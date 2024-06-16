@@ -3,7 +3,7 @@ import type {
   mutationCallBack,
   scrollCallback,
   SamplingStrategy,
-} from '@rrweb/types';
+} from '@saola.ai/rrweb-types';
 import {
   initMutationObserver,
   initScrollObserver,

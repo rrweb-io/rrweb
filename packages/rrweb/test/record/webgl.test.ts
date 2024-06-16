@@ -9,7 +9,7 @@ import {
   EventType,
   IncrementalSource,
   CanvasContext,
-} from '@rrweb/types';
+} from '@saola.ai/rrweb-types';
 import {
   assertSnapshot,
   launchPuppeteer,

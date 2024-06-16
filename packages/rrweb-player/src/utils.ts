@@ -15,8 +15,8 @@ declare global {
   }
 }
 
-import { EventType, IncrementalSource } from '@rrweb/types';
-import type { eventWithTime } from '@rrweb/types';
+import { EventType, IncrementalSource } from '@saola.ai/rrweb-types';
+import type { eventWithTime } from '@saola.ai/rrweb-types';
 
 export function inlineCss(cssObj: Record<string, string>): string {
   let style = '';

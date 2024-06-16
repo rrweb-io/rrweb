@@ -6,7 +6,7 @@ import {
   canvasMutationWithType,
   IWindow,
   listenerHandler,
-} from '@rrweb/types';
+} from '@saola.ai/rrweb-types';
 import { hookSetter, isBlocked, patch } from '../../../utils';
 import { saveWebGLVar, serializeArgs } from './serialize-args';
 

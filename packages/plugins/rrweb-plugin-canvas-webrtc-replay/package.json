@@ -1,5 +1,5 @@
 {
-  "name": "@rrweb/rrweb-plugin-canvas-webrtc-replay",
+  "name": "@saola.ai/rrweb-plugin-canvas-webrtc-replay",
   "version": "2.0.0-alpha.15",
   "description": "",
   "type": "module",

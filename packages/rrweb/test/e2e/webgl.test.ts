@@ -13,7 +13,7 @@ import {
   fakeGoto,
 } from '../utils';
 import type { recordOptions } from '../../src/types';
-import type { eventWithTime } from '@rrweb/types';
+import type { eventWithTime } from '@saola.ai/rrweb-types';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 expect.extend({ toMatchImageSnapshot });
 

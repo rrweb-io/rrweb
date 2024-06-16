@@ -3,7 +3,7 @@ import { stringifySnapshots } from '../../../rrweb/test/utils';
 import { createServer, ViteDevServer } from 'vite';
 import * as puppeteer from 'puppeteer';
 import type { Browser, Page } from 'puppeteer';
-import type { eventWithTime } from '@rrweb/types';
+import type { eventWithTime } from '@saola.ai/rrweb-types';
 
 export async function launchPuppeteer(
   options?: Parameters<(typeof puppeteer)['launch']>[0],

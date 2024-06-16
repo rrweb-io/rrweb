@@ -1,5 +1,5 @@
 {
-  "name": "@rrweb/rrweb-plugin-sequential-id-record",
+  "name": "@saola.ai/rrweb-plugin-sequential-id-record",
   "version": "2.0.0-alpha.15",
   "description": "",
   "type": "module",

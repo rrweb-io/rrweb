@@ -1,5 +1,5 @@
 {
-  "name": "@rrweb/types",
+  "name": "@saola.ai/rrweb-types",
   "version": "2.0.0-alpha.15",
   "publishConfig": {
     "access": "public"

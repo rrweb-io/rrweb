@@ -8,7 +8,7 @@ import {
   Optional,
   mouseInteractionData,
   pluginEvent,
-} from '@rrweb/types';
+} from '@saola.ai/rrweb-types';
 import type { recordOptions } from '../src/types';
 import * as puppeteer from 'puppeteer';
 import { format } from 'prettier';
