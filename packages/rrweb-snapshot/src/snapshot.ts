@@ -328,13 +328,21 @@ export function needMaskingText(
   maskTextSelector: string | null,
   checkAncestors: boolean,
 ): boolean {
+  let el: Element;
+  if (isElement(node)) {
+    el = node;
+    if (!el.childNodes.length) {
+      // optimisation: we can avoid any of the below checks on leaf elements
+      // as masking is applied to child text nodes only
+      return false;
+    }
+  } else if (node.parentElement === null) {
+    // should warn? maybe a text node isn't attached to a parent node yet?
+    return false;
+  } else {
+    el = node.parentElement;
+  }
   try {
-    const el: HTMLElement | null =
-      node.nodeType === node.ELEMENT_NODE
-        ? (node as HTMLElement)
-        : node.parentElement;
-    if (el === null) return false;
-    if (maskTextSelector === '*') return true;
     if (typeof maskTextClass === 'string') {
       if (checkAncestors) {
         if (el.closest(`.${maskTextClass}`)) return true;
@@ -443,7 +451,7 @@ function serializeNode(
     mirror: Mirror;
     blockClass: string | RegExp;
     blockSelector: string | null;
-    needsMask: boolean | undefined;
+    needsMask: boolean;
     inlineStylesheet: boolean;
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
@@ -550,7 +558,7 @@ function serializeTextNode(
   n: Text,
   options: {
     doc: Document;
-    needsMask: boolean | undefined;
+    needsMask: boolean;
     maskTextFn: MaskTextFn | undefined;
     maskInputOptions: MaskInputOptions;
     maskInputFn: MaskInputFn | undefined;
@@ -1026,10 +1034,7 @@ export function serializeNodeWithId(
   let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
 
-  if (
-    !needsMask &&
-    n.childNodes // we can avoid the check on leaf elements, as masking is applied to child text nodes only
-  ) {
+  if (!needsMask) {
     // perf: if needsMask = true, children won't also need to check
     const checkAncestors = needsMask === undefined; // if false, we've already checked ancestors
     needsMask = needMaskingText(
