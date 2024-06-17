@@ -1,5 +1,16 @@
 # rrdom
 
+## 2.0.0
+
+### Major Changes
+
+- Saola AI
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-snapshot@2.0.0
+
 ## 2.0.0-alpha.15
 
 ### Major Changes

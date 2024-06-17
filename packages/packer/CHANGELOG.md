@@ -1,5 +1,16 @@
 # @rrweb/packer
 
+## 2.0.0
+
+### Major Changes
+
+- Saola AI
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-types@2.0.0
+
 ## 2.0.0-alpha.15
 
 ### Major Changes

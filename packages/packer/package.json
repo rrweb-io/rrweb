@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/rrweb-packer",
-  "version": "2.0.0-alpha.15",
+  "version": "2.0.0",
   "publishConfig": {
     "access": "public"
   },
@@ -77,7 +77,7 @@
   },
   "dependencies": {
     "fflate": "^0.4.4",
-    "@saola.ai/rrweb-types": "^2.0.0-alpha.15"
+    "@saola.ai/rrweb-types": "^2.0.0"
   },
   "browserslist": [
     "supports es6-class"

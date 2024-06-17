@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.0.0
+
+### Major Changes
+
+- Saola AI
+
 ## 2.0.0-alpha.15
 
 ### Major Changes

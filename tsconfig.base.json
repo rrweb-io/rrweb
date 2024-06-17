@@ -25,6 +25,7 @@
     "noUnusedParameters": true,
     "forceConsistentCasingInFileNames": true,
     "downlevelIteration": true,
+    "ignoreDeprecations": "5.0",
 
     // needed for vite
     /**

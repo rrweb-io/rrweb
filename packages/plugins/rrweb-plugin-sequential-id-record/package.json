@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/rrweb-plugin-sequential-id-record",
-  "version": "2.0.0-alpha.15",
+  "version": "2.0.0",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-sequential-id-record.umd.cjs",
@@ -43,12 +43,12 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
-    "@saola.ai/rrweb": "^2.0.0-alpha.15",
+    "@saola.ai/rrweb": "^2.0.0",
     "typescript": "^4.7.3",
     "vite": "^5.2.8",
     "vite-plugin-dts": "^3.8.1"
   },
   "peerDependencies": {
-    "@saola.ai/rrweb": "^2.0.0-alpha.15"
+    "@saola.ai/rrweb": "^2.0.0"
   }
 }
