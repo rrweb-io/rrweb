@@ -84,7 +84,6 @@ export default defineConfig({
         );
         return manifest;
       },
-      assets: 'assets',
       browser: process.env.TARGET_BROWSER,
       webExtConfig: {
         startUrl: ['github.com/rrweb-io/rrweb'],

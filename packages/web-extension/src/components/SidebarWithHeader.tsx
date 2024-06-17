@@ -117,7 +117,7 @@ const SidebarContent = ({
           <Image
             borderRadius="md"
             boxSize="2rem"
-            src={Browser.runtime.getURL('assets/icon128.png')}
+            src={Browser.runtime.getURL('icon128.png')}
             alt="RRWeb Logo"
           />
         </Link>
