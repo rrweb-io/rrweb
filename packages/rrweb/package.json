@@ -49,9 +49,6 @@
   },
   "files": [
     "dist",
-    "lib",
-    "es",
-    "typings",
     "package.json"
   ],
   "sideEffects": false,
