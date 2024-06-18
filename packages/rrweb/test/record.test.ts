@@ -534,7 +534,7 @@ describe('record', function (this: ISuite) {
       styleEl.append(document.createTextNode('span { color: orange; }'));
     });
     await waitForRAF(ctx.page);
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
   });
 
   it('captures stylesheets with `blob:` url', async () => {
@@ -962,7 +962,7 @@ describe('record', function (this: ISuite) {
     await ctx.page.waitForResponse(corsStylesheetURL); // wait for stylesheet to be loaded
     await waitForRAF(ctx.page); // wait for rrweb to emit events
 
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
   });
 
   it('captures adopted stylesheets in shadow doms and iframe', async () => {

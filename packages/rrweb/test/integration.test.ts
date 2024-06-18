@@ -907,7 +907,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record images with blob url', async () => {
