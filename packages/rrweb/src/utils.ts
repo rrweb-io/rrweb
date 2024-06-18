@@ -11,7 +11,7 @@ import type {
 } from '@rrweb/types';
 import type { IMirror, Mirror, SlimDOMOptions } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
-import type { RRNode, RRIFrameElement } from 'rrdom';
+import { RRNode, RRIFrameElement, BaseRRNode } from 'rrdom';
 import {
   contains,
   getRootNode,
@@ -462,6 +462,10 @@ export function getBaseDimension(
 export function hasShadowRoot<T extends Node | RRNode>(
   n: T,
 ): n is T & { shadowRoot: ShadowRoot } {
+  if (!n) return false;
+  if (n instanceof BaseRRNode && 'shadowRoot' in n) {
+    return Boolean(n.shadowRoot);
+  }
   return Boolean(shadowRoot(n as unknown as Element));
 }
 
