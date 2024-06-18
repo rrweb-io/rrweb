@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.24.0
+
+### Various fixes & improvements
+
+- fix(rrweb): null check for pointer (#208) by @michellewzhang
+
 ## 2.23.0
 
 ### Various fixes & improvements
