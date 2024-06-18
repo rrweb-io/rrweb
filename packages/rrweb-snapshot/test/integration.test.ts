@@ -156,7 +156,7 @@ describe('integration tests', function (this: ISuite) {
           'blob:http://localhost:xxxx/...',
         );
 
-      assertSnapshot(rebuildHtml);
+      await assertSnapshot(rebuildHtml);
     });
   }
 
@@ -486,7 +486,7 @@ describe('iframe integration tests', function (this: ISuite) {
       null,
       2,
     );
-    assertSnapshot(snapshotResult);
+    await assertSnapshot(snapshotResult);
   });
 });
 
@@ -529,6 +529,6 @@ describe('shadow DOM integration tests', function (this: ISuite) {
       null,
       2,
     );
-    assertSnapshot(snapshotResult);
+    await assertSnapshot(snapshotResult);
   });
 });
