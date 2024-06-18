@@ -227,10 +227,10 @@ function buildNode(
           value = adaptCssForReplay(value, cache);
         }
         if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
-          node.appendChild(doc.createTextNode(value));
           // https://github.com/rrweb-io/rrweb/issues/112
+          // https://github.com/rrweb-io/rrweb/pull/1351
+          node.appendChild(doc.createTextNode(value));
           n.childNodes = []; // value overrides childNodes
-          continue;
         }
 
         try {
@@ -511,16 +511,6 @@ export function buildNodeWithSN(
           node.appendChild(childNode);
         }
       } else {
-        if (
-          childNode.nodeType === childNode.TEXT_NODE &&
-          isElement(node) &&
-          node.tagName === 'STYLE' &&
-          node.childNodes.length === 1 &&
-          !mirror.hasNode(node.childNodes[0])
-        ) {
-          childNode.textContent = node.childNodes[0].textContent;
-          node.removeChild(node.childNodes[0]);
-        }
         node.appendChild(childNode);
       }
       if (afterAppend) {
