@@ -3,4 +3,4 @@
 "rrweb": patch
 ---
 
-fix: style element corner case
+fix: duplicate textContent for style element cause incremental style mutation invalid
