@@ -297,16 +297,22 @@ describe('record', function (this: ISuite) {
       // begin: pre-serialization
       const ruleIdx0 = styleSheet.insertRule('body { background: #000; }');
       const ruleIdx1 = styleSheet.insertRule('body { background: #111; }');
+      const ruleIdx2 = styleSheet.addRule('body', 'border: 2px solid #000;');
+      const ruleIdx3 = styleSheet.addRule('body', 'border: 2px solid #111;');
       styleSheet.deleteRule(ruleIdx1);
+      styleSheet.removeRule(ruleIdx3);
       // end: pre-serialization
       setTimeout(() => {
         styleSheet.insertRule('body { color: #fff; }');
+        styleSheet.addRule('body', 'border: 2px solid #fff;');
       }, 0);
       setTimeout(() => {
         styleSheet.deleteRule(ruleIdx0);
+        styleSheet.removeRule(ruleIdx2);
       }, 5);
       setTimeout(() => {
         styleSheet.insertRule('body { color: #ccc; }');
+        styleSheet.addRule('body', 'border: 2px solid #ff3300;');
       }, 10);
     });
     await ctx.page.waitForTimeout(50);
@@ -322,13 +328,28 @@ describe('record', function (this: ISuite) {
       Boolean((e.data as styleSheetRuleData).removes),
     ).length;
     // pre-serialization insert/delete should be ignored
-    expect(addRules.length).toEqual(2);
+    expect(addRules.length).toEqual(4);
     expect((addRules[0].data as styleSheetRuleData).adds).toEqual([
       {
         rule: 'body { color: #fff; }',
       },
     ]);
-    expect(removeRuleCount).toEqual(1);
+    expect((addRules[1].data as styleSheetRuleData).adds).toEqual([
+      {
+        rule: 'body { border: 2px solid #fff; }',
+      },
+    ]);
+    expect((addRules[2].data as styleSheetRuleData).adds).toEqual([
+      {
+        rule: 'body { color: #ccc; }',
+      },
+    ]);
+    expect((addRules[3].data as styleSheetRuleData).adds).toEqual([
+      {
+        rule: 'body { border: 2px solid #ff3300; }',
+      },
+    ]);
+    expect(removeRuleCount).toEqual(2);
     await assertSnapshot(ctx.events);
   });
 
