@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.23.0
+
+### Various fixes & improvements
+
+- fix(rrweb): check if pointer is undefined before accessing pointerEl (#207) by @michellewzhang
+
 ## 2.22.0
 
 ### Various fixes & improvements
