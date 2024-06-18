@@ -409,7 +409,7 @@ describe('onAssetDetected callback', () => {
       element: el.querySelector('style'),
       attr: 'css_text',
       styleId: 1,
-      value: 'http://localhost/',
+      value: 'http://localhost:3000/',
     });
   });
 
