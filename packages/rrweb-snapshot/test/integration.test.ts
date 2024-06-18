@@ -362,7 +362,7 @@ iframe.contentDocument.querySelector('center').clientHeight
           window.snapshot = sn;
         },
         captureAssets: {
-          origin: false,
+          origins: false,
           objectURLs: false
         }
     })`);
