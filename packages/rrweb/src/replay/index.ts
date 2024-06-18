@@ -2165,7 +2165,7 @@ export class Replayer {
     const _y = y * base.absoluteScale + base.y;
 
     const pointer = this.pointers[pointerId];
-    if (pointer.pointerEl) {
+    if (pointer && pointer.pointerEl) {
       pointer.pointerEl.style.left = `${_x}px`;
       pointer.pointerEl.style.top = `${_y}px`;
     }
