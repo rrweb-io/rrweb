@@ -55,6 +55,18 @@ const suites: Array<
     eval: 'window.workload()',
     times: 10,
   },
+  {
+    title: 'add and reorder 10000 DOM nodes',
+    html: 'benchmark-dom-mutation-add-reorder.html',
+    eval: 'window.workload()',
+    times: 5,
+  },
+  {
+    title: 'add 5x2000 DOM nodes in random order',
+    html: 'benchmark-dom-mutation-random-add.html',
+    eval: 'window.workload()',
+    times: 5,
+  },
 ];
 
 function avg(v: number[]): number {

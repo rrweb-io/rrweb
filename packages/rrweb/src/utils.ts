@@ -351,70 +351,11 @@ export function polyfill(win = window) {
   }
 }
 
-type ResolveTree = {
-  value: addedNodeMutation;
-  children: ResolveTree[];
-  parent: ResolveTree | null;
+export type ResolveTree = {
+  id: number;
+  value: addedNodeMutation | null;
+  children: Map<number | null, ResolveTree>;
 };
-
-export function queueToResolveTrees(queue: addedNodeMutation[]): ResolveTree[] {
-  const queueNodeMap: Record<number, ResolveTree> = {};
-  const putIntoMap = (
-    m: addedNodeMutation,
-    parent: ResolveTree | null,
-  ): ResolveTree => {
-    const nodeInTree: ResolveTree = {
-      value: m,
-      parent,
-      children: [],
-    };
-    queueNodeMap[m.node.id] = nodeInTree;
-    return nodeInTree;
-  };
-
-  const queueNodeTrees: ResolveTree[] = [];
-  for (const mutation of queue) {
-    const { nextId, parentId } = mutation;
-    if (nextId && nextId in queueNodeMap) {
-      const nextInTree = queueNodeMap[nextId];
-      if (nextInTree.parent) {
-        const idx = nextInTree.parent.children.indexOf(nextInTree);
-        nextInTree.parent.children.splice(
-          idx,
-          0,
-          putIntoMap(mutation, nextInTree.parent),
-        );
-      } else {
-        const idx = queueNodeTrees.indexOf(nextInTree);
-        queueNodeTrees.splice(idx, 0, putIntoMap(mutation, null));
-      }
-      continue;
-    }
-    if (parentId in queueNodeMap) {
-      const parentInTree = queueNodeMap[parentId];
-      parentInTree.children.push(putIntoMap(mutation, parentInTree));
-      continue;
-    }
-    queueNodeTrees.push(putIntoMap(mutation, null));
-  }
-
-  return queueNodeTrees;
-}
-
-export function iterateResolveTree(
-  tree: ResolveTree,
-  cb: (mutation: addedNodeMutation) => unknown,
-) {
-  cb(tree.value);
-  /**
-   * The resolve tree was designed to reflect the DOM layout,
-   * but we need append next sibling first, so we do a reverse
-   * loop here.
-   */
-  for (let i = tree.children.length - 1; i >= 0; i--) {
-    iterateResolveTree(tree.children[i], cb);
-  }
-}
 
 export type AppendedIframe = {
   mutationInQueue: addedNodeMutation;
