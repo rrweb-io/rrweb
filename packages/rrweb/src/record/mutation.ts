@@ -32,7 +32,13 @@ import {
   getShadowHost,
   closestElementOfNode,
 } from '../utils';
-import { childNodes, parentNode, textContent } from '@rrweb/utils';
+import {
+  childNodes,
+  host,
+  parentNode,
+  shadowRoot,
+  textContent,
+} from '@rrweb/utils';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -324,7 +330,8 @@ export default class MutationBuffer {
             );
           }
           if (hasShadowRoot(n)) {
-            this.shadowDomManager.addShadowRoot(n.shadowRoot, this.doc);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.shadowDomManager.addShadowRoot(shadowRoot(n)!, this.doc);
           }
         },
         onIframeLoad: (iframe, childSn) => {
@@ -404,7 +411,7 @@ export default class MutationBuffer {
               const parent = parentNode(unhandledNode);
               // If the node is the direct child of a shadow root, we treat the shadow host as its parent node.
               if (parent && parent.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-                const shadowHost = (parent as ShadowRoot).host;
+                const shadowHost = host(parent as ShadowRoot);
                 const parentId = this.mirror.getId(shadowHost);
                 if (parentId !== -1) {
                   node = _node;
@@ -676,7 +683,7 @@ export default class MutationBuffer {
         m.removedNodes.forEach((n) => {
           const nodeId = this.mirror.getId(n);
           const parentId = isShadowRoot(m.target)
-            ? this.mirror.getId(m.target.host)
+            ? this.mirror.getId(host(m.target))
             : this.mirror.getId(m.target);
           if (
             isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
@@ -760,7 +767,8 @@ export default class MutationBuffer {
     if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
       childNodes(n).forEach((childN) => this.genAdds(childN));
       if (hasShadowRoot(n)) {
-        childNodes(n.shadowRoot).forEach((childN) => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        childNodes(shadowRoot(n)!).forEach((childN) => {
           this.processedNodeManager.add(childN, this);
           this.genAdds(childN, n);
         });

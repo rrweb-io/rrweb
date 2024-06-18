@@ -12,7 +12,14 @@ import type {
 import type { IMirror, Mirror, SlimDOMOptions } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
 import type { RRNode, RRIFrameElement } from 'rrdom';
-import { contains, getRootNode, parentElement } from '@rrweb/utils';
+import {
+  contains,
+  getRootNode,
+  parentElement,
+  host,
+  parentNode,
+  shadowRoot,
+} from '@rrweb/utils';
 
 export function on(
   type: string,
@@ -185,8 +192,8 @@ export function getWindowScroll(win: Window) {
       ? doc.scrollingElement.scrollLeft
       : win.pageXOffset !== undefined
       ? win.pageXOffset
-      : doc?.documentElement.scrollLeft ||
-        parentElement(doc?.body)?.scrollLeft ||
+      : doc.documentElement.scrollLeft ||
+        (doc?.body && parentElement(doc.body)?.scrollLeft) ||
         doc?.body?.scrollLeft ||
         0,
     top: doc.scrollingElement
@@ -194,7 +201,7 @@ export function getWindowScroll(win: Window) {
       : win.pageYOffset !== undefined
       ? win.pageYOffset
       : doc?.documentElement.scrollTop ||
-        parentElement(doc?.body)?.scrollTop ||
+        (doc?.body && parentElement(doc.body)?.scrollTop) ||
         doc?.body?.scrollTop ||
         0,
   };
@@ -301,17 +308,15 @@ export function isAncestorRemoved(target: Node, mirror: Mirror): boolean {
   if (!mirror.has(id)) {
     return true;
   }
-  if (
-    target.parentNode &&
-    target.parentNode.nodeType === target.DOCUMENT_NODE
-  ) {
+  const parent = parentNode(target);
+  if (parent && parent.nodeType === target.DOCUMENT_NODE) {
     return false;
   }
   // if the root is not document, it means the node is not in the DOM tree anymore
-  if (!target.parentNode) {
+  if (!parent) {
     return true;
   }
-  return isAncestorRemoved(target.parentNode, mirror);
+  return isAncestorRemoved(parent, mirror);
 }
 
 export function legacy_isTouchEvent(
@@ -457,7 +462,7 @@ export function getBaseDimension(
 export function hasShadowRoot<T extends Node | RRNode>(
   n: T,
 ): n is T & { shadowRoot: ShadowRoot } {
-  return Boolean((n as unknown as Element)?.shadowRoot);
+  return Boolean(shadowRoot(n as unknown as Element));
 }
 
 export function getNestedRule(
@@ -549,10 +554,11 @@ export class StyleSheetMirror {
 export function getShadowHost(n: Node): Element | null {
   let shadowHost: Element | null = null;
   if (
+    'getRootNode' in n &&
     getRootNode(n)?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
-    (getRootNode(n) as ShadowRoot).host
+    host(getRootNode(n) as ShadowRoot)
   )
-    shadowHost = (getRootNode(n) as ShadowRoot).host;
+    shadowHost = host(getRootNode(n) as ShadowRoot);
   return shadowHost;
 }
 

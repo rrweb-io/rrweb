@@ -12,6 +12,26 @@
           throw new Error('childNodes was hijacked by framework');
         },
       });
+
+      Object.defineProperty(Node.prototype, 'childNodes', {
+        get() {
+          throw new Error('childNodes was hijacked by framework');
+        },
+      });
+
+      Node.prototype.contains = function () {
+        throw new Error('contains was hijacked by framework');
+      };
+
+      Node.prototype.getRootNode = function () {
+        throw new Error('getRootNode was hijacked by framework');
+      };
+
+      MutationObserver = class {
+        constructor() {
+          throw new Error('MutationObserver was hijacked by framework');
+        }
+      };
     </script>
   </head>
   <body>

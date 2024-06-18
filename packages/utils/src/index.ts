@@ -284,13 +284,13 @@ export function textContent(n: Node): string | null {
 }
 
 export function contains(n: Node, other: Node): boolean {
-  // return getUntaintedMethod('Node', n, 'contains')(other);
-  return n.contains(other);
+  return getUntaintedMethod('Node', n, 'contains')(other);
+  // return n.contains(other);
 }
 
 export function getRootNode(n: Node): Node {
-  // return getUntaintedMethod('Node', n, 'getRootNode')();
-  return n.getRootNode();
+  return getUntaintedMethod('Node', n, 'getRootNode')();
+  // return n.getRootNode();
 }
 
 export function host(n: ShadowRoot): Element | null {
@@ -315,8 +315,8 @@ export function shadowRoot(n: Node): ShadowRoot | null {
 }
 
 export function querySelector(n: Element, selectors: string): Element | null {
-  // return getUntaintedAccessor('Element', n, 'querySelector')(selectors);
-  return n.querySelector(selectors);
+  return getUntaintedAccessor('Element', n, 'querySelector')(selectors);
+  // return n.querySelector(selectors);
 }
 
 export function querySelectorAll(

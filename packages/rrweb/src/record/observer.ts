@@ -50,16 +50,11 @@ import {
 } from '@rrweb/types';
 import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
-import { parentElement } from '@rrweb/utils';
-
-type WindowWithStoredMutationObserver = IWindow & {
-  __rrMutationObserver?: MutationObserver;
-};
-type WindowWithAngularZone = IWindow & {
-  Zone?: {
-    __symbol__?: (key: string) => string;
-  };
-};
+import {
+  parentElement,
+  host as getHost,
+  mutationObserverCtor,
+} from '@rrweb/utils';
 
 export const mutationBuffers: MutationBuffer[] = [];
 
@@ -93,31 +88,7 @@ export function initMutationObserver(
   mutationBuffers.push(mutationBuffer);
   // see mutation.ts for details
   mutationBuffer.init(options);
-  let mutationObserverCtor =
-    window.MutationObserver ||
-    /**
-     * Some websites may disable MutationObserver by removing it from the window object.
-     * If someone is using rrweb to build a browser extention or things like it, they
-     * could not change the website's code but can have an opportunity to inject some
-     * code before the website executing its JS logic.
-     * Then they can do this to store the native MutationObserver:
-     * window.__rrMutationObserver = MutationObserver
-     */
-    (window as WindowWithStoredMutationObserver).__rrMutationObserver;
-  const angularZoneSymbol = (
-    window as WindowWithAngularZone
-  )?.Zone?.__symbol__?.('MutationObserver');
-  if (
-    angularZoneSymbol &&
-    (window as unknown as Record<string, typeof MutationObserver>)[
-      angularZoneSymbol
-    ]
-  ) {
-    mutationObserverCtor = (
-      window as unknown as Record<string, typeof MutationObserver>
-    )[angularZoneSymbol];
-  }
-  const observer = new (mutationObserverCtor as new (
+  const observer = new (mutationObserverCtor() as new (
     callback: MutationCallback,
   ) => MutationObserver)(
     callbackWrapper(mutationBuffer.processMutations.bind(mutationBuffer)),
@@ -882,7 +853,7 @@ export function initAdoptedStyleSheetObserver(
   // host of adoptedStyleSheets is outermost document or IFrame's document
   if (host.nodeName === '#document') hostId = mirror.getId(host);
   // The host is a ShadowRoot.
-  else hostId = mirror.getId((host as ShadowRoot).host);
+  else hostId = mirror.getId(getHost(host as ShadowRoot));
 
   const patchTarget =
     host.nodeName === '#document'
