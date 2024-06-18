@@ -394,7 +394,7 @@ iframe.contentDocument.querySelector('center').clientHeight
 
   it('should save background-clip: text; as the more compatible -webkit-background-clip: test;', async () => {
     const page: puppeteer.Page = await browser.newPage();
-    await page.goto(`http://localhost:3030/html/background-clip-text.html`, {
+    await page.goto(`${serverURL}/html/background-clip-text.html`, {
       waitUntil: 'load',
     });
     await waitForRAF(page); // wait for page to render
@@ -412,13 +412,10 @@ iframe.contentDocument.querySelector('center').clientHeight
   it('images with inline onload should work', async () => {
     const page: puppeteer.Page = await browser.newPage();
 
-    await page.goto(
-      'http://localhost:3030/html/picture-with-inline-onload.html',
-      {
-        waitUntil: 'load',
-      },
-    );
-    await page.waitForSelector('img', { timeout: 1000 });
+    await page.goto(`${serverURL}/html/picture-with-inline-onload.html`, {
+      waitUntil: 'load',
+    });
+    await page.waitForSelector('img', { timeout: 2000 });
     await page.evaluate(`${code}`);
     await page.evaluate(`
     var snapshot = rrwebSnapshot.snapshot(document, {
