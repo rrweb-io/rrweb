@@ -2179,7 +2179,7 @@ export class Replayer {
   private drawMouseTail(position: { x: number; y: number }, pointerId: number) {
     const pointer = this.pointers[pointerId];
 
-    if (!pointer.mouseTail) {
+    if (!pointer || !pointer.mouseTail) {
       return;
     }
 
@@ -2189,7 +2189,7 @@ export class Replayer {
         : Object.assign({}, defaultMouseTailConfig, this.config.mouseTail);
 
     const draw = () => {
-      if (!pointer.mouseTail) {
+      if (!pointer || !pointer.mouseTail) {
         return;
       }
       const mouseTail = pointer.mouseTail;
