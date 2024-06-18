@@ -231,6 +231,7 @@ function buildNode(
           // https://github.com/rrweb-io/rrweb/pull/1351
           node.appendChild(doc.createTextNode(value));
           n.childNodes = []; // value overrides childNodes
+          continue;
         }
 
         try {
