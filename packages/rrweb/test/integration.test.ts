@@ -1237,22 +1237,29 @@ describe('record integration tests', function (this: ISuite) {
     assertSnapshot(snapshots);
   });
 
-  // https://github.com/rrweb-io/rrweb/pull/1417
-  // This test is to make sure that this problem doesn't regress
+  /**
+   * https://github.com/rrweb-io/rrweb/pull/1417
+   * This test is to make sure that this problem doesn't regress
+   * Test case description:
+   * 1. Record two style elements. One is recorded as a full snapshot and the other is recorded as an incremental snapshot.
+   * 2. Change the color of both style elements to yellow as incremental style mutation.
+   * 3. Replay the recorded events and check if the style mutation is applied correctly.
+   */
   it('should record style mutations and replay them correctly', async () => {
     const page: puppeteer.Page = await browser.newPage();
     const OldColor = 'rgb(255, 0, 0)'; // red color
     const NewColor = 'rgb(255, 255, 0)'; // yellow color
 
-    // A snapshot with a div element with red color
     await page.setContent(
       `
       <!DOCTYPE html><html lang="en">
         <head>
-	        <style> </style>
+	        <style> 
+          </style>
         </head>
         <body>
 	        <div id="one"></div>
+          <div id="two"></div>
 	        <script>
 		        document.querySelector("style").sheet.insertRule('#one { color: ${OldColor}; }', 0);
 	        </script>
@@ -1269,14 +1276,34 @@ describe('record integration tests', function (this: ISuite) {
       code,
       generateRecordSnippet({}),
     );
-    // Change the color of the div element to yellow as an incremental style mutation
-    await page.evaluate((NewColor) => {
-      const styleElement = document.querySelector('style')!;
-      (styleElement.sheet!.cssRules[0] as any).style.setProperty(
-        'color',
-        NewColor,
-      );
-    }, NewColor);
+
+    await page.evaluate(
+      async (OldColor, NewColor) => {
+        // Create a new style element with the same content as the existing style element and apply it to the #two div element
+        const incrementalStyle = document.createElement(
+          'style',
+        ) as HTMLStyleElement;
+        incrementalStyle.textContent = ` \n`;
+        document.head.appendChild(incrementalStyle);
+        incrementalStyle.sheet!.insertRule(`#two { color: ${OldColor}; }`, 0);
+
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        // Change the color of the #one div element to yellow as an incremental style mutation
+        const styleElement = document.querySelector('style')!;
+        (styleElement.sheet!.cssRules[0] as any).style.setProperty(
+          'color',
+          NewColor,
+        );
+        // Change the color of the #two div element to yellow as an incremental style mutation
+        (incrementalStyle.sheet!.cssRules[0] as any).style.setProperty(
+          'color',
+          NewColor,
+        );
+      },
+      OldColor,
+      NewColor,
+    );
 
     const snapshots = (await page.evaluate(
       'window.snapshots',
@@ -1286,15 +1313,22 @@ describe('record integration tests', function (this: ISuite) {
     /**
      * Replay the recorded events and check if the style mutation is applied correctly
      */
-    const changedColor = await page.evaluate(`
+    const changedColors = await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(window.snapshots);
       replayer.pause(1000);
 
       // Get the color of the element after applying the style mutation event
-      window.getComputedStyle(replayer.iframe.contentDocument.querySelector('#one')).color;
+      [
+        window.getComputedStyle(
+          replayer.iframe.contentDocument.querySelector('#one'),
+        ).color,
+        window.getComputedStyle(
+          replayer.iframe.contentDocument.querySelector('#two'),
+        ).color,
+      ];
     `);
-    expect(changedColor).toBe(NewColor);
+    expect(changedColors).toEqual([NewColor, NewColor]);
     await page.close();
   });
 });

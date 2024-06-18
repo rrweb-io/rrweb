@@ -1588,13 +1588,19 @@ export class Replayer {
           parentSn.tagName === 'style' &&
           childNodeArray.length === 1
         ) {
-          const cssText = childNodeArray[0] as Node & RRNode;
-          if (
-            cssText.nodeType === parent.TEXT_NODE &&
-            !mirror.hasNode(cssText)
-          ) {
-            target.textContent = cssText.textContent;
-            parent.removeChild(cssText);
+          // https://github.com/rrweb-io/rrweb/pull/1417
+          /**
+           * If both _cssText and textContent are present for a style element due to some exist bugs, the element will have two child text nodes.
+           * We need to remove the textNode created by _cssText to avoid issue.
+           */
+          for (const cssText of childNodeArray as (Node & RRNode)[]) {
+            if (
+              cssText.nodeType === parent.TEXT_NODE &&
+              !mirror.hasNode(cssText)
+            ) {
+              target.textContent = cssText.textContent;
+              parent.removeChild(cssText);
+            }
           }
         }
       } else if (parentSn?.type === NodeType.Document) {
