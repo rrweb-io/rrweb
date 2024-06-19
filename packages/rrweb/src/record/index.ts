@@ -1,7 +1,7 @@
 import {
   snapshot,
-  MaskInputOptions,
-  SlimDOMOptions,
+  type MaskInputOptions,
+  type SlimDOMOptions,
   createMirror,
 } from 'rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
@@ -19,14 +19,14 @@ import {
 import type { recordOptions } from '../types';
 import {
   EventType,
-  eventWithoutTime,
-  eventWithTime,
+  type eventWithoutTime,
+  type eventWithTime,
   IncrementalSource,
-  listenerHandler,
-  mutationCallbackParam,
-  scrollCallback,
-  canvasMutationParam,
-  adoptedStyleSheetParam,
+  type listenerHandler,
+  type mutationCallbackParam,
+  type scrollCallback,
+  type canvasMutationParam,
+  type adoptedStyleSheetParam,
 } from '@rrweb/types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
