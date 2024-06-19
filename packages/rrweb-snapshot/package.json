@@ -61,7 +61,7 @@
     "tslib": "^1.9.3",
     "typescript": "^4.7.3",
     "vite": "^5.3.1",
-    "vite-plugin-dts": "^3.8.1",
+    "vite-plugin-dts": "^3.9.1",
     "vitest": "^1.4.0"
   }
 }
