@@ -25,17 +25,17 @@
     },
     "test:watch": {
       "persistent": true,
-      "passThroughEnv": ["PUPPETEER_HEADLESS"]
+      "passThroughEnv": ["PUPPETEER_HEADLESS"],
+      "cache": false
     },
     "test:update": {
       "dependsOn": ["^prepublish"],
       "passThroughEnv": ["PUPPETEER_HEADLESS"]
     },
     "dev": {
-      // "dependsOn": ["^prepublish"],
+      "dependsOn": ["prepublish", "^prepublish"],
       "persistent": true,
-      "cache": false,
-      "passThroughEnv": ["CLEAR_DIST_DIR"]
+      "cache": false
     },
     "lint": {},
     "check-types": {}
