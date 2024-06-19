@@ -388,7 +388,7 @@ iframe.contentDocument.querySelector('center').clientHeight
 
   it('should be able to record elements even when .childNodes has been monkey patched', async () => {
     const page: puppeteer.Page = await browser.newPage();
-    await page.goto(`http://localhost:3030/html/monkey-patched-elements.html`, {
+    await page.goto(`${serverURL}/html/monkey-patched-elements.html`, {
       waitUntil: 'load',
     });
     await waitForRAF(page); // wait for page to render
