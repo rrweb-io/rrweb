@@ -9,7 +9,7 @@
   ],
   "tasks": {
     "prepublish": {
-      "dependsOn": ["^prepublish", "//#update-references"],
+      "dependsOn": ["^prepublish", "//#references:update"],
       "outputs": [
         "lib/**",
         "es/**",
@@ -38,8 +38,10 @@
       "cache": false
     },
     "lint": {},
-    "check-types": {},
-    "//#update-references": {
+    "check-types": {
+      "dependsOn": ["//#references:update"]
+    },
+    "//#references:update": {
       "inputs": ["packages/*/package.json", "packages/plugins/*/package.json"],
       "outputs": [
         "packages/*/tsconfig.json",
