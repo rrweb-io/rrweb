@@ -49,8 +49,5 @@
     "vite": "^5.2.8",
     "vite-plugin-dts": "^3.8.1"
   },
-  "dependencies": {},
-  "browserslist": [
-    "supports es6-class"
-  ]
+  "dependencies": {}
 }
