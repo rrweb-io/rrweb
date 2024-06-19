@@ -4,6 +4,7 @@ import {
   EventType,
   IncrementalSource,
 } from '@rrweb/types';
+import { onRequestAnimationFrame } from '../utils';
 
 export class Timer {
   public timeOffset = 0;
@@ -39,14 +40,14 @@ export class Timer {
       this.actions.splice(index, 0, action);
     }
     if (rafWasActive) {
-      this.raf = requestAnimationFrame(this.rafCheck.bind(this));
+      this.raf = onRequestAnimationFrame(this.rafCheck.bind(this));
     }
   }
 
   public start() {
     this.timeOffset = 0;
     this.lastTimestamp = performance.now();
-    this.raf = requestAnimationFrame(this.rafCheck.bind(this));
+    this.raf = onRequestAnimationFrame(this.rafCheck.bind(this));
   }
 
   private rafCheck() {
@@ -64,7 +65,7 @@ export class Timer {
       }
     }
     if (this.actions.length > 0) {
-      this.raf = requestAnimationFrame(this.rafCheck.bind(this));
+      this.raf = onRequestAnimationFrame(this.rafCheck.bind(this));
     } else {
       this.raf = true; // was active
     }

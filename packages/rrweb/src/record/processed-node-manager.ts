@@ -1,3 +1,4 @@
+import { onRequestAnimationFrame } from '../utils';
 import type MutationBuffer from './mutation';
 
 /**
@@ -18,7 +19,7 @@ export default class ProcessedNodeManager {
   public add(node: Node, buffer: MutationBuffer) {
     if (!this.active) {
       this.active = true;
-      requestAnimationFrame(() => {
+      onRequestAnimationFrame(() => {
         this.nodeMap = new WeakMap();
         this.active = false;
       });

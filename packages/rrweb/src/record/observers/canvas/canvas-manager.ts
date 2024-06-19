@@ -9,7 +9,7 @@ import type {
   listenerHandler,
   CanvasArg,
 } from '@rrweb/types';
-import { isBlocked } from '../../../utils';
+import { isBlocked, onRequestAnimationFrame } from '../../../utils';
 import { CanvasContext } from '@rrweb/types';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
@@ -174,7 +174,7 @@ export class CanvasManager {
         lastSnapshotTime &&
         timestamp - lastSnapshotTime < timeBetweenSnapshots
       ) {
-        rafId = requestAnimationFrame(takeCanvasSnapshots);
+        rafId = onRequestAnimationFrame(takeCanvasSnapshots);
         return;
       }
       lastSnapshotTime = timestamp;
@@ -225,10 +225,10 @@ export class CanvasManager {
             [bitmap],
           );
         });
-      rafId = requestAnimationFrame(takeCanvasSnapshots);
+      rafId = onRequestAnimationFrame(takeCanvasSnapshots);
     };
 
-    rafId = requestAnimationFrame(takeCanvasSnapshots);
+    rafId = onRequestAnimationFrame(takeCanvasSnapshots);
 
     this.resetObservers = () => {
       canvasContextReset();
@@ -273,15 +273,15 @@ export class CanvasManager {
   }
 
   private startPendingCanvasMutationFlusher() {
-    requestAnimationFrame(() => this.flushPendingCanvasMutations());
+    onRequestAnimationFrame(() => this.flushPendingCanvasMutations());
   }
 
   private startRAFTimestamping() {
     const setLatestRAFTimestamp = (timestamp: DOMHighResTimeStamp) => {
       this.rafStamps.latestId = timestamp;
-      requestAnimationFrame(setLatestRAFTimestamp);
+      onRequestAnimationFrame(setLatestRAFTimestamp);
     };
-    requestAnimationFrame(setLatestRAFTimestamp);
+    onRequestAnimationFrame(setLatestRAFTimestamp);
   }
 
   flushPendingCanvasMutations() {
@@ -291,7 +291,7 @@ export class CanvasManager {
         this.flushPendingCanvasMutationFor(canvas, id);
       },
     );
-    requestAnimationFrame(() => this.flushPendingCanvasMutations());
+    onRequestAnimationFrame(() => this.flushPendingCanvasMutations());
   }
 
   flushPendingCanvasMutationFor(canvas: HTMLCanvasElement, id: number) {
