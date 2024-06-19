@@ -1,6 +1,6 @@
 {
   "name": "@fullview/rrweb",
-  "version": "2.0.0-alpha.7.22",
+  "version": "2.0.0-alpha.7.24",
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",

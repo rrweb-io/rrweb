@@ -110,7 +110,9 @@ export function initMutationObserver(
   const observer = new (mutationObserverCtor as new (
     callback: MutationCallback,
   ) => MutationObserver)(
-    callbackWrapper((e) => mutationBuffer.processMutations(e, options.largeMutationsConfig)),
+    callbackWrapper((e) =>
+      mutationBuffer.processMutations(e, options.largeMutationsConfig),
+    ),
   );
   observer.observe(rootEl, {
     attributes: true,
@@ -840,7 +842,6 @@ export function initAdoptedStyleSheetObserver(
     patchTarget.prototype,
     'adoptedStyleSheets',
   );
-  
   if (!originalPropertyDescriptor)
     return () => {
       //
