@@ -31,14 +31,6 @@ describe('css parser', () => {
           `@media only screen and (${first}-${second}: 1200px) { .a { width: 10px; }}`,
         );
       });
-      expect(
-        parse(
-          mediaSelectorPlugin,
-          '@media only screen and (min-device-width: 1200px) { .a { width: 10px; }}',
-        ),
-      ).toEqual(
-        `@media only screen and (min-width: 1200px) { .a { width: 10px; }}`,
-      );
     });
   });
 
