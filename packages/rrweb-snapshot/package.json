@@ -11,9 +11,9 @@
     "retest:update": "vitest run --update",
     "test:update": "yarn build && vitest run --update",
     "dev": "vite build --watch",
-    "build": "yarn check-types && vite build",
+    "build": "yarn turbo prepublish -F rrweb-snapshot",
     "check-types": "tsc --noEmit",
-    "prepublish": "npm run build",
+    "prepublish": "yarn check-types && vite build",
     "lint": "yarn eslint src"
   },
   "type": "module",

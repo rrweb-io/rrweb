@@ -27,9 +27,9 @@
     "dev": "vite build --watch",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "build": "tsc -noEmit && vite build",
+    "build": "yarn turbo run prepublish",
     "check-types": "tsc -noEmit",
-    "prepublish": "npm run build"
+    "prepublish": "tsc -noEmit && vite build"
   },
   "repository": {
     "type": "git",

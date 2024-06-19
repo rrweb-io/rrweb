@@ -30,11 +30,11 @@
   },
   "scripts": {
     "dev": "vite build --watch",
-    "build": "tsc -noEmit && vite build",
+    "build": "yarn turbo run prepublish",
     "check-types": "tsc -noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublish": "npm run build",
+    "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts"
   },
   "bugs": {
