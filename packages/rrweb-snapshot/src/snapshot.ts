@@ -68,7 +68,7 @@ let canvasService: HTMLCanvasElement | null;
 let canvasCtx: CanvasRenderingContext2D | null;
 
 const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
-const URL_PROTOCOL_MATCH = /^(?:[a-z+]+:)?\/\//i;
+const URL_PROTOCOL_MATCH = /^(?:[a-z+-]+:)?\/\//i;
 const URL_WWW_MATCH = /^www\..*/i;
 const DATA_URI = /^(data:)([^,]*),(.*)/i;
 export function absoluteToStylesheet(
