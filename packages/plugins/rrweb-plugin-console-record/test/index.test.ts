@@ -87,7 +87,7 @@ describe('rrweb-plugin-console-record', () => {
       'window.snapshots',
     )) as eventWithTime[];
     // The snapshots should containe 1 console log, not multiple.
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record console messages', async () => {
@@ -123,6 +123,6 @@ describe('rrweb-plugin-console-record', () => {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 });
