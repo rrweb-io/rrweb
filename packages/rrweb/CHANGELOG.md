@@ -1,5 +1,16 @@
 # rrweb
 
+## 2.0.0-alpha.16
+
+### Patch Changes
+
+- [#1512](https://github.com/rrweb-io/rrweb/pull/1512) [`d08624c`](https://github.com/rrweb-io/rrweb/commit/d08624cb28add386c3618a0e6607424c3f1884d8) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - optimisation: skip mask check on leaf elements
+
+- Updated dependencies [[`d08624c`](https://github.com/rrweb-io/rrweb/commit/d08624cb28add386c3618a0e6607424c3f1884d8)]:
+  - rrweb-snapshot@2.0.0-alpha.16
+  - rrdom@2.0.0-alpha.16
+  - @rrweb/types@2.0.0-alpha.16
+
 ## 2.0.0-alpha.15
 
 ### Major Changes
