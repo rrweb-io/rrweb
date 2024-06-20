@@ -44,8 +44,8 @@ declare module '$env/static/private' {
 	export const TERM: string;
 	export const npm_package_devDependencies_vite: string;
 	export const npm_package_dependencies_devalue: string;
-	export const HOMEBREW_REPOSITORY: string;
 	export const TMPDIR: string;
+	export const HOMEBREW_REPOSITORY: string;
 	export const npm_package_scripts_lint: string;
 	export const npm_config_init_license: string;
 	export const TERM_PROGRAM_VERSION: string;
@@ -204,8 +204,8 @@ declare module '$env/dynamic/private' {
 		TERM: string;
 		npm_package_devDependencies_vite: string;
 		npm_package_dependencies_devalue: string;
-		HOMEBREW_REPOSITORY: string;
 		TMPDIR: string;
+		HOMEBREW_REPOSITORY: string;
 		npm_package_scripts_lint: string;
 		npm_config_init_license: string;
 		TERM_PROGRAM_VERSION: string;

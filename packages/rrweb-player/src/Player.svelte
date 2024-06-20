@@ -73,6 +73,20 @@
     });
   };
 
+  export const setDims: RRwebPlayerExpose['setDims'] = (iWidth: number, iHeight: number) => {  
+    width = iWidth;
+    height = iHeight;
+  };
+
+  export const setDimsAndScale: RRwebPlayerExpose['setDimsAndScale'] = (iWidth: number, iHeight: number) => {  
+    width = iWidth;
+    height = iHeight;
+    updateScale(replayer.wrapper, {
+      width: replayer.iframe.offsetWidth,
+      height: replayer.iframe.offsetHeight,
+    });
+  };
+
   export const toggleFullscreen: RRwebPlayerExpose['toggleFullscreen'] = () => {
     if (player) {
       isFullscreen() ? exitFullscreen() : openFullscreen(player);

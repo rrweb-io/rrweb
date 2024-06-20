@@ -1,5 +1,23 @@
 # @rrweb/web-extension
 
+## 2.0.2
+
+### Patch Changes
+
+- added setDims and setDimsAndScale
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-player@2.0.2
+  - @saola.ai/rrweb@2.0.2
+
+## 2.0.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @saola.ai/rrweb@2.0.1
+  - @saola.ai/rrweb-player@2.0.1
+
 ## 2.0.0
 
 ### Major Changes
