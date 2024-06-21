@@ -1,6 +1,5 @@
 ---
-'rrweb-snapshot': patch
-'rrweb': patch
+'@amplitude/rrweb': patch
 ---
 
 Ensure :hover works on replayer, even if a rule is behind a media query
