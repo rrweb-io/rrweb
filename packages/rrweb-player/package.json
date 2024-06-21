@@ -16,7 +16,7 @@
     "svelte-preprocess": "^5.0.3",
     "svelte2tsx": "^0.7.6",
     "tslib": "^2.0.0",
-    "vite": "^5.2.8"
+    "vite": "^5.3.1"
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",

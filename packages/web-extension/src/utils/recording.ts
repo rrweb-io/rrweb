@@ -2,11 +2,11 @@ import type { eventWithTime } from '@amplitude/rrweb-types';
 import Browser from 'webextension-polyfill';
 
 import {
-  LocalData,
+  type LocalData,
   LocalDataKey,
   RecorderStatus,
-  RecordStartedMessage,
-  RecordStoppedMessage,
+  type RecordStartedMessage,
+  type RecordStoppedMessage,
   ServiceName,
 } from '~/types';
 import { isFirefox } from '.';

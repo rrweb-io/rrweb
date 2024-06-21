@@ -1,46 +1,44 @@
 import {
-  MaskInputOptions,
-  SlimDOMOptions,
-  createMirror,
   snapshot,
+  type MaskInputOptions,
+  type SlimDOMOptions,
+  createMirror,
 } from '@amplitude/rrweb-snapshot';
+import { initObservers, mutationBuffers } from './observer';
 import {
-  EventType,
-  IncrementalSource,
-  adoptedStyleSheetParam,
-  canvasMutationParam,
-  eventWithoutTime,
-  eventWithTime,
-  listenerHandler,
-  mutationCallbackParam,
-  scrollCallback,
-} from '@amplitude/rrweb-types';
-import type {
-  CrossOriginIframeMessageEventContent,
-  recordOptions,
-} from '../types';
-import {
+  on,
+  getWindowWidth,
   getWindowHeight,
   getWindowScroll,
-  getWindowWidth,
+  polyfill,
   hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
   nowTimestamp,
-  on,
-  polyfill,
 } from '../utils';
+import type { recordOptions } from '../types';
+import {
+  EventType,
+  type eventWithoutTime,
+  type eventWithTime,
+  IncrementalSource,
+  type listenerHandler,
+  type mutationCallbackParam,
+  type scrollCallback,
+  type canvasMutationParam,
+  type adoptedStyleSheetParam,
+} from '@amplitude/rrweb-types';
+import type { CrossOriginIframeMessageEventContent } from '../types';
+import { IframeManager } from './iframe-manager';
+import { ShadowDomManager } from './shadow-dom-manager';
+import { CanvasManager } from './observers/canvas/canvas-manager';
+import { StylesheetManager } from './stylesheet-manager';
+import ProcessedNodeManager from './processed-node-manager';
 import {
   callbackWrapper,
   registerErrorHandler,
   unregisterErrorHandler,
 } from './error-handler';
-import { IframeManager } from './iframe-manager';
-import { initObservers, mutationBuffers } from './observer';
-import { CanvasManager } from './observers/canvas/canvas-manager';
-import ProcessedNodeManager from './processed-node-manager';
-import { ShadowDomManager } from './shadow-dom-manager';
-import { StylesheetManager } from './stylesheet-manager';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
 

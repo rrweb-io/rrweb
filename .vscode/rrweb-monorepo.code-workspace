@@ -94,6 +94,7 @@
       "@rrweb/rrweb-plugin-sequential-id",
       "@rrweb/rrweb-plugin-canvas-webrtc-record",
       "@rrweb/rrweb-plugin-canvas-webrtc-replay"
-    ]
+    ],
+    "typescript.tsdk": " rrweb monorepo/node_modules/typescript/lib"
   }
 }

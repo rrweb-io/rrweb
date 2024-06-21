@@ -17,6 +17,9 @@ export {
   type eventWithTime,
 } from '@amplitude/rrweb-types';
 
+// exports style.css from replay
+import './replay/styles/style.css';
+
 export type { recordOptions, ReplayPlugin } from './types';
 
 const { addCustomEvent } = record;
@@ -26,9 +29,9 @@ export {
   Replayer,
   addCustomEvent,
   freezePage,
-  playerConfig,
-  PlayerMachineState,
-  SpeedMachineState,
+  type playerConfig,
+  type PlayerMachineState,
+  type SpeedMachineState,
   canvasMutation,
   _mirror as mirror,
   record,

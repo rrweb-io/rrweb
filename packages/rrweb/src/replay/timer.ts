@@ -1,8 +1,8 @@
 import {
+  type actionWithDelay,
+  type eventWithTime,
   EventType,
   IncrementalSource,
-  actionWithDelay,
-  eventWithTime,
 } from '@amplitude/rrweb-types';
 
 export class Timer {

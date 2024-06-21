@@ -1,6 +1,6 @@
 import type { UnpackFn, eventWithTime } from '@amplitude/rrweb-types';
 import { strFromU8, strToU8, unzlibSync } from 'fflate';
-import { eventWithTimeAndPacker, MARK } from './base';
+import { type eventWithTimeAndPacker, MARK } from './base';
 
 export const unpack: UnpackFn = (raw: string) => {
   if (typeof raw !== 'string') {

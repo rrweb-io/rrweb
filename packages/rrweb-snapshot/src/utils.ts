@@ -1,4 +1,4 @@
-import {
+import type {
   idNodeMap,
   MaskInputFn,
   MaskInputOptions,
@@ -6,12 +6,12 @@ import {
   IMirror,
   serializedNodeWithId,
   serializedNode,
-  NodeType,
   documentNode,
   documentTypeNode,
   textNode,
   elementNode,
 } from './types';
+import { NodeType } from './types';
 
 export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;

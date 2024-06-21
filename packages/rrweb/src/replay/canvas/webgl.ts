@@ -1,4 +1,4 @@
-import { CanvasContext, canvasMutationCommand } from '@amplitude/rrweb-types';
+import { CanvasContext, type canvasMutationCommand } from '@amplitude/rrweb-types';
 import type { Replayer } from '../';
 import { deserializeArg, variableListFor } from './deserialize-args';
 

@@ -42,6 +42,7 @@ export function externalFunctionWrapper<T extends GenericFunction>(
 ): (...args: Parameters<T>) => ReturnType<T> {
   return (...args: Parameters<T>) => {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return func(...args);
     } catch (error) {
       try {

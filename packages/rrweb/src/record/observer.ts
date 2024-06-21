@@ -1,55 +1,57 @@
 import {
-  MaskInputOptions,
+  type MaskInputOptions,
+  maskInputValue,
   Mirror,
   getInputType,
-  maskInputValue,
   toLowerCase,
 } from '@amplitude/rrweb-snapshot';
+import type { FontFaceSet } from 'css-font-loading-module';
 import {
-  Arguments,
-  IWindow,
+  throttle,
+  on,
+  hookSetter,
+  getWindowScroll,
+  getWindowHeight,
+  getWindowWidth,
+  isBlocked,
+  legacy_isTouchEvent,
+  patch,
+  StyleSheetMirror,
+  nowTimestamp,
+} from '../utils';
+import type { observerParam, MutationBufferParam } from '../types';
+import {
   IncrementalSource,
-  MediaInteractions,
   MouseInteractions,
   PointerTypes,
-  SelectionRange,
+  MediaInteractions,
+} from '@amplitude/rrweb-types';
+import type {
+  mutationCallBack,
+  mousemoveCallBack,
+  mousePosition,
+  mouseInteractionCallBack,
+  listenerHandler,
+  scrollCallback,
+  styleSheetRuleCallback,
+  viewportResizeCallback,
+  inputValue,
+  inputCallback,
+  hookResetter,
+  hooksParam,
+  Arguments,
+  mediaInteractionCallback,
   canvasMutationCallback,
   fontCallback,
   fontParam,
-  hookResetter,
-  hooksParam,
-  inputCallback,
-  inputValue,
-  listenerHandler,
-  mediaInteractionCallback,
-  mouseInteractionCallBack,
-  mousePosition,
-  mousemoveCallBack,
-  mutationCallBack,
-  scrollCallback,
-  selectionCallback,
   styleDeclarationCallback,
-  styleSheetRuleCallback,
-  viewportResizeCallback,
+  IWindow,
+  SelectionRange,
+  selectionCallback,
   customElementCallback,
 } from '@amplitude/rrweb-types';
-import type { FontFaceSet } from 'css-font-loading-module';
-import type { MutationBufferParam, observerParam } from '../types';
-import {
-  StyleSheetMirror,
-  getWindowHeight,
-  getWindowScroll,
-  getWindowWidth,
-  hookSetter,
-  isBlocked,
-  legacy_isTouchEvent,
-  nowTimestamp,
-  on,
-  patch,
-  throttle,
-} from '../utils';
-import { callbackWrapper, externalFunctionWrapper } from './error-handler';
 import MutationBuffer from './mutation';
+import { callbackWrapper, externalFunctionWrapper } from './error-handler';
 
 type WindowWithStoredMutationObserver = IWindow & {
   __rrMutationObserver?: MutationObserver;

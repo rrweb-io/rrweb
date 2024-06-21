@@ -1,11 +1,11 @@
 import type { eventWithTime } from '@amplitude/rrweb-types';
 import Browser from 'webextension-polyfill';
 import {
-  LocalData,
+  type LocalData,
   LocalDataKey,
   RecorderStatus,
-  Settings,
-  SyncData,
+  type Settings,
+  type SyncData,
   SyncDataKey,
 } from '~/types';
 import Channel from '~/utils/channel';

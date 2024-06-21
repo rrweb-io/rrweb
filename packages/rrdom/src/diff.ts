@@ -1,7 +1,7 @@
 import {
   Mirror as NodeMirror,
   NodeType as RRNodeType,
-  elementNode,
+  type elementNode,
 } from '@amplitude/rrweb-snapshot';
 import type {
   canvasEventWithTime,

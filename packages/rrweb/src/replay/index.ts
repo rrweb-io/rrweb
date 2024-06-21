@@ -1,90 +1,92 @@
-import type {
-  RRCanvasElement,
-  Mirror as RRDOMMirror,
-  RRElement,
-  RRIFrameElement,
-  RRMediaElement,
-  RRNode,
-  RRStyleElement,
-  ReplayerHandler,
-} from '@amplitude/rrdom';
 import {
-  RRDocument,
-  buildFromDom,
-  buildFromNode,
-  createOrGetNode,
-  diff,
-  getDefaultSN,
-} from '@amplitude/rrdom';
-import {
-  BuildCache,
-  Mirror,
-  NodeType,
-  attributes,
-  buildNodeWithSN,
-  createCache,
-  createMirror,
   rebuild,
-  serializedElementNodeWithId,
+  buildNodeWithSN,
+  NodeType,
+  type BuildCache,
+  createCache,
+  Mirror,
+  createMirror,
+  type attributes,
+  type serializedElementNodeWithId,
   toLowerCase,
 } from '@amplitude/rrweb-snapshot';
 import {
-  Emitter,
+  RRDocument,
+  createOrGetNode,
+  buildFromNode,
+  buildFromDom,
+  diff,
+  getDefaultSN,
+} from '@amplitude/rrdom';
+import type {
+  RRNode,
+  RRElement,
+  RRStyleElement,
+  RRIFrameElement,
+  RRMediaElement,
+  RRCanvasElement,
+  ReplayerHandler,
+  Mirror as RRDOMMirror,
+} from '@amplitude/rrdom';
+import * as mittProxy from 'mitt';
+import { polyfill as smoothscrollPolyfill } from './smoothscroll';
+import { Timer } from './timer';
+import {
+  createPlayerService,
+  createSpeedService,
+  type PlayerMachineState,
+  type SpeedMachineState,
+} from './machine';
+import type { playerConfig, missingNodeMap } from '../types';
+import {
   EventType,
-  Handler,
-  IWindow,
   IncrementalSource,
   MouseInteractions,
   ReplayerEvents,
-  addedNodeMutation,
-  adoptedStyleSheetData,
-  canvasEventWithTime,
-  canvasMutationCommand,
-  canvasMutationData,
-  canvasMutationParam,
-  eventWithTime,
-  fullSnapshotEvent,
-  incrementalData,
-  incrementalSnapshotEvent,
-  inputData,
-  metaEvent,
-  mouseMovePos,
-  mutationData,
-  playerMetaData,
-  scrollData,
-  selectionData,
-  styleDeclarationData,
-  styleSheetRuleData,
-  styleValueWithPriority,
-  viewportResizeDimension,
 } from '@amplitude/rrweb-types';
-import * as mittProxy from 'mitt';
-import type { missingNodeMap, playerConfig } from '../types';
+import type {
+  fullSnapshotEvent,
+  eventWithTime,
+  playerMetaData,
+  viewportResizeDimension,
+  addedNodeMutation,
+  incrementalSnapshotEvent,
+  incrementalData,
+  Handler,
+  Emitter,
+  metaEvent,
+  mutationData,
+  scrollData,
+  inputData,
+  canvasMutationData,
+  styleValueWithPriority,
+  mouseMovePos,
+  IWindow,
+  canvasMutationCommand,
+  canvasMutationParam,
+  canvasEventWithTime,
+  selectionData,
+  styleSheetRuleData,
+  styleDeclarationData,
+  adoptedStyleSheetData,
+} from '@amplitude/rrweb-types';
 import {
-  AppendedIframe,
-  StyleSheetMirror,
-  getBaseDimension,
-  getNestedRule,
-  getPositionsAndIndex,
-  hasShadowRoot,
-  isSerializedIframe,
-  iterateResolveTree,
   polyfill,
   queueToResolveTrees,
+  iterateResolveTree,
+  type AppendedIframe,
+  getBaseDimension,
+  hasShadowRoot,
+  isSerializedIframe,
+  getNestedRule,
+  getPositionsAndIndex,
   uniqueTextMutations,
+  StyleSheetMirror,
 } from '../utils';
-import canvasMutation from './canvas';
-import { deserializeArg } from './canvas/deserialize-args';
-import { 
-  createPlayerService, 
-  createSpeedService,   
-  type PlayerMachineState,
-  type SpeedMachineState, 
-} from './machine';
-import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
-import { Timer } from './timer';
+import canvasMutation from './canvas';
+import { deserializeArg } from './canvas/deserialize-args';
 import { MediaManager } from './media';
 
 // https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
@@ -2216,4 +2218,4 @@ export class Replayer {
   }
 }
 
-export { PlayerMachineState, SpeedMachineState, playerConfig };
+export { type PlayerMachineState, type SpeedMachineState, type playerConfig };
