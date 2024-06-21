@@ -1,6 +1,6 @@
-import { Rule, Media, NodeWithRules, parse } from './css';
 import {
   serializedNodeWithId,
+  serializedElementNodeWithId,
   NodeType,
   tagMap,
   elementNode,
@@ -57,85 +57,89 @@ function getTagName(n: elementNode): string {
   return tagName;
 }
 
-// based on https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
-function escapeRegExp(str: string) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+function splitSelector(selectorText: string): string[] {
+  const selectorList = [];
+  let currentSegment = '';
+  let depthParentheses = 0; // Track depth of parentheses
+  let depthBrackets = 0; // Track depth of square brackets
+  let currentStringChar = null;
+  for (const char of selectorText) {
+    const hasStringEscape = currentSegment.endsWith('\\');
+    if (currentStringChar) {
+      if (currentStringChar === char && !hasStringEscape) {
+        currentStringChar = null;
+      }
+    } else if (char === '(') {
+      depthParentheses++;
+    } else if (char === ')') {
+      depthParentheses--;
+    } else if (char === '[') {
+      depthBrackets++;
+    } else if (char === ']') {
+      depthBrackets--;
+    } else if ('\'"'.includes(char)) {
+      currentStringChar = char;
+    }
+    // Split point is a comma that is not inside parentheses or square brackets
+    if (char === ',' && depthParentheses === 0 && depthBrackets === 0) {
+      selectorList.push(currentSegment.trim());
+      currentSegment = '';
+    } else {
+      currentSegment += char;
+    }
+  }
+  // Add the last segment
+  if (currentSegment) {
+    selectorList.push(currentSegment.trim());
+  }
+  return selectorList;
 }
 
 const MEDIA_SELECTOR = /(max|min)-device-(width|height)/;
 const MEDIA_SELECTOR_GLOBAL = new RegExp(MEDIA_SELECTOR.source, 'g');
 const HOVER_SELECTOR = /([^\\]):hover/;
 const HOVER_SELECTOR_GLOBAL = new RegExp(HOVER_SELECTOR.source, 'g');
-export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
-  const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
-  if (cachedStyle) return cachedStyle;
-
-  const ast = parse(cssText, {
-    silent: true,
-  });
-
-  if (!ast.stylesheet) {
-    return cssText;
-  }
-
-  const selectors: string[] = [];
-  const medias: string[] = [];
-  function getSelectors(rule: Rule | Media | NodeWithRules) {
-    if ('selectors' in rule && rule.selectors) {
-      rule.selectors.forEach((selector: string) => {
-        if (HOVER_SELECTOR.test(selector)) {
-          selectors.push(selector);
-        }
-      });
+export function adaptStylesheetForReplay(cssRules: CSSRuleList) {
+  // @ts-ignore ignore TS2488: Type 'CSSRuleList' must have a '[Symbol.iterator]()' method that returns an iterator ... it should be fixed in https://github.com/Microsoft/TypeScript/issues/23406
+  for (const cssRule of cssRules) {
+    if ('media' in cssRule) {
+      const cssMediaRule = cssRule as CSSMediaRule;
+      if (
+        cssMediaRule.media.mediaText &&
+        MEDIA_SELECTOR.test(cssMediaRule.media.mediaText)
+      ) {
+        // not attempting to maintain min-device-width along with min-width
+        // (it's non standard)
+        cssMediaRule.media.mediaText = cssMediaRule.media.mediaText.replace(
+          MEDIA_SELECTOR_GLOBAL,
+          '$1-$2',
+        );
+      }
+    } else if ('selectorText' in cssRule) {
+      const cssStyleRule = cssRule as CSSStyleRule;
+      if (
+        cssStyleRule.selectorText &&
+        HOVER_SELECTOR.test(cssStyleRule.selectorText)
+      ) {
+        cssStyleRule.selectorText = splitSelector(cssStyleRule.selectorText)
+          .map((selector) => {
+            if (!HOVER_SELECTOR.test(selector)) {
+              return selector;
+            }
+            const newSelector = selector.replace(
+              HOVER_SELECTOR_GLOBAL,
+              '$1.\\:hover',
+            );
+            return `${selector}, ${newSelector}`;
+          })
+          .join(', ');
+      }
     }
-    if ('media' in rule && rule.media && MEDIA_SELECTOR.test(rule.media)) {
-      medias.push(rule.media);
-    }
-    if ('rules' in rule && rule.rules) {
-      rule.rules.forEach(getSelectors);
+    if ('cssRules' in cssRule) {
+      // could be a CSSKeyframesRule or CSSContainerRule either
+      adaptStylesheetForReplay((cssRule as CSSGroupingRule).cssRules);
     }
   }
-  getSelectors(ast.stylesheet);
-
-  let result = cssText;
-  if (selectors.length > 0) {
-    const selectorMatcher = new RegExp(
-      selectors
-        .filter((selector, index) => selectors.indexOf(selector) === index)
-        .sort((a, b) => b.length - a.length)
-        .map((selector) => {
-          return escapeRegExp(selector);
-        })
-        .join('|'),
-      'g',
-    );
-    result = result.replace(selectorMatcher, (selector) => {
-      const newSelector = selector.replace(
-        HOVER_SELECTOR_GLOBAL,
-        '$1.\\:hover',
-      );
-      return `${selector}, ${newSelector}`;
-    });
-  }
-  if (medias.length > 0) {
-    const mediaMatcher = new RegExp(
-      medias
-        .filter((media, index) => medias.indexOf(media) === index)
-        .sort((a, b) => b.length - a.length)
-        .map((media) => {
-          return escapeRegExp(media);
-        })
-        .join('|'),
-      'g',
-    );
-    result = result.replace(mediaMatcher, (media) => {
-      // not attempting to maintain min-device-width along with min-width
-      // (it's non standard)
-      return media.replace(MEDIA_SELECTOR_GLOBAL, '$1-$2');
-    });
-  }
-  cache?.stylesWithHoverClass.set(cssText, result);
-  return result;
 }
 
 export function createCache(): BuildCache {
@@ -149,11 +153,10 @@ function buildNode(
   n: serializedNodeWithId,
   options: {
     doc: Document;
-    hackCss: boolean;
     cache: BuildCache;
   },
 ): Node | null {
-  const { doc, hackCss, cache } = options;
+  const { doc, cache } = options;
   switch (n.type) {
     case NodeType.Document:
       return doc.implementation.createDocument(null, '', null);
@@ -223,9 +226,6 @@ function buildNode(
 
         const isTextarea = tagName === 'textarea' && name === 'value';
         const isRemoteOrDynamicCss = tagName === 'style' && name === '_cssText';
-        if (isRemoteOrDynamicCss && hackCss && typeof value === 'string') {
-          value = adaptCssForReplay(value, cache);
-        }
         if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
           node.appendChild(doc.createTextNode(value));
           // https://github.com/rrweb-io/rrweb/issues/112
@@ -378,11 +378,7 @@ function buildNode(
       return node;
     }
     case NodeType.Text:
-      return doc.createTextNode(
-        n.isStyle && hackCss
-          ? adaptCssForReplay(n.textContent, cache)
-          : n.textContent,
-      );
+      return doc.createTextNode(n.textContent);
     case NodeType.CDATA:
       return doc.createCDATASection(n.textContent);
     case NodeType.Comment:
@@ -398,7 +394,6 @@ export function buildNodeWithSN(
     doc: Document;
     mirror: Mirror;
     skipChild?: boolean;
-    hackCss: boolean;
     /**
      * This callback will be called for each of this nodes' `.childNodes` after they are appended to _this_ node.
      * Caveat: This callback _doesn't_ get called when this node is appended to the DOM.
@@ -407,14 +402,7 @@ export function buildNodeWithSN(
     cache: BuildCache;
   },
 ): Node | null {
-  const {
-    doc,
-    mirror,
-    skipChild = false,
-    hackCss = true,
-    afterAppend,
-    cache,
-  } = options;
+  const { doc, mirror, skipChild = false, afterAppend, cache } = options;
   /**
    * Add a check to see if the node is already in the mirror. If it is, we can skip the whole process.
    * This situation (duplicated nodes) can happen when recorder has some unfixed bugs and the same node is recorded twice. Or something goes wrong when saving or transferring event data.
@@ -428,7 +416,7 @@ export function buildNodeWithSN(
     // For safety concern, check if the node in mirror is the same as the node we are trying to build
     if (isNodeMetaEqual(meta, n)) return mirror.getNode(n.id);
   }
-  let node = buildNode(n, { doc, hackCss, cache });
+  let node = buildNode(n, { doc, cache });
   if (!node) {
     return null;
   }
@@ -477,7 +465,6 @@ export function buildNodeWithSN(
         doc,
         mirror,
         skipChild: false,
-        hackCss,
         afterAppend,
         cache,
       });
@@ -535,12 +522,7 @@ function visit(mirror: Mirror, onVisit: (node: Node) => void) {
   }
 }
 
-function handleScroll(node: Node, mirror: Mirror) {
-  const n = mirror.getMeta(node);
-  if (n?.type !== NodeType.Element) {
-    return;
-  }
-  const el = node as HTMLElement;
+function handleScroll(el: HTMLElement, n: serializedElementNodeWithId) {
   for (const name in n.attributes) {
     if (
       !(
@@ -583,7 +565,6 @@ function rebuild(
     doc,
     mirror,
     skipChild: false,
-    hackCss,
     afterAppend,
     cache,
   });
@@ -591,7 +572,18 @@ function rebuild(
     if (onVisit) {
       onVisit(visitedNode);
     }
-    handleScroll(visitedNode, mirror);
+    const n = mirror.getMeta(visitedNode);
+    if (n?.type === NodeType.Element) {
+      const el = visitedNode as HTMLElement;
+      handleScroll(el, n);
+      if (hackCss && el.tagName === 'STYLE') {
+        const styleEl = el as HTMLStyleElement;
+        if (styleEl.sheet) {
+          // cssRules are always available on inline style elements
+          adaptStylesheetForReplay(styleEl.sheet.cssRules);
+        }
+      }
+    }
   });
   return node;
 }
