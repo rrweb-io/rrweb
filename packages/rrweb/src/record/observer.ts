@@ -662,7 +662,7 @@ function initStyleSheetObserver(
     this: CSSStyleSheet,
     selector: string,
     styleBlock: string,
-    index?: number,
+    index: number = this.cssRules.length,
   ) {
     const rule = `${selector} { ${styleBlock} }`;
     return win.CSSStyleSheet.prototype.insertRule.apply(this, [rule, index]);
