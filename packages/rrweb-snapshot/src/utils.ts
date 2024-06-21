@@ -1,18 +1,18 @@
-import {
-  documentNode,
-  documentTypeNode,
-  elementNode,
+import type {
   idNodeMap,
   IMirror,
   MaskInputFn,
   MaskInputOptions,
   nodeMetaMap,
-  NodeType,
-  serializedNode,
   serializedNodeWithId,
+  serializedNode,
+  documentNode,
+  documentTypeNode,
+  elementNode,
   textNode,
   IWindow,
 } from './types';
+import { NodeType } from './types';
 
 export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;

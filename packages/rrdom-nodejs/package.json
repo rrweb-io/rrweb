@@ -3,11 +3,11 @@
   "version": "2.0.0-alpha.15",
   "scripts": {
     "dev": "vite build --watch",
-    "build": "tsc -noEmit && vite build",
+    "build": "yarn turbo run prepublish",
     "check-types": "tsc -noEmit",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "prepublish": "npm run build",
+    "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts"
   },
   "keywords": [
@@ -46,10 +46,10 @@
     "compare-versions": "^4.1.3",
     "eslint": "^8.15.0",
     "puppeteer": "^9.1.1",
-    "vite": "^5.2.8",
-    "vite-plugin-dts": "^3.8.1",
+    "vite": "^5.3.1",
+    "vite-plugin-dts": "^3.9.1",
     "vitest": "^1.4.0",
-    "typescript": "^4.7.3"
+    "typescript": "^5.4.5"
   },
   "dependencies": {
     "cssom": "^0.5.0",
@@ -57,8 +57,5 @@
     "nwsapi": "^2.2.0",
     "rrdom": "^2.0.0-alpha.15",
     "rrweb-snapshot": "^2.0.0-alpha.15"
-  },
-  "browserslist": [
-    "supports es6-class"
-  ]
+  }
 }

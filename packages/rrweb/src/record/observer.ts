@@ -1,5 +1,5 @@
 import {
-  MaskInputOptions,
+  type MaskInputOptions,
   maskInputValue,
   Mirror,
   getInputType,
@@ -24,12 +24,16 @@ import {
 } from '../utils';
 import type { observerParam, MutationBufferParam } from '../types';
 import {
+  IncrementalSource,
+  MouseInteractions,
+  PointerTypes,
+  MediaInteractions,
+} from '@rrweb/types';
+import type {
   mutationCallBack,
   mousemoveCallBack,
   mousePosition,
   mouseInteractionCallBack,
-  MouseInteractions,
-  PointerTypes,
   listenerHandler,
   scrollCallback,
   styleSheetRuleCallback,
@@ -37,11 +41,9 @@ import {
   inputValue,
   inputCallback,
   hookResetter,
-  IncrementalSource,
   hooksParam,
   Arguments,
   mediaInteractionCallback,
-  MediaInteractions,
   canvasMutationCallback,
   fontCallback,
   fontParam,
