@@ -451,6 +451,7 @@ function serializeNode(
     blockSelector: string | null;
     needsMask: boolean;
     inlineStylesheet: boolean;
+    maskTextSelector: string | null;
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
@@ -471,6 +472,7 @@ function serializeNode(
     blockSelector,
     needsMask,
     inlineStylesheet,
+    maskTextSelector,
     maskInputOptions = {},
     maskTextFn,
     maskInputFn,
@@ -1041,6 +1043,7 @@ export function serializeNodeWithId(
     blockSelector,
     needsMask,
     inlineStylesheet,
+    maskTextSelector,
     maskInputOptions,
     maskTextFn,
     maskInputFn,
