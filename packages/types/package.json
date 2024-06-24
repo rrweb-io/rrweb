@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrweb-types",
-  "version": "2.0.0-alpha.15",
+  "version": "2.0.0-alpha.16",
   "publishConfig": {
     "access": "public"
   },
@@ -43,7 +43,7 @@
     "vite-plugin-dts": "^1.7.3"
   },
   "dependencies": {
-    "@amplitude/rrweb-snapshot": "^2.0.0-alpha.15"
+    "@amplitude/rrweb-snapshot": "^2.0.0-alpha.16"
   },
   "browserslist": [
     "supports es6-class"
