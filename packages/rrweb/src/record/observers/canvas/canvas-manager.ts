@@ -180,6 +180,7 @@ export class CanvasManager {
       lastSnapshotTime = timestamp;
 
       getCanvas()
+        .filter((canvas) => !isBlocked(canvas, blockClass, blockSelector, true))
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         .forEach(async (canvas: HTMLCanvasElement) => {
           const id = this.mirror.getId(canvas);
