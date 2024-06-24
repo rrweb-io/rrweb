@@ -1,17 +1,17 @@
 import {
-  serializedNode,
-  serializedNodeWithId,
+  type serializedNode,
+  type serializedNodeWithId,
   NodeType,
-  attributes,
-  MaskInputOptions,
-  SlimDOMOptions,
-  DataURLOptions,
-  MaskTextFn,
-  MaskInputFn,
-  KeepIframeSrcFn,
-  ICanvas,
-  elementNode,
-  serializedElementNodeWithId,
+  type attributes,
+  type MaskInputOptions,
+  type SlimDOMOptions,
+  type DataURLOptions,
+  type MaskTextFn,
+  type MaskInputFn,
+  type KeepIframeSrcFn,
+  type ICanvas,
+  type elementNode,
+  type serializedElementNodeWithId,
   type mediaAttributes,
 } from './types';
 import {
@@ -1283,7 +1283,7 @@ function snapshot(
     inlineStylesheet?: boolean;
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
-    maskInputFn?: MaskTextFn;
+    maskInputFn?: MaskInputFn;
     slimDOM?: 'all' | boolean | SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     inlineImages?: boolean;

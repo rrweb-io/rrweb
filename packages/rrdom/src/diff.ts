@@ -1,7 +1,7 @@
 import {
   NodeType as RRNodeType,
   Mirror as NodeMirror,
-  elementNode,
+  type elementNode,
 } from 'rrweb-snapshot';
 import type {
   canvasMutationData,
