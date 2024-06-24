@@ -1053,6 +1053,7 @@ export function serializeNodeWithId(
     // Reuse the previous id
     id = mirror.getId(n);
   } else if (
+    _serializedNode.type === NodeType.Element && _serializedNode.needBlock ||
     slimDOMExcluded(_serializedNode, slimDOMOptions) ||
     (!preserveWhiteSpace &&
       _serializedNode.type === NodeType.Text &&
