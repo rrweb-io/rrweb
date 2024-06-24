@@ -56,6 +56,11 @@ export interface Node {
   };
 }
 
+export interface NodeWithRules extends Node {
+  /** Array of nodes with the types rule, comment and any of the at-rule types. */
+  rules: Array<Rule | Comment | AtRule>;
+}
+
 export interface Rule extends Node {
   /** The list of selectors of the rule, split on commas. Each selector is trimmed from whitespace and comments. */
   selectors?: string[];
@@ -98,13 +103,11 @@ export interface CustomMedia extends Node {
 /**
  * The @document at-rule.
  */
-export interface Document extends Node {
+export interface Document extends NodeWithRules {
   /** The part following @document. */
   document?: string;
   /** The vendor prefix in @document, or undefined if there is none. */
   vendor?: string;
-  /** Array of nodes with the types rule, comment and any of the at-rule types. */
-  rules?: Array<Rule | Comment | AtRule>;
 }
 
 /**
@@ -118,10 +121,7 @@ export interface FontFace extends Node {
 /**
  * The @host at-rule.
  */
-export interface Host extends Node {
-  /** Array of nodes with the types rule, comment and any of the at-rule types. */
-  rules?: Array<Rule | Comment | AtRule>;
-}
+export type Host = NodeWithRules;
 
 /**
  * The @import at-rule.
@@ -153,11 +153,9 @@ export interface KeyFrame extends Node {
 /**
  * The @media at-rule.
  */
-export interface Media extends Node {
+export interface Media extends NodeWithRules {
   /** The part following @media. */
   media?: string;
-  /** Array of nodes with the types rule, comment and any of the at-rule types. */
-  rules?: Array<Rule | Comment | AtRule>;
 }
 
 /**
@@ -181,11 +179,9 @@ export interface Page extends Node {
 /**
  * The @supports at-rule.
  */
-export interface Supports extends Node {
+export interface Supports extends NodeWithRules {
   /** The part following @supports. */
   supports?: string;
-  /** Array of nodes with the types rule, comment and any of the at-rule types. */
-  rules?: Array<Rule | Comment | AtRule>;
 }
 
 /** All at-rules. */
@@ -205,10 +201,8 @@ export type AtRule =
 /**
  * A collection of rules
  */
-export interface StyleRules {
+export interface StyleRules extends NodeWithRules {
   source?: string;
-  /** Array of nodes with the types rule, comment and any of the at-rule types. */
-  rules: Array<Rule | Comment | AtRule>;
   /** Array of Errors. Errors collected during parsing when option silent is true. */
   parsingErrors?: ParserError[];
 }
@@ -224,7 +218,7 @@ export interface Stylesheet extends Node {
 // https://github.com/visionmedia/css-parse/pull/49#issuecomment-30088027
 const commentre = /\/\*[^*]*\*+([^/*][^*]*\*+)*\//g;
 
-export function parse(css: string, options: ParserOptions = {}) {
+export function parse(css: string, options: ParserOptions = {}): Stylesheet {
   /**
    * Positional.
    */
@@ -932,7 +926,7 @@ function trim(str: string) {
  * Adds non-enumerable parent node reference to each node.
  */
 
-function addParent(obj: Stylesheet, parent?: Stylesheet) {
+function addParent(obj: Stylesheet, parent?: Stylesheet): Stylesheet {
   const isNode = obj && typeof obj.type === 'string';
   const childParent = isNode ? obj : parent;
 
