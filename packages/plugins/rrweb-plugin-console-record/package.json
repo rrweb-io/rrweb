@@ -27,9 +27,9 @@
     "dev": "vite build --watch",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "build": "tsc -noEmit && vite build",
+    "build": "yarn turbo run prepublish",
     "check-types": "tsc -noEmit",
-    "prepublish": "npm run build"
+    "prepublish": "tsc -noEmit && vite build"
   },
   "repository": {
     "type": "git",
@@ -46,9 +46,9 @@
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
     "rrweb": "^2.0.0-alpha.15",
-    "typescript": "^4.7.3",
-    "vite": "^5.2.8",
-    "vite-plugin-dts": "^3.8.1",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.1",
+    "vite-plugin-dts": "^3.9.1",
     "vitest": "^1.4.0",
     "puppeteer": "^20.9.0"
   },

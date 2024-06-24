@@ -9,7 +9,7 @@
   ],
   "tasks": {
     "prepublish": {
-      "dependsOn": ["^prepublish"],
+      "dependsOn": ["^prepublish", "//#references:update"],
       "outputs": [
         "lib/**",
         "es/**",
@@ -25,21 +25,28 @@
     },
     "test:watch": {
       "persistent": true,
-      "passThroughEnv": ["PUPPETEER_HEADLESS"]
+      "passThroughEnv": ["PUPPETEER_HEADLESS"],
+      "cache": false
     },
     "test:update": {
       "dependsOn": ["^prepublish"],
       "passThroughEnv": ["PUPPETEER_HEADLESS"]
     },
     "dev": {
-      // "dependsOn": ["^prepublish"],
+      "dependsOn": ["prepublish", "^prepublish"],
       "persistent": true,
-      "cache": false,
-      "passThroughEnv": ["CLEAR_DIST_DIR"]
+      "cache": false
     },
     "lint": {},
     "check-types": {
       "dependsOn": ["^prepublish"]
+    },
+    "//#references:update": {
+      "inputs": ["packages/*/package.json", "packages/plugins/*/package.json"],
+      "outputs": [
+        "packages/*/tsconfig.json",
+        "packages/plugins/*/tsconfig.json"
+      ]
     }
   }
 }
