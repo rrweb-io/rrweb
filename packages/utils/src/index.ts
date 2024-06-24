@@ -134,8 +134,8 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
   const methodNames = key in testableMethods ? testableMethods[key] : undefined;
   const isUntaintedMethods = Boolean(
     methodNames &&
-      // @ts-expect-error 2345
       methodNames.every(
+        // @ts-expect-error 2345
         (method: keyof typeof defaultPrototype) =>
           typeof defaultPrototype[method] === 'function' &&
           defaultPrototype[method]?.toString().includes('[native code]'),
