@@ -1,5 +1,16 @@
 # rrweb
 
+## 2.0.0-alpha.16
+
+### Patch Changes
+
+- [#17](https://github.com/amplitude/rrweb/pull/17) [`c7dfd53`](https://github.com/amplitude/rrweb/commit/c7dfd538c59dce2e4c3db4085beb2e2cec9168bf) Thanks [@jxiwang](https://github.com/jxiwang)! - Ensure :hover works on replayer, even if a rule is behind a media query
+  Respect the intent behind max-device-width and min-device-width media queries so that their effects are apparent in the replayer context
+- Updated dependencies []:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.16
+  - @amplitude/rrdom@2.0.0-alpha.16
+  - @amplitude/rrweb-types@2.0.0-alpha.16
+
 ## 2.0.0-alpha.15
 
 ### Patch Changes
