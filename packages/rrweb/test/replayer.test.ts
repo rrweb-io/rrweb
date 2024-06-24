@@ -15,6 +15,7 @@ import touchAllPointerEvents from './events/touch-all-pointer-id';
 import touchSomePointerEvents from './events/touch-some-pointer-id';
 import mouseEvents from './events/mouse';
 import scrollEvents from './events/scroll';
+import isSyncTapEvents from './events/is-sync-tap';
 import scrollWithParentStylesEvents from './events/scroll-with-parent-styles';
 import inputEvents from './events/input';
 import iframeEvents from './events/iframe';
@@ -881,7 +882,7 @@ describe('replayer', function () {
     `);
 
     // No pointer should exist yet
-    await expect(
+    expect(
       await page.evaluate(
         () => document.querySelectorAll('.replayer-mouse')!.length,
       ),
@@ -892,7 +893,7 @@ describe('replayer', function () {
     `);
 
     // One mouse pointer should exist
-    await expect(
+    expect(
       await page.evaluate(
         () => document.querySelectorAll('.replayer-mouse')!.length,
       ),
@@ -903,9 +904,41 @@ describe('replayer', function () {
     `);
 
     // Pointer should still exist after all events execute
-    await expect(
+    expect(
       await page.evaluate(
         () => document.querySelectorAll('.replayer-mouse')!.length,
+      ),
+    ).toEqual(1);
+  });
+
+  it('removes tap circles from the screen when isSync = true', async () => {
+    await page.evaluate(`events = ${JSON.stringify(isSyncTapEvents)}`);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+    `);
+
+    // No pointer should exist yet
+    expect(
+      await page.evaluate(
+        () => document.querySelectorAll('.replayer-mouse')!.length,
+      ),
+    ).toEqual(0);
+
+    // Seek to second tap
+    await page.evaluate(`
+      replayer.pause(161);
+    `);
+
+    // Seek to first tap
+    await page.evaluate(`
+      replayer.pause(101);
+    `);
+
+    // Only one tap should exist, not both
+    expect(
+      await page.evaluate(
+        () => document.querySelectorAll('.touch-active')!.length,
       ),
     ).toEqual(1);
   });

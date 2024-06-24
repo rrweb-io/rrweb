@@ -1219,6 +1219,20 @@ export class Replayer {
             if (isSync) {
               if (d.type === MouseInteractions.TouchStart) {
                 pointer.touchActive = true;
+
+                // prevents multiple touch circles from staying on the screen
+                // when the user seeks by breadcrumbs
+                Object.values(this.pointers).forEach((p) => {
+                  // don't set p.touchActive to false if p.touchActive is already true
+                  // so that multitouch still works.
+                  // p.touchActive can be null (in which case
+                  // we still want to set it as false) - it's set as null
+                  // in the ReplayerEvents.Flush handler after
+                  // the 'touch-active' class is added or removed.
+                  if (p !== pointer && !p.touchActive) {
+                    p.touchActive = false;
+                  }
+                });
               } else if (d.type === MouseInteractions.TouchEnd) {
                 pointer.touchActive = false;
                 pointer.pointerEl.remove();
