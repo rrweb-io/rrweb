@@ -1,5 +1,7 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.17
+
 ## 2.0.0-alpha.16
 
 ## 2.0.0-alpha.15
