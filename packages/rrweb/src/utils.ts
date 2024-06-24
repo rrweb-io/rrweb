@@ -599,3 +599,14 @@ export function inDom(n: Node): boolean {
   if (!doc) return false;
   return doc.contains(n) || shadowHostInDom(n);
 }
+
+export function debounce(fn: () => void, delay: number) {
+  let timeoutID: NodeJS.Timeout | null = null;
+  return function () {
+    if (timeoutID) {
+      clearTimeout(timeoutID);
+    }
+
+    timeoutID = setTimeout(() => fn(), delay);
+  };
+}

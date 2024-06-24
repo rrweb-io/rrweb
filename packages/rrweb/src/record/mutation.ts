@@ -137,6 +137,7 @@ const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
  * controls behaviour of a MutationObserver
  */
 export default class MutationBuffer {
+  freezeMutations = false;
   private frozen = false;
   private locked = false;
 
@@ -254,9 +255,36 @@ export default class MutationBuffer {
     this.canvasManager.reset();
   }
 
-  public processMutations = (mutations: mutationRecord[]) => {
-    mutations.forEach(this.processMutation); // adds mutations to the buffer
-    this.emit(); // clears buffer if not locked/frozen
+  public processMutations = (
+    mutations: mutationRecord[],
+    largeMutationsConfig?: {
+      limit: number;
+      fullSnapshotCb?: (() => void) | undefined;
+    },
+  ) => {
+    if (this.freezeMutations) {
+      return;
+    } else if (
+      largeMutationsConfig &&
+      mutations.length >= largeMutationsConfig.limit
+    ) {
+      this.freezeMutations = true;
+
+      this.texts = [];
+      this.attributes = [];
+      this.removes = [];
+      this.addedSet = new Set<Node>();
+      this.movedSet = new Set<Node>();
+      this.droppedSet = new Set<Node>();
+      this.movedMap = {};
+
+      largeMutationsConfig.fullSnapshotCb?.();
+
+      return;
+    } else {
+      mutations.forEach(this.processMutation); // adds mutations to the buffer
+      this.emit(); // clears buffer if not locked/frozen
+    }
   };
 
   public emit = () => {

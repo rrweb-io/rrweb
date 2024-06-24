@@ -15,6 +15,7 @@ import {
   isSerializedIframe,
   isSerializedStylesheet,
   nowTimestamp,
+  debounce,
 } from '../utils';
 import type { recordOptions } from '../types';
 import {
@@ -203,6 +204,11 @@ function record<T = eventWithTime>(
   wrappedEmit = (r: eventWithoutTime, isCheckout?: boolean) => {
     const e = r as eventWithTime;
     e.timestamp = nowTimestamp();
+
+    if (!!options.largeMutationsConfig && e.type === EventType.FullSnapshot) {
+      mutationBuffers.forEach((buf) => (buf.freezeMutations = false));
+    }
+
     if (
       mutationBuffers[0]?.isFrozen() &&
       e.type !== EventType.FullSnapshot &&
@@ -432,6 +438,13 @@ function record<T = eventWithTime>(
       );
   };
 
+  const debounceFullSnapshot =
+    options.largeMutationsConfig &&
+    debounce(
+      () => takeFullSnapshot(),
+      options.largeMutationsConfig.fullSnapshotDebounce,
+    );
+
   try {
     const handlers: listenerHandler[] = [];
 
@@ -522,6 +535,10 @@ function record<T = eventWithTime>(
                 ...c,
               },
             });
+          },
+          largeMutationsConfig: options.largeMutationsConfig && {
+            limit: options.largeMutationsConfig.limit,
+            fullSnapshotCb: debounceFullSnapshot,
           },
           blockClass,
           ignoreClass,

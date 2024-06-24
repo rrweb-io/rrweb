@@ -74,6 +74,10 @@ export type recordOptions<T> = {
   mousemoveWait?: number;
   keepIframeSrcFn?: KeepIframeSrcFn;
   errorHandler?: ErrorHandler;
+  largeMutationsConfig?: {
+    limit: number;
+    fullSnapshotDebounce: number;
+  };
 };
 
 export type observerParam = {
@@ -85,6 +89,10 @@ export type observerParam = {
   inputCb: inputCallback;
   mediaInteractionCb: mediaInteractionCallback;
   selectionCb: selectionCallback;
+  largeMutationsConfig?: {
+    limit: number;
+    fullSnapshotCb?: () => void;
+  };
   blockClass: blockClass;
   blockSelector: string | null;
   ignoreClass: string;
@@ -151,6 +159,7 @@ export type MutationBufferParam = Pick<
   | 'shadowDomManager'
   | 'canvasManager'
   | 'processedNodeManager'
+  | 'largeMutationsConfig'
 >;
 
 export type ReplayPlugin = {
