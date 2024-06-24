@@ -12,6 +12,7 @@
     "@amplitude/rrvideo": "2.0.0-alpha.11"
   },
   "changesets": [
+    "fair-ducks-clean",
     "four-gifts-march",
     "octopus-orange",
     "popular-spies-fetch",

@@ -1,5 +1,16 @@
 # rrweb
 
+## 2.0.0-alpha.17
+
+### Patch Changes
+
+- [#16](https://github.com/amplitude/rrweb/pull/16) [`aaee874`](https://github.com/amplitude/rrweb/commit/aaee87499109fef069ec4924afc127bda2886bfc) Thanks [@jxiwang](https://github.com/jxiwang)! - Fix and test for bug #1457 which was affecting replay of complex tailwind css
+
+- Updated dependencies []:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.17
+  - @amplitude/rrdom@2.0.0-alpha.17
+  - @amplitude/rrweb-types@2.0.0-alpha.17
+
 ## 2.0.0-alpha.16
 
 ### Patch Changes
