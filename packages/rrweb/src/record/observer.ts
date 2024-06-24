@@ -416,6 +416,7 @@ function initInputObserver({
   blockSelector,
   ignoreClass,
   ignoreSelector,
+  maskTextSelector,
   maskInputOptions,
   maskInputFn,
   sampling,
@@ -458,8 +459,13 @@ function initInputObserver({
       maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
       maskInputOptions[type as keyof MaskInputOptions]
     ) {
+      const matchesTextSelector = maskTextSelector
+        ? target.matches(maskTextSelector)
+        : false;
+
       text = maskInputValue({
         element: target,
+        matchesTextSelector,
         maskInputOptions,
         tagName,
         type,

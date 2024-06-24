@@ -214,6 +214,7 @@ export function createMirror(): Mirror {
 
 export function maskInputValue({
   element,
+  matchesTextSelector,
   maskInputOptions,
   tagName,
   type,
@@ -221,6 +222,7 @@ export function maskInputValue({
   maskInputFn,
 }: {
   element: HTMLElement;
+  matchesTextSelector: boolean;
   maskInputOptions: MaskInputOptions;
   tagName: string;
   type: string | null;
@@ -232,7 +234,8 @@ export function maskInputValue({
 
   if (
     maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
-    (actualType && maskInputOptions[actualType as keyof MaskInputOptions])
+    (actualType && maskInputOptions[actualType as keyof MaskInputOptions]) ||
+    matchesTextSelector
   ) {
     if (maskInputFn) {
       text = maskInputFn(text, element);

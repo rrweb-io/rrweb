@@ -510,6 +510,7 @@ function serializeNode(
         blockClass,
         blockSelector,
         inlineStylesheet,
+        maskTextSelector,
         maskInputOptions,
         maskInputFn,
         dataURLOptions,
@@ -610,6 +611,7 @@ function serializeElementNode(
     blockClass: string | RegExp;
     blockSelector: string | null;
     inlineStylesheet: boolean;
+    maskTextSelector: string | null;
     maskInputOptions: MaskInputOptions;
     maskInputFn: MaskInputFn | undefined;
     dataURLOptions?: DataURLOptions;
@@ -628,6 +630,7 @@ function serializeElementNode(
     blockClass,
     blockSelector,
     inlineStylesheet,
+    maskTextSelector,
     maskInputOptions = {},
     maskInputFn,
     dataURLOptions = {},
@@ -692,11 +695,16 @@ function serializeElementNode(
       attributes.type !== 'button' &&
       value
     ) {
+      const matchesTextSelector = maskTextSelector
+        ? n.matches(maskTextSelector)
+        : false;
+
       attributes.value = maskInputValue({
         element: n,
         type: getInputType(n),
         tagName,
         value,
+        matchesTextSelector,
         maskInputOptions,
         maskInputFn,
       });
