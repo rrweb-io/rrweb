@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.25.0
+
+### Various fixes & improvements
+
+- fix(rrweb): clean up pointer tap circles when seeking by breadcrumb (#209) by @michellewzhang
+
 ## 2.24.0
 
 ### Various fixes & improvements
