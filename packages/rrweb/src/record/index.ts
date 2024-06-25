@@ -599,7 +599,7 @@ function record<T = eventWithTime>(
 
       if (preventStackedObservers) observerHandlers.set(doc, observerHandler);
 
-      return observerHandler;
+      return callbackWrapper(observerHandler);
     };
 
     iframeManager.addLoadListener((iframeEl) => {
