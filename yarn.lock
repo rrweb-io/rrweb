@@ -9887,6 +9887,19 @@ rollup@^4.13.0:
     "@rollup/rollup-win32-x64-msvc" "4.14.1"
     fsevents "~2.3.2"
 
+rrweb@^2.0.0-alpha.15:
+  version "2.0.0-alpha.15"
+  resolved "https://registry.yarnpkg.com/rrweb/-/rrweb-2.0.0-alpha.15.tgz#700fd5392e6e99a346d173197935685915a94747"
+  integrity sha512-kunhB/pSYeYT9Lusmo5Q0h0kK7//GN3VzZ9vBkcDEeUKa8zk5KdgDmIJ7SM3qWcwR09UKW17FS9HjNGMKjeg/w==
+  dependencies:
+    "@rrweb/types" "^2.0.0-alpha.15"
+    "@types/css-font-loading-module" "0.0.7"
+    "@xstate/fsm" "^1.4.0"
+    base64-arraybuffer "^1.0.1"
+    mitt "^3.0.0"
+    rrdom "^2.0.0-alpha.15"
+    rrweb-snapshot "^2.0.0-alpha.15"
+
 run-async@^2.4.0:
   version "2.4.1"
   resolved "https://registry.npmjs.org/run-async/-/run-async-2.4.1.tgz"
