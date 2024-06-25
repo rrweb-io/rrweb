@@ -299,6 +299,17 @@ export function _isBlockedElement(
   return false;
 }
 
+export function _isDeletedElement(
+  element: HTMLElement,
+  deleteSelector: string | null,
+): boolean {
+  if (deleteSelector) {
+    return element.matches(deleteSelector);
+  }
+
+  return false;
+}
+
 export function classMatchesRegex(
   node: Node | null,
   regex: RegExp,
@@ -449,6 +460,7 @@ function serializeNode(
     mirror: Mirror;
     blockClass: string | RegExp;
     blockSelector: string | null;
+    deleteSelector: string | null;
     needsMask: boolean;
     inlineStylesheet: boolean;
     maskTextSelector: string | null;
@@ -470,6 +482,7 @@ function serializeNode(
     mirror,
     blockClass,
     blockSelector,
+    deleteSelector,
     needsMask,
     inlineStylesheet,
     maskTextSelector,
@@ -511,6 +524,7 @@ function serializeNode(
         doc,
         blockClass,
         blockSelector,
+        deleteSelector,
         inlineStylesheet,
         maskTextSelector,
         maskInputOptions,
@@ -612,6 +626,7 @@ function serializeElementNode(
     doc: Document;
     blockClass: string | RegExp;
     blockSelector: string | null;
+    deleteSelector: string | null;
     inlineStylesheet: boolean;
     maskTextSelector: string | null;
     maskInputOptions: MaskInputOptions;
@@ -631,6 +646,7 @@ function serializeElementNode(
     doc,
     blockClass,
     blockSelector,
+    deleteSelector,
     inlineStylesheet,
     maskTextSelector,
     maskInputOptions = {},
@@ -643,6 +659,7 @@ function serializeElementNode(
     rootId,
   } = options;
   const needBlock = _isBlockedElement(n, blockClass, blockSelector);
+  const needDelete = _isDeletedElement(n, deleteSelector);
   const tagName = getValidTagName(n);
   let attributes: attributes = {};
   const len = n.attributes.length;
@@ -856,6 +873,7 @@ function serializeElementNode(
     childNodes: [],
     isSVG: isSVGElement(n as Element) || undefined,
     needBlock,
+    needDelete,
     rootId,
     isCustom: isCustomElement,
   };
@@ -970,6 +988,7 @@ export function serializeNodeWithId(
     mirror: Mirror;
     blockClass: string | RegExp;
     blockSelector: string | null;
+    deleteSelector: string | null;
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
     skipChild: boolean;
@@ -1003,6 +1022,7 @@ export function serializeNodeWithId(
     mirror,
     blockClass,
     blockSelector,
+    deleteSelector,
     maskTextClass,
     maskTextSelector,
     skipChild = false,
@@ -1041,6 +1061,7 @@ export function serializeNodeWithId(
     mirror,
     blockClass,
     blockSelector,
+    deleteSelector,
     needsMask,
     inlineStylesheet,
     maskTextSelector,
@@ -1064,7 +1085,7 @@ export function serializeNodeWithId(
     // Reuse the previous id
     id = mirror.getId(n);
   } else if (
-    (_serializedNode.type === NodeType.Element && _serializedNode.needBlock) ||
+    (_serializedNode.type === NodeType.Element && _serializedNode.needDelete) ||
     slimDOMExcluded(_serializedNode, slimDOMOptions) ||
     (!preserveWhiteSpace &&
       _serializedNode.type === NodeType.Text &&
@@ -1114,6 +1135,7 @@ export function serializeNodeWithId(
       mirror,
       blockClass,
       blockSelector,
+      deleteSelector,
       needsMask,
       maskTextClass,
       maskTextSelector,
@@ -1184,6 +1206,7 @@ export function serializeNodeWithId(
             mirror,
             blockClass,
             blockSelector,
+            deleteSelector,
             needsMask,
             maskTextClass,
             maskTextSelector,
@@ -1236,6 +1259,7 @@ export function serializeNodeWithId(
             mirror,
             blockClass,
             blockSelector,
+            deleteSelector,
             needsMask,
             maskTextClass,
             maskTextSelector,
@@ -1278,6 +1302,7 @@ function snapshot(
     mirror?: Mirror;
     blockClass?: string | RegExp;
     blockSelector?: string | null;
+    deleteSelector?: string | null;
     maskTextClass?: string | RegExp;
     maskTextSelector?: string | null;
     inlineStylesheet?: boolean;
@@ -1307,6 +1332,7 @@ function snapshot(
     mirror = new Mirror(),
     blockClass = 'rr-block',
     blockSelector = null,
+    deleteSelector = null,
     maskTextClass = 'rr-mask',
     maskTextSelector = null,
     inlineStylesheet = true,
@@ -1373,6 +1399,7 @@ function snapshot(
     mirror,
     blockClass,
     blockSelector,
+    deleteSelector,
     maskTextClass,
     maskTextSelector,
     skipChild: false,

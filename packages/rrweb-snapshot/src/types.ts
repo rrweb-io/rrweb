@@ -38,6 +38,7 @@ export type elementNode = {
   childNodes: serializedNodeWithId[];
   isSVG?: true;
   needBlock?: boolean;
+  needDelete?: boolean;
   // This is a custom element or not.
   isCustom?: true;
 };

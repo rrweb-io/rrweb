@@ -36,7 +36,6 @@ import { CanvasManager } from './observers/canvas/canvas-manager';
 import { StylesheetManager } from './stylesheet-manager';
 import ProcessedNodeManager from './processed-node-manager';
 import {
-  callbackWrapper,
   registerErrorHandler,
   unregisterErrorHandler,
 } from './error-handler';
@@ -71,6 +70,7 @@ function record<T = eventWithTime>(
     checkoutEveryNth,
     blockClass = 'rr-block',
     blockSelector = null,
+    deleteSelector = null,
     ignoreClass = 'rr-ignore',
     ignoreSelector = null,
     maskTextClass = 'rr-mask',
@@ -338,6 +338,7 @@ function record<T = eventWithTime>(
     bypassOptions: {
       blockClass,
       blockSelector,
+      deleteSelector,
       maskTextClass,
       maskTextSelector,
       inlineStylesheet,
@@ -384,6 +385,7 @@ function record<T = eventWithTime>(
       mirror,
       blockClass,
       blockSelector,
+      deleteSelector,
       maskTextClass,
       maskTextSelector,
       inlineStylesheet,
@@ -563,6 +565,7 @@ function record<T = eventWithTime>(
           maskTextFn,
           keepIframeSrcFn,
           blockSelector,
+          deleteSelector,
           slimDOMOptions,
           dataURLOptions,
           mirror,
