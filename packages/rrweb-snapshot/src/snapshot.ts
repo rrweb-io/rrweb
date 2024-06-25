@@ -302,12 +302,12 @@ export function _isBlockedElement(
 export function _isDeletedElement(
   element: HTMLElement,
   deleteSelector: string | null,
-): boolean {
+): boolean | undefined {
   if (deleteSelector) {
     return element.matches(deleteSelector);
   }
 
-  return false;
+  return;
 }
 
 export function classMatchesRegex(
