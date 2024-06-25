@@ -1,8 +1,8 @@
 {
   "name": "rrweb-player",
-  "version": "2.0.0-alpha.15",
+  "version": "2.0.0-alpha.16",
   "devDependencies": {
-    "@rrweb/types": "^2.0.0-alpha.15",
+    "@rrweb/types": "^2.0.0-alpha.16",
     "@sveltejs/adapter-auto": "^3.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/package": "^2.0.0",
