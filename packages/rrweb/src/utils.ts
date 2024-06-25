@@ -20,15 +20,6 @@ import {
   parentNode,
   shadowRoot,
 } from '@rrweb/utils';
-import { RRNode, RRIFrameElement, BaseRRNode } from 'rrdom';
-import {
-  contains,
-  getRootNode,
-  parentElement,
-  host,
-  parentNode,
-  shadowRoot,
-} from '@rrweb/utils';
 
 export function on(
   type: string,
