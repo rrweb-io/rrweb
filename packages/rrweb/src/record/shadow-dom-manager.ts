@@ -12,6 +12,7 @@ import {
 import { patch, inDom } from '../utils';
 import type { Mirror } from 'rrweb-snapshot';
 import { isNativeShadowDom } from 'rrweb-snapshot';
+import { host, shadowRoot } from '@rrweb/utils';
 
 type BypassOptions = Omit<
   MutationBufferParam,
@@ -81,7 +82,7 @@ export class ShadowDomManager {
       )
         this.bypassOptions.stylesheetManager.adoptStyleSheets(
           shadowRoot.adoptedStyleSheets,
-          this.mirror.getId(shadowRoot.host),
+          this.mirror.getId(host(shadowRoot)),
         );
       this.restoreHandlers.push(
         initAdoptedStyleSheetObserver(
@@ -128,13 +129,14 @@ export class ShadowDomManager {
         'attachShadow',
         function (original: (init: ShadowRootInit) => ShadowRoot) {
           return function (this: Element, option: ShadowRootInit) {
-            const shadowRoot = original.call(this, option);
+            const sRoot = original.call(this, option);
             // For the shadow dom elements in the document, monitor their dom mutations.
             // For shadow dom elements that aren't in the document yet,
             // we start monitoring them once their shadow dom host is appended to the document.
-            if (this.shadowRoot && inDom(this))
-              manager.addShadowRoot(this.shadowRoot, doc);
-            return shadowRoot;
+            const shadowRootEl = shadowRoot(this);
+            if (shadowRootEl && inDom(this))
+              manager.addShadowRoot(shadowRootEl, doc);
+            return sRoot;
           };
         },
       ),

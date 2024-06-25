@@ -39,7 +39,7 @@
     },
     "lint": {},
     "check-types": {
-      "dependsOn": ["//#references:update"]
+      "dependsOn": ["^prepublish"]
     },
     "//#references:update": {
       "inputs": ["packages/*/package.json", "packages/plugins/*/package.json"],

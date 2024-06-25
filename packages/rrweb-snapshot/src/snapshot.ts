@@ -26,6 +26,13 @@ import {
   toLowerCase,
   extractFileExtension,
 } from './utils';
+import {
+  childNodes,
+  parentNode,
+  parentElement,
+  textContent,
+  shadowRoot,
+} from '@rrweb/utils';
 
 let _id = 1;
 const tagNameRegex = new RegExp('[^a-z0-9-_:]');
@@ -318,7 +325,7 @@ export function classMatchesRegex(
   if (!node) return false;
   if (node.nodeType !== node.ELEMENT_NODE) {
     if (!checkAncestors) return false;
-    return classMatchesRegex(node.parentNode, regex, checkAncestors);
+    return classMatchesRegex(parentNode(node), regex, checkAncestors);
   }
 
   for (let eIndex = (node as HTMLElement).classList.length; eIndex--; ) {
@@ -328,7 +335,7 @@ export function classMatchesRegex(
     }
   }
   if (!checkAncestors) return false;
-  return classMatchesRegex(node.parentNode, regex, checkAncestors);
+  return classMatchesRegex(parentNode(node), regex, checkAncestors);
 }
 
 export function needMaskingText(
@@ -340,16 +347,16 @@ export function needMaskingText(
   let el: Element;
   if (isElement(node)) {
     el = node;
-    if (!el.childNodes.length) {
+    if (!childNodes(el).length) {
       // optimisation: we can avoid any of the below checks on leaf elements
       // as masking is applied to child text nodes only
       return false;
     }
-  } else if (node.parentElement === null) {
+  } else if (parentElement(node) === null) {
     // should warn? maybe a text node isn't attached to a parent node yet?
     return false;
   } else {
-    el = node.parentElement;
+    el = parentElement(node)!;
   }
   try {
     if (typeof maskTextClass === 'string') {
@@ -552,7 +559,7 @@ function serializeNode(
     case n.COMMENT_NODE:
       return {
         type: NodeType.Comment,
-        textContent: (n as Comment).textContent || '',
+        textContent: textContent(n as Comment) || '',
         rootId,
       };
     default:
@@ -578,11 +585,12 @@ function serializeTextNode(
   const { needsMask, maskTextFn, rootId } = options;
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
-  const parentTagName = n.parentNode && (n.parentNode as HTMLElement).tagName;
-  let textContent = n.textContent;
+  const parent = parentNode(n);
+  const parentTagName = parent && (parent as HTMLElement).tagName;
+  let text = textContent(n);
   const isStyle = parentTagName === 'STYLE' ? true : undefined;
   const isScript = parentTagName === 'SCRIPT' ? true : undefined;
-  if (isStyle && textContent) {
+  if (isStyle && text) {
     try {
       // try to read style sheet
       if (n.nextSibling || n.previousSibling) {
@@ -590,10 +598,8 @@ function serializeTextNode(
         // We can't read all of the sheet's .cssRules and expect them
         // to _only_ include the current rule(s) added by the text node.
         // So we'll be conservative and keep textContent as-is.
-      } else if ((n.parentNode as HTMLStyleElement).sheet?.cssRules) {
-        textContent = stringifyStylesheet(
-          (n.parentNode as HTMLStyleElement).sheet!,
-        );
+      } else if ((parent as HTMLStyleElement).sheet?.cssRules) {
+        text = stringifyStylesheet((parent as HTMLStyleElement).sheet!);
       }
     } catch (err) {
       console.warn(
@@ -601,20 +607,20 @@ function serializeTextNode(
         n,
       );
     }
-    textContent = absoluteToStylesheet(textContent, getHref(options.doc));
+    text = absoluteToStylesheet(text, getHref(options.doc));
   }
   if (isScript) {
-    textContent = 'SCRIPT_PLACEHOLDER';
+    text = 'SCRIPT_PLACEHOLDER';
   }
-  if (!isStyle && !isScript && textContent && needsMask) {
-    textContent = maskTextFn
-      ? maskTextFn(textContent, n.parentElement)
-      : textContent.replace(/[\S]/g, '*');
+  if (!isStyle && !isScript && text && needsMask) {
+    text = maskTextFn
+      ? maskTextFn(text, parentElement(n))
+      : text.replace(/[\S]/g, '*');
   }
 
   return {
     type: NodeType.Text,
-    textContent: textContent || '',
+    textContent: text || '',
     isStyle,
     rootId,
   };
@@ -676,6 +682,7 @@ function serializeElementNode(
   }
   // remote css
   if (tagName === 'link' && inlineStylesheet) {
+    //TODO: maybe replace this `.styleSheets` with original one
     const stylesheet = Array.from(doc.styleSheets).find((s) => {
       return s.href === (n as HTMLLinkElement).href;
     });
@@ -694,7 +701,7 @@ function serializeElementNode(
     tagName === 'style' &&
     (n as HTMLStyleElement).sheet &&
     // TODO: Currently we only try to get dynamic stylesheet when it is an empty style element
-    !(n.innerText || n.textContent || '').trim().length
+    !(n.innerText || textContent(n) || '').trim().length
   ) {
     const cssText = stringifyStylesheet(
       (n as HTMLStyleElement).sheet as CSSStyleSheet,
@@ -1113,8 +1120,8 @@ export function serializeNodeWithId(
     recordChild = recordChild && !serializedNode.needBlock;
     // this property was not needed in replay side
     delete serializedNode.needBlock;
-    const shadowRoot = (n as HTMLElement).shadowRoot;
-    if (shadowRoot && isNativeShadowDom(shadowRoot))
+    const shadowRootEl = shadowRoot(n);
+    if (shadowRootEl && isNativeShadowDom(shadowRootEl))
       serializedNode.isShadowHost = true;
   }
   if (
@@ -1164,7 +1171,7 @@ export function serializeNodeWithId(
     ) {
       // value parameter in DOM reflects the correct value, so ignore childNode
     } else {
-      for (const childN of Array.from(n.childNodes)) {
+      for (const childN of Array.from(childNodes(n))) {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
         if (serializedChildNode) {
           serializedNode.childNodes.push(serializedChildNode);
@@ -1172,11 +1179,12 @@ export function serializeNodeWithId(
       }
     }
 
-    if (isElement(n) && n.shadowRoot) {
-      for (const childN of Array.from(n.shadowRoot.childNodes)) {
+    let shadowRootEl: ShadowRoot | null = null;
+    if (isElement(n) && (shadowRootEl = shadowRoot(n))) {
+      for (const childN of Array.from(childNodes(shadowRootEl))) {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
         if (serializedChildNode) {
-          isNativeShadowDom(n.shadowRoot) &&
+          isNativeShadowDom(shadowRootEl) &&
             (serializedChildNode.isShadow = true);
           serializedNode.childNodes.push(serializedChildNode);
         }
@@ -1184,11 +1192,8 @@ export function serializeNodeWithId(
     }
   }
 
-  if (
-    n.parentNode &&
-    isShadowRoot(n.parentNode) &&
-    isNativeShadowDom(n.parentNode)
-  ) {
+  const parent = parentNode(n);
+  if (parent && isShadowRoot(parent) && isNativeShadowDom(parent)) {
     serializedNode.isShadow = true;
   }
 

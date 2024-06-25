@@ -503,6 +503,218 @@ exports[`integration tests > [html file]: with-style-sheet-with-import.html 1`] 
 </body></html>"
 `;
 
+exports[`integration tests > should be able to record elements even when .childNodes has been monkey patched 1`] = `
+"{
+  \\"type\\": 0,
+  \\"childNodes\\": [
+    {
+      \\"type\\": 1,
+      \\"name\\": \\"html\\",
+      \\"publicId\\": \\"\\",
+      \\"systemId\\": \\"\\",
+      \\"id\\": 2
+    },
+    {
+      \\"type\\": 2,
+      \\"tagName\\": \\"html\\",
+      \\"attributes\\": {
+        \\"lang\\": \\"en\\"
+      },
+      \\"childNodes\\": [
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"head\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 5
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"meta\\",
+              \\"attributes\\": {
+                \\"charset\\": \\"UTF-8\\"
+              },
+              \\"childNodes\\": [],
+              \\"id\\": 6
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 7
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"meta\\",
+              \\"attributes\\": {
+                \\"name\\": \\"viewport\\",
+                \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+              },
+              \\"childNodes\\": [],
+              \\"id\\": 8
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 9
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"title\\",
+              \\"attributes\\": {},
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"Document\\",
+                  \\"id\\": 11
+                }
+              ],
+              \\"id\\": 10
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 12
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"script\\",
+              \\"attributes\\": {},
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                  \\"id\\": 14
+                }
+              ],
+              \\"id\\": 13
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n  \\",
+              \\"id\\": 15
+            }
+          ],
+          \\"id\\": 4
+        },
+        {
+          \\"type\\": 3,
+          \\"textContent\\": \\"\\\\n  \\",
+          \\"id\\": 16
+        },
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"body\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 18
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"ul\\",
+              \\"attributes\\": {},
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 20
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"li\\",
+                  \\"attributes\\": {},
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"a\\",
+                      \\"id\\": 22
+                    }
+                  ],
+                  \\"id\\": 21
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 23
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"li\\",
+                  \\"attributes\\": {},
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"b\\",
+                      \\"id\\": 25
+                    }
+                  ],
+                  \\"id\\": 24
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 26
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"li\\",
+                  \\"attributes\\": {},
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"c\\",
+                      \\"id\\": 28
+                    }
+                  ],
+                  \\"id\\": 27
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 29
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"li\\",
+                  \\"attributes\\": {},
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"d\\",
+                      \\"id\\": 31
+                    }
+                  ],
+                  \\"id\\": 30
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n    \\",
+                  \\"id\\": 32
+                }
+              ],
+              \\"id\\": 19
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+              \\"id\\": 33
+            }
+          ],
+          \\"id\\": 17
+        }
+      ],
+      \\"id\\": 3
+    }
+  ],
+  \\"id\\": 1
+}"
+`;
+
 exports[`shadow DOM integration tests > snapshot shadow DOM 1`] = `
 "{
   \\"type\\": 0,

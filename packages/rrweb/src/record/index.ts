@@ -35,7 +35,12 @@ import { ShadowDomManager } from './shadow-dom-manager';
 import { CanvasManager } from './observers/canvas/canvas-manager';
 import { StylesheetManager } from './stylesheet-manager';
 import ProcessedNodeManager from './processed-node-manager';
-import { registerErrorHandler, unregisterErrorHandler } from './error-handler';
+import {
+  callbackWrapper,
+  registerErrorHandler,
+  unregisterErrorHandler,
+} from './error-handler';
+import { shadowRoot } from '@rrweb/utils';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
 
@@ -401,7 +406,8 @@ function record<T = eventWithTime>(
           stylesheetManager.trackLinkElement(n as HTMLLinkElement);
         }
         if (hasShadowRoot(n)) {
-          shadowDomManager.addShadowRoot(n.shadowRoot, document);
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          shadowDomManager.addShadowRoot(shadowRoot(n as Node)!, document);
         }
       },
       onIframeLoad: (iframe, childSn) => {
