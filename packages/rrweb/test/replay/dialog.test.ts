@@ -123,6 +123,8 @@ describe('dialog', () => {
           customSnapshotIdentifier: imageFileName,
           failureThreshold: 0.05,
           failureThresholdType: 'percent',
+          dumpDiffToConsole: true,
+          storeReceivedOnFailure: true,
         });
       });
     });
