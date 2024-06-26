@@ -1,7 +1,7 @@
 {
   "name": "@rrweb/web-extension",
   "private": true,
-  "version": "2.0.0-alpha.14",
+  "version": "2.0.0-alpha.16",
   "description": "The web extension of rrweb which helps to run rrweb on any website out of box",
   "author": "rrweb-io",
   "license": "MIT",
@@ -18,13 +18,12 @@
     "prepublish": "yarn build"
   },
   "devDependencies": {
-    "@rrweb/types": "^2.0.0-alpha.14",
+    "@rrweb/types": "^2.0.0-alpha.16",
     "@types/react-dom": "^18.0.6",
     "@types/webextension-polyfill": "^0.9.1",
     "@vitejs/plugin-react": "^4.2.1",
-    "cross-env": "^7.0.3",
     "type-fest": "^2.19.0",
-    "vite": "^5.2.8",
+    "vite": "^5.3.1",
     "vite-plugin-web-extension": "^4.1.3",
     "vite-plugin-zip-pack": "^1.2.2",
     "webextension-polyfill": "^0.10.0"
@@ -42,7 +41,7 @@
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
     "react-router-dom": "^6.4.1",
-    "rrweb": "^2.0.0-alpha.14",
-    "rrweb-player": "^2.0.0-alpha.14"
+    "rrweb": "^2.0.0-alpha.16",
+    "rrweb-player": "^2.0.0-alpha.16"
   }
 }

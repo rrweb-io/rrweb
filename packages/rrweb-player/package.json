@@ -1,8 +1,8 @@
 {
   "name": "rrweb-player",
-  "version": "2.0.0-alpha.14",
+  "version": "2.0.0-alpha.16",
   "devDependencies": {
-    "@rrweb/types": "^2.0.0-alpha.14",
+    "@rrweb/types": "^2.0.0-alpha.16",
     "@sveltejs/adapter-auto": "^3.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/package": "^2.0.0",
@@ -16,12 +16,12 @@
     "svelte-preprocess": "^5.0.3",
     "svelte2tsx": "^0.7.6",
     "tslib": "^2.0.0",
-    "vite": "^5.2.8"
+    "vite": "^5.3.1"
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
-    "@rrweb/replay": "^2.0.0-alpha.14",
-    "@rrweb/packer": "^2.0.0-alpha.14"
+    "@rrweb/replay": "^2.0.0-alpha.16",
+    "@rrweb/packer": "^2.0.0-alpha.16"
   },
   "scripts": {
     "dev": "vite build --watch",

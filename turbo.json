@@ -4,14 +4,13 @@
   "globalDependencies": [
     ".eslintrc.js",
     ".prettierrc",
-    "lerna.json",
     "vite.config.defaults.ts",
     "tsconfig.json"
   ],
   "globalPassThroughEnv": ["PUPPETEER_HEADLESS"],
   "tasks": {
     "prepublish": {
-      "dependsOn": ["^prepublish"],
+      "dependsOn": ["^prepublish", "//#references:update"],
       "outputs": [
         "lib/**",
         "es/**",
@@ -25,17 +24,27 @@
       "dependsOn": ["^prepublish"]
     },
     "test:watch": {
-      "persistent": true
+      "persistent": true,
+      "cache": false
     },
     "test:update": {
       "dependsOn": ["^prepublish"]
     },
     "dev": {
-      // "dependsOn": ["prepublish", "^prepublish"],
+      "dependsOn": ["prepublish", "^prepublish"],
       "persistent": true,
       "cache": false
     },
     "lint": {},
-    "check-types": {}
+    "check-types": {
+      "dependsOn": ["//#references:update"]
+    },
+    "//#references:update": {
+      "inputs": ["packages/*/package.json", "packages/plugins/*/package.json"],
+      "outputs": [
+        "packages/*/tsconfig.json",
+        "packages/plugins/*/tsconfig.json"
+      ]
+    }
   }
 }
