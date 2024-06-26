@@ -719,7 +719,7 @@ function serializeElementNode(
     // register what type of dialog is this
     // `modal` or `non-modal`
     // this is used to trigger `showModal()` or `show()` on replay (outside of rrweb-snapshot, in rrweb)
-    (attributes as DialogAttributes).rr_openMode = n.matches('dialog:modal')
+    (attributes as DialogAttributes).rr_open_mode = n.matches('dialog:modal')
       ? 'modal'
       : 'non-modal';
   }

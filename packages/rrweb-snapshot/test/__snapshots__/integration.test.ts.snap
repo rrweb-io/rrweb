@@ -31,7 +31,7 @@ exports[`dialog integration tests > should capture open attribute for modal dial
               \\"tagName\\": \\"dialog\\",
               \\"attributes\\": {
                 \\"open\\": \\"\\",
-                \\"rr_openMode\\": \\"modal\\"
+                \\"rr_open_mode\\": \\"modal\\"
               },
               \\"childNodes\\": [
                 {
@@ -90,7 +90,7 @@ exports[`dialog integration tests > should capture open attribute for non modal 
               \\"tagName\\": \\"dialog\\",
               \\"attributes\\": {
                 \\"open\\": \\"\\",
-                \\"rr_openMode\\": \\"non-modal\\"
+                \\"rr_open_mode\\": \\"non-modal\\"
               },
               \\"childNodes\\": [
                 {

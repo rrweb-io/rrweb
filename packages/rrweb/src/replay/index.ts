@@ -1808,7 +1808,7 @@ export class Replayer {
               }
 
               if (
-                attributeName === 'rr_openMode' &&
+                attributeName === 'rr_open_mode' &&
                 target.nodeName === 'DIALOG'
               ) {
                 applyDialogToTopLevel(target, mutation);

@@ -111,13 +111,13 @@ export type DialogAttributes = {
    * `non-modal` means the dialog is opened with `show()` or
    * by adding an `open` attribute.
    */
-  rr_openMode: 'modal' | 'non-modal';
+  rr_open_mode: 'modal' | 'non-modal';
   /**
    * Currently unimplemented, but in future can be used to:
    * Represents the order of which of the dialog was opened.
    * This is useful for replaying the dialog `.showModal()` in the correct order.
    */
-  // rr_openMode_index?: number;
+  // rr_open_mode_index?: number;
 };
 
 // @deprecated

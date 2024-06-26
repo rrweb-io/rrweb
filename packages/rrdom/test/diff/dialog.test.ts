@@ -54,7 +54,7 @@ describe('diff algorithm for rrdom', () => {
   describe('diff dialog elements', () => {
     vi.setConfig({ testTimeout: 60_000 });
 
-    it('should trigger `showModal` on rr_openMode:modal attributes', () => {
+    it('should trigger `showModal` on rr_open_mode:modal attributes', () => {
       const tagName = 'DIALOG';
       const node = document.createElement(tagName) as HTMLDialogElement;
       vi.spyOn(node, 'matches').mockReturnValue(false); // matches is used to check if the dialog was opened with showModal
@@ -62,7 +62,7 @@ describe('diff algorithm for rrdom', () => {
 
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement(tagName);
-      rrNode.attributes = { rr_openMode: 'modal', open: '' };
+      rrNode.attributes = { rr_open_mode: 'modal', open: '' };
 
       mirror.add(node, elementSn);
       rrDocument.mirror.add(rrNode, elementSn);
@@ -71,7 +71,7 @@ describe('diff algorithm for rrdom', () => {
       expect(showModalFn).toBeCalled();
     });
 
-    it('should trigger `close` on rr_openMode removed', () => {
+    it('should trigger `close` on rr_open_mode removed', () => {
       const tagName = 'DIALOG';
       const node = document.createElement(tagName) as HTMLDialogElement;
       node.showModal();
@@ -89,17 +89,17 @@ describe('diff algorithm for rrdom', () => {
       expect(closeFn).toBeCalled();
     });
 
-    it('should not trigger `close` on rr_openMode is kept', () => {
+    it('should not trigger `close` on rr_open_mode is kept', () => {
       const tagName = 'DIALOG';
       const node = document.createElement(tagName) as HTMLDialogElement;
       vi.spyOn(node, 'matches').mockReturnValue(true); // matches is used to check if the dialog was opened with showModal
-      node.setAttribute('rr_openMode', 'modal');
+      node.setAttribute('rr_open_mode', 'modal');
       node.setAttribute('open', '');
       const closeFn = vi.spyOn(node, 'close');
 
       const rrDocument = new RRDocument();
       const rrNode = rrDocument.createElement(tagName);
-      rrNode.attributes = { rr_openMode: 'modal', open: '' };
+      rrNode.attributes = { rr_open_mode: 'modal', open: '' };
 
       mirror.add(node, elementSn);
       rrDocument.mirror.add(rrNode, elementSn);

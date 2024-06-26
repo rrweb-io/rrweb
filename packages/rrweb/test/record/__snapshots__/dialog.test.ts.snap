@@ -104,7 +104,7 @@ exports[`dialog > add dialog and show 1`] = `
             \\"tagName\\": \\"dialog\\",
             \\"attributes\\": {
               \\"open\\": \\"\\",
-              \\"rr_openMode\\": \\"non-modal\\"
+              \\"rr_open_mode\\": \\"non-modal\\"
             },
             \\"childNodes\\": [],
             \\"id\\": 11
@@ -220,7 +220,7 @@ exports[`dialog > add dialog and showModal 1`] = `
             \\"tagName\\": \\"dialog\\",
             \\"attributes\\": {
               \\"open\\": \\"\\",
-              \\"rr_openMode\\": \\"modal\\"
+              \\"rr_open_mode\\": \\"modal\\"
             },
             \\"childNodes\\": [],
             \\"id\\": 11
@@ -330,7 +330,7 @@ exports[`dialog > switch to show dialog 1`] = `
           \\"id\\": 8,
           \\"attributes\\": {
             \\"open\\": \\"\\",
-            \\"rr_openMode\\": \\"modal\\"
+            \\"rr_open_mode\\": \\"modal\\"
           }
         }
       ],
@@ -348,7 +348,7 @@ exports[`dialog > switch to show dialog 1`] = `
           \\"id\\": 8,
           \\"attributes\\": {
             \\"open\\": \\"\\",
-            \\"rr_openMode\\": \\"non-modal\\"
+            \\"rr_open_mode\\": \\"non-modal\\"
           }
         }
       ],
@@ -457,7 +457,7 @@ exports[`dialog > switch to showModal dialog 1`] = `
           \\"id\\": 8,
           \\"attributes\\": {
             \\"open\\": \\"\\",
-            \\"rr_openMode\\": \\"non-modal\\"
+            \\"rr_open_mode\\": \\"non-modal\\"
           }
         }
       ],
@@ -475,7 +475,7 @@ exports[`dialog > switch to showModal dialog 1`] = `
           \\"id\\": 8,
           \\"attributes\\": {
             \\"open\\": \\"\\",
-            \\"rr_openMode\\": \\"modal\\"
+            \\"rr_open_mode\\": \\"modal\\"
           }
         }
       ],

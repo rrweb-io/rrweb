@@ -132,7 +132,7 @@ const events: eventWithTime[] = [
       attributes: [
         {
           id: 27,
-          attributes: { open: '', rr_openMode: 'non-modal', class: 'show' },
+          attributes: { open: '', rr_open_mode: 'non-modal', class: 'show' },
         },
       ],
     },
@@ -166,7 +166,7 @@ const events: eventWithTime[] = [
       attributes: [
         {
           id: 27,
-          attributes: { rr_openMode: 'modal', open: '', class: 'showModal' },
+          attributes: { rr_open_mode: 'modal', open: '', class: 'showModal' },
         },
       ],
     },
@@ -184,7 +184,7 @@ const events: eventWithTime[] = [
         {
           id: 27,
           attributes: {
-            rr_openMode: 'non-modal',
+            rr_open_mode: 'non-modal',
             class: 'switched-from-show-modal-to-show',
           },
         },
@@ -205,7 +205,7 @@ const events: eventWithTime[] = [
         {
           id: 27,
           attributes: {
-            rr_openMode: 'modal',
+            rr_open_mode: 'modal',
             class: 'switched-from-show-to-show-modal',
           },
         },
@@ -285,7 +285,7 @@ const events: eventWithTime[] = [
                     tagName: 'dialog',
                     attributes: {
                       open: '',
-                      rr_openMode: 'non-modal',
+                      rr_open_mode: 'non-modal',
                       style: 'outline: blue solid 1px;',
                     },
                     childNodes: [{ type: 3, textContent: 'Dialog 1', id: 25 }],
@@ -384,7 +384,7 @@ const events: eventWithTime[] = [
                     type: 2,
                     tagName: 'dialog',
                     attributes: {
-                      rr_openMode: 'modal',
+                      rr_open_mode: 'modal',
                       open: '',
                       style: 'outline: blue solid 1px;',
                       class: 'existing-1',
@@ -431,7 +431,7 @@ const events: eventWithTime[] = [
             type: 2,
             tagName: 'dialog',
             attributes: {
-              rr_openMode: 'modal',
+              rr_open_mode: 'modal',
               open: '',
               style: 'outline: orange solid 1px;',
               class: 'new-dialog',
