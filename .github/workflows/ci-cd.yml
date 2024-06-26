@@ -1,6 +1,9 @@
 name: Tests
 
-on: [push, pull_request]
+on:
+  push:
+    branches: 
+      - "**"
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
