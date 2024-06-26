@@ -1,11 +1,11 @@
-import { mediaSelectorPlugin, pseudoClassPlugin } from './css';
+import { type Rule, type Media, type NodeWithRules, parse, mediaSelectorPlugin, pseudoClassPlugin } from './css';
 import {
-  serializedNodeWithId,
+  type serializedNodeWithId,
   NodeType,
-  tagMap,
-  elementNode,
-  BuildCache,
-  legacyAttributes,
+  type tagMap,
+  type elementNode,
+  type BuildCache,
+  type legacyAttributes,
 } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
 import postcss from 'postcss';
