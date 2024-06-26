@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/all",
-  "version": "2.0.0-alpha.15",
+  "version": "2.0.0-alpha.16",
   "publishConfig": {
     "access": "public"
   },
@@ -56,9 +56,9 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.15",
-    "@rrweb/packer": "^2.0.0-alpha.15",
-    "rrweb": "^2.0.0-alpha.15"
+    "@rrweb/types": "^2.0.0-alpha.16",
+    "@rrweb/packer": "^2.0.0-alpha.16",
+    "rrweb": "^2.0.0-alpha.16"
   },
   "browserslist": [
     "supports es6-class"
