@@ -136,13 +136,14 @@ ul li.specified c:hover img {
   color: white
 }`;
       expect(adaptCssForReplay(cssText, cache)).toMatchCss(
-        `ul li.specified a:hover img, ul li.specified a.\\:hover img,
+        `ul li.specified a:hover img,
 ul li.multiline
 b:hover
-img, ul li.multiline
-b.\\:hover
 img,
-ul li.specified c:hover img, ul li.specified c.\\:hover img {
+ul li.specified c:hover img,
+ul li.specified a.\\:hover img,
+ul li.multiline b.\\:hover img,
+ul li.specified c.\\:hover img {
   color: white
 }`,
       );
@@ -158,14 +159,14 @@ ul li.specified c:hover img, ul li.specified c.\\:hover img {
     it('can add hover class when there is multi selector', () => {
       const cssText = '.a, .b:hover, .c { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toMatchCss(
-        '.a, .b:hover, .b.\\:hover, .c { color: white }',
+        '.a, .b:hover, .c, .b.\\:hover { color: white }',
       );
     });
 
     it('can add hover class when there is a multi selector with the same prefix', () => {
       const cssText = '.a:hover, .a:hover::after { color: white }';
       expect(adaptCssForReplay(cssText, cache)).toMatchCss(
-        '.a:hover, .a.\\:hover, .a:hover::after, .a.\\:hover::after { color: white }',
+        '.a:hover, .a:hover::after, .a.\\:hover, .a.\\:hover::after { color: white }',
       );
     });
 
