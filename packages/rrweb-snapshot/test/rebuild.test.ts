@@ -3,7 +3,8 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import { describe, it, beforeEach, expect } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+
 import {
   adaptCssForReplay,
   buildNodeWithSN,

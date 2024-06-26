@@ -7,6 +7,7 @@
     "vite.config.defaults.ts",
     "tsconfig.json"
   ],
+  "globalPassThroughEnv": ["PUPPETEER_HEADLESS"],
   "tasks": {
     "prepublish": {
       "dependsOn": ["^prepublish", "//#references:update"],
@@ -20,17 +21,14 @@
       ]
     },
     "test": {
-      "dependsOn": ["^prepublish"],
-      "passThroughEnv": ["PUPPETEER_HEADLESS"]
+      "dependsOn": ["^prepublish"]
     },
     "test:watch": {
       "persistent": true,
-      "passThroughEnv": ["PUPPETEER_HEADLESS"],
       "cache": false
     },
     "test:update": {
-      "dependsOn": ["^prepublish"],
-      "passThroughEnv": ["PUPPETEER_HEADLESS"]
+      "dependsOn": ["^prepublish"]
     },
     "dev": {
       "dependsOn": ["prepublish", "^prepublish"],
