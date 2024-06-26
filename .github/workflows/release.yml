@@ -1,9 +1,7 @@
-name: Release
+name: Release Package
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
