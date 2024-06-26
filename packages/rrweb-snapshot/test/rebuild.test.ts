@@ -3,7 +3,7 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import { describe, it, beforeEach, expect } from 'vitest';
+import { describe, it, beforeEach, expect as _expect } from 'vitest';
 import {
   adaptCssForReplay,
   buildNodeWithSN,
@@ -11,8 +11,6 @@ import {
 } from '../src/rebuild';
 import { NodeType } from '../src/types';
 import { createMirror, Mirror } from '../src/utils';
-
-import { expect as _expect } from '@jest/globals';
 
 const expect = _expect as unknown as {
   <T = unknown>(actual: T): {
