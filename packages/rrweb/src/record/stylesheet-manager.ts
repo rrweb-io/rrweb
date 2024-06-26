@@ -1,4 +1,7 @@
-import type { elementNode, serializedNodeWithId } from '@saola.ai/rrweb-snapshot';
+import type {
+  elementNode,
+  serializedNodeWithId,
+} from '@saola.ai/rrweb-snapshot';
 import { stringifyRule } from '@saola.ai/rrweb-snapshot';
 import type {
   adoptedStyleSheetCallback,

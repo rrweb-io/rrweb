@@ -1,4 +1,8 @@
-import { Emitter, MediaInteractions, ReplayerEvents } from '@saola.ai/rrweb-types';
+import {
+  Emitter,
+  MediaInteractions,
+  ReplayerEvents,
+} from '@saola.ai/rrweb-types';
 import type { RRMediaElement } from '@saola.ai/rrdom';
 import type { createPlayerService, createSpeedService } from '../machine';
 import type { Mirror, mediaAttributes } from '@saola.ai/rrweb-snapshot';
