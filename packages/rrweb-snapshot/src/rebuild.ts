@@ -1,4 +1,4 @@
-import { type Rule, type Media, type NodeWithRules, parse, mediaSelectorPlugin, pseudoClassPlugin } from './css';
+import { mediaSelectorPlugin, pseudoClassPlugin } from './css';
 import {
   type serializedNodeWithId,
   NodeType,
