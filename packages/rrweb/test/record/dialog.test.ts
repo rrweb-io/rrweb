@@ -18,17 +18,6 @@ import {
 } from '@rrweb/types';
 import { recordOptions } from '../../src/types';
 
-// TODO: test the following:
-// == on record ==
-// √ dialog show
-// √ dialog showModal
-// √ dialog close
-// √ dialog open and close
-// √ dialog showModal and switch to show
-// √ dialog show and switch to showModal
-// √ dialog add and showModal
-// - multiple dialogs open, playback order
-
 interface IWindow extends Window {
   rrweb: {
     record: (
@@ -219,5 +208,22 @@ describe('dialog', () => {
     await waitForRAF(page);
 
     await assertSnapshot(events);
+  });
+
+  // TODO: implement me in the future
+  it.skip('should record playback order with multiple dialogs opening', async () => {
+    await page.evaluate(() => {
+      const dialog1 = document.createElement('dialog') as HTMLDialogElement;
+      dialog1.className = 'dialog1';
+      document.body.appendChild(dialog1);
+      const dialog2 = document.createElement('dialog') as HTMLDialogElement;
+      dialog1.className = 'dialog2';
+      document.body.appendChild(dialog2);
+      dialog2.showModal(); // <== Note that dialog TWO is being triggered first
+      dialog1.showModal();
+    });
+
+    await waitForRAF(page);
+    await assertSnapshot(events); // <== This should trigger showModal() on dialog2 first, then dialog1
   });
 });

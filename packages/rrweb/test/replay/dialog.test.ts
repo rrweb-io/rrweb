@@ -26,22 +26,6 @@ import {
 
 expect.extend({ toMatchImageSnapshot });
 
-// TODO: test the following:
-// == on playback ==
-// - dialog open (standard) full snapshot
-// √ dialog open (standard) incremental (virtual dom)
-// √ dialog open (standard) incremental (non virtual dom)
-// √ dialog open (showModal) full snapshot
-// √ dialog open (showModal) incremental (virtual dom)
-// √ dialog open (showModal) incremental (non virtual dom)
-// √ append dialog open (showModal) incremental (virtual dom)
-// √ append dialog open (showModal) incremental (non virtual dom)
-// √ dialog close (rrdom)
-// √ dialog close (non virtual dom)
-// √ dialog open and close (switching from modal to non modal)
-// √ dialog open and close (switching from non modal to modal)
-// - multiple dialogs open, recording order
-
 describe('dialog', () => {
   vi.setConfig({ testTimeout: 100_000 });
   let code: ISuite['code'];
@@ -158,4 +142,7 @@ describe('dialog', () => {
       failureThresholdType: 'percent',
     });
   });
+
+  // TODO: implement me in the future
+  it.skip('should trigger showModal on multiple dialogs in a specific order');
 });
