@@ -14,8 +14,8 @@ import {
   ISuite,
 } from './utils';
 import type { recordOptions } from '../src/types';
-import { eventWithTime, EventType, RecordPlugin } from '@rrweb/types';
-import { visitSnapshot, NodeType } from 'rrweb-snapshot';
+import { eventWithTime, NodeType, EventType, RecordPlugin } from '@rrweb/types';
+import { visitSnapshot } from 'rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
   vi.setConfig({ testTimeout: 10_000 });
@@ -73,7 +73,7 @@ describe('record integration tests', function (this: ISuite) {
         x: Math.round(x + width / 2),
         y: Math.round(y + height / 2),
       };
-    }, span);
+    }, span!);
     await page.touchscreen.tap(center.x, center.y);
 
     await page.click('a');
@@ -113,19 +113,20 @@ describe('record integration tests', function (this: ISuite) {
       ta.innerText = 'pre value';
       document.body.append(ta);
     });
-    await page.waitForTimeout(5);
+    await waitForRAF(page);
     await page.evaluate(() => {
       const t = document.querySelector('textarea') as HTMLTextAreaElement;
       t.innerText = 'ok'; // this mutation should be recorded
     });
-    await page.waitForTimeout(5);
+    await waitForRAF(page);
     await page.evaluate(() => {
       const t = document.querySelector('textarea') as HTMLTextAreaElement;
       (t.childNodes[0] as Text).appendData('3'); // this mutation is also valid
     });
-    await page.waitForTimeout(5);
+    await waitForRAF(page);
+
     await page.type('textarea', '1'); // types (inserts) at index 0, in front of existing text
-    await page.waitForTimeout(5);
+    await waitForRAF(page);
     await page.evaluate(() => {
       const t = document.querySelector('textarea') as HTMLTextAreaElement;
       // user has typed so childNode content should now be ignored
@@ -136,8 +137,9 @@ describe('record integration tests', function (this: ISuite) {
       // there is nothing explicit in rrweb which enforces this, but this test may protect against
       // a future change where a mutation on a textarea incorrectly updates the .value
     });
-    await page.waitForTimeout(5);
+    await waitForRAF(page);
     await page.type('textarea', '2'); // cursor is at index 1
+    await waitForRAF(page);
 
     const snapshots = (await page.evaluate(
       'window.snapshots',
@@ -639,6 +641,7 @@ describe('record integration tests', function (this: ISuite) {
       const el = document.createElement('input');
       el.size = 50;
       el.id = 'input';
+      el.setAttribute('size', '50');
       el.value = 'input should be masked';
 
       const nextElement = document.querySelector('#one')!;
@@ -738,12 +741,80 @@ describe('record integration tests', function (this: ISuite) {
     await assertSnapshot(snapshots);
   });
 
+  it('[DEPRECATED] should record images with blob url', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.goto(`${serverURL}/html`);
+    page.setContent(
+      getHtml.call(this, 'image-blob-url.html', {
+        inlineImages: true,
+        captureAssets: { objectURLs: false, origins: false },
+      }),
+    );
+    await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
+    await page.waitForSelector('img'); // wait for image to get added
+    await waitForRAF(page); // wait for image to be captured
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
+  it('[DEPRECATED] should record images inside iframe with blob url', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.goto(`${serverURL}/html`);
+    await page.setContent(
+      getHtml.call(this, 'frame-image-blob-url.html', {
+        inlineImages: true,
+        captureAssets: { objectURLs: false, origins: false },
+      }),
+    );
+    await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
+    await page.waitForTimeout(50); // wait for image to get added
+    await waitForRAF(page); // wait for image to be captured
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
+  it('[DEPRECATED] should record images inside iframe with blob url after iframe was reloaded', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.goto(`${serverURL}/html`);
+    await page.setContent(
+      getHtml.call(this, 'frame2.html', {
+        inlineImages: true,
+        captureAssets: { objectURLs: false, origins: false },
+      }),
+    );
+    await page.waitForSelector('iframe'); // wait for iframe to get added
+    await waitForRAF(page); // wait for iframe to load
+    page.evaluate(() => {
+      const iframe = document.querySelector('iframe')!;
+      iframe.setAttribute('src', '/html/image-blob-url.html');
+    });
+    await page.waitForResponse(`${serverURL}/html/assets/robot.png`); // wait for image to get loaded
+    await page.waitForTimeout(50); // wait for image to get added
+    await waitForRAF(page); // wait for image to be captured
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    assertSnapshot(snapshots);
+  });
+
   it('should record images with blob url', async () => {
     const page: puppeteer.Page = await browser.newPage();
     page.on('console', (msg) => console.log(msg.text()));
     await page.goto(`${serverURL}/html`);
     page.setContent(
-      getHtml.call(this, 'image-blob-url.html', { inlineImages: true }),
+      getHtml.call(this, 'image-blob-url.html', {
+        captureAssets: { objectURLs: true, origins: false },
+      }),
     );
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
     await page.waitForSelector('img'); // wait for image to get added
@@ -760,7 +831,9 @@ describe('record integration tests', function (this: ISuite) {
     page.on('console', (msg) => console.log(msg.text()));
     await page.goto(`${serverURL}/html`);
     await page.setContent(
-      getHtml.call(this, 'frame-image-blob-url.html', { inlineImages: true }),
+      getHtml.call(this, 'frame-image-blob-url.html', {
+        captureAssets: { objectURLs: true, origins: false },
+      }),
     );
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
     await page.waitForTimeout(50); // wait for image to get added
@@ -777,7 +850,9 @@ describe('record integration tests', function (this: ISuite) {
     page.on('console', (msg) => console.log(msg.text()));
     await page.goto(`${serverURL}/html`);
     await page.setContent(
-      getHtml.call(this, 'frame2.html', { inlineImages: true }),
+      getHtml.call(this, 'frame2.html', {
+        captureAssets: { objectURLs: true, origins: false },
+      }),
     );
     await page.waitForSelector('iframe'); // wait for iframe to get added
     await waitForRAF(page); // wait for iframe to load

@@ -10,6 +10,7 @@ import {
   isNativeShadowDom,
   getInputType,
   toLowerCase,
+  getSourcesFromSrcset,
 } from 'rrweb-snapshot';
 import type { observerParam, MutationBufferParam } from '../types';
 import type {
@@ -180,7 +181,6 @@ export default class MutationBuffer {
   private maskInputFn: observerParam['maskInputFn'];
   private keepIframeSrcFn: observerParam['keepIframeSrcFn'];
   private recordCanvas: observerParam['recordCanvas'];
-  private inlineImages: observerParam['inlineImages'];
   private slimDOMOptions: observerParam['slimDOMOptions'];
   private dataURLOptions: observerParam['dataURLOptions'];
   private doc: observerParam['doc'];
@@ -191,6 +191,7 @@ export default class MutationBuffer {
   private canvasManager: observerParam['canvasManager'];
   private processedNodeManager: observerParam['processedNodeManager'];
   private unattachedDoc: HTMLDocument;
+  private assetManager: observerParam['assetManager'];
 
   public init(options: MutationBufferParam) {
     (
@@ -206,7 +207,6 @@ export default class MutationBuffer {
         'maskInputFn',
         'keepIframeSrcFn',
         'recordCanvas',
-        'inlineImages',
         'slimDOMOptions',
         'dataURLOptions',
         'doc',
@@ -216,6 +216,7 @@ export default class MutationBuffer {
         'shadowDomManager',
         'canvasManager',
         'processedNodeManager',
+        'assetManager',
       ] as const
     ).forEach((key) => {
       // just a type trick, the runtime result is correct
@@ -299,6 +300,7 @@ export default class MutationBuffer {
       if (parentId === -1 || nextId === -1) {
         return addList.addNode(n);
       }
+
       const sn = serializeNodeWithId(n, {
         doc: this.doc,
         mirror: this.mirror,
@@ -315,7 +317,6 @@ export default class MutationBuffer {
         slimDOMOptions: this.slimDOMOptions,
         dataURLOptions: this.dataURLOptions,
         recordCanvas: this.recordCanvas,
-        inlineImages: this.inlineImages,
         onSerialize: (currentN) => {
           if (isSerializedIframe(currentN, this.mirror)) {
             this.iframeManager.addIframe(currentN as HTMLIFrameElement);
@@ -335,6 +336,11 @@ export default class MutationBuffer {
         },
         onStylesheetLoad: (link, childSn) => {
           this.stylesheetManager.attachLinkElement(link, childSn);
+        },
+        onAssetDetected: (assets) => {
+          assets.urls.forEach((url) => {
+            this.assetManager.capture(url);
+          });
         },
       });
       if (sn) {
@@ -619,12 +625,26 @@ export default class MutationBuffer {
 
         if (!ignoreAttribute(target.tagName, attributeName, value)) {
           // overwrite attribute if the mutations was triggered in same time
-          item.attributes[attributeName] = transformAttribute(
-            this.doc,
-            toLowerCase(target.tagName),
-            toLowerCase(attributeName),
-            value,
-          );
+          const transformedValue = (item.attributes[attributeName] =
+            transformAttribute(
+              this.doc,
+              toLowerCase(target.tagName),
+              toLowerCase(attributeName),
+              value,
+            ));
+          if (
+            transformedValue &&
+            this.assetManager.isAttributeCapturable(target, attributeName)
+          ) {
+            if (attributeName === 'srcset') {
+              getSourcesFromSrcset(transformedValue).forEach((url) => {
+                this.assetManager.capture(url);
+              });
+            } else {
+              this.assetManager.capture(transformedValue);
+            }
+          }
+
           if (attributeName === 'style') {
             if (!this.unattachedDoc) {
               try {

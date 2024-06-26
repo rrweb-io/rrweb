@@ -1,6 +1,6 @@
-import { NodeType } from 'rrweb-snapshot';
 import { expect } from 'vitest';
 import {
+  NodeType,
   EventType,
   IncrementalSource,
   eventWithTime,

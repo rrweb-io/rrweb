@@ -1,10 +1,3 @@
-import type {
-  serializedNodeWithId,
-  Mirror,
-  INode,
-  DataURLOptions,
-} from 'rrweb-snapshot';
-
 export enum EventType {
   DomContentLoaded,
   Load,
@@ -13,6 +6,7 @@ export enum EventType {
   Meta,
   Custom,
   Plugin,
+  Asset,
 }
 
 export type domContentLoadedEvent = {
@@ -47,6 +41,7 @@ export type metaEvent = {
     href: string;
     width: number;
     height: number;
+    captureAssets?: captureAssetsParam;
   };
 };
 
@@ -64,6 +59,27 @@ export type pluginEvent<T = unknown> = {
     plugin: string;
     payload: T;
   };
+};
+
+export type captureAssetsParam = {
+  /**
+   * Captures object URLs (blobs, files, media sources).
+   * More info: https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
+   */
+  objectURLs: boolean;
+  /**
+   * Allowlist of origins to capture object URLs from.
+   * [origin, origin, ...] to capture from specific origins.
+   *   e.g. ['https://example.com', 'https://www.example.com']
+   * Set to `true` capture from all origins.
+   * Set to `false` or `[]` to disable capturing from any origin apart from object URLs.
+   */
+  origins: string[] | true | false;
+};
+
+export type assetEvent = {
+  type: EventType.Asset;
+  data: assetParam;
 };
 
 export enum IncrementalSource {
@@ -170,7 +186,8 @@ export type eventWithoutTime =
   | incrementalSnapshotEvent
   | metaEvent
   | customEvent
-  | pluginEvent;
+  | pluginEvent
+  | assetEvent;
 
 /**
  * @deprecated intended for internal use
@@ -254,7 +271,7 @@ export type RecordPlugin<TOptions = unknown> = {
   ) => listenerHandler;
   eventProcessor?: <TExtend>(event: eventWithTime) => eventWithTime & TExtend;
   getMirror?: (mirrors: {
-    nodeMirror: Mirror;
+    nodeMirror: IMirror<Node>;
     crossOriginIframeMirror: ICrossOriginIframeMirror;
     crossOriginIframeStyleMirror: ICrossOriginIframeMirror;
   }) => void;
@@ -389,16 +406,18 @@ export enum CanvasContext {
   WebGL2,
 }
 
+export type SerializedBlobArg = {
+  rr_type: 'Blob';
+  data: Array<CanvasArg>;
+  type?: string;
+};
+
 export type SerializedCanvasArg =
   | {
       rr_type: 'ArrayBuffer';
       base64: string; // base64
     }
-  | {
-      rr_type: 'Blob';
-      data: Array<CanvasArg>;
-      type?: string;
-    }
+  | SerializedBlobArg
   | {
       rr_type: string;
       src: string; // url of image
@@ -615,6 +634,28 @@ export type customElementParam = {
 
 export type customElementCallback = (c: customElementParam) => void;
 
+export type assetParam =
+  | {
+      url: string;
+      payload: SerializedCanvasArg;
+    }
+  | {
+      url: string;
+      failed: {
+        status?: number;
+        message: string;
+      };
+    };
+
+export type assetCallback = (d: assetParam) => void;
+
+/**
+ *  @deprecated
+ */
+interface INode extends Node {
+  __sn: serializedNodeWithId;
+}
+
 export type DeprecatedMirror = {
   map: {
     [key: number]: INode;
@@ -704,6 +745,158 @@ export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
   Obj,
   TakeTypeHelper<Obj, Type>[keyof TakeTypeHelper<Obj, Type>]
 >;
+
+export type RebuildAssetManagerResetStatus = { status: 'reset' };
+export type RebuildAssetManagerUnknownStatus = { status: 'unknown' };
+export type RebuildAssetManagerLoadingStatus = { status: 'loading' };
+export type RebuildAssetManagerLoadedStatus = { status: 'loaded'; url: string };
+export type RebuildAssetManagerFailedStatus = { status: 'failed' };
+export type RebuildAssetManagerFinalStatus =
+  | RebuildAssetManagerLoadedStatus
+  | RebuildAssetManagerFailedStatus
+  | RebuildAssetManagerResetStatus;
+export type RebuildAssetManagerStatus =
+  | RebuildAssetManagerUnknownStatus
+  | RebuildAssetManagerLoadingStatus
+  | RebuildAssetManagerFinalStatus;
+
+export declare abstract class RebuildAssetManagerInterface {
+  constructor(
+    playerConfig: { liveMode: boolean },
+    assetManagerConfig?: captureAssetsParam | undefined,
+  );
+  abstract add(event: assetEvent): Promise<void>;
+  abstract get(url: string): RebuildAssetManagerStatus;
+  abstract whenReady(url: string): Promise<RebuildAssetManagerFinalStatus>;
+  abstract reset(config?: captureAssetsParam | undefined): void;
+  abstract isCapturable(n: Element, attribute: string, value: string): boolean;
+  abstract isURLConfiguredForCapture(url: string): boolean;
+  abstract manageAttribute(n: Element, id: number, attribute: string): void;
+}
+
+export enum NodeType {
+  Document,
+  DocumentType,
+  Element,
+  Text,
+  CDATA,
+  Comment,
+}
+
+export type documentNode = {
+  type: NodeType.Document;
+  childNodes: serializedNodeWithId[];
+  compatMode?: string;
+};
+
+export type documentTypeNode = {
+  type: NodeType.DocumentType;
+  name: string;
+  publicId: string;
+  systemId: string;
+};
+
+export type attributes = {
+  [key: string]: string | number | true | null;
+};
+
+export type legacyAttributes = {
+  /**
+   * @deprecated old bug in rrweb was causing these to always be set
+   * @see https://github.com/rrweb-io/rrweb/pull/651
+   */
+  selected: false;
+};
+
+export type mediaAttributes = {
+  rr_mediaState: 'played' | 'paused';
+  rr_mediaCurrentTime: number;
+  /**
+   * for backwards compatibility this is optional but should always be set
+   */
+  rr_mediaPlaybackRate?: number;
+  /**
+   * for backwards compatibility this is optional but should always be set
+   */
+  rr_mediaMuted?: boolean;
+  /**
+   * for backwards compatibility this is optional but should always be set
+   */
+  rr_mediaLoop?: boolean;
+  /**
+   * for backwards compatibility this is optional but should always be set
+   */
+  rr_mediaVolume?: number;
+};
+
+export type elementNode = {
+  type: NodeType.Element;
+  tagName: string;
+  attributes: attributes;
+  childNodes: serializedNodeWithId[];
+  isSVG?: true;
+  needBlock?: boolean;
+  // This is a custom element or not.
+  isCustom?: true;
+};
+
+export type textNode = {
+  type: NodeType.Text;
+  textContent: string;
+  isStyle?: true;
+};
+
+export type cdataNode = {
+  type: NodeType.CDATA;
+  textContent: '';
+};
+
+export type commentNode = {
+  type: NodeType.Comment;
+  textContent: string;
+};
+
+export type serializedNode = (
+  | documentNode
+  | documentTypeNode
+  | elementNode
+  | textNode
+  | cdataNode
+  | commentNode
+) & {
+  rootId?: number;
+  isShadowHost?: boolean;
+  isShadow?: boolean;
+};
+
+export type serializedNodeWithId = serializedNode & { id: number };
+
+export interface IMirror<TNode> {
+  getId(n: TNode | undefined | null): number;
+
+  getNode(id: number): TNode | null;
+
+  getIds(): number[];
+
+  getMeta(n: TNode): serializedNodeWithId | null;
+
+  removeNodeFromMap(n: TNode): void;
+
+  has(id: number): boolean;
+
+  hasNode(node: TNode): boolean;
+
+  add(n: TNode, meta: serializedNodeWithId): void;
+
+  replace(id: number, n: TNode): void;
+
+  reset(): void;
+}
+
+export type DataURLOptions = Partial<{
+  type: string;
+  quality: number;
+}>;
 
 // Types for @rrweb/packer
 export type PackFn = (event: eventWithTime) => string;

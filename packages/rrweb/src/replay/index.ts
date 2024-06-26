@@ -1,12 +1,10 @@
 import {
   rebuild,
   buildNodeWithSN,
-  NodeType,
   type BuildCache,
   createCache,
   Mirror,
   createMirror,
-  type attributes,
   type serializedElementNodeWithId,
   toLowerCase,
 } from 'rrweb-snapshot';
@@ -39,6 +37,8 @@ import {
 } from './machine';
 import type { playerConfig, missingNodeMap } from '../types';
 import {
+  NodeType,
+  type attributes,
   EventType,
   IncrementalSource,
   MouseInteractions,
@@ -87,6 +87,7 @@ import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
+import AssetManager from './asset-manager';
 import { MediaManager } from './media';
 
 const SKIP_TIME_INTERVAL = 5 * 1000;
@@ -142,6 +143,9 @@ export class Replayer {
   private cache: BuildCache = createCache();
 
   private imageMap: Map<eventWithTime | string, HTMLImageElement> = new Map();
+
+  private assetManager: AssetManager;
+
   private canvasEventMap: Map<eventWithTime, canvasMutationParam> = new Map();
 
   private mirror: Mirror = createMirror();
@@ -202,6 +206,7 @@ export class Replayer {
       logger: console,
     };
     this.config = Object.assign({}, defaultConfig, config);
+    this.assetManager = new AssetManager({ liveMode: this.config.liveMode });
 
     this.handleResize = this.handleResize.bind(this);
     this.getCastFn = this.getCastFn.bind(this);
@@ -221,6 +226,7 @@ export class Replayer {
       if (this.usingVirtualDom) {
         const replayerHandler: ReplayerHandler = {
           mirror: this.mirror,
+          assetManager: this.assetManager,
           applyCanvas: (
             canvasEvent: canvasEventWithTime,
             canvasMutationData: canvasMutationData,
@@ -394,7 +400,9 @@ export class Replayer {
       (e) => e.type === EventType.FullSnapshot,
     );
     if (firstMeta) {
-      const { width, height } = firstMeta.data as metaEvent['data'];
+      const { width, height, captureAssets } =
+        firstMeta.data as metaEvent['data'];
+      this.assetManager.reset(captureAssets);
       setTimeout(() => {
         this.emitter.emit(ReplayerEvents.Resize, {
           width,
@@ -676,11 +684,13 @@ export class Replayer {
         };
         break;
       case EventType.Meta:
-        castFn = () =>
+        castFn = () => {
+          this.assetManager.reset(event.data.captureAssets);
           this.emitter.emit(ReplayerEvents.Resize, {
             width: event.data.width,
             height: event.data.height,
           });
+        };
         break;
       case EventType.FullSnapshot:
         castFn = () => {
@@ -742,6 +752,11 @@ export class Replayer {
               this.emitter.emit(ReplayerEvents.SkipStart, payload);
             }
           }
+        };
+        break;
+      case EventType.Asset:
+        castFn = () => {
+          void this.assetManager.add(event);
         };
         break;
       default:
@@ -823,6 +838,8 @@ export class Replayer {
       }
     };
 
+    void this.preloadAllAssets(event.timestamp);
+
     /**
      * Normally rebuilding full snapshot should not be under virtual dom environment.
      * But if the order of data events has some issues, it might be possible.
@@ -839,6 +856,7 @@ export class Replayer {
       afterAppend,
       cache: this.cache,
       mirror: this.mirror,
+      assetManager: this.assetManager,
     });
     afterAppend(this.iframe.contentDocument, event.data.node.id);
 
@@ -945,6 +963,7 @@ export class Replayer {
       skipChild: false,
       afterAppend,
       cache: this.cache,
+      assetManager: this.assetManager,
     });
     afterAppend(iframeEl.contentDocument! as Document, mutation.node.id);
 
@@ -1027,6 +1046,21 @@ export class Replayer {
         }, this.config.loadTimeout);
       }
     }
+  }
+
+  /**
+   * Process all asset events and preload them
+   */
+  private async preloadAllAssets(timestamp: number): Promise<void[]> {
+    const promises: Promise<void>[] = [];
+    for (const event of this.service.state.context.events) {
+      if (event.timestamp <= timestamp) continue;
+      if (event.type === EventType.Meta && event.timestamp !== timestamp) break;
+      if (event.type === EventType.Asset) {
+        promises.push(this.assetManager.add(event));
+      }
+    }
+    return Promise.all(promises);
   }
 
   /**
@@ -1545,6 +1579,7 @@ export class Replayer {
         skipChild: true,
         hackCss: true,
         cache: this.cache,
+        assetManager: this.assetManager,
         /**
          * caveat: `afterAppend` only gets called on child nodes of target
          * we have to call it again below when this target was added to the DOM
@@ -1759,6 +1794,7 @@ export class Replayer {
                     skipChild: true,
                     hackCss: true,
                     cache: this.cache,
+                    assetManager: this.assetManager,
                   });
                   const siblingNode = target.nextSibling;
                   const parentNode = target.parentNode;
@@ -1788,9 +1824,12 @@ export class Replayer {
                   textarea.appendChild(tn as TNode);
                 }
               } else {
-                (target as Element | RRElement).setAttribute(
+                const targetEl = target as Element | RRElement;
+                targetEl.setAttribute(attributeName, value);
+                void this.assetManager.manageAttribute(
+                  targetEl,
+                  mutation.id,
                   attributeName,
-                  value,
                 );
               }
             } catch (error) {

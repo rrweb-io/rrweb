@@ -27,6 +27,7 @@ import {
   type scrollCallback,
   type canvasMutationParam,
   type adoptedStyleSheetParam,
+  type assetParam,
 } from '@rrweb/types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
@@ -39,11 +40,13 @@ import {
   registerErrorHandler,
   unregisterErrorHandler,
 } from './error-handler';
+import AssetManager from './observers/asset-manager';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
 
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
 let canvasManager!: CanvasManager;
+let assetManager!: AssetManager;
 let recording = false;
 
 // Multiple tools (i.e. MooTools, Prototype.js) override Array.from and drop support for the 2nd parameter
@@ -94,11 +97,21 @@ function record<T = eventWithTime>(
     userTriggeredOnInput = false,
     collectFonts = false,
     inlineImages = false,
+    captureAssets = {
+      objectURLs: true,
+      origins: false,
+    },
     plugins,
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
     errorHandler,
   } = options;
+
+  // handle deprecated `inlineImages` option
+  if (inlineImages) {
+    captureAssets.objectURLs = true;
+    captureAssets.origins = true;
+  }
 
   registerErrorHandler(errorHandler);
 
@@ -278,6 +291,12 @@ function record<T = eventWithTime>(
       },
     });
 
+  const wrappedAssetEmit = (p: assetParam) =>
+    wrappedEmit({
+      type: EventType.Asset,
+      data: p,
+    });
+
   const wrappedAdoptedStyleSheetEmit = (a: adoptedStyleSheetParam) =>
     wrappedEmit({
       type: EventType.IncrementalSnapshot,
@@ -326,6 +345,12 @@ function record<T = eventWithTime>(
     dataURLOptions,
   });
 
+  assetManager = new AssetManager({
+    mutationCb: wrappedAssetEmit,
+    win: window,
+    captureAssets,
+  });
+
   const shadowDomManager = new ShadowDomManager({
     mutationCb: wrappedMutationEmit,
     scrollCb: wrappedScrollEmit,
@@ -340,7 +365,6 @@ function record<T = eventWithTime>(
       maskTextFn,
       maskInputFn,
       recordCanvas,
-      inlineImages,
       sampling,
       slimDOMOptions,
       iframeManager,
@@ -348,6 +372,7 @@ function record<T = eventWithTime>(
       canvasManager,
       keepIframeSrcFn,
       processedNodeManager,
+      assetManager,
     },
     mirror,
   });
@@ -363,6 +388,7 @@ function record<T = eventWithTime>(
           href: window.location.href,
           width: getWindowWidth(),
           height: getWindowHeight(),
+          captureAssets,
         },
       },
       isCheckout,
@@ -387,7 +413,6 @@ function record<T = eventWithTime>(
       slimDOM: slimDOMOptions,
       dataURLOptions,
       recordCanvas,
-      inlineImages,
       onSerialize: (n) => {
         if (isSerializedIframe(n, mirror)) {
           iframeManager.addIframe(n as HTMLIFrameElement);
@@ -405,6 +430,11 @@ function record<T = eventWithTime>(
       },
       onStylesheetLoad: (linkEl, childSn) => {
         stylesheetManager.attachLinkElement(linkEl, childSn);
+      },
+      onAssetDetected: (assets) => {
+        assets.urls.forEach((url) => {
+          assetManager.capture(url);
+        });
       },
       keepIframeSrcFn,
     });
@@ -534,7 +564,6 @@ function record<T = eventWithTime>(
           sampling,
           recordDOM,
           recordCanvas,
-          inlineImages,
           userTriggeredOnInput,
           collectFonts,
           doc,
@@ -550,6 +579,7 @@ function record<T = eventWithTime>(
           shadowDomManager,
           processedNodeManager,
           canvasManager,
+          assetManager,
           ignoreCSSAttributes,
           plugins:
             plugins

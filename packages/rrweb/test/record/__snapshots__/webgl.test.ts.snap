@@ -7,7 +7,11 @@ exports[`record webgl > recordCanvas FPS > should record snapshots 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"captureAssets\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -100,7 +104,11 @@ exports[`record webgl > should batch events by RAF 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"captureAssets\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -261,7 +269,11 @@ exports[`record webgl > will record changes to a canvas element 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"captureAssets\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -370,7 +382,11 @@ exports[`record webgl > will record changes to a canvas element before the canva
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"captureAssets\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -514,7 +530,11 @@ exports[`record webgl > will record changes to a canvas element before the canva
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"captureAssets\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -658,7 +678,11 @@ exports[`record webgl > will record changes to a webgl2 canvas element 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"captureAssets\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -767,7 +791,11 @@ exports[`record webgl > will record webgl variables 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"captureAssets\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {
@@ -896,7 +924,11 @@ exports[`record webgl > will record webgl variables in reverse order 1`] = `
     \\"data\\": {
       \\"href\\": \\"about:blank\\",
       \\"width\\": 1920,
-      \\"height\\": 1080
+      \\"height\\": 1080,
+      \\"captureAssets\\": {
+        \\"objectURLs\\": true,
+        \\"origins\\": false
+      }
     }
   },
   {

@@ -27,6 +27,7 @@
     "dev": "vite build --watch",
     "test": "vitest run",
     "test:watch": "vitest watch",
+    "test:update": "vitest run --update",
     "build": "yarn turbo run prepublish",
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build"

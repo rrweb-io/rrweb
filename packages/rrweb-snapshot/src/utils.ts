@@ -1,8 +1,12 @@
 import type {
-  idNodeMap,
   MaskInputFn,
   MaskInputOptions,
+  idNodeMap,
   nodeMetaMap,
+} from './types';
+
+import { NodeType } from '@rrweb/types';
+import type {
   IMirror,
   serializedNodeWithId,
   serializedNode,
@@ -10,8 +14,7 @@ import type {
   documentTypeNode,
   textNode,
   elementNode,
-} from './types';
-import { NodeType } from './types';
+} from '@rrweb/types';
 
 export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;
@@ -350,4 +353,62 @@ export function extractFileExtension(
   const regex = /\.([0-9a-z]+)(?:$)/i;
   const match = url.pathname.match(regex);
   return match?.[1] ?? null;
+}
+
+/**
+ * Extracts the URLs from a srcset attribute.
+ * @param srcset - The srcset attribute value. eg. `image.jpg 2x, image2.jpg 3x`
+ * @returns An array of URLs. eg. `['image.jpg', 'image2.jpg']`
+ */
+export function getUrlsFromSrcset(srcset: string): string[] {
+  const urls: string[] = [];
+  const parts = srcset.split(',');
+  for (let i = 0; i < parts.length; i++) {
+    const trimmed = parts[i].trim();
+    const spaceIndex = trimmed.indexOf(' ');
+    if (spaceIndex === -1) {
+      // If no descriptor is specified, it's a single URL.
+      // eg. `image.jpg`
+      urls.push(trimmed);
+    } else {
+      // Otherwise, it's a URL followed by a single descriptor.
+      // Since we don't know how long the URL will be, we'll assume it's everything
+      // before the first space.
+      // eg. `image.jpg 2x`
+      urls.push(trimmed.substring(0, spaceIndex));
+    }
+  }
+  return urls;
+}
+
+export const CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
+  ['IMG', new Set(['src', 'srcset'])],
+  ['VIDEO', new Set(['src'])],
+  ['AUDIO', new Set(['src'])],
+  ['EMBED', new Set(['src'])],
+  ['SOURCE', new Set(['src'])],
+  ['TRACK', new Set(['src'])],
+  ['INPUT', new Set(['src'])],
+  ['IFRAME', new Set(['src'])],
+  ['OBJECT', new Set(['src'])],
+  ['BODY', new Set(['background'])],
+  ['TABLE', new Set(['background'])],
+  ['TD', new Set(['background'])],
+  ['TR', new Set(['background'])],
+  ['TH', new Set(['background'])],
+  ['TBODY', new Set(['background'])],
+  ['THEAD', new Set(['background'])],
+  ['image', new Set(['href'])],
+  ['feImage', new Set(['href'])],
+  ['cursor', new Set(['href'])],
+]);
+
+export function isAttributeCapturable(n: Element, attribute: string): boolean {
+  const acceptedAttributesSet = CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS.get(
+    n.nodeName,
+  );
+  if (!acceptedAttributesSet) {
+    return false;
+  }
+  return acceptedAttributesSet.has(attribute);
 }

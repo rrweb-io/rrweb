@@ -2,9 +2,13 @@
  * @vitest-environment jsdom
  */
 import { describe, it, test, expect } from 'vitest';
-import { NodeType, serializedNode } from '../src/types';
-import { extractFileExtension, isNodeMetaEqual } from '../src/utils';
-import type { serializedNodeWithId } from 'rrweb-snapshot';
+import { NodeType } from '@rrweb/types';
+import {
+  extractFileExtension,
+  isAttributeCapturable,
+  isNodeMetaEqual,
+} from '../src/utils';
+import type { serializedNode, serializedNodeWithId } from '@rrweb/types';
 
 describe('utils', () => {
   describe('isNodeMetaEqual()', () => {
@@ -148,6 +152,7 @@ describe('utils', () => {
       expect(isNodeMetaEqual(element2, element3)).toBeFalsy();
     });
   });
+
   describe('extractFileExtension', () => {
     test('absolute path', () => {
       const path = 'https://example.com/styles/main.css';
@@ -197,6 +202,104 @@ describe('utils', () => {
       const path = 'https://example.com/scripts/app.min.js?version=1.0';
       const extension = extractFileExtension(path);
       expect(extension).toBe('js');
+    });
+  });
+
+  describe('extractFileExtension', () => {
+    test('absolute path', () => {
+      const path = 'https://example.com/styles/main.css';
+      const extension = extractFileExtension(path);
+      expect(extension).toBe('css');
+    });
+
+    test('relative path', () => {
+      const path = 'styles/main.css';
+      const baseURL = 'https://example.com/';
+      const extension = extractFileExtension(path, baseURL);
+      expect(extension).toBe('css');
+    });
+
+    test('path with search parameters', () => {
+      const path = 'https://example.com/scripts/app.js?version=1.0';
+      const extension = extractFileExtension(path);
+      expect(extension).toBe('js');
+    });
+
+    test('path with fragment', () => {
+      const path = 'https://example.com/styles/main.css#section1';
+      const extension = extractFileExtension(path);
+      expect(extension).toBe('css');
+    });
+
+    test('path with search parameters and fragment', () => {
+      const path = 'https://example.com/scripts/app.js?version=1.0#section1';
+      const extension = extractFileExtension(path);
+      expect(extension).toBe('js');
+    });
+
+    test('path without extension', () => {
+      const path = 'https://example.com/path/to/directory/';
+      const extension = extractFileExtension(path);
+      expect(extension).toBeNull();
+    });
+
+    test('invalid URL', () => {
+      const path = '!@#$%^&*()';
+      const baseURL = 'invalid';
+      const extension = extractFileExtension(path, baseURL);
+      expect(extension).toBeNull();
+    });
+
+    test('path with multiple dots', () => {
+      const path = 'https://example.com/scripts/app.min.js?version=1.0';
+      const extension = extractFileExtension(path);
+      expect(extension).toBe('js');
+    });
+  });
+
+  describe('isAttributeCapturable()', () => {
+    const validAttributeCombinations = [
+      ['img', ['src', 'srcset']],
+      ['video', ['src']],
+      ['audio', ['src']],
+      ['embed', ['src']],
+      ['source', ['src']],
+      ['track', ['src']],
+      ['input', ['src']],
+      ['iframe', ['src']],
+      ['object', ['src']],
+    ] as const;
+
+    const invalidAttributeCombinations = [
+      ['img', ['href']],
+      ['script', ['href']],
+      ['link', ['src']],
+      ['video', ['href']],
+      ['audio', ['href']],
+      ['div', ['src']],
+      ['source', ['href']],
+      ['track', ['href']],
+      ['input', ['href']],
+      ['iframe', ['href']],
+      ['object', ['href']],
+    ] as const;
+
+    validAttributeCombinations.forEach(([tagName, attributes]) => {
+      const element = document.createElement(tagName);
+      attributes.forEach((attribute) => {
+        it(`should correctly identify <${tagName} ${attribute}> as capturable`, () => {
+          expect(isAttributeCapturable(element, attribute)).toBe(true);
+        });
+      });
+    });
+
+    invalidAttributeCombinations.forEach(([tagName, attributes]) => {
+      const element = document.createElement(tagName);
+      attributes.forEach((attribute) => {
+        it(`should correctly identify <${tagName} ${attribute}> as NOT capturable`, () => {
+          expect(isAttributeCapturable(element, attribute)).toBe(false);
+        });
+      });
     });
   });
 });
