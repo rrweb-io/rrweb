@@ -133,7 +133,7 @@ describe('dialog', () => {
     const lastEvent = events[events.length - 1];
 
     expect(lastEvent).toMatchObject(
-      attributeMutationFactory({ rr_open: 'modal' }),
+      attributeMutationFactory({ rr_openMode: 'modal' }),
     );
   });
 

@@ -552,22 +552,22 @@ export class BaseRRDialogElement extends BaseRRElement {
   public readonly nodeName = 'DIALOG' as const;
 
   get isModal() {
-    return this.getAttribute('rr_open') === 'modal';
+    return this.getAttribute('rr_openMode') === 'modal';
   }
   get open() {
     return this.getAttribute('open') !== null;
   }
   public close() {
     this.removeAttribute('open');
-    this.removeAttribute('rr_open');
+    this.removeAttribute('rr_openMode');
   }
   public show() {
     this.setAttribute('open', '');
-    this.setAttribute('rr_open', 'non-modal');
+    this.setAttribute('rr_openMode', 'non-modal');
   }
   public showModal() {
     this.setAttribute('open', '');
-    this.setAttribute('rr_open', 'modal');
+    this.setAttribute('rr_openMode', 'modal');
   }
 }
 

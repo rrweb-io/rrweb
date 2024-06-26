@@ -15,7 +15,7 @@ export function applyDialogToTopLevel(
   const dialog = node as HTMLDialogElement;
   const isOpen = dialog.open;
   const isModal = isOpen && dialog.matches('dialog:modal');
-  const rrOpen = dialog.getAttribute('rr_open');
+  const rrOpen = dialog.getAttribute('rr_openMode');
 
   const shouldBeOpen =
     typeof attributeMutation?.attributes.open === 'string' ||
@@ -61,6 +61,6 @@ export function removeDialogFromTopLevel(
 
   if (attributeMutation.attributes.open === null) {
     dialog.removeAttribute('open');
-    dialog.removeAttribute('rr_open');
+    dialog.removeAttribute('rr_openMode');
   }
 }

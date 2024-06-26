@@ -1807,7 +1807,10 @@ export class Replayer {
                 );
               }
 
-              if (attributeName === 'rr_open' && target.nodeName === 'DIALOG') {
+              if (
+                attributeName === 'rr_openMode' &&
+                target.nodeName === 'DIALOG'
+              ) {
                 applyDialogToTopLevel(target, mutation);
               }
             } catch (error) {
