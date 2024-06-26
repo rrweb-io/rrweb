@@ -20,8 +20,8 @@
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
-    "@rrweb/replay": "^2.0.0-alpha.15",
-    "@rrweb/packer": "^2.0.0-alpha.15"
+    "@rrweb/replay": "^2.0.0-alpha.16",
+    "@rrweb/packer": "^2.0.0-alpha.16"
   },
   "scripts": {
     "dev": "vite build --watch",
