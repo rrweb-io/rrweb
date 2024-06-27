@@ -1,4 +1,4 @@
-import { type Rule, type Media, type NodeWithRules, parse } from './css';
+import { mediaSelectorPlugin, pseudoClassPlugin } from './css';
 import {
   type serializedNodeWithId,
   NodeType,
@@ -8,6 +8,7 @@ import {
   type legacyAttributes,
 } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
+import postcss from 'postcss';
 
 const tagMap: tagMap = {
   script: 'noscript',
@@ -57,83 +58,15 @@ function getTagName(n: elementNode): string {
   return tagName;
 }
 
-// based on https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
-function escapeRegExp(str: string) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-}
-
-const MEDIA_SELECTOR = /(max|min)-device-(width|height)/;
-const MEDIA_SELECTOR_GLOBAL = new RegExp(MEDIA_SELECTOR.source, 'g');
-const HOVER_SELECTOR = /([^\\]):hover/;
-const HOVER_SELECTOR_GLOBAL = new RegExp(HOVER_SELECTOR.source, 'g');
 export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
   if (cachedStyle) return cachedStyle;
 
-  const ast = parse(cssText, {
-    silent: true,
-  });
-
-  if (!ast.stylesheet) {
-    return cssText;
-  }
-
-  const selectors: string[] = [];
-  const medias: string[] = [];
-  function getSelectors(rule: Rule | Media | NodeWithRules) {
-    if ('selectors' in rule && rule.selectors) {
-      rule.selectors.forEach((selector: string) => {
-        if (HOVER_SELECTOR.test(selector)) {
-          selectors.push(selector);
-        }
-      });
-    }
-    if ('media' in rule && rule.media && MEDIA_SELECTOR.test(rule.media)) {
-      medias.push(rule.media);
-    }
-    if ('rules' in rule && rule.rules) {
-      rule.rules.forEach(getSelectors);
-    }
-  }
-  getSelectors(ast.stylesheet);
-
-  let result = cssText;
-  if (selectors.length > 0) {
-    const selectorMatcher = new RegExp(
-      selectors
-        .filter((selector, index) => selectors.indexOf(selector) === index)
-        .sort((a, b) => b.length - a.length)
-        .map((selector) => {
-          return escapeRegExp(selector);
-        })
-        .join('|'),
-      'g',
-    );
-    result = result.replace(selectorMatcher, (selector) => {
-      const newSelector = selector.replace(
-        HOVER_SELECTOR_GLOBAL,
-        '$1.\\:hover',
-      );
-      return `${selector}, ${newSelector}`;
-    });
-  }
-  if (medias.length > 0) {
-    const mediaMatcher = new RegExp(
-      medias
-        .filter((media, index) => medias.indexOf(media) === index)
-        .sort((a, b) => b.length - a.length)
-        .map((media) => {
-          return escapeRegExp(media);
-        })
-        .join('|'),
-      'g',
-    );
-    result = result.replace(mediaMatcher, (media) => {
-      // not attempting to maintain min-device-width along with min-width
-      // (it's non standard)
-      return media.replace(MEDIA_SELECTOR_GLOBAL, '$1-$2');
-    });
-  }
+  const ast: { css: string } = postcss([
+    mediaSelectorPlugin,
+    pseudoClassPlugin,
+  ]).process(cssText);
+  const result = ast.css;
   cache?.stylesWithHoverClass.set(cssText, result);
   return result;
 }
