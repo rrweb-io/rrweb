@@ -100,6 +100,9 @@ describe('integration tests', function (this: ISuite) {
     if (html.filePath.substring(html.filePath.length - 1) === '~') {
       continue;
     }
+    // monkey patching breaks rebuild code
+    if (html.filePath.includes('monkey-patched-elements.html')) continue;
+
     const title = '[html file]: ' + html.filePath;
     it(title, async () => {
       const page: puppeteer.Page = await browser.newPage();
@@ -235,7 +238,6 @@ iframe.contentDocument.querySelector('center').clientHeight
 
   it('correctly saves cross-origin images offline', async () => {
     const page: puppeteer.Page = await browser.newPage();
-
     await page.goto('about:blank', {
       waitUntil: 'load',
     });
@@ -348,7 +350,7 @@ iframe.contentDocument.querySelector('center').clientHeight
 
   it('should save background-clip: text; as the more compatible -webkit-background-clip: test;', async () => {
     const page: puppeteer.Page = await browser.newPage();
-    await page.goto(`http://localhost:3030/html/background-clip-text.html`, {
+    await page.goto(`${serverURL}/html/background-clip-text.html`, {
       waitUntil: 'load',
     });
     await waitForRAF(page); // wait for page to render
@@ -366,13 +368,10 @@ iframe.contentDocument.querySelector('center').clientHeight
   it('images with inline onload should work', async () => {
     const page: puppeteer.Page = await browser.newPage();
 
-    await page.goto(
-      'http://localhost:3030/html/picture-with-inline-onload.html',
-      {
-        waitUntil: 'load',
-      },
-    );
-    await page.waitForSelector('img', { timeout: 1000 });
+    await page.goto(`${serverURL}/html/picture-with-inline-onload.html`, {
+      waitUntil: 'load',
+    });
+    await page.waitForSelector('img', { timeout: 2000 });
     await page.evaluate(`${code}`);
     await page.evaluate(`
     var snapshot = rrwebSnapshot.snapshot(document, {
@@ -385,6 +384,22 @@ iframe.contentDocument.querySelector('center').clientHeight
       'document.querySelector("img").onload.name',
     )) as string;
     assert(fnName === 'onload');
+  });
+
+  it('should be able to record elements even when .childNodes has been monkey patched', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto(`${serverURL}/html/monkey-patched-elements.html`, {
+      waitUntil: 'load',
+    });
+    await waitForRAF(page); // wait for page to render
+    const snapshotResult = JSON.stringify(
+      await page.evaluate(`${code};
+          rrwebSnapshot.snapshot(document);
+        `),
+      null,
+      2,
+    );
+    expect(snapshotResult).toMatchSnapshot();
   });
 });
 
