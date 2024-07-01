@@ -1826,7 +1826,7 @@ export class Replayer {
    * @param d - the scroll data
    * @param isSync - whether the replayer is in sync mode(fast-forward)
    */
-  private applyScroll(d: scrollData, isSync: boolean) {
+  public applyScroll(d: scrollData, isSync: boolean) {
     const target = this.mirror.getNode(d.id);
     if (!target) {
       return this.debugNodeNotFound(d, d.id);

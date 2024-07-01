@@ -1,13 +1,13 @@
 # rrdom
 
-## 2.0.0-alpha.17
+## 2.0.0-alpha.18
 
 ### Patch Changes
 
 - [#1432](https://github.com/rrweb-io/rrweb/pull/1432) [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961) Thanks [@Juice10](https://github.com/Juice10)! - Support `loop` in `RRMediaElement`
 
 - Updated dependencies [[`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`f7c6973`](https://github.com/rrweb-io/rrweb/commit/f7c6973ae9c21b9ea014bdef7101f976f04d9356)]:
-  - rrweb-snapshot@2.0.0-alpha.17
+  - rrweb-snapshot@2.0.0-alpha.18
 
 ## 2.0.0-alpha.12
 

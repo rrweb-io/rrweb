@@ -28,6 +28,7 @@ import {
   canvasMutationParam,
   adoptedStyleSheetParam,
   IWindow,
+  mousePosition,
 } from 'howdygo-rrweb-types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
@@ -437,7 +438,7 @@ function record<T = eventWithTime>(
       return callbackWrapper(initObservers)(
         {
           mutationCb: wrappedMutationEmit,
-          mousemoveCb: (positions, source) =>
+          mousemoveCb: (positions: mousePosition[], source) =>
             wrappedEmit({
               type: EventType.IncrementalSnapshot,
               data: {
