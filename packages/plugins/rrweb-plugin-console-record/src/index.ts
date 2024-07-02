@@ -190,8 +190,8 @@ function initLogObserver(
         return (...args: Array<unknown>) => {
           original.apply(this, args);
 
-          if (level === 'assert' && !args[0]) {
-            // assert does not log if the first argument evaluates to false
+          if (level === 'assert' && !!args[0]) {
+            // assert does not log if the first argument evaluates to true
             return;
           }
 

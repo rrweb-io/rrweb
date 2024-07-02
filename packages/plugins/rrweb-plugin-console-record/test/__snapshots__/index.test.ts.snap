@@ -356,10 +356,10 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"assert\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:2:15\\"
+          \\"__puppeteer_evaluation_script__:3:15\\"
         ],
         \\"payload\\": [
-          \\"\\\\\\"assert\\\\\\"\\"
+          \\"\\\\\\"should log assert\\\\\\"\\"
         ]
       }
     }
