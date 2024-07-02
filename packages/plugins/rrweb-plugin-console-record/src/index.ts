@@ -192,7 +192,7 @@ function initLogObserver(
 
           if (level === 'assert' && !args[0]) {
             // assert does not log if the first argument evaluates to false
-            return
+            return;
           }
 
           if (inStack) {
