@@ -659,6 +659,17 @@ function initStyleSheetObserver(
     ),
   });
 
+  // Support for deprecated addRule method
+  win.CSSStyleSheet.prototype.addRule = function (
+    this: CSSStyleSheet,
+    selector: string,
+    styleBlock: string,
+    index: number = this.cssRules.length,
+  ) {
+    const rule = `${selector} { ${styleBlock} }`;
+    return win.CSSStyleSheet.prototype.insertRule.apply(this, [rule, index]);
+  };
+
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const deleteRule = win.CSSStyleSheet.prototype.deleteRule;
   win.CSSStyleSheet.prototype.deleteRule = new Proxy(deleteRule, {
@@ -687,6 +698,14 @@ function initStyleSheetObserver(
       },
     ),
   });
+
+  // Support for deprecated removeRule method
+  win.CSSStyleSheet.prototype.removeRule = function (
+    this: CSSStyleSheet,
+    index: number,
+  ) {
+    return win.CSSStyleSheet.prototype.deleteRule.apply(this, [index]);
+  };
 
   let replace: (text: string) => Promise<CSSStyleSheet>;
 
