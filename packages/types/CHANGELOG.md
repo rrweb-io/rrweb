@@ -1,6 +1,6 @@
 # @rrweb/types
 
-## 2.0.0-alpha.18
+## 2.0.0-alpha.19
 
 ### Patch Changes
 
@@ -9,7 +9,7 @@
 - [#1369](https://github.com/rrweb-io/rrweb/pull/1369) [`c278d06`](https://github.com/rrweb-io/rrweb/commit/c278d068a0e2f1175cce7cc63920ac1fbf4783cf) Thanks [@stefansundin](https://github.com/stefansundin)! - Fix type error when using `"moduleResolution": "NodeNext"`.
 
 - Updated dependencies [[`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`f7c6973`](https://github.com/rrweb-io/rrweb/commit/f7c6973ae9c21b9ea014bdef7101f976f04d9356)]:
-  - rrweb-snapshot@2.0.0-alpha.18
+  - rrweb-snapshot@2.0.0-alpha.19
 
 ## 2.0.0-alpha.12
 
