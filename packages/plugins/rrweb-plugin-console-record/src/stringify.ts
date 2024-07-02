@@ -3,7 +3,7 @@
  *
  */
 
-import type { StringifyOptions } from "./index";
+import type { StringifyOptions } from './index';
 
 /**
  * transfer the node path in Event to string
@@ -76,7 +76,9 @@ function isObjTooDeep(obj: Record<string, unknown>, limit: number): boolean {
 
 function truncateString(str: string, options: StringifyOptions) {
   if (options.stringLengthLimit && str.length > options.stringLengthLimit) {
-    str = `${str.slice(0, options.stringLengthLimit)}${options.truncationSuffix || "..."}`;
+    str = `${str.slice(0, options.stringLengthLimit)}${
+      options.truncationSuffix || '...'
+    }`;
   }
   return str;
 }
