@@ -3,7 +3,7 @@
  *
  */
 
-import type { StringifyOptions } from './index';
+import type { StringifyOptions } from "./index";
 
 /**
  * transfer the node path in Event to string
@@ -74,13 +74,21 @@ function isObjTooDeep(obj: Record<string, unknown>, limit: number): boolean {
   return false;
 }
 
+function truncateString(str: string, options: StringifyOptions) {
+  if (options.stringLengthLimit && str.length > options.stringLengthLimit) {
+    str = `${str.slice(0, options.stringLengthLimit)}${options.truncationSuffix || "..."}`;
+  }
+  return str;
+}
+
 /**
  * stringify any js object
  * @param obj - the object to stringify
+ * @param stringifyOptions - options to alter behavior
  */
 export function stringify(
   obj: unknown,
-  stringifyOptions?: StringifyOptions,
+  stringifyOptions?: Partial<StringifyOptions>,
 ): string {
   const options: StringifyOptions = {
     numOfKeysLimit: 50,
@@ -148,6 +156,9 @@ export function stringify(
           ? value.stack + '\nEnd of stack for Error object'
           : value.name + ': ' + value.message;
       }
+      if (typeof value === 'string') {
+        return truncateString(value, options);
+      }
       return value;
     },
   );
@@ -185,10 +196,6 @@ export function stringify(
    * limit the toString() result according to option
    */
   function toString(_obj: object): string {
-    let str = _obj.toString();
-    if (options.stringLengthLimit && str.length > options.stringLengthLimit) {
-      str = `${str.slice(0, options.stringLengthLimit)}...`;
-    }
-    return str;
+    return truncateString(_obj.toString(), options);
   }
 }
