@@ -1,5 +1,16 @@
 # @rrweb/rrweb-plugin-console-record
 
+## 2.0.0-alpha.17
+
+### Patch Changes
+
+- [`db20184`](https://github.com/rrweb-io/rrweb/commit/db201841accd2b5df3cd7c88779aa62ab158501c) Thanks [@Juice10](https://github.com/Juice10)! - Keep package version in sync with other packages
+
+- [#1530](https://github.com/rrweb-io/rrweb/pull/1530) [`874933b`](https://github.com/rrweb-io/rrweb/commit/874933b55069759b932b3365025449afc9b2f5c7) Thanks [@pauldambra](https://github.com/pauldambra)! - corrects behaviour of console.assert logging to only capture logs when the provided assertion is falsey
+
+- Updated dependencies []:
+  - rrweb@2.0.0-alpha.17
+
 ## 2.0.0-alpha.15
 
 ### Major Changes

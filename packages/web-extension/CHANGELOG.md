@@ -1,5 +1,13 @@
 # @rrweb/web-extension
 
+## 2.0.0-alpha.17
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb@2.0.0-alpha.17
+  - rrweb-player@2.0.0-alpha.17
+
 ## 2.0.0-alpha.16
 
 ### Patch Changes

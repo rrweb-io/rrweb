@@ -1,5 +1,13 @@
 # rrdom-nodejs
 
+## 2.0.0-alpha.17
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb-snapshot@2.0.0-alpha.17
+  - rrdom@2.0.0-alpha.17
+
 ## 2.0.0-alpha.16
 
 ### Patch Changes
