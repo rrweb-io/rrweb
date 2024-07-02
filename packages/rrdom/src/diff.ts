@@ -83,7 +83,7 @@ export type ReplayerHandler = {
     target: HTMLCanvasElement,
   ) => void;
   applyInput: (data: inputData) => void;
-  applyScroll: (data: scrollData, isSync: boolean) => void;
+  applyScroll: (data: scrollData, isSync: boolean, forceScroll: boolean | undefined) => void;
   applyStyleSheetMutation: (
     data: styleDeclarationData | styleSheetRuleData,
     styleSheet: CSSStyleSheet,
@@ -220,14 +220,14 @@ function diffAfterUpdatingChildren(
   switch (newTree.RRNodeType) {
     case RRNodeType.Document: {
       const scrollData = (newTree as RRDocument).scrollData;
-      scrollData && replayer.applyScroll(scrollData, true);
+      scrollData && replayer.applyScroll(scrollData, true, true);
       break;
     }
     case RRNodeType.Element: {
       const oldElement = oldTree as HTMLElement;
       const newRRElement = newTree as RRElement;
       newRRElement.scrollData &&
-        replayer.applyScroll(newRRElement.scrollData, true);
+        replayer.applyScroll(newRRElement.scrollData, true, true);
       /**
        * Input data need to get applied after all children of this node are updated.
        * Otherwise when we set a value for a select element whose options are empty, the value won't actually update.

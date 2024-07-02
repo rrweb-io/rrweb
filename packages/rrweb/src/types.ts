@@ -193,6 +193,7 @@ export type playerConfig = {
     log: (...args: Parameters<typeof console.log>) => void;
     warn: (...args: Parameters<typeof console.warn>) => void;
   };
+  disableScroll: boolean;
   plugins?: ReplayPlugin[];
 };
 

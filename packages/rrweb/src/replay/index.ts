@@ -192,6 +192,7 @@ export class Replayer {
       pauseAnimation: true,
       mouseTail: defaultMouseTailConfig,
       useVirtualDom: true, // Virtual-dom optimization is enabled by default.
+      disableScroll: false, // Disable scroll mutations
       logger: console,
     };
     this.config = Object.assign({}, defaultConfig, config);
@@ -1252,7 +1253,8 @@ export class Replayer {
           break;
         }
         // Use isSync rather than this.usingVirtualDom because not every fast-forward process uses virtual dom optimization.
-        this.applyScroll(d, isSync);
+        // Do not force scroll mutations in the case `disableScroll` flag is enabled
+        this.applyScroll(d, isSync, false);
         break;
       }
       case IncrementalSource.ViewportResize:
@@ -1826,7 +1828,8 @@ export class Replayer {
    * @param d - the scroll data
    * @param isSync - whether the replayer is in sync mode(fast-forward)
    */
-  public applyScroll(d: scrollData, isSync: boolean) {
+  public applyScroll(d: scrollData, isSync: boolean, forceScroll: boolean | undefined = false) {
+    if (this.config.disableScroll && !forceScroll) return;
     const target = this.mirror.getNode(d.id);
     if (!target) {
       return this.debugNodeNotFound(d, d.id);
