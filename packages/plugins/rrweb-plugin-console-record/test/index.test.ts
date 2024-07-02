@@ -94,7 +94,10 @@ describe('rrweb-plugin-console-record', () => {
     await page.goto(`${serverUrl}test/html/log.html`);
 
     await page.evaluate(() => {
+      // truthy assert does log
       console.assert(0 === 0, 'assert');
+      // falsy assert does not log
+      console.assert(false, 'assert');
       console.count('count');
       console.countReset('count');
       console.debug('debug');
