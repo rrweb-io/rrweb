@@ -1,5 +1,14 @@
 # @rrweb/packer
 
+## 2.0.0-alpha.17
+
+### Patch Changes
+
+- [`db20184`](https://github.com/rrweb-io/rrweb/commit/db201841accd2b5df3cd7c88779aa62ab158501c) Thanks [@Juice10](https://github.com/Juice10)! - Keep package version in sync with other packages
+
+- Updated dependencies []:
+  - @rrweb/types@2.0.0-alpha.17
+
 ## 2.0.0-alpha.15
 
 ### Major Changes
