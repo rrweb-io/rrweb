@@ -1476,4 +1476,75 @@ describe('record integration tests', function (this: ISuite) {
     expect(changedColors).toEqual([NewColor, NewColor]);
     await page.close();
   });
+
+  it('should record style mutations with multiple child nodes and replay them correctly', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    const Color = 'rgb(255, 0, 0)'; // red color
+
+    await page.setContent(
+      `
+      <!DOCTYPE html><html lang="en">
+        <head>
+	        <style>
+          /* hello */
+          /* world */
+          </style>
+        </head>
+        <body>
+	        <div id="one"></div>
+          <div id="two"></div>
+	        <script>
+		        document.querySelector("style").sheet.insertRule('#one { color: ${Color}; }', 0);
+	        </script>
+        </body></html>
+      `,
+    );
+    // Start rrweb recording
+    await page.evaluate(
+      (code, recordSnippet) => {
+        const script = document.createElement('script');
+        script.textContent = `${code};${recordSnippet}`;
+        document.head.appendChild(script);
+      },
+      code,
+      generateRecordSnippet({}),
+    );
+
+    await page.evaluate(async (Color) => {
+      // Create a new style element with the same content as the existing style element and apply it to the #two div element
+      const incrementalStyle = document.createElement(
+        'style',
+      ) as HTMLStyleElement;
+      incrementalStyle.append(document.createTextNode('/* hello */'));
+      incrementalStyle.append(document.createTextNode('/* world */'));
+      document.head.appendChild(incrementalStyle);
+      incrementalStyle.sheet!.insertRule(`#two { color: ${Color}; }`, 0);
+    }, Color);
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    await assertSnapshot(snapshots);
+
+    /**
+     * Replay the recorded events and check if the style mutation is applied correctly
+     */
+    const changedColors = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(window.snapshots);
+      replayer.pause(1000);
+
+      // Get the color of the element after applying the style mutation event
+      [
+        window.getComputedStyle(
+          replayer.iframe.contentDocument.querySelector('#one'),
+        ).color,
+        window.getComputedStyle(
+          replayer.iframe.contentDocument.querySelector('#two'),
+        ).color,
+      ];
+    `);
+    expect(changedColors).toEqual([Color, Color]);
+    await page.close();
+  });
 });
