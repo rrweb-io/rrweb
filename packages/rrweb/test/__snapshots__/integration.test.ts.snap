@@ -15921,26 +15921,6 @@ exports[`record integration tests > should record style mutations and replay the
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
                         \\"id\\": 10
-                      },
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 11
-                      },
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 12
-                      },
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 13
-                      },
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 14
                       }
                     ],
                     \\"id\\": 9
@@ -15951,7 +15931,7 @@ exports[`record integration tests > should record style mutations and replay the
               {
                 \\"type\\": 3,
                 \\"textContent\\": \\"\\\\n        \\",
-                \\"id\\": 15
+                \\"id\\": 11
               },
               {
                 \\"type\\": 2,
@@ -15961,7 +15941,7 @@ exports[`record integration tests > should record style mutations and replay the
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n\\\\t        \\",
-                    \\"id\\": 17
+                    \\"id\\": 13
                   },
                   {
                     \\"type\\": 2,
@@ -15970,12 +15950,12 @@ exports[`record integration tests > should record style mutations and replay the
                       \\"id\\": \\"one\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 18
+                    \\"id\\": 14
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 19
+                    \\"id\\": 15
                   },
                   {
                     \\"type\\": 2,
@@ -15984,12 +15964,12 @@ exports[`record integration tests > should record style mutations and replay the
                       \\"id\\": \\"two\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 20
+                    \\"id\\": 16
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n\\\\t        \\",
-                    \\"id\\": 21
+                    \\"id\\": 17
                   },
                   {
                     \\"type\\": 2,
@@ -15999,18 +15979,18 @@ exports[`record integration tests > should record style mutations and replay the
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 23
+                        \\"id\\": 19
                       }
                     ],
-                    \\"id\\": 22
+                    \\"id\\": 18
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\",
-                    \\"id\\": 24
+                    \\"id\\": 20
                   }
                 ],
-                \\"id\\": 16
+                \\"id\\": 12
               }
             ],
             \\"id\\": 3
@@ -16042,17 +16022,17 @@ exports[`record integration tests > should record style mutations and replay the
               \\"_cssText\\": \\"#two { color: rgb(255, 0, 0); }\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 25
+            \\"id\\": 21
           }
         },
         {
-          \\"parentId\\": 25,
+          \\"parentId\\": 21,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"#two { color: rgb(255, 0, 0); }\\",
             \\"isStyle\\": true,
-            \\"id\\": 26
+            \\"id\\": 22
           }
         }
       ]
@@ -16076,7 +16056,7 @@ exports[`record integration tests > should record style mutations and replay the
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 13,
-      \\"id\\": 25,
+      \\"id\\": 21,
       \\"set\\": {
         \\"property\\": \\"color\\",
         \\"value\\": \\"rgb(255, 255, 0)\\"

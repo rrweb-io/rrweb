@@ -1270,7 +1270,7 @@ describe('record integration tests', function (this: ISuite) {
     await page.evaluate(
       (code, recordSnippet) => {
         const script = document.createElement('script');
-        script.innerHTML = `${code}window.Date.now = () => new Date(Date.UTC(2018, 10, 15, 8)).valueOf();${recordSnippet}`;
+        script.textContent = `${code}window.Date.now = () => new Date(Date.UTC(2018, 10, 15, 8)).valueOf();${recordSnippet}`;
         document.head.appendChild(script);
       },
       code,
