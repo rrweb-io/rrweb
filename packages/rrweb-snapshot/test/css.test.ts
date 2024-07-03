@@ -3,7 +3,7 @@
  */
 import { describe, it, beforeEach, expect } from 'vitest';
 import { mediaSelectorPlugin, pseudoClassPlugin } from '../src/css';
-import postcss, { AcceptedPlugin } from 'postcss';
+import postcss, { type AcceptedPlugin } from 'postcss';
 import { JSDOM } from 'jsdom';
 import { findCssTextSplits, stringifyStylesheet } from './../src/utils';
 import { applyCssSplits } from './../src/rebuild';
