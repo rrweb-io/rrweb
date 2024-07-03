@@ -2,12 +2,12 @@ import {
   rebuild,
   buildNodeWithSN,
   NodeType,
-  BuildCache,
+  type BuildCache,
   createCache,
   Mirror,
   createMirror,
-  attributes,
-  serializedElementNodeWithId,
+  type attributes,
+  type serializedElementNodeWithId,
   toLowerCase,
 } from 'rrweb-snapshot';
 import {
@@ -41,15 +41,17 @@ import type { playerConfig, missingNodeMap } from '../types';
 import {
   EventType,
   IncrementalSource,
+  MouseInteractions,
+  ReplayerEvents,
+} from '@rrweb/types';
+import type {
   fullSnapshotEvent,
   eventWithTime,
-  MouseInteractions,
   playerMetaData,
   viewportResizeDimension,
   addedNodeMutation,
   incrementalSnapshotEvent,
   incrementalData,
-  ReplayerEvents,
   Handler,
   Emitter,
   metaEvent,
@@ -72,7 +74,7 @@ import {
   polyfill,
   queueToResolveTrees,
   iterateResolveTree,
-  AppendedIframe,
+  type AppendedIframe,
   getBaseDimension,
   hasShadowRoot,
   isSerializedIframe,
@@ -2247,4 +2249,4 @@ export class Replayer {
   }
 }
 
-export { PlayerMachineState, SpeedMachineState, playerConfig };
+export { type PlayerMachineState, type SpeedMachineState, type playerConfig };

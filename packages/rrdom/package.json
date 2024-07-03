@@ -1,6 +1,6 @@
 {
   "name": "rrdom",
-  "version": "2.0.0-alpha.15",
+  "version": "2.0.0-alpha.16",
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrdom#readme",
   "license": "MIT",
   "type": "module",
@@ -30,28 +30,28 @@
   },
   "scripts": {
     "dev": "vite build --watch",
-    "build": "tsc -noEmit && vite build",
+    "build": "yarn turbo run prepublish",
     "check-types": "tsc -noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublish": "npm run build",
+    "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts"
   },
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
   "devDependencies": {
-    "@rrweb/types": "^2.0.0-alpha.15",
+    "@rrweb/types": "^2.0.0-alpha.16",
     "@types/puppeteer": "^5.4.4",
     "@typescript-eslint/eslint-plugin": "^5.23.0",
     "@typescript-eslint/parser": "^5.23.0",
     "eslint": "^8.15.0",
     "puppeteer": "^17.1.3",
-    "typescript": "^4.9.0",
-    "vite": "^5.2.8",
-    "vite-plugin-dts": "^3.8.1"
+    "typescript": "^5.4.5",
+    "vite": "^5.3.1",
+    "vite-plugin-dts": "^3.9.1"
   },
   "dependencies": {
-    "rrweb-snapshot": "^2.0.0-alpha.15"
+    "rrweb-snapshot": "^2.0.0-alpha.16"
   }
 }
