@@ -1287,7 +1287,11 @@ describe('record integration tests', function (this: ISuite) {
         document.head.appendChild(incrementalStyle);
         incrementalStyle.sheet!.insertRule(`#two { color: ${OldColor}; }`, 0);
 
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await new Promise((resolve) =>
+          requestAnimationFrame(() => {
+            requestAnimationFrame(resolve);
+          }),
+        );
 
         // Change the color of the #one div element to yellow as an incremental style mutation
         const styleElement = document.querySelector('style')!;
@@ -1304,6 +1308,7 @@ describe('record integration tests', function (this: ISuite) {
       OldColor,
       NewColor,
     );
+    await waitForRAF(page);
 
     const snapshots = (await page.evaluate(
       'window.snapshots',

@@ -1592,7 +1592,7 @@ export class Replayer {
         ) {
           // https://github.com/rrweb-io/rrweb/pull/1417
           /**
-           * If both _cssText and textContent are present for a style element due to some exist bugs, the element will have two child text nodes.
+           * If both _cssText and textContent are present for a style element due to some existing bugs, the element will have two child text nodes.
            * We need to remove the textNode created by _cssText to avoid issue.
            */
           for (const cssText of childNodeArray as (Node & RRNode)[]) {
