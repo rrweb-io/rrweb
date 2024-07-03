@@ -24,11 +24,13 @@ export type { recordOptions, ReplayPlugin } from './types';
 
 const { addCustomEvent } = record;
 const { freezePage } = record;
+const { takeFullSnapshot } = record;
 
 export {
   Replayer,
   addCustomEvent,
   freezePage,
+  takeFullSnapshot,
   type playerConfig,
   type PlayerMachineState,
   type SpeedMachineState,
