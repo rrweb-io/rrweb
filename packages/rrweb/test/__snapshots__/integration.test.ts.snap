@@ -15900,7 +15900,7 @@ exports[`record integration tests > should record style mutations and replay the
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"#one { color: rgb(255, 0, 0); }\\",
+                        \\"textContent\\": \\" \\\\n          \\",
                         \\"isStyle\\": true,
                         \\"id\\": 7
                       }
@@ -16030,7 +16030,7 @@ exports[`record integration tests > should record style mutations and replay the
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
-            \\"textContent\\": \\"#two { color: rgb(255, 0, 0); }\\",
+            \\"textContent\\": \\" \\\\n\\",
             \\"isStyle\\": true,
             \\"id\\": 22
           }

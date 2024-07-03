@@ -565,7 +565,7 @@ function serializeTextNode(
   let textContent = n.textContent;
   const isStyle = parentTagName === 'STYLE' ? true : undefined;
   const isScript = parentTagName === 'SCRIPT' ? true : undefined;
-  if (isStyle && textContent) {
+  if (isStyle && textContent?.trim()) {
     try {
       // try to read style sheet
       if (n.nextSibling || n.previousSibling) {
