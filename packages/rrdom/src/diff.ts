@@ -1,9 +1,11 @@
 import {
-  NodeType as RRNodeType,
   type Mirror as NodeMirror,
-  type elementNode,
 } from 'rrweb-snapshot';
+import {
+  NodeType as RRNodeType,
+} from '@rrweb/types';
 import type {
+  elementNode,
   canvasMutationData,
   canvasEventWithTime,
   inputData,

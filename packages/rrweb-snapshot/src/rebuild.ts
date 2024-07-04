@@ -4,10 +4,12 @@ import {
   type serializedNodeWithId,
   type serializedElementNodeWithId,
   NodeType,
-  type tagMap,
   type elementNode,
-  type BuildCache,
   type legacyAttributes,
+} from '@rrweb/types';
+import {
+  type tagMap,
+  type BuildCache,
 } from './types';
 import { isElement, Mirror, isNodeMetaEqual, lowerIfExists } from './utils';
 import postcss from 'postcss';
