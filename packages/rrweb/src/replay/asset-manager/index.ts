@@ -11,7 +11,7 @@ import { deserializeArg } from '../canvas/deserialize-args';
 import {
   getSourcesFromSrcset,
   buildStyleNode,
-  BuildCache,
+  type BuildCache,
 } from 'rrweb-snapshot';
 import type { RRElement } from 'rrdom';
 import { updateSrcset } from './update-srcset';
