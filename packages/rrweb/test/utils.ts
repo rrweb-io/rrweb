@@ -110,9 +110,17 @@ export function stringifySnapshots(snapshots: eventWithTime[]): string {
     snapshots
       .filter((s) => {
         if (
-          s.type === EventType.IncrementalSnapshot &&
-          (s.data.source === IncrementalSource.MouseMove ||
-            s.data.source === IncrementalSource.ViewportResize)
+          // mouse move or viewport resize can happen on accidental user interference
+          // so we ignore them
+          (s.type === EventType.IncrementalSnapshot &&
+            (s.data.source === IncrementalSource.MouseMove ||
+              s.data.source === IncrementalSource.ViewportResize)) ||
+          // ignore '[vite] connected' messages from vite
+          (s.type === EventType.Plugin &&
+            s.data.plugin === 'rrweb/console@1' &&
+            (s.data.payload as { payload: string[] })?.payload?.find((msg) =>
+              msg.includes('[vite] connected'),
+            ))
         ) {
           return false;
         }
