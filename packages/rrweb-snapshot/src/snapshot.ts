@@ -25,7 +25,7 @@ import {
   getInputType,
   toLowerCase,
   extractFileExtension,
-  findCssTextSplits,
+  markCssSplits,
 } from './utils';
 
 let _id = 1;
@@ -660,18 +660,15 @@ function serializeElementNode(
     }
   }
   if (tagName === 'style' && (n as HTMLStyleElement).sheet) {
-    const cssText = stringifyStylesheet(
+    let cssText = stringifyStylesheet(
       (n as HTMLStyleElement).sheet as CSSStyleSheet,
     );
     if (cssText) {
-      attributes._cssText = absoluteToStylesheet(cssText, getHref(doc));
+      cssText = absoluteToStylesheet(cssText, getHref(doc));
       if (n.childNodes.length > 1) {
-        const splits = findCssTextSplits(
-          attributes._cssText,
-          n as HTMLStyleElement,
-        );
-        attributes._cssTextSplits = splits.join(' ');
+        cssText = markCssSplits(cssText, n as HTMLStyleElement);
       }
+      attributes._cssText = cssText;
     }
   }
   // form fields

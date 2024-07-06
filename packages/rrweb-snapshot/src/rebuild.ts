@@ -2,6 +2,7 @@ import { mediaSelectorPlugin, pseudoClassPlugin } from './css';
 import {
   type serializedNodeWithId,
   type serializedElementNodeWithId,
+  type serializedTextNodeWithId,
   NodeType,
   type tagMap,
   type elementNode,
@@ -80,41 +81,41 @@ export function createCache(): BuildCache {
 }
 
 /**
- * undo findCssTextSplits
+ * undo splitCssText/markCssSplits
  * (would move to utils.ts but uses `adaptCssForReplay`)
  */
 export function applyCssSplits(
   n: serializedElementNodeWithId,
   cssText: string,
-  cssTextSplits: number[],
   hackCss: boolean,
   cache: BuildCache,
 ): void {
-  const lenCheckOk =
-    cssTextSplits.length &&
-    cssTextSplits[cssTextSplits.length - 1] === cssText.length;
-  for (let j = n.childNodes.length - 1; j >= 0; j--) {
-    const scn = n.childNodes[j];
-    let ix = 0;
-    if (cssTextSplits.length > j && j > 0) {
-      ix = cssTextSplits[j - 1];
-    }
+  let childTextNodes: serializedTextNodeWithId[] = [];
+  for (let scn of n.childNodes) {
     if (scn.type === NodeType.Text) {
-      let remainder = '';
-      if (ix !== 0 && lenCheckOk) {
-        remainder = cssText.substring(0, ix);
-        cssText = cssText.substring(ix);
-      } else if (j > 0) {
-        continue;
-      }
-      if (hackCss) {
-        cssText = adaptCssForReplay(cssText, cache);
-      }
-      // id will be assigned when these child nodes are
-      // iterated over in buildNodeWithSN
-      scn.textContent = cssText;
-      cssText = remainder;
+      childTextNodes.push(scn);
     }
+  }
+  for (let i = 0; i < childTextNodes.length; i++) {
+    let remainder = '';
+    const scn = childTextNodes[i];
+    if (i !== childTextNodes.length - 1) {
+      const ix = cssText.indexOf('/* rr_split */');
+      if (ix !== -1) {
+        remainder = cssText.substring(ix + '/* rr_split */'.length);
+        cssText = cssText.substring(0, ix);
+      }
+    } else {
+      // todo: replaceAll after lib.es2021
+      cssText = cssText.replace(/\/\* rr_split \*\//g, '');
+    }
+    if (hackCss) {
+      cssText = adaptCssForReplay(cssText, cache);
+    }
+    // id will be assigned when these child nodes are
+    // iterated over in buildNodeWithSN
+    scn.textContent = cssText;
+    cssText = remainder;
   }
   if (cssText.length) {
     // something has gone wrong
@@ -128,8 +129,8 @@ export function applyCssSplits(
  * browser sees and serialize this to a special _cssText attribute, blanking
  * out any text nodes. This function reverses that and also handles cases where
  * there were no textNode children present (dynamic css/or a <link> element) as
- * well as multiple textNodes (`cssTextSplits`), which need to be repopulated
- * in case they are modified by subsequent mutations.
+ * well as multiple textNodes, which need to be repopulated (based on presence of
+ * a special `rr_split` marker in case they are modified by subsequent mutations.
  */
 export function buildStyleNode(
   n: serializedElementNodeWithId,
@@ -143,13 +144,7 @@ export function buildStyleNode(
 ) {
   const { doc, hackCss, cache } = options;
   if (n.childNodes.length) {
-    let cssTextSplits: number[] = [];
-    if (n.attributes._cssTextSplits) {
-      cssTextSplits = n.attributes._cssTextSplits
-        .split(' ')
-        .map((s) => parseInt(s));
-    }
-    applyCssSplits(n, cssText, cssTextSplits, hackCss, cache);
+    applyCssSplits(n, cssText, hackCss, cache);
   } else {
     if (hackCss) {
       cssText = adaptCssForReplay(cssText, cache);
@@ -235,8 +230,6 @@ function buildNode(
 
         if (name.startsWith('rr_')) {
           specialAttributes[name] = value;
-          continue;
-        } else if (name === '_cssTextSplits') {
           continue;
         }
 
