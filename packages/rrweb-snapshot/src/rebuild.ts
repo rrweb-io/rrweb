@@ -117,10 +117,6 @@ export function applyCssSplits(
     scn.textContent = cssText;
     cssText = remainder;
   }
-  if (cssText.length) {
-    // something has gone wrong
-    console.warn('Leftover css content after applyCssSplits:', cssText);
-  }
 }
 
 /**
