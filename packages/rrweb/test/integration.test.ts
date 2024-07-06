@@ -216,6 +216,14 @@ describe('record integration tests', function (this: ISuite) {
           }
         });
       }
+      let hoverMutationStyleEl = document.getElementById('hover-mutation');
+      if (hoverMutationStyleEl) {
+        hoverMutationStyleEl.childNodes.forEach((cn) => {
+          if (cn.textContent) {
+            cn.textContent = 'a:hover { outline: cyan solid 1px; }';
+          }
+        });
+      }
     });
 
     const snapshots = (await page.evaluate(
@@ -240,6 +248,7 @@ describe('record integration tests', function (this: ISuite) {
       });
       vals.push(replayer.iframe.contentDocument.getElementById('single-textContent').innerText);
       vals.push(replayer.iframe.contentDocument.getElementById('empty').innerText);
+      vals.push(replayer.iframe.contentDocument.getElementById('hover-mutation').innerText);
       vals;
 `);
 
@@ -258,6 +267,7 @@ describe('record integration tests', function (this: ISuite) {
       },
       'a:hover,\na.\\:hover { outline: red solid 1px; }', // has run adaptCssForReplay
       'a:hover,\na.\\:hover { outline: blue solid 1px; }', // has run adaptCssForReplay
+      'a:hover,\na.\\:hover { outline: cyan solid 1px; }', // has run adaptCssForReplay after text mutation
     ]);
   });
 
