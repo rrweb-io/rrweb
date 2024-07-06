@@ -1224,8 +1224,28 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
                   },
                   {
                     \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"textContent\\": \\"\\\\n    \\",
                     \\"id\\": 27
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"style\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"hover-mutation\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      /* replaceme */\\\\n    \\",
+                        \\"id\\": 29
+                      }
+                    ],
+                    \\"id\\": 28
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 30
                   }
                 ],
                 \\"id\\": 4
@@ -1233,7 +1253,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
               {
                 \\"type\\": 3,
                 \\"textContent\\": \\"\\\\n  \\",
-                \\"id\\": 28
+                \\"id\\": 31
               },
               {
                 \\"type\\": 2,
@@ -1243,7 +1263,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 30
+                    \\"id\\": 33
                   },
                   {
                     \\"type\\": 2,
@@ -1253,18 +1273,18 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 32
+                        \\"id\\": 35
                       }
                     ],
-                    \\"id\\": 31
+                    \\"id\\": 34
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 33
+                    \\"id\\": 36
                   }
                 ],
-                \\"id\\": 29
+                \\"id\\": 32
               }
             ],
             \\"id\\": 3
@@ -1292,16 +1312,16 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\".absolutify { background-image: url(\\\\\\"http://localhost:3030/rel\\\\\\"); }\\",
-            \\"id\\": 34
+            \\"id\\": 37
           }
         },
         {
           \\"parentId\\": 13,
-          \\"nextId\\": 34,
+          \\"nextId\\": 37,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"body { background-color: darkgreen; }\\",
-            \\"id\\": 35
+            \\"id\\": 38
           }
         }
       ]
@@ -1321,7 +1341,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
           \\"value\\": \\"body { color: yellow; }\\"
         },
         {
-          \\"id\\": 35,
+          \\"id\\": 38,
           \\"value\\": \\"body { background-color: purple; }\\"
         }
       ],
@@ -1338,6 +1358,10 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
         {
           \\"id\\": 14,
           \\"value\\": \\"\\\\n      body { background-color: black !important; }\\\\n    \\"
+        },
+        {
+          \\"id\\": 29,
+          \\"value\\": \\"a:hover { outline: cyan solid 1px; }\\"
         }
       ],
       \\"attributes\\": [],
