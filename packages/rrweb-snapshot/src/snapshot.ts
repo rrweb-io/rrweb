@@ -404,7 +404,7 @@ function serializeNode(
      * `newlyAddedElement: true` skips scrollTop and scrollLeft check
      */
     newlyAddedElement?: boolean;
-    blankTextNodes?: boolean;
+    cssCaptured?: boolean;
   },
 ): serializedNode | false {
   const {
@@ -422,7 +422,7 @@ function serializeNode(
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement = false,
-    blankTextNodes = false,
+    cssCaptured = false,
   } = options;
   // Only record root id when document object is not the base document
   const rootId = getRootId(doc, mirror);
@@ -469,7 +469,7 @@ function serializeNode(
         needsMask,
         maskTextFn,
         rootId,
-        blankTextNodes,
+        cssCaptured,
       });
     case n.CDATA_SECTION_NODE:
       return {
@@ -501,10 +501,10 @@ function serializeTextNode(
     needsMask: boolean;
     maskTextFn: MaskTextFn | undefined;
     rootId: number | undefined;
-    blankTextNodes?: boolean;
+    cssCaptured?: boolean;
   },
 ): serializedNode {
-  const { needsMask, maskTextFn, rootId, blankTextNodes } = options;
+  const { needsMask, maskTextFn, rootId, cssCaptured } = options;
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parent = dom.parentNode(n);
@@ -514,7 +514,7 @@ function serializeTextNode(
   const isScript = parentTagName === 'SCRIPT' ? true : undefined;
   if (isScript) {
     textContent = 'SCRIPT_PLACEHOLDER';
-  } else if (!blankTextNodes) {
+  } else if (!cssCaptured) {
     textContent = dom.textContent(n);
     if (isStyle && textContent) {
       // mutation only: we don't need to use stringifyStylesheet
@@ -928,7 +928,7 @@ export function serializeNodeWithId(
       node: serializedElementNodeWithId,
     ) => unknown;
     stylesheetLoadTimeout?: number;
-    blankTextNodes?: boolean;
+    cssCaptured?: boolean;
   },
 ): serializedNodeWithId | null {
   const {
@@ -954,7 +954,7 @@ export function serializeNodeWithId(
     stylesheetLoadTimeout = 5000,
     keepIframeSrcFn = () => false,
     newlyAddedElement = false,
-    blankTextNodes = false,
+    cssCaptured = false,
   } = options;
   let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
@@ -985,7 +985,7 @@ export function serializeNodeWithId(
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement,
-    blankTextNodes,
+    cssCaptured,
   });
   if (!_serializedNode) {
     // TODO: dev only
@@ -1065,7 +1065,7 @@ export function serializeNodeWithId(
       onStylesheetLoad,
       stylesheetLoadTimeout,
       keepIframeSrcFn,
-      blankTextNodes: false,
+      cssCaptured: false,
     };
 
     if (
@@ -1080,7 +1080,7 @@ export function serializeNodeWithId(
         (serializedNode as elementNode).attributes._cssText !== undefined &&
         typeof serializedNode.attributes._cssText === 'string'
       ) {
-        bypassOptions.blankTextNodes = true;
+        bypassOptions.cssCaptured = true;
       }
       for (const childN of Array.from(dom.childNodes(n))) {
         const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
