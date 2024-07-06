@@ -180,7 +180,7 @@ describe('style elements', () => {
       rootId: undefined,
       attributes: {
         _cssText:
-          'section.working {color: pink;}body {color: red;}section {color: blue;}',
+          'section.working {color: pink;}body {color: red;}/* rr_split */section {color: blue;}',
       },
       type: 2,
     });

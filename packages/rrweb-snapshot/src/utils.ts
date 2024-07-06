@@ -449,16 +449,15 @@ function normalizeCssString(cssText: string): string {
  * performance is not considered as this is anticipated to be very much an edge case
  * (javascript is needed to add extra text nodes to a <style>)
  */
-export function findCssTextSplits(
+export function splitCssText(
   cssText: string,
   style: HTMLStyleElement,
-): number[] {
+): string[] {
   const childNodes = Array.from(style.childNodes);
-  const splits = [];
+  const splits: string[] = [];
   if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
     const cssTextNorm = normalizeCssString(cssText);
     for (let i = 1; i < childNodes.length; i++) {
-      let split = 0; // marker for 'no split found'
       if (
         childNodes[i].textContent &&
         typeof childNodes[i].textContent === 'string'
@@ -474,16 +473,23 @@ export function findCssTextSplits(
               if (
                 normalizeCssString(cssText.substring(0, k)).length === splitNorm
               ) {
-                split = k;
+                splits.push(cssText.substring(0, k));
+                cssText = cssText.substring(k);
               }
             }
             break;
           }
         }
       }
-      splits.push(split);
     }
   }
-  splits.push(cssText.length); // a check in case the cssText is altered in transit
+  splits.push(cssText); // either the full thing if no splits were found, or the last split
   return splits;
+}
+
+export function markCssSplits(
+  cssText: string,
+  style: HTMLStyleElement,
+): string {
+  return splitCssText(cssText, style).join('/* rr_split */');
 }

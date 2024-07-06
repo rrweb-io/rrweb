@@ -22,7 +22,6 @@ export type documentTypeNode = {
 
 type cssTextKeyAttr = {
   _cssText?: string;
-  _cssTextSplits?: string;
 };
 
 export type attributes = cssTextKeyAttr & {
@@ -90,6 +89,11 @@ export type serializedNodeWithId = serializedNode & { id: number };
 export type serializedElementNodeWithId = Extract<
   serializedNodeWithId,
   Record<'type', NodeType.Element>
+>;
+
+export type serializedTextNodeWithId = Extract<
+  serializedNodeWithId,
+  Record<'type', NodeType.Text>
 >;
 
 export type tagMap = {

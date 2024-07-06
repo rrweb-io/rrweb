@@ -5,7 +5,7 @@ import { describe, it, beforeEach, expect } from 'vitest';
 import { mediaSelectorPlugin, pseudoClassPlugin } from '../src/css';
 import postcss, { type AcceptedPlugin } from 'postcss';
 import { JSDOM } from 'jsdom';
-import { findCssTextSplits, stringifyStylesheet } from './../src/utils';
+import { splitCssText, stringifyStylesheet } from './../src/utils';
 import { applyCssSplits } from './../src/rebuild';
 import {
   NodeType,
@@ -95,17 +95,15 @@ describe('css splitter', () => {
       style.appendChild(JSDOM.fragment('.a{background-color:black;}'));
 
       // how it is currently stringified (spaces present)
-      let browserSheet = '.a { background-color: red; }';
-      let expectedSplit = browserSheet.length;
-      browserSheet += '.a { background-color: black; }';
-
+      const expected = [
+        '.a { background-color: red; }',
+        '.a { background-color: black; }',
+      ];
+      const browserSheet = expected.join('');
       // can't do this as JSDOM doesn't have style.sheet
       //expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
 
-      expect(findCssTextSplits(browserSheet, style)).toEqual([
-        expectedSplit,
-        browserSheet.length,
-      ]);
+      expect(splitCssText(browserSheet, style)).toEqual(expected);
     }
   });
 
@@ -120,7 +118,7 @@ describe('css splitter', () => {
   transition: all 4s ease;
 }`),
       );
-      // TODO: findCssTextSplits can't handle it yet if both start with .x
+      // TODO: splitCssText can't handle it yet if both start with .x
       style.appendChild(
         JSDOM.fragment(`.y {
   -moz-transition: all 5s ease;
@@ -128,18 +126,16 @@ describe('css splitter', () => {
 }`),
       );
       // browser .rules would usually omit the vendored versions and modifies the transition value
-      let browserSheet =
-        '.x { content: "try to keep a newline"; background: red; transition: 4s; }';
-      let expectedSplit = browserSheet.length;
-      browserSheet += '.y { transition: 5s; }';
+      const expected = [
+        '.x { content: "try to keep a newline"; background: red; transition: 4s; }',
+        '.y { transition: 5s; }',
+      ];
+      const browserSheet = expected.join('');
 
       // can't do this as JSDOM doesn't have style.sheet
       //expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
 
-      expect(findCssTextSplits(browserSheet, style)).toEqual([
-        expectedSplit,
-        browserSheet.length,
-      ]);
+      expect(splitCssText(browserSheet, style)).toEqual(expected);
     }
   });
 });
@@ -148,7 +144,7 @@ describe('applyCssSplits css rejoiner', function () {
   const mockLastUnusedArg = null as unknown as BuildCache;
   const halfCssText = '.a { background-color: red; }';
   const otherHalfCssText = halfCssText.replace('.a', '.x');
-  const fullCssText = halfCssText + otherHalfCssText;
+  const markedCssText = [halfCssText, otherHalfCssText].join('/* rr_split */');
   let sn: serializedElementNodeWithId;
 
   beforeEach(() => {
@@ -170,13 +166,7 @@ describe('applyCssSplits css rejoiner', function () {
 
   it('applies css splits correctly', () => {
     // happy path
-    applyCssSplits(
-      sn,
-      fullCssText,
-      [halfCssText.length, fullCssText.length],
-      false,
-      mockLastUnusedArg,
-    );
+    applyCssSplits(sn, markedCssText, false, mockLastUnusedArg);
     expect((sn.childNodes[0] as textNode).textContent).toEqual(halfCssText);
     expect((sn.childNodes[1] as textNode).textContent).toEqual(
       otherHalfCssText,
@@ -202,13 +192,7 @@ describe('applyCssSplits css rejoiner', function () {
         },
       ],
     } as serializedElementNodeWithId;
-    applyCssSplits(
-      sn3,
-      fullCssText,
-      [halfCssText.length, fullCssText.length],
-      false,
-      mockLastUnusedArg,
-    );
+    applyCssSplits(sn3, markedCssText, false, mockLastUnusedArg);
     expect((sn3.childNodes[0] as textNode).textContent).toEqual(halfCssText);
     expect((sn3.childNodes[1] as textNode).textContent).toEqual(
       otherHalfCssText,
@@ -227,49 +211,9 @@ describe('applyCssSplits css rejoiner', function () {
         },
       ],
     } as serializedElementNodeWithId;
-    applyCssSplits(
-      sn1,
-      fullCssText,
-      [halfCssText.length, fullCssText.length],
-      false,
-      mockLastUnusedArg,
+    applyCssSplits(sn1, markedCssText, false, mockLastUnusedArg);
+    expect((sn1.childNodes[0] as textNode).textContent).toEqual(
+      halfCssText + otherHalfCssText,
     );
-    expect((sn1.childNodes[0] as textNode).textContent).toEqual(fullCssText);
-  });
-
-  it('ignores css splits correctly when there is a mismatch in length check', () => {
-    applyCssSplits(sn, fullCssText, [2, 3], false, mockLastUnusedArg);
-    expect((sn.childNodes[0] as textNode).textContent).toEqual(fullCssText);
-    expect((sn.childNodes[1] as textNode).textContent).toEqual('');
-  });
-
-  it('ignores css splits correctly when we indicate a split is invalid with the zero marker', () => {
-    applyCssSplits(
-      sn,
-      fullCssText,
-      [0, fullCssText.length],
-      false,
-      mockLastUnusedArg,
-    );
-    expect((sn.childNodes[0] as textNode).textContent).toEqual(fullCssText);
-    expect((sn.childNodes[1] as textNode).textContent).toEqual('');
-  });
-
-  it('ignores css splits correctly with negative splits', () => {
-    applyCssSplits(sn, fullCssText, [-2, -4], false, mockLastUnusedArg);
-    expect((sn.childNodes[0] as textNode).textContent).toEqual(fullCssText);
-    expect((sn.childNodes[1] as textNode).textContent).toEqual('');
-  });
-
-  it('ignores css splits correctly with out of order splits', () => {
-    applyCssSplits(
-      sn,
-      fullCssText,
-      [fullCssText.length * 2, fullCssText.length],
-      false,
-      mockLastUnusedArg,
-    );
-    expect((sn.childNodes[0] as textNode).textContent).toEqual(fullCssText);
-    expect((sn.childNodes[1] as textNode).textContent).toEqual('');
   });
 });
