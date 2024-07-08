@@ -112,16 +112,25 @@ describe('record integration tests', function (this: ISuite) {
       const ta = document.createElement('textarea');
       ta.innerText = 'pre value';
       document.body.append(ta);
+
+      const ta2 = document.createElement('textarea');
+      ta2.id = 'ta2';
+      document.body.append(ta2);
     });
     await page.waitForTimeout(5);
     await page.evaluate(() => {
       const t = document.querySelector('textarea') as HTMLTextAreaElement;
       t.innerText = 'ok'; // this mutation should be recorded
+
+      const ta2t = document.createTextNode('added');
+      document.getElementById('ta2').append(ta2t);
     });
     await page.waitForTimeout(5);
     await page.evaluate(() => {
       const t = document.querySelector('textarea') as HTMLTextAreaElement;
       (t.childNodes[0] as Text).appendData('3'); // this mutation is also valid
+
+      document.getElementById('ta2').remove(); // done with this
     });
     await page.waitForTimeout(5);
     await page.type('textarea', '1'); // types (inserts) at index 0, in front of existing text
@@ -153,12 +162,18 @@ describe('record integration tests', function (this: ISuite) {
         replayer.pause((e.timestamp - window.snapshots[0].timestamp)+1);
         let ts = replayer.iframe.contentDocument.querySelector('textarea');
         vals.push((e.data.source === 0 ? 'Mutation' : 'User') + ':' + ts.value);
+        let ts2 = replayer.iframe.contentDocument.getElementById('ta2');
+        if (ts2) {
+          vals.push('ta2:' + ts2.value);
+        }
       });
       vals;
     `);
     expect(replayTextareaValues).toEqual([
       'Mutation:pre value',
+      'ta2:',
       'Mutation:ok',
+      'ta2:added',
       'Mutation:ok3',
       'User:1ok3',
       'Mutation:1ok3', // if this gets set to 'ignore', it's an error, as the 'user' has modified the textarea
