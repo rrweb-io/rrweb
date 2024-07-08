@@ -290,6 +290,7 @@ export default class MutationBuffer {
       if (!parent || !inDom(n)) {
         return;
       }
+      let cssCaptured = false;
       if (n.nodeType === Node.TEXT_NODE) {
         const parentTag = (parent as Element).tagName;
         if (parentTag === 'TEXTAREA') {
@@ -298,7 +299,7 @@ export default class MutationBuffer {
         } else if (parentTag === 'STYLE' && this.addedSet.has(parent)) {
           // css content will be recorded via parent's _cssText attribute when
           // mutation adds entire <style> element
-          return;
+          cssCaptured = true;
         }
       }
 
@@ -348,6 +349,7 @@ export default class MutationBuffer {
         onStylesheetLoad: (link, childSn) => {
           this.stylesheetManager.attachLinkElement(link, childSn);
         },
+        cssCaptured,
       });
       if (sn) {
         adds.push({
