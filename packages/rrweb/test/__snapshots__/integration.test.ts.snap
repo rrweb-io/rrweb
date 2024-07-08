@@ -1547,10 +1547,23 @@ exports[`record integration tests > can record and replay textarea mutations cor
             \\"type\\": 2,
             \\"tagName\\": \\"textarea\\",
             \\"attributes\\": {
-              \\"value\\": \\"pre value\\"
+              \\"id\\": \\"ta2\\"
             },
             \\"childNodes\\": [],
             \\"id\\": 21
+          }
+        },
+        {
+          \\"parentId\\": 14,
+          \\"nextId\\": 21,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"textarea\\",
+            \\"attributes\\": {
+              \\"value\\": \\"pre value\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 22
           }
         }
       ]
@@ -1563,9 +1576,15 @@ exports[`record integration tests > can record and replay textarea mutations cor
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 21,
+          \\"id\\": 22,
           \\"attributes\\": {
             \\"value\\": \\"ok\\"
+          }
+        },
+        {
+          \\"id\\": 21,
+          \\"attributes\\": {
+            \\"value\\": \\"added\\"
           }
         }
       ],
@@ -1580,13 +1599,18 @@ exports[`record integration tests > can record and replay textarea mutations cor
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 21,
+          \\"id\\": 22,
           \\"attributes\\": {
             \\"value\\": \\"ok3\\"
           }
         }
       ],
-      \\"removes\\": [],
+      \\"removes\\": [
+        {
+          \\"parentId\\": 14,
+          \\"id\\": 21
+        }
+      ],
       \\"adds\\": []
     }
   },
@@ -1595,7 +1619,7 @@ exports[`record integration tests > can record and replay textarea mutations cor
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 5,
-      \\"id\\": 21
+      \\"id\\": 22
     }
   },
   {
@@ -1604,7 +1628,7 @@ exports[`record integration tests > can record and replay textarea mutations cor
       \\"source\\": 5,
       \\"text\\": \\"1ok3\\",
       \\"isChecked\\": false,
-      \\"id\\": 21
+      \\"id\\": 22
     }
   },
   {
@@ -1614,7 +1638,7 @@ exports[`record integration tests > can record and replay textarea mutations cor
       \\"texts\\": [],
       \\"attributes\\": [
         {
-          \\"id\\": 21,
+          \\"id\\": 22,
           \\"attributes\\": {
             \\"value\\": \\"ignore\\"
           }
@@ -1630,7 +1654,7 @@ exports[`record integration tests > can record and replay textarea mutations cor
       \\"source\\": 5,
       \\"text\\": \\"12ok3\\",
       \\"isChecked\\": false,
-      \\"id\\": 21
+      \\"id\\": 22
     }
   }
 ]"
