@@ -239,6 +239,9 @@ describe('record integration tests', function (this: ISuite) {
           }
         });
       }
+      let st = document.createElement('style');
+      st.innerText = '.record-once { color: brown }';
+      document.body.append(st);
     });
 
     const snapshots = (await page.evaluate(
