@@ -160,8 +160,9 @@ function buildNode(
           value = adaptCssForReplay(value, cache);
         }
         if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
-          node.appendChild(doc.createTextNode(value));
           // https://github.com/rrweb-io/rrweb/issues/112
+          // https://github.com/rrweb-io/rrweb/pull/1351
+          node.appendChild(doc.createTextNode(value));
           n.childNodes = []; // value overrides childNodes
           continue;
         }
