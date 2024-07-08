@@ -1366,7 +1366,21 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
       ],
       \\"attributes\\": [],
       \\"removes\\": [],
-      \\"adds\\": []
+      \\"adds\\": [
+        {
+          \\"parentId\\": 32,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"style\\",
+            \\"attributes\\": {
+              \\"_cssText\\": \\".record-once { color: brown; }\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 39
+          }
+        }
+      ]
     }
   }
 ]"
