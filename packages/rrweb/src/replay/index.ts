@@ -1592,8 +1592,8 @@ export class Replayer {
         ) {
           // https://github.com/rrweb-io/rrweb/pull/1417
           /**
-           * If both _cssText and textContent are present for a style element due to some existing bugs, the element will have two child text nodes.
-           * We need to remove the textNode created by _cssText to avoid issue.
+           * If both _cssText and textContent are present for a style element due to some existing bugs, the element was ending up with two child text nodes 
+           * We need to remove the textNode created by _cssText as it doesn't have an id in the mirror, and thus cannot be further mutated.
            */
           for (const cssText of prospectiveSiblings as (Node & RRNode)[]) {
             if (
