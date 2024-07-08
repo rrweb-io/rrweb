@@ -1374,13 +1374,38 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
             \\"type\\": 2,
             \\"tagName\\": \\"style\\",
             \\"attributes\\": {
-              \\"_cssText\\": \\".record-once { color: brown; }\\"
+              \\"id\\": \\"goldilocks\\",
+              \\"_cssText\\": \\"body { color: brown; }\\"
             },
             \\"childNodes\\": [],
             \\"id\\": 39
           }
+        },
+        {
+          \\"parentId\\": 39,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\",
+            \\"id\\": 40
+          }
         }
       ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [
+        {
+          \\"id\\": 40,
+          \\"value\\": \\"body { color: gold }\\"
+        }
+      ],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": []
     }
   }
 ]"
@@ -16401,6 +16426,15 @@ exports[`record integration tests > should record style mutations and replay the
             },
             \\"childNodes\\": [],
             \\"id\\": 21
+          }
+        },
+        {
+          \\"parentId\\": 21,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\",
+            \\"id\\": 22
           }
         }
       ]

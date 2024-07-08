@@ -240,8 +240,21 @@ describe('record integration tests', function (this: ISuite) {
         });
       }
       let st = document.createElement('style');
-      st.innerText = '.record-once { color: brown }';
+      st.id = 'goldilocks';
+      st.innerText = 'body { color: brown }';
       document.body.append(st);
+    });
+
+    await waitForRAF(page);
+    await page.evaluate(() => {
+      let styleEl = document.getElementById('goldilocks');
+      if (styleEl) {
+        styleEl.childNodes.forEach((cn) => {
+          if (cn.textContent) {
+            cn.textContent = cn.textContent.replace('brown', 'gold');
+          }
+        });
+      }
     });
 
     const snapshots = (await page.evaluate(
@@ -281,7 +294,11 @@ describe('record integration tests', function (this: ISuite) {
       },
       {
         'background-color': 'rgb(0, 0, 0)', // black !important
-        color: 'rgb(255, 255, 0)', // yellow
+        color: 'rgb(165, 42, 42)', // brown
+      },
+      {
+        'background-color': 'rgb(0, 0, 0)',
+        color: 'rgb(255, 215, 0)', // gold
       },
       'a:hover,\na.\\:hover { outline: red solid 1px; }', // has run adaptCssForReplay
       'a:hover,\na.\\:hover { outline: blue solid 1px; }', // has run adaptCssForReplay
