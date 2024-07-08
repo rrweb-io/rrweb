@@ -285,16 +285,25 @@ export default class MutationBuffer {
       return nextId;
     };
     const pushAdd = (n: Node) => {
-      if (
-        !n.parentNode ||
-        !inDom(n) ||
-        (n.parentNode as Element).tagName === 'TEXTAREA'
-      ) {
+      if (!n.parentNode || !inDom(n)) {
         return;
       }
+      if (n.nodeType === Node.TEXT_NODE) {
+        const parentTag = (n.parentNode as Element).tagName;
+        if (parentTag === 'TEXTAREA') {
+          // genTextAreaValueMutation already called via parent
+          return;
+        } else if (parentTag === 'STYLE' && this.addedSet.has(n.parentNode)) {
+          // css content will be recorded via parent's _cssText attribute when
+          // mutation adds entire <style> element
+          return;
+        }
+      }
+
       const parentId = isShadowRoot(n.parentNode)
         ? this.mirror.getId(getShadowHost(n))
         : this.mirror.getId(n.parentNode);
+
       const nextId = getNextId(n);
       if (parentId === -1 || nextId === -1) {
         return addList.addNode(n);
