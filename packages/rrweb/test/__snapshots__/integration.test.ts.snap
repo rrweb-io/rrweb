@@ -16364,15 +16364,6 @@ exports[`record integration tests > should record style mutations and replay the
             \\"childNodes\\": [],
             \\"id\\": 21
           }
-        },
-        {
-          \\"parentId\\": 21,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"#two { color: rgb(255, 0, 0); }\\",
-            \\"id\\": 22
-          }
         }
       ]
     }
