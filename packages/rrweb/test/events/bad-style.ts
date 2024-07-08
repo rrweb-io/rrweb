@@ -58,9 +58,9 @@ const events: eventWithTime[] = [
                     },
                     childNodes: [
                       {
-                        // BAD: duplicated content
                         type: 3,
-                        textContent: '#one { color: rgb(255, 0, 0); }',
+                        // BAD: duplicated content (tweaked to different color)
+                        textContent: '#one { color: rgb(155, 0, 0); }',
                         isStyle: true,
                         id: 7,
                       },
@@ -191,8 +191,8 @@ const events: eventWithTime[] = [
           nextId: null,
           node: {
             type: 3,
-            // BAD: duplicated content
-            textContent: '#two { color: rgb(255, 0, 0); }',
+            // BAD: duplicated content (tweaked to different color)
+            textContent: '#two { color: rgb(155, 0, 0); }',
             isStyle: true,
             id: 22,
           },
