@@ -1572,7 +1572,7 @@ export class Replayer {
         parentSn.type === NodeType.Element &&
         mutation.node.type === NodeType.Text
       ) {
-        const childNodeArray = Array.isArray(parent.childNodes)
+        const prospectiveSiblings = Array.isArray(parent.childNodes)
           ? parent.childNodes
           : Array.from(parent.childNodes);
         if (parentSn.tagName === 'textarea') {
@@ -1581,21 +1581,21 @@ export class Replayer {
 
           // https://github.com/rrweb-io/rrweb/issues/745
           // parent is textarea, will only keep one child node as the value
-          for (const c of childNodeArray) {
+          for (const c of prospectiveSiblings) {
             if (c.nodeType === parent.TEXT_NODE) {
               parent.removeChild(c as Node & RRNode);
             }
           }
         } else if (
           parentSn.tagName === 'style' &&
-          childNodeArray.length === 1
+          prospectiveSiblings.length === 1
         ) {
           // https://github.com/rrweb-io/rrweb/pull/1417
           /**
            * If both _cssText and textContent are present for a style element due to some existing bugs, the element will have two child text nodes.
            * We need to remove the textNode created by _cssText to avoid issue.
            */
-          for (const cssText of childNodeArray as (Node & RRNode)[]) {
+          for (const cssText of prospectiveSiblings as (Node & RRNode)[]) {
             if (
               cssText.nodeType === parent.TEXT_NODE &&
               !mirror.hasNode(cssText)
