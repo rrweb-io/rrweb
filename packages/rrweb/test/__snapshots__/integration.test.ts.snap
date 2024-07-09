@@ -16649,7 +16649,7 @@ exports[`record integration tests > should record style mutations with multiple 
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
-            \\"textContent\\": \\"/* world */\\",
+            \\"textContent\\": \\"\\",
             \\"id\\": 22
           }
         },
@@ -16658,7 +16658,7 @@ exports[`record integration tests > should record style mutations with multiple 
           \\"nextId\\": 22,
           \\"node\\": {
             \\"type\\": 3,
-            \\"textContent\\": \\"/* hello */\\",
+            \\"textContent\\": \\"\\",
             \\"id\\": 23
           }
         }
