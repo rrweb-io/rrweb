@@ -13,30 +13,31 @@ export function applyDialogToTopLevel(
 ): void {
   if (node.nodeName !== 'DIALOG' || node instanceof RRNode) return;
   const dialog = node as HTMLDialogElement;
-  const isOpen = dialog.open;
-  const isModal = isOpen && dialog.matches('dialog:modal');
-  const rrOpen = dialog.getAttribute('rr_open_mode');
+  const oldIsOpen = dialog.open;
+  const oldIsModalState = oldIsOpen && dialog.matches('dialog:modal');
+  const rrOpenMode = dialog.getAttribute('rr_open_mode');
 
-  const shouldBeOpen =
+  const newIsOpen =
     typeof attributeMutation?.attributes.open === 'string' ||
     typeof dialog.getAttribute('open') === 'string';
-  const shouldBeModal = rrOpen === 'modal';
-  const shouldBeNonModal = rrOpen === 'non-modal';
+  const newIsModalState = rrOpenMode === 'modal';
+  const newIsNonModalState = rrOpenMode === 'non-modal';
 
-  const modalChanged =
-    (isModal && shouldBeNonModal) || (!isModal && shouldBeModal);
+  const modalStateChanged =
+    (oldIsModalState && newIsNonModalState) ||
+    (!oldIsModalState && newIsModalState);
 
-  if (isOpen && !modalChanged) return;
+  if (oldIsOpen && !modalStateChanged) return;
   // complain if dialog is not attached to the dom
   if (!dialog.isConnected) {
     console.warn('dialog is not attached to the dom', dialog);
     return;
   }
 
-  if (isOpen) dialog.close();
-  if (!shouldBeOpen) return;
+  if (oldIsOpen) dialog.close();
+  if (!newIsOpen) return;
 
-  if (shouldBeModal) dialog.showModal();
+  if (newIsModalState) dialog.showModal();
   else dialog.show();
 }
 
