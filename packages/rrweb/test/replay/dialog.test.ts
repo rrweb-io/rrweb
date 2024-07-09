@@ -97,6 +97,10 @@ describe('dialog', () => {
       name: 'should add an opened dialog with showModal in incremental snapshot',
       time: showModalIncrementalAddTime,
     },
+    {
+      name: 'should add an opened dialog with showModal in incremental snapshot alternative',
+      time: [showModalFullSnapshotTime, showModalIncrementalAddTime],
+    },
   ].forEach(({ name, time }) => {
     [true, false].forEach((useVirtualDom) => {
       it(`${name} (virtual dom: ${useVirtualDom})`, async () => {
@@ -106,9 +110,14 @@ describe('dialog', () => {
         await page.evaluate(`
           const { Replayer } = rrweb;
           window.replayer = new Replayer(events, { useVirtualDom: ${useVirtualDom} });
-          window.replayer.pause(${time});
         `);
-        await waitForRAF(page);
+        const timeArray = Array.isArray(time) ? time : [time];
+        for (let i = 0; i < timeArray.length; i++) {
+          await page.evaluate(`
+            window.replayer.pause(${timeArray[i]});
+          `);
+          await waitForRAF(page);
+        }
 
         const frameImage = await page!.screenshot({
           fullPage: false,

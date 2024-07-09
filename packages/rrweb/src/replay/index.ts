@@ -248,7 +248,6 @@ export class Replayer {
               this.applyStyleDeclaration(data, styleSheet);
           },
           afterAppend: (node: Node, id: number) => {
-            applyDialogToTopLevel(node);
             for (const plugin of this.config.plugins || []) {
               if (plugin.onBuild) plugin.onBuild(node, { id, replayer: this });
             }
