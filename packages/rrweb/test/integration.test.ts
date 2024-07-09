@@ -1378,12 +1378,8 @@ describe('record integration tests', function (this: ISuite) {
   });
 
   /**
-   * https://github.com/rrweb-io/rrweb/pull/1417
-   * This test is to make sure that this problem doesn't regress
-   * Test case description:
-   * 1. Record two style elements. One is recorded as a full snapshot and the other is recorded as an incremental snapshot.
-   * 2. Change the color of both style elements to yellow as incremental style mutation.
-   * 3. Replay the recorded events and check if the style mutation is applied correctly.
+   * the regression part of the following is now handled by replayer.test.ts::'can deal with duplicate/conflicting values on style elements'
+   * so this test could be dropped if we add more robust mixing of `insertRule` into 'can record and replay style mutations'
    */
   it('should record style mutations and replay them correctly', async () => {
     const page: puppeteer.Page = await browser.newPage();
@@ -1478,6 +1474,8 @@ describe('record integration tests', function (this: ISuite) {
   });
 
   it('should record style mutations with multiple child nodes and replay them correctly', async () => {
+    // ensure that presence of multiple text nodes doesn't interfere with programmatic insertRule operations
+
     const page: puppeteer.Page = await browser.newPage();
     const Color = 'rgb(255, 0, 0)'; // red color
 
