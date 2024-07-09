@@ -191,7 +191,7 @@ describe('record integration tests', function (this: ISuite) {
     await waitForRAF(page); // ensure mutations aren't included in fullsnapshot
 
     await page.evaluate(() => {
-      let styleEl = document.querySelector('style');
+      let styleEl = document.querySelector('style#dual-textContent');
       if (styleEl) {
         styleEl.append(
           document.createTextNode('body { background-color: darkgreen; }'),
@@ -205,7 +205,7 @@ describe('record integration tests', function (this: ISuite) {
     });
     await waitForRAF(page);
     await page.evaluate(() => {
-      let styleEl = document.querySelector('style');
+      let styleEl = document.querySelector('style#dual-textContent');
       if (styleEl) {
         styleEl.childNodes.forEach((cn) => {
           if (cn.textContent) {
@@ -220,7 +220,7 @@ describe('record integration tests', function (this: ISuite) {
     });
     await waitForRAF(page);
     await page.evaluate(() => {
-      let styleEl = document.querySelector('style');
+      let styleEl = document.querySelector('style#dual-textContent');
       if (styleEl) {
         styleEl.childNodes.forEach((cn) => {
           if (cn.textContent) {
@@ -231,7 +231,7 @@ describe('record integration tests', function (this: ISuite) {
           }
         });
       }
-      let hoverMutationStyleEl = document.getElementById('hover-mutation');
+      let hoverMutationStyleEl = document.querySelector('style#hover-mutation');
       if (hoverMutationStyleEl) {
         hoverMutationStyleEl.childNodes.forEach((cn) => {
           if (cn.textContent) {
@@ -247,7 +247,7 @@ describe('record integration tests', function (this: ISuite) {
 
     await waitForRAF(page);
     await page.evaluate(() => {
-      let styleEl = document.getElementById('goldilocks');
+      let styleEl = document.querySelector('style#goldilocks');
       if (styleEl) {
         styleEl.childNodes.forEach((cn) => {
           if (cn.textContent) {
