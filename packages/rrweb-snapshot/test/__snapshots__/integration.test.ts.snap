@@ -393,7 +393,9 @@ exports[`integration tests > [html file]: hover.html 1`] = `
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
   <title>hover selector</title>
-  <style>div:hover, div.\\\\:hover { background: orange; }div:hover::after, div.\\\\:hover::after { position: absolute; left: 0px; top: 100%; content: \\"dropdown\\"; width: 100px; height: 200px; background: lightblue; }</style>
+  <style>div:hover,
+div.\\\\:hover { background: orange; }div:hover::after,
+div.\\\\:hover::after { position: absolute; left: 0px; top: 100%; content: \\"dropdown\\"; width: 100px; height: 200px; background: lightblue; }</style>
 </head><body>
   <div>hover me</div>
 </body></html>"
