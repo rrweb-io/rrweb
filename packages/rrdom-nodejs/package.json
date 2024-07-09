@@ -54,7 +54,7 @@
   "dependencies": {
     "cssom": "^0.5.0",
     "cssstyle": "^2.3.0",
-    "nwsapi": "^2.2.0",
+    "nwsapi": "2.2.0",
     "rrdom": "^2.0.0-alpha.16",
     "rrweb-snapshot": "^2.0.0-alpha.16"
   }

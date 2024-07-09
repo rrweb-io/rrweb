@@ -1581,20 +1581,39 @@ export class Replayer {
       if (
         parentSn &&
         parentSn.type === NodeType.Element &&
-        parentSn.tagName === 'textarea' &&
         mutation.node.type === NodeType.Text
       ) {
-        const childNodeArray = Array.isArray(parent.childNodes)
+        const prospectiveSiblings = Array.isArray(parent.childNodes)
           ? parent.childNodes
           : Array.from(parent.childNodes);
-        // This should be redundant now as we are either recording the value or the childNode, and not both
-        // keeping around for backwards compatibility with old bad double data, see
+        if (parentSn.tagName === 'textarea') {
+          // This should be redundant now as we are either recording the value or the childNode, and not both
+          // keeping around for backwards compatibility with old bad double data, see
 
-        // https://github.com/rrweb-io/rrweb/issues/745
-        // parent is textarea, will only keep one child node as the value
-        for (const c of childNodeArray) {
-          if (c.nodeType === parent.TEXT_NODE) {
-            parent.removeChild(c as Node & RRNode);
+          // https://github.com/rrweb-io/rrweb/issues/745
+          // parent is textarea, will only keep one child node as the value
+          for (const c of prospectiveSiblings) {
+            if (c.nodeType === parent.TEXT_NODE) {
+              parent.removeChild(c as Node & RRNode);
+            }
+          }
+        } else if (
+          parentSn.tagName === 'style' &&
+          prospectiveSiblings.length === 1
+        ) {
+          // https://github.com/rrweb-io/rrweb/pull/1417
+          /**
+           * If both _cssText and textContent are present for a style element due to some existing bugs, the element was ending up with two child text nodes
+           * We need to remove the textNode created by _cssText as it doesn't have an id in the mirror, and thus cannot be further mutated.
+           */
+          for (const cssText of prospectiveSiblings as (Node & RRNode)[]) {
+            if (
+              cssText.nodeType === parent.TEXT_NODE &&
+              !mirror.hasNode(cssText)
+            ) {
+              target.textContent = cssText.textContent;
+              parent.removeChild(cssText);
+            }
           }
         }
       } else if (parentSn?.type === NodeType.Document) {
