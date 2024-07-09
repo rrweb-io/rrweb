@@ -90,8 +90,8 @@ export function applyCssSplits(
   hackCss: boolean,
   cache: BuildCache,
 ): void {
-  let childTextNodes: serializedTextNodeWithId[] = [];
-  for (let scn of n.childNodes) {
+  const childTextNodes: serializedTextNodeWithId[] = [];
+  for (const scn of n.childNodes) {
     if (scn.type === NodeType.Text) {
       childTextNodes.push(scn);
     }
