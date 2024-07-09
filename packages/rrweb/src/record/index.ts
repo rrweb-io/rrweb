@@ -39,7 +39,7 @@ import {
   registerErrorHandler,
   unregisterErrorHandler,
 } from './error-handler';
-import { shadowRoot } from '@rrweb/utils';
+import dom from '@rrweb/utils';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
 
@@ -398,7 +398,7 @@ function record<T = eventWithTime>(
         }
         if (hasShadowRoot(n)) {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          shadowDomManager.addShadowRoot(shadowRoot(n as Node)!, document);
+          shadowDomManager.addShadowRoot(dom.shadowRoot(n as Node)!, document);
         }
       },
       onIframeLoad: (iframe, childSn) => {

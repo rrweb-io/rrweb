@@ -12,14 +12,7 @@ import type {
 import type { IMirror, Mirror, SlimDOMOptions } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
 import { RRNode, RRIFrameElement, BaseRRNode } from 'rrdom';
-import {
-  contains,
-  getRootNode,
-  parentElement,
-  host,
-  parentNode,
-  shadowRoot,
-} from '@rrweb/utils';
+import dom from '@rrweb/utils';
 
 export function on(
   type: string,
@@ -193,7 +186,7 @@ export function getWindowScroll(win: Window) {
       : win.pageXOffset !== undefined
       ? win.pageXOffset
       : doc.documentElement.scrollLeft ||
-        (doc?.body && parentElement(doc.body)?.scrollLeft) ||
+        (doc?.body && dom.parentElement(doc.body)?.scrollLeft) ||
         doc?.body?.scrollLeft ||
         0,
     top: doc.scrollingElement
@@ -201,7 +194,7 @@ export function getWindowScroll(win: Window) {
       : win.pageYOffset !== undefined
       ? win.pageYOffset
       : doc?.documentElement.scrollTop ||
-        (doc?.body && parentElement(doc.body)?.scrollTop) ||
+        (doc?.body && dom.parentElement(doc.body)?.scrollTop) ||
         doc?.body?.scrollTop ||
         0,
   };
@@ -236,7 +229,7 @@ export function closestElementOfNode(node: Node | null): HTMLElement | null {
   const el: HTMLElement | null =
     node.nodeType === node.ELEMENT_NODE
       ? (node as HTMLElement)
-      : parentElement(node);
+      : dom.parentElement(node);
   return el;
 }
 
@@ -308,7 +301,7 @@ export function isAncestorRemoved(target: Node, mirror: Mirror): boolean {
   if (!mirror.has(id)) {
     return true;
   }
-  const parent = parentNode(target);
+  const parent = dom.parentNode(target);
   if (parent && parent.nodeType === target.DOCUMENT_NODE) {
     return false;
   }
@@ -466,7 +459,7 @@ export function hasShadowRoot<T extends Node | RRNode>(
   if (n instanceof BaseRRNode && 'shadowRoot' in n) {
     return Boolean(n.shadowRoot);
   }
-  return Boolean(shadowRoot(n as unknown as Element));
+  return Boolean(dom.shadowRoot(n as unknown as Element));
 }
 
 export function getNestedRule(
@@ -559,10 +552,10 @@ export function getShadowHost(n: Node): Element | null {
   let shadowHost: Element | null = null;
   if (
     'getRootNode' in n &&
-    getRootNode(n)?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
-    host(getRootNode(n) as ShadowRoot)
+    dom.getRootNode(n)?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
+    dom.host(dom.getRootNode(n) as ShadowRoot)
   )
-    shadowHost = host(getRootNode(n) as ShadowRoot);
+    shadowHost = dom.host(dom.getRootNode(n) as ShadowRoot);
   return shadowHost;
 }
 
@@ -584,11 +577,11 @@ export function shadowHostInDom(n: Node): boolean {
   const doc = n.ownerDocument;
   if (!doc) return false;
   const shadowHost = getRootShadowHost(n);
-  return contains(doc, shadowHost);
+  return dom.contains(doc, shadowHost);
 }
 
 export function inDom(n: Node): boolean {
   const doc = n.ownerDocument;
   if (!doc) return false;
-  return contains(doc, n) || shadowHostInDom(n);
+  return dom.contains(doc, n) || shadowHostInDom(n);
 }

@@ -52,11 +52,7 @@ import type {
 } from '@rrweb/types';
 import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
-import {
-  parentElement,
-  host as getHost,
-  mutationObserverCtor,
-} from '@rrweb/utils';
+import dom, { mutationObserverCtor } from '@rrweb/utils';
 
 export const mutationBuffers: MutationBuffer[] = [];
 
@@ -405,7 +401,7 @@ function initInputObserver({
      * We can treat this change as a value change of the select element the current target belongs to.
      */
     if (target && tagName === 'OPTION') {
-      target = parentElement(target);
+      target = dom.parentElement(target);
     }
     if (
       !target ||
@@ -855,7 +851,7 @@ export function initAdoptedStyleSheetObserver(
   // host of adoptedStyleSheets is outermost document or IFrame's document
   if (host.nodeName === '#document') hostId = mirror.getId(host);
   // The host is a ShadowRoot.
-  else hostId = mirror.getId(getHost(host as ShadowRoot));
+  else hostId = mirror.getId(dom.host(host as ShadowRoot));
 
   const patchTarget =
     host.nodeName === '#document'

@@ -32,13 +32,7 @@ import {
   getShadowHost,
   closestElementOfNode,
 } from '../utils';
-import {
-  childNodes,
-  host,
-  parentNode,
-  shadowRoot,
-  textContent,
-} from '@rrweb/utils';
+import dom from '@rrweb/utils';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -292,7 +286,7 @@ export default class MutationBuffer {
       return nextId;
     };
     const pushAdd = (n: Node) => {
-      const parent = parentNode(n);
+      const parent = dom.parentNode(n);
       if (!parent || !inDom(n) || (parent as Element).tagName === 'TEXTAREA') {
         return;
       }
@@ -331,7 +325,7 @@ export default class MutationBuffer {
           }
           if (hasShadowRoot(n)) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.shadowDomManager.addShadowRoot(shadowRoot(n)!, this.doc);
+            this.shadowDomManager.addShadowRoot(dom.shadowRoot(n)!, this.doc);
           }
         },
         onIframeLoad: (iframe, childSn) => {
@@ -359,7 +353,7 @@ export default class MutationBuffer {
     for (const n of this.movedSet) {
       if (
         isParentRemoved(this.removes, n, this.mirror) &&
-        !this.movedSet.has(parentNode(n)!)
+        !this.movedSet.has(dom.parentNode(n)!)
       ) {
         continue;
       }
@@ -383,7 +377,7 @@ export default class MutationBuffer {
     while (addList.length) {
       let node: DoubleLinkedListNode | null = null;
       if (candidate) {
-        const parentId = this.mirror.getId(parentNode(candidate.value));
+        const parentId = this.mirror.getId(dom.parentNode(candidate.value));
         const nextId = getNextId(candidate.value);
         if (parentId !== -1 && nextId !== -1) {
           node = candidate;
@@ -396,7 +390,7 @@ export default class MutationBuffer {
           tailNode = tailNode.previous;
           // ensure _node is defined before attempting to find value
           if (_node) {
-            const parentId = this.mirror.getId(parentNode(_node.value));
+            const parentId = this.mirror.getId(dom.parentNode(_node.value));
             const nextId = getNextId(_node.value);
 
             if (nextId === -1) continue;
@@ -408,10 +402,10 @@ export default class MutationBuffer {
             // nextId !== -1 && parentId === -1 This branch can happen if the node is the child of shadow root
             else {
               const unhandledNode = _node.value;
-              const parent = parentNode(unhandledNode);
+              const parent = dom.parentNode(unhandledNode);
               // If the node is the direct child of a shadow root, we treat the shadow host as its parent node.
               if (parent && parent.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-                const shadowHost = host(parent as ShadowRoot);
+                const shadowHost = dom.host(parent as ShadowRoot);
                 const parentId = this.mirror.getId(shadowHost);
                 if (parentId !== -1) {
                   node = _node;
@@ -442,7 +436,7 @@ export default class MutationBuffer {
       texts: this.texts
         .map((text) => {
           const n = text.node;
-          const parent = parentNode(n);
+          const parent = dom.parentNode(n);
           if (parent && (parent as Element).tagName === 'TEXTAREA') {
             // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
             this.genTextAreaValueMutation(parent as HTMLTextAreaElement);
@@ -523,8 +517,8 @@ export default class MutationBuffer {
       this.attributeMap.set(textarea, item);
     }
     item.attributes.value = Array.from(
-      childNodes(textarea),
-      (cn) => textContent(cn) || '',
+      dom.childNodes(textarea),
+      (cn) => dom.textContent(cn) || '',
     ).join('');
   };
 
@@ -534,7 +528,7 @@ export default class MutationBuffer {
     }
     switch (m.type) {
       case 'characterData': {
-        const value = textContent(m.target);
+        const value = dom.textContent(m.target);
 
         if (
           !isBlocked(m.target, this.blockClass, this.blockSelector, false) &&
@@ -683,7 +677,7 @@ export default class MutationBuffer {
         m.removedNodes.forEach((n) => {
           const nodeId = this.mirror.getId(n);
           const parentId = isShadowRoot(m.target)
-            ? this.mirror.getId(host(m.target))
+            ? this.mirror.getId(dom.host(m.target))
             : this.mirror.getId(m.target);
           if (
             isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
@@ -765,10 +759,10 @@ export default class MutationBuffer {
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
     if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
-      childNodes(n).forEach((childN) => this.genAdds(childN));
+      dom.childNodes(n).forEach((childN) => this.genAdds(childN));
       if (hasShadowRoot(n)) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        childNodes(shadowRoot(n)!).forEach((childN) => {
+        dom.childNodes(dom.shadowRoot(n)!).forEach((childN) => {
           this.processedNodeManager.add(childN, this);
           this.genAdds(childN, n);
         });
@@ -785,7 +779,7 @@ export default class MutationBuffer {
  */
 function deepDelete(addsSet: Set<Node>, n: Node) {
   addsSet.delete(n);
-  childNodes(n).forEach((childN) => deepDelete(addsSet, childN));
+  dom.childNodes(n).forEach((childN) => deepDelete(addsSet, childN));
 }
 
 function isParentRemoved(
@@ -802,13 +796,13 @@ function _isParentRemoved(
   n: Node,
   mirror: Mirror,
 ): boolean {
-  let node: ParentNode | null = parentNode(n);
+  let node: ParentNode | null = dom.parentNode(n);
   while (node) {
     const parentId = mirror.getId(node);
     if (removes.some((r) => r.id === parentId)) {
       return true;
     }
-    node = parentNode(node);
+    node = dom.parentNode(node);
   }
   return false;
 }
@@ -819,7 +813,7 @@ function isAncestorInSet(set: Set<Node>, n: Node): boolean {
 }
 
 function _isAncestorInSet(set: Set<Node>, n: Node): boolean {
-  const parent = parentNode(n);
+  const parent = dom.parentNode(n);
   if (!parent) {
     return false;
   }

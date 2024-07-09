@@ -11,7 +11,7 @@ import type {
   textNode,
   elementNode,
 } from './types';
-import { shadowRoot, host } from '@rrweb/utils';
+import dom from '@rrweb/utils';
 import { NodeType } from './types';
 
 export function isElement(n: Node): n is Element {
@@ -22,8 +22,10 @@ export function isShadowRoot(n: Node): n is ShadowRoot {
   const hostEl: Element | null =
     // anchor and textarea elements also have a `host` property
     // but only shadow roots have a `mode` property
-    (n && 'host' in n && 'mode' in n && host(n as ShadowRoot)) || null;
-  return Boolean(hostEl && 'shadowRoot' in hostEl && shadowRoot(hostEl) === n);
+    (n && 'host' in n && 'mode' in n && dom.host(n as ShadowRoot)) || null;
+  return Boolean(
+    hostEl && 'shadowRoot' in hostEl && dom.shadowRoot(hostEl) === n,
+  );
 }
 
 /**
