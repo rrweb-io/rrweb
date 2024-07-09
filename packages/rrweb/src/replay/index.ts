@@ -957,13 +957,14 @@ export class Replayer {
     });
     afterAppend(iframeEl.contentDocument! as Document, mutation.node.id);
 
-    collectedDialogs.forEach((d) => applyDialogToTopLevel(d));
     for (const { mutationInQueue, builtNode } of collectedIframes) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
       this.newDocumentQueue = this.newDocumentQueue.filter(
         (m) => m !== mutationInQueue,
       );
     }
+
+    collectedDialogs.forEach((d) => applyDialogToTopLevel(d));
   }
 
   private collectIframeAndAttachDocument(
