@@ -1487,13 +1487,13 @@ describe('record integration tests', function (this: ISuite) {
         <head>
 	        <style>
           /* hello */
-          /* world */
           </style>
         </head>
         <body>
 	        <div id="one"></div>
           <div id="two"></div>
 	        <script>
+		        document.querySelector("style").append(document.createTextNode("/* world */"));
 		        document.querySelector("style").sheet.insertRule('#one { color: ${Color}; }', 0);
 	        </script>
         </body></html>

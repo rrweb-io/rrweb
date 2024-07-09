@@ -16522,6 +16522,11 @@ exports[`record integration tests > should record style mutations with multiple 
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\",
                         \\"id\\": 7
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\",
+                        \\"id\\": 8
                       }
                     ],
                     \\"id\\": 6
@@ -16529,7 +16534,7 @@ exports[`record integration tests > should record style mutations with multiple 
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\",
-                    \\"id\\": 8
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 2,
@@ -16539,10 +16544,10 @@ exports[`record integration tests > should record style mutations with multiple 
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 10
+                        \\"id\\": 11
                       }
                     ],
-                    \\"id\\": 9
+                    \\"id\\": 10
                   }
                 ],
                 \\"id\\": 4
@@ -16550,7 +16555,7 @@ exports[`record integration tests > should record style mutations with multiple 
               {
                 \\"type\\": 3,
                 \\"textContent\\": \\"\\\\n        \\",
-                \\"id\\": 11
+                \\"id\\": 12
               },
               {
                 \\"type\\": 2,
@@ -16560,7 +16565,7 @@ exports[`record integration tests > should record style mutations with multiple 
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n\\\\t        \\",
-                    \\"id\\": 13
+                    \\"id\\": 14
                   },
                   {
                     \\"type\\": 2,
@@ -16569,12 +16574,12 @@ exports[`record integration tests > should record style mutations with multiple 
                       \\"id\\": \\"one\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 14
+                    \\"id\\": 15
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 15
+                    \\"id\\": 16
                   },
                   {
                     \\"type\\": 2,
@@ -16583,12 +16588,12 @@ exports[`record integration tests > should record style mutations with multiple 
                       \\"id\\": \\"two\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 16
+                    \\"id\\": 17
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n\\\\t        \\",
-                    \\"id\\": 17
+                    \\"id\\": 18
                   },
                   {
                     \\"type\\": 2,
@@ -16598,18 +16603,18 @@ exports[`record integration tests > should record style mutations with multiple 
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 19
+                        \\"id\\": 20
                       }
                     ],
-                    \\"id\\": 18
+                    \\"id\\": 19
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\",
-                    \\"id\\": 20
+                    \\"id\\": 21
                   }
                 ],
-                \\"id\\": 12
+                \\"id\\": 13
               }
             ],
             \\"id\\": 3
@@ -16641,25 +16646,25 @@ exports[`record integration tests > should record style mutations with multiple 
               \\"_cssText\\": \\"#two { color: rgb(255, 0, 0); }\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 21
-          }
-        },
-        {
-          \\"parentId\\": 21,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"\\",
             \\"id\\": 22
           }
         },
         {
-          \\"parentId\\": 21,
-          \\"nextId\\": 22,
+          \\"parentId\\": 22,
+          \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"\\",
             \\"id\\": 23
+          }
+        },
+        {
+          \\"parentId\\": 22,
+          \\"nextId\\": 23,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\",
+            \\"id\\": 24
           }
         }
       ]
