@@ -1410,8 +1410,8 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
           \\"value\\": \\"\\\\n      body { background-color: black !important; }\\\\n    \\"
         },
         {
-          \\"id\\": 34,
-          \\"value\\": \\".absolutify { background-image: url(\\\\\\"http://localhost:3030/rel2\\\\\\"); }\\"         
+          \\"id\\": 37,
+          \\"value\\": \\".absolutify { background-image: url(\\\\\\"http://localhost:3030/rel2\\\\\\"); }\\"
         },
         {
           \\"id\\": 29,
