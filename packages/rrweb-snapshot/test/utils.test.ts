@@ -311,6 +311,9 @@ describe('utils', () => {
         shouldIgnoreAsset('http:', { origins: ['http://example.com'] }),
       ).toBe(true);
     });
+
+    it(`should ignore malformed url even with origins: true`, () => {
+      expect(shouldIgnoreAsset('http:', { origins: true })).toBe(true);
     });
   });
 

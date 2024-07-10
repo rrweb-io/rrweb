@@ -727,18 +727,17 @@ export function shouldIgnoreAsset(
   for (const origin of originsToIgnore) {
     if (url.startsWith(origin)) return true;
   }
-
+  let urlOrigin;
+  try {
+    urlOrigin = new URL(url).origin;
+  } catch (e) {
+    return true; // something went wrong, ignore!
+  }
   // Check the origins
   const captureOrigins = config.origins;
   if (typeof captureOrigins === 'boolean') {
     return !captureOrigins;
   } else if (Array.isArray(captureOrigins)) {
-    let urlOrigin;
-    try {
-      urlOrigin = new URL(url).origin;
-    } catch (e) {
-      return true; // something went wrong, ignore!
-    }
     return !captureOrigins.includes(urlOrigin);
   }
   return true; // no config, ignore!
