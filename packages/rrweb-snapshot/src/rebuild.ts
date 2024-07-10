@@ -7,10 +7,7 @@ import {
   type elementNode,
   type legacyAttributes,
 } from '@rrweb/types';
-import {
-  type tagMap,
-  type BuildCache,
-} from './types';
+import { type tagMap, type BuildCache } from './types';
 import { isElement, Mirror, isNodeMetaEqual, lowerIfExists } from './utils';
 import postcss from 'postcss';
 
@@ -100,7 +97,7 @@ export function applyCssSplits(
 ): void {
   const childTextNodes = [];
   for (let i = 0; i < n.childNodes.length; i++) {
-    const scn  = n.childNodes[i];
+    const scn = n.childNodes[i];
     if ('textContent' in scn) {
       childTextNodes.push(scn);
     }
@@ -250,12 +247,7 @@ function buildNode(
           // pass
         } else if (tagName === 'style' && name === '_cssText') {
           // with rrweb this is not the preferred way to build a style node, but rather via an asset
-          buildStyleNode(
-            n,
-            node as HTMLStyleElement,
-            value,
-            options,
-          );
+          buildStyleNode(n, node as HTMLStyleElement, value, options);
           continue; // no need to set _cssText as attribute
         } else if (tagName === 'textarea' && name === 'value') {
           // create without an ID or presence in mirror

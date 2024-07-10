@@ -1,6 +1,5 @@
 import type { serializedNodeWithId } from '@rrweb/types';
 
-
 export type tagMap = {
   [key: string]: string;
 };
