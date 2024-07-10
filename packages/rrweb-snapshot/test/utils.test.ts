@@ -6,6 +6,7 @@ import {
   escapeImportStatement,
   extractFileExtension,
   fixSafariColons,
+  shouldIgnoreAsset,
   isAttributeCapturable,
   shouldCaptureAsset,
   isNodeMetaEqual,
@@ -327,6 +328,35 @@ describe('utils', () => {
       ).toEqual(
         "@font-face { font-family: 'MockFont'; src: url('https://example.com/fonts/mockfont.woff2') format('woff2'); font-weight: normal; font-style: normal; }",
       );
+    });
+  });
+
+  describe('shouldIgnoreAsset()', () => {
+    it(`should ignore assets when config not specified`, () => {
+      expect(shouldIgnoreAsset('http://example.com', {})).toBe(true);
+    });
+
+    it(`should not ignore matching origin`, () => {
+      expect(
+        shouldIgnoreAsset('http://example.com/', {
+          origins: ['http://example.com'],
+        }),
+      ).toBe(false);
+    });
+
+    it(`should ignore mismatched origin`, () => {
+      expect(
+        shouldIgnoreAsset('http://123.com/', {
+          origins: ['http://example.com'],
+        }),
+      ).toBe(true);
+    });
+
+    it(`should ignore malformed url`, () => {
+      expect(
+        shouldIgnoreAsset('http:', { origins: ['http://example.com'] }),
+      ).toBe(true);
+    });
     });
   });
 

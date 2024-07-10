@@ -711,7 +711,10 @@ export function isAttributeCapturable(n: Element, attribute: string): boolean {
   return acceptedAttributesSet.has(attribute);
 }
 
-function shouldIgnoreAsset(url: string, config: captureAssetsParam): boolean {
+export function shouldIgnoreAsset(
+  url: string,
+  config: captureAssetsParam,
+): boolean {
   const originsToIgnore = ['data:'];
   const urlIsBlob = url.startsWith(`blob:${window.location.origin}/`);
 
@@ -734,9 +737,9 @@ function shouldIgnoreAsset(url: string, config: captureAssetsParam): boolean {
     try {
       urlOrigin = new URL(url).origin;
     } catch (e) {
-      return false;
+      return true; // something went wrong, ignore!
     }
     return !captureOrigins.includes(urlOrigin);
   }
-  return false;
+  return true; // no config, ignore!
 }
