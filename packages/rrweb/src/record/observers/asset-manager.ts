@@ -187,7 +187,7 @@ export default class AssetManager {
       };
       if (styleId) {
         if (el.childNodes.length > 1) {
-          payload.cssTexts = splitCssText(cssText, el as HTMLStyleElement);;
+          payload.cssTexts = splitCssText(cssText, el as HTMLStyleElement);
         }
         this.mutationCb({
           url: `rr_css_text:${styleId}`,
