@@ -6,7 +6,7 @@ import { stringify } from '../src/stringify';
 import { describe, it, expect } from 'vitest';
 
 describe('console record plugin', () => {
-  const aLongString = 'a'.repeat(100);
+  const aLongString = 'a'.repeat(100) + 'b';
 
   it('can stringify bigint', () => {
     expect(stringify(BigInt(1))).toEqual('"1n"');
