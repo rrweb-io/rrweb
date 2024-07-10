@@ -696,10 +696,12 @@ function serializeElementNode(
         styleRules.length < captureAssets.stylesheetsRuleThreshold)
     ) {
       let cssText = stringifyCssRules(styleRules, sheetBaseHref);
-      if (cssText && styleEl.childNodes.length > 1) {
-        cssText = markCssSplits(cssText, styleEl);
+      if (cssText) {
+        if (styleEl.childNodes.length > 1) {
+          cssText = markCssSplits(cssText, styleEl);
+        }
+        attributes._cssText = cssText;
       }
-      attributes._cssText = cssText;
     } else {
       const styleId = genStyleId();
       onAssetDetected({
