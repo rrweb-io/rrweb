@@ -8,6 +8,7 @@ import snapshot, {
   classMatchesRegex,
   IGNORED_NODE,
   genId,
+  absoluteToDoc,
 } from './snapshot';
 import rebuild, {
   buildNodeWithSN,
@@ -32,4 +33,5 @@ export {
   classMatchesRegex,
   IGNORED_NODE,
   genId,
+  absoluteToDoc,
 };
