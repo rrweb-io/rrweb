@@ -27,7 +27,7 @@ describe('record integration tests', function (this: ISuite) {
     if (!options.captureAssets) {
       // for consistency in the tests
       options.captureAssets = {
-        processStylesheetsWithin: 200,
+        processStylesheetsWithin: 50,
       };
     }
     const filePath = path.resolve(__dirname, `./html/${fileName}`);
@@ -1502,7 +1502,7 @@ describe('record integration tests', function (this: ISuite) {
       code,
       generateRecordSnippet({
         captureAssets: {
-          processStylesheetsWithin: 200,
+          processStylesheetsWithin: 50,
         },
       }),
     );
@@ -1601,7 +1601,7 @@ describe('record integration tests', function (this: ISuite) {
       code,
       generateRecordSnippet({
         captureAssets: {
-          processStylesheetsWithin: 200,
+          processStylesheetsWithin: 50,
         },
       }),
     );
