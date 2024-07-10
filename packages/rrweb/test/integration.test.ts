@@ -1463,7 +1463,11 @@ describe('record integration tests', function (this: ISuite) {
         document.head.appendChild(script);
       },
       code,
-      generateRecordSnippet({}),
+      generateRecordSnippet({
+        captureAssets: {
+          processStylesheetsWithin: 200,
+        },
+      }),
     );
 
     await page.evaluate(
@@ -1558,7 +1562,11 @@ describe('record integration tests', function (this: ISuite) {
         document.head.appendChild(script);
       },
       code,
-      generateRecordSnippet({}),
+      generateRecordSnippet({
+        captureAssets: {
+          processStylesheetsWithin: 200,
+        },
+      }),
     );
 
     await page.evaluate(async (Color) => {
