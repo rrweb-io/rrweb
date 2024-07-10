@@ -6,6 +6,7 @@ import {
   escapeImportStatement,
   extractFileExtension,
   fixSafariColons,
+  shouldIgnoreAsset,
   isAttributeCapturable,
   shouldCaptureAsset,
   isNodeMetaEqual,
@@ -281,6 +282,35 @@ describe('utils', () => {
 
       const out3 = fixSafariColons('[data-aa\\:other] { color: red; }');
       expect(out3).toEqual('[data-aa\\:other] { color: red; }');
+    });
+  });
+
+  describe('shouldIgnoreAsset()', () => {
+    it(`should ignore assets when config not specified`, () => {
+      expect(shouldIgnoreAsset('http://example.com', {})).toBe(true);
+    });
+
+    it(`should not ignore matching origin`, () => {
+      expect(
+        shouldIgnoreAsset('http://example.com/', {
+          origins: ['http://example.com'],
+        }),
+      ).toBe(false);
+    });
+
+    it(`should ignore mismatched origin`, () => {
+      expect(
+        shouldIgnoreAsset('http://123.com/', {
+          origins: ['http://example.com'],
+        }),
+      ).toBe(true);
+    });
+
+    it(`should ignore malformed url`, () => {
+      expect(
+        shouldIgnoreAsset('http:', { origins: ['http://example.com'] }),
+      ).toBe(true);
+    });
     });
   });
 
