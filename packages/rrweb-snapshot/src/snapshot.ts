@@ -762,8 +762,8 @@ function serializeElementNode(
         if (styleEl.childNodes.length > 1) {
           cssText = markCssSplits(cssText, styleEl);
         }
+        attributes._cssText = cssText;
       }
-      attributes._cssText = cssText;
     } else {
       const styleId = genStyleId();
       onAssetDetected({
