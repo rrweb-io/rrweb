@@ -1064,8 +1064,18 @@ export function serializeNodeWithId(
   let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
 
-  if (inlineImages) {
-    captureAssets.images = true;
+  if (onAssetDetected) {
+    if (captureAssets.images === undefined && inlineImages) {
+      captureAssets.images = true;
+    }
+    if (captureAssets.stylesheets === undefined) {
+      if (inlineStylesheet) {
+        // the prior default setting
+        captureAssets.stylesheets = 'without-fetch';
+      } else {
+        captureAssets.stylesheets = false;
+      }
+    }
   }
 
   if (!needsMask) {
