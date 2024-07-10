@@ -24,6 +24,12 @@ describe('record integration tests', function (this: ISuite) {
     fileName: string,
     options: recordOptions<eventWithTime> = {},
   ): string => {
+    if (!options.captureAssets) {
+      // for consistency in the tests
+      options.captureAssets = {
+        processStylesheetsWithin: 200,
+      };
+    }
     const filePath = path.resolve(__dirname, `./html/${fileName}`);
     const html = fs.readFileSync(filePath, 'utf8');
     return replaceLast(
