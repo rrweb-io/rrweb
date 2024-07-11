@@ -96,11 +96,13 @@ export function escapeImportStatement(rule: CSSImportRule): string {
 export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
-    return rules
-      ? fixBrowserCompatibilityIssuesInCSS(
-          Array.from(rules, stringifyRule).join(''),
-        )
-      : null;
+    const stringifiedRules = Array.from(rules, stringifyRule)
+      .map((rule) => {
+        return s.href ? absoluteToStylesheet(rule, s.href) : rule;
+      })
+      .join('');
+
+    return rules ? fixBrowserCompatibilityIssuesInCSS(stringifiedRules) : null;
   } catch (error) {
     return null;
   }
@@ -350,4 +352,66 @@ export function extractFileExtension(
   const regex = /\.([0-9a-z]+)(?:$)/i;
   const match = url.pathname.match(regex);
   return match?.[1] ?? null;
+}
+
+function extractOrigin(url: string): string {
+  let origin = '';
+  if (url.indexOf('//') > -1) {
+    origin = url.split('/').slice(0, 3).join('/');
+  } else {
+    origin = url.split('/')[0];
+  }
+  origin = origin.split('?')[0];
+  return origin;
+}
+
+const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
+const URL_PROTOCOL_MATCH = /^(?:[a-z+]+:)?\/\//i;
+const URL_WWW_MATCH = /^www\..*/i;
+const DATA_URI = /^(data:)([^,]*),(.*)/i;
+export function absoluteToStylesheet(
+  cssText: string | null,
+  href: string,
+): string {
+  return (cssText || '').replace(
+    URL_IN_CSS_REF,
+    (
+      origin: string,
+      quote1: string,
+      path1: string,
+      quote2: string,
+      path2: string,
+      path3: string,
+    ) => {
+      const filePath = path1 || path2 || path3;
+      const maybeQuote = quote1 || quote2 || '';
+      if (!filePath) {
+        return origin;
+      }
+      if (URL_PROTOCOL_MATCH.test(filePath) || URL_WWW_MATCH.test(filePath)) {
+        return `url(${maybeQuote}${filePath}${maybeQuote})`;
+      }
+      if (DATA_URI.test(filePath)) {
+        return `url(${maybeQuote}${filePath}${maybeQuote})`;
+      }
+      if (filePath[0] === '/') {
+        return `url(${maybeQuote}${
+          extractOrigin(href) + filePath
+        }${maybeQuote})`;
+      }
+      const stack = href.split('/');
+      const parts = filePath.split('/');
+      stack.pop();
+      for (const part of parts) {
+        if (part === '.') {
+          continue;
+        } else if (part === '..') {
+          stack.pop();
+        } else {
+          stack.push(part);
+        }
+      }
+      return `url(${maybeQuote}${stack.join('/')}${maybeQuote})`;
+    },
+  );
 }

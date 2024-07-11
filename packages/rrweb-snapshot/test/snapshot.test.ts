@@ -4,13 +4,12 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
 import {
-  absoluteToStylesheet,
   serializeNodeWithId,
   _isBlockedElement,
 } from '../src/snapshot';
 import snapshot from '../src/snapshot';
 import { serializedNodeWithId, elementNode } from '../src/types';
-import { Mirror } from '../src/utils';
+import { Mirror, absoluteToStylesheet } from '../src/utils';
 
 describe('absolute url to stylesheet', () => {
   const href = 'http://localhost/css/style.css';
