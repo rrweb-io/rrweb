@@ -1492,6 +1492,7 @@ describe('record integration tests', function (this: ISuite) {
         </body></html>
       `,
     );
+    const waitForStylesheetAssets = 10;
     // Start rrweb recording
     await page.evaluate(
       (code, recordSnippet) => {
@@ -1502,10 +1503,11 @@ describe('record integration tests', function (this: ISuite) {
       code,
       generateRecordSnippet({
         captureAssets: {
-          processStylesheetsWithin: 50,
+          processStylesheetsWithin: waitForStylesheetAssets,
         },
       }),
     );
+    await page.waitForTimeout(waitForStylesheetAssets + 1); // allow time for stylesheet assets to get emitted before mutations
 
     await page.evaluate(
       async (OldColor, NewColor) => {
@@ -1591,6 +1593,9 @@ describe('record integration tests', function (this: ISuite) {
         </body></html>
       `,
     );
+
+    const waitForStylesheetAssets = 10;
+
     // Start rrweb recording
     await page.evaluate(
       (code, recordSnippet) => {
@@ -1601,10 +1606,11 @@ describe('record integration tests', function (this: ISuite) {
       code,
       generateRecordSnippet({
         captureAssets: {
-          processStylesheetsWithin: 50,
+          processStylesheetsWithin: waitForStylesheetAssets,
         },
       }),
     );
+    await page.waitForTimeout(waitForStylesheetAssets + 1); // allow time for stylesheet assets to get emitted before mutations
 
     await page.evaluate(async (Color) => {
       // Create a new style element with the same content as the existing style element and apply it to the #two div element
