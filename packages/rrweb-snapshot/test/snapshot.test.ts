@@ -3,10 +3,7 @@
  */
 import { JSDOM } from 'jsdom';
 import { describe, it, expect } from 'vitest';
-import {
-  serializeNodeWithId,
-  _isBlockedElement,
-} from '../src/snapshot';
+import { serializeNodeWithId, _isBlockedElement } from '../src/snapshot';
 import snapshot from '../src/snapshot';
 import { serializedNodeWithId, elementNode } from '../src/types';
 import { Mirror, absoluteToStylesheet } from '../src/utils';
