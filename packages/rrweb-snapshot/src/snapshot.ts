@@ -25,7 +25,7 @@ import {
   getInputType,
   toLowerCase,
   extractFileExtension,
-  absoluteToStylesheet,
+  absolutifyURLs,
 } from './utils';
 
 let _id = 1;
@@ -193,7 +193,7 @@ export function transformAttribute(
   } else if (name === 'srcset') {
     return getAbsoluteSrcsetString(doc, value);
   } else if (name === 'style') {
-    return absoluteToStylesheet(value, getHref(doc));
+    return absolutifyURLs(value, getHref(doc));
   } else if (tagName === 'object' && name === 'data') {
     return absoluteToDoc(doc, value);
   }
@@ -523,7 +523,7 @@ function serializeTextNode(
         n,
       );
     }
-    textContent = absoluteToStylesheet(textContent, getHref(options.doc));
+    textContent = absolutifyURLs(textContent, getHref(options.doc));
   }
   if (isScript) {
     textContent = 'SCRIPT_PLACEHOLDER';

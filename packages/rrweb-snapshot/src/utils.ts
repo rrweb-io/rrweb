@@ -96,10 +96,8 @@ export function escapeImportStatement(rule: CSSImportRule): string {
 export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
-    const stringifiedRules = Array.from(rules, stringifyRule)
-      .map((rule) => {
-        return s.href ? absoluteToStylesheet(rule, s.href) : rule;
-      })
+    const stringifiedRules = [...rules]
+      .map((rule: CSSRule) => stringifyRule(rule, s.href))
       .join('');
 
     return rules ? fixBrowserCompatibilityIssuesInCSS(stringifiedRules) : null;
@@ -108,7 +106,10 @@ export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   }
 }
 
-export function stringifyRule(rule: CSSRule): string {
+export function stringifyRule(
+  rule: CSSRule,
+  sheetHref?: string | null,
+): string {
   let importStringified;
   if (isCSSImportRule(rule)) {
     try {
@@ -118,6 +119,10 @@ export function stringifyRule(rule: CSSRule): string {
         stringifyStylesheet(rule.styleSheet) ||
         // work around browser issues with the raw string `@import url(...)` statement
         escapeImportStatement(rule);
+
+      if (sheetHref) {
+        importStringified = absolutifyURLs(importStringified, sheetHref);
+      }
     } catch (error) {
       // ignore
     }
@@ -369,10 +374,7 @@ const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
 const URL_PROTOCOL_MATCH = /^(?:[a-z+]+:)?\/\//i;
 const URL_WWW_MATCH = /^www\..*/i;
 const DATA_URI = /^(data:)([^,]*),(.*)/i;
-export function absoluteToStylesheet(
-  cssText: string | null,
-  href: string,
-): string {
+export function absolutifyURLs(cssText: string | null, href: string): string {
   return (cssText || '').replace(
     URL_IN_CSS_REF,
     (
