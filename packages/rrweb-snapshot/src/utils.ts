@@ -109,8 +109,8 @@ export function stringifyStylesheet(s: CSSStyleSheet): string | null {
 }
 
 export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
-  let importStringified;
   if (isCSSImportRule(rule)) {
+    let importStringified;
     try {
       importStringified =
         // for same-origin stylesheets,
@@ -119,19 +119,31 @@ export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
         // work around browser issues with the raw string `@import url(...)` statement
         escapeImportStatement(rule);
 
-      if (sheetHref) {
-        importStringified = absolutifyURLs(importStringified, sheetHref);
+      if (rule.styleSheet.href) {
+        importStringified = absolutifyURLs(
+          importStringified,
+          rule.styleSheet.href,
+        );
       }
+
+      return importStringified;
     } catch (error) {
       // ignore
     }
-  } else if (isCSSStyleRule(rule) && rule.selectorText.includes(':')) {
-    // Safari does not escape selectors with : properly
-    // see https://bugs.webkit.org/show_bug.cgi?id=184604
-    return fixSafariColons(rule.cssText);
   }
 
-  return importStringified || rule.cssText;
+  let ruleStringified = rule.cssText;
+  if (isCSSStyleRule(rule) && rule.selectorText.includes(':')) {
+    // Safari does not escape selectors with : properly
+    // see https://bugs.webkit.org/show_bug.cgi?id=184604
+    ruleStringified = fixSafariColons(ruleStringified);
+  }
+
+  if (sheetHref) {
+    return absolutifyURLs(ruleStringified, sheetHref);
+  }
+
+  return ruleStringified;
 }
 
 export function fixSafariColons(cssStringified: string): string {
