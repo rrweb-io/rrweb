@@ -108,10 +108,7 @@ export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   }
 }
 
-export function stringifyRule(
-  rule: CSSRule,
-  sheetHref: string | null,
-): string {
+export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
   let importStringified;
   if (isCSSImportRule(rule)) {
     try {
