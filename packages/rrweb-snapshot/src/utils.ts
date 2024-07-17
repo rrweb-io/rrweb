@@ -96,11 +96,13 @@ export function escapeImportStatement(rule: CSSImportRule): string {
 export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
-    const stringifiedRules = [...rules]
-      .map((rule: CSSRule) => stringifyRule(rule, s.href))
-      .join('');
-
-    return rules ? fixBrowserCompatibilityIssuesInCSS(stringifiedRules) : null;
+    if (!rules) {
+      return null;
+    }
+    const stringifiedRules = Array.from(rules, (rule: CSSRule) =>
+      stringifyRule(rule, s.href),
+    ).join('');
+    return fixBrowserCompatibilityIssuesInCSS(stringifiedRules);
   } catch (error) {
     return null;
   }
