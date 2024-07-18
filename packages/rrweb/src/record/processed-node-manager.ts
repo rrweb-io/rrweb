@@ -11,7 +11,7 @@ export default class ProcessedNodeManager {
   public inOtherBuffer(node: Node, thisBuffer: MutationBuffer) {
     const buffers = this.nodeMap.get(node);
     if (!buffers) return false;
-    return buffers.has(thisBuffer);
+    return !buffers.has(thisBuffer);
   }
 
   public add(node: Node, buffer: MutationBuffer) {
