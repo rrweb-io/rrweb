@@ -368,7 +368,7 @@ export class Mirror implements IMirror<RRNode> {
       const n = queue.pop()!;
       this.idNodeMap.delete(this.getId(n));
 
-      for(let i = 0; i < n.childNodes.length; i++) {
+      for (let i = 0; i < n.childNodes.length; i++) {
         queue.push(n.childNodes[i]);
       }
     }

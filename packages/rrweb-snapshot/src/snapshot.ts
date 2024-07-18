@@ -340,16 +340,16 @@ export function needMaskingText(
   } else {
     el = node.parentElement;
   }
-    if (typeof maskTextClass === 'string') {
-      if (el.classList.contains(maskTextClass)) return true;
-      if (checkAncestors && el.matches(`.${maskTextClass} *`)) return true;
-    } else {
-      if (classMatchesRegex(el, maskTextClass, checkAncestors)) return true;
-    }
-    if (maskTextSelector) {
-      if (el.matches(maskTextSelector)) return true;
-      if (checkAncestors && el.matches(`${maskTextSelector} *`)) return true;
-    }
+  if (typeof maskTextClass === 'string') {
+    if (el.matches(`.${maskTextClass}`)) return true;
+    if (checkAncestors && el.matches(`.${maskTextClass} *`)) return true;
+  } else {
+    if (classMatchesRegex(el, maskTextClass, checkAncestors)) return true;
+  }
+  if (maskTextSelector) {
+    if (el.matches(maskTextSelector)) return true;
+    if (checkAncestors && el.matches(`${maskTextSelector} *`)) return true;
+  }
   return false;
 }
 
