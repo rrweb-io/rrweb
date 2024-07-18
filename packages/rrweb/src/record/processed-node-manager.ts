@@ -5,14 +5,11 @@ import type MutationBuffer from './mutation';
  */
 export default class ProcessedNodeManager {
   private nodeMap: WeakMap<Node, Set<MutationBuffer>> = new WeakMap();
-
   private active = false;
 
   public inOtherBuffer(node: Node, thisBuffer: MutationBuffer) {
     const buffers = this.nodeMap.get(node);
-    return (
-      buffers && Array.from(buffers).some((buffer) => buffer !== thisBuffer)
-    );
+    return buffers?.has(thisBuffer)
   }
 
   public add(node: Node, buffer: MutationBuffer) {

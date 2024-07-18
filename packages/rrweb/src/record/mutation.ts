@@ -690,12 +690,7 @@ export default class MutationBuffer {
 
           // iterate breadth first over new nodes (non recursive for performance)
           while (genAddsQueue.length) {
-            const next = genAddsQueue.pop()!;
-
-            // Since this is an extremely hot path, do not destructure next
-            // in order to avoid invoking the iterator protocol
-            const n = next[0];
-            const target = next[1];
+            const [n, target] = genAddsQueue.pop()!;
 
             // this node was already recorded in other buffer, ignore it
             if (this.processedNodeManager.inOtherBuffer(n, this)) continue;
@@ -728,17 +723,11 @@ export default class MutationBuffer {
 
             for (let j = n.childNodes.length - 1; j >= 0; j--) {
               const childN = n.childNodes[j];
-              if (this.movedSet.has(childN) || this.addedSet.has(childN))
-                return;
-
               genAddsQueue.push([childN, undefined]);
             }
             if (hasShadowRoot(n)) {
               for (let j = n.shadowRoot.childNodes.length - 1; j >= 0; j--) {
                 const childN = n.shadowRoot.childNodes[j];
-                if (this.movedSet.has(childN) || this.addedSet.has(childN))
-                  return;
-
                 this.processedNodeManager.add(childN, this);
                 genAddsQueue.push([childN, n]);
               }
@@ -746,7 +735,8 @@ export default class MutationBuffer {
           }
         }
 
-        m.removedNodes.forEach((n) => {
+        for(let i = 0; i < m.removedNodes.length; i++) {
+          const n = m.removedNodes[i];
           const nodeId = this.mirror.getId(n);
           const parentId = isShadowRoot(m.target)
             ? this.mirror.getId(m.target.host)
@@ -793,7 +783,7 @@ export default class MutationBuffer {
             });
           }
           this.mapRemoves.push(n);
-        });
+        };
         break;
       }
       default:
