@@ -134,26 +134,6 @@ class DoubleLinkedList {
 
 const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
 
-function serializeTexts(
-  input: textCursor[],
-  addedIds: Set<number>,
-  mirror: Mirror,
-): mutationCallbackParam['texts'] {
-  const texts = [];
-  for (let i = 0; i < input.length; i++) {
-    const id = mirror.getId(input[i].node);
-    if (addedIds.has(id) || !mirror.has(id)) {
-      continue;
-    }
-    texts.push({
-      id,
-      value: input[i].value,
-    });
-  }
-
-  return texts;
-}
-
 /**
  * controls behaviour of a MutationObserver
  */
@@ -279,6 +259,32 @@ export default class MutationBuffer {
     mutations.forEach(this.processMutation); // adds mutations to the buffer
     this.emit(); // clears buffer if not locked/frozen
   };
+
+  private serializeTexts(
+    input: textCursor[],
+    addedIds: Set<number>,
+  ): mutationCallbackParam['texts'] {
+    const texts = [];
+    for (let i = 0; i < input.length; i++) {
+      const n = input[i].node;
+      const id = this.mirror.getId(n);
+      if (n.parentNode && (n.parentNode as Element).tagName === 'TEXTAREA') {
+        // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
+        this.genTextAreaValueMutation(n.parentNode as HTMLTextAreaElement);
+      }
+  
+      if (addedIds.has(id) || !this.mirror.has(id)) {
+        continue;
+      }
+      texts.push({
+        id,
+        value: input[i].value,
+      });
+    }
+  
+    return texts;
+  }
+  
 
   public emit = () => {
     if (this.frozen || this.locked) {
@@ -459,7 +465,7 @@ export default class MutationBuffer {
     }
 
     const payload = {
-      texts: serializeTexts(this.texts, addedIds, this.mirror),
+      texts: this.serializeTexts(this.texts, addedIds),
       attributes: this.attributes
         .map((attribute) => {
           const { attributes } = attribute;
