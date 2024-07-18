@@ -118,18 +118,18 @@ export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
         stringifyStylesheet(rule.styleSheet) ||
         // work around browser issues with the raw string `@import url(...)` statement
         escapeImportStatement(rule);
-
-      if (rule.styleSheet.href) {
-        importStringified = absolutifyURLs(
-          importStringified,
-          rule.styleSheet.href,
-        );
-      }
-
-      return importStringified;
     } catch (error) {
       // ignore
     }
+
+    if (rule.styleSheet.href) {
+      importStringified = absolutifyURLs(
+        importStringified || rule.cssText,
+        rule.styleSheet.href,
+      );
+    }
+
+    return importStringified || rule.cssText;
   }
 
   let ruleStringified = rule.cssText;
