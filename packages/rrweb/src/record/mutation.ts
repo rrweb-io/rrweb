@@ -134,43 +134,6 @@ class DoubleLinkedList {
 
 const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
 
-function serializeAttributes(
-  input: attributeCursor[],
-  addedIds: Set<number>,
-): mutationCallbackParam['attributes'] {
-  const attributes = [];
-  for (let i = 0; i < input.length; i++) {
-    const id = this.mirror.getId(input[i].node);
-    if (addedIds.has(id) || !this.mirror.has(id)) {
-      continue;
-    }
-
-    const { attributes: elAttributes } = input[i];
-    if (typeof elAttributes.style === 'string') {
-      const diffAsStr = JSON.stringify(input[i].styleDiff);
-      const unchangedAsStr = JSON.stringify(input[i]._unchangedStyles);
-      // check if the style diff is actually shorter than the regular string based mutation
-      // (which was the whole point of #464 'compact style mutation').
-      if (diffAsStr.length < elAttributes.style.length) {
-        // also: CSSOM fails badly when var() is present on shorthand properties, so only proceed with
-        // the compact style mutation if these have all been accounted for
-        if (
-          (diffAsStr + unchangedAsStr).split('var(').length ===
-          elAttributes.style.split('var(').length
-        ) {
-          elAttributes.style = input[i].styleDiff;
-        }
-      }
-    }
-
-    attributes.push({
-      id,
-      attributes: input[i].attributes,
-    });
-  }
-
-  return attributes;
-}
 /**
  * controls behaviour of a MutationObserver
  */
@@ -296,6 +259,44 @@ export default class MutationBuffer {
     mutations.forEach(this.processMutation); // adds mutations to the buffer
     this.emit(); // clears buffer if not locked/frozen
   };
+
+  private serializeAttributes(
+    input: attributeCursor[],
+    addedIds: Set<number>,
+  ): mutationCallbackParam['attributes'] {
+    const attributes = [];
+    for (let i = 0; i < input.length; i++) {
+      const id = this.mirror.getId(input[i].node);
+      if (addedIds.has(id) || !this.mirror.has(id)) {
+        continue;
+      }
+
+      const { attributes: elAttributes } = input[i];
+      if (typeof elAttributes.style === 'string') {
+        const diffAsStr = JSON.stringify(input[i].styleDiff);
+        const unchangedAsStr = JSON.stringify(input[i]._unchangedStyles);
+        // check if the style diff is actually shorter than the regular string based mutation
+        // (which was the whole point of #464 'compact style mutation').
+        if (diffAsStr.length < elAttributes.style.length) {
+          // also: CSSOM fails badly when var() is present on shorthand properties, so only proceed with
+          // the compact style mutation if these have all been accounted for
+          if (
+            (diffAsStr + unchangedAsStr).split('var(').length ===
+            elAttributes.style.split('var(').length
+          ) {
+            elAttributes.style = input[i].styleDiff;
+          }
+        }
+      }
+
+      attributes.push({
+        id,
+        attributes: input[i].attributes,
+      });
+    }
+
+    return attributes;
+  }
 
   public emit = () => {
     if (this.frozen || this.locked) {
@@ -495,7 +496,7 @@ export default class MutationBuffer {
         .filter((text) => !addedIds.has(text.id))
         // text mutation's id was not in the mirror map means the target node has been removed
         .filter((text) => this.mirror.has(text.id)),
-      attributes: serializeAttributes(this.attributes, addedIds),
+      attributes: this.serializeAttributes(this.attributes, addedIds),
       removes: this.removes,
       adds,
     };
