@@ -272,7 +272,7 @@ export default class MutationBuffer {
         // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
         this.genTextAreaValueMutation(n.parentNode as HTMLTextAreaElement);
       }
-  
+
       if (addedIds.has(id) || !this.mirror.has(id)) {
         continue;
       }
@@ -281,10 +281,9 @@ export default class MutationBuffer {
         value: input[i].value,
       });
     }
-  
+
     return texts;
   }
-  
 
   public emit = () => {
     if (this.frozen || this.locked) {
