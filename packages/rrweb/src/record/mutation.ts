@@ -684,7 +684,7 @@ export default class MutationBuffer {
           [Node, Node | undefined]
         >();
 
-        for(let i = m.addedNodes.length-1; i >= 0; i--) {
+        for (let i = m.addedNodes.length - 1; i >= 0; i--) {
           const n = m.addedNodes[i];
           genAddsQueue.push([n, m.target]);
 
@@ -726,25 +726,25 @@ export default class MutationBuffer {
               continue;
             }
 
-            for(let j = n.childNodes.length-1; j >= 0; j--) {
+            for (let j = n.childNodes.length - 1; j >= 0; j--) {
               const childN = n.childNodes[j];
               if (this.movedSet.has(childN) || this.addedSet.has(childN))
                 return;
 
               genAddsQueue.push([childN, undefined]);
-            };
+            }
             if (hasShadowRoot(n)) {
-              for(let j = n.shadowRoot.childNodes.length-1; j >= 0; j--) {
+              for (let j = n.shadowRoot.childNodes.length - 1; j >= 0; j--) {
                 const childN = n.shadowRoot.childNodes[j];
                 if (this.movedSet.has(childN) || this.addedSet.has(childN))
                   return;
 
                 this.processedNodeManager.add(childN, this);
                 genAddsQueue.push([childN, n]);
-              };
+              }
             }
           }
-        };
+        }
 
         m.removedNodes.forEach((n) => {
           const nodeId = this.mirror.getId(n);
