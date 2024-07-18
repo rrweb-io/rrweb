@@ -361,8 +361,9 @@ export default class MutationBuffer {
       }
     };
 
+    
     while (this.mapRemoves.length) {
-      this.mirror.removeNodeFromMap(this.mapRemoves.shift()!);
+      this.mirror.removeNodeFromMap(this.mapRemoves.pop()!);
     }
 
     for (const n of this.movedSet) {
