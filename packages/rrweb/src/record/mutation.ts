@@ -134,20 +134,24 @@ class DoubleLinkedList {
 
 const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
 
-function serializeTexts(input: textCursor[], addedIds: Set<number>): mutationCallbackParam['texts'] {
+function serializeTexts(
+  input: textCursor[],
+  addedIds: Set<number>,
+  mirror: Mirror,
+): mutationCallbackParam['texts'] {
   const texts = [];
-    for (let i = 0; i < input.length; i++) {
-      const id = this.mirror.getId(input[i].node);
-      if (addedIds.has(id) || !this.mirror.has(id)) {
-        continue;
-      }
-      texts.push({
-        id,
-        value: input[i].value,
-      });
+  for (let i = 0; i < input.length; i++) {
+    const id = mirror.getId(input[i].node);
+    if (addedIds.has(id) || !mirror.has(id)) {
+      continue;
     }
+    texts.push({
+      id,
+      value: input[i].value,
+    });
+  }
 
-    return texts;
+  return texts;
 }
 
 /**
@@ -455,7 +459,7 @@ export default class MutationBuffer {
     }
 
     const payload = {
-      texts: serializeTexts(this.texts, addedIds),
+      texts: serializeTexts(this.texts, addedIds, this.mirror),
       attributes: this.attributes
         .map((attribute) => {
           const { attributes } = attribute;
