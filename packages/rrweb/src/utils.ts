@@ -261,7 +261,7 @@ export function isBlocked(
   } else {
     if (classMatchesRegex(el, blockClass, checkAncestors)) return true;
   }
-  
+
   return false;
 }
 
