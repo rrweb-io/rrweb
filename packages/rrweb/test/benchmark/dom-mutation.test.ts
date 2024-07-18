@@ -99,7 +99,9 @@ describe('benchmark: mutation observer', () => {
       const loadPage = async () => {
         if ('html' in suite) {
           await page.goto('about:blank');
-          const code = fs.readFileSync(path.resolve(__dirname, '../../dist/rrweb.umd.cjs')).toString()
+          const code = fs
+            .readFileSync(path.resolve(__dirname, '../../dist/rrweb.umd.cjs'))
+            .toString();
           await page.setContent(`<html>
             <script>
             ${code.toString()}
