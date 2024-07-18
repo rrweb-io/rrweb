@@ -345,11 +345,7 @@ export class Mirror implements IMirror<RRNode> {
 
   getId(n: RRNode | undefined | null): number {
     if (!n) return -1;
-
-    const id = this.getMeta(n)?.id;
-
-    // if n is not a serialized Node, use -1 as its id.
-    return id ?? -1;
+    return this.getMeta(n)?.id ?? -1;
   }
 
   getNode(id: number): RRNode | null {
@@ -367,11 +363,14 @@ export class Mirror implements IMirror<RRNode> {
   // removes the node from idNodeMap
   // doesn't remove the node from nodeMetaMap
   removeNodeFromMap(n: RRNode) {
-    const id = this.getId(n);
-    this.idNodeMap.delete(id);
+    const queue = [n];
+    while (queue.length > 0) {
+      const n = queue.pop()!;
+      this.idNodeMap.delete(this.getId(n));
 
-    if (n.childNodes) {
-      n.childNodes.forEach((childNode) => this.removeNodeFromMap(childNode));
+      for(let i = 0; i < n.childNodes.length; i++) {
+        queue.push(n.childNodes[i]);
+      }
     }
   }
   has(id: number): boolean {
