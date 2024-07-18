@@ -683,7 +683,9 @@ export default class MutationBuffer {
         const genAddsQueue: [Node, Node | undefined][] = new Array<
           [Node, Node | undefined]
         >();
-        m.addedNodes.forEach((n) => {
+
+        for(let i = m.addedNodes.length-1; i >= 0; i--) {
+          const n = m.addedNodes[i];
           genAddsQueue.push([n, m.target]);
 
           // iterate breadth first over new nodes (non recursive for performance)
@@ -723,23 +725,26 @@ export default class MutationBuffer {
               // but we have to ignore it's children otherwise they will be added as placeholders too
               continue;
             }
-            n.childNodes.forEach((childN) => {
+
+            for(let j = n.childNodes.length-1; j >= 0; j--) {
+              const childN = n.childNodes[j];
               if (this.movedSet.has(childN) || this.addedSet.has(childN))
                 return;
 
               genAddsQueue.push([childN, undefined]);
-            });
+            };
             if (hasShadowRoot(n)) {
-              n.shadowRoot.childNodes.forEach((childN) => {
+              for(let j = n.shadowRoot.childNodes.length-1; j >= 0; j--) {
+                const childN = n.shadowRoot.childNodes[j];
                 if (this.movedSet.has(childN) || this.addedSet.has(childN))
                   return;
 
                 this.processedNodeManager.add(childN, this);
                 genAddsQueue.push([childN, n]);
-              });
+              };
             }
           }
-        });
+        };
 
         m.removedNodes.forEach((n) => {
           const nodeId = this.mirror.getId(n);
