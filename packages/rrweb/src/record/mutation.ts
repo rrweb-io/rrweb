@@ -19,6 +19,7 @@ import type {
   removedNodeMutation,
   addedNodeMutation,
   Optional,
+  mutationCallbackParam,
 } from '@rrweb/types';
 import {
   isBlocked,
@@ -133,6 +134,42 @@ class DoubleLinkedList {
 
 const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
 
+function serializeAttributes(input: attributeCursor[], addedIds: Set<number>): mutationCallbackParam['attributes'] {
+  const attributes = [];
+    for (let i = 0; i < input.length; i++) {
+      const id = this.mirror.getId(input[i].node);
+      if (addedIds.has(id) || !this.mirror.has(id)) {
+        continue;
+      }
+
+      const { attributes: elAttributes } = input[i];
+      if (typeof elAttributes.style === 'string') {
+        const diffAsStr = JSON.stringify(input[i].styleDiff);
+        const unchangedAsStr = JSON.stringify(
+          input[i]._unchangedStyles,
+        );
+        // check if the style diff is actually shorter than the regular string based mutation
+        // (which was the whole point of #464 'compact style mutation').
+        if (diffAsStr.length < elAttributes.style.length) {
+          // also: CSSOM fails badly when var() is present on shorthand properties, so only proceed with
+          // the compact style mutation if these have all been accounted for
+          if (
+            (diffAsStr + unchangedAsStr).split('var(').length ===
+            elAttributes.style.split('var(').length
+          ) {
+            elAttributes.style = input[i].styleDiff;
+          }
+        }
+      }
+
+      attributes.push({
+        id,
+        attributes: input[i].attributes,
+      });
+    }
+
+    return attributes
+}
 /**
  * controls behaviour of a MutationObserver
  */
@@ -457,34 +494,7 @@ export default class MutationBuffer {
         .filter((text) => !addedIds.has(text.id))
         // text mutation's id was not in the mirror map means the target node has been removed
         .filter((text) => this.mirror.has(text.id)),
-      attributes: this.attributes
-        .map((attribute) => {
-          const { attributes } = attribute;
-          if (typeof attributes.style === 'string') {
-            const diffAsStr = JSON.stringify(attribute.styleDiff);
-            const unchangedAsStr = JSON.stringify(attribute._unchangedStyles);
-            // check if the style diff is actually shorter than the regular string based mutation
-            // (which was the whole point of #464 'compact style mutation').
-            if (diffAsStr.length < attributes.style.length) {
-              // also: CSSOM fails badly when var() is present on shorthand properties, so only proceed with
-              // the compact style mutation if these have all been accounted for
-              if (
-                (diffAsStr + unchangedAsStr).split('var(').length ===
-                attributes.style.split('var(').length
-              ) {
-                attributes.style = attribute.styleDiff;
-              }
-            }
-          }
-          return {
-            id: this.mirror.getId(attribute.node),
-            attributes: attributes,
-          };
-        })
-        // no need to include them on added elements, as they have just been serialized with up to date attribubtes
-        .filter((attribute) => !addedIds.has(attribute.id))
-        // attribute mutation's id was not in the mirror map means the target node has been removed
-        .filter((attribute) => this.mirror.has(attribute.id)),
+      attributes: serializeAttributes(this.attributes, addedIds),
       removes: this.removes,
       adds,
     };
