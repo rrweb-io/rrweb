@@ -246,29 +246,22 @@ export function isBlocked(
   blockSelector: string | null,
   checkAncestors: boolean,
 ): boolean {
-  if (!node) {
-    return false;
-  }
   const el = closestElementOfNode(node);
+  if (!el) return false;
+  if (!blockClass && !blockSelector) return false;
 
-  if (!el) {
-    return false;
-  }
-
-  try {
-    if (typeof blockClass === 'string') {
-      if (el.classList.contains(blockClass)) return true;
-      if (checkAncestors && el.closest('.' + blockClass) !== null) return true;
-    } else {
-      if (classMatchesRegex(el, blockClass, checkAncestors)) return true;
-    }
-  } catch (e) {
-    // e
-  }
   if (blockSelector) {
     if (el.matches(blockSelector)) return true;
-    if (checkAncestors && el.closest(blockSelector) !== null) return true;
+    if (checkAncestors && el.matches(`${blockSelector} *`)) return true;
   }
+
+  if (typeof blockClass === 'string') {
+    if (el.matches(`.${blockClass}`)) return true;
+    if (checkAncestors && el.matches(`.${blockClass} *`)) return true;
+  } else {
+    if (classMatchesRegex(el, blockClass, checkAncestors)) return true;
+  }
+  
   return false;
 }
 
