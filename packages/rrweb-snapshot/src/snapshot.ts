@@ -36,6 +36,30 @@ export function genId(): number {
   return _id++;
 }
 
+function makeBlockSelector(
+  blockClass: string | null,
+  blockSelector: string | RegExp | null,
+): string | RegExp | null {
+  if (!blockClass && !blockSelector) return null;
+
+  if (typeof blockClass === 'string' && blockClass.length > 0) {
+    if (!blockSelector) return `.${blockClass}`;
+    if (typeof blockSelector === 'string')
+      return `.${blockClass},${blockSelector}`;
+    return new RegExp(`(${blockClass}|${blockSelector.source})`);
+  }
+  if (typeof blockSelector === 'string' && blockSelector.length > 0) {
+    if (!blockClass) return blockSelector;
+    return new RegExp(`(${blockClass}|${blockSelector})`);
+  }
+  if (!!blockSelector && typeof blockSelector === 'object') {
+    if (!blockClass) return blockSelector;
+    return new RegExp(`(${blockClass}|${blockSelector.source})`);
+  }
+
+  return null;
+}
+
 function getValidTagName(element: HTMLElement): Lowercase<string> {
   if (element instanceof HTMLFormElement) {
     return 'form';
@@ -1237,6 +1261,7 @@ function snapshot(
   n: Document,
   options?: {
     mirror?: Mirror;
+    blockClass?: string | null;
     blockSelector?: string | RegExp | null;
     maskTextClass?: string | RegExp;
     maskTextSelector?: string | null;
@@ -1265,6 +1290,7 @@ function snapshot(
 ): serializedNodeWithId | null {
   const {
     mirror = new Mirror(),
+    blockClass = 'rr-block',
     blockSelector = null,
     maskTextClass = 'rr-mask',
     maskTextSelector = null,
@@ -1284,6 +1310,7 @@ function snapshot(
     stylesheetLoadTimeout,
     keepIframeSrcFn = () => false,
   } = options || {};
+
   const maskInputOptions: MaskInputOptions =
     maskAllInputs === true
       ? {
@@ -1330,7 +1357,7 @@ function snapshot(
   return serializeNodeWithId(n, {
     doc: n,
     mirror,
-    blockSelector,
+    blockSelector: makeBlockSelector(blockClass, blockSelector),
     maskTextClass,
     maskTextSelector,
     skipChild: false,
