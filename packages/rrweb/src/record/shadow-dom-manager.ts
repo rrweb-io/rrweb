@@ -15,7 +15,7 @@ import { isNativeShadowDom } from 'rrweb-snapshot';
 
 type BypassOptions = Omit<
   MutationBufferParam,
-  'doc' | 'mutationCb' | 'mirror' | 'shadowDomManager'
+  'doc' | 'mutationCb' | 'mirror' | 'shadowDomManager' | 'blockClass'
 > & {
   sampling: SamplingStrategy;
 };

@@ -188,8 +188,6 @@ export type canvasEventWithTime = eventWithTime & {
   data: canvasMutationData;
 };
 
-export type blockClass = string | RegExp;
-
 export type maskTextClass = string | RegExp;
 
 export type SamplingStrategy = Partial<{

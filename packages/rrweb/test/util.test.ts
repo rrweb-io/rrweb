@@ -1,3 +1,4 @@
+import { makeBlockSelector } from '../src/utils';
 /**
  * @vitest-environment jsdom
  */
@@ -10,6 +11,41 @@ import {
 } from '../src/utils';
 
 describe('Utilities for other modules', () => {
+  describe('makeBlockSelector', () => {
+    it('should return null when both blockSelector and blockClass are null', () => {
+      expect(makeBlockSelector(null, null)).toBeNull();
+    });
+    it('returns blockClass as selector', () => {
+      expect(makeBlockSelector('block', null)).toBe('.block');
+    })
+    it('returns blockClass as selector when blockSelector is falsy', () => {
+      expect(makeBlockSelector('block', '')).toBe('.block');
+    })
+    it('returns merged blockClass and blockSelector blockSelector is string', () => {
+      expect(makeBlockSelector('block', '.selector')).toBe('.block,.selector');
+    })
+    it('returns merged blockClass and blockSelector blockSelector is string', () => {
+      expect(makeBlockSelector('block', '.selector')).toBe('.block,.selector');
+    })
+    it('returns merged blockClass and blockSelector blockSelector is a RegExp', () => {
+      const selector = makeBlockSelector('block', /\.selector/)
+      if(!selector || typeof selector === 'string') {
+        throw new Error('selector should be a RegExp');
+      }
+      expect(selector).toBeInstanceOf(RegExp);
+      expect(selector.test('.block')).toBeTruthy();
+      expect(selector.test('.selector')).toBeTruthy();
+    })
+    it('returns blockSelector as regexp if blockClass is falsy', () => {
+      const regexp = /\.selector/;
+      const selector = makeBlockSelector('', regexp)
+      if(!selector || typeof selector === 'string') {
+        throw new Error('selector should be a RegExp');
+      }
+      expect(selector).toBeInstanceOf(RegExp);
+      expect(selector).toBe(regexp);
+    })
+  })
   describe('StyleSheetMirror', () => {
     it('should create a StyleSheetMirror', () => {
       const mirror = new StyleSheetMirror();

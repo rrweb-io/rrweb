@@ -170,7 +170,6 @@ export default class MutationBuffer {
   private droppedSet = new Set<Node>();
 
   private mutationCb: observerParam['mutationCb'];
-  private blockClass: observerParam['blockClass'];
   private blockSelector: observerParam['blockSelector'];
   private maskTextClass: observerParam['maskTextClass'];
   private maskTextSelector: observerParam['maskTextSelector'];
@@ -196,7 +195,6 @@ export default class MutationBuffer {
     (
       [
         'mutationCb',
-        'blockClass',
         'blockSelector',
         'maskTextClass',
         'maskTextSelector',
@@ -302,7 +300,6 @@ export default class MutationBuffer {
       const sn = serializeNodeWithId(n, {
         doc: this.doc,
         mirror: this.mirror,
-        blockClass: this.blockClass,
         blockSelector: this.blockSelector,
         maskTextClass: this.maskTextClass,
         maskTextSelector: this.maskTextSelector,
@@ -538,7 +535,7 @@ export default class MutationBuffer {
         const value = m.target.textContent;
 
         if (
-          !isBlocked(m.target, this.blockClass, this.blockSelector, false) &&
+          !isBlocked(m.target, this.blockSelector, false) &&
           value !== m.oldValue
         ) {
           this.texts.push({
@@ -576,7 +573,7 @@ export default class MutationBuffer {
           });
         }
         if (
-          isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
+          isBlocked(m.target, this.blockSelector, false) ||
           value === m.oldValue
         ) {
           return;
@@ -671,7 +668,7 @@ export default class MutationBuffer {
         /**
          * Parent is blocked, ignore all child mutations
          */
-        if (isBlocked(m.target, this.blockClass, this.blockSelector, true))
+        if (isBlocked(m.target, this.blockSelector, true))
           return;
 
         if ((m.target as Element).tagName === 'TEXTAREA') {
@@ -687,7 +684,7 @@ export default class MutationBuffer {
             ? this.mirror.getId(m.target.host)
             : this.mirror.getId(m.target);
           if (
-            isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
+            isBlocked(m.target, this.blockSelector, false) ||
             isIgnored(n, this.mirror, this.slimDOMOptions) ||
             !isSerialized(n, this.mirror)
           ) {
@@ -765,7 +762,7 @@ export default class MutationBuffer {
 
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
-    if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
+    if (!isBlocked(n, this.blockSelector, false)) {
       n.childNodes.forEach((childN) => this.genAdds(childN));
       if (hasShadowRoot(n)) {
         n.shadowRoot.childNodes.forEach((childN) => {

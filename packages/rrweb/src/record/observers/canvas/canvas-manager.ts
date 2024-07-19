@@ -1,6 +1,5 @@
 import type { ICanvas, Mirror, DataURLOptions } from 'rrweb-snapshot';
 import type {
-  blockClass,
   canvasManagerMutationCallback,
   canvasMutationCallback,
   canvasMutationCommand,
@@ -59,8 +58,7 @@ export class CanvasManager {
     recordCanvas: boolean;
     mutationCb: canvasMutationCallback;
     win: IWindow;
-    blockClass: blockClass;
-    blockSelector: string | null;
+    blockSelector: string | RegExp | null;
     mirror: Mirror;
     sampling?: 'all' | number;
     dataURLOptions: DataURLOptions;
@@ -68,7 +66,6 @@ export class CanvasManager {
     const {
       sampling = 'all',
       win,
-      blockClass,
       blockSelector,
       recordCanvas,
       dataURLOptions,
@@ -77,9 +74,9 @@ export class CanvasManager {
     this.mirror = options.mirror;
 
     if (recordCanvas && sampling === 'all')
-      this.initCanvasMutationObserver(win, blockClass, blockSelector);
+      this.initCanvasMutationObserver(win, blockSelector);
     if (recordCanvas && typeof sampling === 'number')
-      this.initCanvasFPSObserver(sampling, win, blockClass, blockSelector, {
+      this.initCanvasFPSObserver(sampling, win,  blockSelector, {
         dataURLOptions,
       });
   }
@@ -104,15 +101,13 @@ export class CanvasManager {
   private initCanvasFPSObserver(
     fps: number,
     win: IWindow,
-    blockClass: blockClass,
-    blockSelector: string | null,
+    blockSelector: string | RegExp | null,
     options: {
       dataURLOptions: DataURLOptions;
     },
   ) {
     const canvasContextReset = initCanvasContextObserver(
       win,
-      blockClass,
       blockSelector,
       true,
     );
@@ -162,7 +157,7 @@ export class CanvasManager {
     const getCanvas = (): HTMLCanvasElement[] => {
       const matchedCanvas: HTMLCanvasElement[] = [];
       win.document.querySelectorAll('canvas').forEach((canvas) => {
-        if (!isBlocked(canvas, blockClass, blockSelector, true)) {
+        if (!isBlocked(canvas, blockSelector, true)) {
           matchedCanvas.push(canvas);
         }
       });
@@ -238,29 +233,25 @@ export class CanvasManager {
 
   private initCanvasMutationObserver(
     win: IWindow,
-    blockClass: blockClass,
-    blockSelector: string | null,
+    blockSelector: string | RegExp | null,
   ): void {
     this.startRAFTimestamping();
     this.startPendingCanvasMutationFlusher();
 
     const canvasContextReset = initCanvasContextObserver(
       win,
-      blockClass,
       blockSelector,
       false,
     );
     const canvas2DReset = initCanvas2DMutationObserver(
       this.processMutation.bind(this),
       win,
-      blockClass,
       blockSelector,
     );
 
     const canvasWebGL1and2Reset = initCanvasWebGLMutationObserver(
       this.processMutation.bind(this),
       win,
-      blockClass,
       blockSelector,
     );
 

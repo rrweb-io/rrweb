@@ -11,6 +11,7 @@ import {
 import snapshot from '../src/snapshot';
 import { serializedNodeWithId, elementNode } from '../src/types';
 import { Mirror } from '../src/utils';
+import { makeBlockSelector } from '../../rrweb/src/utils';
 
 describe('absolute url to stylesheet', () => {
   const href = 'http://localhost/css/style.css';
@@ -114,7 +115,7 @@ describe('absolute url to stylesheet', () => {
 
 describe('isBlockedElement()', () => {
   const subject = (html: string, opt: any = {}) =>
-    _isBlockedElement(render(html), 'rr-block', opt.blockSelector);
+    _isBlockedElement(render(html), makeBlockSelector('rr-block', opt.blockSelector));
 
   const render = (html: string): HTMLElement =>
     JSDOM.fragment(html).querySelector('div')!;
@@ -143,8 +144,7 @@ describe('style elements', () => {
     return serializeNodeWithId(node, {
       doc: document,
       mirror: new Mirror(),
-      blockClass: 'blockblock',
-      blockSelector: null,
+      blockSelector: makeBlockSelector('blockblock', null),
       maskTextClass: 'maskmask',
       maskTextSelector: null,
       skipChild: false,
@@ -188,8 +188,7 @@ describe('scrollTop/scrollLeft', () => {
     return serializeNodeWithId(node, {
       doc: document,
       mirror: new Mirror(),
-      blockClass: 'blockblock',
-      blockSelector: null,
+      blockSelector: makeBlockSelector('blockblock', null),
       maskTextClass: 'maskmask',
       maskTextSelector: null,
       skipChild: false,
@@ -226,8 +225,7 @@ describe('form', () => {
     return serializeNodeWithId(node, {
       doc: document,
       mirror: new Mirror(),
-      blockClass: 'blockblock',
-      blockSelector: null,
+      blockSelector: makeBlockSelector('blockblock', null),
       maskTextClass: 'maskmask',
       maskTextSelector: null,
       skipChild: false,

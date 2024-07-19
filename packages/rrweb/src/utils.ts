@@ -2,7 +2,6 @@ import type {
   throttleOptions,
   listenerHandler,
   hookResetter,
-  blockClass,
   addedNodeMutation,
   DocumentDimension,
   IWindow,
@@ -233,36 +232,55 @@ export function closestElementOfNode(node: Node | null): HTMLElement | null {
 }
 
 /**
+ * Coerces the given blockClass and blockSelector into a single RegExp or string
+ * @param blockClass 
+ * @param blockSelector 
+ * @returns 
+ */
+export function makeBlockSelector(blockClass: string | null, blockSelector: string | RegExp | null): string | RegExp | null {
+  if(!blockClass && !blockSelector) return null;
+
+  if(typeof blockClass === 'string' && blockClass.length > 0) {
+    if(!blockSelector) return `.${blockClass}`;
+    if(typeof blockSelector === 'string') return `.${blockClass},${blockSelector}`;
+    return new RegExp(`(${blockClass}|${blockSelector.source})`);
+  }
+  if(typeof blockSelector === 'string' && blockSelector.length > 0) {
+    if(!blockClass) return blockSelector;
+    return new RegExp(`(${blockClass}|${blockSelector})`);
+  }
+  if(!!blockSelector && typeof blockSelector === 'object'){
+    if(!blockClass) return blockSelector;
+    return new RegExp(`(${blockClass}|${blockSelector.source})`);
+  }
+  
+  return null;
+}
+
+/**
  * Checks if the given element set to be blocked by rrweb
  * @param node - node to check
- * @param blockClass - class name to check
  * @param blockSelector - css selectors to check
  * @param checkAncestors - whether to search through parent nodes for the block class
  * @returns true/false if the node was blocked or not
  */
 export function isBlocked(
   node: Node | null,
-  blockClass: blockClass,
-  blockSelector: string | null,
+  blockSelector: string | RegExp | null,
   checkAncestors: boolean,
 ): boolean {
+  if(!blockSelector) return false;
+
   const el = closestElementOfNode(node);
   if (!el) return false;
-  if (!blockClass && !blockSelector) return false;
 
-  if (blockSelector) {
+  if (typeof blockSelector === 'string') {
     if (el.matches(blockSelector)) return true;
     if (checkAncestors && el.matches(`${blockSelector} *`)) return true;
+    return false;
   }
 
-  if (typeof blockClass === 'string') {
-    if (el.matches(`.${blockClass}`)) return true;
-    if (checkAncestors && el.matches(`.${blockClass} *`)) return true;
-  } else {
-    if (classMatchesRegex(el, blockClass, checkAncestors)) return true;
-  }
-
-  return false;
+  return classMatchesRegex(el, blockSelector, checkAncestors)
 }
 
 export function isSerialized(n: Node, mirror: Mirror): boolean {
