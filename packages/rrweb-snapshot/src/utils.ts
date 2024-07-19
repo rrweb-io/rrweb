@@ -119,17 +119,17 @@ export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
         // work around browser issues with the raw string `@import url(...)` statement
         escapeImportStatement(rule);
     } catch (error) {
-      // ignore
+      importStringified = rule.cssText;
     }
 
     if (rule.styleSheet.href) {
       importStringified = absolutifyURLs(
-        importStringified || rule.cssText,
+        importStringified,
         rule.styleSheet.href,
       );
     }
 
-    return importStringified || rule.cssText;
+    return importStringified;
   }
 
   let ruleStringified = rule.cssText;
