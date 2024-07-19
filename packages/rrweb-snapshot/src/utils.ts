@@ -123,10 +123,8 @@ export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
     }
 
     if (rule.styleSheet.href) {
-      importStringified = absolutifyURLs(
-        importStringified,
-        rule.styleSheet.href,
-      );
+      // url()s within the imported stylesheet are relative to _that_ sheet's href
+      return absolutifyURLs(importStringified, rule.styleSheet.href);
     }
 
     return importStringified;
