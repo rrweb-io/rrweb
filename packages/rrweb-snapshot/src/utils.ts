@@ -121,27 +121,23 @@ export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
     } catch (error) {
       importStringified = rule.cssText;
     }
-
     if (rule.styleSheet.href) {
       // url()s within the imported stylesheet are relative to _that_ sheet's href
       return absolutifyURLs(importStringified, rule.styleSheet.href);
     }
-
     return importStringified;
+  } else {
+    let ruleStringified = rule.cssText;
+    if (isCSSStyleRule(rule) && rule.selectorText.includes(':')) {
+      // Safari does not escape selectors with : properly
+      // see https://bugs.webkit.org/show_bug.cgi?id=184604
+      ruleStringified = fixSafariColons(ruleStringified);
+    }
+    if (sheetHref) {
+      return absolutifyURLs(ruleStringified, sheetHref);
+    }
+    return ruleStringified;
   }
-
-  let ruleStringified = rule.cssText;
-  if (isCSSStyleRule(rule) && rule.selectorText.includes(':')) {
-    // Safari does not escape selectors with : properly
-    // see https://bugs.webkit.org/show_bug.cgi?id=184604
-    ruleStringified = fixSafariColons(ruleStringified);
-  }
-
-  if (sheetHref) {
-    return absolutifyURLs(ruleStringified, sheetHref);
-  }
-
-  return ruleStringified;
 }
 
 export function fixSafariColons(cssStringified: string): string {
