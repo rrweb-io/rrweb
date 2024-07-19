@@ -275,20 +275,20 @@ export function _isBlockedElement(
   element: HTMLElement,
   blockSelector: string | RegExp | null,
 ): boolean {
-  if(!blockSelector) return false;
+  if (!blockSelector) return false;
 
-    if (typeof blockSelector === 'string') {
-      if (element.matches(blockSelector)) {
+  if (typeof blockSelector === 'string' && element.matches(blockSelector)) {
+  return true;
+  }
+
+  if (blockSelector instanceof RegExp) {
+    for (let eIndex = element.classList.length; eIndex--; ) {
+      const className = element.classList[eIndex];
+      if (blockSelector.test(className)) {
         return true;
       }
-    } else {
-      for (let eIndex = element.classList.length; eIndex--; ) {
-        const className = element.classList[eIndex];
-        if (blockSelector.test(className)) {
-          return true;
-        }
-      }
     }
+  }
 
   return false;
 }

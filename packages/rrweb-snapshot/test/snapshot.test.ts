@@ -115,7 +115,10 @@ describe('absolute url to stylesheet', () => {
 
 describe('isBlockedElement()', () => {
   const subject = (html: string, opt: any = {}) =>
-    _isBlockedElement(render(html), makeBlockSelector('rr-block', opt.blockSelector));
+    _isBlockedElement(
+      render(html),
+      makeBlockSelector('rr-block', opt.blockSelector),
+    );
 
   const render = (html: string): HTMLElement =>
     JSDOM.fragment(html).querySelector('div')!;

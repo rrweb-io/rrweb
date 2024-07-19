@@ -76,7 +76,7 @@ export class CanvasManager {
     if (recordCanvas && sampling === 'all')
       this.initCanvasMutationObserver(win, blockSelector);
     if (recordCanvas && typeof sampling === 'number')
-      this.initCanvasFPSObserver(sampling, win,  blockSelector, {
+      this.initCanvasFPSObserver(sampling, win, blockSelector, {
         dataURLOptions,
       });
   }

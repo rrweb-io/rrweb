@@ -668,8 +668,7 @@ export default class MutationBuffer {
         /**
          * Parent is blocked, ignore all child mutations
          */
-        if (isBlocked(m.target, this.blockSelector, true))
-          return;
+        if (isBlocked(m.target, this.blockSelector, true)) return;
 
         if ((m.target as Element).tagName === 'TEXTAREA') {
           // children would be ignored in genAdds as they aren't in the mirror

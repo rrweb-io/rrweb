@@ -352,10 +352,7 @@ export function initScrollObserver({
     throttle<UIEvent>(
       callbackWrapper((evt) => {
         const target = getEventTarget(evt);
-        if (
-          !target ||
-          isBlocked(target as Node, blockSelector, true)
-        ) {
+        if (!target || isBlocked(target as Node, blockSelector, true)) {
           return;
         }
         const id = mirror.getId(target as Node);
@@ -412,7 +409,7 @@ function initInputObserver({
   inputCb,
   doc,
   mirror,
-  
+
   blockSelector,
   ignoreClass,
   ignoreSelector,
@@ -1026,7 +1023,7 @@ function initStyleDeclarationObserver(
 
 function initMediaInteractionObserver({
   mediaInteractionCb,
-  
+
   blockSelector,
   mirror,
   sampling,
@@ -1036,10 +1033,7 @@ function initMediaInteractionObserver({
     throttle(
       callbackWrapper((event: Event) => {
         const target = getEventTarget(event);
-        if (
-          !target ||
-          isBlocked(target as Node, blockSelector, true)
-        ) {
+        if (!target || isBlocked(target as Node, blockSelector, true)) {
           return;
         }
         const { currentTime, volume, muted, playbackRate, loop } =
@@ -1131,7 +1125,7 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
 }
 
 function initSelectionObserver(param: observerParam): listenerHandler {
-  const { doc, mirror,  blockSelector, selectionCb } = param;
+  const { doc, mirror, blockSelector, selectionCb } = param;
   let collapsed = true;
 
   const updateSelection = callbackWrapper(() => {

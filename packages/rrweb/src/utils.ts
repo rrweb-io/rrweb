@@ -233,27 +233,31 @@ export function closestElementOfNode(node: Node | null): HTMLElement | null {
 
 /**
  * Coerces the given blockClass and blockSelector into a single RegExp or string
- * @param blockClass 
- * @param blockSelector 
- * @returns 
+ * @param blockClass
+ * @param blockSelector
+ * @returns
  */
-export function makeBlockSelector(blockClass: string | null, blockSelector: string | RegExp | null): string | RegExp | null {
-  if(!blockClass && !blockSelector) return null;
+export function makeBlockSelector(
+  blockClass: string | null,
+  blockSelector: string | RegExp | null,
+): string | RegExp | null {
+  if (!blockClass && !blockSelector) return null;
 
-  if(typeof blockClass === 'string' && blockClass.length > 0) {
-    if(!blockSelector) return `.${blockClass}`;
-    if(typeof blockSelector === 'string') return `.${blockClass},${blockSelector}`;
+  if (typeof blockClass === 'string' && blockClass.length > 0) {
+    if (!blockSelector) return `.${blockClass}`;
+    if (typeof blockSelector === 'string')
+      return `.${blockClass},${blockSelector}`;
     return new RegExp(`(${blockClass}|${blockSelector.source})`);
   }
-  if(typeof blockSelector === 'string' && blockSelector.length > 0) {
-    if(!blockClass) return blockSelector;
+  if (typeof blockSelector === 'string' && blockSelector.length > 0) {
+    if (!blockClass) return blockSelector;
     return new RegExp(`(${blockClass}|${blockSelector})`);
   }
-  if(!!blockSelector && typeof blockSelector === 'object'){
-    if(!blockClass) return blockSelector;
+  if (!!blockSelector && typeof blockSelector === 'object') {
+    if (!blockClass) return blockSelector;
     return new RegExp(`(${blockClass}|${blockSelector.source})`);
   }
-  
+
   return null;
 }
 
@@ -269,7 +273,7 @@ export function isBlocked(
   blockSelector: string | RegExp | null,
   checkAncestors: boolean,
 ): boolean {
-  if(!blockSelector) return false;
+  if (!blockSelector) return false;
 
   const el = closestElementOfNode(node);
   if (!el) return false;
@@ -280,7 +284,7 @@ export function isBlocked(
     return false;
   }
 
-  return classMatchesRegex(el, blockSelector, checkAncestors)
+  return classMatchesRegex(el, blockSelector, checkAncestors);
 }
 
 export function isSerialized(n: Node, mirror: Mirror): boolean {
