@@ -133,6 +133,16 @@ class DoubleLinkedList {
 
 const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
 
+const getNextId = (n: Node, mirror: observerParam['mirror']): number | null => {
+  let ns: Node | null = n;
+  let nextId: number | null = IGNORED_NODE; // slimDOM: ignored
+  while (nextId === IGNORED_NODE) {
+    ns = ns && ns.nextSibling;
+    nextId = ns && mirror.getId(ns);
+  }
+  return nextId;
+};
+
 /**
  * controls behaviour of a MutationObserver
  */
@@ -259,6 +269,74 @@ export default class MutationBuffer {
     this.emit(); // clears buffer if not locked/frozen
   };
 
+  private pushAdd(
+    n: Node,
+    adds: addedNodeMutation[],
+    addList: DoubleLinkedList,
+    addedIds: Set<number>,
+  ) {
+    if (
+      !n.parentNode ||
+      !inDom(n) ||
+      (n.parentNode as Element).tagName === 'TEXTAREA'
+    ) {
+      return;
+    }
+    const parentId = isShadowRoot(n.parentNode)
+      ? this.mirror.getId(getShadowHost(n))
+      : this.mirror.getId(n.parentNode);
+    const nextId = getNextId(n, this.mirror);
+
+    if (parentId === -1 || nextId === -1) {
+      return addList.addNode(n);
+    }
+
+    const sn = serializeNodeWithId(n, {
+      doc: this.doc,
+      mirror: this.mirror,
+      blockClass: this.blockClass,
+      blockSelector: this.blockSelector,
+      maskTextClass: this.maskTextClass,
+      maskTextSelector: this.maskTextSelector,
+      skipChild: true,
+      newlyAddedElement: true,
+      inlineStylesheet: this.inlineStylesheet,
+      maskInputOptions: this.maskInputOptions,
+      maskTextFn: this.maskTextFn,
+      maskInputFn: this.maskInputFn,
+      slimDOMOptions: this.slimDOMOptions,
+      dataURLOptions: this.dataURLOptions,
+      recordCanvas: this.recordCanvas,
+      inlineImages: this.inlineImages,
+      onSerialize: (currentN) => {
+        if (isSerializedIframe(currentN, this.mirror)) {
+          this.iframeManager.addIframe(currentN as HTMLIFrameElement);
+        }
+        if (isSerializedStylesheet(currentN, this.mirror)) {
+          this.stylesheetManager.trackLinkElement(currentN as HTMLLinkElement);
+        }
+        if (hasShadowRoot(n)) {
+          this.shadowDomManager.addShadowRoot(n.shadowRoot, this.doc);
+        }
+      },
+      onIframeLoad: (iframe, childSn) => {
+        this.iframeManager.attachIframe(iframe, childSn);
+        this.shadowDomManager.observeAttachShadow(iframe);
+      },
+      onStylesheetLoad: (link, childSn) => {
+        this.stylesheetManager.attachLinkElement(link, childSn);
+      },
+    });
+    if (sn) {
+      adds.push({
+        parentId,
+        nextId,
+        node: sn,
+      });
+      addedIds.add(sn.id);
+    }
+  }
+
   public emit = () => {
     if (this.frozen || this.locked) {
       return;
@@ -284,69 +362,6 @@ export default class MutationBuffer {
       }
       return nextId;
     };
-    const pushAdd = (n: Node) => {
-      if (
-        !n.parentNode ||
-        !inDom(n) ||
-        (n.parentNode as Element).tagName === 'TEXTAREA'
-      ) {
-        return;
-      }
-      const parentId = isShadowRoot(n.parentNode)
-        ? this.mirror.getId(getShadowHost(n))
-        : this.mirror.getId(n.parentNode);
-      const nextId = getNextId(n);
-      if (parentId === -1 || nextId === -1) {
-        return addList.addNode(n);
-      }
-      const sn = serializeNodeWithId(n, {
-        doc: this.doc,
-        mirror: this.mirror,
-        blockClass: this.blockClass,
-        blockSelector: this.blockSelector,
-        maskTextClass: this.maskTextClass,
-        maskTextSelector: this.maskTextSelector,
-        skipChild: true,
-        newlyAddedElement: true,
-        inlineStylesheet: this.inlineStylesheet,
-        maskInputOptions: this.maskInputOptions,
-        maskTextFn: this.maskTextFn,
-        maskInputFn: this.maskInputFn,
-        slimDOMOptions: this.slimDOMOptions,
-        dataURLOptions: this.dataURLOptions,
-        recordCanvas: this.recordCanvas,
-        inlineImages: this.inlineImages,
-        onSerialize: (currentN) => {
-          if (isSerializedIframe(currentN, this.mirror)) {
-            this.iframeManager.addIframe(currentN as HTMLIFrameElement);
-          }
-          if (isSerializedStylesheet(currentN, this.mirror)) {
-            this.stylesheetManager.trackLinkElement(
-              currentN as HTMLLinkElement,
-            );
-          }
-          if (hasShadowRoot(n)) {
-            this.shadowDomManager.addShadowRoot(n.shadowRoot, this.doc);
-          }
-        },
-        onIframeLoad: (iframe, childSn) => {
-          this.iframeManager.attachIframe(iframe, childSn);
-          this.shadowDomManager.observeAttachShadow(iframe);
-        },
-        onStylesheetLoad: (link, childSn) => {
-          this.stylesheetManager.attachLinkElement(link, childSn);
-        },
-      });
-      if (sn) {
-        adds.push({
-          parentId,
-          nextId,
-          node: sn,
-        });
-        addedIds.add(sn.id);
-      }
-    };
-
     while (this.mapRemoves.length) {
       this.mirror.removeNodeFromMap(this.mapRemoves.shift()!);
     }
@@ -358,7 +373,7 @@ export default class MutationBuffer {
       ) {
         continue;
       }
-      pushAdd(n);
+      this.pushAdd(n, adds, addList, addedIds);
     }
 
     for (const n of this.addedSet) {
@@ -366,9 +381,9 @@ export default class MutationBuffer {
         !isAncestorInSet(this.droppedSet, n) &&
         !isParentRemoved(this.removes, n, this.mirror)
       ) {
-        pushAdd(n);
+        this.pushAdd(n, adds, addList, addedIds);
       } else if (isAncestorInSet(this.movedSet, n)) {
-        pushAdd(n);
+        this.pushAdd(n, adds, addList, addedIds);
       } else {
         this.droppedSet.add(n);
       }
@@ -391,12 +406,11 @@ export default class MutationBuffer {
           tailNode = tailNode.previous;
           // ensure _node is defined before attempting to find value
           if (_node) {
-            const parentId = this.mirror.getId(_node.value.parentNode);
             const nextId = getNextId(_node.value);
-
             if (nextId === -1) continue;
             // nextId !== -1 && parentId !== -1
-            else if (parentId !== -1) {
+            const parentId = this.mirror.getId(_node.value.parentNode);
+            if (parentId !== -1) {
               node = _node;
               break;
             }
@@ -434,7 +448,7 @@ export default class MutationBuffer {
       }
       candidate = node.previous;
       addList.removeNode(node.value);
-      pushAdd(node.value);
+      this.pushAdd(node.value, adds, addList, addedIds);
     }
 
     const payload = {
