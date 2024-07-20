@@ -447,13 +447,13 @@ function serializeNode(
   options: {
     blockClass: string | RegExp;
     blockSelector: string | null;
-    dataURLOptions?: DataURLOptions;
+    dataURLOptions: DataURLOptions | undefined;
     doc: Document;
     inlineImages: boolean;
     inlineStylesheet: boolean;
     keepIframeSrcFn: KeepIframeSrcFn;
     maskInputFn: MaskInputFn | undefined;
-    maskInputOptions: MaskInputOptions;
+    maskInputOptions: MaskInputOptions | undefined;
     maskTextFn: MaskTextFn | undefined;
     mirror: Mirror;
     needsMask: boolean;
@@ -464,24 +464,8 @@ function serializeNode(
     recordCanvas: boolean;
   },
 ): serializedNode | false {
-  const {
-    blockClass,
-    blockSelector,
-    dataURLOptions = {},
-    doc,
-    inlineImages,
-    inlineStylesheet,
-    keepIframeSrcFn,
-    maskInputFn,
-    maskInputOptions = {},
-    maskTextFn,
-    mirror,
-    needsMask,
-    newlyAddedElement = false,
-    recordCanvas,
-  } = options;
   // Only record root id when document object is not the base document
-  const rootId = getRootId(doc, mirror);
+  const rootId = getRootId(options.doc, options.mirror);
   switch (n.nodeType) {
     case n.DOCUMENT_NODE:
       if ((n as Document).compatMode !== 'CSS1Compat') {
@@ -506,24 +490,24 @@ function serializeNode(
       };
     case n.ELEMENT_NODE:
       return serializeElementNode(n as HTMLElement, {
-        blockClass,
-        blockSelector,
-        dataURLOptions,
-        doc,
-        inlineImages,
-        inlineStylesheet,
-        keepIframeSrcFn,
-        maskInputFn,
-        maskInputOptions,
-        newlyAddedElement,
-        recordCanvas,
+        blockClass: options.blockClass,
+        blockSelector: options.blockSelector,
+        dataURLOptions: options.dataURLOptions,
+        doc: options.doc,
+        inlineImages: options.inlineImages,
+        inlineStylesheet: options.inlineStylesheet,
+        keepIframeSrcFn: options.keepIframeSrcFn,
+        maskInputFn: options.maskInputFn,
+        maskInputOptions: options.maskInputOptions,
+        newlyAddedElement: options.newlyAddedElement,
+        recordCanvas: options.recordCanvas,
         rootId,
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
-        doc,
-        needsMask,
-        maskTextFn,
+        doc: options.doc,
+        needsMask: options.needsMask,
+        maskTextFn: options.maskTextFn,
         rootId,
       });
     case n.CDATA_SECTION_NODE:
@@ -614,7 +598,7 @@ function serializeElementNode(
     inlineStylesheet: boolean;
     keepIframeSrcFn: KeepIframeSrcFn;
     maskInputFn: MaskInputFn | undefined;
-    maskInputOptions: MaskInputOptions;
+    maskInputOptions: MaskInputOptions | undefined;
     /**
      * `newlyAddedElement: true` skips scrollTop and scrollLeft check
      */
@@ -692,6 +676,7 @@ function serializeElementNode(
   if (tagName === 'option') {
     if (
       (n as HTMLOptionElement).selected &&
+      options.maskInputOptions &&
       !options.maskInputOptions['select']
     ) {
       attributes.selected = true;
@@ -945,6 +930,9 @@ function slimDOMExcluded(
   return false;
 }
 
+const DEFAULT_KEEP_IFRAME_SRC = () => false;
+const DEFAULT_DATA_URL_OPTIONS = {};
+
 export function serializeNodeWithId(
   n: Node,
   options: {
@@ -987,14 +975,14 @@ export function serializeNodeWithId(
   const {
     blockClass,
     blockSelector,
-    dataURLOptions = {},
+    dataURLOptions = DEFAULT_DATA_URL_OPTIONS,
     doc,
     iframeLoadTimeout = 5000,
     inlineImages = false,
     inlineStylesheet = true,
-    keepIframeSrcFn = () => false,
+    keepIframeSrcFn = DEFAULT_KEEP_IFRAME_SRC,
     maskInputFn,
-    maskInputOptions = {},
+    maskInputOptions,
     maskTextClass,
     maskTextFn,
     maskTextSelector,
@@ -1008,8 +996,7 @@ export function serializeNodeWithId(
     slimDOMOptions,
     stylesheetLoadTimeout = 5000,
   } = options;
-  let { needsMask } = options;
-  let { preserveWhiteSpace = true } = options;
+  let { needsMask, preserveWhiteSpace = true } = options;
 
   if (!needsMask) {
     // perf: if needsMask = true, children won't also need to check
@@ -1127,8 +1114,11 @@ export function serializeNodeWithId(
     ) {
       // value parameter in DOM reflects the correct value, so ignore childNode
     } else {
-      for (const childN of Array.from(n.childNodes)) {
-        const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
+      for (let i = 0; i < n.childNodes.length; i++) {
+        const serializedChildNode = serializeNodeWithId(
+          n.childNodes[i],
+          bypassOptions,
+        );
         if (serializedChildNode) {
           serializedNode.childNodes.push(serializedChildNode);
         }
@@ -1136,8 +1126,11 @@ export function serializeNodeWithId(
     }
 
     if (isElement(n) && n.shadowRoot) {
-      for (const childN of Array.from(n.shadowRoot.childNodes)) {
-        const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
+      for (let i = 0; i < n.shadowRoot.childNodes.length; i++) {
+        const serializedChildNode = serializeNodeWithId(
+          n.shadowRoot.childNodes[i],
+          bypassOptions,
+        );
         if (serializedChildNode) {
           isNativeShadowDom(n.shadowRoot) &&
             (serializedChildNode.isShadow = true);
@@ -1290,28 +1283,8 @@ function snapshot(
     keepIframeSrcFn?: KeepIframeSrcFn;
   },
 ): serializedNodeWithId | null {
-  const {
-    mirror = new Mirror(),
-    blockClass = 'rr-block',
-    blockSelector = null,
-    maskTextClass = 'rr-mask',
-    maskTextSelector = null,
-    inlineStylesheet = true,
-    inlineImages = false,
-    recordCanvas = false,
-    maskAllInputs = false,
-    maskTextFn,
-    maskInputFn,
-    slimDOM = false,
-    dataURLOptions,
-    preserveWhiteSpace,
-    onSerialize,
-    onIframeLoad,
-    iframeLoadTimeout,
-    onStylesheetLoad,
-    stylesheetLoadTimeout,
-    keepIframeSrcFn,
-  } = options;
+  const slimDOM = options.slimDOM ?? false;
+  const maskAllInputs = options.maskAllInputs ?? false;
 
   const maskInputOptions: MaskInputOptions =
     maskAllInputs === true
@@ -1340,55 +1313,55 @@ function snapshot(
       : slimDOM;
 
   return serializeNodeWithId(n, {
-    blockClass,
-    blockSelector,
-    dataURLOptions,
+    blockClass: options.blockClass ?? 'rr-block',
+    blockSelector: options.blockSelector ?? null,
+    dataURLOptions: options.dataURLOptions,
     doc: n,
-    iframeLoadTimeout,
-    inlineImages,
-    inlineStylesheet,
-    keepIframeSrcFn,
-    maskInputFn,
+    iframeLoadTimeout: options.iframeLoadTimeout,
+    inlineImages: options.inlineImages ?? false,
+    inlineStylesheet: options.inlineStylesheet ?? true,
+    keepIframeSrcFn: options.keepIframeSrcFn,
+    maskInputFn: options.maskInputFn,
     maskInputOptions,
-    maskTextClass,
-    maskTextFn,
-    maskTextSelector,
-    mirror,
+    maskTextClass: options.maskTextClass ?? 'rr-mask',
+    maskTextFn: options.maskTextFn,
+    maskTextSelector: options.maskTextSelector ?? null,
+    mirror: options.mirror ?? new Mirror(),
     needsMask: undefined,
     newlyAddedElement: false,
-    onIframeLoad,
-    onSerialize,
-    onStylesheetLoad,
-    preserveWhiteSpace,
-    recordCanvas,
+    onIframeLoad: options.onIframeLoad,
+    onSerialize: options.onSerialize,
+    onStylesheetLoad: options.onStylesheetLoad,
+    preserveWhiteSpace: options.preserveWhiteSpace,
+    recordCanvas: options.recordCanvas,
     skipChild: false,
     slimDOMOptions,
-    stylesheetLoadTimeout,
+    stylesheetLoadTimeout: options.stylesheetLoadTimeout,
   });
 }
 
 const MASK_ALL_INPUT_SETTINGS: MaskInputOptions = {
-    color: true,
-    date: true,
-    'datetime-local': true,
-    email: true,
-    month: true,
-    number: true,
-    range: true,
-    search: true,
-    tel: true,
-    text: true,
-    time: true,
-    url: true,
-    week: true,
-    textarea: true,
-    select: true,
-    password: true,
-}
+  color: true,
+  date: true,
+  'datetime-local': true,
+  email: true,
+  month: true,
+  number: true,
+  range: true,
+  search: true,
+  tel: true,
+  text: true,
+  time: true,
+  url: true,
+  week: true,
+  textarea: true,
+  select: true,
+  password: true,
+};
 
 const MASK_ONLY_PASSWORD_SETTINGS: MaskInputOptions = {
-    password: true,
-  }
+  password: true,
+};
 
 export function visitSnapshot(
   node: serializedNodeWithId,
