@@ -6,7 +6,6 @@ import {
   isShadowRoot,
   needMaskingText,
   maskInputValue,
-  Mirror,
   isNativeShadowDom,
   getInputType,
   toLowerCase,
@@ -354,7 +353,7 @@ export default class MutationBuffer {
 
     for (const n of this.movedSet) {
       if (
-        isParentRemoved(this.removesSubTreeCache, n, this.mirror) &&
+        isParentRemoved(this.removesSubTreeCache, n) &&
         !this.movedSet.has(n.parentNode!)
       ) {
         continue;
@@ -365,7 +364,7 @@ export default class MutationBuffer {
     for (const n of this.addedSet) {
       if (
         !isAncestorInSet(this.droppedSet, n) &&
-        !isParentRemoved(this.removesSubTreeCache, n, this.mirror)
+        !isParentRemoved(this.removesSubTreeCache, n)
       ) {
         pushAdd(n);
       } else if (isAncestorInSet(this.movedSet, n)) {
@@ -808,18 +807,8 @@ function processRemoves(n: Node, cache: Set<Node>) {
 function isParentRemoved(
   removes: Set<Node>,
   n: Node,
-  mirror: Mirror,
 ): boolean {
-  if (removes.size === 0) return false;
-  return _isParentRemoved(removes, n, mirror);
-}
-
-function _isParentRemoved(
-  removes: Set<Node>,
-  n: Node,
-  _mirror: Mirror,
-): boolean {
-  if(!n.parentNode) return false;
+  if(!n.parentNode || !removes.size) return false;
   return removes.has(n.parentNode)
 }
 
