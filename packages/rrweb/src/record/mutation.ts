@@ -792,6 +792,7 @@ function deepDelete(addsSet: Set<Node>, n: Node) {
 }
 
 function processRemoves(n: Node, cache: Set<Node>) {
+  if(cache.has(n)) return;
   const queue = [n]
 
   while (queue.length) {
