@@ -302,7 +302,7 @@ export function _isBlockedElement(
   if (!blockSelector) return false;
 
   if (typeof blockSelector === 'string' && element.matches(blockSelector)) {
-  return true;
+    return true;
   }
 
   if (blockSelector instanceof RegExp) {

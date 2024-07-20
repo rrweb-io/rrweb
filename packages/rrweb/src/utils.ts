@@ -273,7 +273,6 @@ export function isBlocked(
   blockSelector: string | RegExp | null,
   checkAncestors: boolean,
 ): boolean {
-  console.log(node, 'blockSelector', blockSelector);
   if (!blockSelector) return false;
 
   const el = closestElementOfNode(node);
