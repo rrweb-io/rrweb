@@ -739,7 +739,7 @@ export default class MutationBuffer {
   /**
    * Make sure you check if `n`'s parent is blocked before calling this function
    * */
-  private genAdds = (n: Node, target?: Node) => {
+  private genAdds(n: Node, target?: Node){
     // this node was already recorded in other buffer, ignore it
     if (this.processedNodeManager.inOtherBuffer(n, this)) return;
 
