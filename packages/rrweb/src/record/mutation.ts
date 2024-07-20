@@ -702,7 +702,7 @@ export default class MutationBuffer {
             : this.mirror.getId(m.target);
           if (
             isIgnored(n, this.mirror, this.slimDOMOptions) ||
-            !isSerialized(n, this.mirror) || 
+            !isSerialized(n, this.mirror) ||
             isBlocked(m.target, this.blockClass, this.blockSelector, false)
           ) {
             return;
