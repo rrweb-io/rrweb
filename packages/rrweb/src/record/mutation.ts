@@ -584,8 +584,8 @@ export default class MutationBuffer {
           });
         }
         if (
-          isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
-          value === m.oldValue
+          value === m.oldValue ||
+          isBlocked(m.target, this.blockClass, this.blockSelector, false)
         ) {
           return;
         }
@@ -701,9 +701,9 @@ export default class MutationBuffer {
             ? this.mirror.getId(dom.host(m.target))
             : this.mirror.getId(m.target);
           if (
-            isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
             isIgnored(n, this.mirror, this.slimDOMOptions) ||
-            !isSerialized(n, this.mirror)
+            !isSerialized(n, this.mirror) || 
+            isBlocked(m.target, this.blockClass, this.blockSelector, false)
           ) {
             return;
           }
