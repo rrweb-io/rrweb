@@ -790,6 +790,11 @@ function deepDelete(addsSet: Set<Node>, n: Node) {
   n.childNodes.forEach((childN) => deepDelete(addsSet, childN));
 }
 
+/**
+ * When a node is removed, process it's subtree such that the lookup 
+ * for its children can be done efficiently and without traversing its
+ * entire parent chain.
+ */
 function processRemoves(n: Node, cache: Set<Node>) {
   if (cache.has(n)) return;
   const queue = [n];
