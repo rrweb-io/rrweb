@@ -138,7 +138,7 @@ describe('integration tests', function (this: ISuite) {
       const rebuildHtml = (
         (await page.evaluate(`${code}
         const x = new XMLSerializer();
-        const snap = rrwebSnapshot.snapshot(document);
+        const snap = rrwebSnapshot.snapshot(document, {});
         let out = x.serializeToString(rrwebSnapshot.rebuild(snap, { doc: document }));
         if (document.querySelector('html').getAttribute('xmlns') !== 'http://www.w3.org/1999/xhtml') {
           // this is just an artefact of serializeToString
@@ -180,7 +180,7 @@ describe('integration tests', function (this: ISuite) {
       `pre-check: images will be rendered ~326px high in BackCompat mode, and ~588px in CSS1Compat mode; getting: ${renderedHeight}px`,
     );
     const rebuildRenderedHeight = await page.evaluate(`${code}
-const snap = rrwebSnapshot.snapshot(document);
+const snap = rrwebSnapshot.snapshot(document, {});
 const iframe = document.createElement('iframe');
 iframe.setAttribute('width', document.body.clientWidth)
 iframe.setAttribute('height', document.body.clientHeight)
@@ -422,7 +422,7 @@ describe('iframe integration tests', function (this: ISuite) {
     });
     const snapshotResult = JSON.stringify(
       await page.evaluate(`${code};
-      rrwebSnapshot.snapshot(document);
+      rrwebSnapshot.snapshot(document, {});
     `),
       null,
       2,
@@ -465,7 +465,7 @@ describe('shadow DOM integration tests', function (this: ISuite) {
     });
     const snapshotResult = JSON.stringify(
       await page.evaluate(`${code};
-      rrwebSnapshot.snapshot(document);
+      rrwebSnapshot.snapshot(document, {});
     `),
       null,
       2,

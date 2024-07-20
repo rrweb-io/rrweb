@@ -375,19 +375,19 @@ function record<T = eventWithTime>(
 
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
-      mirror,
       blockClass,
       blockSelector,
-      maskTextClass,
-      maskTextSelector,
+      dataURLOptions,
+      inlineImages,
       inlineStylesheet,
       maskAllInputs: maskInputOptions,
-      maskTextFn,
       maskInputFn,
-      slimDOM: slimDOMOptions,
-      dataURLOptions,
+      maskTextClass,
+      maskTextFn,
+      maskTextSelector,
+      mirror,
       recordCanvas,
-      inlineImages,
+      slimDOM: slimDOMOptions,
       onSerialize: (n) => {
         if (isSerializedIframe(n, mirror)) {
           iframeManager.addIframe(n as HTMLIFrameElement);
