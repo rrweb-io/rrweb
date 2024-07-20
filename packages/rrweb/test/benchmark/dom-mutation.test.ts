@@ -146,7 +146,9 @@ describe('benchmark: mutation observer', () => {
       };
 
       // generate profile.json file
-      const profileFilename = `profile-${suite.title}-${new Date().toISOString()}.json`;
+      const profileFilename = `profile-${
+        suite.title
+      }-${new Date().toISOString()}.json`;
       const tempDirectory = path.resolve(path.join(__dirname, '../../temp'));
       fs.mkdirSync(tempDirectory, { recursive: true });
       const profilePath = path.resolve(tempDirectory, profileFilename);

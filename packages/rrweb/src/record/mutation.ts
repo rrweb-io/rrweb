@@ -791,7 +791,7 @@ function deepDelete(addsSet: Set<Node>, n: Node) {
 }
 
 /**
- * When a node is removed, process it's subtree such that the lookup 
+ * When a node is removed, process it's subtree such that the lookup
  * for its children can be done efficiently and without traversing its
  * entire parent chain.
  */
