@@ -791,8 +791,8 @@ function deepDelete(addsSet: Set<Node>, n: Node) {
 }
 
 function processRemoves(n: Node, cache: Set<Node>) {
-  if(cache.has(n)) return;
-  const queue = [n]
+  if (cache.has(n)) return;
+  const queue = [n];
 
   while (queue.length) {
     const next = queue.pop()!;
@@ -804,12 +804,9 @@ function processRemoves(n: Node, cache: Set<Node>) {
   return;
 }
 
-function isParentRemoved(
-  removes: Set<Node>,
-  n: Node,
-): boolean {
-  if(!n.parentNode || !removes.size) return false;
-  return removes.has(n.parentNode)
+function isParentRemoved(removes: Set<Node>, n: Node): boolean {
+  if (!n.parentNode || !removes.size) return false;
+  return removes.has(n.parentNode);
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
