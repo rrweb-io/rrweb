@@ -854,11 +854,46 @@ function serializeElementNode(
 function lowerIfExists(
   maybeAttr: string | number | boolean | undefined | null,
 ): string {
-  if (maybeAttr === undefined || maybeAttr === null) {
+  if (typeof maybeAttr !== 'string') {
     return '';
-  } else {
-    return (maybeAttr as string).toLowerCase();
   }
+
+  return maybeAttr.toLowerCase();
+}
+
+const HEAD_META_REGEXP = /^description|keywords$/;
+const HEAD_ICON_REGEXP = /^msapplication-tile(image|color)$/;
+const HEAD_META_SOCIAL_TWITTER_REGEXP = /^(og|twitter):/;
+const HEAD_META_SOCIAL_TWITTER_OR_FB_REGEXP = /^(og|twitter|fb):/;
+const HEAD_META_ARTICLE_OR_PRODUCT_REGEXP = /^(product|article):/;
+
+function isPreloadLink(
+  sn: serializedNode,
+  slimDOMOptions: SlimDOMOptions,
+): boolean {
+  if (sn.type !== NodeType.Element) return false;
+  if (!slimDOMOptions.script) return false;
+
+  return (
+    sn.tagName === 'link' &&
+    sn.attributes.as === 'script' &&
+    (sn.attributes.rel === 'preload' || sn.attributes.rel === 'modulepreload')
+  );
+}
+
+function isPrefetchLink(
+  sn: serializedNode,
+  slimDOMOptions: SlimDOMOptions,
+): boolean {
+  if (sn.type !== NodeType.Element) return false;
+  if (!slimDOMOptions.script) return false;
+
+  return (
+    sn.tagName === 'link' &&
+    sn.attributes.rel === 'prefetch' &&
+    typeof sn.attributes.href === 'string' &&
+    extractFileExtension(sn.attributes.href) === 'js'
+  );
 }
 
 function slimDOMExcluded(
@@ -870,81 +905,84 @@ function slimDOMExcluded(
     return true;
   } else if (sn.type === NodeType.Element) {
     if (
-      slimDOMOptions.script &&
-      // script tag
-      (sn.tagName === 'script' ||
-        // (module)preload link
-        (sn.tagName === 'link' &&
-          (sn.attributes.rel === 'preload' ||
-            sn.attributes.rel === 'modulepreload') &&
-          sn.attributes.as === 'script') ||
-        // prefetch link
-        (sn.tagName === 'link' &&
-          sn.attributes.rel === 'prefetch' &&
-          typeof sn.attributes.href === 'string' &&
-          extractFileExtension(sn.attributes.href) === 'js'))
+      isPreloadLink(sn, slimDOMOptions) ||
+      isPrefetchLink(sn, slimDOMOptions)
     ) {
       return true;
-    } else if (
-      slimDOMOptions.headFavicon &&
-      ((sn.tagName === 'link' && sn.attributes.rel === 'shortcut icon') ||
-        (sn.tagName === 'meta' &&
-          (lowerIfExists(sn.attributes.name).match(
-            /^msapplication-tile(image|color)$/,
-          ) ||
-            lowerIfExists(sn.attributes.name) === 'application-name' ||
-            lowerIfExists(sn.attributes.rel) === 'icon' ||
-            lowerIfExists(sn.attributes.rel) === 'apple-touch-icon' ||
-            lowerIfExists(sn.attributes.rel) === 'shortcut icon')))
+    }
+
+    const snAttributeName = lowerIfExists(sn.attributes.name);
+    const snAttributeRel = lowerIfExists(sn.attributes.rel);
+
+    if (
+      (slimDOMOptions.headFavicon &&
+        (snAttributeName === 'application-name' ||
+          snAttributeRel === 'icon' ||
+          snAttributeRel === 'apple-touch-icon' ||
+          snAttributeRel === 'shortcut icon')) ||
+      (sn.tagName === 'link' && snAttributeRel === 'shortcut icon') ||
+      (sn.tagName === 'meta' && HEAD_ICON_REGEXP.test(snAttributeName))
     ) {
       return true;
-    } else if (sn.tagName === 'meta') {
+    }
+
+    if (sn.tagName === 'meta') {
       if (
         slimDOMOptions.headMetaDescKeywords &&
-        lowerIfExists(sn.attributes.name).match(/^description|keywords$/)
+        HEAD_META_REGEXP.test(snAttributeName)
       ) {
         return true;
-      } else if (
+      }
+
+      const snAttributeProperty = lowerIfExists(sn.attributes.property);
+      if (
         slimDOMOptions.headMetaSocial &&
-        (lowerIfExists(sn.attributes.property).match(/^(og|twitter|fb):/) || // og = opengraph (facebook)
-          lowerIfExists(sn.attributes.name).match(/^(og|twitter):/) ||
-          lowerIfExists(sn.attributes.name) === 'pinterest')
+        (snAttributeName === 'pinterest' ||
+          HEAD_META_SOCIAL_TWITTER_OR_FB_REGEXP.test(snAttributeProperty) || // og = opengraph (facebook)
+          HEAD_META_SOCIAL_TWITTER_REGEXP.test(snAttributeName))
       ) {
         return true;
-      } else if (
+      }
+
+      if (
         slimDOMOptions.headMetaRobots &&
-        (lowerIfExists(sn.attributes.name) === 'robots' ||
-          lowerIfExists(sn.attributes.name) === 'googlebot' ||
-          lowerIfExists(sn.attributes.name) === 'bingbot')
+        (snAttributeName === 'robots' ||
+          snAttributeName === 'googlebot' ||
+          snAttributeName === 'bingbot')
       ) {
         return true;
-      } else if (
+      }
+
+      if (
         slimDOMOptions.headMetaHttpEquiv &&
         sn.attributes['http-equiv'] !== undefined
       ) {
         // e.g. X-UA-Compatible, Content-Type, Content-Language,
         // cache-control, X-Translated-By
         return true;
-      } else if (
+      }
+
+      if (
         slimDOMOptions.headMetaAuthorship &&
-        (lowerIfExists(sn.attributes.name) === 'author' ||
-          lowerIfExists(sn.attributes.name) === 'generator' ||
-          lowerIfExists(sn.attributes.name) === 'framework' ||
-          lowerIfExists(sn.attributes.name) === 'publisher' ||
-          lowerIfExists(sn.attributes.name) === 'progid' ||
-          lowerIfExists(sn.attributes.property).match(/^article:/) ||
-          lowerIfExists(sn.attributes.property).match(/^product:/))
+        (snAttributeName === 'author' ||
+          snAttributeName === 'generator' ||
+          snAttributeName === 'framework' ||
+          snAttributeName === 'publisher' ||
+          snAttributeName === 'progid' ||
+          HEAD_META_ARTICLE_OR_PRODUCT_REGEXP.test(snAttributeProperty))
       ) {
         return true;
-      } else if (
+      }
+
+      if (
         slimDOMOptions.headMetaVerification &&
-        (lowerIfExists(sn.attributes.name) === 'google-site-verification' ||
-          lowerIfExists(sn.attributes.name) === 'yandex-verification' ||
-          lowerIfExists(sn.attributes.name) === 'csrf-token' ||
-          lowerIfExists(sn.attributes.name) === 'p:domain_verify' ||
-          lowerIfExists(sn.attributes.name) === 'verify-v1' ||
-          lowerIfExists(sn.attributes.name) === 'verification' ||
-          lowerIfExists(sn.attributes.name) === 'shopify-checkout-api-token')
+        (snAttributeName === 'google-site-verification' ||
+          snAttributeName === 'yandex-verification' ||
+          snAttributeName === 'csrf-token' ||
+          snAttributeName === 'p:domain_verify' ||
+          snAttributeName === 'verify-v1' ||
+          snAttributeName === 'verification' ||
+          snAttributeName === 'shopify-checkout-api-token')
       ) {
         return true;
       }
