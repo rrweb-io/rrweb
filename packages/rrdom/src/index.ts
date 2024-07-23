@@ -202,7 +202,7 @@ function getValidTagName(element: HTMLElement): string {
   if (element instanceof HTMLFormElement) {
     return 'FORM';
   }
-  return element.tagName.toUpperCase();
+  return element.tagName;
 }
 
 /**
