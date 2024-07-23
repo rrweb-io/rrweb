@@ -6,7 +6,6 @@ import {
   isShadowRoot,
   needMaskingText,
   maskInputValue,
-  Mirror,
   isNativeShadowDom,
   getInputType,
   toLowerCase,
@@ -168,6 +167,7 @@ export default class MutationBuffer {
   private addedSet = new Set<Node>();
   private movedSet = new Set<Node>();
   private droppedSet = new Set<Node>();
+  private removesSubTreeCache = new Set<Node>();
 
   private mutationCb: observerParam['mutationCb'];
   private blockClass: observerParam['blockClass'];
@@ -353,7 +353,7 @@ export default class MutationBuffer {
 
     for (const n of this.movedSet) {
       if (
-        isParentRemoved(this.removes, n, this.mirror) &&
+        isParentRemoved(this.removesSubTreeCache, n) &&
         !this.movedSet.has(n.parentNode!)
       ) {
         continue;
@@ -364,7 +364,7 @@ export default class MutationBuffer {
     for (const n of this.addedSet) {
       if (
         !isAncestorInSet(this.droppedSet, n) &&
-        !isParentRemoved(this.removes, n, this.mirror)
+        !isParentRemoved(this.removesSubTreeCache, n)
       ) {
         pushAdd(n);
       } else if (isAncestorInSet(this.movedSet, n)) {
@@ -506,6 +506,7 @@ export default class MutationBuffer {
     this.addedSet = new Set<Node>();
     this.movedSet = new Set<Node>();
     this.droppedSet = new Set<Node>();
+    this.removesSubTreeCache = new Set<Node>();
     this.movedMap = {};
 
     this.mutationCb(payload);
@@ -726,6 +727,7 @@ export default class MutationBuffer {
                   ? true
                   : undefined,
             });
+            processRemoves(n, this.removesSubTreeCache);
           }
           this.mapRemoves.push(n);
         });
@@ -788,29 +790,28 @@ function deepDelete(addsSet: Set<Node>, n: Node) {
   n.childNodes.forEach((childN) => deepDelete(addsSet, childN));
 }
 
-function isParentRemoved(
-  removes: removedNodeMutation[],
-  n: Node,
-  mirror: Mirror,
-): boolean {
-  if (removes.length === 0) return false;
-  return _isParentRemoved(removes, n, mirror);
+/**
+ * When a node is removed, process it's subtree such that the lookup
+ * for its children can be done efficiently and without traversing its
+ * entire parent chain.
+ */
+function processRemoves(n: Node, cache: Set<Node>) {
+  if (cache.has(n)) return;
+  const queue = [n];
+
+  while (queue.length) {
+    const next = queue.pop()!;
+    if (cache.has(next)) continue;
+    cache.add(next);
+    next.childNodes.forEach((n) => queue.push(n));
+  }
+
+  return;
 }
 
-function _isParentRemoved(
-  removes: removedNodeMutation[],
-  n: Node,
-  mirror: Mirror,
-): boolean {
-  let node: ParentNode | null = n.parentNode;
-  while (node) {
-    const parentId = mirror.getId(node);
-    if (removes.some((r) => r.id === parentId)) {
-      return true;
-    }
-    node = node.parentNode;
-  }
-  return false;
+function isParentRemoved(removes: Set<Node>, n: Node): boolean {
+  if (!n.parentNode || !removes.size) return false;
+  return removes.has(n.parentNode);
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
