@@ -14,7 +14,6 @@ import type { CanvasManager } from './record/observers/canvas/canvas-manager';
 import type { StylesheetManager } from './record/stylesheet-manager';
 import type {
   addedNodeMutation,
-  blockClass,
   canvasMutationCallback,
   customElementCallback,
   eventWithTime,
@@ -45,8 +44,8 @@ export type recordOptions<T> = {
   emit?: (e: T, isCheckout?: boolean) => void;
   checkoutEveryNth?: number;
   checkoutEveryNms?: number;
-  blockClass?: blockClass;
-  blockSelector?: string;
+  blockClass?: string | null;
+  blockSelector?: string | RegExp | null;
   ignoreClass?: string;
   ignoreSelector?: string;
   maskTextClass?: maskTextClass;
@@ -85,8 +84,7 @@ export type observerParam = {
   inputCb: inputCallback;
   mediaInteractionCb: mediaInteractionCallback;
   selectionCb: selectionCallback;
-  blockClass: blockClass;
-  blockSelector: string | null;
+  blockSelector: string | RegExp | null;
   ignoreClass: string;
   ignoreSelector: string | null;
   maskTextClass: maskTextClass;
@@ -131,7 +129,6 @@ export type observerParam = {
 export type MutationBufferParam = Pick<
   observerParam,
   | 'mutationCb'
-  | 'blockClass'
   | 'blockSelector'
   | 'maskTextClass'
   | 'maskTextSelector'

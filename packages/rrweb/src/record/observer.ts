@@ -224,7 +224,6 @@ function initMouseInteractionObserver({
   mouseInteractionCb,
   doc,
   mirror,
-  blockClass,
   blockSelector,
   sampling,
 }: observerParam): listenerHandler {
@@ -244,7 +243,7 @@ function initMouseInteractionObserver({
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
     return (event: MouseEvent | TouchEvent | PointerEvent) => {
       const target = getEventTarget(event) as Node;
-      if (isBlocked(target, blockClass, blockSelector, true)) {
+      if (isBlocked(target, blockSelector, true)) {
         return;
       }
       let pointerType: PointerTypes | null = null;
@@ -343,21 +342,17 @@ export function initScrollObserver({
   scrollCb,
   doc,
   mirror,
-  blockClass,
   blockSelector,
   sampling,
 }: Pick<
   observerParam,
-  'scrollCb' | 'doc' | 'mirror' | 'blockClass' | 'blockSelector' | 'sampling'
+  'scrollCb' | 'doc' | 'mirror' | 'blockSelector' | 'sampling'
 >): listenerHandler {
   const updatePosition = callbackWrapper(
     throttle<UIEvent>(
       callbackWrapper((evt) => {
         const target = getEventTarget(evt);
-        if (
-          !target ||
-          isBlocked(target as Node, blockClass, blockSelector, true)
-        ) {
+        if (!target || isBlocked(target as Node, blockSelector, true)) {
           return;
         }
         const id = mirror.getId(target as Node);
@@ -414,7 +409,7 @@ function initInputObserver({
   inputCb,
   doc,
   mirror,
-  blockClass,
+
   blockSelector,
   ignoreClass,
   ignoreSelector,
@@ -439,7 +434,7 @@ function initInputObserver({
       !target ||
       !tagName ||
       INPUT_TAGS.indexOf(tagName) < 0 ||
-      isBlocked(target as Node, blockClass, blockSelector, true)
+      isBlocked(target as Node, blockSelector, true)
     ) {
       return;
     }
@@ -1047,7 +1042,7 @@ function initStyleDeclarationObserver(
 
 function initMediaInteractionObserver({
   mediaInteractionCb,
-  blockClass,
+
   blockSelector,
   mirror,
   sampling,
@@ -1057,10 +1052,7 @@ function initMediaInteractionObserver({
     throttle(
       callbackWrapper((event: Event) => {
         const target = getEventTarget(event);
-        if (
-          !target ||
-          isBlocked(target as Node, blockClass, blockSelector, true)
-        ) {
+        if (!target || isBlocked(target as Node, blockSelector, true)) {
           return;
         }
         const { currentTime, volume, muted, playbackRate, loop } =
@@ -1152,7 +1144,7 @@ function initFontObserver({ fontCb, doc }: observerParam): listenerHandler {
 }
 
 function initSelectionObserver(param: observerParam): listenerHandler {
-  const { doc, mirror, blockClass, blockSelector, selectionCb } = param;
+  const { doc, mirror, blockSelector, selectionCb } = param;
   let collapsed = true;
 
   const updateSelection = callbackWrapper(() => {
@@ -1171,8 +1163,8 @@ function initSelectionObserver(param: observerParam): listenerHandler {
       const { startContainer, startOffset, endContainer, endOffset } = range;
 
       const blocked =
-        isBlocked(startContainer, blockClass, blockSelector, true) ||
-        isBlocked(endContainer, blockClass, blockSelector, true);
+        isBlocked(startContainer, blockSelector, true) ||
+        isBlocked(endContainer, blockSelector, true);
 
       if (blocked) continue;
 

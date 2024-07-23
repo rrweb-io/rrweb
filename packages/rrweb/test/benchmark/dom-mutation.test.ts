@@ -89,17 +89,6 @@ describe('benchmark: mutation observer', () => {
     return fs.readFileSync(filePath, 'utf8');
   };
 
-  const addRecordingScript = async (page: Page) => {
-    // const scriptUrl = `${getServerURL(server)}/rrweb-1.1.3.js`;
-    const scriptUrl = `${getServerURL(server)}/rrweb.umd.cjs`;
-    await page.evaluate((url) => {
-      const scriptEl = document.createElement('script');
-      scriptEl.src = url;
-      document.head.append(scriptEl);
-    }, scriptUrl);
-    await page.waitForFunction('window.rrweb');
-  };
-
   for (const suite of suites) {
     it(suite.title, async () => {
       page = await browser.newPage();
@@ -110,12 +99,19 @@ describe('benchmark: mutation observer', () => {
       const loadPage = async () => {
         if ('html' in suite) {
           await page.goto('about:blank');
+          const code = fs
+            .readFileSync(path.resolve(__dirname, '../../dist/rrweb.umd.cjs'))
+            .toString();
+          await page.setContent(`<html>
+            <script>
+            ${code.toString()}
+            </script>
+            </html>`);
+
           await page.setContent(getHtml.call(this, suite.html));
         } else {
           await page.goto(suite.url);
         }
-
-        await addRecordingScript(page);
       };
 
       const getDuration = async (): Promise<number> => {

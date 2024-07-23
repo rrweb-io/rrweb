@@ -1,5 +1,4 @@
 import {
-  type blockClass,
   CanvasContext,
   type canvasManagerMutationCallback,
   type IWindow,
@@ -11,8 +10,7 @@ import { serializeArgs } from './serialize-args';
 export default function initCanvas2DMutationObserver(
   cb: canvasManagerMutationCallback,
   win: IWindow,
-  blockClass: blockClass,
-  blockSelector: string | null,
+  blockSelector: string | RegExp | null,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
   const props2D = Object.getOwnPropertyNames(
@@ -40,7 +38,7 @@ export default function initCanvas2DMutationObserver(
             this: CanvasRenderingContext2D,
             ...args: Array<unknown>
           ) {
-            if (!isBlocked(this.canvas, blockClass, blockSelector, true)) {
+            if (!isBlocked(this.canvas, blockSelector, true)) {
               // Using setTimeout as toDataURL can be heavy
               // and we'd rather not block the main thread
               setTimeout(() => {

@@ -15,6 +15,7 @@ import {
   isSerializedIframe,
   isSerializedStylesheet,
   nowTimestamp,
+  makeBlockSelector,
 } from '../utils';
 import type { recordOptions } from '../types';
 import {
@@ -319,8 +320,7 @@ function record<T = eventWithTime>(
     recordCanvas,
     mutationCb: wrappedCanvasMutationEmit,
     win: window,
-    blockClass,
-    blockSelector,
+    blockSelector: makeBlockSelector(blockClass, blockSelector),
     mirror,
     sampling: sampling.canvas,
     dataURLOptions,
@@ -330,8 +330,7 @@ function record<T = eventWithTime>(
     mutationCb: wrappedMutationEmit,
     scrollCb: wrappedScrollEmit,
     bypassOptions: {
-      blockClass,
-      blockSelector,
+      blockSelector: makeBlockSelector(blockClass, blockSelector),
       maskTextClass,
       maskTextSelector,
       inlineStylesheet,
@@ -376,8 +375,7 @@ function record<T = eventWithTime>(
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
       mirror,
-      blockClass,
-      blockSelector,
+      blockSelector: makeBlockSelector(blockClass, blockSelector),
       maskTextClass,
       maskTextSelector,
       inlineStylesheet,
@@ -524,7 +522,6 @@ function record<T = eventWithTime>(
               },
             });
           },
-          blockClass,
           ignoreClass,
           ignoreSelector,
           maskTextClass,
@@ -541,7 +538,7 @@ function record<T = eventWithTime>(
           maskInputFn,
           maskTextFn,
           keepIframeSrcFn,
-          blockSelector,
+          blockSelector: makeBlockSelector(blockClass, blockSelector),
           slimDOMOptions,
           dataURLOptions,
           mirror,
