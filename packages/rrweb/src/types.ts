@@ -4,7 +4,6 @@ import type {
   SlimDOMOptions,
   MaskInputFn,
   MaskTextFn,
-  DataURLOptions,
 } from 'rrweb-snapshot';
 import type { IframeManager } from './record/iframe-manager';
 import type { ShadowDomManager } from './record/shadow-dom-manager';
@@ -13,6 +12,7 @@ import type { RRNode } from 'rrdom';
 import type { CanvasManager } from './record/observers/canvas/canvas-manager';
 import type { StylesheetManager } from './record/stylesheet-manager';
 import type {
+  DataURLOptions,
   addedNodeMutation,
   blockClass,
   canvasMutationCallback,
@@ -38,8 +38,10 @@ import type {
   viewportResizeCallback,
   PackFn,
   UnpackFn,
+  captureAssetsParam,
 } from '@rrweb/types';
 import type ProcessedNodeManager from './record/processed-node-manager';
+import type AssetManager from './record/observers/asset-manager';
 
 export type recordOptions<T> = {
   emit?: (e: T, isCheckout?: boolean) => void;
@@ -57,7 +59,10 @@ export type recordOptions<T> = {
   maskTextFn?: MaskTextFn;
   slimDOMOptions?: SlimDOMOptions | 'all' | true;
   ignoreCSSAttributes?: Set<string>;
-  inlineStylesheet?: boolean;
+  /**
+   * @deprecated please use `captureAssets.stylesheets` instead
+   */
+  inlineStylesheet?: boolean | 'all';
   hooks?: hooksParam;
   packFn?: PackFn;
   sampling?: SamplingStrategy;
@@ -68,7 +73,11 @@ export type recordOptions<T> = {
   recordAfter?: 'DOMContentLoaded' | 'load';
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
+  /**
+   * @deprecated please use `captureAssets.images` instead
+   */
   inlineImages?: boolean;
+  captureAssets?: captureAssetsParam;
   plugins?: RecordPlugin[];
   // departed, please use sampling options
   mousemoveWait?: number;
@@ -95,7 +104,7 @@ export type observerParam = {
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
   keepIframeSrcFn: KeepIframeSrcFn;
-  inlineStylesheet: boolean;
+  inlineStylesheet: boolean | 'all';
   styleSheetRuleCb: styleSheetRuleCallback;
   styleDeclarationCb: styleDeclarationCallback;
   canvasMutationCb: canvasMutationCallback;
@@ -103,8 +112,8 @@ export type observerParam = {
   fontCb: fontCallback;
   sampling: SamplingStrategy;
   recordDOM: boolean;
+  captureAssets: captureAssetsParam;
   recordCanvas: boolean;
-  inlineImages: boolean;
   userTriggeredOnInput: boolean;
   collectFonts: boolean;
   slimDOMOptions: SlimDOMOptions;
@@ -116,6 +125,7 @@ export type observerParam = {
   shadowDomManager: ShadowDomManager;
   canvasManager: CanvasManager;
   processedNodeManager: ProcessedNodeManager;
+  assetManager: AssetManager;
   ignoreCSSAttributes: Set<string>;
   plugins: Array<{
     observer: (
@@ -140,8 +150,8 @@ export type MutationBufferParam = Pick<
   | 'maskTextFn'
   | 'maskInputFn'
   | 'keepIframeSrcFn'
+  | 'captureAssets'
   | 'recordCanvas'
-  | 'inlineImages'
   | 'slimDOMOptions'
   | 'dataURLOptions'
   | 'doc'
@@ -151,6 +161,7 @@ export type MutationBufferParam = Pick<
   | 'shadowDomManager'
   | 'canvasManager'
   | 'processedNodeManager'
+  | 'assetManager'
 >;
 
 export type ReplayPlugin = {
@@ -224,3 +235,11 @@ export type CrossOriginIframeMessageEvent =
   MessageEvent<CrossOriginIframeMessageEventContent>;
 
 export type ErrorHandler = (error: unknown) => void | boolean;
+
+export type assetStatus = {
+  status: 'capturing' | 'captured' | 'error' | 'refused';
+};
+
+export interface ProcessingStyleElement extends HTMLStyleElement {
+  __rrProcessingStylesheet?: true;
+}

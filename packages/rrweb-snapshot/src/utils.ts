@@ -3,6 +3,10 @@ import type {
   MaskInputFn,
   MaskInputOptions,
   nodeMetaMap,
+} from './types';
+
+import { NodeType } from '@rrweb/types';
+import type {
   IMirror,
   serializedNodeWithId,
   serializedNode,
@@ -10,8 +14,8 @@ import type {
   documentTypeNode,
   textNode,
   elementNode,
-} from './types';
-import { NodeType } from './types';
+  captureAssetsParam,
+} from '@rrweb/types';
 
 export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;
@@ -93,17 +97,28 @@ export function escapeImportStatement(rule: CSSImportRule): string {
   return statement.join(' ') + ';';
 }
 
+/*
+ * serialize the css rules from the .sheet property
+ * for <link rel="stylesheet"> elements, this is the only way of getting the rules without a FETCH
+ * for <style> elements, this is less preferable to looking at childNodes[0].textContent
+ * (which will include vendor prefixed rules which may not be used or visible to the recorded browser,
+ * but which might be needed by the replayer browser)
+ * however, at snapshot time, we don't know whether the style element has suffered
+ * any programmatic manipulation prior to the snapshot, in which case the .sheet would be more up to date
+ */
 export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
-    return rules
-      ? fixBrowserCompatibilityIssuesInCSS(
-          Array.from(rules, stringifyRule).join(''),
-        )
-      : null;
+    return rules ? stringifyCssRules(rules) : null;
   } catch (error) {
     return null;
   }
+}
+
+export function stringifyCssRules(rules: CSSRuleList): string {
+  return fixBrowserCompatibilityIssuesInCSS(
+    Array.from(rules, stringifyRule).join(''),
+  );
 }
 
 export function stringifyRule(rule: CSSRule): string {
@@ -247,6 +262,16 @@ export function toLowerCase<T extends string>(str: T): Lowercase<T> {
   return str.toLowerCase() as unknown as Lowercase<T>;
 }
 
+export function lowerIfExists(
+  maybeAttr: string | number | boolean | undefined | null,
+): Lowercase<string> {
+  if (maybeAttr === undefined || maybeAttr === null) {
+    return '';
+  } else {
+    return toLowerCase(maybeAttr as string);
+  }
+}
+
 const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';
 type PatchedGetImageData = {
   [ORIGINAL_ATTRIBUTE_NAME]: CanvasImageData['getImageData'];
@@ -333,7 +358,7 @@ export function getInputType(element: HTMLElement): Lowercase<string> | null {
 }
 
 /**
- * Extracts the file extension from an a path, considering search parameters and fragments.
+ * Extracts the file extension from a path, considering search parameters and fragments.
  * @param path - Path to file
  * @param baseURL - [optional] Base URL of the page, used to resolve relative paths. Defaults to current page URL.
  */
@@ -350,4 +375,193 @@ export function extractFileExtension(
   const regex = /\.([0-9a-z]+)(?:$)/i;
   const match = url.pathname.match(regex);
   return match?.[1] ?? null;
+}
+
+function normalizeCssString(cssText: string): string {
+  // remove spaces
+  // TODO: normalize other differences between css as authored vs. stringifyStylesheet
+  return cssText.replace(/[\s]/g, '');
+}
+
+/**
+ * Maps the output of stringifyStylesheet to individual text nodes of a <style> element
+ * performance is not considered as this is anticipated to be very much an edge case
+ * (javascript is needed to add extra text nodes to a <style>)
+ */
+export function splitCssText(
+  cssText: string,
+  style: HTMLStyleElement,
+): string[] {
+  const childNodes = Array.from(style.childNodes);
+  const splits: string[] = [];
+  if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
+    const cssTextNorm = normalizeCssString(cssText);
+    for (let i = 1; i < childNodes.length; i++) {
+      if (
+        childNodes[i].textContent &&
+        typeof childNodes[i].textContent === 'string'
+      ) {
+        const textContentNorm = normalizeCssString(childNodes[i].textContent!);
+        for (let j = 3; j < textContentNorm.length; j++) {
+          // find a  substring that appears only once
+          const bit = textContentNorm.substring(0, j);
+          if (cssTextNorm.split(bit).length === 2) {
+            const splitNorm = cssTextNorm.indexOf(bit);
+            // find the split point in the original text
+            for (let k = splitNorm; k < cssText.length; k++) {
+              if (
+                normalizeCssString(cssText.substring(0, k)).length === splitNorm
+              ) {
+                splits.push(cssText.substring(0, k));
+                cssText = cssText.substring(k);
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+  splits.push(cssText); // either the full thing if no splits were found, or the last split
+  return splits;
+}
+
+export function markCssSplits(
+  cssText: string,
+  style: HTMLStyleElement,
+): string {
+  return splitCssText(cssText, style).join('/* rr_split */');
+}
+
+export const CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
+  ['IMG', new Set(['src', 'srcset'])],
+  ['VIDEO', new Set(['src'])],
+  ['AUDIO', new Set(['src'])],
+  ['EMBED', new Set(['src'])],
+  ['SOURCE', new Set(['src'])],
+  ['TRACK', new Set(['src'])],
+  ['INPUT', new Set(['src'])],
+  ['OBJECT', new Set(['src'])],
+  ['BODY', new Set(['background'])],
+  ['TABLE', new Set(['background'])],
+  ['TD', new Set(['background'])],
+  ['TR', new Set(['background'])],
+  ['TH', new Set(['background'])],
+  ['TBODY', new Set(['background'])],
+  ['THEAD', new Set(['background'])],
+  ['image', new Set(['href'])],
+  ['feImage', new Set(['href'])],
+  ['cursor', new Set(['href'])],
+]);
+
+export function shouldCaptureAsset(
+  n: Element,
+  attribute: string,
+  value: string,
+  config: captureAssetsParam,
+): boolean {
+  if (
+    config.stylesheets !== false &&
+    n.nodeName === 'LINK' &&
+    attribute === 'href' &&
+    lowerIfExists((n as HTMLLinkElement).rel) === 'stylesheet'
+  ) {
+    const linkEl = n as HTMLLinkElement;
+    if (!linkEl.sheet) {
+      // capture with an onload mutation instead so that we get an accurate timestamp for it's appearance
+      return false;
+    } else if (
+      config.stylesheets === true ||
+      !shouldIgnoreAsset(value, config)
+    ) {
+      // we'll also try to fetch if there are CORs issues
+      return true;
+    } else if (config.stylesheets === 'without-fetch') {
+      // replicate legacy inlineStylesheet behaviour;
+      // inline all stylesheets that are CORs accessible
+      try {
+        return linkEl.sheet.cssRules !== undefined;
+      } catch (e) {
+        return false;
+      }
+    }
+    return false;
+  } else if (
+    config.images &&
+    n.nodeName === 'IMG' &&
+    ['src', 'srcset'].includes(attribute)
+  ) {
+    return true;
+  }
+  return (
+    isAttributeCapturable(n, attribute) && !shouldIgnoreAsset(value, config)
+  );
+}
+
+export function isAttributeCapturable(n: Element, attribute: string): boolean {
+  if (n.nodeName === 'IFRAME' && attribute == 'src') {
+    const i = n as HTMLIFrameElement;
+    if (i.contentDocument && i.contentDocument.contentType) {
+      return (
+        i.contentDocument.contentType.startsWith('image/') ||
+        i.contentDocument.contentType == 'application/pdf'
+      );
+    } else if (i.src) {
+      // fallback to checking filename
+      let ipath;
+      try {
+        ipath = new URL(i.src).pathname;
+      } catch (e) {
+        ipath = i.src.split('?')[0];
+      }
+      return (
+        ipath.endsWith('.pdf') ||
+        ipath.endsWith('.jpeg') ||
+        ipath.endsWith('.jpg') ||
+        ipath.endsWith('.gif') ||
+        ipath.endsWith('.png') ||
+        ipath.endsWith('.webp')
+      );
+    }
+    return false;
+  }
+  const acceptedAttributesSet = CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS.get(
+    n.nodeName,
+  );
+  if (!acceptedAttributesSet) {
+    return false;
+  }
+  return acceptedAttributesSet.has(attribute);
+}
+
+export function shouldIgnoreAsset(
+  url: string,
+  config: captureAssetsParam,
+): boolean {
+  const originsToIgnore = ['data:'];
+  const urlIsBlob = url.startsWith(`blob:${window.location.origin}/`);
+
+  // Check if url is a blob and we should ignore blobs
+  // BUT: if config.images == true, we should not ignore these on <img> elements
+  // so this function should not be used in the absence of that context
+  if (urlIsBlob) return !config.objectURLs;
+
+  // Check if url matches any ignorable origins
+  for (const origin of originsToIgnore) {
+    if (url.startsWith(origin)) return true;
+  }
+  let urlOrigin;
+  try {
+    urlOrigin = new URL(url).origin;
+  } catch (e) {
+    return true; // something went wrong, ignore!
+  }
+  // Check the origins
+  const captureOrigins = config.origins;
+  if (typeof captureOrigins === 'boolean') {
+    return !captureOrigins;
+  } else if (Array.isArray(captureOrigins)) {
+    return !captureOrigins.includes(urlOrigin);
+  }
+  return true; // no config, ignore!
 }

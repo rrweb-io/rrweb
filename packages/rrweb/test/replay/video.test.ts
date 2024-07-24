@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import type * as puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer';
 import {
   startServer,
   launchPuppeteer,
@@ -15,6 +15,7 @@ import { vi } from 'vitest';
 import { Replayer } from '../../src/replay';
 import videoPlaybackEvents from '../events/video-playback';
 import videoPlaybackOnFullSnapshotEvents from '../events/video-playback-on-full-snapshot';
+import type * as puppeteer from 'puppeteer';
 expect.extend({ toMatchImageSnapshot });
 
 type IWindow = typeof globalThis & Window & { replayer: Replayer };

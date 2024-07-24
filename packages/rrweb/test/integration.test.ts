@@ -14,8 +14,8 @@ import {
   ISuite,
 } from './utils';
 import type { recordOptions } from '../src/types';
-import { eventWithTime, EventType, RecordPlugin } from '@rrweb/types';
-import { visitSnapshot, NodeType } from 'rrweb-snapshot';
+import { eventWithTime, NodeType, EventType, RecordPlugin } from '@rrweb/types';
+import { visitSnapshot } from 'rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
   vi.setConfig({ testTimeout: 10_000 });
@@ -24,6 +24,12 @@ describe('record integration tests', function (this: ISuite) {
     fileName: string,
     options: recordOptions<eventWithTime> = {},
   ): string => {
+    if (!options.captureAssets) {
+      // for consistency in the tests
+      options.captureAssets = {
+        processStylesheetsWithin: 50,
+      };
+    }
     const filePath = path.resolve(__dirname, `./html/${fileName}`);
     const html = fs.readFileSync(filePath, 'utf8');
     return replaceLast(
@@ -73,7 +79,7 @@ describe('record integration tests', function (this: ISuite) {
         x: Math.round(x + width / 2),
         y: Math.round(y + height / 2),
       };
-    }, span);
+    }, span!);
     await page.touchscreen.tap(center.x, center.y);
 
     await page.click('a');
@@ -101,7 +107,7 @@ describe('record integration tests', function (this: ISuite) {
     await assertSnapshot(snapshots);
   });
 
-  it('can record textarea mutations correctly', async () => {
+  it('can record and replay textarea mutations correctly', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'empty.html'));
@@ -112,20 +118,29 @@ describe('record integration tests', function (this: ISuite) {
       const ta = document.createElement('textarea');
       ta.innerText = 'pre value';
       document.body.append(ta);
+
+      const ta2 = document.createElement('textarea');
+      ta2.id = 'ta2';
+      document.body.append(ta2);
     });
-    await page.waitForTimeout(5);
+    await waitForRAF(page);
     await page.evaluate(() => {
       const t = document.querySelector('textarea') as HTMLTextAreaElement;
       t.innerText = 'ok'; // this mutation should be recorded
+
+      const ta2t = document.createTextNode('added');
+      document.getElementById('ta2').append(ta2t);
     });
-    await page.waitForTimeout(5);
+    await waitForRAF(page);
     await page.evaluate(() => {
       const t = document.querySelector('textarea') as HTMLTextAreaElement;
       (t.childNodes[0] as Text).appendData('3'); // this mutation is also valid
+
+      document.getElementById('ta2').remove(); // done with this
     });
-    await page.waitForTimeout(5);
+    await waitForRAF(page);
     await page.type('textarea', '1'); // types (inserts) at index 0, in front of existing text
-    await page.waitForTimeout(5);
+    await waitForRAF(page);
     await page.evaluate(() => {
       const t = document.querySelector('textarea') as HTMLTextAreaElement;
       // user has typed so childNode content should now be ignored
@@ -136,8 +151,9 @@ describe('record integration tests', function (this: ISuite) {
       // there is nothing explicit in rrweb which enforces this, but this test may protect against
       // a future change where a mutation on a textarea incorrectly updates the .value
     });
-    await page.waitForTimeout(5);
+    await waitForRAF(page);
     await page.type('textarea', '2'); // cursor is at index 1
+    await waitForRAF(page);
 
     const snapshots = (await page.evaluate(
       'window.snapshots',
@@ -153,16 +169,157 @@ describe('record integration tests', function (this: ISuite) {
         replayer.pause((e.timestamp - window.snapshots[0].timestamp)+1);
         let ts = replayer.iframe.contentDocument.querySelector('textarea');
         vals.push((e.data.source === 0 ? 'Mutation' : 'User') + ':' + ts.value);
+        let ts2 = replayer.iframe.contentDocument.getElementById('ta2');
+        if (ts2) {
+          vals.push('ta2:' + ts2.value);
+        }
       });
       vals;
     `);
     expect(replayTextareaValues).toEqual([
       'Mutation:pre value',
+      'ta2:',
       'Mutation:ok',
+      'ta2:added',
       'Mutation:ok3',
       'User:1ok3',
       'Mutation:1ok3', // if this gets set to 'ignore', it's an error, as the 'user' has modified the textarea
       'User:12ok3',
+    ]);
+  });
+
+  it('can record and replay style mutations', async () => {
+    // This test shows that the `isStyle` attribute on textContent is not needed in a mutation
+    // TODO: we could get a lot more elaborate here with mixed textContent and insertRule mutations
+    const page: puppeteer.Page = await browser.newPage();
+    page.on('console', (msg) => console.log(msg.text()));
+
+    const waitForStylesheetAssets = 100;
+
+    await page.goto(`${serverURL}/html`);
+    await page.setContent(
+      getHtml.call(this, 'style.html', {
+        captureAssets: {
+          processStylesheetsWithin: waitForStylesheetAssets,
+        },
+      }),
+    );
+
+    await waitForRAF(page); // ensure mutations aren't included in fullsnapshot
+    await page.waitForTimeout(waitForStylesheetAssets + 1); // allow time for stylesheet assets to get emitted before mutations
+
+    await page.evaluate(() => {
+      let styleEl = document.querySelector('style#dual-textContent');
+      if (styleEl) {
+        styleEl.append(
+          document.createTextNode('body { background-color: darkgreen; }'),
+        );
+        styleEl.append(
+          document.createTextNode(
+            '.absolutify { background-image: url("./rel"); }',
+          ),
+        );
+      }
+    });
+    await waitForRAF(page);
+    await page.evaluate(() => {
+      let styleEl = document.querySelector('style#dual-textContent');
+      if (styleEl) {
+        styleEl.childNodes.forEach((cn) => {
+          if (cn.textContent) {
+            cn.textContent = cn.textContent.replace('darkgreen', 'purple');
+            cn.textContent = cn.textContent.replace(
+              'orange !important',
+              'yellow',
+            );
+          }
+        });
+      }
+    });
+    await waitForRAF(page);
+    await page.evaluate(() => {
+      let styleEl = document.querySelector('style#dual-textContent');
+      if (styleEl) {
+        styleEl.childNodes.forEach((cn) => {
+          if (cn.textContent) {
+            cn.textContent = cn.textContent
+              .replace('black', 'black !important')
+              .replace('/rel', '/rel2');
+          }
+        });
+      }
+      let hoverMutationStyleEl = document.querySelector('style#hover-mutation');
+      if (hoverMutationStyleEl) {
+        hoverMutationStyleEl.childNodes.forEach((cn) => {
+          if (cn.textContent) {
+            cn.textContent = 'a:hover { outline: cyan solid 1px; }';
+          }
+        });
+      }
+      let st = document.createElement('style');
+      st.id = 'goldilocks';
+      st.innerText = 'body { color: brown }';
+      document.body.append(st);
+    });
+
+    await waitForRAF(page);
+    await page.evaluate(() => {
+      let styleEl = document.querySelector('style#goldilocks');
+      if (styleEl) {
+        styleEl.childNodes.forEach((cn) => {
+          if (cn.textContent) {
+            cn.textContent = cn.textContent.replace('brown', 'gold');
+          }
+        });
+      }
+    });
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+
+    // following ensures that the ./rel url has been absolutized (in a mutation)
+    await assertSnapshot(snapshots);
+
+    // check after each mutation and text input
+    const replayStyleValues = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(window.snapshots);
+      const vals = [];
+      window.snapshots.filter((e)=>e.data.attributes || e.data.source === 5).forEach((e)=>{
+        replayer.pause((e.timestamp - window.snapshots[0].timestamp)+1);
+        let bodyStyle = getComputedStyle(replayer.iframe.contentDocument.querySelector('body'))
+        vals.push({
+          'background-color': bodyStyle['background-color'],
+          'color': bodyStyle['color'],
+        });
+      });
+      vals.push(replayer.iframe.contentDocument.getElementById('single-textContent').innerText);
+      vals.push(replayer.iframe.contentDocument.getElementById('empty').innerText);
+      vals.push(replayer.iframe.contentDocument.getElementById('hover-mutation').innerText);
+      vals;
+`);
+    await waitForRAF(page);
+    expect(replayStyleValues).toEqual([
+      {
+        'background-color': 'rgb(0, 100, 0)', // darkgreen
+        color: 'rgb(255, 165, 0)', // orange (from style.html as asset)
+      },
+      {
+        'background-color': 'rgb(128, 0, 128)', // purple
+        color: 'rgb(255, 255, 0)', // yellow
+      },
+      {
+        'background-color': 'rgb(0, 0, 0)', // black !important
+        color: 'rgb(165, 42, 42)', // brown
+      },
+      {
+        'background-color': 'rgb(0, 0, 0)',
+        color: 'rgb(255, 215, 0)', // gold
+      },
+      'a:hover,\na.\\:hover { outline: red solid 1px; }', // has run adaptCssForReplay
+      'a:hover,\na.\\:hover { outline: blue solid 1px; }', // has run adaptCssForReplay
+      'a:hover,\na.\\:hover { outline: cyan solid 1px; }', // has run adaptCssForReplay after text mutation
     ]);
   });
 
@@ -639,6 +796,7 @@ describe('record integration tests', function (this: ISuite) {
       const el = document.createElement('input');
       el.size = 50;
       el.id = 'input';
+      el.setAttribute('size', '50');
       el.value = 'input should be masked';
 
       const nextElement = document.querySelector('#one')!;
@@ -738,12 +896,34 @@ describe('record integration tests', function (this: ISuite) {
     await assertSnapshot(snapshots);
   });
 
+  it('should record images with blob url if inlineImages is on', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.goto(`${serverURL}/html`);
+    page.setContent(
+      getHtml.call(this, 'image-blob-url.html', {
+        inlineImages: true,
+        captureAssets: { origins: false }, // override the default, leaving objectUrls unspecified
+      }),
+    );
+    await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
+    await page.waitForSelector('img'); // wait for image to get added
+    await waitForRAF(page); // wait for image to be captured
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    await assertSnapshot(snapshots);
+  });
+
   it('should record images with blob url', async () => {
     const page: puppeteer.Page = await browser.newPage();
     page.on('console', (msg) => console.log(msg.text()));
     await page.goto(`${serverURL}/html`);
     page.setContent(
-      getHtml.call(this, 'image-blob-url.html', { inlineImages: true }),
+      getHtml.call(this, 'image-blob-url.html', {
+        captureAssets: { objectURLs: true, origins: false },
+      }),
     );
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
     await page.waitForSelector('img'); // wait for image to get added
@@ -760,10 +940,12 @@ describe('record integration tests', function (this: ISuite) {
     page.on('console', (msg) => console.log(msg.text()));
     await page.goto(`${serverURL}/html`);
     await page.setContent(
-      getHtml.call(this, 'frame-image-blob-url.html', { inlineImages: true }),
+      getHtml.call(this, 'frame-image-blob-url.html', {
+        captureAssets: { objectURLs: true, origins: false },
+      }),
     );
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`);
-    await page.waitForTimeout(50); // wait for image to get added
+    await page.waitForTimeout(150); // wait for image to get added
     await waitForRAF(page); // wait for image to be captured
 
     const snapshots = (await page.evaluate(
@@ -777,7 +959,9 @@ describe('record integration tests', function (this: ISuite) {
     page.on('console', (msg) => console.log(msg.text()));
     await page.goto(`${serverURL}/html`);
     await page.setContent(
-      getHtml.call(this, 'frame2.html', { inlineImages: true }),
+      getHtml.call(this, 'frame2.html', {
+        captureAssets: { objectURLs: true, origins: false },
+      }),
     );
     await page.waitForSelector('iframe'); // wait for iframe to get added
     await waitForRAF(page); // wait for iframe to load
@@ -786,7 +970,7 @@ describe('record integration tests', function (this: ISuite) {
       iframe.setAttribute('src', '/html/image-blob-url.html');
     });
     await page.waitForResponse(`${serverURL}/html/assets/robot.png`); // wait for image to get loaded
-    await page.waitForTimeout(50); // wait for image to get added
+    await page.waitForTimeout(150); // wait for image to get added
     await waitForRAF(page); // wait for image to be captured
 
     const snapshots = (await page.evaluate(
@@ -798,7 +982,16 @@ describe('record integration tests', function (this: ISuite) {
   it('should record shadow DOM', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
-    await page.setContent(getHtml.call(this, 'shadow-dom.html'));
+
+    const waitForStylesheetAssets = 100;
+    await page.setContent(
+      getHtml.call(this, 'shadow-dom.html', {
+        captureAssets: {
+          processStylesheetsWithin: waitForStylesheetAssets,
+        },
+      }),
+    );
+    await page.waitForTimeout(waitForStylesheetAssets + 1); // allow time for stylesheet assets to get emitted before mutations
 
     await page.evaluate(() => {
       const sleep = (ms: number) =>
@@ -1238,12 +1431,8 @@ describe('record integration tests', function (this: ISuite) {
   });
 
   /**
-   * https://github.com/rrweb-io/rrweb/pull/1417
-   * This test is to make sure that this problem doesn't regress
-   * Test case description:
-   * 1. Record two style elements. One is recorded as a full snapshot and the other is recorded as an incremental snapshot.
-   * 2. Change the color of both style elements to yellow as incremental style mutation.
-   * 3. Replay the recorded events and check if the style mutation is applied correctly.
+   * the regression part of the following is now handled by replayer.test.ts::'can deal with duplicate/conflicting values on style elements'
+   * so this test could be dropped if we add more robust mixing of `insertRule` into 'can record and replay style mutations'
    */
   it('should record style mutations and replay them correctly', async () => {
     const page: puppeteer.Page = await browser.newPage();
@@ -1266,6 +1455,7 @@ describe('record integration tests', function (this: ISuite) {
         </body></html>
       `,
     );
+    const waitForStylesheetAssets = 10;
     // Start rrweb recording
     await page.evaluate(
       (code, recordSnippet) => {
@@ -1274,8 +1464,13 @@ describe('record integration tests', function (this: ISuite) {
         document.head.appendChild(script);
       },
       code,
-      generateRecordSnippet({}),
+      generateRecordSnippet({
+        captureAssets: {
+          processStylesheetsWithin: waitForStylesheetAssets,
+        },
+      }),
     );
+    await page.waitForTimeout(waitForStylesheetAssets + 1); // allow time for stylesheet assets to get emitted before mutations
 
     await page.evaluate(
       async (OldColor, NewColor) => {
@@ -1334,6 +1529,87 @@ describe('record integration tests', function (this: ISuite) {
       ];
     `);
     expect(changedColors).toEqual([NewColor, NewColor]);
+    await page.close();
+  });
+
+  it('should record style mutations with multiple child nodes and replay them correctly', async () => {
+    // ensure that presence of multiple text nodes doesn't interfere with programmatic insertRule operations
+
+    const page: puppeteer.Page = await browser.newPage();
+    const Color = 'rgb(255, 0, 0)'; // red color
+
+    await page.setContent(
+      `
+      <!DOCTYPE html><html lang="en">
+        <head>
+	        <style>
+          /* hello */
+          </style>
+        </head>
+        <body>
+	        <div id="one"></div>
+          <div id="two"></div>
+	        <script>
+		        document.querySelector("style").append(document.createTextNode("/* world */"));
+		        document.querySelector("style").sheet.insertRule('#one { color: ${Color}; }', 0);
+	        </script>
+        </body></html>
+      `,
+    );
+
+    const waitForStylesheetAssets = 10;
+
+    // Start rrweb recording
+    await page.evaluate(
+      (code, recordSnippet) => {
+        const script = document.createElement('script');
+        script.textContent = `${code};${recordSnippet}`;
+        document.head.appendChild(script);
+      },
+      code,
+      generateRecordSnippet({
+        captureAssets: {
+          processStylesheetsWithin: waitForStylesheetAssets,
+        },
+      }),
+    );
+    await page.waitForTimeout(waitForStylesheetAssets + 1); // allow time for stylesheet assets to get emitted before mutations
+
+    await page.evaluate(async (Color) => {
+      // Create a new style element with the same content as the existing style element and apply it to the #two div element
+      const incrementalStyle = document.createElement(
+        'style',
+      ) as HTMLStyleElement;
+      incrementalStyle.append(document.createTextNode('/* hello */'));
+      incrementalStyle.append(document.createTextNode('/* world */'));
+      document.head.appendChild(incrementalStyle);
+      incrementalStyle.sheet!.insertRule(`#two { color: ${Color}; }`, 0);
+    }, Color);
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    await assertSnapshot(snapshots);
+
+    /**
+     * Replay the recorded events and check if the style mutation is applied correctly
+     */
+    const changedColors = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(window.snapshots);
+      replayer.pause(1000);
+
+      // Get the color of the element after applying the style mutation event
+      [
+        window.getComputedStyle(
+          replayer.iframe.contentDocument.querySelector('#one'),
+        ).color,
+        window.getComputedStyle(
+          replayer.iframe.contentDocument.querySelector('#two'),
+        ).color,
+      ];
+    `);
+    expect(changedColors).toEqual([Color, Color]);
     await page.close();
   });
 });

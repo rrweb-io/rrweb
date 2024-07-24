@@ -6,17 +6,17 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import { vi } from 'vitest';
 import { JSDOM } from 'jsdom';
+import { Mirror } from 'rrweb-snapshot';
 import {
   cdataNode,
   commentNode,
   documentNode,
   documentTypeNode,
   elementNode,
-  Mirror,
   NodeType,
   NodeType as RRNodeType,
   textNode,
-} from 'rrweb-snapshot';
+} from '@rrweb/types';
 import {
   buildFromDom,
   buildFromNode,

@@ -25,6 +25,8 @@ interface ISuite {
   events: eventWithTime[];
   server: http.Server;
   serverURL: string;
+  serverB: http.Server;
+  serverBURL: string;
 }
 
 interface IWindow extends Window {
@@ -82,10 +84,7 @@ const setup = function (
   content: string,
   options?: ExtraOptions,
 ): ISuite {
-  const ctx = {} as ISuite & {
-    serverB: http.Server;
-    serverBURL: string;
-  };
+  const ctx = {} as ISuite;
 
   beforeAll(async () => {
     ctx.browser = await launchPuppeteer();
@@ -207,13 +206,18 @@ describe('cross origin iframes', function (this: ISuite) {
     });
 
     it('should replace the existing DOM nodes on iframe navigation with `isAttachIframe`', async () => {
-      await ctx.page.evaluate((url) => {
+      const newUrl = `${ctx.serverURL}/html/form.html?2`;
+      ctx.page.evaluate((url) => {
         const iframe = document.querySelector('iframe') as HTMLIFrameElement;
-        iframe.src = `${url}/html/form.html?2`;
-      }, ctx.serverURL);
+        iframe.src = url;
+      }, newUrl);
+      await ctx.page.waitForFrame((iframe) => iframe.url() === newUrl);
+
       await waitForRAF(ctx.page); // loads iframe
 
       await injectRecordScript(ctx.page.mainFrame().childFrames()[0]); // injects script into new iframe
+
+      await waitForRAF(ctx.page); // wait till script is loaded
 
       const events: eventWithTime[] = await ctx.page.evaluate(
         () => (window as unknown as IWindow).snapshots,
@@ -543,7 +547,7 @@ describe('cross origin iframes', function (this: ISuite) {
     it('should filter out forwarded cross origin rrweb messages', async () => {
       const frame = ctx.page.mainFrame().childFrames()[0];
       const iframe2URL = `${ctx.serverBURL}/html/blank.html`;
-      await frame.evaluate((iframe2URL) => {
+      frame.evaluate((iframe2URL) => {
         // Add a message proxy to forward messages from child frames to its parent frame.
         window.addEventListener('message', (event) => {
           if (event.source !== window)
@@ -555,7 +559,7 @@ describe('cross origin iframes', function (this: ISuite) {
       }, iframe2URL);
 
       // Wait for iframe2 to load
-      await ctx.page.waitForFrame(iframe2URL);
+      await ctx.page.waitForFrame((iframe) => iframe.url() === iframe2URL);
       const iframe2 = frame.childFrames()[0];
       // Record iframe2
       await injectRecordScript(iframe2);
@@ -591,8 +595,8 @@ describe('same origin iframes', function (this: ISuite) {
     await waitForRAF(ctx.page);
     // two events (full snapshot + meta) from main frame,
     // and two (full snapshot + mutation) from iframe
-    expect(events.length).toBe(4);
     await assertSnapshot(events);
+    expect(events.length).toBe(4);
   });
 
   it('should record cross-origin iframe in same-origin iframe', async () => {
