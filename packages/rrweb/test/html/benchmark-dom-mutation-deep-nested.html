@@ -2,7 +2,7 @@
   <body></body>
   <script>
     function init() {
-      const count = 100;
+      const count = 100;  // originally 1000 in #1277
 
       let roots = [];
       for (let i = 0; i < count; ++i) {
@@ -11,7 +11,7 @@
         roots.push(div);
       }
 
-      let tree_depth = 256;
+      let tree_depth = 256; // originally 64 in #1277
       let children = [...roots];
       while (tree_depth > 0) {
         for (let i = 0; i < children.length; i++) {
