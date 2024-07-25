@@ -10,6 +10,7 @@
     "test:watch": "vitest watch",
     "retest:update": "vitest run --update",
     "test:update": "yarn build && vitest run --update",
+    "bench": "vite build && vitest bench",
     "dev": "vite build --watch",
     "build": "yarn turbo prepublish -F rrweb-snapshot",
     "check-types": "tsc --noEmit",

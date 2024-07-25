@@ -127,61 +127,21 @@ export function escapeImportStatement(rule: CSSImportRule): string {
 export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
-    const stringifiedRules = [] as string[];
-    for (let i = 0; i < rules.length; ++i) {
-      stringifiedRules.push(stringifyRule(rules[i]));
+    if (!rules) {
+      return null;
     }
-    return rules
-      ? fixBrowserCompatibilityIssuesInCSS(stringifiedRules.join(''))
-      : null;
+    const stringifiedRules = Array.from(rules, (rule: CSSRule) =>
+      stringifyRule(rule, s.href),
+    ).join('');
+    return fixBrowserCompatibilityIssuesInCSS(stringifiedRules);
   } catch (error) {
     return null;
   }
 }
 
-function replaceChromeGridTemplateAreas(rule: CSSStyleRule): string {
-  const hasGridTemplateInCSSText = rule.cssText.includes('grid-template:');
-  const hasGridTemplateAreaInStyleRules =
-    rule.style.getPropertyValue('grid-template-areas') !== '';
-  const hasGridTemplateAreaInCSSText = rule.cssText.includes(
-    'grid-template-areas:',
-  );
-  if (
-    isCSSStyleRule(rule) &&
-    hasGridTemplateInCSSText &&
-    hasGridTemplateAreaInStyleRules &&
-    !hasGridTemplateAreaInCSSText
-  ) {
-    // chrome does not correctly provide the grid template areas in the rules cssText
-    // e.g. https://bugs.chromium.org/p/chromium/issues/detail?id=1303968
-    // we remove the grid-template rule from the text... so everything from grid-template: to the next semicolon
-    // and then add each grid-template-x rule into the css text because Chrome isn't doing this correctly
-    const parts = rule.cssText
-      .split(';')
-      .filter((s) => !s.includes('grid-template:'))
-      .map((s) => s.trim());
-
-    const gridStyles: string[] = [];
-
-    for (let i = 0; i < rule.style.length; i++) {
-      const styleName = rule.style[i];
-      if (styleName.startsWith('grid-template')) {
-        gridStyles.push(
-          `${styleName}: ${rule.style.getPropertyValue(styleName)}`,
-        );
-      }
-    }
-    parts.splice(parts.length - 1, 0, gridStyles.join('; '));
-    return parts.join('; ');
-  }
-  return rule.cssText;
-}
-
-export function stringifyRule(rule: CSSRule): string {
-  let importStringified;
-  let gridTemplateFixed;
-
+export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
   if (isCSSImportRule(rule)) {
+    let importStringified;
     try {
       importStringified =
         // for same-origin stylesheets,
@@ -190,19 +150,25 @@ export function stringifyRule(rule: CSSRule): string {
         // work around browser issues with the raw string `@import url(...)` statement
         escapeImportStatement(rule);
     } catch (error) {
-      // ignore
+      importStringified = rule.cssText;
     }
-  } else if (isCSSStyleRule(rule) && rule.selectorText.includes(':')) {
-    // Safari does not escape selectors with : properly
-    // see https://bugs.webkit.org/show_bug.cgi?id=184604
-    return fixSafariColons(rule.cssText);
+    if (rule.styleSheet.href) {
+      // url()s within the imported stylesheet are relative to _that_ sheet's href
+      return absolutifyURLs(importStringified, rule.styleSheet.href);
+    }
+    return importStringified;
+  } else {
+    let ruleStringified = rule.cssText;
+    if (isCSSStyleRule(rule) && rule.selectorText.includes(':')) {
+      // Safari does not escape selectors with : properly
+      // see https://bugs.webkit.org/show_bug.cgi?id=184604
+      ruleStringified = fixSafariColons(ruleStringified);
+    }
+    if (sheetHref) {
+      return absolutifyURLs(ruleStringified, sheetHref);
+    }
+    return ruleStringified;
   }
-
-  if (isCSSStyleRule(rule)) {
-    gridTemplateFixed = replaceChromeGridTemplateAreas(rule);
-  }
-
-  return importStringified || gridTemplateFixed || rule.cssText;
 }
 
 export function fixSafariColons(cssStringified: string): string {
@@ -430,4 +396,63 @@ export function extractFileExtension(
   const regex = /\.([0-9a-z]+)(?:$)/i;
   const match = url.pathname.match(regex);
   return match?.[1] ?? null;
+}
+
+function extractOrigin(url: string): string {
+  let origin = '';
+  if (url.indexOf('//') > -1) {
+    origin = url.split('/').slice(0, 3).join('/');
+  } else {
+    origin = url.split('/')[0];
+  }
+  origin = origin.split('?')[0];
+  return origin;
+}
+
+const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
+const URL_PROTOCOL_MATCH = /^(?:[a-z+]+:)?\/\//i;
+const URL_WWW_MATCH = /^www\..*/i;
+const DATA_URI = /^(data:)([^,]*),(.*)/i;
+export function absolutifyURLs(cssText: string | null, href: string): string {
+  return (cssText || '').replace(
+    URL_IN_CSS_REF,
+    (
+      origin: string,
+      quote1: string,
+      path1: string,
+      quote2: string,
+      path2: string,
+      path3: string,
+    ) => {
+      const filePath = path1 || path2 || path3;
+      const maybeQuote = quote1 || quote2 || '';
+      if (!filePath) {
+        return origin;
+      }
+      if (URL_PROTOCOL_MATCH.test(filePath) || URL_WWW_MATCH.test(filePath)) {
+        return `url(${maybeQuote}${filePath}${maybeQuote})`;
+      }
+      if (DATA_URI.test(filePath)) {
+        return `url(${maybeQuote}${filePath}${maybeQuote})`;
+      }
+      if (filePath[0] === '/') {
+        return `url(${maybeQuote}${
+          extractOrigin(href) + filePath
+        }${maybeQuote})`;
+      }
+      const stack = href.split('/');
+      const parts = filePath.split('/');
+      stack.pop();
+      for (const part of parts) {
+        if (part === '.') {
+          continue;
+        } else if (part === '..') {
+          stack.pop();
+        } else {
+          stack.push(part);
+        }
+      }
+      return `url(${maybeQuote}${stack.join('/')}${maybeQuote})`;
+    },
+  );
 }
