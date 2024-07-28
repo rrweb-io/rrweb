@@ -45,7 +45,6 @@
     start: number;
     end: number;
   } | null = null;
-
   let meta: playerMetaData;
   $: meta = replayer.getMetaData();
   let percentage: string;
@@ -75,7 +74,7 @@
   }
 
   let customEvents: CustomEvent[];
-  $: customEvents = (() => {
+  const buildCustomEvents = () => {
     const { context } = replayer.service.state;
     const totalEvents = context.events.length;
     const start = context.events[0].timestamp;
@@ -99,7 +98,8 @@
     });
 
     return customEvents;
-  })();
+  };
+  $: customEvents = buildCustomEvents();
 
   let inactivePeriods: {
     name: string;
@@ -107,7 +107,7 @@
     position: string;
     width: string;
   }[];
-  $: inactivePeriods = (() => {
+  const buildInactivePeriods = () => {
     try {
       const { context } = replayer.service.state;
       const totalEvents = context.events.length;
@@ -136,7 +136,8 @@
       // For safety concern, if there is any error, the main function won't be affected.
       return [];
     }
-  })();
+  };
+  $: inactivePeriods = buildInactivePeriods();
 
   const loopTimer = () => {
     stopTimer();
@@ -169,6 +170,11 @@
       cancelAnimationFrame(timer);
       timer = null;
     }
+  };
+
+  export const triggerUpdateProgress = () => {
+    customEvents = buildCustomEvents();
+    inactivePeriods = buildInactivePeriods();
   };
 
   export const toggle = () => {

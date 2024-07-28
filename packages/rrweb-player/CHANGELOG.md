@@ -1,5 +1,11 @@
 # rrweb-player
 
+## 2.0.3
+
+### Patch Changes
+
+- Trigger progress bar updates (custom events and inactive periods) on async add event
+
 ## 2.0.2
 
 ### Patch Changes
