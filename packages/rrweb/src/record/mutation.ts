@@ -19,6 +19,7 @@ import type {
   removedNodeMutation,
   addedNodeMutation,
   Optional,
+  mutationCallbackParam,
 } from '@rrweb/types';
 import {
   isBlocked,
@@ -259,6 +260,31 @@ export default class MutationBuffer {
     this.emit(); // clears buffer if not locked/frozen
   };
 
+  private serializeTexts(
+    input: textCursor[],
+    addedIds: Set<number>,
+  ): mutationCallbackParam['texts'] {
+    const texts = [];
+    for (let i = 0; i < input.length; i++) {
+      const n = input[i].node;
+      const id = this.mirror.getId(n);
+      if (n.parentNode && (n.parentNode as Element).tagName === 'TEXTAREA') {
+        // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
+        this.genTextAreaValueMutation(n.parentNode as HTMLTextAreaElement);
+      }
+
+      if (addedIds.has(id) || !this.mirror.has(id)) {
+        continue;
+      }
+      texts.push({
+        id,
+        value: input[i].value,
+      });
+    }
+
+    return texts;
+  }
+
   public emit = () => {
     if (this.frozen || this.locked) {
       return;
@@ -438,25 +464,7 @@ export default class MutationBuffer {
     }
 
     const payload = {
-      texts: this.texts
-        .map((text) => {
-          const n = text.node;
-          if (
-            n.parentNode &&
-            (n.parentNode as Element).tagName === 'TEXTAREA'
-          ) {
-            // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
-            this.genTextAreaValueMutation(n.parentNode as HTMLTextAreaElement);
-          }
-          return {
-            id: this.mirror.getId(n),
-            value: text.value,
-          };
-        })
-        // no need to include them on added elements, as they have just been serialized with up to date attribubtes
-        .filter((text) => !addedIds.has(text.id))
-        // text mutation's id was not in the mirror map means the target node has been removed
-        .filter((text) => this.mirror.has(text.id)),
+      texts: this.serializeTexts(this.texts, addedIds),
       attributes: this.attributes
         .map((attribute) => {
           const { attributes } = attribute;
