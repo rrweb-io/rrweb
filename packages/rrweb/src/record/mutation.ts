@@ -851,7 +851,7 @@ function _isParentRemoved(
   let node: ParentNode | null = n.parentNode;
   while (node) {
     const parentId = mirror.getId(node);
-    if (removes.some((r) => r.id === parentId)) {
+    if (removesMap.has(parentId)) {
       return true;
     }
     node = node.parentNode;
