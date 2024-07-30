@@ -647,8 +647,6 @@ function serializeElementNode(
       attributes.type !== 'button' &&
       value
     ) {
-      const type = getInputType(n);
-
       attributes.value = maskInputValue({
         element: n,
         type: getInputType(n),
