@@ -26,7 +26,7 @@ import {
   toLowerCase,
   extractFileExtension,
   nativeSetTimeout,
-  absolutifyURLs
+  absolutifyURLs,
 } from './utils';
 
 let _id = 1;
