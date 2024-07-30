@@ -433,7 +433,7 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
     }
 
     // Use match logic from https://github.com/NxtChg/pieces/blob/3eb39c8287a97632e9347a24f333d52d916bc816/js/css_parser/css_parse.js#L46C1-L47C1
-    const m = match(/^(((?<!\\)"(?:\\"|[^"])*"|(?<!\\)'(?:\\'|[^'])*'|[^{])+)/);
+    const m = match(/^(("(?:\\"|[^"])*"|'(?:\\'|[^'])*'|[^{])+)/);
     if (!m) {
       return;
     }
@@ -464,9 +464,17 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
     let currentSegment = '';
     let depthParentheses = 0; // Track depth of parentheses
     let depthBrackets = 0; // Track depth of square brackets
+    let currentStringChar = null;
 
     for (const char of input) {
-      if (char === '(') {
+
+      const hasStringEscape = currentSegment.endsWith('\\');
+
+      if (currentStringChar) {
+        if (currentStringChar === char && !hasStringEscape) {
+          currentStringChar = null;
+        }
+      } else if (char === '(') {
         depthParentheses++;
       } else if (char === ')') {
         depthParentheses--;
@@ -474,6 +482,8 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
         depthBrackets++;
       } else if (char === ']') {
         depthBrackets--;
+      } else if ('\'"'.includes(char)) {
+        currentStringChar = char;
       }
 
       // Split point is a comma that is not inside parentheses or square brackets
@@ -855,17 +865,7 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
    */
 
   function _compileAtrule(name: string) {
-    const re = new RegExp(
-      '^@' +
-        name +
-        '\\s*((?:' +
-        [
-          '(?<!\\\\)"(?:\\\\"|[^"])*"',
-          "(?<!\\\\)'(?:\\\\'|[^'])*'",
-          '[^;]',
-        ].join('|') +
-        ')+);',
-    );
+    const re = new RegExp('^@' + name + '\\s*([^;]+);');
     return () => {
       const pos = position();
       const m = match(re);
