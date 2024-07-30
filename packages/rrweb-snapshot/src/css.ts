@@ -437,6 +437,7 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
     if (!m) {
       return;
     }
+
     /* @fix Remove all comments from selectors
      * http://ostermiller.org/findcomment.html */
     const cleanedInput = m[0]
@@ -463,9 +464,16 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
     let currentSegment = '';
     let depthParentheses = 0; // Track depth of parentheses
     let depthBrackets = 0; // Track depth of square brackets
+    let currentStringChar = null;
 
     for (const char of input) {
-      if (char === '(') {
+      const hasStringEscape = currentSegment.endsWith('\\');
+
+      if (currentStringChar) {
+        if (currentStringChar === char && !hasStringEscape) {
+          currentStringChar = null;
+        }
+      } else if (char === '(') {
         depthParentheses++;
       } else if (char === ')') {
         depthParentheses--;
@@ -473,6 +481,8 @@ export function parse(css: string, options: ParserOptions = {}): Stylesheet {
         depthBrackets++;
       } else if (char === ']') {
         depthBrackets--;
+      } else if ('\'"'.includes(char)) {
+        currentStringChar = char;
       }
 
       // Split point is a comma that is not inside parentheses or square brackets
