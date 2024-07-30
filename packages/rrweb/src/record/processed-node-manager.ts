@@ -6,6 +6,9 @@ import { getNative } from 'rrweb-snapshot';
  */
 export default class ProcessedNodeManager {
   private nodeMap: WeakMap<Node, Set<MutationBuffer>> = new WeakMap();
+  private nativeRAF = getNative<typeof requestAnimationFrame>(
+    'requestAnimationFrame',
+  ).bind(window);
 
   private active = false;
 
@@ -19,7 +22,7 @@ export default class ProcessedNodeManager {
   public add(node: Node, buffer: MutationBuffer) {
     if (!this.active) {
       this.active = true;
-      requestAnimationFrame(() => {
+      this.nativeRAF(() => {
         this.nodeMap = new WeakMap();
         this.active = false;
       });
