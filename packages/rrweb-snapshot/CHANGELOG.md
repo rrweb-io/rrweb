@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.18
+
+### Patch Changes
+
+- [#20](https://github.com/amplitude/rrweb/pull/20) [`66c6fcb`](https://github.com/amplitude/rrweb/commit/66c6fcbf213694f8a6ff4784cec1e9b1320ae429) Thanks [@jxiwang](https://github.com/jxiwang)! - better nested css selector splitting when commas or brackets happen to be in quoted text
+
 ## 2.0.0-alpha.17
 
 ## 2.0.0-alpha.16
