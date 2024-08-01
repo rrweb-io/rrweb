@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.19
+
+### Patch Changes
+
+- [#25](https://github.com/amplitude/rrweb/pull/25) [`f876ea5`](https://github.com/amplitude/rrweb/commit/f876ea55e21653d682a983b320f611d9ab09e0ad) Thanks [@lewgordon-amplitude](https://github.com/lewgordon-amplitude)! - Don't double-record the values of <textarea>s when they already have some content prefilled #1301
+
 ## 2.0.0-alpha.18
 
 ### Patch Changes
