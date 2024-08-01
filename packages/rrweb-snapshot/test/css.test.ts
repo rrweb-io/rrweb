@@ -9,9 +9,9 @@ import { splitCssText, stringifyStylesheet } from './../src/utils';
 import { applyCssSplits } from './../src/rebuild';
 import {
   NodeType,
-  serializedElementNodeWithId,
-  BuildCache,
-  textNode,
+  type serializedElementNodeWithId,
+  type BuildCache,
+  type textNode,
 } from '../src/types';
 
 describe('css parser', () => {
