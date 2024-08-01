@@ -5,7 +5,7 @@
   "scripts": {
     "prepare": "npm run prepack",
     "prepack": "npm run build",
-    "retest": "PUPPETEER_HEADLESS=true yarn retest:headful",
+    "retest": "cross-env PUPPETEER_HEADLESS=true yarn retest:headful",
     "retest:headful": "vitest run --exclude test/benchmark",
     "build-and-test": "yarn build && yarn retest",
     "test:headless": "cross-env PUPPETEER_HEADLESS=true yarn build-and-test",
