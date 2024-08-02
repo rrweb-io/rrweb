@@ -96,26 +96,24 @@ export function applyCssSplits(
       childTextNodes.push(scn);
     }
   }
+  const cssTextSplits = cssText.split('/* rr_split */');
+  while (
+    cssTextSplits.length > 1 &&
+    cssTextSplits.length > childTextNodes.length
+  ) {
+    // unexpected: remerge the last two so that we don't discard any css
+    cssTextSplits.splice(-2, 2, cssTextSplits.slice(-2).join(''));
+  }
   for (let i = 0; i < childTextNodes.length; i++) {
-    let remainder = '';
-    const scn = childTextNodes[i];
-    if (i !== childTextNodes.length - 1) {
-      const ix = cssText.indexOf('/* rr_split */');
-      if (ix !== -1) {
-        remainder = cssText.substring(ix + '/* rr_split */'.length);
-        cssText = cssText.substring(0, ix);
-      }
-    } else {
-      // todo: replaceAll after lib.es2021
-      cssText = cssText.replace(/\/\* rr_split \*\//g, '');
+    const childTextNode = childTextNodes[i];
+    const cssTextSection = cssTextSplits[i];
+    if (childTextNode && cssTextSection) {
+      // id will be assigned when these child nodes are
+      // iterated over in buildNodeWithSN
+      childTextNode.textContent = hackCss
+        ? adaptCssForReplay(cssTextSection, cache)
+        : cssTextSection;
     }
-    if (hackCss) {
-      cssText = adaptCssForReplay(cssText, cache);
-    }
-    // id will be assigned when these child nodes are
-    // iterated over in buildNodeWithSN
-    scn.textContent = cssText;
-    cssText = remainder;
   }
 }
 
