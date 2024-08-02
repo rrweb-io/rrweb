@@ -52,7 +52,7 @@ import type {
 } from '@rrweb/types';
 import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
-import dom, { mutationObserver as mutationObserverCtor } from '@rrweb/utils';
+import dom, { mutationObserverCtor } from '@rrweb/utils';
 
 export const mutationBuffers: MutationBuffer[] = [];
 
