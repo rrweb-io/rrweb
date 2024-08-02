@@ -9,9 +9,20 @@
       "@amplitude/rrdom",
       "@amplitude/rrdom-nodejs",
       "@amplitude/rrweb-player",
+      "@amplitude/rrweb-all",
+      "@amplitude/rrweb-replay",
+      "@amplitude/rrweb-record",
       "@amplitude/rrweb-types",
-      "@amplitude/rrweb-web-extension",
-      "@amplitude/rrvideo"
+      "@amplitude/rrweb-packer",
+      "@amplitude/rrweb-utils",
+      "@amplitude/web-extension",
+      "@amplitude/rrvideo",
+      "@amplitude/rrweb-plugin-console-record",
+      "@amplitude/rrweb-plugin-console-replay",
+      "@amplitude/rrweb-plugin-sequential-id-record",
+      "@amplitude/rrweb-plugin-sequential-id-replay",
+      "@amplitude/rrweb-plugin-canvas-webrtc-record",
+      "@amplitude/rrweb-plugin-canvas-webrtc-replay"
     ]
   ],
   "linked": [],

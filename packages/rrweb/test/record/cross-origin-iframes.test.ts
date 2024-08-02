@@ -53,7 +53,11 @@ async function injectRecordScript(
   } catch (e) {
     // we get this error: `Protocol error (DOM.resolveNode): Node with given id does not belong to the document`
     // then the page wasn't loaded yet and we try again
-    if (!e.message.includes('DOM.resolveNode')) throw e;
+    if (
+      !e.message.includes('DOM.resolveNode') ||
+      !e.message.includes('DOM.describeNode')
+    )
+      throw e;
     await injectRecordScript(frame, options);
     return;
   }
