@@ -109,6 +109,26 @@ describe('css splitter', () => {
     }
   });
 
+  it('finds css textElement splits correctly when comments are present', () => {
+    const window = new Window({ url: 'https://localhost:8080' });
+    const document = window.document;
+    // as authored, with comment, missing semicolons
+    document.head.innerHTML =
+      '<style>.a{color:red}.b{color:blue} /* author comment */</style>';
+    const style = document.querySelector('style');
+    if (style) {
+      style.append('/* author comment */.a{color:red}.b{color:green}');
+
+      // how it is currently stringified (spaces present)
+      const expected = [
+        '.a { color: red; } .b { color: blue; }',
+        '.a { color: red; } .b { color: green; }',
+      ];
+      const browserSheet = expected.join('');
+      expect(splitCssText(browserSheet, style)).toEqual(expected);
+    }
+  });
+
   it('finds css textElement splits correctly when vendor prefixed rules have been removed', () => {
     const style = JSDOM.fragment(`<style></style>`).querySelector('style');
     if (style) {

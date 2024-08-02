@@ -443,10 +443,12 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
   );
 }
 
-function normalizeCssString(cssText: string): string {
-  // remove spaces
-  // TODO: normalize other differences between css as authored vs. stringifyStylesheet
-  return cssText.replace(/[\s]/g, '');
+/**
+ * Intention is to normalize by remove spaces, semicolons and CSS comments
+ * so that we can compare css as authored vs. output of stringifyStylesheet
+ */
+export function normalizeCssString(cssText: string): string {
+  return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '');
 }
 
 /**
