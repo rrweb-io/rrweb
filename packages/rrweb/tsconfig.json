@@ -9,7 +9,6 @@
       "vite/client",
       "@types/dom-mediacapture-transform",
       "@types/offscreencanvas",
-
       // rrweb specific:
       /*
        * @see https://vitest.dev/config/#globals
@@ -18,7 +17,6 @@
        */
       "vitest/globals"
     ],
-
     // TODO: enable me in the future, this is quite a large project
     // at time of writing (April 2024) there are over 100 errors in rrweb
     "strict": false
@@ -26,6 +24,9 @@
   "references": [
     {
       "path": "../types"
+    },
+    {
+      "path": "../utils"
     },
     {
       "path": "../rrdom"
