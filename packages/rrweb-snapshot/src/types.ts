@@ -103,6 +103,23 @@ export type mediaAttributes = {
   rr_mediaVolume?: number;
 };
 
+export type DialogAttributes = {
+  open: string;
+  /**
+   * Represents the dialog's open mode.
+   * `modal` means the dialog is opened with `showModal()`.
+   * `non-modal` means the dialog is opened with `show()` or
+   * by adding an `open` attribute.
+   */
+  rr_open_mode: 'modal' | 'non-modal';
+  /**
+   * Currently unimplemented, but in future can be used to:
+   * Represents the order of which of the dialog was opened.
+   * This is useful for replaying the dialog `.showModal()` in the correct order.
+   */
+  // rr_open_mode_index?: number;
+};
+
 // @deprecated
 export interface INode extends Node {
   __sn: serializedNodeWithId;

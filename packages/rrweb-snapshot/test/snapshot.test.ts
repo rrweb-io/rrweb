@@ -2,11 +2,30 @@
  * @vitest-environment jsdom
  */
 import { JSDOM } from 'jsdom';
-import { describe, it, expect } from 'vitest';
-import { serializeNodeWithId, _isBlockedElement } from '../src/snapshot';
-import snapshot from '../src/snapshot';
-import { serializedNodeWithId, elementNode } from '../src/types';
+import { describe, expect, it } from 'vitest';
+
+import snapshot, {
+  _isBlockedElement,
+  serializeNodeWithId,
+} from '../src/snapshot';
+import { elementNode, serializedNodeWithId } from '../src/types';
 import { Mirror, absolutifyURLs } from '../src/utils';
+
+const serializeNode = (node: Node): serializedNodeWithId | null => {
+  return serializeNodeWithId(node, {
+    doc: document,
+    mirror: new Mirror(),
+    blockClass: 'blockblock',
+    blockSelector: null,
+    maskTextClass: 'maskmask',
+    maskTextSelector: null,
+    skipChild: false,
+    inlineStylesheet: true,
+    maskTextFn: undefined,
+    maskInputFn: undefined,
+    slimDOMOptions: {},
+  });
+};
 
 describe('absolute url to stylesheet', () => {
   const href = 'http://localhost/css/style.css';
@@ -135,22 +154,6 @@ describe('isBlockedElement()', () => {
 });
 
 describe('style elements', () => {
-  const serializeNode = (node: Node): serializedNodeWithId | null => {
-    return serializeNodeWithId(node, {
-      doc: document,
-      mirror: new Mirror(),
-      blockClass: 'blockblock',
-      blockSelector: null,
-      maskTextClass: 'maskmask',
-      maskTextSelector: null,
-      skipChild: false,
-      inlineStylesheet: true,
-      maskTextFn: undefined,
-      maskInputFn: undefined,
-      slimDOMOptions: {},
-    });
-  };
-
   const render = (html: string): HTMLStyleElement => {
     document.write(html);
     return document.querySelector('style')!;
@@ -180,23 +183,6 @@ describe('style elements', () => {
 });
 
 describe('scrollTop/scrollLeft', () => {
-  const serializeNode = (node: Node): serializedNodeWithId | null => {
-    return serializeNodeWithId(node, {
-      doc: document,
-      mirror: new Mirror(),
-      blockClass: 'blockblock',
-      blockSelector: null,
-      maskTextClass: 'maskmask',
-      maskTextSelector: null,
-      skipChild: false,
-      inlineStylesheet: true,
-      maskTextFn: undefined,
-      maskInputFn: undefined,
-      slimDOMOptions: {},
-      newlyAddedElement: false,
-    });
-  };
-
   const render = (html: string): HTMLDivElement => {
     document.write(html);
     return document.querySelector('div')!;
@@ -218,23 +204,6 @@ describe('scrollTop/scrollLeft', () => {
 });
 
 describe('form', () => {
-  const serializeNode = (node: Node): serializedNodeWithId | null => {
-    return serializeNodeWithId(node, {
-      doc: document,
-      mirror: new Mirror(),
-      blockClass: 'blockblock',
-      blockSelector: null,
-      maskTextClass: 'maskmask',
-      maskTextSelector: null,
-      skipChild: false,
-      inlineStylesheet: true,
-      maskTextFn: undefined,
-      maskInputFn: undefined,
-      slimDOMOptions: {},
-      newlyAddedElement: false,
-    });
-  };
-
   const render = (html: string): HTMLTextAreaElement => {
     document.write(html);
     return document.querySelector('textarea')!;
