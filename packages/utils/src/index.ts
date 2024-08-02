@@ -204,3 +204,18 @@ export function querySelectorAll(
 export function mutationObserverCtor(): (typeof MutationObserver)['prototype']['constructor'] {
   return getUntaintedPrototype('MutationObserver').constructor;
 }
+
+export default {
+  childNodes,
+  parentNode,
+  parentElement,
+  textContent,
+  contains,
+  getRootNode,
+  host,
+  styleSheets,
+  shadowRoot,
+  querySelector,
+  querySelectorAll,
+  mutationObserver: mutationObserverCtor,
+};
