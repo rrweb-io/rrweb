@@ -6,6 +6,7 @@ import {
   type MaskInputOptions,
   type SlimDOMOptions,
   type DataURLOptions,
+  type DialogAttributes,
   type MaskTextFn,
   type MaskInputFn,
   type KeepIframeSrcFn,
@@ -652,6 +653,16 @@ function serializeElementNode(
       delete attributes.selected;
     }
   }
+
+  if (tagName === 'dialog' && (n as HTMLDialogElement).open) {
+    // register what type of dialog is this
+    // `modal` or `non-modal`
+    // this is used to trigger `showModal()` or `show()` on replay (outside of rrweb-snapshot, in rrweb)
+    (attributes as DialogAttributes).rr_open_mode = n.matches('dialog:modal')
+      ? 'modal'
+      : 'non-modal';
+  }
+
   // canvas image data
   if (tagName === 'canvas' && recordCanvas) {
     if ((n as ICanvas).__context === '2d') {
