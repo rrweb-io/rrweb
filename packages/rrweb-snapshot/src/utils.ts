@@ -480,6 +480,7 @@ export function splitCssText(
               ) {
                 splits.push(cssText.substring(0, k));
                 cssText = cssText.substring(k);
+                break;
               }
             }
             break;
