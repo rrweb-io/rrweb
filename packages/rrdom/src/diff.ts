@@ -1,7 +1,7 @@
 import {
   NodeType as RRNodeType,
   Mirror as NodeMirror,
-  elementNode,
+  type elementNode,
 } from 'rrweb-snapshot';
 import type {
   canvasMutationData,
@@ -237,7 +237,7 @@ function diffAfterUpdatingChildren(
         case 'AUDIO':
         case 'VIDEO': {
           const oldMediaElement = oldTree as HTMLMediaElement;
-          const newMediaRRElement = newRRElement as RRMediaElement;
+          const newMediaRRElement = newRRElement as unknown as RRMediaElement;
           if (newMediaRRElement.paused !== undefined)
             newMediaRRElement.paused
               ? void oldMediaElement.pause()

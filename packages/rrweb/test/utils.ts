@@ -44,7 +44,7 @@ export interface ISuite {
   events: eventWithTime[];
 }
 
-export const startServer = (defaultPort: number = 3030) =>
+export const startServer = (defaultPort = 3030) =>
   new Promise<http.Server>((resolve) => {
     const mimeType: IMimeType = {
       '.html': 'text/html',
@@ -59,8 +59,8 @@ export const startServer = (defaultPort: number = 3030) =>
         .replace(/^(\.\.[\/\\])+/, '');
 
       let pathname = path.join(__dirname, sanitizePath);
-      if (/^\/rrweb.*\.js.*/.test(sanitizePath)) {
-        pathname = path.join(__dirname, `../dist`, sanitizePath);
+      if (/^\/rrweb.*\.c?js.*/.test(sanitizePath)) {
+        pathname = path.join(__dirname, `../dist/main`, sanitizePath);
       }
 
       try {
@@ -105,14 +105,22 @@ export function getServerURL(server: http.Server): string {
  * Also remove timestamp from event.
  * @param snapshots incrementalSnapshotEvent[]
  */
-function stringifySnapshots(snapshots: eventWithTime[]): string {
+export function stringifySnapshots(snapshots: eventWithTime[]): string {
   return JSON.stringify(
     snapshots
       .filter((s) => {
         if (
-          s.type === EventType.IncrementalSnapshot &&
-          (s.data.source === IncrementalSource.MouseMove ||
-            s.data.source === IncrementalSource.ViewportResize)
+          // mouse move or viewport resize can happen on accidental user interference
+          // so we ignore them
+          (s.type === EventType.IncrementalSnapshot &&
+            (s.data.source === IncrementalSource.MouseMove ||
+              s.data.source === IncrementalSource.ViewportResize)) ||
+          // ignore '[vite] connected' messages from vite
+          (s.type === EventType.Plugin &&
+            s.data.plugin === 'rrweb/console@1' &&
+            (s.data.payload as { payload: string[] })?.payload?.find((msg) =>
+              msg.includes('[vite] connected'),
+            ))
         ) {
           return false;
         }

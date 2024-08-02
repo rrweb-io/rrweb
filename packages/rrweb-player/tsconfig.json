@@ -1,18 +1,28 @@
 {
-  "extends": "@tsconfig/svelte/tsconfig.json",
-  "include": ["src/**/*"],
-  "exclude": [
-    "node_modules/*",
-    "__sapper__/*",
-    "public/*",
-    "../rrweb/src/record/workers/workers.d.ts"
-  ],
+  "extends": "../../tsconfig.base.json",
+  "exclude": ["package.json", "vite.config.ts"],
+  "include": ["src/**/*", "vite-env.d.ts"],
   "compilerOptions": {
-    "composite": true
+    "composite": true,
+    "rootDir": "./src",
+    // defaults for svelte
+    "useDefineForClassFields": true,
+    "resolveJsonModule": true,
+    /**
+     * Typecheck JS in `.svelte` and `.js` files by default.
+     * Disable checkJs if you'd like to use dynamic types in JS.
+     * Note that setting allowJs false does not prevent the use
+     * of JS in `.svelte` files.
+     */
+    "allowJs": true,
+    "checkJs": true
   },
   "references": [
     {
-      "path": "../rrweb"
+      "path": "../replay"
+    },
+    {
+      "path": "../packer"
     },
     {
       "path": "../types"

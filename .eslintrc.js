@@ -1,3 +1,4 @@
+// TODO: add .eslintignore. More info: https://bobbyhadz.com/blog/typescript-parseroptions-project-has-been-set-for
 module.exports = {
   env: {
     browser: true,
@@ -16,7 +17,7 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
     tsconfigRootDir: __dirname,
-    project: ['./tsconfig.eslint.json', './packages/*/tsconfig.json'],
+    project: ['./tsconfig.eslint.json', './packages/**/tsconfig.json'],
   },
   plugins: ['@typescript-eslint', 'eslint-plugin-tsdoc', 'jest', 'compat'],
   rules: {

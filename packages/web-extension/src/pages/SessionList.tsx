@@ -23,13 +23,13 @@ import {
   useReactTable,
   flexRender,
   getCoreRowModel,
-  SortingState,
+  type SortingState,
   getSortedRowModel,
-  PaginationState,
+  type PaginationState,
 } from '@tanstack/react-table';
 import { VscTriangleDown, VscTriangleUp } from 'react-icons/vsc';
 import { useNavigate } from 'react-router-dom';
-import { Session, EventName } from '~/types';
+import { type Session, EventName } from '~/types';
 import Channel from '~/utils/channel';
 import { deleteSessions, getAllSessions } from '~/utils/storage';
 import {

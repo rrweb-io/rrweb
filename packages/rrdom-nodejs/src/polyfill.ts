@@ -1,4 +1,5 @@
-import { RRDocument, RRNode } from './document-nodejs';
+import { BaseRRNode } from 'rrdom';
+import { RRDocument } from './document-nodejs';
 
 /**
  * Polyfill the performance for nodejs.
@@ -70,11 +71,11 @@ export function polyfillEvent() {
 }
 
 /**
- * Polyfill Node type with RRNode for nodejs.
+ * Polyfill Node type with BaseRRNode for nodejs.
  */
 export function polyfillNode() {
   if (typeof Node !== 'undefined') return;
-  (global.Node as unknown) = RRNode;
+  (global.Node as unknown) = BaseRRNode;
 }
 
 /**
@@ -85,8 +86,8 @@ export function polyfillDocument() {
   const rrdom = new RRDocument();
   (() => {
     rrdom.appendChild(rrdom.createElement('html'));
-    rrdom.documentElement!.appendChild(rrdom.createElement('head'));
-    rrdom.documentElement!.appendChild(rrdom.createElement('body'));
+    rrdom.documentElement?.appendChild(rrdom.createElement('head'));
+    rrdom.documentElement?.appendChild(rrdom.createElement('body'));
   })();
   global.document = rrdom as unknown as Document;
 }

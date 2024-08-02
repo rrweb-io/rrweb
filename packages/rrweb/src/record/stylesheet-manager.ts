@@ -51,7 +51,10 @@ export class StylesheetManager {
     this.trackStylesheetInLinkElement(linkEl);
   }
 
-  public adoptStyleSheets(sheets: CSSStyleSheet[], hostId: number) {
+  public adoptStyleSheets(
+    sheets: CSSStyleSheet[] | readonly CSSStyleSheet[],
+    hostId: number,
+  ) {
     if (sheets.length === 0) return;
     const adoptedStyleSheetData: adoptedStyleSheetParam = {
       id: hostId,
@@ -65,13 +68,16 @@ export class StylesheetManager {
         const rules = [] as styleSheetAddRule[];
         for (let i = 0; i < sheet.rules.length; ++i) {
           rules.push({
-            rule: stringifyRule(sheet.rules[i]),
+            rule: stringifyRule(sheet.rules[i], sheet.href),
             index: i,
           });
         }
         styles.push({
           styleId,
-          rules,
+          rules: Array.from(sheet.rules || CSSRule, (r, index) => ({
+            rule: stringifyRule(r, sheet.href),
+            index,
+          })),
         });
       } else styleId = this.styleMirror.getId(sheet);
       adoptedStyleSheetData.styleIds.push(styleId);
@@ -86,7 +92,7 @@ export class StylesheetManager {
   }
 
   // TODO: take snapshot on stylesheet reload by applying event listener
-  private trackStylesheetInLinkElement(linkEl: HTMLLinkElement) {
+  private trackStylesheetInLinkElement(_linkEl: HTMLLinkElement) {
     // linkEl.addEventListener('load', () => {
     //   // re-loaded, maybe take another snapshot?
     // });
