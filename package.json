@@ -34,6 +34,7 @@
     "eslint-plugin-compat": "^5.0.0",
     "eslint-plugin-jest": "^27.6.0",
     "eslint-plugin-tsdoc": "^0.2.17",
+    "happy-dom": "^14.12.0",
     "markdownlint": "^0.25.1",
     "markdownlint-cli": "^0.31.1",
     "prettier": "2.8.4",

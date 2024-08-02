@@ -13,6 +13,7 @@ import {
   type BuildCache,
   type textNode,
 } from '../src/types';
+import { Window } from 'happy-dom';
 
 describe('css parser', () => {
   function parse(plugin: AcceptedPlugin, input: string): string {
@@ -88,11 +89,13 @@ li[attr="has,comma"] a.\\:hover {background: red;}`,
 
 describe('css splitter', () => {
   it('finds css textElement splits correctly', () => {
-    const style = JSDOM.fragment(`<style></style>`).querySelector('style');
+    const window = new Window({ url: 'https://localhost:8080' });
+    const document = window.document;
+    document.head.innerHTML = '<style>.a{background-color:red;}</style>';
+    const style = document.querySelector('style');
     if (style) {
       // as authored, e.g. no spaces
-      style.appendChild(JSDOM.fragment('.a{background-color:red;}'));
-      style.appendChild(JSDOM.fragment('.a{background-color:black;}'));
+      style.append('.a{background-color:black;}');
 
       // how it is currently stringified (spaces present)
       const expected = [
@@ -100,8 +103,7 @@ describe('css splitter', () => {
         '.a { background-color: black; }',
       ];
       const browserSheet = expected.join('');
-      // can't do this as JSDOM doesn't have style.sheet
-      //expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
+      expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
 
       expect(splitCssText(browserSheet, style)).toEqual(expected);
     }
@@ -133,6 +135,7 @@ describe('css splitter', () => {
       const browserSheet = expected.join('');
 
       // can't do this as JSDOM doesn't have style.sheet
+      // also happy-dom doesn't strip out vendor-prefixed rules like a real browser does
       //expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
 
       expect(splitCssText(browserSheet, style)).toEqual(expected);
