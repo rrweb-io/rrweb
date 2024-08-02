@@ -1,5 +1,123 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`dialog integration tests > should capture open attribute for modal dialogs 1`] = `
+"{
+  \\"type\\": 0,
+  \\"childNodes\\": [
+    {
+      \\"type\\": 2,
+      \\"tagName\\": \\"html\\",
+      \\"attributes\\": {},
+      \\"childNodes\\": [
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"head\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [],
+          \\"id\\": 3
+        },
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"body\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 5
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"dialog\\",
+              \\"attributes\\": {
+                \\"open\\": \\"\\",
+                \\"rr_open_mode\\": \\"modal\\"
+              },
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"I'm a dialog\\",
+                  \\"id\\": 7
+                }
+              ],
+              \\"id\\": 6
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+              \\"id\\": 8
+            }
+          ],
+          \\"id\\": 4
+        }
+      ],
+      \\"id\\": 2
+    }
+  ],
+  \\"compatMode\\": \\"BackCompat\\",
+  \\"id\\": 1
+}"
+`;
+
+exports[`dialog integration tests > should capture open attribute for non modal dialogs 1`] = `
+"{
+  \\"type\\": 0,
+  \\"childNodes\\": [
+    {
+      \\"type\\": 2,
+      \\"tagName\\": \\"html\\",
+      \\"attributes\\": {},
+      \\"childNodes\\": [
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"head\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [],
+          \\"id\\": 3
+        },
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"body\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 5
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"dialog\\",
+              \\"attributes\\": {
+                \\"open\\": \\"\\",
+                \\"rr_open_mode\\": \\"non-modal\\"
+              },
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"I'm a dialog\\",
+                  \\"id\\": 7
+                }
+              ],
+              \\"id\\": 6
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+              \\"id\\": 8
+            }
+          ],
+          \\"id\\": 4
+        }
+      ],
+      \\"id\\": 2
+    }
+  ],
+  \\"compatMode\\": \\"BackCompat\\",
+  \\"id\\": 1
+}"
+`;
+
 exports[`iframe integration tests > snapshot async iframes 1`] = `
 "{
   \\"type\\": 0,
@@ -212,6 +330,12 @@ exports[`integration tests > [html file]: cors-style-sheet.html 1`] = `
     <link rel=\\"stylesheet\\" href=\\"\\" />
   </head>
   <body></body></html>"
+`;
+
+exports[`integration tests > [html file]: dialog.html 1`] = `
+"<html><head></head><body>
+    <dialog>I'm a dialog</dialog>
+  </body></html>"
 `;
 
 exports[`integration tests > [html file]: dynamic-stylesheet.html 1`] = `
@@ -489,7 +613,7 @@ exports[`integration tests > [html file]: with-style-sheet.html 1`] = `
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
   <title>with style sheet</title>
-  <style>body { margin: 0px; background: url(\\"http://localhost:3030/a.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/css/b.jpg\\"); }body &gt; p { color: yellow; }</style>
+  <style>body { margin: 0px; background: url(\\"http://localhost:3030/should-be-in-root-folder.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/css/should-be-in-css-folder.jpg\\"); }body &gt; p { color: yellow; }</style>
 </head><body>
 </body></html>"
 `;
@@ -500,7 +624,8 @@ exports[`integration tests > [html file]: with-style-sheet-with-import.html 1`] 
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
   <title>with style sheet with import</title>
-  <style>@import url(\\"//fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&amp;family=Roboto:wght@100;300;400;500;700&amp;display=swap\\\\\\"\\");body { margin: 0px; background: url(\\"http://localhost:3030/a.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/css/b.jpg\\"); }body &gt; p { color: yellow; }</style>
+  <style>@import url(\\"//fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&amp;family=Roboto:wght@100;300;400;500;700&amp;display=swap\\\\\\"\\");body { margin: 0px; background: url(\\"http://localhost:3030/should-be-in-root-folder.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/css/should-be-in-css-folder.jpg\\"); }body &gt; p { color: yellow; }body { margin: 0px; background: url(\\"http://localhost:3030/should-be-in-root-folder.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/alt-css/should-be-in-alt-css-folder.jpg\\"); }body &gt; p { color: yellow; }</style>
+  <style>body { margin: 0px; background: url(\\"http://localhost:3030/should-be-in-root-folder.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/alt-css/should-be-in-alt-css-folder.jpg\\"); }body &gt; p { color: yellow; }section { background: url(\\"http://localhost:3030/should-be-in-root-folder.jpg\\"); }</style>
 </head><body>
 </body></html>"
 `;

@@ -88,6 +88,7 @@ import './styles/style.css';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
 import { MediaManager } from './media';
+import { applyDialogToTopLevel, removeDialogFromTopLevel } from './dialog';
 
 const SKIP_TIME_INTERVAL = 5 * 1000;
 
@@ -803,9 +804,12 @@ export class Replayer {
       );
     }
     this.legacy_missingNodeRetryMap = {};
-    const collected: AppendedIframe[] = [];
+    const collectedIframes: AppendedIframe[] = [];
+    const collectedDialogs = new Set<HTMLDialogElement>();
     const afterAppend = (builtNode: Node, id: number) => {
-      this.collectIframeAndAttachDocument(collected, builtNode);
+      if (builtNode.nodeName === 'DIALOG')
+        collectedDialogs.add(builtNode as HTMLDialogElement);
+      this.collectIframeAndAttachDocument(collectedIframes, builtNode);
       if (this.mediaManager.isSupportedMediaElement(builtNode)) {
         const { events } = this.service.state.context;
         this.mediaManager.addMediaElements(
@@ -842,7 +846,7 @@ export class Replayer {
     });
     afterAppend(this.iframe.contentDocument, event.data.node.id);
 
-    for (const { mutationInQueue, builtNode } of collected) {
+    for (const { mutationInQueue, builtNode } of collectedIframes) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
       this.newDocumentQueue = this.newDocumentQueue.filter(
         (m) => m !== mutationInQueue,
@@ -850,6 +854,7 @@ export class Replayer {
     }
     const { documentElement, head } = this.iframe.contentDocument;
     this.insertStyleRules(documentElement, head);
+    collectedDialogs.forEach((d) => applyDialogToTopLevel(d));
     if (!this.service.state.matches('playing')) {
       this.iframe.contentDocument
         .getElementsByTagName('html')[0]
@@ -912,9 +917,12 @@ export class Replayer {
     type TNode = typeof mirror extends Mirror ? Node : RRNode;
     type TMirror = typeof mirror extends Mirror ? Mirror : RRDOMMirror;
 
-    const collected: AppendedIframe[] = [];
+    const collectedIframes: AppendedIframe[] = [];
+    const collectedDialogs = new Set<HTMLDialogElement>();
     const afterAppend = (builtNode: Node, id: number) => {
-      this.collectIframeAndAttachDocument(collected, builtNode);
+      if (builtNode.nodeName === 'DIALOG')
+        collectedDialogs.add(builtNode as HTMLDialogElement);
+      this.collectIframeAndAttachDocument(collectedIframes, builtNode);
       const sn = (mirror as TMirror).getMeta(builtNode as unknown as TNode);
       if (
         sn?.type === NodeType.Element &&
@@ -948,12 +956,14 @@ export class Replayer {
     });
     afterAppend(iframeEl.contentDocument! as Document, mutation.node.id);
 
-    for (const { mutationInQueue, builtNode } of collected) {
+    for (const { mutationInQueue, builtNode } of collectedIframes) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
       this.newDocumentQueue = this.newDocumentQueue.filter(
         (m) => m !== mutationInQueue,
       );
     }
+
+    collectedDialogs.forEach((d) => applyDialogToTopLevel(d));
   }
 
   private collectIframeAndAttachDocument(
@@ -1534,6 +1544,7 @@ export class Replayer {
       const afterAppend = (node: Node | RRNode, id: number) => {
         // Skip the plugin onBuild callback for virtual dom
         if (this.usingVirtualDom) return;
+        applyDialogToTopLevel(node);
         for (const plugin of this.config.plugins || []) {
           if (plugin.onBuild) plugin.onBuild(node, { id, replayer: this });
         }
@@ -1570,20 +1581,39 @@ export class Replayer {
       if (
         parentSn &&
         parentSn.type === NodeType.Element &&
-        parentSn.tagName === 'textarea' &&
         mutation.node.type === NodeType.Text
       ) {
-        const childNodeArray = Array.isArray(parent.childNodes)
+        const prospectiveSiblings = Array.isArray(parent.childNodes)
           ? parent.childNodes
           : Array.from(parent.childNodes);
-        // This should be redundant now as we are either recording the value or the childNode, and not both
-        // keeping around for backwards compatibility with old bad double data, see
+        if (parentSn.tagName === 'textarea') {
+          // This should be redundant now as we are either recording the value or the childNode, and not both
+          // keeping around for backwards compatibility with old bad double data, see
 
-        // https://github.com/rrweb-io/rrweb/issues/745
-        // parent is textarea, will only keep one child node as the value
-        for (const c of childNodeArray) {
-          if (c.nodeType === parent.TEXT_NODE) {
-            parent.removeChild(c as Node & RRNode);
+          // https://github.com/rrweb-io/rrweb/issues/745
+          // parent is textarea, will only keep one child node as the value
+          for (const c of prospectiveSiblings) {
+            if (c.nodeType === parent.TEXT_NODE) {
+              parent.removeChild(c as Node & RRNode);
+            }
+          }
+        } else if (
+          parentSn.tagName === 'style' &&
+          prospectiveSiblings.length === 1
+        ) {
+          // https://github.com/rrweb-io/rrweb/pull/1417
+          /**
+           * If both _cssText and textContent are present for a style element due to some existing bugs, the element was ending up with two child text nodes
+           * We need to remove the textNode created by _cssText as it doesn't have an id in the mirror, and thus cannot be further mutated.
+           */
+          for (const cssText of prospectiveSiblings as (Node & RRNode)[]) {
+            if (
+              cssText.nodeType === parent.TEXT_NODE &&
+              !mirror.hasNode(cssText)
+            ) {
+              target.textContent = cssText.textContent;
+              parent.removeChild(cssText);
+            }
           }
         }
       } else if (parentSn?.type === NodeType.Document) {
@@ -1738,6 +1768,8 @@ export class Replayer {
           const value = mutation.attributes[attributeName];
           if (value === null) {
             (target as Element | RRElement).removeAttribute(attributeName);
+            if (attributeName === 'open')
+              removeDialogFromTopLevel(target, mutation);
           } else if (typeof value === 'string') {
             try {
               // When building snapshot, some link styles haven't loaded. Then they are loaded, they will be inlined as incremental mutation change of attribute. We need to replace the old elements whose styles aren't inlined.
@@ -1792,6 +1824,13 @@ export class Replayer {
                   attributeName,
                   value,
                 );
+              }
+
+              if (
+                attributeName === 'rr_open_mode' &&
+                target.nodeName === 'DIALOG'
+              ) {
+                applyDialogToTopLevel(target, mutation);
               }
             } catch (error) {
               this.warn(

@@ -6,6 +6,7 @@ import {
   type MaskInputOptions,
   type SlimDOMOptions,
   type DataURLOptions,
+  type DialogAttributes,
   type MaskTextFn,
   type MaskInputFn,
   type KeepIframeSrcFn,
@@ -25,6 +26,7 @@ import {
   getInputType,
   toLowerCase,
   extractFileExtension,
+  absolutifyURLs,
 } from './utils';
 import dom from '@rrweb/utils';
 
@@ -54,70 +56,8 @@ function getValidTagName(element: HTMLElement): Lowercase<string> {
   return processedTagName;
 }
 
-function extractOrigin(url: string): string {
-  let origin = '';
-  if (url.indexOf('//') > -1) {
-    origin = url.split('/').slice(0, 3).join('/');
-  } else {
-    origin = url.split('/')[0];
-  }
-  origin = origin.split('?')[0];
-  return origin;
-}
-
 let canvasService: HTMLCanvasElement | null;
 let canvasCtx: CanvasRenderingContext2D | null;
-
-const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
-const URL_PROTOCOL_MATCH = /^(?:[a-z+]+:)?\/\//i;
-const URL_WWW_MATCH = /^www\..*/i;
-const DATA_URI = /^(data:)([^,]*),(.*)/i;
-export function absoluteToStylesheet(
-  cssText: string | null,
-  href: string,
-): string {
-  return (cssText || '').replace(
-    URL_IN_CSS_REF,
-    (
-      origin: string,
-      quote1: string,
-      path1: string,
-      quote2: string,
-      path2: string,
-      path3: string,
-    ) => {
-      const filePath = path1 || path2 || path3;
-      const maybeQuote = quote1 || quote2 || '';
-      if (!filePath) {
-        return origin;
-      }
-      if (URL_PROTOCOL_MATCH.test(filePath) || URL_WWW_MATCH.test(filePath)) {
-        return `url(${maybeQuote}${filePath}${maybeQuote})`;
-      }
-      if (DATA_URI.test(filePath)) {
-        return `url(${maybeQuote}${filePath}${maybeQuote})`;
-      }
-      if (filePath[0] === '/') {
-        return `url(${maybeQuote}${
-          extractOrigin(href) + filePath
-        }${maybeQuote})`;
-      }
-      const stack = href.split('/');
-      const parts = filePath.split('/');
-      stack.pop();
-      for (const part of parts) {
-        if (part === '.') {
-          continue;
-        } else if (part === '..') {
-          stack.pop();
-        } else {
-          stack.push(part);
-        }
-      }
-      return `url(${maybeQuote}${stack.join('/')}${maybeQuote})`;
-    },
-  );
-}
 
 // eslint-disable-next-line no-control-regex
 const SRCSET_NOT_SPACES = /^[^ \t\n\r\u000c]+/; // Don't use \s, to avoid matching non-breaking space
@@ -255,7 +195,7 @@ export function transformAttribute(
   } else if (name === 'srcset') {
     return getAbsoluteSrcsetString(doc, value);
   } else if (name === 'style') {
-    return absoluteToStylesheet(value, getHref(doc));
+    return absolutifyURLs(value, getHref(doc));
   } else if (tagName === 'object' && name === 'data') {
     return absoluteToDoc(doc, value);
   }
@@ -584,7 +524,7 @@ function serializeTextNode(
         n,
       );
     }
-    text = absoluteToStylesheet(text, getHref(options.doc));
+    text = absolutifyURLs(text, getHref(options.doc));
   }
   if (isScript) {
     text = 'SCRIPT_PLACEHOLDER';
@@ -665,7 +605,7 @@ function serializeElementNode(
     if (cssText) {
       delete attributes.rel;
       delete attributes.href;
-      attributes._cssText = absoluteToStylesheet(cssText, stylesheet!.href!);
+      attributes._cssText = cssText;
     }
   }
   // dynamic stylesheet
@@ -679,7 +619,7 @@ function serializeElementNode(
       (n as HTMLStyleElement).sheet as CSSStyleSheet,
     );
     if (cssText) {
-      attributes._cssText = absoluteToStylesheet(cssText, getHref(doc));
+      attributes._cssText = cssText;
     }
   }
   // form fields
@@ -714,6 +654,16 @@ function serializeElementNode(
       delete attributes.selected;
     }
   }
+
+  if (tagName === 'dialog' && (n as HTMLDialogElement).open) {
+    // register what type of dialog is this
+    // `modal` or `non-modal`
+    // this is used to trigger `showModal()` or `show()` on replay (outside of rrweb-snapshot, in rrweb)
+    (attributes as DialogAttributes).rr_open_mode = n.matches('dialog:modal')
+      ? 'modal'
+      : 'non-modal';
+  }
+
   // canvas image data
   if (tagName === 'canvas' && recordCanvas) {
     if ((n as ICanvas).__context === '2d') {

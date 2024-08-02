@@ -160,8 +160,9 @@ function buildNode(
           value = adaptCssForReplay(value, cache);
         }
         if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
-          node.appendChild(doc.createTextNode(value));
           // https://github.com/rrweb-io/rrweb/issues/112
+          // https://github.com/rrweb-io/rrweb/pull/1351
+          node.appendChild(doc.createTextNode(value));
           n.childNodes = []; // value overrides childNodes
           continue;
         }
@@ -286,6 +287,11 @@ function buildNode(
           (node as HTMLMediaElement).loop = value;
         } else if (name === 'rr_mediaVolume' && typeof value === 'number') {
           (node as HTMLMediaElement).volume = value;
+        } else if (name === 'rr_open_mode') {
+          (node as HTMLDialogElement).setAttribute(
+            'rr_open_mode',
+            value as string,
+          ); // keep this attribute for rrweb to trigger showModal
         }
       }
 
