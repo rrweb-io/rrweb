@@ -20,9 +20,18 @@ export type documentTypeNode = {
   systemId: string;
 };
 
-export type attributes = {
-  [key: string]: string | number | true | null;
+type cssTextKeyAttr = {
+  _cssText?: string;
 };
+
+export type attributes = cssTextKeyAttr & {
+  [key: string]:
+    | string
+    | number // properties e.g. rr_scrollLeft or rr_mediaCurrentTime
+    | true // e.g. checked  on <input type="radio">
+    | null; // an indication that an attribute was removed (during a mutation)
+};
+
 export type legacyAttributes = {
   /**
    * @deprecated old bug in rrweb was causing these to always be set
@@ -45,6 +54,10 @@ export type elementNode = {
 export type textNode = {
   type: NodeType.Text;
   textContent: string;
+  /**
+   * @deprecated styles are now always snapshotted against parent <style> element
+   * style mutations can still happen via an added textNode, but they don't need this attribute for correct replay
+   */
   isStyle?: true;
 };
 
@@ -76,6 +89,11 @@ export type serializedNodeWithId = serializedNode & { id: number };
 export type serializedElementNodeWithId = Extract<
   serializedNodeWithId,
   Record<'type', NodeType.Element>
+>;
+
+export type serializedTextNodeWithId = Extract<
+  serializedNodeWithId,
+  Record<'type', NodeType.Text>
 >;
 
 export type tagMap = {
