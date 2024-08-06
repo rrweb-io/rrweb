@@ -1,5 +1,17 @@
 # rrweb
 
+## 2.0.0-alpha.18
+
+### Patch Changes
+
+- [#1437](https://github.com/rrweb-io/rrweb/pull/1437) [`5fbb904`](https://github.com/rrweb-io/rrweb/commit/5fbb904edb653f3da17e6775ee438d81ef0bba83) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Edge case: Provide support for mutations on a <style> element which (unusually) has multiple text nodes
+
+- Updated dependencies [[`5fbb904`](https://github.com/rrweb-io/rrweb/commit/5fbb904edb653f3da17e6775ee438d81ef0bba83)]:
+  - rrweb-snapshot@2.0.0-alpha.18
+  - rrdom@2.0.0-alpha.18
+  - @rrweb/types@2.0.0-alpha.18
+  - @rrweb/utils@2.0.0-alpha.18
+
 ## 2.0.0-alpha.17
 
 ### Minor Changes
