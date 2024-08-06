@@ -223,7 +223,7 @@ export function _isBlockedElement(
       if (element.classList.contains(blockClass)) {
         return true;
       }
-    } else {
+    } else if (blockClass) {
       for (let eIndex = element.classList.length; eIndex--; ) {
         const className = element.classList[eIndex];
         if (blockClass.test(className)) {
@@ -247,6 +247,7 @@ export function classMatchesRegex(
   checkAncestors: boolean,
 ): boolean {
   if (!node) return false;
+  if (!regex) return false;
   if (node.nodeType !== node.ELEMENT_NODE) {
     if (!checkAncestors) return false;
     return classMatchesRegex(dom.parentNode(node), regex, checkAncestors);
