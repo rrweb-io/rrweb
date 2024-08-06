@@ -50,8 +50,16 @@ describe('css parser', () => {
   describe('pseudoClassPlugin', () => {
     it('parses nested commas in selectors correctly', () => {
       const cssText =
-        'body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) {background: red;}';
+        'body > ul :is(li:not(:first-of-type) a.current, li:not(:first-of-type).active a) {background: red;}';
       expect(parse(pseudoClassPlugin, cssText)).toEqual(cssText);
+    });
+
+    it("doesn't ignore :hover within :is brackets", () => {
+      const cssText =
+        'body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) {background: red;}';
+      expect(parse(pseudoClassPlugin, cssText))
+        .toEqual(`body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a),
+body > ul :is(li:not(:first-of-type) a.\\:hover, li:not(:first-of-type).active a) {background: red;}`);
     });
 
     it('should parse selector with comma nested inside ()', () => {
