@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.20
+
+### Patch Changes
+
+- [#27](https://github.com/amplitude/rrweb/pull/27) [`5b85646`](https://github.com/amplitude/rrweb/commit/5b85646a9557c89d594c6a484f576fbdb0c38eb7) Thanks [@jxiwang](https://github.com/jxiwang)! - Replay: Replace negative lookbehind in regexes from css parser as it causes issues with Safari 16
+
 ## 2.0.0-alpha.19
 
 ### Patch Changes
