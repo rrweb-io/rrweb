@@ -5,6 +5,7 @@ import type {
   MaskInputFn,
   KeepIframeSrcFn,
   ICanvas,
+  DialogAttributes,
 } from './types';
 import { NodeType } from '@rrweb/types';
 import type {
@@ -16,7 +17,6 @@ import type {
   mediaAttributes,
   asset,
   DataURLOptions,
-  DialogAttributes,
   captureAssetsParam,
 } from '@rrweb/types';
 import {
