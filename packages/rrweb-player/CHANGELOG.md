@@ -1,5 +1,11 @@
 # rrweb-player
 
+## 2.0.4
+
+### Patch Changes
+
+- Expose refreshProgress instead of triggering update on every addEvent
+
 ## 2.0.3
 
 ### Patch Changes

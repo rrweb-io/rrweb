@@ -111,8 +111,12 @@
   export const addEvent: RRwebPlayerExpose['addEvent'] = (event: eventWithTime) => {
     replayer.addEvent(event);
     controller.triggerUpdateMeta();
-    controller.triggerUpdateProgress();
+    
   };
+  export const refreshProgress: RRwebPlayerExpose["refreshProgress"] = () => {
+    controller.triggerUpdateProgress();
+  }
+  
   export const getMetaData: RRwebPlayerExpose['getMetaData'] = () => replayer.getMetaData();
   export const getReplayer: RRwebPlayerExpose['getReplayer'] = () => replayer;
 

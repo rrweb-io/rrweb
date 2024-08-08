@@ -173,8 +173,10 @@
   };
 
   export const triggerUpdateProgress = () => {
-    customEvents = buildCustomEvents();
-    inactivePeriods = buildInactivePeriods();
+    return Promise.resolve().then(() => {
+      customEvents = buildCustomEvents();
+      inactivePeriods = buildInactivePeriods();
+    });
   };
 
   export const toggle = () => {
