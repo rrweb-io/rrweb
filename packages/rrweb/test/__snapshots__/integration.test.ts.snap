@@ -13034,6 +13034,21 @@ exports[`record integration tests should not record blocked elements dynamically
           \\"nextId\\": 18,
           \\"node\\": {
             \\"type\\": 2,
+            \\"tagName\\": \\"iframe\\",
+            \\"attributes\\": {
+              \\"class\\": \\"rr-block\\",
+              \\"rr_width\\": \\"104px\\",
+              \\"rr_height\\": \\"104px\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 23
+          }
+        },
+        {
+          \\"parentId\\": 16,
+          \\"nextId\\": 23,
+          \\"node\\": {
+            \\"type\\": 2,
             \\"tagName\\": \\"button\\",
             \\"attributes\\": {
               \\"class\\": \\"rr-block\\",
@@ -13041,7 +13056,7 @@ exports[`record integration tests should not record blocked elements dynamically
               \\"rr_height\\": \\"100px\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 23
+            \\"id\\": 24
           }
         }
       ]

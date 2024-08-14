@@ -639,8 +639,15 @@ describe('record integration tests', function (this: ISuite) {
       el.style.height = '100px';
       el.innerText = 'Should not be recorded';
 
+      const iframe = document.createElement('iframe');
+      iframe.className = 'rr-block';
+      iframe.style.width = '100px';
+      iframe.style.height = '100px';
+      iframe.src = '#foo';
+
       const nextElement = document.querySelector('.rr-block')!;
       nextElement.parentNode!.insertBefore(el, nextElement);
+      nextElement.parentNode!.insertBefore(iframe, nextElement);
     });
 
     const snapshots = (await page.evaluate(

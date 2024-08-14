@@ -331,7 +331,16 @@ export default class MutationBuffer {
         recordCanvas: this.recordCanvas,
         inlineImages: this.inlineImages,
         onSerialize: (currentN) => {
-          if (isSerializedIframe(currentN, this.mirror)) {
+          if (
+            isSerializedIframe(currentN, this.mirror) &&
+            !isBlocked(
+              currentN,
+              this.blockClass,
+              this.blockSelector,
+              this.unblockSelector,
+              false,
+            )
+          ) {
             this.iframeManager.addIframe(currentN as HTMLIFrameElement);
           }
           if (isSerializedStylesheet(currentN, this.mirror)) {
@@ -344,6 +353,18 @@ export default class MutationBuffer {
           }
         },
         onIframeLoad: (iframe, childSn) => {
+          if (
+            isBlocked(
+              iframe,
+              this.blockClass,
+              this.blockSelector,
+              this.unblockSelector,
+              false,
+            )
+          ) {
+            return;
+          }
+
           this.iframeManager.attachIframe(iframe, childSn);
           if (iframe.contentWindow) {
             this.canvasManager.addWindow(iframe.contentWindow as IWindow);
