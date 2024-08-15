@@ -511,7 +511,10 @@ export class CanvasManager implements CanvasManagerInterface {
             })();
           });
       });
-      rafId = onRequestAnimationFrame(takeCanvasSnapshots);
+
+      if (!isManualSnapshot) {
+        rafId = onRequestAnimationFrame(takeCanvasSnapshots);
+      }
     };
 
     rafId = onRequestAnimationFrame(takeCanvasSnapshots);
