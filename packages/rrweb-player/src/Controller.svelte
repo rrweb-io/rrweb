@@ -212,16 +212,16 @@
     pauseAt = false;
   };
 
-  export const goto = (timeOffset: number, play?: boolean) => {
+  export const goto = (timeOffset: number, play?: boolean, fromProgress = false) => {
     currentTime = timeOffset;
     pauseAt = false;
     finished = false;
     const resumePlaying =
       typeof play === 'boolean' ? play : playerState === 'playing';
     if (resumePlaying) {
-      replayer.play(timeOffset);
+      replayer.play(timeOffset, fromProgress);
     } else {
-      replayer.pause(timeOffset);
+      replayer.pause(timeOffset, fromProgress);
     }
   };
 
@@ -258,7 +258,7 @@
       percent = 1;
     }
     const timeOffset = meta.totalTime * percent;
-    goto(timeOffset);
+    goto(timeOffset, undefined, true);
   };
 
   const handleProgressKeydown = (event: KeyboardEvent) => { 

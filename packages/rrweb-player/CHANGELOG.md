@@ -1,5 +1,11 @@
 # rrweb-player
 
+## 2.0.5
+
+### Patch Changes
+
+- [DEV-889] Player - Add loader/indication while seeking
+
 ## 2.0.4
 
 ### Patch Changes

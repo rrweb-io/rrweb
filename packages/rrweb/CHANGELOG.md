@@ -1,5 +1,16 @@
 # rrweb
 
+## 2.0.5
+
+### Patch Changes
+
+- [DEV-889] Player - Add loader/indication while seeking
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-types@2.0.5
+  - @saola.ai/rrweb-snapshot@2.0.5
+  - @saola.ai/rrdom@2.0.5
+
 ## 2.0.4
 
 ### Patch Changes

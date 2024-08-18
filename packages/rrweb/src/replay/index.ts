@@ -508,25 +508,38 @@ export class Replayer {
    * and cast event after the offset asynchronously with timer.
    * @param timeOffset - number
    */
-  public play(timeOffset = 0) {
-    if (this.service.state.matches('paused')) {
-      this.service.send({ type: 'PLAY', payload: { timeOffset } });
+  public play(timeOffset = 0, fromProgress = false) {
+    const performPlay = () => {
+      if (this.service.state.matches('paused')) {
+        this.service.send({ type: 'PLAY', payload: { timeOffset } });
+      } else {
+        this.service.send({ type: 'PAUSE' });
+        this.service.send({ type: 'PLAY', payload: { timeOffset } });
+      }
+      this.iframe.contentDocument
+        ?.getElementsByTagName('html')[0]
+        ?.classList.remove('rrweb-paused');
+      this.emitter.emit(ReplayerEvents.Start);
+    };
+
+    if (fromProgress) {
+      this.emitter.emit(ReplayerEvents.GotoStarted);
+
+      // inside an immediate callback in order to release the thread, so the UI can render a loader
+      setTimeout(() => {
+        performPlay();
+      }, 0);
     } else {
-      this.service.send({ type: 'PAUSE' });
-      this.service.send({ type: 'PLAY', payload: { timeOffset } });
+      performPlay();
     }
-    this.iframe.contentDocument
-      ?.getElementsByTagName('html')[0]
-      ?.classList.remove('rrweb-paused');
-    this.emitter.emit(ReplayerEvents.Start);
   }
 
-  public pause(timeOffset?: number) {
+  public pause(timeOffset?: number, fromProgress = false) {
     if (timeOffset === undefined && this.service.state.matches('playing')) {
       this.service.send({ type: 'PAUSE' });
     }
     if (typeof timeOffset === 'number') {
-      this.play(timeOffset);
+      this.play(timeOffset, fromProgress);
       this.service.send({ type: 'PAUSE' });
     }
     this.iframe.contentDocument

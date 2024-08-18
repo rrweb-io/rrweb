@@ -209,7 +209,9 @@ export function createPlayerService(
             }
           }
           applyEventsSynchronously(syncEvents);
+          emitter.emit(ReplayerEvents.EventsApplied);
           emitter.emit(ReplayerEvents.Flush);
+
           timer.start();
         },
         pause(ctx) {
