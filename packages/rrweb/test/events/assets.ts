@@ -119,6 +119,8 @@ const events: eventWithTime[] = [
         id: 1,
       },
       initialOffset: { left: 0, top: 0 },
+      liveBuffer: 50,
+      liveBufferAssetCount: 3,
     },
     timestamp: 1636379531389,
   },

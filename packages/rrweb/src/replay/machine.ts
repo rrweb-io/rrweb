@@ -87,6 +87,10 @@ export function createPlayerService(
   context: PlayerContext,
   { getCastFn, applyEventsSynchronously, emitter }: PlayerAssets,
 ) {
+  const addEventQueue: Array<eventWithTime> = [];
+  let addEventQueueTimeout: ReturnType<typeof setTimeout> | -1;
+  let addEventQueueAssetCount = -1;
+
   const playerMachine = createMachine<PlayerContext, PlayerEvent, PlayerState>(
     {
       id: 'player',
@@ -236,10 +240,9 @@ export function createPlayerService(
           },
         }),
         addEvent: assign((ctx, machineEvent) => {
-          const { baselineTime, timer, events } = ctx;
+          const { events } = ctx;
           if (machineEvent.type === 'ADD_EVENT') {
             const { event } = machineEvent.payload;
-            addDelay(event, baselineTime);
 
             let end = events.length - 1;
             if (!events[end] || events[end].timestamp <= event.timestamp) {
@@ -262,17 +265,52 @@ export function createPlayerService(
               events.splice(insertionIndex, 0, event);
             }
 
-            const isSync = event.timestamp < baselineTime;
-            const castFn = getCastFn(event, isSync);
-            if (isSync) {
-              castFn();
-            } else if (timer.isActive()) {
-              timer.addAction({
-                doAction: () => {
-                  castFn();
-                },
-                delay: event.delay!,
-              });
+            const castOrScheduleEvent = (event: eventWithTime) => {
+              const { baselineTime, timer } = ctx;
+              addDelay(event, baselineTime);
+              const isSync = event.timestamp < baselineTime;
+              const castFn = getCastFn(event, isSync);
+              if (isSync) {
+                castFn();
+              } else if (timer.isActive()) {
+                timer.addAction({
+                  doAction: () => {
+                    castFn();
+                  },
+                  delay: event.delay!,
+                });
+              }
+            };
+
+            const flushAddEventQueue = () => {
+              addEventQueueTimeout = -1;
+              while (addEventQueue.length) {
+                castOrScheduleEvent(addEventQueue.shift()!);
+              }
+            };
+
+            if (event.type === EventType.Asset && addEventQueueTimeout) {
+              addEventQueueAssetCount -= 1;
+            }
+            if (addEventQueue.length) {
+              addEventQueue.push(event);
+              // TODO: support appearance of a second FullSnapshot before first one's assets load
+              if (addEventQueueAssetCount <= 0) {
+                clearTimeout(addEventQueueTimeout);
+                flushAddEventQueue();
+              }
+            } else if (
+              event.type === EventType.FullSnapshot &&
+              event.data.assetCount
+            ) {
+              addEventQueue.push(event);
+              addEventQueueAssetCount = event.data.assetCount;
+              addEventQueueTimeout = setTimeout(
+                flushAddEventQueue,
+                event.data.liveBuffer,
+              );
+            } else {
+              castOrScheduleEvent(event);
             }
           }
           return { ...ctx, events };

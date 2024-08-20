@@ -100,6 +100,24 @@ describe('replayer', function () {
       expect(image).toMatchImageSnapshot();
     });
 
+    it('should wait for stylesheet assets to avoid fouc', async () => {
+      // fouc = flash of unstyled content
+      await page.evaluate(`
+      const { Replayer } = rrweb;
+      window.replayer = new Replayer([], {
+        liveMode: true,
+      });
+      replayer.startLive();
+      window.replayer.addEvent(events[0]);
+      window.replayer.addEvent(events[1]);
+      window.replayer.addEvent(events[2]);
+    `);
+
+      await waitForRAF(page);
+      const image = await page.screenshot();
+      expect(image).toMatchImageSnapshot(); // should be blank white and not have image rendered yet
+    });
+
     it('should support urls src modified via incremental mutation', async () => {
       await page.evaluate(`
       const { Replayer } = rrweb;
