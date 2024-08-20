@@ -1,28 +1,12 @@
 import type MutationBuffer from './mutation';
-import { getNative } from 'rrweb-snapshot';
 
 /**
  * Keeps a log of nodes that could show up in multiple mutation buffer but shouldn't be handled twice.
  */
 export default class ProcessedNodeManager {
   private nodeMap: WeakMap<Node, Set<MutationBuffer>> = new WeakMap();
-  // Whether to continue RAF loop.
-  private loop = true;
-  private nativeRAF;
 
-  constructor() {
-    this.nativeRAF = getNative<typeof requestAnimationFrame>(
-      'requestAnimationFrame',
-    ).bind(window);
-    this.periodicallyClear();
-  }
-
-  private periodicallyClear() {
-    this.nativeRAF(() => {
-      this.clear();
-      if (this.loop) this.periodicallyClear();
-    });
-  }
+  private active = false;
 
   public inOtherBuffer(node: Node, thisBuffer: MutationBuffer) {
     const buffers = this.nodeMap.get(node);
@@ -32,15 +16,17 @@ export default class ProcessedNodeManager {
   }
 
   public add(node: Node, buffer: MutationBuffer) {
+    if (!this.active) {
+      this.active = true;
+      requestAnimationFrame(() => {
+        this.nodeMap = new WeakMap();
+        this.active = false;
+      });
+    }
     this.nodeMap.set(node, (this.nodeMap.get(node) || new Set()).add(buffer));
   }
 
-  private clear() {
-    this.nodeMap = new WeakMap();
-  }
-
   public destroy() {
-    // Stop the RAF loop.
-    this.loop = false;
+    // cleanup no longer needed
   }
 }

@@ -1,0 +1,4 @@
+{
+  "main": "../dist/rrweb-record.cjs",
+  "types": "../dist/rrweb-record.d.ts"
+}

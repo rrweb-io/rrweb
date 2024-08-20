@@ -392,26 +392,26 @@ export enum CanvasContext {
 
 export type SerializedCanvasArg =
   | {
-      rr_type: 'ArrayBuffer';
-      base64: string; // base64
-    }
+  rr_type: 'ArrayBuffer';
+  base64: string; // base64
+}
   | {
-      rr_type: 'Blob';
-      data: Array<CanvasArg>;
-      type?: string;
-    }
+  rr_type: 'Blob';
+  data: Array<CanvasArg>;
+  type?: string;
+}
   | {
-      rr_type: string;
-      src: string; // url of image
-    }
+  rr_type: string;
+  src: string; // url of image
+}
   | {
-      rr_type: string;
-      args: Array<CanvasArg>;
-    }
+  rr_type: string;
+  args: Array<CanvasArg>;
+}
   | {
-      rr_type: string;
-      index: number;
-    };
+  rr_type: string;
+  index: number;
+};
 
 export type CanvasArg =
   | SerializedCanvasArg
@@ -497,14 +497,14 @@ export type canvasMutationCommand = {
 
 export type canvasMutationParam =
   | {
-      id: number;
-      type: CanvasContext;
-      commands: canvasMutationCommand[];
-    }
+  id: number;
+  type: CanvasContext;
+  commands: canvasMutationCommand[];
+}
   | ({
-      id: number;
-      type: CanvasContext;
-    } & canvasMutationCommand);
+  id: number;
+  type: CanvasContext;
+} & canvasMutationCommand);
 
 export type canvasMutationWithType = {
   type: CanvasContext;
@@ -527,15 +527,15 @@ export type ImageBitmapDataURLWorkerParams = {
 
 export type ImageBitmapDataURLWorkerResponse =
   | {
-      id: number;
-    }
+  id: number;
+}
   | {
-      id: number;
-      type: string;
-      base64: string;
-      width: number;
-      height: number;
-    };
+  id: number;
+  type: string;
+  base64: string;
+  width: number;
+  height: number;
+};
 
 export type fontParam = {
   family: string;
@@ -566,7 +566,7 @@ export type inputValue = {
 
 export type inputCallback = (v: inputValue & { id: number }) => void;
 
-export const enum MediaInteractions {
+export enum MediaInteractions {
   Play,
   Pause,
   Seeked,
@@ -704,4 +704,7 @@ export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
   TakeTypeHelper<Obj, Type>[keyof TakeTypeHelper<Obj, Type>]
 >;
 
-export { IWindow };
+export type { IWindow };
+// Types for @rrweb/packer
+export type PackFn = (event: eventWithTime) => string;
+export type UnpackFn = (raw: string) => eventWithTime;

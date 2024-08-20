@@ -1,0 +1,4 @@
+{
+  "main": "../dist/pack.cjs",
+  "types": "../dist/pack.d.ts"
+}
