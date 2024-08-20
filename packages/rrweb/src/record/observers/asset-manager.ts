@@ -177,10 +177,7 @@ export default class AssetManager {
     }
     const processStylesheet = () => {
       cssRules = el.sheet!.cssRules; // update, as a mutation may have since occurred
-      const cssText = stringifyCssRules(
-        cssRules,
-        sheetBaseHref,
-      );
+      const cssText = stringifyCssRules(cssRules, sheetBaseHref);
       const payload: SerializedCssTextArg = {
         rr_type: 'CssText',
         cssTexts: [cssText],
@@ -220,7 +217,10 @@ export default class AssetManager {
       requestIdleCallback(processStylesheet, {
         timeout,
       });
-      return { status: 'capturing' }; // 'processing' ?
+      return {
+        status: 'capturing', // 'processing' ?
+        timeout,
+      };
     } else {
       processStylesheet();
       return { status: 'captured' };

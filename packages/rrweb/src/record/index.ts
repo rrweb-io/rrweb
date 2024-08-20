@@ -409,6 +409,9 @@ function record<T = eventWithTime>(
 
     shadowDomManager.init();
 
+    let liveBuffer = 0;
+    let assetCount = 0;
+
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
       mirror,
@@ -444,7 +447,19 @@ function record<T = eventWithTime>(
         stylesheetManager.attachLinkElement(linkEl, childSn);
       },
       onAssetDetected: (asset: asset) => {
-        assetManager.capture(asset);
+        const assetStatus = assetManager.capture(asset);
+        if (
+          'timeout' in assetStatus && // removeme when we just capture one asset from srcset
+          assetStatus.timeout
+        ) {
+          // currently only stylesheet assets return a timeout
+          // indicating that we want the fullsnapshot to wait in order to avoid a flash of unstyled content
+          liveBuffer = Math.max(
+            liveBuffer,
+            assetStatus.timeout + 100, // add a guess for worst case processing time
+          );
+        }
+        assetCount += 1;
       },
       keepIframeSrcFn,
     });
@@ -452,14 +467,18 @@ function record<T = eventWithTime>(
     if (!node) {
       return console.warn('Failed to snapshot the document');
     }
-
+    const data: any = {
+      node,
+      initialOffset: getWindowScroll(window),
+    };
+    if (liveBuffer > 0) {
+      data.liveBuffer = liveBuffer;
+      data.assetCount = assetCount;
+    }
     wrappedEmit(
       {
         type: EventType.FullSnapshot,
-        data: {
-          node,
-          initialOffset: getWindowScroll(window),
-        },
+        data,
       },
       isCheckout,
     );
