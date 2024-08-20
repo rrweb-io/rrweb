@@ -238,6 +238,7 @@ export type ErrorHandler = (error: unknown) => void | boolean;
 
 export type assetStatus = {
   status: 'capturing' | 'captured' | 'error' | 'refused';
+  timeout?: number;
 };
 
 export interface ProcessingStyleElement extends HTMLStyleElement {
