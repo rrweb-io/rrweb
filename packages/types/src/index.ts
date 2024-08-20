@@ -27,6 +27,17 @@ export type fullSnapshotEvent = {
       top: number;
       left: number;
     };
+    /*
+     * in milliseconds, how long we should delay rebuild
+     * wait in a live context in order that assets can be transmitted
+     */
+    liveBuffer?: number;
+    /*
+     * the number of assets associated with this snapshot
+     * useful for processing streams of events without having
+     * to rebuild this event to count them up
+     */
+    assetCount?: number;
   };
 };
 
