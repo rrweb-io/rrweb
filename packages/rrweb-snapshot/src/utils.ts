@@ -129,11 +129,14 @@ export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   }
 }
 
-export function stringifyCssRules(rules: CSSRuleList, sheetHref: string | null): string {
+export function stringifyCssRules(
+  rules: CSSRuleList,
+  sheetHref: string | null,
+): string {
   const stringifiedRules = Array.from(rules, (rule: CSSRule) =>
     stringifyRule(rule, sheetHref),
   ).join('');
-  return fixBrowserCompatibilityIssuesInCSS(stringifiedRules);  
+  return fixBrowserCompatibilityIssuesInCSS(stringifiedRules);
 }
 
 export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
