@@ -511,8 +511,14 @@ function serializeTextNode(
     cssCaptured?: boolean;
   },
 ): serializedNode {
-  const { needsMask, maskTextFn, maskInputOptions, maskInputFn, rootId, cssCaptured } =
-    options;
+  const {
+    needsMask,
+    maskTextFn,
+    maskInputOptions,
+    maskInputFn,
+    rootId,
+    cssCaptured,
+  } = options;
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parentTagName = n.parentNode && (n.parentNode as HTMLElement).tagName;
@@ -531,7 +537,7 @@ function serializeTextNode(
       } else if ((n.parentNode as HTMLStyleElement).sheet?.cssRules) {
         textContent = stringifyStylesheet(
           (n.parentNode as HTMLStyleElement).sheet!,
-      );
+        );
       }
     } catch (err) {
       console.warn(

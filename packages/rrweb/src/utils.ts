@@ -9,7 +9,8 @@ import type {
   DeprecatedMirror,
   textMutation,
 } from '@rrweb/types';
-import type { IMirror, Mirror, SlimDOMOptions } from 'rrweb-snapshot';import {
+import type { IMirror, Mirror, SlimDOMOptions } from 'rrweb-snapshot';
+import {
   isShadowRoot,
   IGNORED_NODE,
   classMatchesRegex,
