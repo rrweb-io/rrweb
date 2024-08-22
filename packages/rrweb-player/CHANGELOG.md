@@ -1,5 +1,11 @@
 # rrweb-player
 
+## 2.0.6
+
+### Patch Changes
+
+- [DEV-1029] Fix for delaying play / pause goto on progress bar clicks
+
 ## 2.0.5
 
 ### Patch Changes

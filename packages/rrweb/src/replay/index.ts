@@ -499,6 +499,29 @@ export class Replayer {
     return this.mirror;
   }
 
+  public handleGoto(
+    timeOffset: number,
+    resumePlaying: boolean,
+    fromProgress: boolean,
+  ) {
+    if (fromProgress) {
+      this.emitter.emit(ReplayerEvents.GotoStarted);
+    }
+
+    const handle = () => {
+      if (resumePlaying) {
+        this.play(timeOffset);
+      } else {
+        this.pause(timeOffset);
+      }
+    };
+
+    if (fromProgress) {
+      // inside an immediate callback in order to release the thread, so the UI can render a loader
+      setTimeout(handle, 0);
+    } else handle();
+  }
+
   /**
    * This API was designed to be used as play at any time offset.
    * Since we minimized the data collected from recorder, we do not
@@ -508,38 +531,27 @@ export class Replayer {
    * and cast event after the offset asynchronously with timer.
    * @param timeOffset - number
    */
-  public play(timeOffset = 0, fromProgress = false) {
-    const performPlay = () => {
-      if (this.service.state.matches('paused')) {
-        this.service.send({ type: 'PLAY', payload: { timeOffset } });
-      } else {
-        this.service.send({ type: 'PAUSE' });
-        this.service.send({ type: 'PLAY', payload: { timeOffset } });
-      }
-      this.iframe.contentDocument
-        ?.getElementsByTagName('html')[0]
-        ?.classList.remove('rrweb-paused');
-      this.emitter.emit(ReplayerEvents.Start);
-    };
-
-    if (fromProgress) {
-      this.emitter.emit(ReplayerEvents.GotoStarted);
-
-      // inside an immediate callback in order to release the thread, so the UI can render a loader
-      setTimeout(() => {
-        performPlay();
-      }, 0);
+  public play(timeOffset = 0) {
+    if (this.service.state.matches('paused')) {
+      this.service.send({
+        type: 'PLAY',
+        payload: { timeOffset },
+      });
     } else {
-      performPlay();
+      this.service.send({ type: 'PAUSE' });
+      this.service.send({
+        type: 'PLAY',
+        payload: { timeOffset },
+      });
     }
   }
 
-  public pause(timeOffset?: number, fromProgress = false) {
+  public pause(timeOffset?: number) {
     if (timeOffset === undefined && this.service.state.matches('playing')) {
       this.service.send({ type: 'PAUSE' });
     }
     if (typeof timeOffset === 'number') {
-      this.play(timeOffset, fromProgress);
+      this.play(timeOffset);
       this.service.send({ type: 'PAUSE' });
     }
     this.iframe.contentDocument

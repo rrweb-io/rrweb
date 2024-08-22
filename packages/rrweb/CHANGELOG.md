@@ -1,5 +1,16 @@
 # rrweb
 
+## 2.0.6
+
+### Patch Changes
+
+- [DEV-1029] Fix for delaying play / pause goto on progress bar clicks
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-snapshot@2.0.6
+  - @saola.ai/rrdom@2.0.6
+  - @saola.ai/rrweb-types@2.0.6
+
 ## 2.0.5
 
 ### Patch Changes

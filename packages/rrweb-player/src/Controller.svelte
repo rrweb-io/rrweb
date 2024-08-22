@@ -218,11 +218,8 @@
     finished = false;
     const resumePlaying =
       typeof play === 'boolean' ? play : playerState === 'playing';
-    if (resumePlaying) {
-      replayer.play(timeOffset, fromProgress);
-    } else {
-      replayer.pause(timeOffset, fromProgress);
-    }
+
+    replayer.handleGoto(timeOffset, resumePlaying, fromProgress)
   };
 
   export const playRange = (
