@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.0.7
+
+### Patch Changes
+
+- [DEV-1026] Remove animation css in snapshot rebuild
+
 ## 2.0.6
 
 ## 2.0.5

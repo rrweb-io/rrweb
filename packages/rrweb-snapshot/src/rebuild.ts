@@ -134,6 +134,7 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
       return media.replace(MEDIA_SELECTOR_GLOBAL, '$1-$2');
     });
   }
+  result = result.replace(/animation.+?;/g, '');
   cache?.stylesWithHoverClass.set(cssText, result);
   return result;
 }
