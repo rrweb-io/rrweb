@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.26.0
+
+### Various fixes & improvements
+
+- fix(rrdom): Ignore invalid DOM attributes when diffing (#213) by @billyvg
+- fix: manual snapshot in rAF loop (#210) by @ShinyChang
+- feat: Fix blocking dynamically added iframes (#212) by @billyvg
+
 ## 2.25.0
 
 ### Various fixes & improvements
