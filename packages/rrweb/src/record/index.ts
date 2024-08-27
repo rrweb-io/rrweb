@@ -82,8 +82,7 @@ try {
   console.debug('Unable to override Array.from', err);
 }
 
-export const mirror = createMirror();
-
+const mirror = createMirror();
 function record<T = eventWithTime>(
   options: recordOptions<T> = {},
 ): listenerHandler | undefined {
