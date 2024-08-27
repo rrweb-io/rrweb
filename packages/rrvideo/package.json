@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/rrvideo",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "transform rrweb session into video",
   "main": "build/index.js",
   "bin": {
@@ -27,13 +27,13 @@
     "@types/node": "^18.15.11",
     "jest": "^27.5.1",
     "ts-jest": "^27.1.3",
-    "@saola.ai/rrweb-types": "^2.0.7"
+    "@saola.ai/rrweb-types": "^2.0.8"
   },
   "dependencies": {
     "@open-tech-world/cli-progress-bar": "^2.0.2",
     "fs-extra": "^11.1.1",
     "minimist": "^1.2.5",
     "playwright": "^1.32.1",
-    "@saola.ai/rrweb-player": "^2.0.7"
+    "@saola.ai/rrweb-player": "^2.0.8"
   }
 }

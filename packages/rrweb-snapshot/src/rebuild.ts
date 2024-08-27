@@ -66,7 +66,11 @@ const MEDIA_SELECTOR = /(max|min)-device-(width|height)/;
 const MEDIA_SELECTOR_GLOBAL = new RegExp(MEDIA_SELECTOR.source, 'g');
 const HOVER_SELECTOR = /([^\\]):hover/;
 const HOVER_SELECTOR_GLOBAL = new RegExp(HOVER_SELECTOR.source, 'g');
-export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
+export function adaptCssForReplay(
+  cssText: string,
+  cache: BuildCache,
+  removeAnimationCss = false,
+): string {
   const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
   if (cachedStyle) return cachedStyle;
 
@@ -134,7 +138,7 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
       return media.replace(MEDIA_SELECTOR_GLOBAL, '$1-$2');
     });
   }
-  result = result.replace(/animation.+?;/g, '');
+  if (removeAnimationCss) result = result.replace(/animation.+?;/g, '');
   cache?.stylesWithHoverClass.set(cssText, result);
   return result;
 }
@@ -152,9 +156,10 @@ function buildNode(
     doc: Document;
     hackCss: boolean;
     cache: BuildCache;
+    removeAnimationCss: boolean;
   },
 ): Node | null {
-  const { doc, hackCss, cache } = options;
+  const { doc, hackCss, cache, removeAnimationCss } = options;
   switch (n.type) {
     case NodeType.Document:
       return doc.implementation.createDocument(null, '', null);
@@ -225,7 +230,7 @@ function buildNode(
         const isTextarea = tagName === 'textarea' && name === 'value';
         const isRemoteOrDynamicCss = tagName === 'style' && name === '_cssText';
         if (isRemoteOrDynamicCss && hackCss && typeof value === 'string') {
-          value = adaptCssForReplay(value, cache);
+          value = adaptCssForReplay(value, cache, removeAnimationCss);
         }
         if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
           node.appendChild(doc.createTextNode(value));
@@ -406,6 +411,7 @@ export function buildNodeWithSN(
      */
     afterAppend?: (n: Node, id: number) => unknown;
     cache: BuildCache;
+    removeAnimationCss: boolean;
   },
 ): Node | null {
   const {
@@ -415,6 +421,7 @@ export function buildNodeWithSN(
     hackCss = true,
     afterAppend,
     cache,
+    removeAnimationCss,
   } = options;
   /**
    * Add a check to see if the node is already in the mirror. If it is, we can skip the whole process.
@@ -429,7 +436,7 @@ export function buildNodeWithSN(
     // For safety concern, check if the node in mirror is the same as the node we are trying to build
     if (isNodeMetaEqual(meta, n)) return mirror.getNode(n.id);
   }
-  let node = buildNode(n, { doc, hackCss, cache });
+  let node = buildNode(n, { doc, hackCss, cache, removeAnimationCss });
   if (!node) {
     return null;
   }
@@ -481,6 +488,7 @@ export function buildNodeWithSN(
         hackCss,
         afterAppend,
         cache,
+        removeAnimationCss,
       });
       if (!childNode) {
         console.warn('Failed to rebuild', childN);
@@ -570,6 +578,7 @@ function rebuild(
     afterAppend?: (n: Node, id: number) => unknown;
     cache: BuildCache;
     mirror: Mirror;
+    removeAnimationCss: boolean;
   },
 ): Node | null {
   const {
@@ -579,6 +588,7 @@ function rebuild(
     afterAppend,
     cache,
     mirror = new Mirror(),
+    removeAnimationCss,
   } = options;
   const node = buildNodeWithSN(n, {
     doc,
@@ -587,6 +597,7 @@ function rebuild(
     hackCss,
     afterAppend,
     cache,
+    removeAnimationCss,
   });
   visit(mirror, (visitedNode) => {
     if (onVisit) {

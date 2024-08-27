@@ -1,5 +1,12 @@
 # rrdom
 
+## 2.0.8
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-snapshot@2.0.8
+
 ## 2.0.7
 
 ### Patch Changes

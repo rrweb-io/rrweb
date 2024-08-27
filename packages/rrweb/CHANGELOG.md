@@ -1,5 +1,16 @@
 # rrweb
 
+## 2.0.8
+
+### Patch Changes
+
+- [DEV-1035] Remove animation CSS as a config
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-snapshot@2.0.8
+  - @saola.ai/rrdom@2.0.8
+  - @saola.ai/rrweb-types@2.0.8
+
 ## 2.0.7
 
 ### Patch Changes

@@ -196,6 +196,7 @@ export type playerConfig = {
     warn: (...args: Parameters<typeof console.warn>) => void;
   };
   plugins?: ReplayPlugin[];
+  removeAnimationCss: boolean;
 };
 
 export type missingNode = {

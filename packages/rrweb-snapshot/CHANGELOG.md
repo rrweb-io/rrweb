@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.0.8
+
+### Patch Changes
+
+- [DEV-1035] Remove animation CSS as a config
+
 ## 2.0.7
 
 ### Patch Changes

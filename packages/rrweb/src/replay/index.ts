@@ -198,6 +198,7 @@ export class Replayer {
       mouseTail: defaultMouseTailConfig,
       useVirtualDom: true, // Virtual-dom optimization is enabled by default.
       logger: console,
+      removeAnimationCss: false,
     };
     this.config = Object.assign({}, defaultConfig, config);
 
@@ -862,6 +863,7 @@ export class Replayer {
       afterAppend,
       cache: this.cache,
       mirror: this.mirror,
+      removeAnimationCss: this.config.removeAnimationCss,
     });
     afterAppend(this.iframe.contentDocument, event.data.node.id);
 
@@ -968,6 +970,7 @@ export class Replayer {
       skipChild: false,
       afterAppend,
       cache: this.cache,
+      removeAnimationCss: this.config.removeAnimationCss,
     });
     afterAppend(iframeEl.contentDocument! as Document, mutation.node.id);
 
@@ -1568,6 +1571,7 @@ export class Replayer {
         skipChild: true,
         hackCss: true,
         cache: this.cache,
+        removeAnimationCss: this.config.removeAnimationCss,
         /**
          * caveat: `afterAppend` only gets called on child nodes of target
          * we have to call it again below when this target was added to the DOM
@@ -1782,6 +1786,7 @@ export class Replayer {
                     skipChild: true,
                     hackCss: true,
                     cache: this.cache,
+                    removeAnimationCss: this.config.removeAnimationCss,
                   });
                   const siblingNode = target.nextSibling;
                   const parentNode = target.parentNode;

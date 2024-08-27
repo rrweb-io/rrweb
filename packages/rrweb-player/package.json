@@ -1,8 +1,8 @@
 {
   "name": "@saola.ai/rrweb-player",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "devDependencies": {
-    "@saola.ai/rrweb-types": "^2.0.7",
+    "@saola.ai/rrweb-types": "^2.0.8",
     "@sveltejs/adapter-auto": "^3.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/package": "^2.0.0",
