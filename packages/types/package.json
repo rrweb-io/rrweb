@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/rrweb-types",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "publishConfig": {
     "access": "public"
   },
@@ -52,7 +52,7 @@
   "dependencies": {
     "@changesets/cli": "^2.27.1",
     "@monorepo-utils/workspaces-to-typescript-project-references": "^2.8.2",
-    "@saola.ai/rrweb-snapshot": "^2.0.8",
+    "@saola.ai/rrweb-snapshot": "^2.0.9",
     "browserslist": "^4.22.1",
     "concurrently": "^7.1.0",
     "cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz",

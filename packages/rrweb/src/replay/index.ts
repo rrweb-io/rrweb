@@ -545,6 +545,10 @@ export class Replayer {
         payload: { timeOffset },
       });
     }
+    this.iframe.contentDocument
+      ?.getElementsByTagName('html')[0]
+      ?.classList.remove('rrweb-paused');
+    this.emitter.emit(ReplayerEvents.Start);
   }
 
   public pause(timeOffset?: number) {

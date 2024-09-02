@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/rrweb",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",
@@ -83,12 +83,12 @@
     "vite-plugin-dts": "^3.8.1"
   },
   "dependencies": {
-    "@saola.ai/rrweb-types": "^2.0.8",
+    "@saola.ai/rrweb-types": "^2.0.9",
     "@types/css-font-loading-module": "0.0.7",
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",
     "mitt": "^3.0.0",
-    "@saola.ai/rrdom": "^2.0.8",
-    "@saola.ai/rrweb-snapshot": "^2.0.8"
+    "@saola.ai/rrdom": "^2.0.9",
+    "@saola.ai/rrweb-snapshot": "^2.0.9"
   }
 }

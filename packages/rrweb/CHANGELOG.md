@@ -1,5 +1,16 @@
 # rrweb
 
+## 2.0.9
+
+### Patch Changes
+
+- [DEV-1044] Return the emitting of ReplayerEvents.Start
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-snapshot@2.0.9
+  - @saola.ai/rrdom@2.0.9
+  - @saola.ai/rrweb-types@2.0.9
+
 ## 2.0.8
 
 ### Patch Changes
