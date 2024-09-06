@@ -29,7 +29,6 @@ export { deserializeArg } from './replay/canvas/deserialize-args';
 export {
   CanvasManager,
   takeFullSnapshot,
-  mirror,
   freezePage,
   addCustomEvent,
 } from './record';
