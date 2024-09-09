@@ -5,7 +5,7 @@
 ### Various fixes & improvements
 
 - skipping tests (#216) by @billyvg
--  remove mirror export (#216) by @billyvg
+- remove mirror export (#216) by @billyvg
 - Apply formatting changes (#216) by @billyvg
 - Replace Array.from with clean implementation (#1464) by @billyvg
 - Fix and test for bug #1457 (#1481) by @eoghanmurray
