@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.27.0
+
+### Various fixes & improvements
+
+- skipping tests (#216) by @billyvg
+- remove mirror export (#216) by @billyvg
+- Apply formatting changes (#216) by @billyvg
+- Replace Array.from with clean implementation (#1464) by @billyvg
+- Fix and test for bug #1457 (#1481) by @eoghanmurray
+- Replace Array.from with clean implementation (#1464) by @colingm
+- Fixup for background-clip replacement (#1476) by @eoghanmurray
+- yarn format - prettier improvements & add .editorconfig (#1471) by @eoghanmurray
+- Fix that blob urls persist on the shared anchor element and can't be later modified (#1467) by @eoghanmurray
+- perf(snapshot): avoid recreate element `a` every time (#1387) by @H4ad
+- Ensure there is separation of timestamps (#1455) by @eoghanmurray
+
 ## 2.26.0
 
 ### Various fixes & improvements
