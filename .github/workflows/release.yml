@@ -9,7 +9,7 @@ on:
         description: Force a release even when there are release-blockers (optional)
         required: false
       merge_target:
-        description: Target branch to merge into. Uses the default branch, sentry-v1, as a fallback (optional)
+        description: Target branch to merge into. Uses the default branch (sentry-v2) as a fallback (optional)
         required: false
 jobs:
   release:
