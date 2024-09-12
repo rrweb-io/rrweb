@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import { vi } from 'vitest';
 import 'construct-style-sheets-polyfill';
 import type { recordOptions } from '../src/types';
 import {
@@ -35,6 +36,7 @@ interface IWindow extends Window {
       takeFullSnapshot: (isCheckout?: boolean | undefined) => void;
     };
 
+    freezePage(): void;
     addCustomEvent<T>(tag: string, payload: T): void;
   };
   emit: (e: eventWithTime) => undefined;
@@ -48,7 +50,7 @@ const setup = function (this: ISuite, content: string): ISuite {
       devtools: true,
     });
 
-    const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
+    const bundlePath = path.resolve(__dirname, '../dist/rrweb.umd.cjs');
     ctx.code = fs.readFileSync(bundlePath, 'utf8');
   });
 
@@ -57,6 +59,7 @@ const setup = function (this: ISuite, content: string): ISuite {
     await ctx.page.goto('about:blank');
     await ctx.page.setContent(content);
     await ctx.page.evaluate(ctx.code);
+
     ctx.events = [];
     await ctx.page.exposeFunction('emit', (e: eventWithTime) => {
       if (e.type === EventType.DomContentLoaded || e.type === EventType.Load) {
@@ -80,7 +83,7 @@ const setup = function (this: ISuite, content: string): ISuite {
 };
 
 describe('record', function (this: ISuite) {
-  jest.setTimeout(10_000);
+  vi.setConfig({ testTimeout: 10_000 });
 
   const ctx: ISuite = setup.call(
     this,
@@ -203,7 +206,7 @@ describe('record', function (this: ISuite) {
       }, 10);
     });
     await ctx.page.waitForTimeout(100);
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
   });
 
   it('should record scroll position', async () => {
@@ -220,7 +223,7 @@ describe('record', function (this: ISuite) {
       p.scrollLeft = 10;
     });
     await waitForRAF(ctx.page);
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
   });
 
   it('should record selection event', async () => {
@@ -276,7 +279,7 @@ describe('record', function (this: ISuite) {
       });
     });
     await ctx.page.waitForTimeout(50);
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
   });
 
   it('captures stylesheet rules', async () => {
@@ -294,6 +297,7 @@ describe('record', function (this: ISuite) {
       // begin: pre-serialization
       const ruleIdx0 = styleSheet.insertRule('body { background: #000; }');
       const ruleIdx1 = styleSheet.insertRule('body { background: #111; }');
+
       styleSheet.deleteRule(ruleIdx1);
       // end: pre-serialization
       setTimeout(() => {
@@ -325,8 +329,71 @@ describe('record', function (this: ISuite) {
         rule: 'body { color: #fff; }',
       },
     ]);
+    expect((addRules[1].data as styleSheetRuleData).adds).toEqual([
+      {
+        rule: 'body { color: #ccc; }',
+      },
+    ]);
     expect(removeRuleCount).toEqual(1);
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
+  });
+
+  it('captures stylesheet rules with deprecated addRule & removeRule properties', async () => {
+    await ctx.page.evaluate(() => {
+      const { record } = (window as unknown as IWindow).rrweb;
+
+      record({
+        emit: (window as unknown as IWindow).emit,
+      });
+
+      const styleElement = document.createElement('style');
+      document.head.appendChild(styleElement);
+
+      const styleSheet = <CSSStyleSheet>styleElement.sheet;
+      // begin: pre-serialization
+      const ruleIdx0 = styleSheet.addRule('body', 'background: #000;');
+      const ruleIdx1 = styleSheet.addRule('body', 'background: #111;');
+
+      styleSheet.removeRule(ruleIdx1);
+      // end: pre-serialization
+      setTimeout(() => {
+        styleSheet.addRule('body', 'color: #fff;');
+      }, 0);
+      setTimeout(() => {
+        styleSheet.removeRule(ruleIdx0);
+      }, 5);
+      setTimeout(() => {
+        styleSheet.addRule('body', 'color: #ccc;');
+      }, 10);
+    });
+    await ctx.page.waitForTimeout(50);
+    const styleSheetRuleEvents = ctx.events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.StyleSheetRule,
+    );
+    const addRules = styleSheetRuleEvents.filter((e) =>
+      Boolean((e.data as styleSheetRuleData).adds),
+    );
+    const removeRuleCount = styleSheetRuleEvents.filter((e) =>
+      Boolean((e.data as styleSheetRuleData).removes),
+    ).length;
+    // pre-serialization insert/delete should be ignored
+    expect(addRules.length).toEqual(2);
+    expect((addRules[0].data as styleSheetRuleData).adds).toEqual([
+      {
+        index: 1,
+        rule: 'body { color: #fff; }',
+      },
+    ]);
+    expect((addRules[1].data as styleSheetRuleData).adds).toEqual([
+      {
+        index: 1,
+        rule: 'body { color: #ccc; }',
+      },
+    ]);
+    expect(removeRuleCount).toEqual(1);
+    await assertSnapshot(ctx.events);
   });
 
   const captureNestedStylesheetRulesTest = async () => {
@@ -372,7 +439,7 @@ describe('record', function (this: ISuite) {
     // sync insert/delete should be ignored
     expect(addRuleCount).toEqual(2);
     expect(removeRuleCount).toEqual(1);
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
   };
   it('captures nested stylesheet rules', captureNestedStylesheetRulesTest);
 
@@ -423,7 +490,7 @@ describe('record', function (this: ISuite) {
       }, 0);
     });
     await ctx.page.waitForTimeout(50);
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
   });
 
   it('captures inserted style text nodes correctly', async () => {
@@ -443,7 +510,7 @@ describe('record', function (this: ISuite) {
       styleEl.append(document.createTextNode('h1 { color: pink; }'));
     });
     await waitForRAF(ctx.page);
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
   });
 
   it('captures stylesheets with `blob:` url', async () => {
@@ -470,7 +537,7 @@ describe('record', function (this: ISuite) {
       });
     });
     await waitForRAF(ctx.page);
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
   });
 
   it('captures mutations on adopted stylesheets', async () => {
@@ -535,7 +602,7 @@ describe('record', function (this: ISuite) {
       });
     });
     await waitForRAF(ctx.page);
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
   });
 
   it('captures adopted stylesheets in nested shadow doms and iframes', async () => {
@@ -587,7 +654,7 @@ describe('record', function (this: ISuite) {
       }, 150);
     });
     await ctx.page.waitForTimeout(200);
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
   });
 
   it('captures adopted stylesheets of shadow doms in checkout full snapshot', async () => {
@@ -616,7 +683,7 @@ describe('record', function (this: ISuite) {
       });
     });
     await waitForRAF(ctx.page);
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
   });
 
   it('captures stylesheets in iframes with `blob:` url', async () => {
@@ -648,7 +715,93 @@ describe('record', function (this: ISuite) {
       });
     });
     await waitForRAF(ctx.page);
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
+  });
+
+  it('aggregates mutations', async () => {
+    await ctx.page.evaluate(() => {
+      return new Promise((resolve) => {
+        const { record, freezePage } = (window as unknown as IWindow).rrweb;
+        record({
+          emit: (window as unknown as IWindow).emit,
+        });
+        freezePage();
+        setTimeout(() => {
+          const div = document.createElement('div');
+          div.setAttribute('id', 'here-and-gone');
+          document.body.appendChild(div);
+        }, 0);
+        setTimeout(() => {
+          const div = document.getElementById('here-and-gone');
+          if (div) {
+            div.setAttribute('data-test', 'x');
+          }
+        }, 10);
+        setTimeout(() => {
+          const div = document.getElementById('here-and-gone');
+          if (div) {
+            div.parentNode?.removeChild(div as HTMLElement);
+          }
+        }, 15);
+        setTimeout(() => {
+          // 'unfreeze' happens upon a user event
+          // however, we expect none of the above mutations to produce any effect
+          document.body.click();
+        }, 20);
+        setTimeout(() => {
+          resolve(null);
+        }, 25);
+      });
+    });
+    await waitForRAF(ctx.page); // wait till events get sent
+
+    const mutationEvents = ctx.events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.Mutation,
+    );
+    expect(mutationEvents.length).toEqual(0); // there was no aggregate effect
+
+    await assertSnapshot(ctx.events);
+  });
+
+  it('no need for attribute mutations on adds', async () => {
+    await ctx.page.evaluate(() => {
+      const { record, freezePage } = (window as unknown as IWindow).rrweb;
+      record({
+        emit: (window as unknown as IWindow).emit,
+      });
+      freezePage();
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.setAttribute('id', 'here');
+        div.innerText = 'as-created';
+        div.setAttribute('data-test', 'as-created');
+        document.body.appendChild(div);
+      }, 0);
+      setTimeout(() => {
+        const div = document.getElementById('here');
+        if (div) {
+          div.setAttribute('data-test', 'x');
+          (div.childNodes[0] as Text).replaceData(0, 'as-created'.length, 'y');
+        }
+      }, 10);
+      setTimeout(() => {
+        // 'unfreeze' happens upon a user event
+        document.body.click();
+      }, 20);
+    });
+    await ctx.page.waitForTimeout(50); // wait till setTimeout is called
+    await waitForRAF(ctx.page); // wait till events get sent
+
+    const mutationEvents = ctx.events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.Mutation,
+    );
+    expect(mutationEvents.length).toEqual(1);
+
+    await assertSnapshot(ctx.events);
   });
 
   describe('loading stylesheets', () => {
@@ -700,7 +853,7 @@ describe('record', function (this: ISuite) {
       await ctx.page.waitForResponse(`${serverURL}/html/assets/style.css`);
       await waitForRAF(ctx.page);
 
-      assertSnapshot(ctx.events);
+      await assertSnapshot(ctx.events);
     });
 
     it('captures stylesheets in iframes that are still loading', async () => {
@@ -734,7 +887,7 @@ describe('record', function (this: ISuite) {
 
       await waitForRAF(ctx.page);
 
-      assertSnapshot(ctx.events);
+      await assertSnapshot(ctx.events);
     });
   });
 
@@ -760,7 +913,7 @@ describe('record', function (this: ISuite) {
     await ctx.page.waitForResponse(corsStylesheetURL); // wait for stylesheet to be loaded
     await waitForRAF(ctx.page); // wait for rrweb to emit events
 
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
   });
 
   it('captures adopted stylesheets in shadow doms and iframe', async () => {
@@ -835,12 +988,12 @@ describe('record', function (this: ISuite) {
     });
     await waitForRAF(ctx.page); // wait till events get sent
 
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
   });
 });
 
 describe('record iframes', function (this: ISuite) {
-  jest.setTimeout(10_000);
+  vi.setConfig({ testTimeout: 10_000 });
 
   const ctx: ISuite = setup.call(
     this,
@@ -936,6 +1089,6 @@ describe('record iframes', function (this: ISuite) {
     expect(styleRelatedEvents.length).toEqual(5);
     expect(addRuleCount).toEqual(2);
     expect(removeRuleCount).toEqual(2);
-    assertSnapshot(ctx.events);
+    await assertSnapshot(ctx.events);
   });
 });

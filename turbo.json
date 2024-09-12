@@ -1,15 +1,50 @@
 {
   "$schema": "https://turborepo.org/schema.json",
-  "baseBranch": "origin/master",
-  "pipeline": {
+  // These root workspace files are reused in workspaces and may affect their build output
+  "globalDependencies": [
+    ".eslintrc.js",
+    ".prettierrc",
+    "vite.config.defaults.ts",
+    "tsconfig.json"
+  ],
+  "globalPassThroughEnv": ["PUPPETEER_HEADLESS"],
+  "tasks": {
     "prepublish": {
-      "dependsOn": ["^prepublish"],
-      "outputs": ["lib/**", "es/**", "dist/**", "typings/**"]
+      "dependsOn": ["^prepublish", "//#references:update"],
+      "outputs": [
+        "lib/**",
+        "es/**",
+        "dist/**",
+        "typings/**",
+        ".svelte-kit/**",
+        "types/**"
+      ]
     },
-    "test": {},
-    "test:watch": {},
-    "dev": {},
+    "test": {
+      "dependsOn": ["^prepublish"]
+    },
+    "test:watch": {
+      "persistent": true,
+      "cache": false
+    },
+    "test:update": {
+      "dependsOn": ["^prepublish"]
+    },
+    "dev": {
+      "dependsOn": ["prepublish", "^prepublish"],
+      "persistent": true,
+      "cache": false
+    },
     "lint": {},
-    "check-types": {}
+    "check-types": {
+      "dependsOn": ["^prepublish"]
+    },
+    "//#references:update": {
+      "inputs": ["packages/*/package.json", "packages/plugins/*/package.json"],
+      "outputs": [
+        "packages/*/tsconfig.json",
+        "packages/plugins/*/tsconfig.json"
+      ]
+    }
   }
 }

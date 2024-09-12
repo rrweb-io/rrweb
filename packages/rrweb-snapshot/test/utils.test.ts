@@ -1,9 +1,15 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, it, test, expect } from 'vitest';
 import { NodeType, serializedNode } from '../src/types';
-import { isNodeMetaEqual } from '../src/utils';
-import { serializedNodeWithId } from 'rrweb-snapshot';
+import {
+  escapeImportStatement,
+  extractFileExtension,
+  fixSafariColons,
+  isNodeMetaEqual,
+} from '../src/utils';
+import type { serializedNodeWithId } from 'rrweb-snapshot';
 
 describe('utils', () => {
   describe('isNodeMetaEqual()', () => {
@@ -145,6 +151,133 @@ describe('utils', () => {
       expect(isNodeMetaEqual(element1, element2)).toBeFalsy();
       expect(isNodeMetaEqual(element1, element3)).toBeFalsy();
       expect(isNodeMetaEqual(element2, element3)).toBeFalsy();
+    });
+  });
+  describe('extractFileExtension', () => {
+    test('absolute path', () => {
+      const path = 'https://example.com/styles/main.css';
+      const extension = extractFileExtension(path);
+      expect(extension).toBe('css');
+    });
+
+    test('relative path', () => {
+      const path = 'styles/main.css';
+      const baseURL = 'https://example.com/';
+      const extension = extractFileExtension(path, baseURL);
+      expect(extension).toBe('css');
+    });
+
+    test('path with search parameters', () => {
+      const path = 'https://example.com/scripts/app.js?version=1.0';
+      const extension = extractFileExtension(path);
+      expect(extension).toBe('js');
+    });
+
+    test('path with fragment', () => {
+      const path = 'https://example.com/styles/main.css#section1';
+      const extension = extractFileExtension(path);
+      expect(extension).toBe('css');
+    });
+
+    test('path with search parameters and fragment', () => {
+      const path = 'https://example.com/scripts/app.js?version=1.0#section1';
+      const extension = extractFileExtension(path);
+      expect(extension).toBe('js');
+    });
+
+    test('path without extension', () => {
+      const path = 'https://example.com/path/to/directory/';
+      const extension = extractFileExtension(path);
+      expect(extension).toBeNull();
+    });
+
+    test('invalid URL', () => {
+      const path = '!@#$%^&*()';
+      const baseURL = 'invalid';
+      const extension = extractFileExtension(path, baseURL);
+      expect(extension).toBeNull();
+    });
+
+    test('path with multiple dots', () => {
+      const path = 'https://example.com/scripts/app.min.js?version=1.0';
+      const extension = extractFileExtension(path);
+      expect(extension).toBe('js');
+    });
+  });
+
+  describe('escapeImportStatement', () => {
+    it('parses imports with quotes correctly', () => {
+      const out1 = escapeImportStatement({
+        cssText: `@import url("/foo.css;900;800"");`,
+        href: '/foo.css;900;800"',
+        media: {
+          length: 0,
+        },
+        layerName: null,
+        supportsText: null,
+      } as unknown as CSSImportRule);
+      expect(out1).toEqual(`@import url("/foo.css;900;800\\"");`);
+
+      const out2 = escapeImportStatement({
+        cssText: `@import url("/foo.css;900;800"") supports(display: flex);`,
+        href: '/foo.css;900;800"',
+        media: {
+          length: 0,
+        },
+        layerName: null,
+        supportsText: 'display: flex',
+      } as unknown as CSSImportRule);
+      expect(out2).toEqual(
+        `@import url("/foo.css;900;800\\"") supports(display: flex);`,
+      );
+
+      const out3 = escapeImportStatement({
+        cssText: `@import url("/foo.css;900;800"");`,
+        href: '/foo.css;900;800"',
+        media: {
+          length: 1,
+          mediaText: 'print, screen',
+        },
+        layerName: null,
+        supportsText: null,
+      } as unknown as CSSImportRule);
+      expect(out3).toEqual(`@import url("/foo.css;900;800\\"") print, screen;`);
+
+      const out4 = escapeImportStatement({
+        cssText: `@import url("/foo.css;900;800"") layer(layer-1);`,
+        href: '/foo.css;900;800"',
+        media: {
+          length: 0,
+        },
+        layerName: 'layer-1',
+        supportsText: null,
+      } as unknown as CSSImportRule);
+      expect(out4).toEqual(
+        `@import url("/foo.css;900;800\\"") layer(layer-1);`,
+      );
+
+      const out5 = escapeImportStatement({
+        cssText: `@import url("/foo.css;900;800"") layer;`,
+        href: '/foo.css;900;800"',
+        media: {
+          length: 0,
+        },
+        layerName: '',
+        supportsText: null,
+      } as unknown as CSSImportRule);
+      expect(out5).toEqual(`@import url("/foo.css;900;800\\"") layer;`);
+    });
+  });
+  describe('fixSafariColons', () => {
+    it('parses : in attribute selectors correctly', () => {
+      const out1 = fixSafariColons('[data-foo] { color: red; }');
+      expect(out1).toEqual('[data-foo] { color: red; }');
+
+      const out2 = fixSafariColons('[data-foo:other] { color: red; }');
+      expect(out2).toEqual('[data-foo\\:other] { color: red; }');
+
+      const out3 = fixSafariColons('[data-aa\\:other] { color: red; }');
+      expect(out3).toEqual('[data-aa\\:other] { color: red; }');
     });
   });
 });

@@ -1,10 +1,9 @@
-import type { Mirror } from 'rrweb-snapshot';
 import {
-  blockClass,
+  type blockClass,
   CanvasContext,
-  canvasManagerMutationCallback,
-  IWindow,
-  listenerHandler,
+  type canvasManagerMutationCallback,
+  type IWindow,
+  type listenerHandler,
 } from '@rrweb/types';
 import { hookSetter, isBlocked, patch } from '../../../utils';
 import { serializeArgs } from './serialize-args';
@@ -45,7 +44,7 @@ export default function initCanvas2DMutationObserver(
               // Using setTimeout as toDataURL can be heavy
               // and we'd rather not block the main thread
               setTimeout(() => {
-                const recordArgs = serializeArgs([...args], win, this);
+                const recordArgs = serializeArgs(args, win, this);
                 cb(this.canvas, {
                   type: CanvasContext['2D'],
                   property: prop,

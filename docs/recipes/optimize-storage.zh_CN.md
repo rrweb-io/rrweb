@@ -69,18 +69,22 @@ rrweb.record({
 
 ### 基于 packFn 的单数据压缩
 
-rrweb 内包含了基于 fflate 的简单压缩 rrweb.pack，在录制时可以作为 `packFn` 传入。
+rrweb 提供了一个基于 fflate 的简单压缩函数，在 [@rrweb/packer](../../packages/packer/) 中可以作为 `packFn` 传入使用。
 
 ```js
+import { pack } from '@rrweb/packer';
+
 rrweb.record({
   emit(event) {},
   packFn: rrweb.pack,
 });
 ```
 
-回放时通用需要传入 rrweb.unpack 作为 `unpackFn` 传入。
+回放时通用需要传入 packer.unpack 作为 `unpackFn` 传入。
 
 ```js
+import { unpack } from '@rrweb/packer';
+
 const replayer = new rrweb.Replayer(events, {
   unpackFn: rrweb.unpack,
 });

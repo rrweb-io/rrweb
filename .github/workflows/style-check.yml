@@ -8,17 +8,17 @@ jobs:
     name: ESLint Check and Report Upload
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.head_ref }}
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: lts/*
           cache: 'yarn'
       - name: Install Dependencies
-        run: yarn
+        run: yarn install --frozen-lockfile
       - name: Build Packages
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
       - name: Eslint Check
@@ -62,10 +62,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: lts/*
           cache: 'yarn'
       - name: Install Dependencies
-        run: yarn
+        run: yarn install --frozen-lockfile
       - name: Prettier Check
         run: yarn prettier --check '**/*.{ts,md}'
 
@@ -82,10 +82,10 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: lts/*
           cache: 'yarn'
       - name: Install Dependencies
-        run: yarn
+        run: yarn install --frozen-lockfile
       - name: Prettify Code
         run: yarn prettier --write '**/*.{ts,md}'
       - name: Commit Changes
@@ -93,3 +93,4 @@ jobs:
         with:
           commit_message: Apply formatting changes
           branch: ${{ github.head_ref }}
+          file_pattern: ':!packages/rrweb-player/.svelte-kit/ambient.d.ts'

@@ -1,16 +1,16 @@
-import Browser, { Storage } from 'webextension-polyfill';
+import Browser, { type Storage } from 'webextension-polyfill';
 import { nanoid } from 'nanoid';
 import type { eventWithTime } from '@rrweb/types';
 import {
-  LocalData,
+  type LocalData,
   LocalDataKey,
   RecorderStatus,
   ServiceName,
-  Session,
-  RecordStartedMessage,
-  RecordStoppedMessage,
+  type Session,
+  type RecordStartedMessage,
+  type RecordStoppedMessage,
   MessageName,
-  EmitEventMessage,
+  type EmitEventMessage,
 } from '~/types';
 import Channel from '~/utils/channel';
 import { isInCrossOriginIFrame } from '~/utils';
@@ -155,8 +155,8 @@ async function initMainPage() {
 
   // Before unload pages, cache the new events in the local storage.
   window.addEventListener('beforeunload', (event) => {
+    if (!newEvents.length) return;
     event.preventDefault();
-    if (newEvents.length === 0) return;
     void Browser.storage.local.set({
       [LocalDataKey.bufferedEvents]: bufferedEvents.concat(newEvents),
     });

@@ -1,7 +1,7 @@
 import {
   NodeType as RRNodeType,
   Mirror as NodeMirror,
-  elementNode,
+  type elementNode,
 } from 'rrweb-snapshot';
 import type {
   canvasMutationData,
@@ -21,6 +21,7 @@ import type {
 } from './document';
 import type {
   RRCanvasElement,
+  RRDialogElement,
   RRElement,
   RRIFrameElement,
   RRMediaElement,
@@ -116,19 +117,9 @@ export function diff(
     rrnodeMirror,
   );
 
-  const oldChildren = oldTree.childNodes;
-  const newChildren = newTree.childNodes;
-  if (oldChildren.length > 0 || newChildren.length > 0) {
-    diffChildren(
-      Array.from(oldChildren),
-      newChildren,
-      oldTree,
-      replayer,
-      rrnodeMirror,
-    );
-  }
+  diffChildren(oldTree, newTree, replayer, rrnodeMirror);
 
-  diffAfterUpdatingChildren(oldTree, newTree, replayer, rrnodeMirror);
+  diffAfterUpdatingChildren(oldTree, newTree, replayer);
 }
 
 /**
@@ -196,19 +187,23 @@ function diffBeforeUpdatingChildren(
       }
       if (newRRElement.shadowRoot) {
         if (!oldElement.shadowRoot) oldElement.attachShadow({ mode: 'open' });
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const oldChildren = oldElement.shadowRoot!.childNodes;
-        const newChildren = newRRElement.shadowRoot.childNodes;
-        if (oldChildren.length > 0 || newChildren.length > 0)
-          diffChildren(
-            Array.from(oldChildren),
-            newChildren,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            oldElement.shadowRoot!,
-            replayer,
-            rrnodeMirror,
-          );
+        diffChildren(
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          oldElement.shadowRoot!,
+          newRRElement.shadowRoot,
+          replayer,
+          rrnodeMirror,
+        );
       }
+      /**
+       * Attributes and styles of the old element need to be updated before updating its children because of an edge case:
+       * `applyScroll` may fail in `diffAfterUpdatingChildren` when the height of a node when `applyScroll` is called may be incorrect if
+       * 1. its parent node contains styles that affects the targeted node's height
+       * 2. the CSS selector is targeting an attribute of the parent node
+       * by running `diffProps` on the parent node before `diffChildren` is called,
+       * we can ensure that the correct attributes (and therefore styles) have applied to parent nodes
+       */
+      diffProps(oldElement, newRRElement, rrnodeMirror);
       break;
     }
   }
@@ -222,7 +217,6 @@ function diffAfterUpdatingChildren(
   oldTree: Node,
   newTree: IRRNode,
   replayer: ReplayerHandler,
-  rrnodeMirror: Mirror,
 ) {
   switch (newTree.RRNodeType) {
     case RRNodeType.Document: {
@@ -233,7 +227,6 @@ function diffAfterUpdatingChildren(
     case RRNodeType.Element: {
       const oldElement = oldTree as HTMLElement;
       const newRRElement = newTree as RRElement;
-      diffProps(oldElement, newRRElement, rrnodeMirror);
       newRRElement.scrollData &&
         replayer.applyScroll(newRRElement.scrollData, true);
       /**
@@ -245,7 +238,7 @@ function diffAfterUpdatingChildren(
         case 'AUDIO':
         case 'VIDEO': {
           const oldMediaElement = oldTree as HTMLMediaElement;
-          const newMediaRRElement = newRRElement as RRMediaElement;
+          const newMediaRRElement = newRRElement as unknown as RRMediaElement;
           if (newMediaRRElement.paused !== undefined)
             newMediaRRElement.paused
               ? void oldMediaElement.pause()
@@ -258,6 +251,8 @@ function diffAfterUpdatingChildren(
             oldMediaElement.currentTime = newMediaRRElement.currentTime;
           if (newMediaRRElement.playbackRate !== undefined)
             oldMediaElement.playbackRate = newMediaRRElement.playbackRate;
+          if (newMediaRRElement.loop !== undefined)
+            oldMediaElement.loop = newMediaRRElement.loop;
           break;
         }
         case 'CANVAS': {
@@ -289,6 +284,29 @@ function diffAfterUpdatingChildren(
             (newTree as RRStyleElement).rules.forEach((data) =>
               replayer.applyStyleSheetMutation(data, styleSheet),
             );
+          break;
+        }
+        case 'DIALOG': {
+          const dialog = oldElement as HTMLDialogElement;
+          const rrDialog = newRRElement as unknown as RRDialogElement;
+          const wasOpen = dialog.open;
+          const wasModal = dialog.matches('dialog:modal');
+          const shouldBeOpen = rrDialog.open;
+          const shouldBeModal = rrDialog.isModal;
+
+          const modalChanged = wasModal !== shouldBeModal;
+          const openChanged = wasOpen !== shouldBeOpen;
+
+          if (modalChanged || (wasOpen && openChanged)) dialog.close();
+          if (shouldBeOpen && (openChanged || modalChanged)) {
+            try {
+              if (shouldBeModal) dialog.showModal();
+              else dialog.show();
+            } catch (e) {
+              console.warn(e);
+            }
+          }
+
           break;
         }
       }
@@ -335,23 +353,25 @@ function diffProps(
           ctx.drawImage(image, 0, 0, image.width, image.height);
         }
       };
-    } else oldTree.setAttribute(name, newValue);
+    } else if (newTree.tagName === 'IFRAME' && name === 'srcdoc') continue;
+    else oldTree.setAttribute(name, newValue);
   }
 
   for (const { name } of Array.from(oldAttributes))
     if (!(name in newAttributes)) oldTree.removeAttribute(name);
-
   newTree.scrollLeft && (oldTree.scrollLeft = newTree.scrollLeft);
   newTree.scrollTop && (oldTree.scrollTop = newTree.scrollTop);
 }
 
 function diffChildren(
-  oldChildren: (Node | undefined)[],
-  newChildren: IRRNode[],
-  parentNode: Node,
+  oldTree: Node,
+  newTree: IRRNode,
   replayer: ReplayerHandler,
   rrnodeMirror: Mirror,
 ) {
+  const oldChildren: (Node | undefined)[] = Array.from(oldTree.childNodes);
+  const newChildren = newTree.childNodes;
+  if (oldChildren.length === 0 && newChildren.length === 0) return;
   let oldStartIndex = 0,
     oldEndIndex = oldChildren.length - 1,
     newStartIndex = 0,
@@ -371,14 +391,12 @@ function diffChildren(
       // same first node?
       nodeMatching(oldStartNode, newStartNode, replayer.mirror, rrnodeMirror)
     ) {
-      diff(oldStartNode, newStartNode, replayer, rrnodeMirror);
       oldStartNode = oldChildren[++oldStartIndex];
       newStartNode = newChildren[++newStartIndex];
     } else if (
       // same last node?
       nodeMatching(oldEndNode, newEndNode, replayer.mirror, rrnodeMirror)
     ) {
-      diff(oldEndNode, newEndNode, replayer, rrnodeMirror);
       oldEndNode = oldChildren[--oldEndIndex];
       newEndNode = newChildren[--newEndIndex];
     } else if (
@@ -386,11 +404,10 @@ function diffChildren(
       nodeMatching(oldStartNode, newEndNode, replayer.mirror, rrnodeMirror)
     ) {
       try {
-        parentNode.insertBefore(oldStartNode, oldEndNode.nextSibling);
+        oldTree.insertBefore(oldStartNode, oldEndNode.nextSibling);
       } catch (e) {
         console.warn(e);
       }
-      diff(oldStartNode, newEndNode, replayer, rrnodeMirror);
       oldStartNode = oldChildren[++oldStartIndex];
       newEndNode = newChildren[--newEndIndex];
     } else if (
@@ -398,11 +415,10 @@ function diffChildren(
       nodeMatching(oldEndNode, newStartNode, replayer.mirror, rrnodeMirror)
     ) {
       try {
-        parentNode.insertBefore(oldEndNode, oldStartNode);
+        oldTree.insertBefore(oldEndNode, oldStartNode);
       } catch (e) {
         console.warn(e);
       }
-      diff(oldEndNode, newStartNode, replayer, rrnodeMirror);
       oldEndNode = oldChildren[--oldEndIndex];
       newStartNode = newChildren[++newStartIndex];
     } else {
@@ -424,11 +440,10 @@ function diffChildren(
         nodeMatching(nodeToMove, newStartNode, replayer.mirror, rrnodeMirror)
       ) {
         try {
-          parentNode.insertBefore(nodeToMove, oldStartNode);
+          oldTree.insertBefore(nodeToMove, oldStartNode);
         } catch (e) {
           console.warn(e);
         }
-        diff(nodeToMove, newStartNode, replayer, rrnodeMirror);
         oldChildren[indexInOld] = undefined;
       } else {
         const newNode = createOrGetNode(
@@ -438,7 +453,7 @@ function diffChildren(
         );
 
         if (
-          parentNode.nodeName === '#document' &&
+          oldTree.nodeName === '#document' &&
           oldStartNode &&
           /**
            * Special case 1: one document isn't allowed to have two doctype nodes at the same time, so we need to remove the old one first before inserting the new one.
@@ -453,14 +468,13 @@ function diffChildren(
             (newNode.nodeType === newNode.ELEMENT_NODE &&
               oldStartNode.nodeType === oldStartNode.ELEMENT_NODE))
         ) {
-          parentNode.removeChild(oldStartNode);
+          oldTree.removeChild(oldStartNode);
           replayer.mirror.removeNodeFromMap(oldStartNode);
           oldStartNode = oldChildren[++oldStartIndex];
         }
 
         try {
-          parentNode.insertBefore(newNode, oldStartNode || null);
-          diff(newNode, newStartNode, replayer, rrnodeMirror);
+          oldTree.insertBefore(newNode, oldStartNode || null);
         } catch (e) {
           console.warn(e);
         }
@@ -482,8 +496,7 @@ function diffChildren(
         rrnodeMirror,
       );
       try {
-        parentNode.insertBefore(newNode, referenceNode);
-        diff(newNode, newChildren[newStartIndex], replayer, rrnodeMirror);
+        oldTree.insertBefore(newNode, referenceNode);
       } catch (e) {
         console.warn(e);
       }
@@ -491,14 +504,23 @@ function diffChildren(
   } else if (newStartIndex > newEndIndex) {
     for (; oldStartIndex <= oldEndIndex; oldStartIndex++) {
       const node = oldChildren[oldStartIndex];
-      if (!node || node.parentNode !== parentNode) continue;
+      if (!node || node.parentNode !== oldTree) continue;
       try {
-        parentNode.removeChild(node);
+        oldTree.removeChild(node);
         replayer.mirror.removeNodeFromMap(node);
       } catch (e) {
         console.warn(e);
       }
     }
+  }
+
+  // Recursively diff the children of the old tree and the new tree with their props and deeper structures.
+  let oldChild = oldTree.firstChild;
+  let newChild = newTree.firstChild;
+  while (oldChild !== null && newChild !== null) {
+    diff(oldChild, newChild, replayer, rrnodeMirror);
+    oldChild = oldChild.nextSibling;
+    newChild = newChild.nextSibling;
   }
 }
 

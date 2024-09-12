@@ -83,6 +83,7 @@ export enum IncrementalSource {
   StyleDeclaration,
   Selection,
   AdoptedStyleSheet,
+  CustomElement,
 }
 
 export type mutationData = {
@@ -142,6 +143,10 @@ export type adoptedStyleSheetData = {
   source: IncrementalSource.AdoptedStyleSheet;
 } & adoptedStyleSheetParam;
 
+export type customElementData = {
+  source: IncrementalSource.CustomElement;
+} & customElementParam;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
@@ -155,9 +160,10 @@ export type incrementalData =
   | fontData
   | selectionData
   | styleDeclarationData
-  | adoptedStyleSheetData;
+  | adoptedStyleSheetData
+  | customElementData;
 
-export type event =
+export type eventWithoutTime =
   | domContentLoadedEvent
   | loadedEvent
   | fullSnapshotEvent
@@ -166,7 +172,13 @@ export type event =
   | customEvent
   | pluginEvent;
 
-export type eventWithTime = event & {
+/**
+ * @deprecated intended for internal use
+ * a synonym for eventWithoutTime
+ */
+export type event = eventWithoutTime;
+
+export type eventWithTime = eventWithoutTime & {
   timestamp: number;
   delay?: number;
 };
@@ -262,6 +274,7 @@ export type hooksParam = {
   canvasMutation?: canvasMutationCallback;
   font?: fontCallback;
   selection?: selectionCallback;
+  customElement?: customElementCallback;
 };
 
 // https://dom.spec.whatwg.org/#interface-mutationrecord
@@ -283,7 +296,7 @@ export type textMutation = {
   value: string | null;
 };
 
-export type styleAttributeValue = {
+export type styleOMValue = {
   [key: string]: styleValueWithPriority | string | false;
 };
 
@@ -292,13 +305,15 @@ export type styleValueWithPriority = [string, string];
 export type attributeCursor = {
   node: Node;
   attributes: {
-    [key: string]: string | styleAttributeValue | null;
+    [key: string]: string | styleOMValue | null;
   };
+  styleDiff: styleOMValue;
+  _unchangedStyles: styleOMValue;
 };
 export type attributeMutation = {
   id: number;
   attributes: {
-    [key: string]: string | styleAttributeValue | null;
+    [key: string]: string | styleOMValue | null;
   };
 };
 
@@ -362,6 +377,12 @@ export enum MouseInteractions {
   TouchCancel,
 }
 
+export enum PointerTypes {
+  Mouse,
+  Pen,
+  Touch,
+}
+
 export enum CanvasContext {
   '2D',
   WebGL,
@@ -402,8 +423,9 @@ export type CanvasArg =
 type mouseInteractionParam = {
   type: MouseInteractions;
   id: number;
-  x: number;
-  y: number;
+  x?: number;
+  y?: number;
+  pointerType?: PointerTypes;
 };
 
 export type mouseInteractionCallBack = (d: mouseInteractionParam) => void;
@@ -543,7 +565,7 @@ export type inputValue = {
 
 export type inputCallback = (v: inputValue & { id: number }) => void;
 
-export const enum MediaInteractions {
+export enum MediaInteractions {
   Play,
   Pause,
   Seeked,
@@ -557,6 +579,7 @@ export type mediaInteractionParam = {
   currentTime?: number;
   volume?: number;
   muted?: boolean;
+  loop?: boolean;
   playbackRate?: number;
 };
 
@@ -583,6 +606,14 @@ export type selectionParam = {
 };
 
 export type selectionCallback = (p: selectionParam) => void;
+
+export type customElementParam = {
+  define?: {
+    name: string;
+  };
+};
+
+export type customElementCallback = (c: customElementParam) => void;
 
 export type DeprecatedMirror = {
   map: {
@@ -629,6 +660,9 @@ export type Arguments<T> = T extends (...payload: infer U) => unknown
 export enum ReplayerEvents {
   Start = 'start',
   Pause = 'pause',
+  /**
+   * @deprecated use Play instead
+   */
   Resume = 'resume',
   Resize = 'resize',
   Finish = 'finish',
@@ -670,3 +704,7 @@ export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
   Obj,
   TakeTypeHelper<Obj, Type>[keyof TakeTypeHelper<Obj, Type>]
 >;
+
+// Types for @rrweb/packer
+export type PackFn = (event: eventWithTime) => string;
+export type UnpackFn = (raw: string) => eventWithTime;

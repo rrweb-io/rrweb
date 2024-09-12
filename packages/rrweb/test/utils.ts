@@ -3,10 +3,11 @@ import {
   EventType,
   IncrementalSource,
   eventWithTime,
+  eventWithoutTime,
   MouseInteractions,
   Optional,
   mouseInteractionData,
-  event,
+  pluginEvent,
 } from '@rrweb/types';
 import type { recordOptions } from '../src/types';
 import * as puppeteer from 'puppeteer';
@@ -20,7 +21,7 @@ export async function launchPuppeteer(
   options?: Parameters<(typeof puppeteer)['launch']>[0],
 ) {
   return await puppeteer.launch({
-    headless: process.env.PUPPETEER_HEADLESS ? true : false,
+    headless: process.env.PUPPETEER_HEADLESS ? 'new' : false,
     defaultViewport: {
       width: 1920,
       height: 1080,
@@ -43,12 +44,13 @@ export interface ISuite {
   events: eventWithTime[];
 }
 
-export const startServer = (defaultPort: number = 3030) =>
+export const startServer = (defaultPort = 3030) =>
   new Promise<http.Server>((resolve) => {
     const mimeType: IMimeType = {
       '.html': 'text/html',
       '.js': 'text/javascript',
       '.css': 'text/css',
+      '.webm': 'video/webm',
     };
     const s = http.createServer((req, res) => {
       const parsedUrl = url.parse(req.url!);
@@ -57,8 +59,8 @@ export const startServer = (defaultPort: number = 3030) =>
         .replace(/^(\.\.[\/\\])+/, '');
 
       let pathname = path.join(__dirname, sanitizePath);
-      if (/^\/rrweb.*\.js.*/.test(sanitizePath)) {
-        pathname = path.join(__dirname, `../dist`, sanitizePath);
+      if (/^\/rrweb.*\.c?js.*/.test(sanitizePath)) {
+        pathname = path.join(__dirname, `../dist/main`, sanitizePath);
       }
 
       try {
@@ -68,6 +70,7 @@ export const startServer = (defaultPort: number = 3030) =>
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET');
         res.setHeader('Access-Control-Allow-Headers', 'Content-type');
+        if (ext === '.webm') res.setHeader('Accept-Ranges', 'bytes');
         setTimeout(() => {
           res.end(data);
           // mock delay
@@ -102,13 +105,22 @@ export function getServerURL(server: http.Server): string {
  * Also remove timestamp from event.
  * @param snapshots incrementalSnapshotEvent[]
  */
-function stringifySnapshots(snapshots: eventWithTime[]): string {
+export function stringifySnapshots(snapshots: eventWithTime[]): string {
   return JSON.stringify(
     snapshots
       .filter((s) => {
         if (
-          s.type === EventType.IncrementalSnapshot &&
-          s.data.source === IncrementalSource.MouseMove
+          // mouse move or viewport resize can happen on accidental user interference
+          // so we ignore them
+          (s.type === EventType.IncrementalSnapshot &&
+            (s.data.source === IncrementalSource.MouseMove ||
+              s.data.source === IncrementalSource.ViewportResize)) ||
+          // ignore '[vite] connected' messages from vite
+          (s.type === EventType.Plugin &&
+            s.data.plugin === 'rrweb/console@1' &&
+            (s.data.payload as { payload: string[] })?.payload?.find((msg) =>
+              msg.includes('[vite] connected'),
+            ))
         ) {
           return false;
         }
@@ -133,23 +145,26 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
           s.data.source === IncrementalSource.Mutation
         ) {
           s.data.attributes.forEach((a) => {
-            if (
-              'style' in a.attributes &&
-              a.attributes.style &&
-              typeof a.attributes.style === 'object'
-            ) {
-              for (const [k, v] of Object.entries(a.attributes.style)) {
-                if (Array.isArray(v)) {
-                  if (coordinatesReg.test(k + ': ' + v[0])) {
-                    // TODO: could round the number here instead depending on what's coming out of various test envs
-                    a.attributes.style[k] = ['Npx', v[1]];
+            if ('style' in a.attributes && a.attributes.style) {
+              if (typeof a.attributes.style === 'object') {
+                for (const [k, v] of Object.entries(a.attributes.style)) {
+                  if (Array.isArray(v)) {
+                    if (coordinatesReg.test(k + ': ' + v[0])) {
+                      // TODO: could round the number here instead depending on what's coming out of various test envs
+                      a.attributes.style[k] = ['Npx', v[1]];
+                    }
+                  } else if (typeof v === 'string') {
+                    if (coordinatesReg.test(k + ': ' + v)) {
+                      a.attributes.style[k] = 'Npx';
+                    }
                   }
-                } else if (typeof v === 'string') {
-                  if (coordinatesReg.test(k + ': ' + v)) {
-                    a.attributes.style[k] = 'Npx';
-                  }
+                  coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
                 }
-                coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
+              } else if (coordinatesReg.test(a.attributes.style)) {
+                a.attributes.style = a.attributes.style.replace(
+                  coordinatesReg,
+                  '$1: Npx',
+                );
               }
             }
 
@@ -192,9 +207,36 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
           if (s.data.currentTime) {
             s.data.currentTime = Math.round(s.data.currentTime * 10) / 10;
           }
+        } else if (
+          s.type === EventType.Plugin &&
+          s.data.plugin === 'rrweb/console@1'
+        ) {
+          const pluginPayload = (
+            s as pluginEvent<{
+              trace: string[];
+              payload: string[];
+            }>
+          ).data.payload;
+
+          if (pluginPayload?.trace.length) {
+            pluginPayload.trace = pluginPayload.trace.map((trace) => {
+              return trace.replace(
+                /^pptr:evaluate;.*?:(\d+:\d+)/,
+                '__puppeteer_evaluation_script__:$1',
+              );
+            });
+          }
+          if (pluginPayload?.payload.length) {
+            pluginPayload.payload = pluginPayload.payload.map((payload) => {
+              return payload.replace(
+                /pptr:evaluate;.*?:(\d+:\d+)/g,
+                '__puppeteer_evaluation_script__:$1',
+              );
+            });
+          }
         }
         delete (s as Optional<eventWithTime, 'timestamp'>).timestamp;
-        return s as event;
+        return s as eventWithoutTime;
       }),
     null,
     2,
@@ -208,18 +250,18 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
 
 function stripBlobURLsFromAttributes(node: {
   attributes: {
-    src?: string;
+    [key: string]: any;
   };
 }) {
-  if (
-    'src' in node.attributes &&
-    node.attributes.src &&
-    typeof node.attributes.src === 'string' &&
-    node.attributes.src.startsWith('blob:')
-  ) {
-    node.attributes.src = node.attributes.src
-      .replace(/[\w-]+$/, '...')
-      .replace(/:[0-9]+\//, ':xxxx/');
+  for (const attr in node.attributes) {
+    if (
+      typeof node.attributes[attr] === 'string' &&
+      node.attributes[attr].startsWith('blob:')
+    ) {
+      node.attributes[attr] = node.attributes[attr]
+        .replace(/[\w-]+$/, '...')
+        .replace(/:[0-9]+\//, ':xxxx/');
+    }
   }
 }
 
@@ -257,7 +299,24 @@ function stringifyDomSnapshot(mhtml: string): string {
   return newResult.map((asset) => Object.values(asset).join('\n')).join('\n\n');
 }
 
-export function assertSnapshot(snapshots: eventWithTime[]) {
+export async function assertSnapshot(
+  snapshotsOrPage: eventWithTime[] | puppeteer.Page,
+) {
+  let snapshots: eventWithTime[];
+  if (!Array.isArray(snapshotsOrPage)) {
+    // make sure page has finished executing js
+    await waitForRAF(snapshotsOrPage);
+    await snapshotsOrPage.waitForFunction(
+      'window.snapshots && window.snapshots.length > 0',
+    );
+
+    snapshots = (await snapshotsOrPage.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+  } else {
+    snapshots = snapshotsOrPage;
+  }
+
   expect(snapshots).toBeDefined();
   expect(stringifySnapshots(snapshots)).toMatchSnapshot();
 }
@@ -587,18 +646,66 @@ export async function waitForRAF(
   });
 }
 
+export async function waitForIFrameLoad(
+  page: puppeteer.Frame | puppeteer.Page,
+  iframeSelector: string,
+  timeout = 10000,
+): Promise<puppeteer.Frame> {
+  const el = await page.waitForSelector(iframeSelector);
+  if (!el)
+    throw new Error('Waiting for iframe load has timed out - no element found');
+
+  let frame = await el.contentFrame();
+  if (frame && frame.isDetached()) {
+    throw new Error(
+      'Waiting for iframe load has timed out - frame is detached',
+    );
+  }
+  if (frame && frame.url() !== '') {
+    return frame;
+  }
+
+  await page.$eval(
+    iframeSelector,
+    (el, timeout) => {
+      const p = new Promise((resolve, reject) => {
+        (el as HTMLIFrameElement).onload = () => {
+          resolve(el as HTMLIFrameElement);
+        };
+        setTimeout(() => {
+          reject(
+            new Error(
+              'Waiting for iframe load has timed out - onload not fired',
+            ),
+          );
+        }, timeout);
+      });
+      return p;
+    },
+    timeout,
+  );
+
+  frame = await el.contentFrame();
+  if (!frame)
+    throw new Error('Waiting for iframe load has timed out - no frame found');
+  return frame;
+}
+
 export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
   return `
-  window.snapshots = [];
   rrweb.record({
     emit: event => {
+      if (!window.snapshots) window.snapshots = [];
       window.snapshots.push(event);
     },
+    ignoreSelector: ${JSON.stringify(options.ignoreSelector)},
     maskTextSelector: ${JSON.stringify(options.maskTextSelector)},
     maskAllInputs: ${options.maskAllInputs},
     maskInputOptions: ${JSON.stringify(options.maskAllInputs)},
     userTriggeredOnInput: ${options.userTriggeredOnInput},
+    maskTextClass: ${options.maskTextClass},
     maskTextFn: ${options.maskTextFn},
+    maskInputFn: ${options.maskInputFn},
     recordCanvas: ${options.recordCanvas},
     recordAfter: '${options.recordAfter || 'load'}',
     inlineImages: ${options.inlineImages},
@@ -606,3 +713,26 @@ export function generateRecordSnippet(options: recordOptions<eventWithTime>) {
   });
   `;
 }
+
+export async function hideMouseAnimation(p: puppeteer.Page): Promise<void> {
+  await p.addStyleTag({
+    content: `.replayer-mouse-tail{display: none !important;}
+                html, body { margin: 0; padding: 0; }
+                iframe { border: none; }`,
+  });
+}
+
+export const fakeGoto = async (p: puppeteer.Page, url: string) => {
+  const intercept = async (request: puppeteer.HTTPRequest) => {
+    await request.respond({
+      status: 200,
+      contentType: 'text/html',
+      body: ' ', // non-empty string or page will load indefinitely
+    });
+  };
+  await p.setRequestInterception(true);
+  p.on('request', intercept);
+  await p.goto(url);
+  p.off('request', intercept);
+  await p.setRequestInterception(false);
+};

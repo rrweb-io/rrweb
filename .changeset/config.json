@@ -9,9 +9,20 @@
       "rrdom",
       "rrdom-nodejs",
       "rrweb-player",
+      "@rrweb/all",
+      "@rrweb/replay",
+      "@rrweb/record",
       "@rrweb/types",
+      "@rrweb/packer",
+      "@rrweb/utils",
       "@rrweb/web-extension",
-      "rrvideo"
+      "rrvideo",
+      "@rrweb/rrweb-plugin-console-record",
+      "@rrweb/rrweb-plugin-console-replay",
+      "@rrweb/rrweb-plugin-sequential-id-record",
+      "@rrweb/rrweb-plugin-sequential-id-replay",
+      "@rrweb/rrweb-plugin-canvas-webrtc-record",
+      "@rrweb/rrweb-plugin-canvas-webrtc-replay"
     ]
   ],
   "linked": [],

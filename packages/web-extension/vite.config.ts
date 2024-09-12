@@ -1,14 +1,11 @@
-import {
-  defineConfig,
-  LibraryFormats,
-  LibraryOptions,
-  PluginOption,
-} from 'vite';
+import { defineConfig, LibraryFormats, PluginOption } from 'vite';
 import webExtension, { readJsonFile } from 'vite-plugin-web-extension';
 import zip from 'vite-plugin-zip-pack';
 import * as path from 'path';
 import type { PackageJson } from 'type-fest';
 import react from '@vitejs/plugin-react';
+
+const emptyOutDir = !process.argv.includes('--watch');
 
 function useSpecialFormat(
   entriesToUse: string[],
@@ -17,9 +14,19 @@ function useSpecialFormat(
   return {
     name: 'use-special-format',
     config(config) {
-      const shouldUse = entriesToUse.includes(
-        (config.build?.lib as LibraryOptions)?.entry,
-      );
+      // entry can be string | string[] | {[entryAlias: string]: string}
+      const entry = config.build?.lib && config.build.lib.entry;
+      let shouldUse = false;
+
+      if (typeof entry === 'string') {
+        shouldUse = entriesToUse.includes(entry);
+      } else if (Array.isArray(entry)) {
+        shouldUse = entriesToUse.some((e) => entry.includes(e));
+      } else if (entry && typeof entry === 'object') {
+        const entryKeys = Object.keys(entry);
+        shouldUse = entriesToUse.some((e) => entryKeys.includes(e));
+      }
+
       if (shouldUse) {
         config.build = config.build ?? {};
         // @ts-expect-error: lib needs to be an object, forcing it.
@@ -41,7 +48,7 @@ export default defineConfig({
       'dist',
       process.env.TARGET_BROWSER as string,
     ),
-    emptyOutDir: true,
+    emptyOutDir,
   },
   // Add the webExtension plugin
   plugins: [
@@ -79,7 +86,6 @@ export default defineConfig({
         );
         return manifest;
       },
-      assets: 'assets',
       browser: process.env.TARGET_BROWSER,
       webExtConfig: {
         startUrl: ['github.com/rrweb-io/rrweb'],
