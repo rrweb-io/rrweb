@@ -1,6 +1,6 @@
 {
   "name": "@pendo/rrweb",
-  "version": "2.0.0-alpha.17.dkindel",
+  "version": "2.0.0-alpha.17",
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",
