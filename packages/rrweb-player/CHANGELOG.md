@@ -1,5 +1,13 @@
 # rrweb-player
 
+## 2.0.0-alpha.17
+
+### Patch Changes
+
+- Updated dependencies [[`db20184`](https://github.com/rrweb-io/rrweb/commit/db201841accd2b5df3cd7c88779aa62ab158501c)]:
+  - @rrweb/packer@2.0.0-alpha.17
+  - @rrweb/replay@2.0.0-alpha.17
+
 ## 2.0.0-alpha.16
 
 ## 2.0.0-alpha.15

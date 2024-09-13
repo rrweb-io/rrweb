@@ -14,6 +14,7 @@
       "@rrweb/record",
       "@rrweb/types",
       "@rrweb/packer",
+      "@rrweb/utils",
       "@rrweb/web-extension",
       "rrvideo",
       "@rrweb/rrweb-plugin-console-record",
