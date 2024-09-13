@@ -1,5 +1,5 @@
 {
-  "name": "@pendo/rrweb",
+  "name": "rrweb",
   "version": "2.0.0-alpha.17",
   "description": "record and replay the web",
   "scripts": {

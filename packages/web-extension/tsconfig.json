@@ -8,18 +8,15 @@
     "incremental": true,
     "resolveJsonModule": true,
     "paths": {
-      "~/*": [
-        "src/*"
-      ]
+      "~/*": ["src/*"]
     },
     "jsx": "react-jsx"
   },
-  "exclude": [
-    "dist",
-    "node_modules",
-    "vite.config.ts"
-  ],
+  "exclude": ["dist", "node_modules", "vite.config.ts"],
   "references": [
+    {
+      "path": "../rrweb"
+    },
     {
       "path": "../rrweb-player"
     },
