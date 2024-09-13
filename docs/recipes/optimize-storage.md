@@ -49,7 +49,7 @@ rrweb.record({
 rrweb.record({
   emit(event) {},
   sampling: {
-    // Configure which kind of mouse interactions should be recorded
+    // Configure which kinds of mouse interaction should be recorded
     mouseInteraction: {
       MouseUp: false,
       MouseDown: false,
