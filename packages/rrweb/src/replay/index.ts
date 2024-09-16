@@ -582,7 +582,7 @@ export class Replayer {
     this.mirror.reset();
     this.styleMirror.reset();
     this.mediaManager.reset();
-    this.config.root.removeChild(this.wrapper);
+    // this.config.root.removeChild(this.wrapper);  - Leaving the DOM handling to React, causes issues with Vite's hot reloading
     this.emitter.emit(ReplayerEvents.Destroy);
   }
 
