@@ -1,5 +1,11 @@
 # rrweb-player
 
+## 2.0.10
+
+### Patch Changes
+
+- [DEV-1039] Expose destroy() function for Svelte player
+
 ## 2.0.9
 
 ## 2.0.8

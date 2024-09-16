@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/rrdom-nodejs",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "scripts": {
     "dev": "vite build --watch",
     "build": "tsc -noEmit && vite build",
@@ -55,8 +55,8 @@
     "cssom": "^0.5.0",
     "cssstyle": "^2.3.0",
     "nwsapi": "^2.2.0",
-    "@saola.ai/rrdom": "^2.0.9",
-    "@saola.ai/rrweb-snapshot": "^2.0.9"
+    "@saola.ai/rrdom": "^2.0.10",
+    "@saola.ai/rrweb-snapshot": "^2.0.10"
   },
   "browserslist": [
     "supports es6-class"
