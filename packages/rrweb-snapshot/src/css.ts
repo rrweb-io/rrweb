@@ -898,8 +898,8 @@ export function parse(css: string, options: ParserOptions = {}) {
         name +
         '\\s*((?:' +
         [
-          '(?<!\\\\)"(?:\\\\"|[^"])*"',
-          "(?<!\\\\)'(?:\\\\'|[^'])*'",
+          /[^\\]"(?:\\"|[^"])*"/.source, // consume any quoted parts (checking that the double quote isn't itself escaped)
+          /[^\\]'(?:\\'|[^'])*'/.source, // same but for single quotes
           '[^;]',
         ].join('|') +
         ')+);',

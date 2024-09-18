@@ -9,6 +9,7 @@ import {
   _isBlockedElement,
   needMaskingText,
 } from '../src/snapshot';
+import snapshot from '../src/snapshot';
 import { serializedNodeWithId } from '../src/types';
 import { Mirror } from '../src/utils';
 
@@ -575,6 +576,30 @@ describe('needMaskingText', () => {
       expect(
         needMaskingText(el, 'maskmask', '.foo', 'unmaskmask', null, false),
       ).toEqual(false);
+    });
+  });
+});
+
+describe('jsdom snapshot', () => {
+  const render = (html: string): Document => {
+    document.write(html);
+    return document;
+  };
+
+  it("doesn't rely on global browser objects", () => {
+    // this test is incomplete in terms of coverage,
+    // but the idea being that we are checking that all features use the
+    // passed-in `doc` object rather than the global `document`
+    // (which is only present in browsers)
+    // in any case, supporting jsdom is not a primary goal
+
+    const doc = render(`<!DOCTYPE html><p>Hello world</p><canvas></canvas>`);
+    const sn = snapshot(doc, {
+      // JSDOM Error: Not implemented: HTMLCanvasElement.prototype.toDataURL (without installing the canvas npm package)
+      //recordCanvas: true,
+    });
+    expect(sn).toMatchObject({
+      type: 0,
     });
   });
 });
