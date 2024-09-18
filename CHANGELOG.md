@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.28.0
+
+### Various fixes & improvements
+
+- Apply formatting changes (#219) by @billyvg
+- meta: Update default branch for merge target (#217) by @billyvg
+- perf(mutation): refactor parent removed detection to iterative procedure (#1489) by @JonasBa
+- Refactor to preclude the need for a continuous raf loop (#1328) by @eoghanmurray
+- No neg lookbehind (#1493) by @eoghanmurray
+- Removing global document references (#1482) by @AlfieJones
+- Return early for child same origin frames (#1295) by @colingm
+- inlineImages: Setting of `image.crossOrigin` is not always necessary (#1468) by @eoghanmurray
+- Version Packages (alpha) (#1453) by @github-actions
+
 ## 2.27.0
 
 ### Various fixes & improvements
