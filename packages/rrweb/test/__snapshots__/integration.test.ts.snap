@@ -18037,40 +18037,6 @@ exports[`record integration tests should record images inside iframe with blob u
         }
       ]
     }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [
-        {
-          \\"id\\": 41,
-          \\"attributes\\": {
-            \\"crossorigin\\": \\"anonymous\\"
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"adds\\": []
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [
-        {
-          \\"id\\": 41,
-          \\"attributes\\": {
-            \\"crossorigin\\": null
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"adds\\": []
-    }
   }
 ]"
 `;
@@ -18505,40 +18471,6 @@ exports[`record integration tests should record images inside iframe with blob u
         }
       ]
     }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [
-        {
-          \\"id\\": 47,
-          \\"attributes\\": {
-            \\"crossorigin\\": \\"anonymous\\"
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"adds\\": []
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [
-        {
-          \\"id\\": 47,
-          \\"attributes\\": {
-            \\"crossorigin\\": null
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"adds\\": []
-    }
   }
 ]"
 `;
@@ -18745,40 +18677,6 @@ exports[`record integration tests should record images with blob url 1`] = `
           }
         }
       ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [
-        {
-          \\"id\\": 24,
-          \\"attributes\\": {
-            \\"crossorigin\\": \\"anonymous\\"
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"adds\\": []
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [
-        {
-          \\"id\\": 24,
-          \\"attributes\\": {
-            \\"crossorigin\\": null
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"adds\\": []
     }
   }
 ]"
