@@ -351,6 +351,7 @@ export class Mirror implements IMirror<RRNode> {
 
   getId(n: RRNode | undefined | null): number {
     if (!n) return -1;
+    // if n is not a serialized Node, use -1 as its id.
     return this.getMeta(n)?.id ?? -1;
   }
 
