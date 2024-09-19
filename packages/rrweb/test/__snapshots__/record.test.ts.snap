@@ -1386,18 +1386,18 @@ exports[`record > captures inserted style text nodes correctly 1`] = `
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"_cssText\\": \\"div { color: red; }/* rr_split */section { color: blue; }\\"
+                    },
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"div { color: red; }\\",
-                        \\"isStyle\\": true,
+                        \\"textContent\\": \\"\\",
                         \\"id\\": 6
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"section { color: blue; }\\",
-                        \\"isStyle\\": true,
+                        \\"textContent\\": \\"\\",
                         \\"id\\": 7
                       }
                     ],
@@ -1460,7 +1460,6 @@ exports[`record > captures inserted style text nodes correctly 1`] = `
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"h1 { color: pink; }\\",
-            \\"isStyle\\": true,
             \\"id\\": 12
           }
         },
@@ -1470,7 +1469,6 @@ exports[`record > captures inserted style text nodes correctly 1`] = `
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"span { color: orange; }\\",
-            \\"isStyle\\": true,
             \\"id\\": 13
           }
         }
@@ -2189,6 +2187,146 @@ exports[`record > captures stylesheet rules 1`] = `
       \\"adds\\": [
         {
           \\"rule\\": \\"body { color: #ccc; }\\"
+        }
+      ]
+    }
+  }
+]"
+`;
+
+exports[`record > captures stylesheet rules with deprecated addRule & removeRule properties 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n          \\",
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"input\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"text\\",
+                      \\"size\\": \\"40\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
+                    \\"id\\": 8
+                  }
+                ],
+                \\"id\\": 5
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"style\\",
+            \\"attributes\\": {
+              \\"_cssText\\": \\"body { background: rgb(0, 0, 0); }\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 9
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"id\\": 9,
+      \\"adds\\": [
+        {
+          \\"rule\\": \\"body { color: #fff; }\\",
+          \\"index\\": 1
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"id\\": 9,
+      \\"removes\\": [
+        {
+          \\"index\\": 0
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 8,
+      \\"id\\": 9,
+      \\"adds\\": [
+        {
+          \\"rule\\": \\"body { color: #ccc; }\\",
+          \\"index\\": 1
         }
       ]
     }

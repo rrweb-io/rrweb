@@ -1,6 +1,8 @@
 import { mediaSelectorPlugin, pseudoClassPlugin } from './css';
 import {
   type serializedNodeWithId,
+  type serializedElementNodeWithId,
+  type serializedTextNodeWithId,
   NodeType,
   type tagMap,
   type elementNode,
@@ -76,6 +78,77 @@ export function createCache(): BuildCache {
   return {
     stylesWithHoverClass,
   };
+}
+
+/**
+ * undo splitCssText/markCssSplits
+ * (would move to utils.ts but uses `adaptCssForReplay`)
+ */
+export function applyCssSplits(
+  n: serializedElementNodeWithId,
+  cssText: string,
+  hackCss: boolean,
+  cache: BuildCache,
+): void {
+  const childTextNodes: serializedTextNodeWithId[] = [];
+  for (const scn of n.childNodes) {
+    if (scn.type === NodeType.Text) {
+      childTextNodes.push(scn);
+    }
+  }
+  const cssTextSplits = cssText.split('/* rr_split */');
+  while (
+    cssTextSplits.length > 1 &&
+    cssTextSplits.length > childTextNodes.length
+  ) {
+    // unexpected: remerge the last two so that we don't discard any css
+    cssTextSplits.splice(-2, 2, cssTextSplits.slice(-2).join(''));
+  }
+  for (let i = 0; i < childTextNodes.length; i++) {
+    const childTextNode = childTextNodes[i];
+    const cssTextSection = cssTextSplits[i];
+    if (childTextNode && cssTextSection) {
+      // id will be assigned when these child nodes are
+      // iterated over in buildNodeWithSN
+      childTextNode.textContent = hackCss
+        ? adaptCssForReplay(cssTextSection, cache)
+        : cssTextSection;
+    }
+  }
+}
+
+/**
+ * Normally a <style> element has a single textNode containing the rules.
+ * During serialization, we bypass this (`styleEl.sheet`) to get the rules the
+ * browser sees and serialize this to a special _cssText attribute, blanking
+ * out any text nodes. This function reverses that and also handles cases where
+ * there were no textNode children present (dynamic css/or a <link> element) as
+ * well as multiple textNodes, which need to be repopulated (based on presence of
+ * a special `rr_split` marker in case they are modified by subsequent mutations.
+ */
+export function buildStyleNode(
+  n: serializedElementNodeWithId,
+  styleEl: HTMLStyleElement, // when inlined, a <link type="stylesheet"> also gets rebuilt as a <style>
+  cssText: string,
+  options: {
+    doc: Document;
+    hackCss: boolean;
+    cache: BuildCache;
+  },
+) {
+  const { doc, hackCss, cache } = options;
+  if (n.childNodes.length) {
+    applyCssSplits(n, cssText, hackCss, cache);
+  } else {
+    if (hackCss) {
+      cssText = adaptCssForReplay(cssText, cache);
+    }
+    /**
+       <link> element or dynamic <style> are serialized without any child nodes
+       we create the text node without an ID or presence in mirror as it can't
+    */
+    styleEl.appendChild(doc.createTextNode(cssText));
+  }
 }
 
 function buildNode(
@@ -154,14 +227,13 @@ function buildNode(
           continue;
         }
 
-        const isTextarea = tagName === 'textarea' && name === 'value';
-        const isRemoteOrDynamicCss = tagName === 'style' && name === '_cssText';
-        if (isRemoteOrDynamicCss && hackCss && typeof value === 'string') {
-          value = adaptCssForReplay(value, cache);
-        }
-        if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
-          // https://github.com/rrweb-io/rrweb/issues/112
-          // https://github.com/rrweb-io/rrweb/pull/1351
+        if (typeof value !== 'string') {
+          // pass
+        } else if (tagName === 'style' && name === '_cssText') {
+          buildStyleNode(n, node as HTMLStyleElement, value, options);
+          continue; // no need to set _cssText as attribute
+        } else if (tagName === 'textarea' && name === 'value') {
+          // create without an ID or presence in mirror
           node.appendChild(doc.createTextNode(value));
           n.childNodes = []; // value overrides childNodes
           continue;
@@ -287,6 +359,11 @@ function buildNode(
           (node as HTMLMediaElement).loop = value;
         } else if (name === 'rr_mediaVolume' && typeof value === 'number') {
           (node as HTMLMediaElement).volume = value;
+        } else if (name === 'rr_open_mode') {
+          (node as HTMLDialogElement).setAttribute(
+            'rr_open_mode',
+            value as string,
+          ); // keep this attribute for rrweb to trigger showModal
         }
       }
 
@@ -312,11 +389,11 @@ function buildNode(
       return node;
     }
     case NodeType.Text:
-      return doc.createTextNode(
-        n.isStyle && hackCss
-          ? adaptCssForReplay(n.textContent, cache)
-          : n.textContent,
-      );
+      if (n.isStyle && hackCss) {
+        // support legacy style
+        return doc.createTextNode(adaptCssForReplay(n.textContent, cache));
+      }
+      return doc.createTextNode(n.textContent);
     case NodeType.CDATA:
       return doc.createCDATASection(n.textContent);
     case NodeType.Comment:
