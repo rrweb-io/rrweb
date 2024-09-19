@@ -32,6 +32,7 @@ import {
   getShadowHost,
   closestElementOfNode,
 } from '../utils';
+import dom from '@rrweb/utils';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -275,22 +276,31 @@ export default class MutationBuffer {
     addList: DoubleLinkedList,
     addedIds: Set<number>,
   ) {
-    if (
-      !n.parentNode ||
-      !inDom(n) ||
-      (n.parentNode as Element).tagName === 'TEXTAREA'
-    ) {
+    const parent = dom.parentNode(n);
+    if (!parent || !inDom(n)) {
       return;
     }
-    const parentId = isShadowRoot(n.parentNode)
-      ? this.mirror.getId(getShadowHost(n))
-      : this.mirror.getId(n.parentNode);
-    const nextId = getNextId(n, this.mirror);
+    let cssCaptured = false;
+    if (n.nodeType === Node.TEXT_NODE) {
+      const parentTag = (parent as Element).tagName;
+      if (parentTag === 'TEXTAREA') {
+        // genTextAreaValueMutation already called via parent
+        return;
+      } else if (parentTag === 'STYLE' && this.addedSet.has(parent)) {
+        // css content will be recorded via parent's _cssText attribute when
+        // mutation adds entire <style> element
+        cssCaptured = true;
+      }
+    }
 
+    const parentId = isShadowRoot(parent)
+      ? this.mirror.getId(getShadowHost(n))
+      : this.mirror.getId(parent);
+
+    const nextId = getNextId(n);
     if (parentId === -1 || nextId === -1) {
       return addList.addNode(n);
     }
-
     const sn = serializeNodeWithId(n, {
       doc: this.doc,
       mirror: this.mirror,
@@ -316,7 +326,8 @@ export default class MutationBuffer {
           this.stylesheetManager.trackLinkElement(currentN as HTMLLinkElement);
         }
         if (hasShadowRoot(n)) {
-          this.shadowDomManager.addShadowRoot(n.shadowRoot, this.doc);
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          this.shadowDomManager.addShadowRoot(dom.shadowRoot(n)!, this.doc);
         }
       },
       onIframeLoad: (iframe, childSn) => {
@@ -326,6 +337,7 @@ export default class MutationBuffer {
       onStylesheetLoad: (link, childSn) => {
         this.stylesheetManager.attachLinkElement(link, childSn);
       },
+      cssCaptured,
     });
     if (sn) {
       adds.push({
