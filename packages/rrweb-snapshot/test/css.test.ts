@@ -1,6 +1,19 @@
-import { describe, it, expect } from 'vitest';
+/**
+ * @vitest-environment jsdom
+ */
+import { describe, it, beforeEach, expect } from 'vitest';
 import { mediaSelectorPlugin, pseudoClassPlugin } from '../src/css';
-import postcss, { AcceptedPlugin } from 'postcss';
+import postcss, { type AcceptedPlugin } from 'postcss';
+import { JSDOM } from 'jsdom';
+import { splitCssText, stringifyStylesheet } from './../src/utils';
+import { applyCssSplits } from './../src/rebuild';
+import {
+  NodeType,
+  type serializedElementNodeWithId,
+  type BuildCache,
+  type textNode,
+} from '../src/types';
+import { Window } from 'happy-dom';
 
 describe('css parser', () => {
   function parse(plugin: AcceptedPlugin, input: string): string {
@@ -37,8 +50,16 @@ describe('css parser', () => {
   describe('pseudoClassPlugin', () => {
     it('parses nested commas in selectors correctly', () => {
       const cssText =
-        'body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) {background: red;}';
+        'body > ul :is(li:not(:first-of-type) a.current, li:not(:first-of-type).active a) {background: red;}';
       expect(parse(pseudoClassPlugin, cssText)).toEqual(cssText);
+    });
+
+    it("doesn't ignore :hover within :is brackets", () => {
+      const cssText =
+        'body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) {background: red;}';
+      expect(parse(pseudoClassPlugin, cssText))
+        .toEqual(`body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a),
+body > ul :is(li:not(:first-of-type) a.\\:hover, li:not(:first-of-type).active a) {background: red;}`);
     });
 
     it('should parse selector with comma nested inside ()', () => {
@@ -71,5 +92,159 @@ li[attr="weirder\\"("] a.\\:hover {background-color: red;}`);
 li[attr="has,comma"] a.\\:hover {background: red;}`,
       );
     });
+  });
+});
+
+describe('css splitter', () => {
+  it('finds css textElement splits correctly', () => {
+    const window = new Window({ url: 'https://localhost:8080' });
+    const document = window.document;
+    document.head.innerHTML = '<style>.a{background-color:red;}</style>';
+    const style = document.querySelector('style');
+    if (style) {
+      // as authored, e.g. no spaces
+      style.append('.a{background-color:black;}');
+
+      // how it is currently stringified (spaces present)
+      const expected = [
+        '.a { background-color: red; }',
+        '.a { background-color: black; }',
+      ];
+      const browserSheet = expected.join('');
+      expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
+
+      expect(splitCssText(browserSheet, style)).toEqual(expected);
+    }
+  });
+
+  it('finds css textElement splits correctly when comments are present', () => {
+    const window = new Window({ url: 'https://localhost:8080' });
+    const document = window.document;
+    // as authored, with comment, missing semicolons
+    document.head.innerHTML =
+      '<style>.a{color:red}.b{color:blue} /* author comment */</style>';
+    const style = document.querySelector('style');
+    if (style) {
+      style.append('/* author comment */.a{color:red}.b{color:green}');
+
+      // how it is currently stringified (spaces present)
+      const expected = [
+        '.a { color: red; } .b { color: blue; }',
+        '.a { color: red; } .b { color: green; }',
+      ];
+      const browserSheet = expected.join('');
+      expect(splitCssText(browserSheet, style)).toEqual(expected);
+    }
+  });
+
+  it('finds css textElement splits correctly when vendor prefixed rules have been removed', () => {
+    const style = JSDOM.fragment(`<style></style>`).querySelector('style');
+    if (style) {
+      // as authored, with newlines
+      style.appendChild(
+        JSDOM.fragment(`.x {
+  -webkit-transition: all 4s ease;
+  content: 'try to keep a newline';
+  transition: all 4s ease;
+}`),
+      );
+      // TODO: splitCssText can't handle it yet if both start with .x
+      style.appendChild(
+        JSDOM.fragment(`.y {
+  -moz-transition: all 5s ease;
+  transition: all 5s ease;
+}`),
+      );
+      // browser .rules would usually omit the vendored versions and modifies the transition value
+      const expected = [
+        '.x { content: "try to keep a newline"; background: red; transition: 4s; }',
+        '.y { transition: 5s; }',
+      ];
+      const browserSheet = expected.join('');
+
+      // can't do this as JSDOM doesn't have style.sheet
+      // also happy-dom doesn't strip out vendor-prefixed rules like a real browser does
+      //expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
+
+      expect(splitCssText(browserSheet, style)).toEqual(expected);
+    }
+  });
+});
+
+describe('applyCssSplits css rejoiner', function () {
+  const mockLastUnusedArg = null as unknown as BuildCache;
+  const halfCssText = '.a { background-color: red; }';
+  const otherHalfCssText = halfCssText.replace('.a', '.x');
+  const markedCssText = [halfCssText, otherHalfCssText].join('/* rr_split */');
+  let sn: serializedElementNodeWithId;
+
+  beforeEach(() => {
+    sn = {
+      type: NodeType.Element,
+      tagName: 'style',
+      childNodes: [
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+      ],
+    } as serializedElementNodeWithId;
+  });
+
+  it('applies css splits correctly', () => {
+    // happy path
+    applyCssSplits(sn, markedCssText, false, mockLastUnusedArg);
+    expect((sn.childNodes[0] as textNode).textContent).toEqual(halfCssText);
+    expect((sn.childNodes[1] as textNode).textContent).toEqual(
+      otherHalfCssText,
+    );
+  });
+
+  it('applies css splits correctly even when there are too many child nodes', () => {
+    let sn3 = {
+      type: NodeType.Element,
+      tagName: 'style',
+      childNodes: [
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+      ],
+    } as serializedElementNodeWithId;
+    applyCssSplits(sn3, markedCssText, false, mockLastUnusedArg);
+    expect((sn3.childNodes[0] as textNode).textContent).toEqual(halfCssText);
+    expect((sn3.childNodes[1] as textNode).textContent).toEqual(
+      otherHalfCssText,
+    );
+    expect((sn3.childNodes[2] as textNode).textContent).toEqual('');
+  });
+
+  it('maintains entire css text when there are too few child nodes', () => {
+    let sn1 = {
+      type: NodeType.Element,
+      tagName: 'style',
+      childNodes: [
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+      ],
+    } as serializedElementNodeWithId;
+    applyCssSplits(sn1, markedCssText, false, mockLastUnusedArg);
+    expect((sn1.childNodes[0] as textNode).textContent).toEqual(
+      halfCssText + otherHalfCssText,
+    );
   });
 });
