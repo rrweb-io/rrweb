@@ -1,5 +1,13 @@
 # rrdom-nodejs
 
+## 2.0.0-alpha.17
+
+### Patch Changes
+
+- Updated dependencies [[`40bbc25`](https://github.com/rrweb-io/rrweb/commit/40bbc25fc287badc317a53f2d3f21b1c9f2b211b), [`335639a`](https://github.com/rrweb-io/rrweb/commit/335639af9b0ce7f70eb0f38ce113d877c7325158), [`335639a`](https://github.com/rrweb-io/rrweb/commit/335639af9b0ce7f70eb0f38ce113d877c7325158), [`d350da8`](https://github.com/rrweb-io/rrweb/commit/d350da8552d8616dd118ee550bdfbce082986562), [`be6bf52`](https://github.com/rrweb-io/rrweb/commit/be6bf52c248c35de1b3491e3a3440ff61f876414)]:
+  - rrweb-snapshot@2.0.0-alpha.17
+  - rrdom@2.0.0-alpha.17
+
 ## 2.0.0-alpha.16
 
 ### Patch Changes
