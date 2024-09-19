@@ -215,17 +215,6 @@ const HTML_TAGNAMES: Record<string, Lowercase<string>> = {
   XMP: 'xmp',
 };
 
-function extractOrigin(url: string): string {
-  let origin = '';
-  if (url.indexOf('//') > -1) {
-    origin = url.split('/').slice(0, 3).join('/');
-  } else {
-    origin = url.split('/')[0];
-  }
-  origin = origin.split('?')[0];
-  return origin;
-}
-
 let canvasService: HTMLCanvasElement | null;
 let canvasCtx: CanvasRenderingContext2D | null;
 
