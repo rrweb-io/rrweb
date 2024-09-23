@@ -1020,13 +1020,41 @@ export function serializeNodeWithId(
     onSerialize(n);
   }
   let recordChild = !skipChild;
+  // @ts-expect-error TODO
+  if (n.adoptedStyleSheets) {
+    // @ts-expect-error TODO
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+    serializedNode.chromaticAdoptedStylesheets =
+      // @ts-expect-error TODO
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      n.adoptedStyleSheets.map(
+        // @ts-expect-error TODO
+        (sheet) =>
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+          Array.from(sheet.cssRules)
+            // @ts-expect-error TODO
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            .map((rule) => rule.cssText)
+            .join(' '),
+      );
+  }
   if (serializedNode.type === NodeType.Element) {
     recordChild = recordChild && !serializedNode.needBlock;
     // this property was not needed in replay side
     delete serializedNode.needBlock;
     const shadowRootEl = dom.shadowRoot(n);
-    if (shadowRootEl && isNativeShadowDom(shadowRootEl))
+    if (shadowRootEl && isNativeShadowDom(shadowRootEl)) {
       serializedNode.isShadowHost = true;
+      if (shadowRootEl.adoptedStyleSheets) {
+        // @ts-expect-error TODO
+        serializedNode.chromaticAdoptedStylesheets =
+          shadowRootEl.adoptedStyleSheets.map((sheet) =>
+            Array.from(sheet.cssRules)
+              .map((rule) => rule.cssText)
+              .join(' '),
+          );
+      }
+    }
   }
   if (
     (serializedNode.type === NodeType.Document ||
