@@ -380,14 +380,17 @@ function buildNode(
          */
         if (!node.shadowRoot) {
           node.attachShadow({ mode: 'open' });
-          const sheet = new CSSStyleSheet();
           // @ts-expect-error TODO
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          sheet.replaceSync(n.chromaticAdoptedStylesheets);
-          // @ts-expect-error TODO
-          node.shadowRoot.adoptedStyleSheets = [sheet];
-          // @ts-expect-error TODO
-          node.adoptedStyleSheets = [sheet];
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+          n.chromaticAdoptedStylesheets.forEach(
+            // @ts-expect-error TODO
+            (chromaticAdoptedStylesheet) => {
+              const styleSheet = new CSSStyleSheet();
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+              styleSheet.replaceSync(chromaticAdoptedStylesheet);
+              node.shadowRoot?.adoptedStyleSheets.push(styleSheet);
+            },
+          );
         } else {
           while (node.shadowRoot.firstChild) {
             node.shadowRoot.removeChild(node.shadowRoot.firstChild);
