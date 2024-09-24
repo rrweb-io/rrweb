@@ -247,3 +247,5 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
     </td>
   </tr>
 </table>
+
+## New header just to trigger tests on master
