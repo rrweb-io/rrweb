@@ -213,4 +213,13 @@ ul li.specified c:hover img, ul li.specified c.\\:hover img {
       should_not_modify,
     );
   });
+
+  it('should not incorrectly interpret at rules', () => {
+    // the ':hover' in the below is a decoy which is not part of the selector,
+    const should_not_modify =
+      '@import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,400;0,500;0,700;1,400&display=:hover");';
+    expect(adaptCssForReplay(should_not_modify, cache)).toEqual(
+      should_not_modify,
+    );
+  });
 });
