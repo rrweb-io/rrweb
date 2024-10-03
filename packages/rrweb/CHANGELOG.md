@@ -1,5 +1,16 @@
 # rrweb
 
+## 2.0.0-alpha.21
+
+### Patch Changes
+
+- [#30](https://github.com/amplitude/rrweb/pull/30) [`8002e3b`](https://github.com/amplitude/rrweb/commit/8002e3b251e6e38a9c307b176f9b8ecb3c16bc57) Thanks [@jxiwang](https://github.com/jxiwang)! - Adding null check to tag name
+
+- Updated dependencies []:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.21
+  - @amplitude/rrdom@2.0.0-alpha.21
+  - @amplitude/rrweb-types@2.0.0-alpha.21
+
 ## 2.0.0-alpha.20
 
 ### Patch Changes
