@@ -169,6 +169,7 @@ export default class MutationBuffer {
   private addedSet = new Set<Node>();
   private movedSet = new Set<Node>();
   private droppedSet = new Set<Node>();
+  private removesSubTreeCache = new Set<Node>();
 
   private mutationCb: observerParam['mutationCb'];
   private blockClass: observerParam['blockClass'];
@@ -367,7 +368,7 @@ export default class MutationBuffer {
 
     for (const n of this.movedSet) {
       if (
-        isParentRemoved(this.removes, n, this.mirror) &&
+        isParentRemoved(this.removesSubTreeCache, n, this.mirror) &&
         !this.movedSet.has(dom.parentNode(n)!)
       ) {
         continue;
@@ -378,7 +379,7 @@ export default class MutationBuffer {
     for (const n of this.addedSet) {
       if (
         !isAncestorInSet(this.droppedSet, n) &&
-        !isParentRemoved(this.removes, n, this.mirror)
+        !isParentRemoved(this.removesSubTreeCache, n, this.mirror)
       ) {
         pushAdd(n);
       } else if (isAncestorInSet(this.movedSet, n)) {
@@ -514,6 +515,7 @@ export default class MutationBuffer {
     this.addedSet = new Set<Node>();
     this.movedSet = new Set<Node>();
     this.droppedSet = new Set<Node>();
+    this.removesSubTreeCache = new Set<Node>();
     this.movedMap = {};
 
     this.mutationCb(payload);
@@ -740,6 +742,7 @@ export default class MutationBuffer {
                   ? true
                   : undefined,
             });
+            processRemoves(n, this.removesSubTreeCache);
           }
           this.mapRemoves.push(n);
         });
@@ -803,29 +806,33 @@ function deepDelete(addsSet: Set<Node>, n: Node) {
   dom.childNodes(n).forEach((childN) => deepDelete(addsSet, childN));
 }
 
-function isParentRemoved(
-  removes: removedNodeMutation[],
-  n: Node,
-  mirror: Mirror,
-): boolean {
-  if (removes.length === 0) return false;
+function processRemoves(n: Node, cache: Set<Node>) {
+  const queue = [n];
+
+  while (queue.length) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const next = queue.pop()!;
+    if (cache.has(next)) continue;
+    cache.add(next);
+    dom.childNodes(next).forEach((n) => queue.push(n));
+  }
+
+  return;
+}
+
+function isParentRemoved(removes: Set<Node>, n: Node, mirror: Mirror): boolean {
+  if (removes.size === 0) return false;
   return _isParentRemoved(removes, n, mirror);
 }
 
 function _isParentRemoved(
-  removes: removedNodeMutation[],
+  removes: Set<Node>,
   n: Node,
-  mirror: Mirror,
+  _mirror: Mirror,
 ): boolean {
-  let node: ParentNode | null = dom.parentNode(n);
-  while (node) {
-    const parentId = mirror.getId(node);
-    if (removes.some((r) => r.id === parentId)) {
-      return true;
-    }
-    node = dom.parentNode(node);
-  }
-  return false;
+  const node: ParentNode | null = dom.parentNode(n);
+  if (!node) return false;
+  return removes.has(node);
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
