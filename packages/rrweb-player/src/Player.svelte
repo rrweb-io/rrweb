@@ -117,6 +117,12 @@
     controller.triggerUpdateMeta();
     
   };
+
+  export const updatePlayRanges: RRwebPlayerExpose['updatePlayRanges'] = async (rangeStart: number | undefined, rangeEnd: number | undefined) => {
+    await controller.triggerUpdateMeta(rangeStart, rangeEnd);
+    controller.triggerUpdateProgress();
+  };
+
   export const refreshProgress: RRwebPlayerExpose["refreshProgress"] = () => {
     controller.triggerUpdateProgress();
   }

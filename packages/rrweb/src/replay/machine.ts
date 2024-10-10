@@ -15,6 +15,8 @@ export type PlayerContext = {
   timeOffset: number;
   baselineTime: number;
   lastPlayedEvent: eventWithTime | null;
+  rangeStart?: number;
+  rangeEnd?: number;
 };
 export type PlayerEvent =
   | {
@@ -39,6 +41,13 @@ export type PlayerEvent =
     }
   | {
       type: 'END';
+    }
+  | {
+      type: 'SET_RANGE';
+      payload: {
+        start: number | undefined;
+        end: number | undefined;
+      };
     };
 export type PlayerState =
   | {
@@ -125,6 +134,10 @@ export function createPlayerService(
             ADD_EVENT: {
               target: 'paused',
               actions: ['addEvent'],
+            },
+            SET_RANGE: {
+              target: 'paused',
+              actions: ['setRange'],
             },
           },
         },
@@ -273,6 +286,15 @@ export function createPlayerService(
             }
           }
           return { ...ctx, events };
+        }),
+        setRange: assign((ctx, machineEvent) => {
+          if (machineEvent.type === 'SET_RANGE') {
+            const { start, end } = machineEvent.payload;
+
+            return { ...ctx, rangeStart: start, rangeEnd: end };
+          }
+
+          return ctx;
         }),
       },
     },

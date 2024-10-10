@@ -87,11 +87,14 @@
        * we are only interested in custom event and calculate it's position
        * to place it in player's timeline.
        */
+      if (context.rangeStart && event.timestamp < context.rangeStart || context.rangeEnd && event.timestamp > context.rangeEnd) {
+        return;
+      } 
       if (event.type === EventType.Custom) {
         const customEvent = {
           name: event.data.tag,
           background: tags[event.data.tag] || 'rgb(73, 80, 246)',
-          position: `${position(start, end, event.timestamp)}%`,
+          position: `${position(context.rangeStart || start, context.rangeEnd || end, event.timestamp)}%`,
         };
         customEvents.push(customEvent);
       }
@@ -110,6 +113,9 @@
   const buildInactivePeriods = () => {
     try {
       const { context } = replayer.service.state;
+      if (context.rangeStart || context.rangeEnd) {
+        return [];
+      }
       const totalEvents = context.events.length;
       const start = context.events[0].timestamp;
       const end = context.events[totalEvents - 1].timestamp;
@@ -285,9 +291,13 @@
     skipInactive = !skipInactive;
   };
 
-  export const triggerUpdateMeta = () => {
+  export const triggerUpdateMeta = (rangeStart?: number, rangeEnd?: number) => {
     return Promise.resolve().then(() => {
-      meta = replayer.getMetaData();
+      if (rangeStart && rangeEnd) {
+        currentTime = 0;
+      } 
+
+      meta = replayer.getMetaData(rangeStart, rangeEnd);
     });
   };
 
@@ -438,6 +448,7 @@
   <div class="rr-controller">
     <div class="rr-timeline">
       <span class="rr-timeline__time">{formatTime(currentTime)}</span>
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
       <div
         class="rr-progress"
         class:disabled={speedState === 'skipping'}

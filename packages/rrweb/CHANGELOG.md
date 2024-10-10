@@ -1,5 +1,16 @@
 # rrweb
 
+## 2.0.12
+
+### Patch Changes
+
+- [DEV-1066] Test editor select timestamp (Range editing)
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-snapshot@2.0.12
+  - @saola.ai/rrdom@2.0.12
+  - @saola.ai/rrweb-types@2.0.12
+
 ## 2.0.11
 
 ### Patch Changes

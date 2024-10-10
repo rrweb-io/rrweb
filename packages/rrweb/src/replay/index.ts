@@ -468,16 +468,29 @@ export class Replayer {
     }
   }
 
-  public getMetaData(): playerMetaData {
-    const firstEvent = this.service.state.context.events[0];
-    const lastEvent =
+  public getMetaData(rangeStart?: number, rangeEnd?: number): playerMetaData {
+    if (
+      this.service.state.context.rangeStart !== rangeStart ||
+      this.service.state.context.rangeEnd !== rangeEnd
+    ) {
+      this.service.send({
+        type: 'SET_RANGE',
+        payload: { start: rangeStart, end: rangeEnd },
+      });
+    }
+
+    const firstEventTimestamp =
+      rangeStart || this.service.state.context.events[0].timestamp;
+    const lastEventTimestamp =
+      rangeEnd ||
       this.service.state.context.events[
         this.service.state.context.events.length - 1
-      ];
+      ].timestamp;
+
     return {
-      startTime: firstEvent.timestamp,
-      endTime: lastEvent.timestamp,
-      totalTime: lastEvent.timestamp - firstEvent.timestamp,
+      startTime: firstEventTimestamp,
+      endTime: lastEventTimestamp,
+      totalTime: lastEventTimestamp - firstEventTimestamp,
     };
   }
 
@@ -508,12 +521,17 @@ export class Replayer {
     if (fromProgress) {
       this.emitter.emit(ReplayerEvents.GotoStarted);
     }
+    const modifiedOffset = this.service.state.context.rangeStart
+      ? this.service.state.context.rangeStart -
+        this.service.state.context.events[0].timestamp +
+        timeOffset
+      : timeOffset;
 
     const handle = () => {
       if (resumePlaying) {
-        this.play(timeOffset);
+        this.play(modifiedOffset);
       } else {
-        this.pause(timeOffset);
+        this.pause(modifiedOffset);
       }
     };
 

@@ -77,6 +77,10 @@ export type RRwebPlayerExpose = {
   setDims: (width: number, height: number) => void;
   setDimsAndScale: (width: number, height: number) => void;
   refreshProgress: () => void;
+  updatePlayRanges: (
+    rangeStart: number | undefined,
+    rangeEnd: number | undefined,
+  ) => void;
   destroy: () => void;
   play: () => void;
   pause: () => void;

@@ -1,5 +1,11 @@
 # rrweb-player
 
+## 2.0.12
+
+### Patch Changes
+
+- [DEV-1066] Test editor select timestamp (Range editing)
+
 ## 2.0.11
 
 ## 2.0.10

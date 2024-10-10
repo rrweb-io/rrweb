@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/rrdom",
-  "version": "2.0.11",
+  "version": "2.0.12",
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrdom#readme",
   "license": "MIT",
   "type": "module",
@@ -41,7 +41,7 @@
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
   "devDependencies": {
-    "@saola.ai/rrweb-types": "^2.0.11",
+    "@saola.ai/rrweb-types": "^2.0.12",
     "@types/puppeteer": "^5.4.4",
     "@typescript-eslint/eslint-plugin": "^5.23.0",
     "@typescript-eslint/parser": "^5.23.0",
@@ -52,6 +52,6 @@
     "vite-plugin-dts": "^3.8.1"
   },
   "dependencies": {
-    "@saola.ai/rrweb-snapshot": "^2.0.11"
+    "@saola.ai/rrweb-snapshot": "^2.0.12"
   }
 }
