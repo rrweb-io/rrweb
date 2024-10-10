@@ -31,7 +31,7 @@ import {
   styleDeclarationCallback,
   styleSheetRuleCallback,
   viewportResizeCallback,
-  customElementCallback
+  customElementCallback,
 } from '@amplitude/rrweb-types';
 import type { FontFaceSet } from 'css-font-loading-module';
 import type { MutationBufferParam, observerParam } from '../types';
