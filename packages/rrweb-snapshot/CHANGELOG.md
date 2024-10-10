@@ -1,5 +1,19 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.21
+
+## 2.0.0-alpha.20
+
+### Patch Changes
+
+- [#27](https://github.com/amplitude/rrweb/pull/27) [`5b85646`](https://github.com/amplitude/rrweb/commit/5b85646a9557c89d594c6a484f576fbdb0c38eb7) Thanks [@jxiwang](https://github.com/jxiwang)! - Replay: Replace negative lookbehind in regexes from css parser as it causes issues with Safari 16
+
+## 2.0.0-alpha.19
+
+### Patch Changes
+
+- [#25](https://github.com/amplitude/rrweb/pull/25) [`f876ea5`](https://github.com/amplitude/rrweb/commit/f876ea55e21653d682a983b320f611d9ab09e0ad) Thanks [@lewgordon-amplitude](https://github.com/lewgordon-amplitude)! - Don't double-record the values of <textarea>s when they already have some content prefilled #1301
+
 ## 2.0.0-alpha.18
 
 ### Patch Changes

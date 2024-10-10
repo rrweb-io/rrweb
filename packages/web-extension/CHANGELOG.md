@@ -1,5 +1,29 @@
 # @rrweb/web-extension
 
+## 2.0.0-alpha.21
+
+### Patch Changes
+
+- Updated dependencies [[`8002e3b`](https://github.com/amplitude/rrweb/commit/8002e3b251e6e38a9c307b176f9b8ecb3c16bc57)]:
+  - @amplitude/rrweb@2.0.0-alpha.21
+  - @amplitude/rrweb-player@2.0.0-alpha.21
+
+## 2.0.0-alpha.20
+
+### Patch Changes
+
+- Updated dependencies [[`5b85646`](https://github.com/amplitude/rrweb/commit/5b85646a9557c89d594c6a484f576fbdb0c38eb7), [`5b85646`](https://github.com/amplitude/rrweb/commit/5b85646a9557c89d594c6a484f576fbdb0c38eb7)]:
+  - @amplitude/rrweb@2.0.0-alpha.20
+  - @amplitude/rrweb-player@2.0.0-alpha.20
+
+## 2.0.0-alpha.19
+
+### Patch Changes
+
+- Updated dependencies [[`8cb959c`](https://github.com/amplitude/rrweb/commit/8cb959c1bf745c0a0e94bd49f0bbda40cccbbe07), [`f876ea5`](https://github.com/amplitude/rrweb/commit/f876ea55e21653d682a983b320f611d9ab09e0ad)]:
+  - @amplitude/rrweb@2.0.0-alpha.19
+  - @amplitude/rrweb-player@2.0.0-alpha.19
+
 ## 2.0.0-alpha.18
 
 ### Patch Changes
