@@ -89,7 +89,8 @@ export function createPlayerService(
 ) {
   const addEventQueue: Array<eventWithTime> = [];
   let addEventQueueTimeout: ReturnType<typeof setTimeout> | -1;
-  let addEventQueueAssetCount = -1;
+  const awaitAssets = new Set();
+  let awaitAssetsHref = '';
 
   const playerMachine = createMachine<PlayerContext, PlayerEvent, PlayerState>(
     {
@@ -290,27 +291,57 @@ export function createPlayerService(
             };
 
             if (event.type === EventType.Asset && addEventQueueTimeout) {
-              addEventQueueAssetCount -= 1;
+              let matchUrl = event.data.url;
+              if (matchUrl.startsWith('rr_css_text')) {
+                matchUrl = awaitAssetsHref + '#' + matchUrl;
+              }
+              awaitAssets.delete(matchUrl);
             }
             if (addEventQueue.length) {
               addEventQueue.push(event);
               // TODO: support appearance of a second FullSnapshot before first one's assets load
-              if (addEventQueueAssetCount <= 0) {
+              if (awaitAssets.size == 0) {
                 clearTimeout(addEventQueueTimeout);
                 flushAddEventQueue();
               }
-            } else if (
-              event.type === EventType.FullSnapshot &&
-              event.data.assetCount
-            ) {
-              addEventQueue.push(event);
-              addEventQueueAssetCount = event.data.assetCount;
-              addEventQueueTimeout = setTimeout(
-                flushAddEventQueue,
-                event.data.liveBuffer,
-              );
             } else {
-              castOrScheduleEvent(event);
+              let liveBuffer = 0;
+              if (
+                event.type === EventType.FullSnapshot &&
+                event.data.capturedAssetStatuses
+              ) {
+                awaitAssetsHref = '';
+                const earlierMetas = events.filter(
+                  (e) =>
+                    e.type === EventType.Meta && e.timestamp <= event.timestamp,
+                );
+                if (earlierMetas.length) {
+                  awaitAssetsHref =
+                    earlierMetas[earlierMetas.length - 1].data.href;
+                } else {
+                  // error: no meta event associated with this FullSnapshot
+                }
+                awaitAssets.clear();
+                event.data.capturedAssetStatuses.forEach((status) => {
+                  if (status.timeout) {
+                    // currently only stylesheet assets return a timeout
+                    awaitAssets.add(status.url);
+                    liveBuffer = Math.max(
+                      liveBuffer,
+                      status.timeout + 100, // add a guess for worst case processing time
+                    );
+                  }
+                });
+              }
+              if (liveBuffer > 0) {
+                addEventQueue.push(event);
+                addEventQueueTimeout = setTimeout(
+                  flushAddEventQueue,
+                  liveBuffer,
+                );
+              } else {
+                castOrScheduleEvent(event);
+              }
             }
           }
           return { ...ctx, events };

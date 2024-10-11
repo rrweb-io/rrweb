@@ -1296,7 +1296,29 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
-      }
+      },
+      \\"capturedAssetStatuses\\": [
+        {
+          \\"url\\": \\"http://localhost:3030/html#rr_css_text:1\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 50
+        },
+        {
+          \\"url\\": \\"http://localhost:3030/html#rr_css_text:2\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 50
+        },
+        {
+          \\"url\\": \\"http://localhost:3030/html#rr_css_text:3\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 50
+        },
+        {
+          \\"url\\": \\"http://localhost:3030/html#rr_css_text:4\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 50
+        }
+      ]
     }
   },
   {
@@ -6115,7 +6137,14 @@ exports[`record integration tests > mutations should work when blocked class is 
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
-      }
+      },
+      \\"capturedAssetStatuses\\": [
+        {
+          \\"url\\": \\"#rr_css_text:1\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 25
+        }
+      ]
     }
   },
   {
@@ -8497,7 +8526,14 @@ exports[`record integration tests > should nest record iframe 1`] = `
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
-      }
+      },
+      \\"capturedAssetStatuses\\": [
+        {
+          \\"url\\": \\"http://localhost:3030/html#rr_css_text:1\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 25
+        }
+      ]
     }
   },
   {
@@ -12155,7 +12191,14 @@ exports[`record integration tests > should record dynamic CSS changes 1`] = `
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
-      }
+      },
+      \\"capturedAssetStatuses\\": [
+        {
+          \\"url\\": \\"#rr_css_text:1\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 25
+        }
+      ]
     }
   },
   {
@@ -15700,7 +15743,19 @@ exports[`record integration tests > should record shadow DOM 1`] = `
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
-      }
+      },
+      \\"capturedAssetStatuses\\": [
+        {
+          \\"url\\": \\"#rr_css_text:1\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 50
+        },
+        {
+          \\"url\\": \\"#rr_css_text:2\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 50
+        }
+      ]
     }
   },
   {
@@ -16785,7 +16840,14 @@ exports[`record integration tests > should record style mutations and replay the
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
-      }
+      },
+      \\"capturedAssetStatuses\\": [
+        {
+          \\"url\\": \\"#rr_css_text:1\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 5
+        }
+      ]
     }
   },
   {
@@ -17018,7 +17080,14 @@ exports[`record integration tests > should record style mutations with multiple 
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
-      }
+      },
+      \\"capturedAssetStatuses\\": [
+        {
+          \\"url\\": \\"#rr_css_text:1\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 5
+        }
+      ]
     }
   },
   {

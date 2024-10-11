@@ -173,7 +173,7 @@ export function stringifySnapshots(snapshots: eventWithTime[]): string {
             }
 
             // strip blob:urls as they are different every time
-            stripBlobURLsFromAttributes(a);
+            stripBlobURLsFromValues(a.attributes);
           });
           s.data.adds.forEach((add) => {
             if (add.node.type === NodeType.Element) {
@@ -190,7 +190,7 @@ export function stringifySnapshots(snapshots: eventWithTime[]): string {
               coordinatesReg.lastIndex = 0; // wow, a real wart in ECMAScript
 
               // strip blob:urls as they are different every time
-              stripBlobURLsFromAttributes(add.node);
+              stripBlobURLsFromValues(add.node.attributes);
 
               // strip rr_dataURL as they are not consistent
               if (
@@ -203,6 +203,11 @@ export function stringifySnapshots(snapshots: eventWithTime[]): string {
               }
             }
           });
+        } else if (
+          s.type === EventType.FullSnapshot &&
+          s.data.capturedAssetStatuses
+        ) {
+          s.data.capturedAssetStatuses.forEach(stripBlobURLsFromValues);
         } else if (
           s.type === EventType.IncrementalSnapshot &&
           s.data.source === IncrementalSource.MediaInteraction
@@ -252,24 +257,20 @@ export function stringifySnapshots(snapshots: eventWithTime[]): string {
       'http://localhost:3030',
     )
     .replace(
-      // stripBlobURLsFromAttributes would have to recursively
+      // stripBlobURLsFromValues would have to recursively
       // examine fullsnapshots to do this 'properly'
       /href": "blob:null\/[^"]+"/g,
       'href": "blob:null/..."',
     );
 }
 
-function stripBlobURLsFromAttributes(node: {
-  attributes: {
-    [key: string]: any;
-  };
-}) {
-  for (const attr in node.attributes) {
+function stripBlobURLsFromValues(attributes: { [key: string]: any }) {
+  for (const attr in attributes) {
     if (
-      typeof node.attributes[attr] === 'string' &&
-      node.attributes[attr].startsWith('blob:')
+      typeof attributes[attr] === 'string' &&
+      attributes[attr].startsWith('blob:')
     ) {
-      node.attributes[attr] = node.attributes[attr]
+      attributes[attr] = attributes[attr]
         .replace(/[\w-]+$/, '...')
         .replace(/:[0-9]+\//, ':xxxx/');
     }
