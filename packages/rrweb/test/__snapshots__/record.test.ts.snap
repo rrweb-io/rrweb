@@ -1562,7 +1562,14 @@ exports[`record > captures inserted style text nodes correctly 1`] = `
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
-      }
+      },
+      \\"capturedAssetStatuses\\": [
+        {
+          \\"url\\": \\"#rr_css_text:1\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 1000
+        }
+      ]
     }
   },
   {
@@ -2693,7 +2700,14 @@ exports[`record > captures stylesheets with \`blob:\` url 1`] = `
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
-      }
+      },
+      \\"capturedAssetStatuses\\": [
+        {
+          \\"url\\": \\"blob:null/...\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 2000
+        }
+      ]
     }
   },
   {
@@ -2793,7 +2807,14 @@ exports[`record > doesn't duplicate assets and mutations 1`] = `
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
-      }
+      },
+      \\"capturedAssetStatuses\\": [
+        {
+          \\"url\\": \\"#rr_css_text:1\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 1000
+        }
+      ]
     }
   },
   {

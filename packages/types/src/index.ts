@@ -19,6 +19,12 @@ export type loadedEvent = {
   data: unknown;
 };
 
+export type assetStatus = {
+  url: string;
+  status: 'capturing' | 'captured' | 'error' | 'refused';
+  timeout?: number;
+};
+
 export type fullSnapshotEvent = {
   type: EventType.FullSnapshot;
   data: {
@@ -28,16 +34,13 @@ export type fullSnapshotEvent = {
       left: number;
     };
     /*
-     * in milliseconds, how long we should delay rebuild
-     * wait in a live context in order that assets can be transmitted
+     * the assets associated with this snapshot
+     * info is used to delay first FullSnapshot render until e.g. stylesheet
+     * assets have been received by the replayer
+     * could also be useful for server-side processing of the event stream
+     * without having to delve into the structure of this full snapshot
      */
-    liveBuffer?: number;
-    /*
-     * the number of assets associated with this snapshot
-     * useful for processing streams of events without having
-     * to rebuild this event to count them up
-     */
-    assetCount?: number;
+    capturedAssetStatuses?: assetStatus[];
   };
 };
 

@@ -6,17 +6,14 @@ import type {
   listenerHandler,
   asset,
   captureAssetsParam,
+  assetStatus,
 } from '@rrweb/types';
 import type { assetCallback } from '@rrweb/types';
 import { encode } from 'base64-arraybuffer';
 
 import { patch } from '../../utils';
 
-import type {
-  recordOptions,
-  assetStatus,
-  ProcessingStyleElement,
-} from '../../types';
+import type { recordOptions, ProcessingStyleElement } from '../../types';
 import {
   getSourcesFromSrcset,
   shouldCaptureAsset,
@@ -138,20 +135,35 @@ export default class AssetManager {
     styleId?: number,
   ): assetStatus {
     let cssRules: CSSRuleList;
+    let url = sheetBaseHref; // linkEl.href for a link element
+    if (styleId) {
+      url += `#rr_css_text:${styleId}`;
+    }
     try {
       cssRules = el.sheet!.cssRules;
     } catch (e) {
       if (el.tagName === 'STYLE') {
         // sheetBaseHref represents the document url the style element is embedded in so can't be fetched
-        return { status: 'refused' };
+        return {
+          url,
+          status: 'refused',
+        };
       }
-      const url = sheetBaseHref; // same as linkEl.href
       if (this.capturedURLs.has(url)) {
-        return { status: 'captured' };
+        return {
+          url,
+          status: 'captured',
+        };
       } else if (this.capturingURLs.has(url)) {
-        return { status: 'capturing' };
+        return {
+          url,
+          status: 'capturing',
+        };
       } else if (this.failedURLs.has(url)) {
-        return { status: 'error' };
+        return {
+          url,
+          status: 'error',
+        };
       }
       this.capturingURLs.add(url);
       // stylesheet could not be found or
@@ -173,7 +185,10 @@ export default class AssetManager {
           }
         })
         .catch(this.fetchCatcher(url));
-      return { status: 'capturing' }; // 'processing' ?
+      return {
+        url,
+        status: 'capturing', // 'processing' ?
+      };
     }
     const processStylesheet = () => {
       cssRules = el.sheet!.cssRules; // update, as a mutation may have since occurred
@@ -218,12 +233,16 @@ export default class AssetManager {
         timeout,
       });
       return {
+        url,
         status: 'capturing', // 'processing' ?
         timeout,
       };
     } else {
       processStylesheet();
-      return { status: 'captured' };
+      return {
+        url,
+        status: 'captured',
+      };
     }
   }
 
@@ -247,11 +266,20 @@ export default class AssetManager {
 
   private captureUrl(url: string): assetStatus {
     if (this.capturedURLs.has(url)) {
-      return { status: 'captured' };
+      return {
+        url,
+        status: 'captured',
+      };
     } else if (this.capturingURLs.has(url)) {
-      return { status: 'capturing' };
+      return {
+        url,
+        status: 'capturing',
+      };
     } else if (this.failedURLs.has(url)) {
-      return { status: 'error' };
+      return {
+        url,
+        status: 'error',
+      };
     }
     this.capturingURLs.add(url);
     void this.getURLObject(url)
@@ -285,7 +313,10 @@ export default class AssetManager {
       })
       .catch(this.fetchCatcher(url));
 
-    return { status: 'capturing' };
+    return {
+      url,
+      status: 'capturing',
+    };
   }
 
   private fetchCatcher(url: string) {
