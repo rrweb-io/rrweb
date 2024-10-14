@@ -360,7 +360,7 @@ function diffProps(
       name.startsWith('rr_captured_') &&
       newValue &&
       typeof newValue === 'string'
-    ) 
+    )
       // can possibly remove the attribute again if it hasn't loaded yet
       assetManager.manageAttribute(
         oldTree,
