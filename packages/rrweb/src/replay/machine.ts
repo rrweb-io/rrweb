@@ -11,6 +11,7 @@ import {
   EventType,
   type Emitter,
   IncrementalSource,
+  type metaEvent,
 } from '@rrweb/types';
 import { Timer, addDelay } from './timer';
 
@@ -58,6 +59,15 @@ export type PlayerState =
       value: 'live';
       context: PlayerContext;
     };
+
+type metaEventWithTime = metaEvent & {
+  timestamp: number;
+  delay?: number;
+};
+
+function isMetaEvent(e: eventWithTime): e is metaEventWithTime {
+  return e.type === EventType.Meta;
+}
 
 /**
  * If the array have multiple meta and fullsnapshot events,
@@ -311,10 +321,9 @@ export function createPlayerService(
                 event.data.capturedAssetStatuses
               ) {
                 awaitAssetsHref = '';
-                const earlierMetas = events.filter(
-                  (e) =>
-                    e.type === EventType.Meta && e.timestamp <= event.timestamp,
-                );
+                const earlierMetas: metaEvent[] = events
+                  .filter(isMetaEvent)
+                  .filter((e) => e.timestamp <= event.timestamp);
                 if (earlierMetas.length) {
                   awaitAssetsHref =
                     earlierMetas[earlierMetas.length - 1].data.href;
