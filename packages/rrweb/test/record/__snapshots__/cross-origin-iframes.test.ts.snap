@@ -263,11 +263,7 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
                         \\"attributes\\": {
                           \\"controls\\": \\"\\",
                           \\"rr_mediaState\\": \\"paused\\",
-                          \\"rr_mediaCurrentTime\\": 0,
-                          \\"rr_mediaPlaybackRate\\": 1,
-                          \\"rr_mediaMuted\\": false,
-                          \\"rr_mediaLoop\\": false,
-                          \\"rr_mediaVolume\\": 1
+                          \\"rr_mediaCurrentTime\\": 0
                         },
                         \\"childNodes\\": [
                           {
@@ -331,8 +327,7 @@ exports[`cross origin iframes audio.html should emit contents of iframe once 1`]
       \\"currentTime\\": 0,
       \\"volume\\": 1,
       \\"muted\\": false,
-      \\"playbackRate\\": 1,
-      \\"loop\\": false
+      \\"playbackRate\\": 1
     }
   }
 ]"

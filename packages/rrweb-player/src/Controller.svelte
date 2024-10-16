@@ -114,7 +114,7 @@
       const totalEvents = context.events.length;
       const start = context.events[0].timestamp;
       const end = context.events[totalEvents - 1].timestamp;
-      const periods = getInactivePeriods(context.events, replayer.config.inactivePeriodThreshold);
+      const periods = getInactivePeriods(context.events);
       // calculate the indicator width.
       const getWidth = (
         startTime: number,

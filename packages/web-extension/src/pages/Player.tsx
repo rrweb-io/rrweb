@@ -27,7 +27,7 @@ export default function Player() {
       });
     getEvents(sessionId)
       .then((events) => {
-        if (!playerElRef.current) return;
+        if (!playerElRef.current || !sessionId) return;
 
         const linkEl = document.createElement('link');
         linkEl.href =
