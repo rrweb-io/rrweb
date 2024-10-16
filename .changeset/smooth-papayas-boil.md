@@ -1,6 +1,6 @@
 ---
 'rrweb-snapshot': patch
-'rrweb': patch
+'@amplitude/rrweb': patch
 ---
 
 Capture stylesheets designated as `rel="preload"`
