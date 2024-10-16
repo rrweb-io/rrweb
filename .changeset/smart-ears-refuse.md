@@ -1,5 +1,5 @@
 ---
-'rrweb-snapshot': patch
+'@amplitude/rrweb-snapshot': patch
 ---
 
 Feat: Add 'isCustom' flag to serialized elements.
