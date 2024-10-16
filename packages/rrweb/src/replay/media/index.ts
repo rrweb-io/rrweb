@@ -1,8 +1,12 @@
-import { Emitter, MediaInteractions, ReplayerEvents } from '@rrweb/types';
-import type { RRMediaElement } from 'rrdom/es';
+import {
+  Emitter,
+  MediaInteractions,
+  ReplayerEvents,
+} from '@amplitude/rrweb-types';
+import type { RRMediaElement } from '@amplitude/rrdom/es';
 import type { createPlayerService, createSpeedService } from '../machine';
-import type { Mirror, mediaAttributes } from 'rrweb-snapshot';
-import type { mediaInteractionData } from '@rrweb/types';
+import type { Mirror, mediaAttributes } from '@amplitude/rrweb-snapshot';
+import type { mediaInteractionData } from '@amplitude/rrweb-types';
 
 type MediaState = {
   isPlaying: boolean;
