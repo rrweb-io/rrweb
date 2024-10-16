@@ -22,44 +22,40 @@ void (async () => {
   let events = [];
 
   async function injectRecording(frame) {
-    try {
-      await frame.evaluate((rrwebCode) => {
-        const win = window;
-        if (win.__IS_RECORDING__) return;
-        win.__IS_RECORDING__ = true;
+    await frame.evaluate((rrwebCode) => {
+      const win = window;
+      if (win.__IS_RECORDING__) return;
+      win.__IS_RECORDING__ = true;
 
-        (async () => {
-          function loadScript(code) {
-            const s = document.createElement('script');
-            let r = false;
-            s.type = 'text/javascript';
-            s.innerHTML = code;
-            if (document.head) {
+      (async () => {
+        function loadScript(code) {
+          const s = document.createElement('script');
+          let r = false;
+          s.type = 'text/javascript';
+          s.innerHTML = code;
+          if (document.head) {
+            document.head.append(s);
+          } else {
+            requestAnimationFrame(() => {
               document.head.append(s);
-            } else {
-              requestAnimationFrame(() => {
-                document.head.append(s);
-              });
-            }
+            });
           }
-          loadScript(rrwebCode);
+        }
+        loadScript(rrwebCode);
 
-          win.events = [];
-          rrweb.record({
-            emit: (event) => {
-              win.events.push(event);
-              win._replLog(event);
-            },
-            plugins: [],
-            recordCanvas: true,
-            recordCrossOriginIframes: true,
-            collectFonts: true,
-          });
-        })();
-      }, code);
-    } catch (e) {
-      console.error('failed to inject recording script:', e);
-    }
+        win.events = [];
+        rrweb.record({
+          emit: (event) => {
+            win.events.push(event);
+            win._replLog(event);
+          },
+          plugins: [],
+          recordCanvas: true,
+          recordCrossOriginIframes: true,
+          collectFonts: true,
+        });
+      })();
+    }, code);
   }
 
   await start('https://react-redux.realworld.io');

@@ -38,8 +38,6 @@ export type elementNode = {
   childNodes: serializedNodeWithId[];
   isSVG?: true;
   needBlock?: boolean;
-  // This is a custom element or not.
-  isCustom?: true;
 };
 
 export type textNode = {
@@ -80,27 +78,6 @@ export type serializedElementNodeWithId = Extract<
 
 export type tagMap = {
   [key: string]: string;
-};
-
-export type mediaAttributes = {
-  rr_mediaState: 'played' | 'paused';
-  rr_mediaCurrentTime: number;
-  /**
-   * for backwards compatibility this is optional but should always be set
-   */
-  rr_mediaPlaybackRate?: number;
-  /**
-   * for backwards compatibility this is optional but should always be set
-   */
-  rr_mediaMuted?: boolean;
-  /**
-   * for backwards compatibility this is optional but should always be set
-   */
-  rr_mediaLoop?: boolean;
-  /**
-   * for backwards compatibility this is optional but should always be set
-   */
-  rr_mediaVolume?: number;
 };
 
 // @deprecated

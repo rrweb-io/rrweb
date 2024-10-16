@@ -169,18 +169,6 @@ function buildNode(
       if (n.isSVG) {
         node = doc.createElementNS('http://www.w3.org/2000/svg', tagName);
       } else {
-        if (
-          // If the tag name is a custom element name
-          n.isCustom &&
-          // If the browser supports custom elements
-          doc.defaultView?.customElements &&
-          // If the custom element hasn't been defined yet
-          !doc.defaultView.customElements.get(n.tagName)
-        )
-          doc.defaultView.customElements.define(
-            n.tagName,
-            class extends doc.defaultView.HTMLElement {},
-          );
         node = doc.createElement(tagName);
       }
       /**
@@ -342,17 +330,6 @@ function buildNode(
               break;
             default:
           }
-        } else if (
-          name === 'rr_mediaPlaybackRate' &&
-          typeof value === 'number'
-        ) {
-          (node as HTMLMediaElement).playbackRate = value;
-        } else if (name === 'rr_mediaMuted' && typeof value === 'boolean') {
-          (node as HTMLMediaElement).muted = value;
-        } else if (name === 'rr_mediaLoop' && typeof value === 'boolean') {
-          (node as HTMLMediaElement).loop = value;
-        } else if (name === 'rr_mediaVolume' && typeof value === 'number') {
-          (node as HTMLMediaElement).volume = value;
         }
       }
 

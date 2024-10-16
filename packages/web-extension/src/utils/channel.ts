@@ -33,7 +33,7 @@ class Channel {
   private emitter = mitt();
   constructor() {
     /**
-     * Register message listener.
+     * Register massage listener.
      */
     Browser.runtime.onMessage.addListener(
       ((message: string, sender: Runtime.MessageSender) => {

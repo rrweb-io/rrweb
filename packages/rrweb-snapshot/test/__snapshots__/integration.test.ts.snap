@@ -840,7 +840,6 @@ exports[`shadow DOM integration tests snapshot shadow DOM 1`] = `
                   \\"isShadow\\": true
                 }
               ],
-              \\"isCustom\\": true,
               \\"id\\": 16,
               \\"isShadowHost\\": true
             },
