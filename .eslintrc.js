@@ -21,5 +21,6 @@ module.exports = {
   plugins: ['@typescript-eslint', 'eslint-plugin-tsdoc', 'jest', 'compat'],
   rules: {
     'tsdoc/syntax': 'warn',
+    '@typescript-eslint/prefer-as-const': 'warn',
   },
 };
