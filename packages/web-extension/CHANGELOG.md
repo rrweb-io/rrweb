@@ -1,5 +1,21 @@
 # @rrweb/web-extension
 
+## 2.0.0-alpha.22
+
+### Patch Changes
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`3bfcc54`](https://github.com/amplitude/rrweb/commit/3bfcc54c5940b99ce2a9dc1c735578bbf9c6286c) Thanks [@jxiwang](https://github.com/jxiwang)! - Update `vite.config.ts` to account for all potential entry types.
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`d48125e`](https://github.com/amplitude/rrweb/commit/d48125e7831eb4f1229892696730703244a92a93) Thanks [@jxiwang](https://github.com/jxiwang)! - 🎈 perf(web-extension): conditional check in Player component
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`0c6db64`](https://github.com/amplitude/rrweb/commit/0c6db642ff0d0bc85288ca52fc52355d093825f8) Thanks [@jxiwang](https://github.com/jxiwang)! - 🐞 fix(web-extension): typo
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`331e46b`](https://github.com/amplitude/rrweb/commit/331e46b8170e03a597156ad4e1f1d7e67e0bb296) Thanks [@jxiwang](https://github.com/jxiwang)! - 🐞 fix(web-extension): beforeunload logic
+
+- Updated dependencies [[`931a6bb`](https://github.com/amplitude/rrweb/commit/931a6bbc34cb9b4f0daa3e99544b4990001460a1), [`e9cfd9f`](https://github.com/amplitude/rrweb/commit/e9cfd9fbc1876c641e9ededa8e1088e86fa6aab7), [`a1d5962`](https://github.com/amplitude/rrweb/commit/a1d596254aa12bd85295f7c759ed28637cdffa04), [`a5ef2a8`](https://github.com/amplitude/rrweb/commit/a5ef2a867154aed9cc49cdeb7ef1056095e264d1), [`43f38b1`](https://github.com/amplitude/rrweb/commit/43f38b1e9c9bf0f64fbf288ac868000ca876de81), [`0c34ddd`](https://github.com/amplitude/rrweb/commit/0c34dddfb350d897e0a684e7860e699d20c544c4), [`53b18a9`](https://github.com/amplitude/rrweb/commit/53b18a954d09c487fc08e46d8aa4030500f43b86), [`87cba12`](https://github.com/amplitude/rrweb/commit/87cba12ebbc2da78671c16be6932c10b4c1cbb6d), [`87cba12`](https://github.com/amplitude/rrweb/commit/87cba12ebbc2da78671c16be6932c10b4c1cbb6d), [`ffdf49c`](https://github.com/amplitude/rrweb/commit/ffdf49c6e9f44177f80b320efdbfdb85a4da0756), [`ba7f3d5`](https://github.com/amplitude/rrweb/commit/ba7f3d50e982d6d2e5c1dd4868a536db5d3572e9), [`c400629`](https://github.com/amplitude/rrweb/commit/c4006294af905b3c10d793d941ca00426300c092)]:
+  - @amplitude/rrweb@2.0.0-alpha.22
+  - @amplitude/rrweb-player@2.0.0-alpha.22
+
 ## 2.0.0-alpha.21
 
 ### Patch Changes
