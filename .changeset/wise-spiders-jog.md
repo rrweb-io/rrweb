@@ -1,5 +1,5 @@
 ---
-'@rrweb/types': patch
+'@amplitude/rrweb-types': patch
 ---
 
 Fix type error when using `"moduleResolution": "NodeNext"`.

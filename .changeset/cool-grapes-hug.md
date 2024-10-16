@@ -1,5 +1,5 @@
 ---
-'rrdom': patch
+'@amplitude/rrdom': patch
 ---
 
 Support `loop` in `RRMediaElement`
