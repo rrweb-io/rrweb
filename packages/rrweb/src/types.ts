@@ -15,6 +15,7 @@ import type {
   addedNodeMutation,
   blockClass,
   canvasMutationCallback,
+  customElementCallback,
   eventWithTime,
   fontCallback,
   hooksParam,
@@ -97,6 +98,7 @@ export type observerParam = {
   styleSheetRuleCb: styleSheetRuleCallback;
   styleDeclarationCb: styleDeclarationCallback;
   canvasMutationCb: canvasMutationCallback;
+  customElementCb: customElementCallback;
   fontCb: fontCallback;
   sampling: SamplingStrategy;
   recordDOM: boolean;
@@ -168,6 +170,7 @@ export type playerConfig = {
   root: Element;
   loadTimeout: number;
   skipInactive: boolean;
+  inactivePeriodThreshold: number;
   showWarning: boolean;
   showDebug: boolean;
   blockClass: string;

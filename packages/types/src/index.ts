@@ -83,6 +83,7 @@ export enum IncrementalSource {
   StyleDeclaration,
   Selection,
   AdoptedStyleSheet,
+  CustomElement,
 }
 
 export type mutationData = {
@@ -142,6 +143,10 @@ export type adoptedStyleSheetData = {
   source: IncrementalSource.AdoptedStyleSheet;
 } & adoptedStyleSheetParam;
 
+export type customElementData = {
+  source: IncrementalSource.CustomElement;
+} & customElementParam;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
@@ -155,7 +160,8 @@ export type incrementalData =
   | fontData
   | selectionData
   | styleDeclarationData
-  | adoptedStyleSheetData;
+  | adoptedStyleSheetData
+  | customElementData;
 
 export type event =
   | domContentLoadedEvent
@@ -262,6 +268,7 @@ export type hooksParam = {
   canvasMutation?: canvasMutationCallback;
   font?: fontCallback;
   selection?: selectionCallback;
+  customElement?: customElementCallback;
 };
 
 // https://dom.spec.whatwg.org/#interface-mutationrecord
@@ -410,8 +417,8 @@ export type CanvasArg =
 type mouseInteractionParam = {
   type: MouseInteractions;
   id: number;
-  x: number;
-  y: number;
+  x?: number;
+  y?: number;
   pointerType?: PointerTypes;
 };
 
@@ -566,6 +573,7 @@ export type mediaInteractionParam = {
   currentTime?: number;
   volume?: number;
   muted?: boolean;
+  loop?: boolean;
   playbackRate?: number;
 };
 
@@ -592,6 +600,14 @@ export type selectionParam = {
 };
 
 export type selectionCallback = (p: selectionParam) => void;
+
+export type customElementParam = {
+  define?: {
+    name: string;
+  };
+};
+
+export type customElementCallback = (c: customElementParam) => void;
 
 export type DeprecatedMirror = {
   map: {
@@ -638,6 +654,9 @@ export type Arguments<T> = T extends (...payload: infer U) => unknown
 export enum ReplayerEvents {
   Start = 'start',
   Pause = 'pause',
+  /**
+   * @deprecated use Play instead
+   */
   Resume = 'resume',
   Resize = 'resize',
   Finish = 'finish',
