@@ -1,4 +1,8 @@
-import { Emitter, MediaInteractions, ReplayerEvents } from '@amplitude/rrweb-types';
+import {
+  Emitter,
+  MediaInteractions,
+  ReplayerEvents,
+} from '@amplitude/rrweb-types';
 import type { RRMediaElement } from '@amplitude/rrdom/es';
 import type { createPlayerService, createSpeedService } from '../machine';
 import type { Mirror, mediaAttributes } from '@amplitude/rrweb-snapshot';
