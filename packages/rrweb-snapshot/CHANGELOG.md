@@ -1,5 +1,21 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.22
+
+### Minor Changes
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`87cba12`](https://github.com/amplitude/rrweb/commit/87cba12ebbc2da78671c16be6932c10b4c1cbb6d) Thanks [@jxiwang](https://github.com/jxiwang)! - Video and Audio elements now also capture `playbackRate`, `muted`, `loop`, `volume`.
+
+### Patch Changes
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`a1d5962`](https://github.com/amplitude/rrweb/commit/a1d596254aa12bd85295f7c759ed28637cdffa04) Thanks [@jxiwang](https://github.com/jxiwang)! - Feat: Add 'isCustom' flag to serialized elements.
+
+  This flag is used to indicate whether the element is a custom element or not. This is useful for replaying the :defined pseudo-class of custom elements.
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`ffdf49c`](https://github.com/amplitude/rrweb/commit/ffdf49c6e9f44177f80b320efdbfdb85a4da0756) Thanks [@jxiwang](https://github.com/jxiwang)! - Capture stylesheets designated as `rel="preload"`
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`ba7f3d5`](https://github.com/amplitude/rrweb/commit/ba7f3d50e982d6d2e5c1dd4868a536db5d3572e9) Thanks [@jxiwang](https://github.com/jxiwang)! - Snapshot performance when masking text: Avoid the repeated calls to `closest` when recursing through the DOM
+
 ## 2.0.0-alpha.21
 
 ## 2.0.0-alpha.20

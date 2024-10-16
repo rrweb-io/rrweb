@@ -1,5 +1,16 @@
 # @rrweb/types
 
+## 2.0.0-alpha.22
+
+### Patch Changes
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`87cba12`](https://github.com/amplitude/rrweb/commit/87cba12ebbc2da78671c16be6932c10b4c1cbb6d) Thanks [@jxiwang](https://github.com/jxiwang)! - Add `loop` to `mediaInteractionParam`
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`21278b5`](https://github.com/amplitude/rrweb/commit/21278b54b57f16e98b05923103e82b77b2eda19f) Thanks [@jxiwang](https://github.com/jxiwang)! - Fix type error when using `"moduleResolution": "NodeNext"`.
+
+- Updated dependencies [[`87cba12`](https://github.com/amplitude/rrweb/commit/87cba12ebbc2da78671c16be6932c10b4c1cbb6d), [`a1d5962`](https://github.com/amplitude/rrweb/commit/a1d596254aa12bd85295f7c759ed28637cdffa04), [`ffdf49c`](https://github.com/amplitude/rrweb/commit/ffdf49c6e9f44177f80b320efdbfdb85a4da0756), [`ba7f3d5`](https://github.com/amplitude/rrweb/commit/ba7f3d50e982d6d2e5c1dd4868a536db5d3572e9)]:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.22
+
 ## 2.0.0-alpha.21
 
 ### Patch Changes

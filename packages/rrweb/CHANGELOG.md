@@ -1,5 +1,40 @@
 # rrweb
 
+## 2.0.0-alpha.22
+
+### Minor Changes
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`87cba12`](https://github.com/amplitude/rrweb/commit/87cba12ebbc2da78671c16be6932c10b4c1cbb6d) Thanks [@jxiwang](https://github.com/jxiwang)! - Full overhawl of `video` and `audio` element playback. More robust and fixes lots of bugs related to pausing/playing/skipping/muting/playbackRate etc.
+
+### Patch Changes
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`931a6bb`](https://github.com/amplitude/rrweb/commit/931a6bbc34cb9b4f0daa3e99544b4990001460a1) Thanks [@jxiwang](https://github.com/jxiwang)! - fix: createImageBitmap throws DOMException if source is 0 width or height
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`e9cfd9f`](https://github.com/amplitude/rrweb/commit/e9cfd9fbc1876c641e9ededa8e1088e86fa6aab7) Thanks [@jxiwang](https://github.com/jxiwang)! - safely capture BigInt values with the console log plugin"
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`a1d5962`](https://github.com/amplitude/rrweb/commit/a1d596254aa12bd85295f7c759ed28637cdffa04) Thanks [@jxiwang](https://github.com/jxiwang)! - Feat: Add support for replaying :defined pseudo-class of custom elements
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`a5ef2a8`](https://github.com/amplitude/rrweb/commit/a5ef2a867154aed9cc49cdeb7ef1056095e264d1) Thanks [@jxiwang](https://github.com/jxiwang)! - ref: Avoid unnecessary cloning of objects or arrays
+
+- [#34](https://github.com/amplitude/rrweb/pull/34) [`43f38b1`](https://github.com/amplitude/rrweb/commit/43f38b1e9c9bf0f64fbf288ac868000ca876de81) Thanks [@jxiwang](https://github.com/jxiwang)! - Change package names
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`0c34ddd`](https://github.com/amplitude/rrweb/commit/0c34dddfb350d897e0a684e7860e699d20c544c4) Thanks [@jxiwang](https://github.com/jxiwang)! - export the canvasMutation function
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`53b18a9`](https://github.com/amplitude/rrweb/commit/53b18a954d09c487fc08e46d8aa4030500f43b86) Thanks [@jxiwang](https://github.com/jxiwang)! - export eventWithTime for consumption by typescript code
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`87cba12`](https://github.com/amplitude/rrweb/commit/87cba12ebbc2da78671c16be6932c10b4c1cbb6d) Thanks [@jxiwang](https://github.com/jxiwang)! - Record `loop` on `<audio>` & `<video>` elements.
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`ffdf49c`](https://github.com/amplitude/rrweb/commit/ffdf49c6e9f44177f80b320efdbfdb85a4da0756) Thanks [@jxiwang](https://github.com/jxiwang)! - Capture stylesheets designated as `rel="preload"`
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`ba7f3d5`](https://github.com/amplitude/rrweb/commit/ba7f3d50e982d6d2e5c1dd4868a536db5d3572e9) Thanks [@jxiwang](https://github.com/jxiwang)! - Snapshot performance when masking text: Avoid the repeated calls to `closest` when recursing through the DOM
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`c400629`](https://github.com/amplitude/rrweb/commit/c4006294af905b3c10d793d941ca00426300c092) Thanks [@jxiwang](https://github.com/jxiwang)! - fix: protect against missing parentNode
+
+- Updated dependencies [[`87cba12`](https://github.com/amplitude/rrweb/commit/87cba12ebbc2da78671c16be6932c10b4c1cbb6d), [`87cba12`](https://github.com/amplitude/rrweb/commit/87cba12ebbc2da78671c16be6932c10b4c1cbb6d), [`87cba12`](https://github.com/amplitude/rrweb/commit/87cba12ebbc2da78671c16be6932c10b4c1cbb6d), [`a1d5962`](https://github.com/amplitude/rrweb/commit/a1d596254aa12bd85295f7c759ed28637cdffa04), [`ffdf49c`](https://github.com/amplitude/rrweb/commit/ffdf49c6e9f44177f80b320efdbfdb85a4da0756), [`a880f6c`](https://github.com/amplitude/rrweb/commit/a880f6c22172e7ec853e3ba72a22e6082cd83aa0), [`ba7f3d5`](https://github.com/amplitude/rrweb/commit/ba7f3d50e982d6d2e5c1dd4868a536db5d3572e9), [`21278b5`](https://github.com/amplitude/rrweb/commit/21278b54b57f16e98b05923103e82b77b2eda19f)]:
+  - @amplitude/rrdom@2.0.0-alpha.22
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.22
+  - @amplitude/rrweb-types@2.0.0-alpha.22
+
 ## 2.0.0-alpha.21
 
 ### Patch Changes
