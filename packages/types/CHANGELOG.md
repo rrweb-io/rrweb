@@ -1,5 +1,12 @@
 # @rrweb/types
 
+## 2.0.0-alpha.23
+
+### Patch Changes
+
+- Updated dependencies [[`9f0fb7c`](https://github.com/amplitude/rrweb/commit/9f0fb7c53f6910a33a69a843a8773e939f42b0fa), [`0983ef8`](https://github.com/amplitude/rrweb/commit/0983ef8c952ff0038e555e4147e008d2fb174248), [`88a15cf`](https://github.com/amplitude/rrweb/commit/88a15cf221f245a9e98ca0b074e7abced5798c5b), [`6d5cbf0`](https://github.com/amplitude/rrweb/commit/6d5cbf098d3322a9d2e29df0664d199025332e2a)]:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.23
+
 ## 2.0.0-alpha.22
 
 ### Patch Changes
