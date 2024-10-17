@@ -9,7 +9,6 @@ import {
   IncrementalSource,
   adoptedStyleSheetParam,
   canvasMutationParam,
-  event,
   eventWithoutTime,
   eventWithTime,
   listenerHandler,

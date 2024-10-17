@@ -31,7 +31,7 @@ function minifyAndUMDPlugin({
             '',
           );
           const outputFilePath = resolve(outputOptions.dir!, baseFileName);
-          // console.log(outputFilePath, 'minifying', file.fileName);
+          console.log(outputFilePath, 'minifying', file.fileName);
           if (isCSS) {
             await buildFile({
               input: inputFilePath,
