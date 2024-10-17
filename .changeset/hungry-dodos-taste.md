@@ -1,5 +1,5 @@
 ---
-'rrweb-snapshot': patch
+'@amplitude/rrweb-snapshot': patch
 ---
 
 Avoid recreating the same element every time, instead, we cache and we just update the element.
