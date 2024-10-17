@@ -1,5 +1,20 @@
 # rrweb
 
+## 2.0.0-alpha.24
+
+### Patch Changes
+
+- [#39](https://github.com/amplitude/rrweb/pull/39) [`d4dacd5`](https://github.com/amplitude/rrweb/commit/d4dacd507dfa8f7719ae6e136042843ba47b7302) Thanks [@jxiwang](https://github.com/jxiwang)! - inlineImages: during snapshot avoid adding an event listener for inlining of same-origin images (async listener mutates the snapshot which can be problematic)
+
+- [#39](https://github.com/amplitude/rrweb/pull/39) [`bc92f7c`](https://github.com/amplitude/rrweb/commit/bc92f7ca0c5887aa7ca8943b3966a23e92e02c11) Thanks [@jxiwang](https://github.com/jxiwang)! - Optimize performance of isParentRemoved by converting it to an iterative procedure
+
+- [#39](https://github.com/amplitude/rrweb/pull/39) [`f075371`](https://github.com/amplitude/rrweb/commit/f075371b7c8125a69422322c3d63e237d3100e9c) Thanks [@jxiwang](https://github.com/jxiwang)! - Refactor to preclude the need for a continuous raf loop running in the background which is related to shadowDom
+
+- Updated dependencies [[`d4dacd5`](https://github.com/amplitude/rrweb/commit/d4dacd507dfa8f7719ae6e136042843ba47b7302), [`e3c831c`](https://github.com/amplitude/rrweb/commit/e3c831c5442fc5d213f3a02dba8b746c9c87d37d)]:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.24
+  - @amplitude/rrdom@2.0.0-alpha.24
+  - @amplitude/rrweb-types@2.0.0-alpha.24
+
 ## 2.0.0-alpha.23
 
 ### Patch Changes
