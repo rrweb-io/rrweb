@@ -1,5 +1,13 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.24
+
+### Patch Changes
+
+- [#39](https://github.com/amplitude/rrweb/pull/39) [`d4dacd5`](https://github.com/amplitude/rrweb/commit/d4dacd507dfa8f7719ae6e136042843ba47b7302) Thanks [@jxiwang](https://github.com/jxiwang)! - inlineImages: during snapshot avoid adding an event listener for inlining of same-origin images (async listener mutates the snapshot which can be problematic)
+
+- [#39](https://github.com/amplitude/rrweb/pull/39) [`e3c831c`](https://github.com/amplitude/rrweb/commit/e3c831c5442fc5d213f3a02dba8b746c9c87d37d) Thanks [@jxiwang](https://github.com/jxiwang)! - (when `recordCanvas: true`): ensure we use doc.createElement instead of document.createElement to allow use in non-browser e.g. jsdom environments
+
 ## 2.0.0-alpha.23
 
 ### Patch Changes
