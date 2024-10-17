@@ -1,6 +1,10 @@
 import type { Mirror, serializedNodeWithId } from '@amplitude/rrweb-snapshot';
 import { NodeType, genId } from '@amplitude/rrweb-snapshot';
-import type { eventWithTime, eventWithoutTime, mutationCallBack } from '@amplitude/rrweb-types';
+import type {
+  eventWithTime,
+  eventWithoutTime,
+  mutationCallBack,
+} from '@amplitude/rrweb-types';
 import { EventType, IncrementalSource } from '@amplitude/rrweb-types';
 import type { CrossOriginIframeMessageEvent } from '../types';
 import CrossOriginIframeMirror from './cross-origin-iframe-mirror';
