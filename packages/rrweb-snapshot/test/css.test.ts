@@ -20,7 +20,7 @@ describe('css parser', () => {
     const ast = postcss([plugin]).process(input, {});
     return ast.css;
   }
-  
+
   describe('mediaSelectorPlugin', () => {
     it('selectors without device remain unchanged', () => {
       const cssText =
