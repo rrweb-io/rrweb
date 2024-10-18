@@ -3,7 +3,7 @@ import {
   type playerConfig,
   type PlayerMachineState,
   type SpeedMachineState,
-} from 'rrweb';
-import 'rrweb/dist/style.css';
+} from '@amplitude/rrweb';
+import '@amplitude/rrweb/dist/style.css';
 
 export { Replayer, playerConfig, PlayerMachineState, SpeedMachineState };

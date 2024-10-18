@@ -1,4 +1,4 @@
-import { NodeType } from 'rrweb-snapshot';
+import { NodeType } from '@amplitude/rrweb-snapshot';
 import { expect } from 'vitest';
 import {
   EventType,
@@ -8,7 +8,7 @@ import {
   mouseInteractionData,
   event,
   pluginEvent,
-} from '@rrweb/types';
+} from '@amplitude/rrweb-types';
 import * as puppeteer from 'puppeteer';
 import * as path from 'path';
 import * as http from 'http';

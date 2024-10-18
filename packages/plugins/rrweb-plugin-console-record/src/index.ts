@@ -3,7 +3,7 @@ import type {
   RecordPlugin,
   listenerHandler,
 } from '@amplitude/rrweb-types';
-import { utils } from 'rrweb';
+import { utils } from '@amplitude/rrweb';
 import { ErrorStackParser, StackFrame } from './error-stack-parser';
 import { stringify } from './stringify';
 

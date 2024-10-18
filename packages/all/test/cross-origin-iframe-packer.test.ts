@@ -16,7 +16,7 @@ import { unpack } from '@amplitude/rrweb-packer';
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
-import type { recordOptions } from 'rrweb';
+import type { recordOptions } from '@amplitude/rrweb';
 import type {} from'@amplitude/rrweb-types';
 import { EventType } from '@amplitude/rrweb-types';
 import {
@@ -57,7 +57,7 @@ async function injectRecordScript(
   options?: ExtraOptions,
 ) {
   await frame.addScriptTag({
-    path: path.resolve(__dirname, '../dist/all.umd.cjs'),
+    path: path.resolve(__dirname, '../dist/rrweb-all.umd.cjs'),
   });
   options = options || {};
   await frame.evaluate((options) => {

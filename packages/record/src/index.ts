@@ -1,3 +1,3 @@
-import { record } from 'rrweb';
+import { record } from '@amplitude/rrweb';
 
 export { record };
