@@ -134,7 +134,7 @@ export class Replayer {
   private mouseTail: HTMLCanvasElement | null = null;
   private tailPositions: Array<{ x: number; y: number }> = [];
 
-  private emitter: Emitter = mitt();
+  private emitter: Emitter = mitt() as Emitter;
 
   private nextUserInteractionEvent: eventWithTime | null;
 
@@ -331,6 +331,8 @@ export class Replayer {
         this.applySelection(this.lastSelectionData);
         this.lastSelectionData = null;
       }
+
+      this.emitter.emit(ReplayerEvents.FlushEnd);
     });
     this.emitter.on(ReplayerEvents.PlayBack, () => {
       this.firstFullSnapshot = null;
@@ -525,6 +527,31 @@ export class Replayer {
     this.emitter.emit(ReplayerEvents.Start);
   }
 
+  public playSingleEvent(eventIndex: number) {
+    const handleFinish = () => {
+      this.service.send('END');
+      this.emitter.off(ReplayerEvents.FlushEnd, handleFinish);
+    };
+    this.emitter.on(ReplayerEvents.FlushEnd, handleFinish);
+
+    if (this.service.state.matches('paused')) {
+      this.service.send({
+        type: 'PLAY_SINGLE_EVENT',
+        payload: { singleEvent: eventIndex },
+      });
+    } else {
+      this.service.send({ type: 'PAUSE' });
+      this.service.send({
+        type: 'PLAY_SINGLE_EVENT',
+        payload: { singleEvent: eventIndex },
+      });
+    }
+    this.iframe.contentDocument
+      ?.getElementsByTagName('html')[0]
+      ?.classList.remove('rrweb-paused');
+    this.emitter.emit(ReplayerEvents.Start);
+  }
+
   public pause(timeOffset?: number) {
     if (timeOffset === undefined && this.service.state.matches('playing')) {
       this.service.send({ type: 'PAUSE' });
@@ -558,6 +585,7 @@ export class Replayer {
     this.mediaManager.reset();
     this.config.root.removeChild(this.wrapper);
     this.emitter.emit(ReplayerEvents.Destroy);
+    this.emitter.all.clear();
   }
 
   public startLive(baselineTime?: number) {
