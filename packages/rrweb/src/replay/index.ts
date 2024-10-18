@@ -527,7 +527,11 @@ export class Replayer {
     this.emitter.emit(ReplayerEvents.Start);
   }
 
-  public playSingleEvent(eventIndex: number) {
+  /**
+   * Applies all events synchronously until the given event index.
+   * @param eventIndex - number
+   */
+  public replayEvent(eventIndex: number) {
     const handleFinish = () => {
       this.service.send('END');
       this.emitter.off(ReplayerEvents.FlushEnd, handleFinish);
