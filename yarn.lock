@@ -9749,7 +9749,7 @@ rrweb-snapshot@^2.0.0-alpha.17:
   dependencies:
     postcss "^8.4.38"
 
-rrweb@^2.0.0-alpha.14:
+rrweb@^2.0.0-alpha.24:
   version "2.0.0-alpha.17"
   resolved "https://registry.yarnpkg.com/rrweb/-/rrweb-2.0.0-alpha.17.tgz#de4d8bce18c0f184708b79edaa3c974a9f5b843f"
   integrity sha512-GQxBkCC4r9XL2bwSdv7iIS49M3cEA8OtObVq0rrQ4GUT4+h7omucGQ4x7m5YN5Vq1oalStBaBlYqF7yRnfG3JA==

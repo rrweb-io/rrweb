@@ -195,7 +195,7 @@
 </script>
 
 <style global>
-  @import '@rrweb/replay/dist/style.css';
+  @import '@amplitude/rrweb-replay/dist/style.css';
 
   .rr-player {
     position: relative;

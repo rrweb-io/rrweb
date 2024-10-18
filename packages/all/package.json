@@ -27,19 +27,19 @@
   },
   "license": "MIT",
   "type": "module",
-  "main": "./dist/all.cjs",
-  "module": "./dist/all.js",
-  "unpkg": "./dist/all.umd.cjs",
+  "main": "./dist/rrweb-all.cjs",
+  "module": "./dist/rrweb-all.js",
+  "unpkg": "./dist/rrweb-all.umd.cjs",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": {
         "types": "./dist/index.d.ts",
-        "default": "./dist/all.js"
+        "default": "./dist/rrweb-all.js"
       },
       "require": {
         "types": "./dist/index.d.cts",
-        "default": "./dist/all.cjs"
+        "default": "./dist/rrweb-all.cjs"
       }
     }
   },
