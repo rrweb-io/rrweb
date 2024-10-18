@@ -1,6 +1,6 @@
-import { eventWithTime } from '@amplitude/rrweb-types';
+import type { eventWithTime } from '@amplitude/rrweb-types';
 import { openDB } from 'idb';
-import { Session } from '~/types';
+import type { Session } from '~/types';
 
 /**
  * Storage related functions with indexedDB.
