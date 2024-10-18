@@ -1,5 +1,5 @@
-import { Mirror } from '@amplitude/rrweb-snapshot';
-import { eventWithTime } from '@amplitude/rrweb-types';
+import type { Mirror } from '@amplitude/rrweb-snapshot';
+import type { eventWithTime } from '@amplitude/rrweb-types';
 import type { Replayer, playerConfig } from '@amplitude/rrweb-replay';
 
 export type RRwebPlayerOptions = {
