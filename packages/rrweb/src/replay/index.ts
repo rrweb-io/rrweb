@@ -846,7 +846,7 @@ export class Replayer {
       }
     };
 
-    void this.preloadAllAssets(event.timestamp, this.config.liveMode);
+    void this.preloadAllAssets(event);
 
     /**
      * Normally rebuilding full snapshot should not be under virtual dom environment.
@@ -1069,18 +1069,29 @@ export class Replayer {
    * Process all asset events and preload them
    */
   private async preloadAllAssets(
-    timestamp: number,
-    liveMode: boolean,
+    fullSnapshot: fullSnapshotEvent & { timestamp: number },
   ): Promise<void[]> {
     const promises: Promise<void>[] = [];
+    let expectedAssets = new Set();
+    if (fullSnapshot.data.capturedAssetStatuses) {
+      fullSnapshot.data.capturedAssetStatuses.forEach((status) => {
+        expectedAssets.add(status.url);
+      });
+    }
+
     for (const event of this.service.state.context.events) {
-      if (event.timestamp <= timestamp) continue;
-      if (event.type === EventType.Meta && event.timestamp !== timestamp) break;
+      if (event.timestamp <= fullSnapshot.timestamp) continue;
+      if (
+        event.type === EventType.Meta &&
+        event.timestamp !== fullSnapshot.timestamp
+      )
+        break;
       if (event.type === EventType.Asset) {
         promises.push(this.assetManager.add(event));
+        expectedAssets.delete(event.data.url);
       }
     }
-    if (!liveMode) {
+    if (expectedAssets.size === 0) {
       this.assetManager.allAdded = true;
     }
     return Promise.all(promises);
