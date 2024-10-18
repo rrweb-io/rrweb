@@ -406,6 +406,7 @@ export class Replayer {
     );
     if (firstMeta) {
       const { width, height } = firstMeta.data as metaEvent['data'];
+      this.assetManager.reset();
       setTimeout(() => {
         this.emitter.emit(ReplayerEvents.Resize, {
           width,
@@ -689,6 +690,7 @@ export class Replayer {
         break;
       case EventType.Meta:
         castFn = () => {
+          this.assetManager.reset();
           this.emitter.emit(ReplayerEvents.Resize, {
             width: event.data.width,
             height: event.data.height,
