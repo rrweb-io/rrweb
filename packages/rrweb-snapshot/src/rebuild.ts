@@ -152,7 +152,7 @@ export function buildStyleNode(
 }
 
 function buildNode(
-  n: serializedNodeWithId,
+  n: serializedNodeWithId & { rrwebAdoptedStylesheets?: string[] },
   options: {
     doc: Document;
     hackCss: boolean;
@@ -380,6 +380,13 @@ function buildNode(
          */
         if (!node.shadowRoot) {
           node.attachShadow({ mode: 'open' });
+          n.rrwebAdoptedStylesheets?.forEach(
+            (rrwebAdoptedStylesheet) => {
+              const styleSheet = new CSSStyleSheet();
+              styleSheet.replaceSync(rrwebAdoptedStylesheet);
+              node.shadowRoot?.adoptedStyleSheets.push(styleSheet);
+            },
+          );
         } else {
           while (node.shadowRoot.firstChild) {
             node.shadowRoot.removeChild(node.shadowRoot.firstChild);
