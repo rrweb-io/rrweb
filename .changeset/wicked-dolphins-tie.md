@@ -1,5 +1,5 @@
 ---
-"@rrweb/web-extension": minor
+"@amplitude/rrweb-web-extension": minor
 ---
 
 Added session downloader for chrome extension

@@ -15,7 +15,7 @@
       "@amplitude/rrweb-types",
       "@amplitude/rrweb-packer",
       "@amplitude/rrweb-utils",
-      "@amplitude/web-extension",
+      "@amplitude/rrweb-web-extension",
       "@amplitude/rrvideo",
       "@amplitude/rrweb-plugin-console-record",
       "@amplitude/rrweb-plugin-console-replay",
