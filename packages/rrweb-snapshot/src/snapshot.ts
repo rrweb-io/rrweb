@@ -1008,7 +1008,10 @@ export function serializeNodeWithId(
     id = genId();
   }
 
-  const serializedNode = Object.assign(_serializedNode, { id });
+  const serializedNode: serializedNode & {
+    id: number;
+    rrwebAdoptedStylesheets?: Array<string | null>;
+  } = Object.assign(_serializedNode, { id });
   // add IGNORED_NODE to mirror to track nextSiblings
   mirror.add(n, serializedNode);
 
@@ -1025,8 +1028,15 @@ export function serializeNodeWithId(
     // this property was not needed in replay side
     delete serializedNode.needBlock;
     const shadowRootEl = dom.shadowRoot(n);
-    if (shadowRootEl && isNativeShadowDom(shadowRootEl))
+    if (shadowRootEl && isNativeShadowDom(shadowRootEl)) {
       serializedNode.isShadowHost = true;
+      if (shadowRootEl.adoptedStyleSheets.length > 0) {
+        serializedNode.rrwebAdoptedStylesheets =
+          shadowRootEl.adoptedStyleSheets.map((stylesheet) =>
+            stringifyStylesheet(stylesheet),
+          );
+      }
+    }
   }
   if (
     (serializedNode.type === NodeType.Document ||
