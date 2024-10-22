@@ -11,7 +11,7 @@
     "retest:update": "vitest run --update",
     "test:update": "yarn build && vitest run --update",
     "dev": "vite build --watch",
-    "build": "yarn turbo prepublish -F rrweb-snapshot",
+    "build": "yarn turbo prepublish -F @amplitude/rrweb-snapshot",
     "check-types": "tsc --noEmit",
     "prepublish": "yarn check-types && vite build",
     "lint": "yarn eslint src"
