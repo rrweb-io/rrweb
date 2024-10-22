@@ -1,6 +1,6 @@
 ---
-"@rrweb/record": patch
-"rrweb": patch
+"@amplitude/rrweb-record": patch
+"@amplitude/rrweb": patch
 ---
 
 Added support for deprecated addRule & removeRule methods
