@@ -1,11 +1,10 @@
 /**
  * @vitest-environment jsdom
  */
-import { buildFromDom } from '@amplitude/rrdom';
-import { NodeType as RRNodeType } from '@amplitude/rrweb-snapshot';
 import { describe, it, expect, beforeAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
+import { NodeType as RRNodeType } from '@amplitude/rrweb-snapshot';
 import {
   RRCanvasElement,
   RRCDATASection,
@@ -18,6 +17,7 @@ import {
   RRStyleElement,
   RRText,
 } from '../src/document-nodejs';
+import { buildFromDom } from '@amplitude/rrdom';
 
 describe('RRDocument for nodejs environment', () => {
   describe('RRDocument API', () => {
