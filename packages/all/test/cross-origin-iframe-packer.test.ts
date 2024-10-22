@@ -17,7 +17,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
 import type { recordOptions } from '@amplitude/rrweb';
-import type {} from'@amplitude/rrweb-types';
+import type {} from '@amplitude/rrweb-types';
 import { EventType } from '@amplitude/rrweb-types';
 import {
   assertSnapshot,

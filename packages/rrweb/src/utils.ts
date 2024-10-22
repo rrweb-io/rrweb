@@ -1,5 +1,9 @@
 import { RRNode, RRIFrameElement, BaseRRNode } from '@amplitude/rrdom';
-import type { IMirror, Mirror, SlimDOMOptions } from '@amplitude/rrweb-snapshot';
+import type {
+  IMirror,
+  Mirror,
+  SlimDOMOptions,
+} from '@amplitude/rrweb-snapshot';
 import {
   IGNORED_NODE,
   classMatchesRegex,

@@ -3,7 +3,10 @@
  */
 import { EventType, IncrementalSource, Replayer, eventWithTime } from '../src';
 import { vi, type MockInstance } from 'vitest';
-import type { styleDeclarationData, styleSheetRuleData } from '@amplitude/rrweb-types';
+import type {
+  styleDeclarationData,
+  styleSheetRuleData,
+} from '@amplitude/rrweb-types';
 import { createMirror, Mirror as NodeMirror } from '@amplitude/rrweb-snapshot';
 import type { ReplayerHandler } from '@amplitude/rrdom';
 
