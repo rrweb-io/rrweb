@@ -1861,9 +1861,9 @@ describe('diff algorithm for rrdom', () => {
         this.cssRules = [{ cssText: baseStyle }];
       }
 
-      vi
-        .spyOn(window, 'CSSStyleSheet')
-        .mockImplementationOnce(MockCSSStyleSheet as any);
+      vi.spyOn(window, 'CSSStyleSheet').mockImplementationOnce(
+        MockCSSStyleSheet as any,
+      );
 
       const baseStyle = 'body {margin: 0;}';
       const insertedStyle = 'div {display: flex;}';
