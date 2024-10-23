@@ -795,7 +795,6 @@ export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
   TakeTypeHelper<Obj, Type>[keyof TakeTypeHelper<Obj, Type>]
 >;
 
-export type RebuildAssetManagerResetStatus = { status: 'reset' };
 export type RebuildAssetManagerUnknownStatus = { status: 'unknown' };
 export type RebuildAssetManagerLoadingStatus = { status: 'loading' };
 export type RebuildAssetManagerLoadedStatus = {
@@ -806,8 +805,7 @@ export type RebuildAssetManagerLoadedStatus = {
 export type RebuildAssetManagerFailedStatus = { status: 'failed' };
 export type RebuildAssetManagerFinalStatus =
   | RebuildAssetManagerLoadedStatus
-  | RebuildAssetManagerFailedStatus
-  | RebuildAssetManagerResetStatus;
+  | RebuildAssetManagerFailedStatus;
 export type RebuildAssetManagerStatus =
   | RebuildAssetManagerUnknownStatus
   | RebuildAssetManagerLoadingStatus
@@ -821,7 +819,6 @@ export declare abstract class RebuildAssetManagerInterface {
   abstract add(event: assetEvent): Promise<void>;
   abstract get(url: string): RebuildAssetManagerStatus;
   abstract whenReady(url: string): Promise<RebuildAssetManagerFinalStatus>;
-  abstract reset(config?: captureAssetsParam | undefined): void;
   abstract manageAttribute(
     n: Element,
     id: number,
