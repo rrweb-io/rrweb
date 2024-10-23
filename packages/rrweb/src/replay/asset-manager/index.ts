@@ -17,8 +17,8 @@ import type { RRElement } from 'rrdom';
 import { updateSrcset } from './update-srcset';
 
 export default class AssetManager implements RebuildAssetManagerInterface {
-  private originalToObjectURLMap: Map<string, string> = new Map();
-  private urlToStylesheetMap: Map<string, string[]> = new Map();
+  private originalToObjectURLMap: Map<string, Map<number, string>> = new Map();
+  private urlToStylesheetMap: Map<string, Map<number, string[]>> = new Map();
   private nodeIdAttributeHijackedMap: Map<number, Map<string, string>> =
     new Map();
   private loadingURLs: Set<string> = new Set();
@@ -30,6 +30,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
   private liveMode: boolean;
   private cache: BuildCache;
   public allAdded: boolean;
+  public replayerApproxTs: number = 0;
 
   constructor({ liveMode, cache }: { liveMode: boolean; cache: BuildCache }) {
     this.liveMode = liveMode;
@@ -37,7 +38,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     this.allAdded = false;
   }
 
-  public async add(event: assetEvent) {
+  public async add(event: assetEvent & { timestamp: number }) {
     const { data } = event;
     const { url, payload, failed } = { payload: false, failed: false, ...data };
     if (failed) {
@@ -57,8 +58,14 @@ export default class AssetManager implements RebuildAssetManagerInterface {
 
     if (payload.rr_type === 'CssText') {
       const cssPayload = payload as SerializedCssTextArg;
-      this.urlToStylesheetMap.set(url, cssPayload.cssTexts);
+      let assets = this.urlToStylesheetMap.get(url);
+      if (!assets) {
+        assets = new Map();
+        this.urlToStylesheetMap.set(url, assets);
+      }
+      assets.set(event.timestamp, cssPayload.cssTexts);
       this.loadingURLs.delete(url);
+      this.failedURLs.delete(url);
       this.executeCallbacks(url, {
         status: 'loaded',
         url,
@@ -72,8 +79,14 @@ export default class AssetManager implements RebuildAssetManagerInterface {
         status,
       )(payload as SerializedCanvasArg)) as Blob | MediaSource;
       const objectURL = URL.createObjectURL(result);
-      this.originalToObjectURLMap.set(url, objectURL);
+      let assets = this.originalToObjectURLMap.get(url);
+      if (!assets) {
+        assets = new Map();
+        this.originalToObjectURLMap.set(url, assets);
+      }
+      assets.set(event.timestamp, objectURL);
       this.loadingURLs.delete(url);
+      this.failedURLs.delete(url);
       this.executeCallbacks(url, { status: 'loaded', url: objectURL });
     }
   }
@@ -123,22 +136,45 @@ export default class AssetManager implements RebuildAssetManagerInterface {
   }
 
   public get(url: string): RebuildAssetManagerStatus {
-    const cssResult = this.urlToStylesheetMap.get(url);
-    if (cssResult) {
-      return {
-        status: 'loaded',
-        url,
-        cssTexts: cssResult,
-      };
+    let tsResult: Map<number, string> | Map<number, string[]> | undefined;
+    tsResult = this.urlToStylesheetMap.get(url);
+    if (!tsResult) {
+      tsResult = this.originalToObjectURLMap.get(url);
     }
-
-    const result = this.originalToObjectURLMap.get(url);
-
-    if (result) {
-      return {
-        status: 'loaded',
-        url: result,
-      };
+    if (tsResult) {
+      let result;
+      let bestTs: number | null = null;
+      // pick the asset with a timestamp closest to the current replayer value
+      // preferring ones that loaded after (assuming these are the ones that
+      // were triggered by the most recently played snapshot)
+      tsResult.forEach((value, ts) => {
+        if (bestTs === null) {
+          result = value;
+          bestTs = ts;
+        } else if (this.replayerApproxTs <= ts) {
+          if (bestTs < this.replayerApproxTs || ts < bestTs) {
+            result = value;
+            bestTs = ts;
+          }
+        } else if (bestTs < ts) {
+          result = value;
+          bestTs = ts;
+        }
+      });
+      if (result === undefined) {
+        // satisfy typings
+      } else if (this.urlToStylesheetMap.has(url)) {
+        return {
+          status: 'loaded',
+          url,
+          cssTexts: result,
+        };
+      } else {
+        return {
+          status: 'loaded',
+          url: result,
+        };
+      }
     }
 
     if (this.loadingURLs.has(url)) {
@@ -279,24 +315,5 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     }
 
     return Promise.all(promises);
-  }
-
-  public reset(): void {
-    this.originalToObjectURLMap.forEach((objectURL) => {
-      URL.revokeObjectURL(objectURL);
-    });
-    this.originalToObjectURLMap.clear();
-    this.urlToStylesheetMap.clear();
-    this.loadingURLs.clear();
-    this.failedURLs.clear();
-    this.nodeIdAttributeHijackedMap.clear();
-    this.callbackMap.forEach((callbacks) => {
-      while (callbacks.length > 0) {
-        const cb = callbacks.pop();
-        if (cb) cb({ status: 'reset' });
-      }
-    });
-    this.callbackMap.clear();
-    this.allAdded = false;
   }
 }

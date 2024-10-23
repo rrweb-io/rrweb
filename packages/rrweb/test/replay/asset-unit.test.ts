@@ -136,25 +136,6 @@ describe('AssetManager', () => {
     });
   });
 
-  it('should send status reset to callbacks when reset', async () => {
-    vi.useFakeTimers();
-    const url = 'https://example.com/image.png';
-    const event: assetEvent = {
-      type: EventType.Asset,
-      data: {
-        url,
-        payload: examplePayload,
-      },
-    };
-    void assetManager.add(event);
-    const promise = assetManager.whenReady(url);
-
-    assetManager.reset();
-    vi.runAllTimers();
-
-    await expect(promise).resolves.toEqual({ status: 'reset' });
-  });
-
   it("should be able to modify a node's attribute once asset is loaded", async () => {
     const url = 'https://example.com/image.png';
     const event: assetEvent = {
