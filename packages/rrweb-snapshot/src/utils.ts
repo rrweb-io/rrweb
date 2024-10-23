@@ -188,11 +188,11 @@ export function replaceChromeGridTemplateAreas(rule: CSSStyleRule): string {
     for (let i = 0; i < rule.style.length; i++) {
       const styleName = rule.style[i];
       const styleValue = rule.style.getPropertyValue(styleName);
-      
+
       styleDeclarations.push(`${styleName}: ${styleValue}`);
     }
 
-    return `${rule.selectorText} { ${styleDeclarations.join('; ')}; }`
+    return `${rule.selectorText} { ${styleDeclarations.join('; ')}; }`;
   }
 
   return rule.cssText;

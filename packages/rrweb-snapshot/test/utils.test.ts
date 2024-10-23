@@ -272,25 +272,28 @@ describe('utils', () => {
 
   describe('replaceChromeGridTemplateAreas', () => {
     it('does not alter corectly parsed grid template rules', () => {
-      const cssText = '#wrapper { display: grid; width: 100%; height: 100%; grid-template: minmax(2, 1fr); margin: 0px auto; }';
+      const cssText =
+        '#wrapper { display: grid; width: 100%; height: 100%; grid-template: minmax(2, 1fr); margin: 0px auto; }';
       const mockCssRule = {
         cssText,
         selectorText: '#wrapper',
         style: {
-          getPropertyValue (prop) {
+          getPropertyValue(prop) {
             return {
-              'grid-template-areas': ''
-            }[prop]
-          }
-        }
-      } as Partial<CSSStyleRule> as CSSStyleRule
+              'grid-template-areas': '',
+            }[prop];
+          },
+        },
+      } as Partial<CSSStyleRule> as CSSStyleRule;
 
       expect(replaceChromeGridTemplateAreas(mockCssRule)).toEqual(cssText);
     });
 
     it('fixes incorrectly parsed grid template rules', () => {
-      const cssText1 = '#wrapper { grid-template-areas: "header header" "main main" "footer footer"; grid-template-rows: minmax(2, 1fr); grid-template-columns: minmax(2, 1fr); display: grid; margin: 0px auto; }';
-      const cssText2 = '.some-class { color: purple; grid-template: "TopNav TopNav" 65px "SideNav Content" 52px "SideNav Content" / 255px auto; column-gap: 32px; }';
+      const cssText1 =
+        '#wrapper { grid-template-areas: "header header" "main main" "footer footer"; grid-template-rows: minmax(2, 1fr); grid-template-columns: minmax(2, 1fr); display: grid; margin: 0px auto; }';
+      const cssText2 =
+        '.some-class { color: purple; grid-template: "TopNav TopNav" 65px "SideNav Content" 52px "SideNav Content" / 255px auto; column-gap: 32px; }';
 
       const mockCssRule1 = {
         cssText: cssText1,
@@ -305,22 +308,22 @@ describe('utils', () => {
           getPropertyValue: (key: string): string => {
             switch (key) {
               case 'grid-template-areas':
-                return '"header header" "main main" "footer footer"'
+                return '"header header" "main main" "footer footer"';
               case 'grid-template-rows':
                 return 'minmax(2, 1fr)';
               case 'grid-template-columns':
                 return 'minmax(2, 1fr)';
-              case'display':
+              case 'display':
                 return 'grid';
-              case'margin':
-                return '0px auto'
+              case 'margin':
+                return '0px auto';
               default:
-                return ''
+                return '';
             }
           },
-        } as Record<string | number, any>
-      } as Partial<CSSStyleRule> as CSSStyleRule
-      
+        } as Record<string | number, any>,
+      } as Partial<CSSStyleRule> as CSSStyleRule;
+
       const mockCssRule2 = {
         cssText: cssText2,
         selectorText: '.some-class',
@@ -333,28 +336,28 @@ describe('utils', () => {
           4: 'column-gap',
           getPropertyValue: (key: string): string => {
             switch (key) {
-              case'color':
+              case 'color':
                 return 'purple';
               case 'grid-template-areas':
-                return '"TopNav TopNav" "SideNav Content" "SideNav Content"'
+                return '"TopNav TopNav" "SideNav Content" "SideNav Content"';
               case 'grid-template-rows':
                 return '65px 52px auto';
               case 'grid-template-columns':
                 return '255px auto';
-              case'column-gap':
-                return '32px'
+              case 'column-gap':
+                return '32px';
               default:
-                return ''
+                return '';
             }
           },
-        } as Record<string | number, any>
-      } as Partial<CSSStyleRule> as CSSStyleRule
+        } as Record<string | number, any>,
+      } as Partial<CSSStyleRule> as CSSStyleRule;
 
       expect(replaceChromeGridTemplateAreas(mockCssRule1)).toEqual(
-        '#wrapper { grid-template-areas: "header header" "main main" "footer footer"; grid-template-rows: minmax(2, 1fr); grid-template-columns: minmax(2, 1fr); display: grid; margin: 0px auto; }'
+        '#wrapper { grid-template-areas: "header header" "main main" "footer footer"; grid-template-rows: minmax(2, 1fr); grid-template-columns: minmax(2, 1fr); display: grid; margin: 0px auto; }',
       );
       expect(replaceChromeGridTemplateAreas(mockCssRule2)).toEqual(
-        '.some-class { color: purple; grid-template-areas: "TopNav TopNav" "SideNav Content" "SideNav Content"; grid-template-rows: 65px 52px auto; grid-template-columns: 255px auto; column-gap: 32px; }'
+        '.some-class { color: purple; grid-template-areas: "TopNav TopNav" "SideNav Content" "SideNav Content"; grid-template-rows: 65px 52px auto; grid-template-columns: 255px auto; column-gap: 32px; }',
       );
     });
   });
