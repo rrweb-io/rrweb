@@ -176,7 +176,6 @@ export default class MutationBuffer {
   private attributes: attributeCursor[] = [];
   private attributeMap = new WeakMap<Node, attributeCursor>();
   private removes: removedNodeMutation[] = [];
-  private removesMap = new Map<number, number>();
   private mapRemoves: Node[] = [];
 
   private movedMap: Record<string, true> = {};
@@ -201,6 +200,7 @@ export default class MutationBuffer {
   private addedSet = new Set<Node>();
   private movedSet = new Set<Node>();
   private droppedSet = new Set<Node>();
+  private removesSubTreeCache = new Set<Node>();
 
   private mutationCb: observerParam['mutationCb'];
   private blockClass: observerParam['blockClass'];
@@ -399,7 +399,7 @@ export default class MutationBuffer {
 
     for (const n of this.movedSet) {
       if (
-        isParentRemoved(this.removesMap, n, this.mirror) &&
+        isParentRemoved(this.removesSubTreeCache, n, this.mirror) &&
         !this.movedSet.has(dom.parentNode(n)!)
       ) {
         continue;
@@ -410,7 +410,7 @@ export default class MutationBuffer {
     for (const n of this.addedSet) {
       if (
         !isAncestorInSet(this.droppedSet, n) &&
-        !isParentRemoved(this.removesMap, n, this.mirror)
+        !isParentRemoved(this.removesSubTreeCache, n, this.mirror)
       ) {
         pushAdd(n);
       } else if (isAncestorInSet(this.movedSet, n)) {
@@ -547,10 +547,10 @@ export default class MutationBuffer {
     this.attributes = [];
     this.attributeMap = new WeakMap<Node, attributeCursor>();
     this.removes = [];
-    this.removesMap = new Map<number, number>();
     this.addedSet = new Set<Node>();
     this.movedSet = new Set<Node>();
     this.droppedSet = new Set<Node>();
+    this.removesSubTreeCache = new Set<Node>();
     this.movedMap = {};
 
     this.mutationCb(payload);
@@ -785,7 +785,7 @@ export default class MutationBuffer {
                   ? true
                   : undefined,
             });
-            this.removesMap.set(nodeId, this.removes.length - 1);
+            processRemoves(n, this.removesSubTreeCache);
           }
           this.mapRemoves.push(n);
         });
@@ -849,29 +849,33 @@ function deepDelete(addsSet: Set<Node>, n: Node) {
   dom.childNodes(n).forEach((childN) => deepDelete(addsSet, childN));
 }
 
-function isParentRemoved(
-  removesMap: Map<number, number>,
-  n: Node,
-  mirror: Mirror,
-): boolean {
-  if (removesMap.size === 0) return false;
-  return _isParentRemoved(removesMap, n, mirror);
+function processRemoves(n: Node, cache: Set<Node>) {
+  const queue = [n];
+
+  while (queue.length) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const next = queue.pop()!;
+    if (cache.has(next)) continue;
+    cache.add(next);
+    dom.childNodes(next).forEach((n) => queue.push(n));
+  }
+
+  return;
+}
+
+function isParentRemoved(removes: Set<Node>, n: Node, mirror: Mirror): boolean {
+  if (removes.size === 0) return false;
+  return _isParentRemoved(removes, n, mirror);
 }
 
 function _isParentRemoved(
-  removesMap: Map<number, number>,
+  removes: Set<Node>,
   n: Node,
-  mirror: Mirror,
+  _mirror: Mirror,
 ): boolean {
-  let node: ParentNode | null = n.parentNode;
-  while (node) {
-    const parentId = mirror.getId(node);
-    if (removesMap.has(parentId)) {
-      return true;
-    }
-    node = node.parentNode;
-  }
-  return false;
+  const node: ParentNode | null = dom.parentNode(n);
+  if (!node) return false;
+  return removes.has(node);
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
