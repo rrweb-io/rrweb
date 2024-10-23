@@ -1,6 +1,124 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`iframe integration tests snapshot async iframes 1`] = `
+exports[`dialog integration tests > should capture open attribute for modal dialogs 1`] = `
+"{
+  \\"type\\": 0,
+  \\"childNodes\\": [
+    {
+      \\"type\\": 2,
+      \\"tagName\\": \\"html\\",
+      \\"attributes\\": {},
+      \\"childNodes\\": [
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"head\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [],
+          \\"id\\": 3
+        },
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"body\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 5
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"dialog\\",
+              \\"attributes\\": {
+                \\"open\\": \\"\\",
+                \\"rr_open_mode\\": \\"modal\\"
+              },
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"I'm a dialog\\",
+                  \\"id\\": 7
+                }
+              ],
+              \\"id\\": 6
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+              \\"id\\": 8
+            }
+          ],
+          \\"id\\": 4
+        }
+      ],
+      \\"id\\": 2
+    }
+  ],
+  \\"compatMode\\": \\"BackCompat\\",
+  \\"id\\": 1
+}"
+`;
+
+exports[`dialog integration tests > should capture open attribute for non modal dialogs 1`] = `
+"{
+  \\"type\\": 0,
+  \\"childNodes\\": [
+    {
+      \\"type\\": 2,
+      \\"tagName\\": \\"html\\",
+      \\"attributes\\": {},
+      \\"childNodes\\": [
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"head\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [],
+          \\"id\\": 3
+        },
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"body\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 5
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"dialog\\",
+              \\"attributes\\": {
+                \\"open\\": \\"\\",
+                \\"rr_open_mode\\": \\"non-modal\\"
+              },
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"I'm a dialog\\",
+                  \\"id\\": 7
+                }
+              ],
+              \\"id\\": 6
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+              \\"id\\": 8
+            }
+          ],
+          \\"id\\": 4
+        }
+      ],
+      \\"id\\": 2
+    }
+  ],
+  \\"compatMode\\": \\"BackCompat\\",
+  \\"id\\": 1
+}"
+`;
+
+exports[`iframe integration tests > snapshot async iframes 1`] = `
 "{
   \\"type\\": 0,
   \\"childNodes\\": [
@@ -132,7 +250,7 @@ exports[`iframe integration tests snapshot async iframes 1`] = `
 }"
 `;
 
-exports[`integration tests [html file]: about-mozilla.html 1`] = `
+exports[`integration tests > [html file]: about-mozilla.html 1`] = `
 "<!DOCTYPE html><html><head>
   <title>The Book of Mozilla, 11:9</title>
   <style type=\\"text/css\\">html { background: maroon; color: white; font-style: italic; }#moztext { margin-top: 15%; font-size: 1.1em; font-family: serif; text-align: center; line-height: 1.5; }#from { font-size: 1.95em; font-family: serif; text-align: right; }em { font-size: 1.3em; line-height: 0; }a { text-decoration: none; color: white; }</style>
@@ -149,7 +267,7 @@ exports[`integration tests [html file]: about-mozilla.html 1`] = `
   </p></body></html>"
 `;
 
-exports[`integration tests [html file]: background-clip-text.html 1`] = `
+exports[`integration tests > [html file]: background-clip-text.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta http-equiv=\\"X-UA-Compatible\\" content=\\"IE=edge\\" />
@@ -163,7 +281,7 @@ exports[`integration tests [html file]: background-clip-text.html 1`] = `
   </body></html>"
 `;
 
-exports[`integration tests [html file]: basic.html 1`] = `
+exports[`integration tests > [html file]: basic.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -173,7 +291,7 @@ exports[`integration tests [html file]: basic.html 1`] = `
   <h1>Title</h1></body></html>"
 `;
 
-exports[`integration tests [html file]: block-element.html 1`] = `
+exports[`integration tests > [html file]: block-element.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -188,7 +306,7 @@ exports[`integration tests [html file]: block-element.html 1`] = `
   </body></html>"
 `;
 
-exports[`integration tests [html file]: compat-mode.html 1`] = `
+exports[`integration tests > [html file]: compat-mode.html 1`] = `
 "<!-- no doctype! --><html><head>
   <title>Compat Mode; image resizing</title>
 </head>
@@ -202,7 +320,7 @@ exports[`integration tests [html file]: compat-mode.html 1`] = `
 </body></html>"
 `;
 
-exports[`integration tests [html file]: cors-style-sheet.html 1`] = `
+exports[`integration tests > [html file]: cors-style-sheet.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -214,7 +332,13 @@ exports[`integration tests [html file]: cors-style-sheet.html 1`] = `
   <body></body></html>"
 `;
 
-exports[`integration tests [html file]: dynamic-stylesheet.html 1`] = `
+exports[`integration tests > [html file]: dialog.html 1`] = `
+"<html><head></head><body>
+    <dialog>I'm a dialog</dialog>
+  </body></html>"
+`;
+
+exports[`integration tests > [html file]: dynamic-stylesheet.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -228,7 +352,7 @@ exports[`integration tests [html file]: dynamic-stylesheet.html 1`] = `
   </body></html>"
 `;
 
-exports[`integration tests [html file]: form-fields.html 1`] = `
+exports[`integration tests > [html file]: form-fields.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -263,19 +387,21 @@ exports[`integration tests [html file]: form-fields.html 1`] = `
   <noscript>SCRIPT_PLACEHOLDER</noscript></body></html>"
 `;
 
-exports[`integration tests [html file]: hover.html 1`] = `
+exports[`integration tests > [html file]: hover.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
   <title>hover selector</title>
-  <style>div:hover, div.\\\\:hover { background: orange; }div:hover::after, div.\\\\:hover::after { position: absolute; left: 0px; top: 100%; content: \\"dropdown\\"; width: 100px; height: 200px; background: lightblue; }</style>
+  <style>div:hover,
+div.\\\\:hover { background: orange; }div:hover::after,
+div.\\\\:hover::after { position: absolute; left: 0px; top: 100%; content: \\"dropdown\\"; width: 100px; height: 200px; background: lightblue; }</style>
 </head><body>
   <div>hover me</div>
 </body></html>"
 `;
 
-exports[`integration tests [html file]: iframe.html 1`] = `
+exports[`integration tests > [html file]: iframe.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -287,17 +413,17 @@ exports[`integration tests [html file]: iframe.html 1`] = `
 </body></html>"
 `;
 
-exports[`integration tests [html file]: iframe-inner.html 1`] = `
+exports[`integration tests > [html file]: iframe-inner.html 1`] = `
 "<html><head></head><body><button>inner iframe button</button>
 </body></html>"
 `;
 
-exports[`integration tests [html file]: invalid-attribute.html 1`] = `
+exports[`integration tests > [html file]: invalid-attribute.html 1`] = `
 "<html foo=\\"bar\\"><head></head><body>
 </body></html>"
 `;
 
-exports[`integration tests [html file]: invalid-doctype.html 1`] = `
+exports[`integration tests > [html file]: invalid-doctype.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -306,7 +432,7 @@ exports[`integration tests [html file]: invalid-doctype.html 1`] = `
   <body></body></html>"
 `;
 
-exports[`integration tests [html file]: invalid-tagname.html 1`] = `
+exports[`integration tests > [html file]: invalid-tagname.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -320,7 +446,7 @@ exports[`integration tests [html file]: invalid-tagname.html 1`] = `
 </body></html>"
 `;
 
-exports[`integration tests [html file]: mask-text.html 1`] = `
+exports[`integration tests > [html file]: mask-text.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -335,7 +461,7 @@ exports[`integration tests [html file]: mask-text.html 1`] = `
   </body></html>"
 `;
 
-exports[`integration tests [html file]: picture.html 1`] = `
+exports[`integration tests > [html file]: picture.html 1`] = `
 "<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
     <picture>
       <!-- these are 404 - not sure if that's intentional -->
@@ -346,32 +472,32 @@ exports[`integration tests [html file]: picture.html 1`] = `
   </body></html>"
 `;
 
-exports[`integration tests [html file]: picture-blob.html 1`] = `
+exports[`integration tests > [html file]: picture-blob.html 1`] = `
 "<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
     <img src=\\"blob:http://localhost:xxxx/...\\" alt=\\"This is a robot\\" />
   
   <noscript>SCRIPT_PLACEHOLDER</noscript></body></html>"
 `;
 
-exports[`integration tests [html file]: picture-blob-in-frame.html 1`] = `
+exports[`integration tests > [html file]: picture-blob-in-frame.html 1`] = `
 "<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
     <iframe></iframe>
   </body></html>"
 `;
 
-exports[`integration tests [html file]: picture-in-frame.html 1`] = `
+exports[`integration tests > [html file]: picture-in-frame.html 1`] = `
 "<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
     <iframe></iframe>
   </body></html>"
 `;
 
-exports[`integration tests [html file]: picture-with-inline-onload.html 1`] = `
+exports[`integration tests > [html file]: picture-with-inline-onload.html 1`] = `
 "<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
     <img src=\\"http://localhost:3030/images/robot.png\\" alt=\\"This is a robot\\" style=\\"opacity: 1;\\" _onload=\\"this.style.opacity=1\\" />
   </body></html>"
 `;
 
-exports[`integration tests [html file]: preload.html 1`] = `
+exports[`integration tests > [html file]: preload.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -383,7 +509,7 @@ exports[`integration tests [html file]: preload.html 1`] = `
   <body></body></html>"
 `;
 
-exports[`integration tests [html file]: shadow-dom.html 1`] = `
+exports[`integration tests > [html file]: shadow-dom.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -402,7 +528,7 @@ exports[`integration tests [html file]: shadow-dom.html 1`] = `
   </body></html>"
 `;
 
-exports[`integration tests [html file]: svg.html 1`] = `
+exports[`integration tests > [html file]: svg.html 1`] = `
 "<!DOCTYPE html><html><head>
     <title>IcoMoon - SVG Icons</title>
     <meta charset=\\"utf-8\\" />
@@ -435,7 +561,7 @@ exports[`integration tests [html file]: svg.html 1`] = `
   </body></html>"
 `;
 
-exports[`integration tests [html file]: video.html 1`] = `
+exports[`integration tests > [html file]: video.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
     <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -450,7 +576,7 @@ exports[`integration tests [html file]: video.html 1`] = `
   </body></html>"
 `;
 
-exports[`integration tests [html file]: with-relative-res.html 1`] = `
+exports[`integration tests > [html file]: with-relative-res.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -470,7 +596,7 @@ exports[`integration tests [html file]: with-relative-res.html 1`] = `
   <img src=\\"http://localhost:3030/a.jpg\\" alt=\\"\\" srcset=\\"http://localhost:3030/300,400/a.jpg 300w, http://localhost:3030/b.png\\" /></body></html>"
 `;
 
-exports[`integration tests [html file]: with-script.html 1`] = `
+exports[`integration tests > [html file]: with-script.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
@@ -481,29 +607,242 @@ exports[`integration tests [html file]: with-script.html 1`] = `
   <noscript>SCRIPT_PLACEHOLDER</noscript></body></html>"
 `;
 
-exports[`integration tests [html file]: with-style-sheet.html 1`] = `
+exports[`integration tests > [html file]: with-style-sheet.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
   <title>with style sheet</title>
-  <style>body { margin: 0px; background: url(\\"http://localhost:3030/a.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/css/b.jpg\\"); }body &gt; p { color: yellow; }</style>
+  <style>body { margin: 0px; background: url(\\"http://localhost:3030/should-be-in-root-folder.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/css/should-be-in-css-folder.jpg\\"); }body &gt; p { color: yellow; }</style>
 </head><body>
 </body></html>"
 `;
 
-exports[`integration tests [html file]: with-style-sheet-with-import.html 1`] = `
+exports[`integration tests > [html file]: with-style-sheet-with-import.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
   <meta charset=\\"UTF-8\\" />
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
   <title>with style sheet with import</title>
-  <style>@import url(\\"//fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&amp;family=Roboto:wght@100;300;400;500;700&amp;display=swap\\\\\\"\\");body { margin: 0px; background: url(\\"http://localhost:3030/a.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/css/b.jpg\\"); }body &gt; p { color: yellow; }</style>
+  <style>@import url(\\"//fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&amp;family=Roboto:wght@100;300;400;500;700&amp;display=swap\\\\\\"\\");body { margin: 0px; background: url(\\"http://localhost:3030/should-be-in-root-folder.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/css/should-be-in-css-folder.jpg\\"); }body &gt; p { color: yellow; }body { margin: 0px; background: url(\\"http://localhost:3030/should-be-in-root-folder.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/alt-css/should-be-in-alt-css-folder.jpg\\"); }body &gt; p { color: yellow; }</style>
+  <style>body { margin: 0px; background: url(\\"http://localhost:3030/should-be-in-root-folder.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/alt-css/should-be-in-alt-css-folder.jpg\\"); }body &gt; p { color: yellow; }section { background: url(\\"http://localhost:3030/should-be-in-root-folder.jpg\\"); }</style>
 </head><body>
 </body></html>"
 `;
 
-exports[`shadow DOM integration tests snapshot shadow DOM 1`] = `
+exports[`integration tests > should be able to record elements even when .childNodes has been monkey patched 1`] = `
+"{
+  \\"type\\": 0,
+  \\"childNodes\\": [
+    {
+      \\"type\\": 1,
+      \\"name\\": \\"html\\",
+      \\"publicId\\": \\"\\",
+      \\"systemId\\": \\"\\",
+      \\"id\\": 2
+    },
+    {
+      \\"type\\": 2,
+      \\"tagName\\": \\"html\\",
+      \\"attributes\\": {
+        \\"lang\\": \\"en\\"
+      },
+      \\"childNodes\\": [
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"head\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 5
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"meta\\",
+              \\"attributes\\": {
+                \\"charset\\": \\"UTF-8\\"
+              },
+              \\"childNodes\\": [],
+              \\"id\\": 6
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 7
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"meta\\",
+              \\"attributes\\": {
+                \\"name\\": \\"viewport\\",
+                \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+              },
+              \\"childNodes\\": [],
+              \\"id\\": 8
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 9
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"title\\",
+              \\"attributes\\": {},
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"Document\\",
+                  \\"id\\": 11
+                }
+              ],
+              \\"id\\": 10
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 12
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"script\\",
+              \\"attributes\\": {},
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                  \\"id\\": 14
+                }
+              ],
+              \\"id\\": 13
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n  \\",
+              \\"id\\": 15
+            }
+          ],
+          \\"id\\": 4
+        },
+        {
+          \\"type\\": 3,
+          \\"textContent\\": \\"\\\\n  \\",
+          \\"id\\": 16
+        },
+        {
+          \\"type\\": 2,
+          \\"tagName\\": \\"body\\",
+          \\"attributes\\": {},
+          \\"childNodes\\": [
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n    \\",
+              \\"id\\": 18
+            },
+            {
+              \\"type\\": 2,
+              \\"tagName\\": \\"ul\\",
+              \\"attributes\\": {},
+              \\"childNodes\\": [
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 20
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"li\\",
+                  \\"attributes\\": {},
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"a\\",
+                      \\"id\\": 22
+                    }
+                  ],
+                  \\"id\\": 21
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 23
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"li\\",
+                  \\"attributes\\": {},
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"b\\",
+                      \\"id\\": 25
+                    }
+                  ],
+                  \\"id\\": 24
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 26
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"li\\",
+                  \\"attributes\\": {},
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"c\\",
+                      \\"id\\": 28
+                    }
+                  ],
+                  \\"id\\": 27
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n      \\",
+                  \\"id\\": 29
+                },
+                {
+                  \\"type\\": 2,
+                  \\"tagName\\": \\"li\\",
+                  \\"attributes\\": {},
+                  \\"childNodes\\": [
+                    {
+                      \\"type\\": 3,
+                      \\"textContent\\": \\"d\\",
+                      \\"id\\": 31
+                    }
+                  ],
+                  \\"id\\": 30
+                },
+                {
+                  \\"type\\": 3,
+                  \\"textContent\\": \\"\\\\n    \\",
+                  \\"id\\": 32
+                }
+              ],
+              \\"id\\": 19
+            },
+            {
+              \\"type\\": 3,
+              \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
+              \\"id\\": 33
+            }
+          ],
+          \\"id\\": 17
+        }
+      ],
+      \\"id\\": 3
+    }
+  ],
+  \\"id\\": 1
+}"
+`;
+
+exports[`shadow DOM integration tests > snapshot shadow DOM 1`] = `
 "{
   \\"type\\": 0,
   \\"childNodes\\": [

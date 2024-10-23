@@ -31,8 +31,9 @@ import type {
   styleDeclarationCallback,
   styleSheetRuleCallback,
   viewportResizeCallback,
+  PackFn,
+  UnpackFn,
 } from '@amplitude/rrweb-types';
-import type { PackFn, UnpackFn } from './packer/base';
 import type { IframeManager } from './record/iframe-manager';
 import type { CanvasManager } from './record/observers/canvas/canvas-manager';
 import type ProcessedNodeManager from './record/processed-node-manager';
@@ -164,6 +165,7 @@ export type ReplayPlugin = {
   ) => void;
   getMirror?: (mirrors: { nodeMirror: Mirror }) => void;
 };
+export type { Replayer } from './replay';
 export type playerConfig = {
   speed: number;
   maxSpeed: number;

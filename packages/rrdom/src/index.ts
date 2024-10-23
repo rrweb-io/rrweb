@@ -16,24 +16,25 @@ import type {
   styleSheetRuleData,
 } from '@amplitude/rrweb-types';
 import {
-  BaseRRCDATASectionImpl,
-  BaseRRCommentImpl,
-  BaseRRDocumentImpl,
-  BaseRRDocumentTypeImpl,
-  BaseRRElementImpl,
-  BaseRRMediaElementImpl,
-  BaseRRTextImpl,
-  IRRComment,
-  IRRDocument,
-  IRRDocumentType,
-  IRRElement,
-  IRRNode,
-  IRRText,
-  NodeType,
   BaseRRNode as RRNode,
+  BaseRRCDATASection,
+  BaseRRComment,
+  BaseRRDocument,
+  BaseRRDocumentType,
+  BaseRRElement,
+  BaseRRMediaElement,
+  BaseRRText,
+  type IRRDocument,
+  type IRRElement,
+  type IRRNode,
+  NodeType,
+  type IRRDocumentType,
+  type IRRText,
+  type IRRComment,
+  BaseRRDialogElement,
 } from './document';
 
-export class RRDocument extends BaseRRDocumentImpl(RRNode) {
+export class RRDocument extends BaseRRDocument {
   private UNSERIALIZED_STARTING_ID = -2;
   // In the rrweb replayer, there are some unserialized nodes like the element that stores the injected style rules.
   // These unserialized nodes may interfere the execution of the diff algorithm.
@@ -104,6 +105,9 @@ export class RRDocument extends BaseRRDocumentImpl(RRNode) {
       case 'STYLE':
         element = new RRStyleElement(upperTagName);
         break;
+      case 'DIALOG':
+        element = new RRDialogElement(upperTagName);
+        break;
       default:
         element = new RRElement(upperTagName);
         break;
@@ -142,14 +146,16 @@ export class RRDocument extends BaseRRDocumentImpl(RRNode) {
   }
 }
 
-export const RRDocumentType = BaseRRDocumentTypeImpl(RRNode);
+export const RRDocumentType = BaseRRDocumentType;
 
-export class RRElement extends BaseRRElementImpl(RRNode) {
+export class RRElement extends BaseRRElement {
   inputData: inputData | null = null;
   scrollData: scrollData | null = null;
 }
 
-export class RRMediaElement extends BaseRRMediaElementImpl(RRElement) {}
+export class RRMediaElement extends BaseRRMediaElement {}
+
+export class RRDialogElement extends BaseRRDialogElement {}
 
 export class RRCanvasElement extends RRElement implements IRRElement {
   public rr_dataURL: string | null = null;
@@ -177,13 +183,13 @@ export class RRIFrameElement extends RRElement {
   }
 }
 
-export const RRText = BaseRRTextImpl(RRNode);
+export const RRText = BaseRRText;
 export type RRText = typeof RRText;
 
-export const RRComment = BaseRRCommentImpl(RRNode);
+export const RRComment = BaseRRComment;
 export type RRComment = typeof RRComment;
 
-export const RRCDATASection = BaseRRCDATASectionImpl(RRNode);
+export const RRCDATASection = BaseRRCDATASection;
 export type RRCDATASection = typeof RRCDATASection;
 
 interface RRElementTagNameMap {
@@ -483,5 +489,5 @@ function walk(node: IRRNode, mirror: IMirror<IRRNode>, blankSpace: string) {
 
 export { RRNode };
 
-export { ReplayerHandler, createOrGetNode, diff } from './diff';
+export { diff, createOrGetNode, type ReplayerHandler } from './diff';
 export * from './document';

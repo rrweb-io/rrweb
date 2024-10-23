@@ -1,64 +1,58 @@
 import {
-  MaskInputOptions,
+  type MaskInputOptions,
+  maskInputValue,
   Mirror,
   getInputType,
-  maskInputValue,
   toLowerCase,
 } from '@amplitude/rrweb-snapshot';
+import type { FontFaceSet } from 'css-font-loading-module';
 import {
-  Arguments,
-  IWindow,
+  throttle,
+  on,
+  hookSetter,
+  getWindowScroll,
+  getWindowHeight,
+  getWindowWidth,
+  isBlocked,
+  legacy_isTouchEvent,
+  patch,
+  StyleSheetMirror,
+  nowTimestamp,
+} from '../utils';
+import type { observerParam, MutationBufferParam } from '../types';
+import {
   IncrementalSource,
-  MediaInteractions,
   MouseInteractions,
   PointerTypes,
-  SelectionRange,
+  MediaInteractions,
+} from '@amplitude/rrweb-types';
+import type {
+  mutationCallBack,
+  mousemoveCallBack,
+  mousePosition,
+  mouseInteractionCallBack,
+  listenerHandler,
+  scrollCallback,
+  styleSheetRuleCallback,
+  viewportResizeCallback,
+  inputValue,
+  inputCallback,
+  hookResetter,
+  hooksParam,
+  Arguments,
+  mediaInteractionCallback,
   canvasMutationCallback,
   fontCallback,
   fontParam,
-  hookResetter,
-  hooksParam,
-  inputCallback,
-  inputValue,
-  listenerHandler,
-  mediaInteractionCallback,
-  mouseInteractionCallBack,
-  mousePosition,
-  mousemoveCallBack,
-  mutationCallBack,
-  scrollCallback,
-  selectionCallback,
   styleDeclarationCallback,
-  styleSheetRuleCallback,
-  viewportResizeCallback,
+  IWindow,
+  SelectionRange,
+  selectionCallback,
   customElementCallback,
 } from '@amplitude/rrweb-types';
-import type { FontFaceSet } from 'css-font-loading-module';
-import type { MutationBufferParam, observerParam } from '../types';
-import {
-  StyleSheetMirror,
-  getWindowHeight,
-  getWindowScroll,
-  getWindowWidth,
-  hookSetter,
-  isBlocked,
-  legacy_isTouchEvent,
-  nowTimestamp,
-  on,
-  patch,
-  throttle,
-} from '../utils';
-import { callbackWrapper, externalFunctionWrapper } from './error-handler';
 import MutationBuffer from './mutation';
-
-type WindowWithStoredMutationObserver = IWindow & {
-  __rrMutationObserver?: MutationObserver;
-};
-type WindowWithAngularZone = IWindow & {
-  Zone?: {
-    __symbol__?: (key: string) => string;
-  };
-};
+import { callbackWrapper, externalFunctionWrapper } from './error-handler';
+import dom, { mutationObserverCtor } from '@amplitude/rrweb-utils';
 
 export const mutationBuffers: MutationBuffer[] = [];
 
@@ -92,31 +86,7 @@ export function initMutationObserver(
   mutationBuffers.push(mutationBuffer);
   // see mutation.ts for details
   mutationBuffer.init(options);
-  let mutationObserverCtor =
-    window.MutationObserver ||
-    /**
-     * Some websites may disable MutationObserver by removing it from the window object.
-     * If someone is using rrweb to build a browser extention or things like it, they
-     * could not change the website's code but can have an opportunity to inject some
-     * code before the website executing its JS logic.
-     * Then they can do this to store the native MutationObserver:
-     * window.__rrMutationObserver = MutationObserver
-     */
-    (window as WindowWithStoredMutationObserver).__rrMutationObserver;
-  const angularZoneSymbol = (
-    window as WindowWithAngularZone
-  )?.Zone?.__symbol__?.('MutationObserver');
-  if (
-    angularZoneSymbol &&
-    (window as unknown as Record<string, typeof MutationObserver>)[
-      angularZoneSymbol
-    ]
-  ) {
-    mutationObserverCtor = (
-      window as unknown as Record<string, typeof MutationObserver>
-    )[angularZoneSymbol];
-  }
-  const observer = new (mutationObserverCtor as new (
+  const observer = new (mutationObserverCtor() as new (
     callback: MutationCallback,
   ) => MutationObserver)(
     callbackWrapper(mutationBuffer.processMutations.bind(mutationBuffer)),
@@ -431,7 +401,7 @@ function initInputObserver({
      * We can treat this change as a value change of the select element the current target belongs to.
      */
     if (target && tagName === 'OPTION') {
-      target = target.parentElement;
+      target = dom.parentElement(target);
     }
     if (
       !target ||
@@ -659,6 +629,17 @@ function initStyleSheetObserver(
     ),
   });
 
+  // Support for deprecated addRule method
+  win.CSSStyleSheet.prototype.addRule = function (
+    this: CSSStyleSheet,
+    selector: string,
+    styleBlock: string,
+    index: number = this.cssRules.length,
+  ) {
+    const rule = `${selector} { ${styleBlock} }`;
+    return win.CSSStyleSheet.prototype.insertRule.apply(this, [rule, index]);
+  };
+
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const deleteRule = win.CSSStyleSheet.prototype.deleteRule;
   win.CSSStyleSheet.prototype.deleteRule = new Proxy(deleteRule, {
@@ -689,6 +670,14 @@ function initStyleSheetObserver(
       },
     ),
   });
+
+  // Support for deprecated removeRule method
+  win.CSSStyleSheet.prototype.removeRule = function (
+    this: CSSStyleSheet,
+    index: number,
+  ) {
+    return win.CSSStyleSheet.prototype.deleteRule.apply(this, [index]);
+  };
 
   let replace: (text: string) => Promise<CSSStyleSheet>;
 
@@ -885,7 +874,7 @@ export function initAdoptedStyleSheetObserver(
   // host of adoptedStyleSheets is outermost document or IFrame's document
   if (host.nodeName === '#document') hostId = mirror.getId(host);
   // The host is a ShadowRoot.
-  else hostId = mirror.getId((host as ShadowRoot).host);
+  else hostId = mirror.getId(dom.host(host as ShadowRoot));
 
   const patchTarget =
     host.nodeName === '#document'

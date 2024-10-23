@@ -1,6 +1,6 @@
-import { eventWithTime } from '@amplitude/rrweb-types';
+import type { eventWithTime } from '@amplitude/rrweb-types';
 import { openDB } from 'idb';
-import { Session } from '~/types';
+import type { Session } from '~/types';
 
 /**
  * Storage related functions with indexedDB.
@@ -87,4 +87,23 @@ export async function deleteSessions(ids: string[]) {
   await Promise.all(promises).then(() => {
     return Promise.all([eventTransition.done, sessionTransition.done]);
   });
+}
+
+export async function downloadSessions(ids: string[]) {
+  for (const sessionId of ids) {
+    const events = await getEvents(sessionId);
+    const session = await getSession(sessionId);
+    const blob = new Blob([JSON.stringify({ session, events }, null, 2)], {
+      type: 'application/json',
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${session.name}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 }

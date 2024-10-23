@@ -1,9 +1,9 @@
 import {
-  Emitter,
+  type Emitter,
   MediaInteractions,
   ReplayerEvents,
 } from '@amplitude/rrweb-types';
-import type { RRMediaElement } from '@amplitude/rrdom/es';
+import type { RRMediaElement } from '@amplitude/rrdom';
 import type { createPlayerService, createSpeedService } from '../machine';
 import type { Mirror, mediaAttributes } from '@amplitude/rrweb-snapshot';
 import type { mediaInteractionData } from '@amplitude/rrweb-types';
@@ -54,7 +54,7 @@ export class MediaManager {
   }
 
   private syncAllMediaElements(options = { pause: false }) {
-    this.mediaMap.forEach((mediaState, target) => {
+    this.mediaMap.forEach((_mediaState, target) => {
       this.syncTargetWithState(target);
       if (options.pause) {
         target.pause();

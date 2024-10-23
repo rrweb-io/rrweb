@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import {
   IconButton,
   Box,
@@ -12,8 +12,8 @@ import {
   Drawer,
   DrawerContent,
   useDisclosure,
-  BoxProps,
-  FlexProps,
+  type BoxProps,
+  type FlexProps,
   Heading,
   Stack,
   Text,
@@ -117,7 +117,7 @@ const SidebarContent = ({
           <Image
             borderRadius="md"
             boxSize="2rem"
-            src={Browser.runtime.getURL('assets/icon128.png')}
+            src={Browser.runtime.getURL('icon128.png')}
             alt="RRWeb Logo"
           />
         </Link>

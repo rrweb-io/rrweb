@@ -3,6 +3,7 @@ import 'construct-style-sheets-polyfill';
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
+import { vi } from 'vitest';
 import adoptedStyleSheet from './events/adopted-style-sheet';
 import adoptedStyleSheetModification from './events/adopted-style-sheet-modification';
 import canvasInIframe from './events/canvas-in-iframe';
@@ -15,8 +16,9 @@ import scrollEvents from './events/scroll';
 import scrollWithParentStylesEvents from './events/scroll-with-parent-styles';
 import selectionEvents from './events/selection';
 import shadowDomEvents from './events/shadow-dom';
-import textareaEvents from './events/bad-textarea';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
+import badTextareaEvents from './events/bad-textarea';
+import badStyleEvents from './events/bad-style';
 import StyleSheetTextMutation from './events/style-sheet-text-mutation';
 import {
   assertDomSnapshot,
@@ -37,7 +39,7 @@ type IWindow = Window &
   typeof globalThis & { rrweb: typeof import('../src'); events: typeof events };
 
 describe('replayer', function () {
-  jest.setTimeout(10_000);
+  vi.setConfig({ testTimeout: 10_000 });
 
   let code: ISuite['code'];
   let browser: ISuite['browser'];
@@ -46,7 +48,7 @@ describe('replayer', function () {
   beforeAll(async () => {
     browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../dist/rrweb.js');
+    const bundlePath = path.resolve(__dirname, '../dist/rrweb.umd.cjs');
     code = fs.readFileSync(bundlePath, 'utf8');
   });
 
@@ -580,7 +582,7 @@ describe('replayer', function () {
     expect(iframeTwoDocument).not.toBeNull();
     expect((await iframeTwoDocument!.$$('iframe')).length).toEqual(2);
     expect((await iframeTwoDocument!.$$('style')).length).toBe(1);
-    let iframeThreeDocument = await (
+    const iframeThreeDocument = await (
       await iframeTwoDocument!.$$('iframe')
     )[0]!.contentFrame();
     let iframeFourDocument = await (
@@ -1048,9 +1050,9 @@ describe('replayer', function () {
     await page.evaluate(
       `events = ${JSON.stringify(documentReplacementEvents)}`,
     );
-    const warningThrown = jest.fn();
+    const warningThrown = vi.fn();
     page.on('console', warningThrown);
-    const errorThrown = jest.fn();
+    const errorThrown = vi.fn();
     page.on('pageerror', errorThrown);
     await page.evaluate(`
       const { Replayer } = rrweb;
@@ -1141,7 +1143,7 @@ describe('replayer', function () {
   });
 
   it('can deal with legacy duplicate/conflicting values on textareas', async () => {
-    await page.evaluate(`events = ${JSON.stringify(textareaEvents)}`);
+    await page.evaluate(`events = ${JSON.stringify(badTextareaEvents)}`);
 
     const displayValue = await page.evaluate(`
       const { Replayer } = rrweb;
@@ -1153,5 +1155,26 @@ describe('replayer', function () {
     // If the custom element is not defined, the display value will be 'none'.
     // If the custom element is defined, the display value will be 'block'.
     expect(displayValue).toEqual('this value is used for replay');
+  });
+
+  it('can deal with duplicate/conflicting values on style elements', async () => {
+    await page.evaluate(`events = ${JSON.stringify(badStyleEvents)}`);
+
+    const changedColors = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(1000);
+      // Get the color of the elements after applying the style mutation event
+      [
+        replayer.iframe.contentWindow.getComputedStyle(
+          replayer.iframe.contentDocument.querySelector('#one'),
+        ).color,
+        replayer.iframe.contentWindow.getComputedStyle(
+          replayer.iframe.contentDocument.querySelector('#two'),
+        ).color,
+      ];
+`);
+    const newColor = 'rgb(255, 255, 0)'; // yellow
+    expect(changedColors).toEqual([newColor, newColor]);
   });
 });

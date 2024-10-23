@@ -1,7 +1,7 @@
 import {
   Mirror as NodeMirror,
   NodeType as RRNodeType,
-  elementNode,
+  type elementNode,
 } from '@amplitude/rrweb-snapshot';
 import type {
   canvasEventWithTime,
@@ -19,6 +19,7 @@ import type {
   RRIFrameElement,
   RRMediaElement,
   RRStyleElement,
+  RRDialogElement,
 } from '.';
 import type {
   IRRCDATASection,
@@ -237,7 +238,7 @@ function diffAfterUpdatingChildren(
         case 'AUDIO':
         case 'VIDEO': {
           const oldMediaElement = oldTree as HTMLMediaElement;
-          const newMediaRRElement = newRRElement as RRMediaElement;
+          const newMediaRRElement = newRRElement as unknown as RRMediaElement;
           if (newMediaRRElement.paused !== undefined)
             newMediaRRElement.paused
               ? void oldMediaElement.pause()
@@ -283,6 +284,29 @@ function diffAfterUpdatingChildren(
             (newTree as RRStyleElement).rules.forEach((data) =>
               replayer.applyStyleSheetMutation(data, styleSheet),
             );
+          break;
+        }
+        case 'DIALOG': {
+          const dialog = oldElement as HTMLDialogElement;
+          const rrDialog = newRRElement as unknown as RRDialogElement;
+          const wasOpen = dialog.open;
+          const wasModal = dialog.matches('dialog:modal');
+          const shouldBeOpen = rrDialog.open;
+          const shouldBeModal = rrDialog.isModal;
+
+          const modalChanged = wasModal !== shouldBeModal;
+          const openChanged = wasOpen !== shouldBeOpen;
+
+          if (modalChanged || (wasOpen && openChanged)) dialog.close();
+          if (shouldBeOpen && (openChanged || modalChanged)) {
+            try {
+              if (shouldBeModal) dialog.showModal();
+              else dialog.show();
+            } catch (e) {
+              console.warn(e);
+            }
+          }
+
           break;
         }
       }
@@ -335,7 +359,6 @@ function diffProps(
 
   for (const { name } of Array.from(oldAttributes))
     if (!(name in newAttributes)) oldTree.removeAttribute(name);
-
   newTree.scrollLeft && (oldTree.scrollLeft = newTree.scrollLeft);
   newTree.scrollTop && (oldTree.scrollTop = newTree.scrollTop);
 }

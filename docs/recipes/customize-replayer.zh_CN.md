@@ -1,11 +1,11 @@
 # 自定义回放 UI
 
-当 rrweb Replayer 和 rrweb-player 的 UI 不能满足需求时，可以通过自定义回放 UI 制作属于你自己的回放器。
+当 rrweb Replayer 和 [rrweb-player](../../packages/rrweb-player/) 的 UI 不能满足需求时，可以通过自定义回放 UI 制作属于你自己的回放器。
 
 你可以通过以下几种方式从不同角度自定义回放 UI：
 
-1. 使用 rrweb-player 时，通过覆盖 CSS 样式表定制 UI。
-2. 使用 rrweb-player 时，通过 `showController: false` 隐藏控制器 UI，重新实现控制器 UI。
+1. 使用 [rrweb-player](../../packages/rrweb-player/) 时，通过覆盖 CSS 样式表定制 UI。
+2. 使用 [rrweb-player](../../packages/rrweb-player/) 时，通过 `showController: false` 隐藏控制器 UI，重新实现控制器 UI。
 3. 通过 `insertStyleRules` 在回放页面（iframe）内定制 CSS 样式。
 4. 基于 rrweb Replayer 开发自己的回放器 UI。
 
@@ -14,6 +14,8 @@
 使用 rrweb-player 时，可以隐藏其控制器 UI：
 
 ```js
+import rrwebPlayer from 'rrweb-player';
+
 new rrwebPlayer({
   target: document.body,
   props: {

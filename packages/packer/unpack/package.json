@@ -1,0 +1,4 @@
+{
+  "main": "../dist/unpack.cjs",
+  "types": "../dist/unpack.d.ts"
+}

@@ -14,12 +14,12 @@ import type {
   listenerHandler,
 } from '@amplitude/rrweb-types';
 import { CanvasContext } from '@amplitude/rrweb-types';
-import ImageBitmapDataURLWorker from 'web-worker:../../workers/image-bitmap-data-url-worker.ts';
 import { isBlocked } from '../../../utils';
-import type { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap-data-url-worker';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';
+import ImageBitmapDataURLWorker from '../../workers/image-bitmap-data-url-worker?worker&inline';
+import type { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap-data-url-worker';
 
 export type RafStamps = { latestId: number; invokeId: number | null };
 
@@ -266,7 +266,6 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
-      this.mirror,
     );
 
     this.resetObservers = () => {
@@ -290,7 +289,7 @@ export class CanvasManager {
 
   flushPendingCanvasMutations() {
     this.pendingCanvasMutations.forEach(
-      (values: canvasMutationCommand[], canvas: HTMLCanvasElement) => {
+      (_values: canvasMutationCommand[], canvas: HTMLCanvasElement) => {
         const id = this.mirror.getId(canvas);
         this.flushPendingCanvasMutationFor(canvas, id);
       },
