@@ -6,9 +6,8 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import { vi } from 'vitest';
 import { JSDOM } from 'jsdom';
-import { Mirror } from 'rrweb-snapshot';
+import { buildNodeWithSN, Mirror } from 'rrweb-snapshot';
 import {
-  buildNodeWithSN,
   cdataNode,
   commentNode,
   documentNode,
