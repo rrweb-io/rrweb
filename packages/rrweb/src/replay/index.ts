@@ -408,7 +408,6 @@ export class Replayer {
     );
     if (firstMeta) {
       const { width, height } = firstMeta.data as metaEvent['data'];
-      this.assetManager.reset();
       setTimeout(() => {
         this.emitter.emit(ReplayerEvents.Resize, {
           width,
@@ -699,7 +698,6 @@ export class Replayer {
         break;
       case EventType.Meta:
         castFn = () => {
-          this.assetManager.reset();
           this.emitter.emit(ReplayerEvents.Resize, {
             width: event.data.width,
             height: event.data.height,
@@ -855,6 +853,7 @@ export class Replayer {
       }
     };
 
+    this.assetManager.replayerApproxTs = event.timestamp;
     void this.preloadAllAssets(event);
 
     /**
@@ -1178,6 +1177,7 @@ export class Replayer {
     const { data: d } = e;
     switch (d.source) {
       case IncrementalSource.Mutation: {
+        this.assetManager.replayerApproxTs = e.timestamp;
         try {
           this.applyMutation(d, isSync);
         } catch (error) {
