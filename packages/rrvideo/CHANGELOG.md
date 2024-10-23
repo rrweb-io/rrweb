@@ -1,5 +1,12 @@
 # rrvideo
 
+## 2.0.0-alpha.25
+
+### Patch Changes
+
+- Updated dependencies [[`0749d4c`](https://github.com/amplitude/rrweb/commit/0749d4c0d5ec0fb75b82db935d9cc8466645b307)]:
+  - @amplitude/rrweb-player@2.0.0-alpha.25
+
 ## 2.0.0-alpha.24
 
 ### Patch Changes

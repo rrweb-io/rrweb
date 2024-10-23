@@ -1,5 +1,45 @@
 # rrweb
 
+## 2.0.0-alpha.25
+
+### Major Changes
+
+- [#43](https://github.com/amplitude/rrweb/pull/43) [`0749d4c`](https://github.com/amplitude/rrweb/commit/0749d4c0d5ec0fb75b82db935d9cc8466645b307) Thanks [@jxiwang](https://github.com/jxiwang)! - Split plugins out of rrweb and move them into their own packages: @rrweb/packer, @rrweb/rrweb-plugin-canvas-webrtc-record, @rrweb/rrweb-plugin-canvas-webrtc-replay, @rrweb/rrweb-plugin-sequential-id-record, @rrweb/rrweb-plugin-sequential-id-replay, @rrweb/rrweb-plugin-console-record, @rrweb/rrweb-plugin-console-replay. Check out the README of each package for more information or check out https://github.com/rrweb-io/rrweb/pull/1033 to see the changes.
+
+- [#43](https://github.com/amplitude/rrweb/pull/43) [`0749d4c`](https://github.com/amplitude/rrweb/commit/0749d4c0d5ec0fb75b82db935d9cc8466645b307) Thanks [@jxiwang](https://github.com/jxiwang)! - Important: If you don't reference distributed files directly, for example you run `import rrweb from 'rrweb'` you won't notice a difference. If you include rrweb in a script tag and referred to a `.js` file, you'll now have to update that path to include a `.umd.cjs` file. Distributed files have new paths, filenames and extensions. All packages now no longer include a `.js` files, instead they include `.cjs`, `.umd.cjs` and `.mjs` files. The `.umd.cjs` files are CommonJS modules that bundle all files together to make it easy to ship one file to browser environments. The `.mjs` files are ES modules that can be used in modern browsers, node.js and bundlers that support ES modules. The `.cjs` files are CommonJS modules that can be used in older Node.js environments.
+
+- [#43](https://github.com/amplitude/rrweb/pull/43) [`0749d4c`](https://github.com/amplitude/rrweb/commit/0749d4c0d5ec0fb75b82db935d9cc8466645b307) Thanks [@jxiwang](https://github.com/jxiwang)! - Remove the rrweb-all.js, rrweb-record.js, and rrweb-replay.js files from `rrweb` package. Now you can use `@rrweb/all`, `@rrweb/record`, and `@rrweb/replay` packages instead. Check out the README of each package for more information or check out [PR #1033](https://github.com/rrweb-io/rrweb/pull/1033) to see the changes.
+
+### Minor Changes
+
+- [#43](https://github.com/amplitude/rrweb/pull/43) [`3ae57a6`](https://github.com/amplitude/rrweb/commit/3ae57a6d8803f4e076a448fa7e3967fa3c125487) Thanks [@jxiwang](https://github.com/jxiwang)! - Support top-layer <dialog> components. Fixes #1381.
+
+### Patch Changes
+
+- [#43](https://github.com/amplitude/rrweb/pull/43) [`becf687`](https://github.com/amplitude/rrweb/commit/becf687910a21be618c8644642673217d75a4bfe) Thanks [@jxiwang](https://github.com/jxiwang)! - Fix that the optional `maskInputFn` was being accidentally ignored during the creation of the full snapshot
+
+- [#43](https://github.com/amplitude/rrweb/pull/43) [`178f1e6`](https://github.com/amplitude/rrweb/commit/178f1e6e450e0903e9dadc4dc96dd74236f296ba) Thanks [@jxiwang](https://github.com/jxiwang)! - fix: duplicate textContent for style elements cause incremental style mutations to be invalid
+
+- [#43](https://github.com/amplitude/rrweb/pull/43) [`4fe0153`](https://github.com/amplitude/rrweb/commit/4fe01532dc533ecbcc01d3fa5fcec8a0abbf292e) Thanks [@jxiwang](https://github.com/jxiwang)! - Export `ReplayPlugin` from rrweb directly. Previously we had to do `import type { ReplayPlugin } from 'rrweb/dist/types';` now we can do `import type { ReplayPlugin } from 'rrweb';`
+
+- [#43](https://github.com/amplitude/rrweb/pull/43) [`1dba10a`](https://github.com/amplitude/rrweb/commit/1dba10a215ea873fd1663d77c58c783c9d8a0edc) Thanks [@jxiwang](https://github.com/jxiwang)! - Export takeFullSnapshot function for a recording process
+
+- [#43](https://github.com/amplitude/rrweb/pull/43) [`e8a0ecd`](https://github.com/amplitude/rrweb/commit/e8a0ecd0268e599c17e97bcd91f94c44b04d79a0) Thanks [@jxiwang](https://github.com/jxiwang)! - Added support for deprecated addRule & removeRule methods
+
+- [#43](https://github.com/amplitude/rrweb/pull/43) [`f317df7`](https://github.com/amplitude/rrweb/commit/f317df792ba69ee33b7148f486dea8e77cfab42a) Thanks [@jxiwang](https://github.com/jxiwang)! - Fix: some nested cross-origin iframes can't be recorded
+
+- [#43](https://github.com/amplitude/rrweb/pull/43) [`3ef1e70`](https://github.com/amplitude/rrweb/commit/3ef1e709eb43b21505ed6bde405c2f6f83b0badc) Thanks [@jxiwang](https://github.com/jxiwang)! - optimisation: skip mask check on leaf elements
+
+- [#43](https://github.com/amplitude/rrweb/pull/43) [`4442d21`](https://github.com/amplitude/rrweb/commit/4442d21c5b1b6fb6dd6af6f52f97ca0317005ad8) Thanks [@jxiwang](https://github.com/jxiwang)! - Add slimDOM option to block animation on <title> tag; enabled when the 'all' value is used for slimDOM
+
+- [#43](https://github.com/amplitude/rrweb/pull/43) [`9e9226f`](https://github.com/amplitude/rrweb/commit/9e9226fc00031dc6c2012dedcd53ec41db86b975) Thanks [@jxiwang](https://github.com/jxiwang)! - Reverse monkey patch built in methods to support LWC (and other frameworks like angular which monkey patch built in methods).
+
+- Updated dependencies [[`becf687`](https://github.com/amplitude/rrweb/commit/becf687910a21be618c8644642673217d75a4bfe), [`178f1e6`](https://github.com/amplitude/rrweb/commit/178f1e6e450e0903e9dadc4dc96dd74236f296ba), [`3ae57a6`](https://github.com/amplitude/rrweb/commit/3ae57a6d8803f4e076a448fa7e3967fa3c125487), [`0749d4c`](https://github.com/amplitude/rrweb/commit/0749d4c0d5ec0fb75b82db935d9cc8466645b307), [`3ae57a6`](https://github.com/amplitude/rrweb/commit/3ae57a6d8803f4e076a448fa7e3967fa3c125487), [`6676611`](https://github.com/amplitude/rrweb/commit/6676611aa9ef5ef777d55289d7887293965e317f), [`3ef1e70`](https://github.com/amplitude/rrweb/commit/3ef1e709eb43b21505ed6bde405c2f6f83b0badc), [`4442d21`](https://github.com/amplitude/rrweb/commit/4442d21c5b1b6fb6dd6af6f52f97ca0317005ad8), [`9e9226f`](https://github.com/amplitude/rrweb/commit/9e9226fc00031dc6c2012dedcd53ec41db86b975)]:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.25
+  - @amplitude/rrdom@2.0.0-alpha.25
+  - @amplitude/rrweb-types@2.0.0-alpha.25
+  - @amplitude/rrweb-utils@2.0.0-alpha.25
+
 ## 2.0.0-alpha.24
 
 ### Patch Changes
