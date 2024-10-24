@@ -177,16 +177,54 @@ export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
     return importStringified;
   } else {
     let ruleStringified = rule.cssText;
-    if (isCSSStyleRule(rule) && rule.selectorText.includes(':')) {
-      // Safari does not escape selectors with : properly
-      // see https://bugs.webkit.org/show_bug.cgi?id=184604
-      ruleStringified = fixSafariColons(ruleStringified);
+    if (isCSSStyleRule(rule)) {
+      ruleStringified = replaceChromeGridTemplateAreas(rule);
+
+      if (rule.selectorText.includes(':')) {
+        // Safari does not escape selectors with : properly
+        // see https://bugs.webkit.org/show_bug.cgi?id=184604
+        ruleStringified = fixSafariColons(ruleStringified);
+      }
     }
     if (sheetHref) {
       return absolutifyURLs(ruleStringified, sheetHref);
     }
     return ruleStringified;
   }
+}
+
+export function replaceChromeGridTemplateAreas(rule: CSSStyleRule): string {
+  // chrome does not correctly provide the grid-template-areas in the rule.cssText
+  // when it parses them to grid-template short-hand syntax
+  // e.g. https://bugs.chromium.org/p/chromium/issues/detail?id=1303968
+  // so, we manually rebuild the cssText using rule.style when
+  // we find the cssText contains grid-template:, rule.style contains grid-template-areas, but
+  // cssText does not include grid-template-areas
+  const hasGridTemplateInCSSText = rule.cssText.includes('grid-template:');
+  const hasGridTemplateAreaInStyleRules =
+    rule.style.getPropertyValue('grid-template-areas') !== '';
+  const hasGridTemplateAreaInCSSText = rule.cssText.includes(
+    'grid-template-areas:',
+  );
+
+  if (
+    hasGridTemplateInCSSText &&
+    hasGridTemplateAreaInStyleRules &&
+    !hasGridTemplateAreaInCSSText
+  ) {
+    const styleDeclarations = [];
+
+    for (let i = 0; i < rule.style.length; i++) {
+      const styleName = rule.style[i];
+      const styleValue = rule.style.getPropertyValue(styleName);
+
+      styleDeclarations.push(`${styleName}: ${styleValue}`);
+    }
+
+    return `${rule.selectorText} { ${styleDeclarations.join('; ')}; }`;
+  }
+
+  return rule.cssText;
 }
 
 export function fixSafariColons(cssStringified: string): string {
