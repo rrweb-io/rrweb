@@ -14,7 +14,6 @@ function useSpecialFormat(
   return {
     name: 'use-special-format',
     config(config) {
-      // entry can be string | string[] | {[entryAlias: string]: string}
       const entry = config.build?.lib && config.build.lib.entry;
       let shouldUse = false;
 
@@ -41,50 +40,23 @@ function useSpecialFormat(
 
 export default defineConfig({
   root: 'src',
-  // Configure our outputs - nothing special, this is normal vite config
   build: {
-    outDir: path.resolve(
-      __dirname,
-      'dist',
-      process.env.TARGET_BROWSER as string,
-    ),
+    outDir: path.resolve(__dirname, 'dist', process.env.TARGET_BROWSER as string),
     emptyOutDir,
   },
-  // Add the webExtension plugin
   plugins: [
     react(),
     webExtension({
-      // A function to generate manifest file dynamically.
       manifest: () => {
         const packageJson = readJsonFile('package.json') as PackageJson;
-        const isProduction = process.env.NODE_ENV === 'production';
-        type ManifestBase = {
-          common: Record<string, unknown>;
-          chrome: Record<string, unknown>;
-          firefox: Record<string, unknown>;
-        };
-        const originalManifest = readJsonFile('./src/manifest.json') as {
-          common: Record<string, unknown>;
-          v2: ManifestBase;
-          v3: ManifestBase;
-        };
-        const ManifestVersion =
-          process.env.TARGET_BROWSER === 'chrome' && isProduction ? 'v3' : 'v2';
-        const BrowserName =
-          process.env.TARGET_BROWSER === 'chrome' ? 'chrome' : 'firefox';
-        const commonManifest = originalManifest.common;
-        const manifest = {
+        const manifest = readJsonFile('./src/manifest.json');
+
+        return {
+          ...manifest,
           version: '2.0.0',
           author: packageJson.author,
           version_name: packageJson.dependencies?.rrweb?.replace('^', ''),
-          ...commonManifest,
         };
-        Object.assign(
-          manifest,
-          originalManifest[ManifestVersion].common,
-          originalManifest[ManifestVersion][BrowserName],
-        );
-        return manifest;
       },
       browser: process.env.TARGET_BROWSER,
       webExtConfig: {
