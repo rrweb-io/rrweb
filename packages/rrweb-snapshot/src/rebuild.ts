@@ -64,11 +64,17 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
   if (cachedStyle) return cachedStyle;
 
-  const ast: { css: string } = postcss([
-    mediaSelectorPlugin,
-    pseudoClassPlugin,
-  ]).process(cssText);
-  const result = ast.css;
+  let result = cssText;
+  try {
+    const ast: { css: string } = postcss([
+      mediaSelectorPlugin,
+      pseudoClassPlugin,
+    ]).process(cssText);
+    result = ast.css;
+  } catch (error) {
+    console.warn('Failed to adapt css for replay', error);
+  }
+
   cache?.stylesWithHoverClass.set(cssText, result);
   return result;
 }
