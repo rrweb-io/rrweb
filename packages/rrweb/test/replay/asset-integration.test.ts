@@ -85,7 +85,11 @@ describe('replayer', function () {
       });
       replayer.startLive();
       window.replayer.addEvent(events[0]);
-      window.replayer.addEvent(events[1]);
+      const fullSnapshot = events[1];
+
+      // filtering: avoid the bit where we pause/wait for the css assets when building a full snapshot
+      fullSnapshot.data.capturedAssetStatuses = fullSnapshot.data.capturedAssetStatuses.filter(s => !s.url.includes('css'));
+      window.replayer.addEvent(fullSnapshot);
     `);
 
       await waitForRAF(page);
@@ -187,7 +191,11 @@ describe('replayer', function () {
       });
       replayer.startLive(events[0].timestamp);
       window.replayer.addEvent(events[0]);
-      window.replayer.addEvent(events[1]);
+      const fullSnapshot = events[1];
+
+      // filtering: avoid the bit where we pause/wait for the css assets when building a full snapshot
+      fullSnapshot.data.capturedAssetStatuses = fullSnapshot.data.capturedAssetStatuses.filter(s => !s.url.includes('css'));
+      window.replayer.addEvent(fullSnapshot);
     `);
 
       await waitForRAF(page);
