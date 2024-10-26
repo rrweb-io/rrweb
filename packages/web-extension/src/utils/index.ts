@@ -1,9 +1,16 @@
 export function isFirefox(): boolean {
-  return window.navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+  // Use self.navigator.userAgent to ensure compatibility in service workers
+  const userAgent =
+    typeof navigator !== 'undefined'
+      ? navigator.userAgent
+      : typeof self !== 'undefined' && 'navigator' in self
+      ? self.navigator.userAgent
+      : '';
+  return userAgent.toLowerCase().includes('firefox');
 }
 
 export function isInCrossOriginIFrame(): boolean {
-  if (window.parent !== window) {
+  if (typeof window !== 'undefined' && window.parent !== window) {
     try {
       void window.parent.location.origin;
     } catch (error) {
@@ -37,7 +44,7 @@ function padZero(num: number, len = 2): string {
   const threshold = Math.pow(10, len - 1);
   if (num < threshold) {
     while (String(threshold).length > str.length) {
-      str = `0${num}`;
+      str = `0${str}`;
     }
   }
   return str;

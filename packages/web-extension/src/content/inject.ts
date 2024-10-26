@@ -65,7 +65,7 @@ const messageHandler = (
  * Only post message in the main page.
  */
 function postMessage(message: unknown) {
-  if (!isInCrossOriginIFrame()) window.postMessage(message, location.origin);
+  if (!isInCrossOriginIFrame()) window.postMessage(message, '*');
 }
 
 window.addEventListener('message', messageHandler);
@@ -74,5 +74,5 @@ window.postMessage(
   {
     message: MessageName.RecordScriptReady,
   },
-  location.origin,
+  '*',
 );

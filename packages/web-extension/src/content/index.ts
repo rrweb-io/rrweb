@@ -34,7 +34,7 @@ void (() => {
               recordCrossOriginIframes: true,
             },
           },
-          location.origin,
+          '*',
         );
     },
   );
@@ -68,7 +68,7 @@ async function initMainPage() {
     return new Promise((resolve) => {
       startResponseCb = (response) => {
         const pausedTime = response.startTimestamp - pausedTimestamp;
-        // Decrease the time spent in the pause state and make them look like a continuous recording.
+        // Adjust event timestamps to account for paused time
         bufferedEvents.forEach((event) => {
           event.timestamp += pausedTime;
         });
@@ -79,7 +79,7 @@ async function initMainPage() {
   let stopResponseCb: ((response: RecordStoppedMessage) => void) | undefined =
     undefined;
   channel.provide(ServiceName.StopRecord, () => {
-    window.postMessage({ message: MessageName.StopRecord });
+    window.postMessage({ message: MessageName.StopRecord }, '*');
     return new Promise((resolve) => {
       stopResponseCb = (response: RecordStoppedMessage) => {
         stopResponseCb = undefined;
@@ -88,7 +88,7 @@ async function initMainPage() {
         bufferedEvents = [];
         newEvents = [];
         resolve(response);
-        // clear cache
+        // Clear cache
         void Browser.storage.local.set({
           [LocalDataKey.bufferedEvents]: [],
         });
@@ -96,7 +96,7 @@ async function initMainPage() {
     });
   });
   channel.provide(ServiceName.PauseRecord, () => {
-    window.postMessage({ message: MessageName.StopRecord });
+    window.postMessage({ message: MessageName.StopRecord }, '*');
     return new Promise((resolve) => {
       stopResponseCb = (response: RecordStoppedMessage) => {
         stopResponseCb = undefined;
@@ -133,7 +133,7 @@ async function initMainPage() {
         stopResponseCb
       ) {
         const data = event.data as RecordStoppedMessage;
-        // On firefox, the event.data is immutable, so we need to clone it to avoid errors.
+        // On Firefox, the event.data is immutable, so we need to clone it to avoid errors.
         const newData = {
           ...data,
         };
@@ -154,9 +154,8 @@ async function initMainPage() {
   }
 
   // Before unload pages, cache the new events in the local storage.
-  window.addEventListener('beforeunload', (event) => {
+  window.addEventListener('beforeunload', () => {
     if (!newEvents.length) return;
-    event.preventDefault();
     void Browser.storage.local.set({
       [LocalDataKey.bufferedEvents]: bufferedEvents.concat(newEvents),
     });
@@ -166,17 +165,11 @@ async function initMainPage() {
 async function initCrossOriginIframe() {
   Browser.storage.local.onChanged.addListener((change) => {
     if (change[LocalDataKey.recorderStatus]) {
-      const statusChange = change[
-        LocalDataKey.recorderStatus
-      ] as Storage.StorageChange;
+      const statusChange = change[LocalDataKey.recorderStatus];
       const newStatus =
         statusChange.newValue as LocalData[LocalDataKey.recorderStatus];
       if (newStatus.status === RecorderStatus.RECORDING) startRecord();
-      else
-        window.postMessage(
-          { message: MessageName.StopRecord },
-          location.origin,
-        );
+      else window.postMessage({ message: MessageName.StopRecord }, '*');
     }
   });
   const localData = (await Browser.storage.local.get()) as LocalData;
@@ -196,7 +189,7 @@ function startRecord() {
   };
 }
 
-function generateSession() {
+function generateSession(): Session {
   const newSession: Session = {
     id: nanoid(),
     name: document.title,

@@ -14,7 +14,7 @@ import { pauseRecording, resumeRecording } from '~/utils/recording';
 const channel = new Channel();
 
 void (async () => {
-  // assign default value to settings of this extension
+  // Assign default value to settings of this extension
   const result =
     ((await Browser.storage.sync.get(SyncDataKey.settings)) as SyncData) ||
     undefined;
@@ -28,13 +28,17 @@ void (async () => {
     settings,
   } as SyncData);
 
-  // When tab is changed during the recording process, pause recording in the old tab and start a new one in the new tab.
+  // When tab is changed during the recording process,
+  // pause recording in the old tab and start a new one in the new tab.
   Browser.tabs.onActivated.addListener((activeInfo) => {
-    Browser.storage.local
-      .get(LocalDataKey.recorderStatus)
-      .then(async (data) => {
+    void (async () => {
+      try {
+        const data = await Browser.storage.local.get(
+          LocalDataKey.recorderStatus,
+        );
         const localData = data as LocalData;
         if (!localData || !localData[LocalDataKey.recorderStatus]) return;
+
         let statusData = localData[LocalDataKey.recorderStatus];
         let { status } = statusData;
         let bufferedEvents: eventWithTime[] | undefined;
@@ -46,7 +50,7 @@ void (async () => {
             statusData,
           ).catch(async () => {
             /**
-             * This error happen when the old tab is closed.
+             * This error happens when the old tab is closed.
              * In this case, the recording process would be stopped through Browser.tabs.onRemoved API.
              * So we just read the new status here.
              */
@@ -63,49 +67,74 @@ void (async () => {
           status = statusData.status;
           bufferedEvents = result.bufferedEvents;
         }
-        if (status === RecorderStatus.PausedSwitch)
-          await resumeRecording(
-            channel,
-            activeInfo.tabId,
-            statusData,
-            bufferedEvents,
-          );
-      })
-      .catch(() => {
-        // the extension can't access to the tab
-      });
+
+        // Update the recorderStatus with new activeTabId
+        statusData.activeTabId = activeInfo.tabId;
+        await Browser.storage.local.set({
+          [LocalDataKey.recorderStatus]: statusData,
+        });
+
+        // Check if the new tab is fully loaded
+        const tab = await Browser.tabs.get(activeInfo.tabId);
+        if (tab.status === 'complete') {
+          // Tab is fully loaded, inject content script and resume recording
+          await injectContentScript(activeInfo.tabId);
+          if (statusData.status === RecorderStatus.PausedSwitch) {
+            await resumeRecording(
+              channel,
+              activeInfo.tabId,
+              statusData,
+              bufferedEvents,
+            );
+          }
+        } else {
+          // Tab is not fully loaded, wait for onUpdated event
+          // The onUpdated listener will handle resuming recording when the tab completes loading
+        }
+      } catch (error) {
+        console.error('Error in onActivated listener:', error);
+      }
+    })();
   });
 
-  // If the recording can't start on an invalid tab, resume it when the tab content is updated.
-  Browser.tabs.onUpdated.addListener(function (tabId, info) {
-    if (info.status !== 'complete') return;
-    Browser.storage.local
-      .get(LocalDataKey.recorderStatus)
-      .then(async (data) => {
+  // If the recording can't start on an invalid tab,
+  // resume it when the tab content is updated.
+  Browser.tabs.onUpdated.addListener((tabId, info) => {
+    void (async () => {
+      if (info.status !== 'complete') return;
+      try {
+        const data = await Browser.storage.local.get(
+          LocalDataKey.recorderStatus,
+        );
         const localData = data as LocalData;
         if (!localData || !localData[LocalDataKey.recorderStatus]) return;
         const { status, activeTabId } = localData[LocalDataKey.recorderStatus];
-        if (status !== RecorderStatus.PausedSwitch || activeTabId === tabId)
+        if (status !== RecorderStatus.PausedSwitch || activeTabId !== tabId)
           return;
+
+        await injectContentScript(tabId);
         await resumeRecording(
           channel,
           tabId,
           localData[LocalDataKey.recorderStatus],
         );
-      })
-      .catch(() => {
-        // the extension can't access to the tab
-      });
+      } catch (error) {
+        console.error('Error in onUpdated listener:', error);
+      }
+    })();
   });
 
   /**
-   * When the current tab is closed, the recording events will be lost because this event is fired after it is closed.
+   * When the current tab is closed, the recording events will be lost
+   * because this event is fired after it is closed.
    * This event listener is just used to make sure the recording status is updated.
    */
   Browser.tabs.onRemoved.addListener((tabId) => {
-    Browser.storage.local
-      .get(LocalDataKey.recorderStatus)
-      .then(async (data) => {
+    void (async () => {
+      try {
+        const data = await Browser.storage.local.get(
+          LocalDataKey.recorderStatus,
+        );
         const localData = data as LocalData;
         if (!localData || !localData[LocalDataKey.recorderStatus]) return;
         const { status, activeTabId, startTimestamp } =
@@ -123,15 +152,15 @@ void (async () => {
         await Browser.storage.local.set({
           [LocalDataKey.recorderStatus]: statusData,
         });
-      })
-      .catch((err) => {
-        console.error(err);
-      });
+      } catch (err) {
+        console.error('Error in onRemoved listener:', err);
+      }
+    })();
   });
 })();
 
 /**
- * Update existed settings with new settings.
+ * Update existing settings with new settings.
  * Set new setting values if these properties don't exist in older versions.
  */
 function setDefaultSettings(
@@ -158,5 +187,47 @@ function setDefaultSettings(
       // settings[i] is a single setting item and it has not been set before
       existedSettings[i] = newSettings[i];
     }
+  }
+}
+
+/**
+ * Checks if a URL is valid for content script injection.
+ * @param url - The URL to check.
+ * @returns True if the URL is injectable.
+ */
+function isInjectableUrl(url: string): boolean {
+  // We cannot inject into chrome://, chrome-extension://, or other browser-specific pages
+  const prohibitedProtocols = [
+    'chrome:',
+    'chrome-extension:',
+    'about:',
+    'moz-extension:',
+    'edge:',
+    'opera:',
+    'vivaldi:',
+  ];
+  const urlObj = new URL(url);
+  return !prohibitedProtocols.includes(urlObj.protocol);
+}
+
+/**
+ * Injects the content script into the specified tab.
+ * @param tabId - The ID of the tab to inject the content script into.
+ */
+async function injectContentScript(tabId: number) {
+  try {
+    const tab = await Browser.tabs.get(tabId);
+    if (tab.url && isInjectableUrl(tab.url)) {
+      await Browser.scripting.executeScript({
+        target: { tabId },
+        files: ['content/index.js'], // Replace with your actual content script file(s)
+      });
+    } else {
+      console.warn(
+        `Cannot inject content script into tab ${tabId} with URL ${tab.url}`,
+      );
+    }
+  } catch (err) {
+    console.error(`Failed to inject content script into tab ${tabId}:`, err);
   }
 }
