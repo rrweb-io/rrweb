@@ -1,5 +1,13 @@
 # rrweb-player
 
+## 2.0.0-alpha.26
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @amplitude/rrweb-replay@2.0.0-alpha.26
+  - @amplitude/rrweb-packer@2.0.0-alpha.26
+
 ## 2.0.0-alpha.25
 
 ### Major Changes

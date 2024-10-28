@@ -1,5 +1,15 @@
 # rrdom-nodejs
 
+## 2.0.0-alpha.26
+
+### Patch Changes
+
+- [#45](https://github.com/amplitude/rrweb/pull/45) [`e8e18b5`](https://github.com/amplitude/rrweb/commit/e8e18b55c1de705ae7b7bdf66b46f6e45e06b65e) Thanks [@jxiwang](https://github.com/jxiwang)! - chore(rrweb): fix the dist files to properly map to typescript checks
+
+- Updated dependencies [[`e8e18b5`](https://github.com/amplitude/rrweb/commit/e8e18b55c1de705ae7b7bdf66b46f6e45e06b65e)]:
+  - @amplitude/rrdom@2.0.0-alpha.26
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.26
+
 ## 2.0.0-alpha.25
 
 ### Major Changes
