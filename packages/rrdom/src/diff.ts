@@ -1,6 +1,6 @@
 import {
   Mirror as NodeMirror,
-  NodeType as RRNodeType,
+  NodeType as NodeType_2,
   type elementNode,
 } from '@amplitude/rrweb-snapshot';
 import type {
@@ -148,7 +148,7 @@ function diffBeforeUpdatingChildren(
     oldTree = calibratedOldTree;
   }
   switch (newTree.RRNodeType) {
-    case RRNodeType.Document: {
+    case NodeType_2.Document: {
       /**
        * Special cases for updating the document node:
        * Case 1: If the oldTree is the content document of an iframe element and its content (HTML, HEAD, and BODY) is automatically mounted by browsers, we need to remove them to avoid unexpected behaviors. e.g. Selector matches may be case insensitive.
@@ -166,7 +166,7 @@ function diffBeforeUpdatingChildren(
       }
       break;
     }
-    case RRNodeType.Element: {
+    case NodeType_2.Element: {
       const oldElement = oldTree as HTMLElement;
       const newRRElement = newTree as IRRElement;
       switch (newRRElement.tagName) {
@@ -219,12 +219,12 @@ function diffAfterUpdatingChildren(
   replayer: ReplayerHandler,
 ) {
   switch (newTree.RRNodeType) {
-    case RRNodeType.Document: {
+    case NodeType_2.Document: {
       const scrollData = (newTree as RRDocument).scrollData;
       scrollData && replayer.applyScroll(scrollData, true);
       break;
     }
-    case RRNodeType.Element: {
+    case NodeType_2.Element: {
       const oldElement = oldTree as HTMLElement;
       const newRRElement = newTree as RRElement;
       newRRElement.scrollData &&
@@ -312,9 +312,9 @@ function diffAfterUpdatingChildren(
       }
       break;
     }
-    case RRNodeType.Text:
-    case RRNodeType.Comment:
-    case RRNodeType.CDATA: {
+    case NodeType_2.Text:
+    case NodeType_2.Comment:
+    case NodeType_2.CDATA: {
       if (
         oldTree.textContent !==
         (newTree as IRRText | IRRComment | IRRCDATASection).data
@@ -536,17 +536,17 @@ export function createOrGetNode(
   if (nodeId > -1) node = domMirror.getNode(nodeId);
   if (node !== null && sameNodeType(node, rrNode)) return node;
   switch (rrNode.RRNodeType) {
-    case RRNodeType.Document:
+    case NodeType_2.Document:
       node = new Document();
       break;
-    case RRNodeType.DocumentType:
+    case NodeType_2.DocumentType:
       node = document.implementation.createDocumentType(
         (rrNode as IRRDocumentType).name,
         (rrNode as IRRDocumentType).publicId,
         (rrNode as IRRDocumentType).systemId,
       );
       break;
-    case RRNodeType.Element: {
+    case NodeType_2.Element: {
       let tagName = (rrNode as IRRElement).tagName.toLowerCase();
       tagName = SVGTagMap[tagName] || tagName;
       if (sn && 'isSVG' in sn && sn?.isSVG) {
@@ -554,13 +554,13 @@ export function createOrGetNode(
       } else node = document.createElement((rrNode as IRRElement).tagName);
       break;
     }
-    case RRNodeType.Text:
+    case NodeType_2.Text:
       node = document.createTextNode((rrNode as IRRText).data);
       break;
-    case RRNodeType.Comment:
+    case NodeType_2.Comment:
       node = document.createComment((rrNode as IRRComment).data);
       break;
-    case RRNodeType.CDATA:
+    case NodeType_2.CDATA:
       node = document.createCDATASection((rrNode as IRRCDATASection).data);
       break;
   }

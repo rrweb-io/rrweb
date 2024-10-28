@@ -4,7 +4,7 @@ import type {
   serializedNodeWithId,
 } from '@amplitude/rrweb-snapshot';
 import {
-  NodeType as RRNodeType,
+  NodeType as NodeType_2,
   createMirror as createNodeMirror,
 } from '@amplitude/rrweb-snapshot';
 import type {
@@ -415,13 +415,13 @@ export class Mirror implements IMirror<RRNode> {
  */
 export function getDefaultSN(node: IRRNode, id: number): serializedNodeWithId {
   switch (node.RRNodeType) {
-    case RRNodeType.Document:
+    case NodeType_2.Document:
       return {
         id,
         type: node.RRNodeType,
         childNodes: [],
       };
-    case RRNodeType.DocumentType: {
+    case NodeType_2.DocumentType: {
       const doctype = node as IRRDocumentType;
       return {
         id,
@@ -431,7 +431,7 @@ export function getDefaultSN(node: IRRNode, id: number): serializedNodeWithId {
         systemId: doctype.systemId,
       };
     }
-    case RRNodeType.Element:
+    case NodeType_2.Element:
       return {
         id,
         type: node.RRNodeType,
@@ -439,19 +439,19 @@ export function getDefaultSN(node: IRRNode, id: number): serializedNodeWithId {
         attributes: {},
         childNodes: [],
       };
-    case RRNodeType.Text:
+    case NodeType_2.Text:
       return {
         id,
         type: node.RRNodeType,
         textContent: (node as IRRText).textContent || '',
       };
-    case RRNodeType.Comment:
+    case NodeType_2.Comment:
       return {
         id,
         type: node.RRNodeType,
         textContent: (node as IRRComment).textContent || '',
       };
-    case RRNodeType.CDATA:
+    case NodeType_2.CDATA:
       return {
         id,
         type: node.RRNodeType,
@@ -471,7 +471,7 @@ export function printRRDom(rootNode: IRRNode, mirror: IMirror<IRRNode>) {
 }
 function walk(node: IRRNode, mirror: IMirror<IRRNode>, blankSpace: string) {
   let printText = `${blankSpace}${mirror.getId(node)} ${node.toString()}\n`;
-  if (node.RRNodeType === RRNodeType.Element) {
+  if (node.RRNodeType === NodeType_2.Element) {
     const element = node as IRRElement;
     if (element.shadowRoot)
       printText += walk(element.shadowRoot, mirror, blankSpace + '  ');
