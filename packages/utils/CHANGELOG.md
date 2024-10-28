@@ -1,5 +1,7 @@
 # @amplitude/rrweb-utils
 
+## 2.0.0-alpha.26
+
 ## 2.0.0-alpha.25
 
 ### Patch Changes
