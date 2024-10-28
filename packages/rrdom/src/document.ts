@@ -1,4 +1,4 @@
-import { NodeType as RRNodeType } from '@amplitude/rrweb-snapshot';
+import { NodeType as NodeType_2 } from '@amplitude/rrweb-snapshot';
 import { camelize, parseCSSText, toCSSText } from './style';
 export interface IRRNode {
   parentElement: IRRNode | null;
@@ -10,7 +10,7 @@ export interface IRRNode {
   // corresponding nodeType value of standard HTML Node
   readonly nodeType: number;
   readonly nodeName: string; // https://dom.spec.whatwg.org/#dom-node-nodename
-  readonly RRNodeType: RRNodeType;
+  readonly RRNodeType: NodeType_2;
 
   firstChild: IRRNode | null;
 
@@ -140,7 +140,7 @@ export abstract class BaseRRNode implements IRRNode {
   // corresponding nodeType value of standard HTML Node
   public readonly nodeType!: number;
   public readonly nodeName!: string;
-  public readonly RRNodeType!: RRNodeType;
+  public readonly RRNodeType!: NodeType_2;
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
   constructor(..._args: any[]) {
@@ -199,7 +199,7 @@ export class BaseRRDocument extends BaseRRNode implements IRRDocument {
   public readonly nodeType: number = NodeType.DOCUMENT_NODE;
   public readonly nodeName = '#document' as const;
   public readonly compatMode: 'BackCompat' | 'CSS1Compat' = 'CSS1Compat';
-  public readonly RRNodeType = RRNodeType.Document;
+  public readonly RRNodeType = NodeType_2.Document;
   public textContent: string | null = null;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -212,7 +212,7 @@ export class BaseRRDocument extends BaseRRNode implements IRRDocument {
     return (
       (this.childNodes.find(
         (node) =>
-          node.RRNodeType === RRNodeType.Element &&
+          node.RRNodeType === NodeType_2.Element &&
           (node as IRRElement).tagName === 'HTML',
       ) as IRRElement) || null
     );
@@ -222,7 +222,7 @@ export class BaseRRDocument extends BaseRRNode implements IRRDocument {
     return (
       (this.documentElement?.childNodes.find(
         (node) =>
-          node.RRNodeType === RRNodeType.Element &&
+          node.RRNodeType === NodeType_2.Element &&
           (node as IRRElement).tagName === 'BODY',
       ) as IRRElement) || null
     );
@@ -232,7 +232,7 @@ export class BaseRRDocument extends BaseRRNode implements IRRDocument {
     return (
       (this.documentElement?.childNodes.find(
         (node) =>
-          node.RRNodeType === RRNodeType.Element &&
+          node.RRNodeType === NodeType_2.Element &&
           (node as IRRElement).tagName === 'HEAD',
       ) as IRRElement) || null
     );
@@ -249,13 +249,13 @@ export class BaseRRDocument extends BaseRRNode implements IRRDocument {
   public appendChild(newChild: IRRNode): IRRNode {
     const nodeType = newChild.RRNodeType;
     if (
-      nodeType === RRNodeType.Element ||
-      nodeType === RRNodeType.DocumentType
+      nodeType === NodeType_2.Element ||
+      nodeType === NodeType_2.DocumentType
     ) {
       if (this.childNodes.some((s) => s.RRNodeType === nodeType)) {
         throw new Error(
           `RRDomException: Failed to execute 'appendChild' on 'RRNode': Only one ${
-            nodeType === RRNodeType.Element ? 'RRElement' : 'RRDoctype'
+            nodeType === NodeType_2.Element ? 'RRElement' : 'RRDoctype'
           } on RRDocument allowed.`,
         );
       }
@@ -269,13 +269,13 @@ export class BaseRRDocument extends BaseRRNode implements IRRDocument {
   public insertBefore(newChild: IRRNode, refChild: IRRNode | null): IRRNode {
     const nodeType = newChild.RRNodeType;
     if (
-      nodeType === RRNodeType.Element ||
-      nodeType === RRNodeType.DocumentType
+      nodeType === NodeType_2.Element ||
+      nodeType === NodeType_2.DocumentType
     ) {
       if (this.childNodes.some((s) => s.RRNodeType === nodeType)) {
         throw new Error(
           `RRDomException: Failed to execute 'insertBefore' on 'RRNode': Only one ${
-            nodeType === RRNodeType.Element ? 'RRElement' : 'RRDoctype'
+            nodeType === NodeType_2.Element ? 'RRElement' : 'RRDoctype'
           } on RRDocument allowed.`,
         );
       }
@@ -380,7 +380,7 @@ export class BaseRRDocument extends BaseRRNode implements IRRDocument {
 
 export class BaseRRDocumentType extends BaseRRNode implements IRRDocumentType {
   public readonly nodeType: number = NodeType.DOCUMENT_TYPE_NODE;
-  public readonly RRNodeType = RRNodeType.DocumentType;
+  public readonly RRNodeType = NodeType_2.DocumentType;
   declare readonly nodeName: string;
   public readonly name: string;
   public readonly publicId: string;
@@ -402,7 +402,7 @@ export class BaseRRDocumentType extends BaseRRNode implements IRRDocumentType {
 
 export class BaseRRElement extends BaseRRNode implements IRRElement {
   public readonly nodeType: number = NodeType.ELEMENT_NODE;
-  public readonly RRNodeType = RRNodeType.Element;
+  public readonly RRNodeType = NodeType_2.Element;
   declare readonly nodeName: string;
   public tagName: string;
   public attributes: Record<string, string> = {};
@@ -575,7 +575,7 @@ export class BaseRRDialogElement extends BaseRRElement {
 export class BaseRRText extends BaseRRNode implements IRRText {
   public readonly nodeType: number = NodeType.TEXT_NODE;
   public readonly nodeName = '#text' as const;
-  public readonly RRNodeType = RRNodeType.Text;
+  public readonly RRNodeType = NodeType_2.Text;
   public data: string;
 
   constructor(data: string) {
@@ -599,7 +599,7 @@ export class BaseRRText extends BaseRRNode implements IRRText {
 export class BaseRRComment extends BaseRRNode implements IRRComment {
   public readonly nodeType: number = NodeType.COMMENT_NODE;
   public readonly nodeName = '#comment' as const;
-  public readonly RRNodeType = RRNodeType.Comment;
+  public readonly RRNodeType = NodeType_2.Comment;
   public data: string;
 
   constructor(data: string) {
@@ -623,7 +623,7 @@ export class BaseRRComment extends BaseRRNode implements IRRComment {
 export class BaseRRCDATASection extends BaseRRNode implements IRRCDATASection {
   public readonly nodeName = '#cdata-section' as const;
   public readonly nodeType: number = NodeType.CDATA_SECTION_NODE;
-  public readonly RRNodeType = RRNodeType.CDATA;
+  public readonly RRNodeType = NodeType_2.CDATA;
   public data: string;
 
   constructor(data: string) {

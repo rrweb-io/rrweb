@@ -62,7 +62,7 @@ try {
 }
 
 const mirror = createMirror();
-function record<T = eventWithTime>(
+export function record<T = eventWithTime>(
   options: recordOptions<T> = {},
 ): listenerHandler | undefined {
   const {
