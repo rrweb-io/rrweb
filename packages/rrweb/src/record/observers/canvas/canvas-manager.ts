@@ -123,13 +123,6 @@ export class CanvasManager implements CanvasManagerInterface {
     this.worker?.terminate();
     this.worker = null;
     this.snapshotInProgressMap = new Map();
-    if (
-      (this.options.recordCanvas &&
-        typeof this.options.sampling === 'number') ||
-      this.options.enableManualSnapshot
-    ) {
-      this.worker = this.initFPSWorker();
-    }
   }
 
   public freeze() {
