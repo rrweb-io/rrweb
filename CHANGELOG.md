@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.29.0
+
+### Various fixes & improvements
+
+- fix(rrweb): Do not re-initialize worker in CanvasManager.reset (#221) by @billyvg
+
 ## 2.28.0
 
 ### Various fixes & improvements
