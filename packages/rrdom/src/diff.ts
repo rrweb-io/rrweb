@@ -1,8 +1,5 @@
-import {
-  NodeType as RRNodeType,
-  Mirror as NodeMirror,
-  type elementNode,
-} from 'rrweb-snapshot';
+import { type Mirror as NodeMirror } from 'rrweb-snapshot';
+import { NodeType as RRNodeType } from '@rrweb/types';
 import type {
   canvasMutationData,
   canvasEventWithTime,
@@ -341,7 +338,7 @@ function diffProps(
 
   for (const name in newAttributes) {
     const newValue = newAttributes[name];
-    const sn = rrnodeMirror.getMeta(newTree) as elementNode | null;
+    const sn = rrnodeMirror.getMeta(newTree);
     if (sn?.isSVG && NAMESPACES[name])
       oldTree.setAttributeNS(NAMESPACES[name], name, newValue);
     else if (newTree.tagName === 'CANVAS' && name === 'rr_dataURL') {
