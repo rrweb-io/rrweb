@@ -340,7 +340,7 @@ function diffProps(
   for (const name in newAttributes) {
     const newValue = newAttributes[name];
     const sn = rrnodeMirror.getMeta(newTree) as elementNode | null;
-    if (sn?.type == RRNodeType.Element && sn?.isSVG && NAMESPACES[name])
+    if (sn?.isSVG && NAMESPACES[name])
       oldTree.setAttributeNS(NAMESPACES[name], name, newValue);
     else if (newTree.tagName === 'CANVAS' && name === 'rr_dataURL') {
       const image = document.createElement('img');
