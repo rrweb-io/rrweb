@@ -1,7 +1,7 @@
 import type { listenerHandler, RecordPlugin, IWindow } from '@rrweb/types';
-import { utils } from 'rrweb';
 import { ErrorStackParser, StackFrame } from './error-stack-parser';
 import { stringify } from './stringify';
+import { patch } from '@rrweb/utils'
 
 export type StringifyOptions = {
   // limit of string length
@@ -183,7 +183,7 @@ function initLogObserver(
       };
     }
     // replace the logger.{level}. return a restore function
-    return utils.patch(
+    return patch(
       _logger,
       level,
       (original: (...args: Array<unknown>) => void) => {
