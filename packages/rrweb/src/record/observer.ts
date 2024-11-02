@@ -18,7 +18,7 @@ import {
   StyleSheetMirror,
   nowTimestamp,
 } from '../utils';
-import { patch } from '@rrweb/utils'
+import { patch } from '@rrweb/utils';
 import type { observerParam, MutationBufferParam } from '../types';
 import {
   IncrementalSource,

@@ -7,7 +7,7 @@ import {
 } from '@rrweb/types';
 import { hookSetter, isBlocked } from '../../../utils';
 import { serializeArgs } from './serialize-args';
-import { patch } from '@rrweb/utils'
+import { patch } from '@rrweb/utils';
 
 export default function initCanvas2DMutationObserver(
   cb: canvasManagerMutationCallback,

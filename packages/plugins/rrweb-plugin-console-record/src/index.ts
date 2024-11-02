@@ -1,7 +1,7 @@
 import type { listenerHandler, RecordPlugin, IWindow } from '@rrweb/types';
 import { ErrorStackParser, StackFrame } from './error-stack-parser';
 import { stringify } from './stringify';
-import { patch } from '@rrweb/utils'
+import { patch } from '@rrweb/utils';
 
 export type StringifyOptions = {
   // limit of string length

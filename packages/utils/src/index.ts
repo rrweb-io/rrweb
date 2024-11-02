@@ -205,7 +205,6 @@ export function mutationObserverCtor(): (typeof MutationObserver)['prototype']['
   return getUntaintedPrototype('MutationObserver').constructor;
 }
 
-
 // copy from https://github.com/getsentry/sentry-javascript/blob/b2109071975af8bf0316d3b5b38f519bdaf5dc15/packages/utils/src/object.ts
 export function patch(
   source: { [key: string]: any },
@@ -262,5 +261,5 @@ export default {
   querySelector,
   querySelectorAll,
   mutationObserver: mutationObserverCtor,
-  patch
+  patch,
 };
