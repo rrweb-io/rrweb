@@ -46,6 +46,6 @@ jobs:
         if: success()
         with:
           install-script: "yarn install --frozen-lockfile"
-          build-script: "NODE_OPTIONS='--max-old-space-size=4096' yarn build:all"
+          build-script: "build:all"
           compression: "none"
           pattern: "**/dist/*.js"
