@@ -40,3 +40,12 @@ jobs:
           name: image-diff
           path: packages/**/__image_snapshots__/__diff_output__/*.png
           if-no-files-found: ignore
+
+      - name: Check bundle sizes
+        if: success()
+        uses: preactjs/compressed-size-action@v2
+        with:
+          install-script: "yarn install --frozen-lockfile"
+          build-script: 'NODE_OPTIONS='--max-old-space-size=4096' yarn build:all'
+          compression: 'none'
+          pattern: '**/dist/*.js'
