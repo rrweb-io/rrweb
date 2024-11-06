@@ -1,5 +1,32 @@
 # @rrweb/types
 
+## 2.0.13
+
+### Patch Changes
+
+- Merge from rrweb remote upstream
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-snapshot@2.0.13
+
+## 2.0.0-alpha.17
+
+### Minor Changes
+
+- [#1503](https://github.com/rrweb-io/rrweb/pull/1503) [`335639a`](https://github.com/rrweb-io/rrweb/commit/335639af9b0ce7f70eb0f38ce113d877c7325158) Thanks [@Juice10](https://github.com/Juice10)! - Support top-layer <dialog> components. Fixes #1381.
+
+### Patch Changes
+
+- Updated dependencies [[`40bbc25`](https://github.com/rrweb-io/rrweb/commit/40bbc25fc287badc317a53f2d3f21b1c9f2b211b), [`335639a`](https://github.com/rrweb-io/rrweb/commit/335639af9b0ce7f70eb0f38ce113d877c7325158), [`d350da8`](https://github.com/rrweb-io/rrweb/commit/d350da8552d8616dd118ee550bdfbce082986562), [`be6bf52`](https://github.com/rrweb-io/rrweb/commit/be6bf52c248c35de1b3491e3a3440ff61f876414)]:
+  - rrweb-snapshot@2.0.0-alpha.17
+
+## 2.0.0-alpha.16
+
+### Patch Changes
+
+- Updated dependencies [[`a2c8a1a`](https://github.com/rrweb-io/rrweb/commit/a2c8a1a37bfcf8389b280af792262c8263a979a3), [`d08624c`](https://github.com/rrweb-io/rrweb/commit/d08624cb28add386c3618a0e6607424c3f1884d8)]:
+  - rrweb-snapshot@2.0.0-alpha.16
+
 ## 2.0.12
 
 ### Patch Changes

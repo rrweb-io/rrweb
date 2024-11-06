@@ -1,6 +1,6 @@
 import {
-  actionWithDelay,
-  eventWithTime,
+  type actionWithDelay,
+  type eventWithTime,
   EventType,
   IncrementalSource,
 } from '@saola.ai/rrweb-types';

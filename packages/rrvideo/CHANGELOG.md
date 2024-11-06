@@ -1,17 +1,33 @@
 # rrvideo
 
+## 2.0.13
+
+### Patch Changes
+
+- Merge from rrweb remote upstream
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-player@2.0.13
+
+## 2.0.0-alpha.17
+
 ## 2.0.12
 
 ### Patch Changes
 
 - Updated dependencies []:
-  - @saola.ai/rrweb-player@2.0.12
+  - rrweb-player@2.0.0-alpha.17
+
+## 2.0.0-alpha.16
+
+- @saola.ai/rrweb-player@2.0.12
 
 ## 2.0.11
 
 ### Patch Changes
 
 - Updated dependencies []:
+  - rrweb-player@2.0.0-alpha.16
   - @saola.ai/rrweb-player@2.0.11
 
 ## 2.0.10

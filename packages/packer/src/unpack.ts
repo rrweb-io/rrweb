@@ -1,5 +1,5 @@
 import { strFromU8, strToU8, unzlibSync } from 'fflate';
-import { eventWithTimeAndPacker, MARK } from './base';
+import { type eventWithTimeAndPacker, MARK } from './base';
 import type { UnpackFn, eventWithTime } from '@saola.ai/rrweb-types';
 
 export const unpack: UnpackFn = (raw: string) => {

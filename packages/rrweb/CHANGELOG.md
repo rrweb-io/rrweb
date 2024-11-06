@@ -1,5 +1,52 @@
 # rrweb
 
+## 2.0.13
+
+### Patch Changes
+
+- Merge from rrweb remote upstream
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-snapshot@2.0.13
+  - @saola.ai/rrdom@2.0.13
+  - @saola.ai/rrweb-types@2.0.13
+  - @saola.ai/rrweb-utils@2.0.13
+
+## 2.0.0-alpha.17
+
+### Minor Changes
+
+- [#1503](https://github.com/rrweb-io/rrweb/pull/1503) [`335639a`](https://github.com/rrweb-io/rrweb/commit/335639af9b0ce7f70eb0f38ce113d877c7325158) Thanks [@Juice10](https://github.com/Juice10)! - Support top-layer <dialog> components. Fixes #1381.
+
+### Patch Changes
+
+- [#1417](https://github.com/rrweb-io/rrweb/pull/1417) [`40bbc25`](https://github.com/rrweb-io/rrweb/commit/40bbc25fc287badc317a53f2d3f21b1c9f2b211b) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - fix: duplicate textContent for style elements cause incremental style mutations to be invalid
+
+- [#1527](https://github.com/rrweb-io/rrweb/pull/1527) [`68076b7`](https://github.com/rrweb-io/rrweb/commit/68076b724ff19d198d4f351a05063b85e1705a8c) Thanks [@arredgroup](https://github.com/arredgroup)! - Export takeFullSnapshot function for a recording process
+
+- [#1515](https://github.com/rrweb-io/rrweb/pull/1515) [`8059d96`](https://github.com/rrweb-io/rrweb/commit/8059d9695146626b102b2059a3a9b932d5f598f6) Thanks [@okejminja](https://github.com/okejminja)! - Added support for deprecated addRule & removeRule methods
+
+- [#1509](https://github.com/rrweb-io/rrweb/pull/1509) [`be6bf52`](https://github.com/rrweb-io/rrweb/commit/be6bf52c248c35de1b3491e3a3440ff61f876414) Thanks [@Juice10](https://github.com/Juice10)! - Reverse monkey patch built in methods to support LWC (and other frameworks like angular which monkey patch built in methods).
+
+- Updated dependencies [[`40bbc25`](https://github.com/rrweb-io/rrweb/commit/40bbc25fc287badc317a53f2d3f21b1c9f2b211b), [`335639a`](https://github.com/rrweb-io/rrweb/commit/335639af9b0ce7f70eb0f38ce113d877c7325158), [`335639a`](https://github.com/rrweb-io/rrweb/commit/335639af9b0ce7f70eb0f38ce113d877c7325158), [`d350da8`](https://github.com/rrweb-io/rrweb/commit/d350da8552d8616dd118ee550bdfbce082986562), [`be6bf52`](https://github.com/rrweb-io/rrweb/commit/be6bf52c248c35de1b3491e3a3440ff61f876414)]:
+  - rrweb-snapshot@2.0.0-alpha.17
+  - rrdom@2.0.0-alpha.17
+  - @rrweb/types@2.0.0-alpha.17
+  - @rrweb/utils@2.0.0-alpha.17
+
+## 2.0.0-alpha.16
+
+### Patch Changes
+
+- [#1386](https://github.com/rrweb-io/rrweb/pull/1386) [`a2c8a1a`](https://github.com/rrweb-io/rrweb/commit/a2c8a1a37bfcf8389b280af792262c8263a979a3) Thanks [@ababik](https://github.com/ababik)! - Fix that the optional `maskInputFn` was being accidentally ignored during the creation of the full snapshot
+
+- [#1512](https://github.com/rrweb-io/rrweb/pull/1512) [`d08624c`](https://github.com/rrweb-io/rrweb/commit/d08624cb28add386c3618a0e6607424c3f1884d8) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - optimisation: skip mask check on leaf elements
+
+- Updated dependencies [[`a2c8a1a`](https://github.com/rrweb-io/rrweb/commit/a2c8a1a37bfcf8389b280af792262c8263a979a3), [`d08624c`](https://github.com/rrweb-io/rrweb/commit/d08624cb28add386c3618a0e6607424c3f1884d8)]:
+  - rrweb-snapshot@2.0.0-alpha.16
+  - rrdom@2.0.0-alpha.16
+  - @rrweb/types@2.0.0-alpha.16
+
 ## 2.0.12
 
 ### Patch Changes

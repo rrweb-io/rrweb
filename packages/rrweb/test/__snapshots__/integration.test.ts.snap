@@ -1034,6 +1034,671 @@ exports[`record integration tests > can mask character data mutations with regex
 ]"
 `;
 
+exports[`record integration tests > can record and replay style mutations 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"name\\": \\"viewport\\",
+                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"title\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"style\\",
+                        \\"id\\": 11
+                      }
+                    ],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 12
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"style\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"dual-textContent\\",
+                      \\"_cssText\\": \\"body { background-color: black; }/* rr_split */body { color: orange !important; }\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\",
+                        \\"id\\": 14
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\",
+                        \\"id\\": 15
+                      }
+                    ],
+                    \\"id\\": 13
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 16
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 18
+                      }
+                    ],
+                    \\"id\\": 17
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 19
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"style\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"single-textContent\\",
+                      \\"_cssText\\": \\"a:hover { outline: red solid 1px; }\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\",
+                        \\"id\\": 21
+                      }
+                    ],
+                    \\"id\\": 20
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 22
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"style\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"empty\\",
+                      \\"_cssText\\": \\"a:hover { outline: blue solid 1px; }\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 23
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 24
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 26
+                      }
+                    ],
+                    \\"id\\": 25
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 27
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"style\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"hover-mutation\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n      /* replaceme */\\\\n    \\",
+                        \\"id\\": 29
+                      }
+                    ],
+                    \\"id\\": 28
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 30
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 31
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"id\\": 33
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 35
+                      }
+                    ],
+                    \\"id\\": 34
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 36
+                  }
+                ],
+                \\"id\\": 32
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 13,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\".absolutify { background-image: url(\\\\\\"http://localhost:3030/rel\\\\\\"); }\\",
+            \\"id\\": 37
+          }
+        },
+        {
+          \\"parentId\\": 13,
+          \\"nextId\\": 37,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"body { background-color: darkgreen; }\\",
+            \\"id\\": 38
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [
+        {
+          \\"id\\": 15,
+          \\"value\\": \\"body { color: yellow; }\\"
+        },
+        {
+          \\"id\\": 15,
+          \\"value\\": \\"body { color: yellow; }\\"
+        },
+        {
+          \\"id\\": 38,
+          \\"value\\": \\"body { background-color: purple; }\\"
+        }
+      ],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [
+        {
+          \\"id\\": 14,
+          \\"value\\": \\"\\\\n      body { background-color: black !important; }\\\\n    \\"
+        },
+        {
+          \\"id\\": 29,
+          \\"value\\": \\"a:hover { outline: cyan solid 1px; }\\"
+        }
+      ],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 32,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"style\\",
+            \\"attributes\\": {
+              \\"id\\": \\"goldilocks\\",
+              \\"_cssText\\": \\"body { color: brown; }\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 39
+          }
+        },
+        {
+          \\"parentId\\": 39,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\",
+            \\"id\\": 40
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [
+        {
+          \\"id\\": 40,
+          \\"value\\": \\"body { color: gold }\\"
+        }
+      ],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  }
+]"
+`;
+
+exports[`record integration tests > can record and replay textarea mutations correctly 1`] = `
+"[
+  {
+    \\"type\\": 0,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 1,
+    \\"data\\": {}
+  },
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"charset\\": \\"UTF-8\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"meta\\",
+                    \\"attributes\\": {
+                      \\"name\\": \\"viewport\\",
+                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"title\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"Empty\\",
+                        \\"id\\": 11
+                      }
+                    ],
+                    \\"id\\": 10
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\",
+                    \\"id\\": 12
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n  \\",
+                \\"id\\": 13
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\",
+                    \\"id\\": 15
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"one\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 16
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
+                    \\"id\\": 17
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 19
+                      }
+                    ],
+                    \\"id\\": 18
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
+                    \\"id\\": 20
+                  }
+                ],
+                \\"id\\": 14
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 14,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"textarea\\",
+            \\"attributes\\": {
+              \\"id\\": \\"ta2\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 21
+          }
+        },
+        {
+          \\"parentId\\": 14,
+          \\"nextId\\": 21,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"textarea\\",
+            \\"attributes\\": {
+              \\"value\\": \\"pre value\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 22
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 22,
+          \\"attributes\\": {
+            \\"value\\": \\"ok\\"
+          }
+        },
+        {
+          \\"id\\": 21,
+          \\"attributes\\": {
+            \\"value\\": \\"added\\"
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 22,
+          \\"attributes\\": {
+            \\"value\\": \\"ok3\\"
+          }
+        }
+      ],
+      \\"removes\\": [
+        {
+          \\"parentId\\": 14,
+          \\"id\\": 21
+        }
+      ],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 22
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"1ok3\\",
+      \\"isChecked\\": false,
+      \\"id\\": 22
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 22,
+          \\"attributes\\": {
+            \\"value\\": \\"ignore\\"
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"12ok3\\",
+      \\"isChecked\\": false,
+      \\"id\\": 22
+    }
+  }
+]"
+`;
+
 exports[`record integration tests > can record attribute mutation 1`] = `
 "[
   {
@@ -3830,270 +4495,6 @@ exports[`record integration tests > can record style changes compactly and prese
 ]"
 `;
 
-exports[`record integration tests > can record textarea mutations correctly 1`] = `
-"[
-  {
-    \\"type\\": 0,
-    \\"data\\": {}
-  },
-  {
-    \\"type\\": 1,
-    \\"data\\": {}
-  },
-  {
-    \\"type\\": 4,
-    \\"data\\": {
-      \\"href\\": \\"about:blank\\",
-      \\"width\\": 1920,
-      \\"height\\": 1080
-    }
-  },
-  {
-    \\"type\\": 2,
-    \\"data\\": {
-      \\"node\\": {
-        \\"type\\": 0,
-        \\"childNodes\\": [
-          {
-            \\"type\\": 1,
-            \\"name\\": \\"html\\",
-            \\"publicId\\": \\"\\",
-            \\"systemId\\": \\"\\",
-            \\"id\\": 2
-          },
-          {
-            \\"type\\": 2,
-            \\"tagName\\": \\"html\\",
-            \\"attributes\\": {
-              \\"lang\\": \\"en\\"
-            },
-            \\"childNodes\\": [
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"head\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 5
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"meta\\",
-                    \\"attributes\\": {
-                      \\"charset\\": \\"UTF-8\\"
-                    },
-                    \\"childNodes\\": [],
-                    \\"id\\": 6
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 7
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"meta\\",
-                    \\"attributes\\": {
-                      \\"name\\": \\"viewport\\",
-                      \\"content\\": \\"width=device-width, initial-scale=1.0\\"
-                    },
-                    \\"childNodes\\": [],
-                    \\"id\\": 8
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 9
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"title\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"Empty\\",
-                        \\"id\\": 11
-                      }
-                    ],
-                    \\"id\\": 10
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\",
-                    \\"id\\": 12
-                  }
-                ],
-                \\"id\\": 4
-              },
-              {
-                \\"type\\": 3,
-                \\"textContent\\": \\"\\\\n  \\",
-                \\"id\\": 13
-              },
-              {
-                \\"type\\": 2,
-                \\"tagName\\": \\"body\\",
-                \\"attributes\\": {},
-                \\"childNodes\\": [
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\",
-                    \\"id\\": 15
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"div\\",
-                    \\"attributes\\": {
-                      \\"id\\": \\"one\\"
-                    },
-                    \\"childNodes\\": [],
-                    \\"id\\": 16
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 17
-                  },
-                  {
-                    \\"type\\": 2,
-                    \\"tagName\\": \\"script\\",
-                    \\"attributes\\": {},
-                    \\"childNodes\\": [
-                      {
-                        \\"type\\": 3,
-                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 19
-                      }
-                    ],
-                    \\"id\\": 18
-                  },
-                  {
-                    \\"type\\": 3,
-                    \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 20
-                  }
-                ],
-                \\"id\\": 14
-              }
-            ],
-            \\"id\\": 3
-          }
-        ],
-        \\"id\\": 1
-      },
-      \\"initialOffset\\": {
-        \\"left\\": 0,
-        \\"top\\": 0
-      }
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [],
-      \\"removes\\": [],
-      \\"adds\\": [
-        {
-          \\"parentId\\": 14,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"textarea\\",
-            \\"attributes\\": {
-              \\"value\\": \\"pre value\\"
-            },
-            \\"childNodes\\": [],
-            \\"id\\": 21
-          }
-        }
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [
-        {
-          \\"id\\": 21,
-          \\"attributes\\": {
-            \\"value\\": \\"ok\\"
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"adds\\": []
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [
-        {
-          \\"id\\": 21,
-          \\"attributes\\": {
-            \\"value\\": \\"ok3\\"
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"adds\\": []
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 21
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"1ok3\\",
-      \\"isChecked\\": false,
-      \\"id\\": 21
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 0,
-      \\"texts\\": [],
-      \\"attributes\\": [
-        {
-          \\"id\\": 21,
-          \\"attributes\\": {
-            \\"value\\": \\"ignore\\"
-          }
-        }
-      ],
-      \\"removes\\": [],
-      \\"adds\\": []
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 5,
-      \\"text\\": \\"12ok3\\",
-      \\"isChecked\\": false,
-      \\"id\\": 21
-    }
-  }
-]"
-`;
-
 exports[`record integration tests > can use maskInputOptions to configure which type of inputs should be masked 1`] = `
 "[
   {
@@ -5216,12 +5617,13 @@ exports[`record integration tests > mutations should work when blocked class is 
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"_cssText\\": \\"#b-class, #b-class-2 { height: 33px; width: 200px; }\\"
+                    },
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"#b-class, #b-class-2 { height: 33px; width: 200px; }\\",
-                        \\"isStyle\\": true,
+                        \\"textContent\\": \\"\\",
                         \\"id\\": 9
                       }
                     ],
@@ -7932,12 +8334,13 @@ exports[`record integration tests > should nest record iframe 1`] = `
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"_cssText\\": \\"iframe { width: 500px; height: 500px; }\\"
+                    },
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"iframe { width: 500px; height: 500px; }\\",
-                        \\"isStyle\\": true,
+                        \\"textContent\\": \\"\\",
                         \\"id\\": 14
                       }
                     ],
@@ -11475,7 +11878,6 @@ exports[`record integration tests > should record dynamic CSS changes 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\",
-                        \\"isStyle\\": true,
                         \\"id\\": 18
                       }
                     ],
@@ -14743,12 +15145,13 @@ exports[`record integration tests > should record shadow DOM 1`] = `
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"_cssText\\": \\".my-element { margin: 0px 0px 1rem; }iframe { border: 0px; width: 100%; padding: 0px; }body { max-width: 400px; margin: 1rem auto; padding: 0px 1rem; font-family: \\\\\\"comic sans ms\\\\\\"; }\\"
+                    },
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\".my-element { margin: 0px 0px 1rem; }iframe { border: 0px; width: 100%; padding: 0px; }body { max-width: 400px; margin: 1rem auto; padding: 0px 1rem; font-family: \\\\\\"comic sans ms\\\\\\"; }\\",
-                        \\"isStyle\\": true,
+                        \\"textContent\\": \\"\\",
                         \\"id\\": 14
                       }
                     ],
@@ -14826,12 +15229,13 @@ exports[`record integration tests > should record shadow DOM 1`] = `
                       {
                         \\"type\\": 2,
                         \\"tagName\\": \\"style\\",
-                        \\"attributes\\": {},
+                        \\"attributes\\": {
+                          \\"_cssText\\": \\"body { margin: 0px; }p { border: 1px solid rgb(204, 204, 204); padding: 1rem; color: red; font-family: sans-serif; }\\"
+                        },
                         \\"childNodes\\": [
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"body { margin: 0px; }p { border: 1px solid rgb(204, 204, 204); padding: 1rem; color: red; font-family: sans-serif; }\\",
-                            \\"isStyle\\": true,
+                            \\"textContent\\": \\"\\",
                             \\"id\\": 28
                           }
                         ],
@@ -15843,6 +16247,424 @@ exports[`record integration tests > should record shadow doms polyfilled by synt
             \\"childNodes\\": [],
             \\"id\\": 32,
             \\"isShadow\\": true
+          }
+        }
+      ]
+    }
+  }
+]"
+`;
+
+exports[`record integration tests > should record style mutations and replay them correctly 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\t        \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"style\\",
+                    \\"attributes\\": {
+                      \\"_cssText\\": \\"#one { color: rgb(255, 0, 0); }\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\",
+                        \\"id\\": 7
+                      }
+                    ],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 10
+                      }
+                    ],
+                    \\"id\\": 9
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n        \\",
+                \\"id\\": 11
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\t        \\",
+                    \\"id\\": 13
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"one\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n          \\",
+                    \\"id\\": 15
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"two\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 16
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\t        \\",
+                    \\"id\\": 17
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 19
+                      }
+                    ],
+                    \\"id\\": 18
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\\\n      \\",
+                    \\"id\\": 20
+                  }
+                ],
+                \\"id\\": 12
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"style\\",
+            \\"attributes\\": {
+              \\"_cssText\\": \\"#two { color: rgb(255, 0, 0); }\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 21
+          }
+        },
+        {
+          \\"parentId\\": 21,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\",
+            \\"id\\": 22
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 13,
+      \\"id\\": 6,
+      \\"set\\": {
+        \\"property\\": \\"color\\",
+        \\"value\\": \\"rgb(255, 255, 0)\\"
+      },
+      \\"index\\": [
+        0
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 13,
+      \\"id\\": 21,
+      \\"set\\": {
+        \\"property\\": \\"color\\",
+        \\"value\\": \\"rgb(255, 255, 0)\\"
+      },
+      \\"index\\": [
+        0
+      ]
+    }
+  }
+]"
+`;
+
+exports[`record integration tests > should record style mutations with multiple child nodes and replay them correctly 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {
+              \\"lang\\": \\"en\\"
+            },
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\t        \\",
+                    \\"id\\": 5
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"style\\",
+                    \\"attributes\\": {
+                      \\"_cssText\\": \\"#one { color: rgb(255, 0, 0); }\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\",
+                        \\"id\\": 7
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\",
+                        \\"id\\": 8
+                      }
+                    ],
+                    \\"id\\": 6
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\",
+                    \\"id\\": 9
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 11
+                      }
+                    ],
+                    \\"id\\": 10
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 3,
+                \\"textContent\\": \\"\\\\n        \\",
+                \\"id\\": 12
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\t        \\",
+                    \\"id\\": 14
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"one\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 15
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n          \\",
+                    \\"id\\": 16
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"div\\",
+                    \\"attributes\\": {
+                      \\"id\\": \\"two\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 17
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n\\\\t        \\",
+                    \\"id\\": 18
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {},
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 20
+                      }
+                    ],
+                    \\"id\\": 19
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\\\n      \\",
+                    \\"id\\": 21
+                  }
+                ],
+                \\"id\\": 13
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [],
+      \\"removes\\": [],
+      \\"adds\\": [
+        {
+          \\"parentId\\": 4,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"style\\",
+            \\"attributes\\": {
+              \\"_cssText\\": \\"#two { color: rgb(255, 0, 0); }\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 22
+          }
+        },
+        {
+          \\"parentId\\": 22,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\",
+            \\"id\\": 23
+          }
+        },
+        {
+          \\"parentId\\": 22,
+          \\"nextId\\": 23,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\",
+            \\"id\\": 24
           }
         }
       ]

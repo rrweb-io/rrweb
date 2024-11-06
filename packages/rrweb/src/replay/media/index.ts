@@ -1,5 +1,5 @@
 import {
-  Emitter,
+  type Emitter,
   MediaInteractions,
   ReplayerEvents,
 } from '@saola.ai/rrweb-types';
