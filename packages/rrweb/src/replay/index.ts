@@ -1071,13 +1071,11 @@ export class Replayer {
     fullSnapshot: fullSnapshotEvent & { timestamp: number },
   ): Promise<void[]> {
     const promises: Promise<void>[] = [];
-    let expectedAssets = new Set();
     if (fullSnapshot.data.capturedAssetStatuses) {
       fullSnapshot.data.capturedAssetStatuses.forEach((status) => {
-        expectedAssets.add(status.url);
+        this.assetManager.expectedAssets.add(status.url);
       });
     }
-
     for (const event of this.service.state.context.events) {
       if (event.timestamp <= fullSnapshot.timestamp) continue;
       if (
@@ -1087,11 +1085,7 @@ export class Replayer {
         break;
       if (event.type === EventType.Asset) {
         promises.push(this.assetManager.add(event));
-        expectedAssets.delete(event.data.url);
       }
-    }
-    if (expectedAssets.size === 0) {
-      this.assetManager.allAdded = true;
     }
     return Promise.all(promises);
   }
