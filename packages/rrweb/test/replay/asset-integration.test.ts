@@ -88,7 +88,7 @@ describe('replayer', function () {
       const fullSnapshot = events[1];
 
       // filtering: avoid the bit where we pause/wait for the css assets when building a full snapshot
-      fullSnapshot.data.capturedAssetStatuses = fullSnapshot.data.capturedAssetStatuses.filter(s => !s.url.includes('css'));
+      fullSnapshot.data.capturedAssetStatuses = fullSnapshot.data.capturedAssetStatuses.filter(s => !s.url.includes('css') && !s.url.includes('style'));
       window.replayer.addEvent(fullSnapshot);
     `);
 
@@ -194,7 +194,7 @@ describe('replayer', function () {
       const fullSnapshot = events[1];
 
       // filtering: avoid the bit where we pause/wait for the css assets when building a full snapshot
-      fullSnapshot.data.capturedAssetStatuses = fullSnapshot.data.capturedAssetStatuses.filter(s => !s.url.includes('css'));
+      fullSnapshot.data.capturedAssetStatuses = fullSnapshot.data.capturedAssetStatuses.filter(s => !s.url.includes('css') && !s.url.includes('style'));
       window.replayer.addEvent(fullSnapshot);
     `);
 

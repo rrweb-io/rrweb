@@ -1134,7 +1134,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
                       \\"id\\": \\"dual-textContent\\",
-                      \\"rr_css_text\\": 1
+                      \\"rr_css_text\\": \\"http://localhost:3030/html#rr_style_el:1\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -1178,7 +1178,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
                       \\"id\\": \\"single-textContent\\",
-                      \\"rr_css_text\\": 2
+                      \\"rr_css_text\\": \\"http://localhost:3030/html#rr_style_el:2\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -1199,7 +1199,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
                       \\"id\\": \\"empty\\",
-                      \\"rr_css_text\\": 3
+                      \\"rr_css_text\\": \\"http://localhost:3030/html#rr_style_el:3\\"
                     },
                     \\"childNodes\\": [],
                     \\"id\\": 23
@@ -1232,7 +1232,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
                       \\"id\\": \\"hover-mutation\\",
-                      \\"rr_css_text\\": 4
+                      \\"rr_css_text\\": \\"http://localhost:3030/html#rr_style_el:4\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -1299,22 +1299,22 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
       },
       \\"capturedAssetStatuses\\": [
         {
-          \\"url\\": \\"http://localhost:3030/html#rr_css_text:1\\",
+          \\"url\\": \\"http://localhost:3030/html#rr_style_el:1\\",
           \\"status\\": \\"capturing\\",
           \\"timeout\\": 50
         },
         {
-          \\"url\\": \\"http://localhost:3030/html#rr_css_text:2\\",
+          \\"url\\": \\"http://localhost:3030/html#rr_style_el:2\\",
           \\"status\\": \\"capturing\\",
           \\"timeout\\": 50
         },
         {
-          \\"url\\": \\"http://localhost:3030/html#rr_css_text:3\\",
+          \\"url\\": \\"http://localhost:3030/html#rr_style_el:3\\",
           \\"status\\": \\"capturing\\",
           \\"timeout\\": 50
         },
         {
-          \\"url\\": \\"http://localhost:3030/html#rr_css_text:4\\",
+          \\"url\\": \\"http://localhost:3030/html#rr_style_el:4\\",
           \\"status\\": \\"capturing\\",
           \\"timeout\\": 50
         }
@@ -1324,7 +1324,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
   {
     \\"type\\": 7,
     \\"data\\": {
-      \\"url\\": \\"rr_css_text:1\\",
+      \\"url\\": \\"http://localhost:3030/html#rr_style_el:1\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
         \\"cssTexts\\": [
@@ -1337,7 +1337,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
   {
     \\"type\\": 7,
     \\"data\\": {
-      \\"url\\": \\"rr_css_text:2\\",
+      \\"url\\": \\"http://localhost:3030/html#rr_style_el:2\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
         \\"cssTexts\\": [
@@ -1349,7 +1349,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
   {
     \\"type\\": 7,
     \\"data\\": {
-      \\"url\\": \\"rr_css_text:3\\",
+      \\"url\\": \\"http://localhost:3030/html#rr_style_el:3\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
         \\"cssTexts\\": [
@@ -1361,7 +1361,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
   {
     \\"type\\": 7,
     \\"data\\": {
-      \\"url\\": \\"rr_css_text:4\\",
+      \\"url\\": \\"http://localhost:3030/html#rr_style_el:4\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
         \\"cssTexts\\": [
@@ -5694,7 +5694,7 @@ exports[`record integration tests > mutations should work when blocked class is 
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"rr_css_text\\": 1
+                      \\"rr_css_text\\": \\"about: blank#rr_style_el:1\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -6140,7 +6140,7 @@ exports[`record integration tests > mutations should work when blocked class is 
       },
       \\"capturedAssetStatuses\\": [
         {
-          \\"url\\": \\"#rr_css_text:1\\",
+          \\"url\\": \\"about: blank#rr_style_el:1\\",
           \\"status\\": \\"capturing\\",
           \\"timeout\\": 25
         }
@@ -6150,7 +6150,7 @@ exports[`record integration tests > mutations should work when blocked class is 
   {
     \\"type\\": 7,
     \\"data\\": {
-      \\"url\\": \\"rr_css_text:1\\",
+      \\"url\\": \\"about: blank#rr_style_el:1\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
         \\"cssTexts\\": [
@@ -8430,7 +8430,7 @@ exports[`record integration tests > should nest record iframe 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"rr_css_text\\": 1
+                      \\"rr_css_text\\": \\"http://localhost:3030/html#rr_style_el:1\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -8529,7 +8529,7 @@ exports[`record integration tests > should nest record iframe 1`] = `
       },
       \\"capturedAssetStatuses\\": [
         {
-          \\"url\\": \\"http://localhost:3030/html#rr_css_text:1\\",
+          \\"url\\": \\"http://localhost:3030/html#rr_style_el:1\\",
           \\"status\\": \\"capturing\\",
           \\"timeout\\": 25
         }
@@ -8587,7 +8587,7 @@ exports[`record integration tests > should nest record iframe 1`] = `
   {
     \\"type\\": 7,
     \\"data\\": {
-      \\"url\\": \\"rr_css_text:1\\",
+      \\"url\\": \\"http://localhost:3030/html#rr_style_el:1\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
         \\"cssTexts\\": [
@@ -12111,7 +12111,7 @@ exports[`record integration tests > should record dynamic CSS changes 1`] = `
                     \\"attributes\\": {
                       \\"data-styled\\": \\"active\\",
                       \\"data-styled-version\\": \\"5.0.1\\",
-                      \\"rr_css_text\\": 1
+                      \\"rr_css_text\\": \\"about:blank#rr_style_el:1\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -12319,7 +12319,7 @@ exports[`record integration tests > should record dynamic CSS changes 1`] = `
       },
       \\"capturedAssetStatuses\\": [
         {
-          \\"url\\": \\"#rr_css_text:1\\",
+          \\"url\\": \\"about:blank#rr_style_el:1\\",
           \\"status\\": \\"capturing\\",
           \\"timeout\\": 25
         }
@@ -12329,7 +12329,7 @@ exports[`record integration tests > should record dynamic CSS changes 1`] = `
   {
     \\"type\\": 7,
     \\"data\\": {
-      \\"url\\": \\"rr_css_text:1\\",
+      \\"url\\": \\"about:blank#rr_style_el:1\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
         \\"cssTexts\\": [
@@ -15671,7 +15671,7 @@ exports[`record integration tests > should record shadow DOM 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"rr_css_text\\": 1
+                      \\"rr_css_text\\": \\"about:blank#rr_style_el:1\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -15755,7 +15755,7 @@ exports[`record integration tests > should record shadow DOM 1`] = `
                         \\"type\\": 2,
                         \\"tagName\\": \\"style\\",
                         \\"attributes\\": {
-                          \\"rr_css_text\\": 2
+                          \\"rr_css_text\\": \\"about:blank#rr_style_el:2\\"
                         },
                         \\"childNodes\\": [
                           {
@@ -15871,12 +15871,12 @@ exports[`record integration tests > should record shadow DOM 1`] = `
       },
       \\"capturedAssetStatuses\\": [
         {
-          \\"url\\": \\"#rr_css_text:1\\",
+          \\"url\\": \\"about:blank#rr_style_el:1\\",
           \\"status\\": \\"capturing\\",
           \\"timeout\\": 50
         },
         {
-          \\"url\\": \\"#rr_css_text:2\\",
+          \\"url\\": \\"about:blank#rr_style_el:2\\",
           \\"status\\": \\"capturing\\",
           \\"timeout\\": 50
         }
@@ -15886,7 +15886,7 @@ exports[`record integration tests > should record shadow DOM 1`] = `
   {
     \\"type\\": 7,
     \\"data\\": {
-      \\"url\\": \\"rr_css_text:1\\",
+      \\"url\\": \\"about:blank#rr_style_el:1\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
         \\"cssTexts\\": [
@@ -15898,7 +15898,7 @@ exports[`record integration tests > should record shadow DOM 1`] = `
   {
     \\"type\\": 7,
     \\"data\\": {
-      \\"url\\": \\"rr_css_text:2\\",
+      \\"url\\": \\"about:blank#rr_style_el:2\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
         \\"cssTexts\\": [
@@ -16860,7 +16860,7 @@ exports[`record integration tests > should record style mutations and replay the
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"rr_css_text\\": 1
+                      \\"rr_css_text\\": \\"about:blank#rr_style_el:1\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -16968,7 +16968,7 @@ exports[`record integration tests > should record style mutations and replay the
       },
       \\"capturedAssetStatuses\\": [
         {
-          \\"url\\": \\"#rr_css_text:1\\",
+          \\"url\\": \\"about:blank#rr_style_el:1\\",
           \\"status\\": \\"capturing\\",
           \\"timeout\\": 5
         }
@@ -16978,7 +16978,7 @@ exports[`record integration tests > should record style mutations and replay the
   {
     \\"type\\": 7,
     \\"data\\": {
-      \\"url\\": \\"rr_css_text:1\\",
+      \\"url\\": \\"about:blank#rr_style_el:1\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
         \\"cssTexts\\": [
@@ -17095,7 +17095,7 @@ exports[`record integration tests > should record style mutations with multiple 
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"rr_css_text\\": 1
+                      \\"rr_css_text\\": \\"about:blank#rr_style_el:1\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -17208,7 +17208,7 @@ exports[`record integration tests > should record style mutations with multiple 
       },
       \\"capturedAssetStatuses\\": [
         {
-          \\"url\\": \\"#rr_css_text:1\\",
+          \\"url\\": \\"about:blank#rr_style_el:1\\",
           \\"status\\": \\"capturing\\",
           \\"timeout\\": 5
         }
@@ -17218,7 +17218,7 @@ exports[`record integration tests > should record style mutations with multiple 
   {
     \\"type\\": 7,
     \\"data\\": {
-      \\"url\\": \\"rr_css_text:1\\",
+      \\"url\\": \\"about:blank#rr_style_el:1\\",
       \\"payload\\": {
         \\"rr_type\\": \\"CssText\\",
         \\"cssTexts\\": [
