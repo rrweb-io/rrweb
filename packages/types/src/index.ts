@@ -823,7 +823,7 @@ export declare abstract class RebuildAssetManagerInterface {
     n: Element,
     id: number,
     attribute: string,
-    originalValue: string | number,
+    originalValue: string,
     serializedNode?: serializedElementNodeWithId,
   ): void;
 }
