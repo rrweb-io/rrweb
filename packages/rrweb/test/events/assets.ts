@@ -70,7 +70,7 @@ const events: eventWithTime[] = [
                     type: 2,
                     tagName: 'style',
                     attributes: {
-                      rr_css_text: 1,
+                      rr_css_text: '#rr_style_el:1',
                     },
                     childNodes: [],
                     id: 24,
@@ -130,7 +130,7 @@ const events: eventWithTime[] = [
           timeout: 50,
         },
         {
-          url: 'rr_css_text:1',
+          url: '#rr_style_el:1',
           status: 'capturing',
           timeout: 50,
         },
@@ -170,7 +170,7 @@ const events: eventWithTime[] = [
   {
     type: EventType.Asset,
     data: {
-      url: 'rr_css_text:1',
+      url: '#rr_style_el:1',
       payload: {
         rr_type: 'CssText',
         cssTexts: ['body { margin: 0; border-top: 10px solid darkgreen; }'],
