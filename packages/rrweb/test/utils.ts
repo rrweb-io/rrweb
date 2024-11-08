@@ -615,7 +615,7 @@ export const sampleStyleSheetAssetRemoveEvents: eventWithTime[] = [
                     attributes: {
                       'data-jss': '',
                       'data-meta': 'OverlayDrawer',
-                      rr_css_text: 1,
+                      rr_css_text: 'http://localhost#rr_style_el:1',
                     },
                     childNodes: [
                       {
@@ -669,7 +669,7 @@ export const sampleStyleSheetAssetRemoveEvents: eventWithTime[] = [
   {
     type: EventType.Asset,
     data: {
-      url: 'rr_css_text:1',
+      url: 'http://localhost#rr_style_el:1',
       payload: {
         rr_type: 'CssText',
         cssTexts: [

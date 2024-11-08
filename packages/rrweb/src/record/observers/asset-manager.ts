@@ -137,7 +137,7 @@ export default class AssetManager {
     let cssRules: CSSRuleList;
     let url = sheetBaseHref; // linkEl.href for a link element
     if (styleId) {
-      url += `#rr_css_text:${styleId}`;
+      url += `#rr_style_el:${styleId}`;
     }
     try {
       cssRules = el.sheet!.cssRules;
@@ -202,7 +202,7 @@ export default class AssetManager {
           payload.cssTexts = splitCssText(cssText, el as HTMLStyleElement);
         }
         this.mutationCb({
-          url: `rr_css_text:${styleId}`,
+          url,
           payload,
         });
       } else {

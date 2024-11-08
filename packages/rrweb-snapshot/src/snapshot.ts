@@ -687,7 +687,11 @@ function serializeElementNode(
   }
   if (tagName === 'style' && (n as HTMLStyleElement).sheet) {
     const styleEl = n as HTMLStyleElement;
-    const sheetBaseHref = getHref(doc); // should equal styleEl.ownerDocument.location.href
+    let sheetBaseHref = getHref(doc); // should equal styleEl.ownerDocument.location.href
+    if (sheetBaseHref === '') {
+      // this for testing: getHref() doesn't return 'about:blank' (but maybe should)
+      sheetBaseHref = document.location.href;
+    }
     const styleRules = styleEl.sheet!.cssRules;
     if (
       !onAssetDetected ||
@@ -710,7 +714,7 @@ function serializeElementNode(
         value: sheetBaseHref,
         styleId,
       });
-      attributes.rr_css_text = styleId;
+      attributes.rr_css_text = `${sheetBaseHref}#rr_style_el:${styleId}`;
     }
   }
   // form fields
