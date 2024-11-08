@@ -459,7 +459,7 @@ function buildNode(
         if (
           (name.startsWith('rr_captured_') || name === 'rr_css_text') &&
           value &&
-          (typeof value === 'string' || typeof value === 'number')
+          typeof value === 'string'
         ) {
           options.assetManager?.manageAttribute(
             node,

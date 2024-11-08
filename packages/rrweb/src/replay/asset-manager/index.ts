@@ -198,14 +198,10 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     node: RRElement | Element,
     nodeId: number,
     attribute: string,
-    serializedValue: string | number,
+    serializedValue: string,
     serializedNode?: serializedElementNodeWithId,
   ): Promise<unknown> {
-    const newValue =
-      typeof serializedValue === 'string'
-        ? serializedValue
-        : `rr_css_text:${serializedValue}`;
-    const preloadedStatus = this.get(newValue);
+    const preloadedStatus = this.get(serializedValue);
 
     let isCssTextElement = false;
     if (node.nodeName === 'STYLE') {
@@ -217,7 +213,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     const promises: Promise<unknown>[] = [];
 
     if (attribute === 'srcset') {
-      const values = getSourcesFromSrcset(newValue);
+      const values = getSourcesFromSrcset(serializedValue);
       let expectedValue: string | null = prevValue;
       values.forEach((value) => {
         promises.push(
@@ -226,7 +222,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
             if (!isLoaded) {
               if (!this.liveMode && !isCssTextElement) {
                 // failed to load asset, revert to recorded value
-                node.setAttribute(attribute, newValue);
+                node.setAttribute(attribute, serializedValue);
               }
               return; // failed to load asset
             }
@@ -239,7 +235,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
             }
             if (!expectedValue) {
               // before srcset has been set for the first time
-              expectedValue = newValue;
+              expectedValue = serializedValue;
             }
             expectedValue = updateSrcset(
               node,
@@ -273,25 +269,25 @@ export default class AssetManager implements RebuildAssetManagerInterface {
           hijackedAttributes = new Map();
           this.nodeIdAttributeHijackedMap.set(nodeId, hijackedAttributes);
         }
-        hijackedAttributes.set(attribute, newValue);
+        hijackedAttributes.set(attribute, serializedValue);
         if (node.tagName === 'IMG' && attribute === 'src') {
           // special value to prevent a broken image icon while asset is being loaded
           node.setAttribute('src', '//:0');
         }
       }
       promises.push(
-        this.whenReady(newValue).then((status) => {
+        this.whenReady(serializedValue).then((status) => {
           const isLoaded = status.status === 'loaded';
           if (!isLoaded) {
             if (!this.liveMode && !isCssTextElement) {
               // failed to load asset, revert to recorded value
-              node.setAttribute(attribute, newValue);
+              node.setAttribute(attribute, serializedValue);
             }
             return;
           }
           if (!isCssTextElement) {
             const attributeUnchanged = this.liveMode
-              ? newValue ===
+              ? serializedValue ===
                 this.nodeIdAttributeHijackedMap.get(nodeId)?.get(attribute)
               : node.getAttribute(attribute) === prevValue;
 
