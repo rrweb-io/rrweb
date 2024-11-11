@@ -41,10 +41,6 @@
       "path": "../packages/types"
     },
     {
-      "name": "@rrweb/utils",
-      "path": "../packages/utils"
-    },
-    {
       "name": "@rrweb/packer",
       "path": "../packages/packer"
     },
@@ -92,14 +88,12 @@
       "@rrweb/record",
       "@rrweb/replay",
       "@rrweb/types",
-      "@rrweb/utils",
       "@rrweb/packer",
       "@rrweb/rrweb-plugin-console-record",
       "@rrweb/rrweb-plugin-console-replay",
       "@rrweb/rrweb-plugin-sequential-id",
       "@rrweb/rrweb-plugin-canvas-webrtc-record",
       "@rrweb/rrweb-plugin-canvas-webrtc-replay"
-    ],
-    "typescript.tsdk": " rrweb monorepo/node_modules/typescript/lib"
+    ]
   }
 }

@@ -1,16 +1,16 @@
-import Browser, { type Storage } from 'webextension-polyfill';
+import Browser, { Storage } from 'webextension-polyfill';
 import { nanoid } from 'nanoid';
 import type { eventWithTime } from '@saola.ai/rrweb-types';
 import {
-  type LocalData,
+  LocalData,
   LocalDataKey,
   RecorderStatus,
   ServiceName,
-  type Session,
-  type RecordStartedMessage,
-  type RecordStoppedMessage,
+  Session,
+  RecordStartedMessage,
+  RecordStoppedMessage,
   MessageName,
-  type EmitEventMessage,
+  EmitEventMessage,
 } from '~/types';
 import Channel from '~/utils/channel';
 import { isInCrossOriginIFrame } from '~/utils';

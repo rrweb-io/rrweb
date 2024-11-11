@@ -1,5 +1,5 @@
 import type { Replayer } from '../';
-import { CanvasContext, type canvasMutationCommand } from '@saola.ai/rrweb-types';
+import { CanvasContext, canvasMutationCommand } from '@saola.ai/rrweb-types';
 import { deserializeArg, variableListFor } from './deserialize-args';
 
 function getContext(

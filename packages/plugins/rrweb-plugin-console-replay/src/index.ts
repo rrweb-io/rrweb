@@ -1,6 +1,6 @@
 import {
-  type LogLevel,
-  type LogData,
+  LogLevel,
+  LogData,
   PLUGIN_NAME,
 } from '@saola.ai/rrweb-plugin-console-record';
 import type { eventWithTime } from '@saola.ai/rrweb-types';

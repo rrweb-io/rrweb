@@ -193,12 +193,6 @@ function initLogObserver(
       (original: (...args: Array<unknown>) => void) => {
         return (...args: Array<unknown>) => {
           original.apply(this, args);
-
-          if (level === 'assert' && !!args[0]) {
-            // assert does not log if the first argument evaluates to true
-            return;
-          }
-
           if (inStack) {
             // If we are already in a stack this means something from the following code is calling a console method
             // likely a proxy method called from stringify. We don't want to log this as it will cause an infinite loop
@@ -209,11 +203,7 @@ function initLogObserver(
             const trace = ErrorStackParser.parse(new Error())
               .map((stackFrame: StackFrame) => stackFrame.toString())
               .splice(1); // splice(1) to omit the hijacked log function
-
-            // assert does not log its first arg, that's only used for deciding whether to log
-            const argsForPayload = level === 'assert' ? args.slice(1) : args;
-
-            const payload = argsForPayload.map((s) =>
+            const payload = args.map((s) =>
               stringify(s, logOptions.stringifyOptions),
             );
             logCount++;

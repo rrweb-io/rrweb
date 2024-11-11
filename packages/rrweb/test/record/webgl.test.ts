@@ -124,7 +124,7 @@ describe('record webgl', function (this: ISuite) {
         ],
       },
     });
-    await assertSnapshot(ctx.events);
+    assertSnapshot(ctx.events);
   });
 
   it('will record changes to a webgl2 canvas element', async () => {
@@ -150,7 +150,7 @@ describe('record webgl', function (this: ISuite) {
         ],
       },
     });
-    await assertSnapshot(ctx.events);
+    assertSnapshot(ctx.events);
   });
 
   it('will record changes to a canvas element before the canvas gets added', async () => {
@@ -165,7 +165,7 @@ describe('record webgl', function (this: ISuite) {
 
     await waitForRAF(ctx.page);
 
-    await assertSnapshot(ctx.events);
+    assertSnapshot(ctx.events);
   });
 
   it('will record changes to a canvas element before the canvas gets added (webgl2)', async () => {
@@ -188,7 +188,7 @@ describe('record webgl', function (this: ISuite) {
     // we need to change this
     await waitForRAF(ctx.page);
 
-    await assertSnapshot(ctx.events);
+    assertSnapshot(ctx.events);
   });
 
   it('will record webgl variables', async () => {
@@ -203,7 +203,7 @@ describe('record webgl', function (this: ISuite) {
 
     await ctx.page.waitForTimeout(50);
 
-    await assertSnapshot(ctx.events);
+    assertSnapshot(ctx.events);
   });
 
   it('will record webgl variables in reverse order', async () => {
@@ -219,7 +219,7 @@ describe('record webgl', function (this: ISuite) {
 
     await ctx.page.waitForTimeout(50);
 
-    await assertSnapshot(ctx.events);
+    assertSnapshot(ctx.events);
   });
 
   it('sets _context on canvas.getContext()', async () => {
@@ -264,7 +264,7 @@ describe('record webgl', function (this: ISuite) {
 
     await ctx.page.waitForTimeout(50);
 
-    await assertSnapshot(ctx.events);
+    assertSnapshot(ctx.events);
     expect(ctx.events.length).toEqual(5);
   });
 
@@ -312,7 +312,7 @@ describe('record webgl', function (this: ISuite) {
       await waitForRAF(ctx.page);
 
       // should yield a frame for each change at a max of 60fps
-      await assertSnapshot(stripBase64(ctx.events));
+      assertSnapshot(stripBase64(ctx.events));
     });
   });
 });

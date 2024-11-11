@@ -7,8 +7,7 @@ import { build, Format } from 'esbuild';
 import { resolve } from 'path';
 import { umdWrapper } from 'esbuild-plugin-umd-wrapper';
 
-// don't empty out dir if --watch flag is passed
-const emptyOutDir = !process.argv.includes('--watch');
+const emptyOutDir = process.env.CLEAR_DIST_DIR !== 'false';
 
 function minifyAndUMDPlugin({
   name,

@@ -1,9 +1,9 @@
 import type { Replayer } from '..';
 import {
   CanvasContext,
-  type canvasMutationCommand,
-  type canvasMutationData,
-  type canvasMutationParam,
+  canvasMutationCommand,
+  canvasMutationData,
+  canvasMutationParam,
 } from '@saola.ai/rrweb-types';
 import webglMutation from './webgl';
 import canvas2DMutation from './2d';

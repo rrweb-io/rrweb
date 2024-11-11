@@ -1,5 +1,5 @@
 import {
-  type MaskInputOptions,
+  MaskInputOptions,
   maskInputValue,
   Mirror,
   getInputType,
@@ -21,16 +21,12 @@ import {
 } from '../utils';
 import type { observerParam, MutationBufferParam } from '../types';
 import {
-  IncrementalSource,
-  MouseInteractions,
-  PointerTypes,
-  MediaInteractions,
-} from '@saola.ai/rrweb-types';
-import type {
   mutationCallBack,
   mousemoveCallBack,
   mousePosition,
   mouseInteractionCallBack,
+  MouseInteractions,
+  PointerTypes,
   listenerHandler,
   scrollCallback,
   styleSheetRuleCallback,
@@ -38,9 +34,11 @@ import type {
   inputValue,
   inputCallback,
   hookResetter,
+  IncrementalSource,
   hooksParam,
   Arguments,
   mediaInteractionCallback,
+  MediaInteractions,
   canvasMutationCallback,
   fontCallback,
   fontParam,
@@ -52,7 +50,15 @@ import type {
 } from '@saola.ai/rrweb-types';
 import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
-import dom, { mutationObserverCtor } from '@rrweb/utils';
+
+type WindowWithStoredMutationObserver = IWindow & {
+  __rrMutationObserver?: MutationObserver;
+};
+type WindowWithAngularZone = IWindow & {
+  Zone?: {
+    __symbol__?: (key: string) => string;
+  };
+};
 
 export const mutationBuffers: MutationBuffer[] = [];
 
@@ -86,7 +92,31 @@ export function initMutationObserver(
   mutationBuffers.push(mutationBuffer);
   // see mutation.ts for details
   mutationBuffer.init(options);
-  const observer = new (mutationObserverCtor() as new (
+  let mutationObserverCtor =
+    window.MutationObserver ||
+    /**
+     * Some websites may disable MutationObserver by removing it from the window object.
+     * If someone is using rrweb to build a browser extention or things like it, they
+     * could not change the website's code but can have an opportunity to inject some
+     * code before the website executing its JS logic.
+     * Then they can do this to store the native MutationObserver:
+     * window.__rrMutationObserver = MutationObserver
+     */
+    (window as WindowWithStoredMutationObserver).__rrMutationObserver;
+  const angularZoneSymbol = (
+    window as WindowWithAngularZone
+  )?.Zone?.__symbol__?.('MutationObserver');
+  if (
+    angularZoneSymbol &&
+    (window as unknown as Record<string, typeof MutationObserver>)[
+      angularZoneSymbol
+    ]
+  ) {
+    mutationObserverCtor = (
+      window as unknown as Record<string, typeof MutationObserver>
+    )[angularZoneSymbol];
+  }
+  const observer = new (mutationObserverCtor as new (
     callback: MutationCallback,
   ) => MutationObserver)(
     callbackWrapper(mutationBuffer.processMutations.bind(mutationBuffer)),
@@ -401,7 +431,7 @@ function initInputObserver({
      * We can treat this change as a value change of the select element the current target belongs to.
      */
     if (target && tagName === 'OPTION') {
-      target = dom.parentElement(target);
+      target = target.parentElement;
     }
     if (
       !target ||
@@ -627,17 +657,6 @@ function initStyleSheetObserver(
     ),
   });
 
-  // Support for deprecated addRule method
-  win.CSSStyleSheet.prototype.addRule = function (
-    this: CSSStyleSheet,
-    selector: string,
-    styleBlock: string,
-    index: number = this.cssRules.length,
-  ) {
-    const rule = `${selector} { ${styleBlock} }`;
-    return win.CSSStyleSheet.prototype.insertRule.apply(this, [rule, index]);
-  };
-
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const deleteRule = win.CSSStyleSheet.prototype.deleteRule;
   win.CSSStyleSheet.prototype.deleteRule = new Proxy(deleteRule, {
@@ -666,14 +685,6 @@ function initStyleSheetObserver(
       },
     ),
   });
-
-  // Support for deprecated removeRule method
-  win.CSSStyleSheet.prototype.removeRule = function (
-    this: CSSStyleSheet,
-    index: number,
-  ) {
-    return win.CSSStyleSheet.prototype.deleteRule.apply(this, [index]);
-  };
 
   let replace: (text: string) => Promise<CSSStyleSheet>;
 
@@ -870,7 +881,7 @@ export function initAdoptedStyleSheetObserver(
   // host of adoptedStyleSheets is outermost document or IFrame's document
   if (host.nodeName === '#document') hostId = mirror.getId(host);
   // The host is a ShadowRoot.
-  else hostId = mirror.getId(dom.host(host as ShadowRoot));
+  else hostId = mirror.getId((host as ShadowRoot).host);
 
   const patchTarget =
     host.nodeName === '#document'

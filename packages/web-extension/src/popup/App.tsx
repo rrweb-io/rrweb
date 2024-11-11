@@ -10,13 +10,16 @@ import {
 } from '@chakra-ui/react';
 import { FiSettings, FiList, FiPause, FiPlay } from 'react-icons/fi';
 import Channel from '~/utils/channel';
-import type {
+import {
   LocalData,
+  LocalDataKey,
+  RecorderStatus,
+  ServiceName,
   RecordStartedMessage,
   RecordStoppedMessage,
   Session,
+  EventName,
 } from '~/types';
-import { LocalDataKey, RecorderStatus, ServiceName, EventName } from '~/types';
 import Browser from 'webextension-polyfill';
 import { CircleButton } from '~/components/CircleButton';
 import { Timer } from './Timer';
@@ -36,8 +39,9 @@ export function App() {
     void Browser.storage.local.get(LocalDataKey.recorderStatus).then((data) => {
       const localData = data as LocalData;
       if (!localData || !localData[LocalDataKey.recorderStatus]) return;
-      const { status, startTimestamp, pausedTimestamp } =
-        localData[LocalDataKey.recorderStatus];
+      const { status, startTimestamp, pausedTimestamp } = localData[
+        LocalDataKey.recorderStatus
+      ];
       setStatus(status);
       if (startTimestamp && pausedTimestamp)
         setStartTime(Date.now() - pausedTimestamp + startTimestamp || 0);

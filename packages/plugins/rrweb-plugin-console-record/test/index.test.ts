@@ -87,17 +87,14 @@ describe('rrweb-plugin-console-record', () => {
       'window.snapshots',
     )) as eventWithTime[];
     // The snapshots should containe 1 console log, not multiple.
-    await assertSnapshot(snapshots);
+    assertSnapshot(snapshots);
   });
 
   it('should record console messages', async () => {
     await page.goto(`${serverUrl}test/html/log.html`);
 
     await page.evaluate(() => {
-      // truthy assert does not log
-      console.assert(0 === 0, 'should not log assert');
-      // falsy assert does log
-      console.assert(false, 'should log assert');
+      console.assert(0 === 0, 'assert');
       console.count('count');
       console.countReset('count');
       console.debug('debug');
@@ -126,6 +123,6 @@ describe('rrweb-plugin-console-record', () => {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    await assertSnapshot(snapshots);
+    assertSnapshot(snapshots);
   });
 });

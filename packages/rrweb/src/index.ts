@@ -17,24 +17,19 @@ export {
   type eventWithTime,
 } from '@saola.ai/rrweb-types';
 
-// exports style.css from replay
-import './replay/styles/style.css';
-
 export type { recordOptions, ReplayPlugin } from './types';
 
 const { addCustomEvent } = record;
 const { freezePage } = record;
-const { takeFullSnapshot } = record;
 
 export {
   record,
   addCustomEvent,
   freezePage,
-  takeFullSnapshot,
   Replayer,
-  type playerConfig,
-  type PlayerMachineState,
-  type SpeedMachineState,
+  playerConfig,
+  PlayerMachineState,
+  SpeedMachineState,
   canvasMutation,
   _mirror as mirror,
   utils,

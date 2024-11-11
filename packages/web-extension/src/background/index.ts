@@ -2,11 +2,11 @@ import Browser from 'webextension-polyfill';
 import type { eventWithTime } from '@saola.ai/rrweb-types';
 import Channel from '~/utils/channel';
 import {
-  type LocalData,
+  LocalData,
   LocalDataKey,
   RecorderStatus,
-  type Settings,
-  type SyncData,
+  Settings,
+  SyncData,
   SyncDataKey,
 } from '~/types';
 import { pauseRecording, resumeRecording } from '~/utils/recording';

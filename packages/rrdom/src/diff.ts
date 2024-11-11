@@ -1,7 +1,7 @@
 import {
   NodeType as RRNodeType,
   Mirror as NodeMirror,
-  type elementNode,
+  elementNode,
 } from '@saola.ai/rrweb-snapshot';
 import type {
   canvasMutationData,
@@ -21,7 +21,6 @@ import type {
 } from './document';
 import type {
   RRCanvasElement,
-  RRDialogElement,
   RRElement,
   RRIFrameElement,
   RRMediaElement,
@@ -286,29 +285,6 @@ function diffAfterUpdatingChildren(
             );
           break;
         }
-        case 'DIALOG': {
-          const dialog = oldElement as HTMLDialogElement;
-          const rrDialog = newRRElement as unknown as RRDialogElement;
-          const wasOpen = dialog.open;
-          const wasModal = dialog.matches('dialog:modal');
-          const shouldBeOpen = rrDialog.open;
-          const shouldBeModal = rrDialog.isModal;
-
-          const modalChanged = wasModal !== shouldBeModal;
-          const openChanged = wasOpen !== shouldBeOpen;
-
-          if (modalChanged || (wasOpen && openChanged)) dialog.close();
-          if (shouldBeOpen && (openChanged || modalChanged)) {
-            try {
-              if (shouldBeModal) dialog.showModal();
-              else dialog.show();
-            } catch (e) {
-              console.warn(e);
-            }
-          }
-
-          break;
-        }
       }
       break;
     }
@@ -354,20 +330,12 @@ function diffProps(
         }
       };
     } else if (newTree.tagName === 'IFRAME' && name === 'srcdoc') continue;
-    else {
-      try {
-        oldTree.setAttribute(name, newValue);
-      } catch (err) {
-        // We want to continue diffing so we quietly catch
-        // this exception. Otherwise, this can throw and bubble up to
-        // the `ReplayerEvents.Flush` listener and break rendering
-        console.warn(err);
-      }
-    }
+    else oldTree.setAttribute(name, newValue);
   }
 
   for (const { name } of Array.from(oldAttributes))
     if (!(name in newAttributes)) oldTree.removeAttribute(name);
+
   newTree.scrollLeft && (oldTree.scrollLeft = newTree.scrollLeft);
   newTree.scrollTop && (oldTree.scrollTop = newTree.scrollTop);
 }

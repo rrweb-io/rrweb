@@ -262,6 +262,7 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
+      this.mirror,
     );
 
     this.resetObservers = () => {

@@ -149,7 +149,7 @@ describe('cross origin iframes & packer', function (this: ISuite) {
         const unpackedSnapshots = packedSnapshots.map((packed) =>
           unpack(packed),
         ) as eventWithTime[];
-        await assertSnapshot(unpackedSnapshots);
+        assertSnapshot(unpackedSnapshots);
       });
     });
   });

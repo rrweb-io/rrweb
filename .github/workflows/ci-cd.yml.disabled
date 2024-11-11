@@ -41,5 +41,5 @@ jobs:
         if: failure()
         with:
           name: image-diff
-          path: packages/**/__image_snapshots__/__diff_output__/*.png
+          path: packages/rrweb/test/*/__image_snapshots__/__diff_output__/*.png
           if-no-files-found: ignore

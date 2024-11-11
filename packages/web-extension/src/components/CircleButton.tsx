@@ -1,4 +1,4 @@
-import { Button, type ButtonProps } from '@chakra-ui/react';
+import { Button, ButtonProps } from '@chakra-ui/react';
 
 interface CircleButtonProps extends ButtonProps {
   diameter: number;

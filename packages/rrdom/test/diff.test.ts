@@ -338,32 +338,6 @@ describe('diff algorithm for rrdom', () => {
       expect((node as Node as HTMLElement).className).toBe('node');
     });
 
-    it('ignores invalid attributes', () => {
-      const tagName = 'DIV';
-      const node = document.createElement(tagName);
-      const sn = Object.assign({}, elementSn, {
-        attributes: { '@click': 'foo' },
-        tagName,
-      });
-      mirror.add(node, sn);
-
-      const rrDocument = new RRDocument();
-      const rrNode = rrDocument.createElement(tagName);
-      const sn2 = Object.assign({}, elementSn, {
-        attributes: { '@click': 'foo' },
-        tagName,
-      });
-      rrDocument.mirror.add(rrNode, sn2);
-
-      rrNode.attributes = { id: 'node1', class: 'node', '@click': 'foo' };
-      diff(node, rrNode, replayer);
-      expect((node as Node as HTMLElement).id).toBe('node1');
-      expect((node as Node as HTMLElement).className).toBe('node');
-      expect('@click' in (node as Node as HTMLElement)).toBe(false);
-      expect(warn).toHaveBeenCalledTimes(1);
-      warn.mockClear();
-    });
-
     it('can update exist properties', () => {
       const tagName = 'DIV';
       const node = document.createElement(tagName);

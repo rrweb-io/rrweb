@@ -9,17 +9,6 @@
   "commit": false,
   "fixed": [
     [
-      "@saola.ai/rrweb-all",
-      "@saola.ai/replay",
-      "@saola.ai/record",
-      "@saola.ai/rrweb-packer",
-      "@saola.ai/rrweb-utils",
-      "@saola.ai/rrweb-plugin-console-record",
-      "@saola.ai/rrweb-plugin-console-replay",
-      "@saola.ai/rrweb-plugin-sequential-id-record",
-      "@saola.ai/rrweb-plugin-sequential-id-replay",
-      "@saola.ai/rrweb-plugin-canvas-webrtc-record",
-      "@saola.ai/rrweb-plugin-canvas-webrtc-replay",
       "@saola.ai/rrweb",
       "@saola.ai/rrweb-snapshot",
       "@saola.ai/rrdom",

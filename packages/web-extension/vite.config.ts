@@ -5,8 +5,6 @@ import * as path from 'path';
 import type { PackageJson } from 'type-fest';
 import react from '@vitejs/plugin-react';
 
-const emptyOutDir = !process.argv.includes('--watch');
-
 function useSpecialFormat(
   entriesToUse: string[],
   format: LibraryFormats,
@@ -48,7 +46,7 @@ export default defineConfig({
       'dist',
       process.env.TARGET_BROWSER as string,
     ),
-    emptyOutDir,
+    emptyOutDir: true,
   },
   // Add the webExtension plugin
   plugins: [

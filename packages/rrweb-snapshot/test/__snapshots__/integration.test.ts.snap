@@ -1,123 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`dialog integration tests > should capture open attribute for modal dialogs 1`] = `
-"{
-  \\"type\\": 0,
-  \\"childNodes\\": [
-    {
-      \\"type\\": 2,
-      \\"tagName\\": \\"html\\",
-      \\"attributes\\": {},
-      \\"childNodes\\": [
-        {
-          \\"type\\": 2,
-          \\"tagName\\": \\"head\\",
-          \\"attributes\\": {},
-          \\"childNodes\\": [],
-          \\"id\\": 3
-        },
-        {
-          \\"type\\": 2,
-          \\"tagName\\": \\"body\\",
-          \\"attributes\\": {},
-          \\"childNodes\\": [
-            {
-              \\"type\\": 3,
-              \\"textContent\\": \\"\\\\n    \\",
-              \\"id\\": 5
-            },
-            {
-              \\"type\\": 2,
-              \\"tagName\\": \\"dialog\\",
-              \\"attributes\\": {
-                \\"open\\": \\"\\",
-                \\"rr_open_mode\\": \\"modal\\"
-              },
-              \\"childNodes\\": [
-                {
-                  \\"type\\": 3,
-                  \\"textContent\\": \\"I'm a dialog\\",
-                  \\"id\\": 7
-                }
-              ],
-              \\"id\\": 6
-            },
-            {
-              \\"type\\": 3,
-              \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
-              \\"id\\": 8
-            }
-          ],
-          \\"id\\": 4
-        }
-      ],
-      \\"id\\": 2
-    }
-  ],
-  \\"compatMode\\": \\"BackCompat\\",
-  \\"id\\": 1
-}"
-`;
-
-exports[`dialog integration tests > should capture open attribute for non modal dialogs 1`] = `
-"{
-  \\"type\\": 0,
-  \\"childNodes\\": [
-    {
-      \\"type\\": 2,
-      \\"tagName\\": \\"html\\",
-      \\"attributes\\": {},
-      \\"childNodes\\": [
-        {
-          \\"type\\": 2,
-          \\"tagName\\": \\"head\\",
-          \\"attributes\\": {},
-          \\"childNodes\\": [],
-          \\"id\\": 3
-        },
-        {
-          \\"type\\": 2,
-          \\"tagName\\": \\"body\\",
-          \\"attributes\\": {},
-          \\"childNodes\\": [
-            {
-              \\"type\\": 3,
-              \\"textContent\\": \\"\\\\n    \\",
-              \\"id\\": 5
-            },
-            {
-              \\"type\\": 2,
-              \\"tagName\\": \\"dialog\\",
-              \\"attributes\\": {
-                \\"open\\": \\"\\",
-                \\"rr_open_mode\\": \\"non-modal\\"
-              },
-              \\"childNodes\\": [
-                {
-                  \\"type\\": 3,
-                  \\"textContent\\": \\"I'm a dialog\\",
-                  \\"id\\": 7
-                }
-              ],
-              \\"id\\": 6
-            },
-            {
-              \\"type\\": 3,
-              \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
-              \\"id\\": 8
-            }
-          ],
-          \\"id\\": 4
-        }
-      ],
-      \\"id\\": 2
-    }
-  ],
-  \\"compatMode\\": \\"BackCompat\\",
-  \\"id\\": 1
-}"
-`;
-
 exports[`iframe integration tests > snapshot async iframes 1`] = `
 "{
   \\"type\\": 0,
@@ -332,12 +214,6 @@ exports[`integration tests > [html file]: cors-style-sheet.html 1`] = `
   <body></body></html>"
 `;
 
-exports[`integration tests > [html file]: dialog.html 1`] = `
-"<html><head></head><body>
-    <dialog>I'm a dialog</dialog>
-  </body></html>"
-`;
-
 exports[`integration tests > [html file]: dynamic-stylesheet.html 1`] = `
 "<!DOCTYPE html><html lang=\\"en\\"><head>
     <meta charset=\\"UTF-8\\" />
@@ -393,9 +269,7 @@ exports[`integration tests > [html file]: hover.html 1`] = `
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
   <title>hover selector</title>
-  <style>div:hover,
-div.\\\\:hover { background: orange; }div:hover::after,
-div.\\\\:hover::after { position: absolute; left: 0px; top: 100%; content: \\"dropdown\\"; width: 100px; height: 200px; background: lightblue; }</style>
+  <style>div:hover, div.\\\\:hover { background: orange; }div:hover::after, div.\\\\:hover::after { position: absolute; left: 0px; top: 100%; content: \\"dropdown\\"; width: 100px; height: 200px; background: lightblue; }</style>
 </head><body>
   <div>hover me</div>
 </body></html>"
@@ -613,7 +487,7 @@ exports[`integration tests > [html file]: with-style-sheet.html 1`] = `
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
   <title>with style sheet</title>
-  <style>body { margin: 0px; background: url(\\"http://localhost:3030/should-be-in-root-folder.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/css/should-be-in-css-folder.jpg\\"); }body &gt; p { color: yellow; }</style>
+  <style>body { margin: 0px; background: url(\\"http://localhost:3030/a.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/css/b.jpg\\"); }body &gt; p { color: yellow; }</style>
 </head><body>
 </body></html>"
 `;
@@ -624,222 +498,9 @@ exports[`integration tests > [html file]: with-style-sheet-with-import.html 1`] 
   <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\" />
   <meta http-equiv=\\"X-UA-Compatible\\" content=\\"ie=edge\\" />
   <title>with style sheet with import</title>
-  <style>@import url(\\"//fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&amp;family=Roboto:wght@100;300;400;500;700&amp;display=swap\\\\\\"\\");body { margin: 0px; background: url(\\"http://localhost:3030/should-be-in-root-folder.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/css/should-be-in-css-folder.jpg\\"); }body &gt; p { color: yellow; }body { margin: 0px; background: url(\\"http://localhost:3030/should-be-in-root-folder.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/alt-css/should-be-in-alt-css-folder.jpg\\"); }body &gt; p { color: yellow; }</style>
-  <style>body { margin: 0px; background: url(\\"http://localhost:3030/should-be-in-root-folder.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/alt-css/should-be-in-alt-css-folder.jpg\\"); }body &gt; p { color: yellow; }section { background: url(\\"http://localhost:3030/should-be-in-root-folder.jpg\\"); }</style>
+  <style>@import url(\\"//fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&amp;family=Roboto:wght@100;300;400;500;700&amp;display=swap\\\\\\"\\");body { margin: 0px; background: url(\\"http://localhost:3030/a.jpg\\"); border-image: url(\\"data:image/svg+xml;utf8,&lt;svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" x=\\\\\\"0px\\\\\\" y=\\\\\\"0px\\\\\\" viewBox=\\\\\\"0 0 256 256\\\\\\"&gt;&lt;g&gt;&lt;g&gt;&lt;polygon points=\\\\\\"79.093,0 48.907,30.187 146.72,128 48.907,225.813 79.093,256 207.093,128\\\\\\"/&gt;&lt;/g&gt;&lt;/g&gt;&lt;/svg&gt;\\") 100% / 1 / 0 stretch; }p { color: red; background: url(\\"http://localhost:3030/css/b.jpg\\"); }body &gt; p { color: yellow; }</style>
 </head><body>
 </body></html>"
-`;
-
-exports[`integration tests > should be able to record elements even when .childNodes has been monkey patched 1`] = `
-"{
-  \\"type\\": 0,
-  \\"childNodes\\": [
-    {
-      \\"type\\": 1,
-      \\"name\\": \\"html\\",
-      \\"publicId\\": \\"\\",
-      \\"systemId\\": \\"\\",
-      \\"id\\": 2
-    },
-    {
-      \\"type\\": 2,
-      \\"tagName\\": \\"html\\",
-      \\"attributes\\": {
-        \\"lang\\": \\"en\\"
-      },
-      \\"childNodes\\": [
-        {
-          \\"type\\": 2,
-          \\"tagName\\": \\"head\\",
-          \\"attributes\\": {},
-          \\"childNodes\\": [
-            {
-              \\"type\\": 3,
-              \\"textContent\\": \\"\\\\n    \\",
-              \\"id\\": 5
-            },
-            {
-              \\"type\\": 2,
-              \\"tagName\\": \\"meta\\",
-              \\"attributes\\": {
-                \\"charset\\": \\"UTF-8\\"
-              },
-              \\"childNodes\\": [],
-              \\"id\\": 6
-            },
-            {
-              \\"type\\": 3,
-              \\"textContent\\": \\"\\\\n    \\",
-              \\"id\\": 7
-            },
-            {
-              \\"type\\": 2,
-              \\"tagName\\": \\"meta\\",
-              \\"attributes\\": {
-                \\"name\\": \\"viewport\\",
-                \\"content\\": \\"width=device-width, initial-scale=1.0\\"
-              },
-              \\"childNodes\\": [],
-              \\"id\\": 8
-            },
-            {
-              \\"type\\": 3,
-              \\"textContent\\": \\"\\\\n    \\",
-              \\"id\\": 9
-            },
-            {
-              \\"type\\": 2,
-              \\"tagName\\": \\"title\\",
-              \\"attributes\\": {},
-              \\"childNodes\\": [
-                {
-                  \\"type\\": 3,
-                  \\"textContent\\": \\"Document\\",
-                  \\"id\\": 11
-                }
-              ],
-              \\"id\\": 10
-            },
-            {
-              \\"type\\": 3,
-              \\"textContent\\": \\"\\\\n    \\",
-              \\"id\\": 12
-            },
-            {
-              \\"type\\": 2,
-              \\"tagName\\": \\"script\\",
-              \\"attributes\\": {},
-              \\"childNodes\\": [
-                {
-                  \\"type\\": 3,
-                  \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                  \\"id\\": 14
-                }
-              ],
-              \\"id\\": 13
-            },
-            {
-              \\"type\\": 3,
-              \\"textContent\\": \\"\\\\n  \\",
-              \\"id\\": 15
-            }
-          ],
-          \\"id\\": 4
-        },
-        {
-          \\"type\\": 3,
-          \\"textContent\\": \\"\\\\n  \\",
-          \\"id\\": 16
-        },
-        {
-          \\"type\\": 2,
-          \\"tagName\\": \\"body\\",
-          \\"attributes\\": {},
-          \\"childNodes\\": [
-            {
-              \\"type\\": 3,
-              \\"textContent\\": \\"\\\\n    \\",
-              \\"id\\": 18
-            },
-            {
-              \\"type\\": 2,
-              \\"tagName\\": \\"ul\\",
-              \\"attributes\\": {},
-              \\"childNodes\\": [
-                {
-                  \\"type\\": 3,
-                  \\"textContent\\": \\"\\\\n      \\",
-                  \\"id\\": 20
-                },
-                {
-                  \\"type\\": 2,
-                  \\"tagName\\": \\"li\\",
-                  \\"attributes\\": {},
-                  \\"childNodes\\": [
-                    {
-                      \\"type\\": 3,
-                      \\"textContent\\": \\"a\\",
-                      \\"id\\": 22
-                    }
-                  ],
-                  \\"id\\": 21
-                },
-                {
-                  \\"type\\": 3,
-                  \\"textContent\\": \\"\\\\n      \\",
-                  \\"id\\": 23
-                },
-                {
-                  \\"type\\": 2,
-                  \\"tagName\\": \\"li\\",
-                  \\"attributes\\": {},
-                  \\"childNodes\\": [
-                    {
-                      \\"type\\": 3,
-                      \\"textContent\\": \\"b\\",
-                      \\"id\\": 25
-                    }
-                  ],
-                  \\"id\\": 24
-                },
-                {
-                  \\"type\\": 3,
-                  \\"textContent\\": \\"\\\\n      \\",
-                  \\"id\\": 26
-                },
-                {
-                  \\"type\\": 2,
-                  \\"tagName\\": \\"li\\",
-                  \\"attributes\\": {},
-                  \\"childNodes\\": [
-                    {
-                      \\"type\\": 3,
-                      \\"textContent\\": \\"c\\",
-                      \\"id\\": 28
-                    }
-                  ],
-                  \\"id\\": 27
-                },
-                {
-                  \\"type\\": 3,
-                  \\"textContent\\": \\"\\\\n      \\",
-                  \\"id\\": 29
-                },
-                {
-                  \\"type\\": 2,
-                  \\"tagName\\": \\"li\\",
-                  \\"attributes\\": {},
-                  \\"childNodes\\": [
-                    {
-                      \\"type\\": 3,
-                      \\"textContent\\": \\"d\\",
-                      \\"id\\": 31
-                    }
-                  ],
-                  \\"id\\": 30
-                },
-                {
-                  \\"type\\": 3,
-                  \\"textContent\\": \\"\\\\n    \\",
-                  \\"id\\": 32
-                }
-              ],
-              \\"id\\": 19
-            },
-            {
-              \\"type\\": 3,
-              \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
-              \\"id\\": 33
-            }
-          ],
-          \\"id\\": 17
-        }
-      ],
-      \\"id\\": 3
-    }
-  ],
-  \\"id\\": 1
-}"
 `;
 
 exports[`shadow DOM integration tests > snapshot shadow DOM 1`] = `
@@ -1094,13 +755,12 @@ exports[`shadow DOM integration tests > snapshot shadow DOM 1`] = `
                 {
                   \\"type\\": 2,
                   \\"tagName\\": \\"style\\",
-                  \\"attributes\\": {
-                    \\"_cssText\\": \\":host { display: inline-block; width: 650px; font-family: \\\\\\"Roboto Slab\\\\\\"; contain: content; }:host([background]) { background: var(--background-color, #9E9E9E); border-radius: 10px; padding: 10px; }#panels { box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 2px; background: white; border-radius: 3px; padding: 16px; height: 250px; overflow: auto; }#tabs { display: inline-flex; user-select: none; }#tabs slot { display: inline-flex; }#tabs ::slotted(*) { font: 400 16px / 22px Roboto; padding: 16px 8px; margin: 0px; text-align: center; width: 100px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; cursor: pointer; border-top-left-radius: 3px; border-top-right-radius: 3px; background: linear-gradient(rgb(250, 250, 250), rgb(238, 238, 238)); border: none; }#tabs ::slotted([aria-selected=\\\\\\"true\\\\\\"]) { font-weight: 600; background: white; box-shadow: none; }#tabs ::slotted(:focus) { z-index: 1; }#panels ::slotted([aria-hidden=\\\\\\"true\\\\\\"]) { display: none; }\\"
-                  },
+                  \\"attributes\\": {},
                   \\"childNodes\\": [
                     {
                       \\"type\\": 3,
-                      \\"textContent\\": \\"\\",
+                      \\"textContent\\": \\":host { display: inline-block; width: 650px; font-family: \\\\\\"Roboto Slab\\\\\\"; contain: content; }:host([background]) { background: var(--background-color, #9E9E9E); border-radius: 10px; padding: 10px; }#panels { box-shadow: rgba(0, 0, 0, 0.3) 0px 2px 2px; background: white; border-radius: 3px; padding: 16px; height: 250px; overflow: auto; }#tabs { display: inline-flex; user-select: none; }#tabs slot { display: inline-flex; }#tabs ::slotted(*) { font: 400 16px / 22px Roboto; padding: 16px 8px; margin: 0px; text-align: center; width: 100px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; cursor: pointer; border-top-left-radius: 3px; border-top-right-radius: 3px; background: linear-gradient(rgb(250, 250, 250), rgb(238, 238, 238)); border: none; }#tabs ::slotted([aria-selected=\\\\\\"true\\\\\\"]) { font-weight: 600; background: white; box-shadow: none; }#tabs ::slotted(:focus) { z-index: 1; }#panels ::slotted([aria-hidden=\\\\\\"true\\\\\\"]) { display: none; }\\",
+                      \\"isStyle\\": true,
                       \\"id\\": 38
                     }
                   ],

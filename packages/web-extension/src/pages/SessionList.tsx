@@ -23,15 +23,15 @@ import {
   useReactTable,
   flexRender,
   getCoreRowModel,
-  type SortingState,
+  SortingState,
   getSortedRowModel,
-  type PaginationState,
+  PaginationState,
 } from '@tanstack/react-table';
 import { VscTriangleDown, VscTriangleUp } from 'react-icons/vsc';
 import { useNavigate } from 'react-router-dom';
-import { type Session, EventName } from '~/types';
+import { Session, EventName } from '~/types';
 import Channel from '~/utils/channel';
-import { deleteSessions, getAllSessions, downloadSessions } from '~/utils/storage';
+import { deleteSessions, getAllSessions } from '~/utils/storage';
 import {
   FiChevronLeft,
   FiChevronRight,
@@ -292,38 +292,24 @@ export function SessionList() {
             ))}
           </Select>
           {Object.keys(rowSelection).length > 0 && (
-            <Flex gap={1}>
-              <Button
-                mr={4}
-                size="md"
-                colorScheme="red"
-                onClick={() => {
-                  if (table.getSelectedRowModel().flatRows.length === 0) return;
-                  const ids = table
-                    .getSelectedRowModel()
-                    .flatRows.map((row) => row.original.id);
-                  void deleteSessions(ids).then(() => {
-                    setRowSelection({});
-                    void updateSessions();
-                    channel.emit(EventName.SessionUpdated, {});
-                  });
-                }}
-              >
-                Delete
-              </Button>
-              <Button
-                mr={4}
-                size="md"
-                colorScheme="green"
-                onClick={() => {
-                  const selectedRows = table.getSelectedRowModel().flatRows;
-                  if (selectedRows.length === 0) return;
-                  void downloadSessions(selectedRows.map((row) => row.original.id));
-                }}
-              >
-                Download
-              </Button>
-            </Flex>
+            <Button
+              mr={4}
+              size="md"
+              colorScheme="red"
+              onClick={() => {
+                if (table.getSelectedRowModel().flatRows.length === 0) return;
+                const ids = table
+                  .getSelectedRowModel()
+                  .flatRows.map((row) => row.original.id);
+                void deleteSessions(ids).then(() => {
+                  setRowSelection({});
+                  void updateSessions();
+                  channel.emit(EventName.SessionUpdated, {});
+                });
+              }}
+            >
+              Delete
+            </Button>
           )}
         </Flex>
       </Flex>

@@ -7,10 +7,9 @@
     "vite.config.defaults.ts",
     "tsconfig.json"
   ],
-  "globalPassThroughEnv": ["PUPPETEER_HEADLESS"],
   "tasks": {
     "prepublish": {
-      "dependsOn": ["^prepublish", "//#references:update"],
+      "dependsOn": ["^prepublish"],
       "outputs": [
         "lib/**",
         "es/**",
@@ -21,30 +20,24 @@
       ]
     },
     "test": {
-      "dependsOn": ["^prepublish"]
+      "dependsOn": ["^prepublish"],
+      "passThroughEnv": ["PUPPETEER_HEADLESS"]
     },
     "test:watch": {
       "persistent": true,
-      "cache": false
+      "passThroughEnv": ["PUPPETEER_HEADLESS"]
     },
     "test:update": {
-      "dependsOn": ["^prepublish"]
+      "dependsOn": ["^prepublish"],
+      "passThroughEnv": ["PUPPETEER_HEADLESS"]
     },
     "dev": {
-      "dependsOn": ["prepublish", "^prepublish"],
+      // "dependsOn": ["^prepublish"],
       "persistent": true,
-      "cache": false
+      "cache": false,
+      "passThroughEnv": ["CLEAR_DIST_DIR"]
     },
     "lint": {},
-    "check-types": {
-      "dependsOn": ["^prepublish"]
-    },
-    "//#references:update": {
-      "inputs": ["packages/*/package.json", "packages/plugins/*/package.json"],
-      "outputs": [
-        "packages/*/tsconfig.json",
-        "packages/plugins/*/tsconfig.json"
-      ]
-    }
+    "check-types": {}
   }
 }

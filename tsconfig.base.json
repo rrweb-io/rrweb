@@ -14,7 +14,7 @@
     "sourceMap": true,
     "skipLibCheck": true,
     "declaration": true,
-    "verbatimModuleSyntax": true,
+    "importsNotUsedAsValues": "error",
     "strict": true,
     "removeComments": true,
     "noImplicitAny": true,

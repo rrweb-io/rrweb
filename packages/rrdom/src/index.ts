@@ -31,7 +31,6 @@ import {
   type IRRDocumentType,
   type IRRText,
   type IRRComment,
-  BaseRRDialogElement,
 } from './document';
 
 export class RRDocument extends BaseRRDocument {
@@ -105,9 +104,6 @@ export class RRDocument extends BaseRRDocument {
       case 'STYLE':
         element = new RRStyleElement(upperTagName);
         break;
-      case 'DIALOG':
-        element = new RRDialogElement(upperTagName);
-        break;
       default:
         element = new RRElement(upperTagName);
         break;
@@ -154,8 +150,6 @@ export class RRElement extends BaseRRElement {
 }
 
 export class RRMediaElement extends BaseRRMediaElement {}
-
-export class RRDialogElement extends BaseRRDialogElement {}
 
 export class RRCanvasElement extends RRElement implements IRRElement {
   public rr_dataURL: string | null = null;

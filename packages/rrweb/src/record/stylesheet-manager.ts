@@ -70,7 +70,7 @@ export class StylesheetManager {
         styles.push({
           styleId,
           rules: Array.from(sheet.rules || CSSRule, (r, index) => ({
-            rule: stringifyRule(r, sheet.href),
+            rule: stringifyRule(r),
             index,
           })),
         });

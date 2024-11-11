@@ -2,79 +2,64 @@
  * @vitest-environment jsdom
  */
 import { JSDOM } from 'jsdom';
-import { describe, expect, it } from 'vitest';
-
-import snapshot, {
-  _isBlockedElement,
+import { describe, it, expect } from 'vitest';
+import {
+  absoluteToStylesheet,
   serializeNodeWithId,
+  _isBlockedElement,
 } from '../src/snapshot';
-import { elementNode, serializedNodeWithId } from '../src/types';
-import { Mirror, absolutifyURLs } from '../src/utils';
-
-const serializeNode = (node: Node): serializedNodeWithId | null => {
-  return serializeNodeWithId(node, {
-    doc: document,
-    mirror: new Mirror(),
-    blockClass: 'blockblock',
-    blockSelector: null,
-    maskTextClass: 'maskmask',
-    maskTextSelector: null,
-    skipChild: false,
-    inlineStylesheet: true,
-    maskTextFn: undefined,
-    maskInputFn: undefined,
-    slimDOMOptions: {},
-  });
-};
+import snapshot from '../src/snapshot';
+import { serializedNodeWithId, elementNode } from '../src/types';
+import { Mirror } from '../src/utils';
 
 describe('absolute url to stylesheet', () => {
   const href = 'http://localhost/css/style.css';
 
   it('can handle relative path', () => {
-    expect(absolutifyURLs('url(a.jpg)', href)).toEqual(
+    expect(absoluteToStylesheet('url(a.jpg)', href)).toEqual(
       `url(http://localhost/css/a.jpg)`,
     );
   });
 
   it('can handle same level path', () => {
-    expect(absolutifyURLs('url("./a.jpg")', href)).toEqual(
+    expect(absoluteToStylesheet('url("./a.jpg")', href)).toEqual(
       `url("http://localhost/css/a.jpg")`,
     );
   });
 
   it('can handle parent level path', () => {
-    expect(absolutifyURLs('url("../a.jpg")', href)).toEqual(
+    expect(absoluteToStylesheet('url("../a.jpg")', href)).toEqual(
       `url("http://localhost/a.jpg")`,
     );
   });
 
   it('can handle absolute path', () => {
-    expect(absolutifyURLs('url("/a.jpg")', href)).toEqual(
+    expect(absoluteToStylesheet('url("/a.jpg")', href)).toEqual(
       `url("http://localhost/a.jpg")`,
     );
   });
 
   it('can handle external path', () => {
-    expect(absolutifyURLs('url("http://localhost/a.jpg")', href)).toEqual(
+    expect(absoluteToStylesheet('url("http://localhost/a.jpg")', href)).toEqual(
       `url("http://localhost/a.jpg")`,
     );
   });
 
   it('can handle single quote path', () => {
-    expect(absolutifyURLs(`url('./a.jpg')`, href)).toEqual(
+    expect(absoluteToStylesheet(`url('./a.jpg')`, href)).toEqual(
       `url('http://localhost/css/a.jpg')`,
     );
   });
 
   it('can handle no quote path', () => {
-    expect(absolutifyURLs('url(./a.jpg)', href)).toEqual(
+    expect(absoluteToStylesheet('url(./a.jpg)', href)).toEqual(
       `url(http://localhost/css/a.jpg)`,
     );
   });
 
   it('can handle multiple no quote paths', () => {
     expect(
-      absolutifyURLs(
+      absoluteToStylesheet(
         'background-image: url(images/b.jpg);background: #aabbcc url(images/a.jpg) 50% 50% repeat;',
         href,
       ),
@@ -85,11 +70,11 @@ describe('absolute url to stylesheet', () => {
   });
 
   it('can handle data url image', () => {
-    expect(absolutifyURLs('url(data:image/gif;base64,ABC)', href)).toEqual(
-      'url(data:image/gif;base64,ABC)',
-    );
     expect(
-      absolutifyURLs(
+      absoluteToStylesheet('url(data:image/gif;base64,ABC)', href),
+    ).toEqual('url(data:image/gif;base64,ABC)');
+    expect(
+      absoluteToStylesheet(
         'url(data:application/font-woff;base64,d09GMgABAAAAAAm)',
         href,
       ),
@@ -98,7 +83,7 @@ describe('absolute url to stylesheet', () => {
 
   it('preserves quotes around inline svgs with spaces', () => {
     expect(
-      absolutifyURLs(
+      absoluteToStylesheet(
         "url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%2328a745' d='M3'/%3E%3C/svg%3E\")",
         href,
       ),
@@ -106,7 +91,7 @@ describe('absolute url to stylesheet', () => {
       "url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%2328a745' d='M3'/%3E%3C/svg%3E\")",
     );
     expect(
-      absolutifyURLs(
+      absoluteToStylesheet(
         'url(\'data:image/svg+xml;utf8,<svg width="28" height="32" viewBox="0 0 28 32" xmlns="http://www.w3.org/2000/svg"><path d="M27 14C28" fill="white"/></svg>\')',
         href,
       ),
@@ -114,7 +99,7 @@ describe('absolute url to stylesheet', () => {
       'url(\'data:image/svg+xml;utf8,<svg width="28" height="32" viewBox="0 0 28 32" xmlns="http://www.w3.org/2000/svg"><path d="M27 14C28" fill="white"/></svg>\')',
     );
     expect(
-      absolutifyURLs(
+      absoluteToStylesheet(
         'url("data:image/svg+xml;utf8,<svg width="28" height="32" viewBox="0 0 28 32" xmlns="http://www.w3.org/2000/svg"><path d="M27 14C28" fill="white"/></svg>")',
         href,
       ),
@@ -123,7 +108,7 @@ describe('absolute url to stylesheet', () => {
     );
   });
   it('can handle empty path', () => {
-    expect(absolutifyURLs(`url('')`, href)).toEqual(`url('')`);
+    expect(absoluteToStylesheet(`url('')`, href)).toEqual(`url('')`);
   });
 });
 
@@ -154,6 +139,22 @@ describe('isBlockedElement()', () => {
 });
 
 describe('style elements', () => {
+  const serializeNode = (node: Node): serializedNodeWithId | null => {
+    return serializeNodeWithId(node, {
+      doc: document,
+      mirror: new Mirror(),
+      blockClass: 'blockblock',
+      blockSelector: null,
+      maskTextClass: 'maskmask',
+      maskTextSelector: null,
+      skipChild: false,
+      inlineStylesheet: true,
+      maskTextFn: undefined,
+      maskInputFn: undefined,
+      slimDOMOptions: {},
+    });
+  };
+
   const render = (html: string): HTMLStyleElement => {
     document.write(html);
     return document.querySelector('style')!;
@@ -162,32 +163,44 @@ describe('style elements', () => {
   it('should serialize all rules of stylesheet when the sheet has a single child node', () => {
     const styleEl = render(`<style>body { color: red; }</style>`);
     styleEl.sheet?.insertRule('section { color: blue; }');
-    expect(serializeNode(styleEl)).toMatchObject({
+    expect(serializeNode(styleEl.childNodes[0])).toMatchObject({
+      isStyle: true,
       rootId: undefined,
-      attributes: {
-        _cssText: 'section {color: blue;}body {color: red;}',
-      },
-      type: 2,
+      textContent: 'section {color: blue;}body {color: red;}',
+      type: 3,
     });
   });
 
-  it('should serialize all rules on stylesheets with mix of insertion type', () => {
+  it('should serialize individual text nodes on stylesheets with multiple child nodes', () => {
     const styleEl = render(`<style>body { color: red; }</style>`);
-    styleEl.sheet?.insertRule('section.lost { color: unseeable; }'); // browser throws this away after append
     styleEl.append(document.createTextNode('section { color: blue; }'));
-    styleEl.sheet?.insertRule('section.working { color: pink; }');
-    expect(serializeNode(styleEl)).toMatchObject({
+    expect(serializeNode(styleEl.childNodes[1])).toMatchObject({
+      isStyle: true,
       rootId: undefined,
-      attributes: {
-        _cssText:
-          'section.working {color: pink;}body {color: red;}/* rr_split */section {color: blue;}',
-      },
-      type: 2,
+      textContent: 'section { color: blue; }',
+      type: 3,
     });
   });
 });
 
 describe('scrollTop/scrollLeft', () => {
+  const serializeNode = (node: Node): serializedNodeWithId | null => {
+    return serializeNodeWithId(node, {
+      doc: document,
+      mirror: new Mirror(),
+      blockClass: 'blockblock',
+      blockSelector: null,
+      maskTextClass: 'maskmask',
+      maskTextSelector: null,
+      skipChild: false,
+      inlineStylesheet: true,
+      maskTextFn: undefined,
+      maskInputFn: undefined,
+      slimDOMOptions: {},
+      newlyAddedElement: false,
+    });
+  };
+
   const render = (html: string): HTMLDivElement => {
     document.write(html);
     return document.querySelector('div')!;
@@ -209,6 +222,23 @@ describe('scrollTop/scrollLeft', () => {
 });
 
 describe('form', () => {
+  const serializeNode = (node: Node): serializedNodeWithId | null => {
+    return serializeNodeWithId(node, {
+      doc: document,
+      mirror: new Mirror(),
+      blockClass: 'blockblock',
+      blockSelector: null,
+      maskTextClass: 'maskmask',
+      maskTextSelector: null,
+      skipChild: false,
+      inlineStylesheet: true,
+      maskTextFn: undefined,
+      maskInputFn: undefined,
+      slimDOMOptions: {},
+      newlyAddedElement: false,
+    });
+  };
+
   const render = (html: string): HTMLTextAreaElement => {
     document.write(html);
     return document.querySelector('textarea')!;

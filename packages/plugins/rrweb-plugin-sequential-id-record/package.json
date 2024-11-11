@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/rrweb-plugin-sequential-id-record",
-  "version": "2.0.13",
+  "version": "2.0.15",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-sequential-id-record.umd.cjs",
@@ -25,9 +25,9 @@
   ],
   "scripts": {
     "dev": "vite build --watch",
-    "build": "yarn turbo run prepublish",
+    "build": "tsc -noEmit && vite build",
     "check-types": "tsc -noEmit",
-    "prepublish": "tsc -noEmit && vite build"
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -43,12 +43,12 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
-    "@saola.ai/rrweb": "^2.0.13",
-    "typescript": "^5.4.5",
-    "vite": "^5.3.1",
-    "vite-plugin-dts": "^3.9.1"
+    "@saola.ai/rrweb": "^2.0.15",
+    "typescript": "^4.7.3",
+    "vite": "^5.2.8",
+    "vite-plugin-dts": "^3.8.1"
   },
   "peerDependencies": {
-    "@saola.ai/rrweb": "^2.0.13"
+    "@saola.ai/rrweb": "^2.0.15"
   }
 }

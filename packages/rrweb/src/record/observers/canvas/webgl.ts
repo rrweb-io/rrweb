@@ -1,10 +1,11 @@
+import type { Mirror } from '@saola.ai/rrweb-snapshot';
 import {
-  type blockClass,
+  blockClass,
   CanvasContext,
-  type canvasManagerMutationCallback,
-  type canvasMutationWithType,
-  type IWindow,
-  type listenerHandler,
+  canvasManagerMutationCallback,
+  canvasMutationWithType,
+  IWindow,
+  listenerHandler,
 } from '@saola.ai/rrweb-types';
 import { hookSetter, isBlocked, patch } from '../../../utils';
 import { saveWebGLVar, serializeArgs } from './serialize-args';
@@ -15,6 +16,7 @@ function patchGLPrototype(
   cb: canvasManagerMutationCallback,
   blockClass: blockClass,
   blockSelector: string | null,
+  _mirror: Mirror,
   win: IWindow,
 ): listenerHandler[] {
   const handlers: listenerHandler[] = [];
@@ -91,6 +93,7 @@ export default function initCanvasWebGLMutationObserver(
   win: IWindow,
   blockClass: blockClass,
   blockSelector: string | null,
+  mirror: Mirror,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
 
@@ -101,6 +104,7 @@ export default function initCanvasWebGLMutationObserver(
       cb,
       blockClass,
       blockSelector,
+      mirror,
       win,
     ),
   );
@@ -113,6 +117,7 @@ export default function initCanvasWebGLMutationObserver(
         cb,
         blockClass,
         blockSelector,
+        mirror,
         win,
       ),
     );

@@ -1,13 +1,13 @@
 {
   "name": "@saola.ai/rrdom-nodejs",
-  "version": "2.0.13",
+  "version": "2.0.15",
   "scripts": {
     "dev": "vite build --watch",
-    "build": "yarn turbo run prepublish",
+    "build": "tsc -noEmit && vite build",
     "check-types": "tsc -noEmit",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "prepublish": "tsc -noEmit && vite build",
+    "prepublish": "npm run build",
     "lint": "yarn eslint src/**/*.ts"
   },
   "keywords": [
@@ -46,16 +46,19 @@
     "compare-versions": "^4.1.3",
     "eslint": "^8.15.0",
     "puppeteer": "^9.1.1",
-    "vite": "^5.3.1",
-    "vite-plugin-dts": "^3.9.1",
+    "vite": "^5.2.8",
+    "vite-plugin-dts": "^3.8.1",
     "vitest": "^1.4.0",
-    "typescript": "^5.4.5"
+    "typescript": "^4.7.3"
   },
   "dependencies": {
     "cssom": "^0.5.0",
     "cssstyle": "^2.3.0",
     "nwsapi": "^2.2.0",
-    "@saola.ai/rrdom": "^2.0.13",
-    "@saola.ai/rrweb-snapshot": "^2.0.13"
-  }
+    "@saola.ai/rrdom": "^2.0.15",
+    "@saola.ai/rrweb-snapshot": "^2.0.15"
+  },
+  "browserslist": [
+    "supports es6-class"
+  ]
 }

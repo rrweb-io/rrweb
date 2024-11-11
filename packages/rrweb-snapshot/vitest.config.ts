@@ -6,7 +6,7 @@ export default mergeConfig(
   configShared,
   defineProject({
     test: {
-      globals: true,
+      // ... custom test config here
     },
   }),
 );

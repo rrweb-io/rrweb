@@ -1,5 +1,17 @@
 # rrweb-snapshot
 
+## 2.0.15
+
+### Patch Changes
+
+- [REVERT] Commit eb1fb6d60f4381ee87272bdceccdf6ad5297284f - new version 2.0.15
+
+## 2.0.14
+
+### Patch Changes
+
+- [REVERT] Commit eb1fb6d60f4381ee87272bdceccdf6ad5297284f
+
 ## 2.0.13
 
 ### Patch Changes
