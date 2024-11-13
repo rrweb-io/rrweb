@@ -1083,6 +1083,9 @@ export class Replayer {
     const promises: Promise<void>[] = [];
     if (fullSnapshot.data.capturedAssetStatuses) {
       fullSnapshot.data.capturedAssetStatuses.forEach((status) => {
+        if (this.assetManager.expectedAssets === null) {
+          this.assetManager.expectedAssets = new Set();
+        }
         this.assetManager.expectedAssets.add(status.url);
       });
     }

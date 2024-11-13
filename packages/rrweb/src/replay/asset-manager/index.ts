@@ -29,13 +29,12 @@ export default class AssetManager implements RebuildAssetManagerInterface {
   > = new Map();
   private liveMode: boolean;
   private cache: BuildCache;
-  public expectedAssets: Set<string>;
+  public expectedAssets: Set<string> | null = null;
   public replayerApproxTs: number = 0;
 
   constructor({ liveMode, cache }: { liveMode: boolean; cache: BuildCache }) {
     this.liveMode = liveMode;
     this.cache = cache;
-    this.expectedAssets = new Set();
   }
 
   public async add(event: assetEvent & { timestamp: number }) {
@@ -50,7 +49,9 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       return;
     }
     this.loadingURLs.add(url);
-    this.expectedAssets.delete(url);
+    if (this.expectedAssets !== null) {
+      this.expectedAssets.delete(url);
+    }
 
     // tracks if deserializing did anything, not really needed for AssetManager
     const status = {
@@ -116,6 +117,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       return currentStatus;
     } else if (
       currentStatus.status === 'unknown' &&
+      this.expectedAssets !== null &&
       this.expectedAssets.size === 0 &&
       !this.liveMode
     ) {
