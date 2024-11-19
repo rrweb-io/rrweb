@@ -28,6 +28,29 @@ const testableMethods = {
 
 const untaintedBasePrototype: Partial<BasePrototypeCache> = {};
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const isFunction = (x: unknown): x is (...args: any[]) => any => {
+    return typeof x === 'function'
+}
+
+function isNativeFunction(x: unknown): boolean {
+  return isFunction(x) && x.toString().includes("[native code]");
+}
+
+/*
+ When angular patches things they pass the above `isNativeFunction` check
+ That then causes performance issues
+ because angular's change detection
+ doesn't like sharing a mutation observer
+ */
+export const isAngularZonePatchedFunction = (x: unknown): boolean => {
+    if (!isFunction(x)) {
+        return false
+    }
+    const prototypeKeys = Object.getOwnPropertyNames(x.prototype || {})
+    return prototypeKeys.some((key) => key.indexOf('__zone'))
+}
+
 export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
   key: T,
 ): BasePrototypeCache[T] {
@@ -43,12 +66,16 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
   const isUntaintedAccessors = Boolean(
     accessorNames &&
       // @ts-expect-error 2345
-      accessorNames.every((accessor: keyof typeof defaultPrototype) =>
-        Boolean(
-          Object.getOwnPropertyDescriptor(defaultPrototype, accessor)
-            ?.get?.toString()
-            .includes('[native code]'),
-        ),
+      accessorNames.every((accessor: keyof typeof defaultPrototype) => {
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        const candidate = Object.getOwnPropertyDescriptor(defaultPrototype, accessor)
+          ?.get;
+        let isUntainted = isNativeFunction(candidate)
+        if (key === 'MutationObserver') {
+          isUntainted = isUntainted && !isAngularZonePatchedFunction(candidate)
+        }
+        return isUntainted
+        },
       ),
   );
 
