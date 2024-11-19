@@ -28,6 +28,7 @@ import type {
   RRDocument,
   Mirror,
 } from '.';
+import { getIFrameContentDocument } from './util';
 
 const NAMESPACES: Record<string, string> = {
   svg: 'http://www.w3.org/2000/svg',
@@ -170,8 +171,9 @@ function diffBeforeUpdatingChildren(
       const newRRElement = newTree as IRRElement;
       switch (newRRElement.tagName) {
         case 'IFRAME': {
-          const oldContentDocument = (oldTree as HTMLIFrameElement)
-            .contentDocument;
+          const oldContentDocument = getIFrameContentDocument(
+            oldTree as HTMLIFrameElement,
+          );
           // If the iframe is cross-origin, the contentDocument will be null.
           if (!oldContentDocument) break;
           // IFrame element doesn't have child nodes, so here we update its content document separately.

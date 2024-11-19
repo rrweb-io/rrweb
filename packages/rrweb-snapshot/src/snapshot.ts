@@ -29,6 +29,7 @@ import {
   shouldMaskInput,
   setTimeout,
   clearTimeout,
+  getIframeContentDocument,
 } from './utils';
 
 let _id = 1;
@@ -1046,7 +1047,7 @@ function serializeElementNode(
   if (tagName === 'iframe' && !keepIframeSrcFn(attributes.src as string)) {
     // Don't try to access `contentDocument` if iframe is blocked, otherwise it
     // will trigger browser warnings.
-    if (!needBlock && !(n as HTMLIFrameElement).contentDocument) {
+    if (!needBlock && !getIframeContentDocument(n as HTMLIFrameElement)) {
       // we can't record it directly as we can't see into it
       // preserve the src attribute so a decision can be taken at replay time
       attributes.rr_src = attributes.src;
@@ -1384,7 +1385,7 @@ export function serializeNodeWithId(
     onceIframeLoaded(
       n as HTMLIFrameElement,
       () => {
-        const iframeDoc = (n as HTMLIFrameElement).contentDocument;
+        const iframeDoc = getIframeContentDocument(n as HTMLIFrameElement);
         if (iframeDoc && onIframeLoad) {
           const serializedIframeNode = serializeNodeWithId(iframeDoc, {
             doc: iframeDoc,

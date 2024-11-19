@@ -32,6 +32,7 @@ import {
   IRRText,
   IRRComment,
 } from './document';
+import { getIFrameContentDocument } from './util';
 
 export class RRDocument extends BaseRRDocumentImpl(RRNode) {
   private UNSERIALIZED_STARTING_ID = -2;
@@ -313,7 +314,7 @@ export function buildFromDom(
     }
 
     if (node.nodeName === 'IFRAME') {
-      const iframeDoc = (node as HTMLIFrameElement).contentDocument;
+      const iframeDoc = getIFrameContentDocument(node as HTMLIFrameElement);
       iframeDoc && walk(iframeDoc, rrNode);
     } else if (
       node.nodeType === NodeType.DOCUMENT_NODE ||
@@ -485,3 +486,4 @@ export { RRNode };
 
 export { diff, createOrGetNode, ReplayerHandler } from './diff';
 export * from './document';
+export { getIFrameContentDocument, getIFrameContentWindow } from './util';

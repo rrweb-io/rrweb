@@ -17,6 +17,8 @@ import {
   buildFromDom,
   diff,
   getDefaultSN,
+  getIFrameContentDocument,
+  getIFrameContentWindow,
 } from '@sentry-internal/rrdom';
 import type {
   RRNode,
@@ -266,10 +268,11 @@ export class Replayer {
             }
           },
         };
-        if (this.iframe.contentDocument)
+        const iframeDoc = getIFrameContentDocument(this.iframe);
+        if (iframeDoc)
           try {
             diff(
-              this.iframe.contentDocument,
+              iframeDoc,
               this.virtualDom,
               replayerHandler,
               this.virtualDom.mirror,
@@ -553,7 +556,8 @@ export class Replayer {
       this.service.send({ type: 'PAUSE' });
       this.service.send({ type: 'PLAY', payload: { timeOffset } });
     }
-    this.iframe.contentDocument
+    const iframeDoc = getIFrameContentDocument(this.iframe);
+    iframeDoc
       ?.getElementsByTagName('html')[0]
       ?.classList.remove('rrweb-paused');
     this.emitter.emit(ReplayerEvents.Start);
@@ -567,9 +571,8 @@ export class Replayer {
       this.play(timeOffset);
       this.service.send({ type: 'PAUSE' });
     }
-    this.iframe.contentDocument
-      ?.getElementsByTagName('html')[0]
-      ?.classList.add('rrweb-paused');
+    const iframeDoc = getIFrameContentDocument(this.iframe);
+    iframeDoc?.getElementsByTagName('html')[0]?.classList.add('rrweb-paused');
     this.emitter.emit(ReplayerEvents.Pause);
   }
 
@@ -638,13 +641,11 @@ export class Replayer {
     this.iframe.setAttribute('sandbox', attributes.join(' '));
     this.disableInteract();
     this.wrapper.appendChild(this.iframe);
-    if (this.iframe.contentWindow && this.iframe.contentDocument) {
-      smoothscrollPolyfill(
-        this.iframe.contentWindow,
-        this.iframe.contentDocument,
-      );
-
-      polyfill(this.iframe.contentWindow as IWindow);
+    const iframeDoc = getIFrameContentDocument(this.iframe);
+    const iframeWindow = getIFrameContentWindow(this.iframe);
+    if (iframeWindow && iframeDoc) {
+      smoothscrollPolyfill(iframeWindow, iframeDoc);
+      polyfill(iframeWindow as IWindow);
     }
   }
 
@@ -816,7 +817,8 @@ export class Replayer {
     event: fullSnapshotEvent & { timestamp: number },
     isSync = false,
   ) {
-    if (!this.iframe.contentDocument) {
+    const iframeDoc = getIFrameContentDocument(this.iframe);
+    if (!iframeDoc) {
       return this.warn('Looks like your replayer has been destroyed.');
     }
     if (Object.keys(this.legacy_missingNodeRetryMap).length) {
@@ -850,12 +852,12 @@ export class Replayer {
 
     this.mirror.reset();
     rebuild(event.data.node, {
-      doc: this.iframe.contentDocument,
+      doc: iframeDoc,
       afterAppend,
       cache: this.cache,
       mirror: this.mirror,
     });
-    afterAppend(this.iframe.contentDocument, event.data.node.id);
+    afterAppend(iframeDoc, event.data.node.id);
 
     for (const { mutationInQueue, builtNode } of collected) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
@@ -863,11 +865,10 @@ export class Replayer {
         (m) => m !== mutationInQueue,
       );
     }
-    const { documentElement, head } = this.iframe.contentDocument;
+    const { documentElement, head } = iframeDoc;
     this.insertStyleRules(documentElement, head);
     if (!this.service.state.matches('playing')) {
-      const iframeHtmlElement =
-        this.iframe.contentDocument.getElementsByTagName('html')[0];
+      const iframeHtmlElement = iframeDoc.getElementsByTagName('html')[0];
 
       iframeHtmlElement && iframeHtmlElement.classList.add('rrweb-paused');
     }
@@ -927,6 +928,9 @@ export class Replayer {
       : this.mirror;
     type TNode = typeof mirror extends Mirror ? Node : RRNode;
     type TMirror = typeof mirror extends Mirror ? Mirror : RRDOMMirror;
+    const iframeContentDoc = getIFrameContentDocument(
+      iframeEl as HTMLIFrameElement,
+    );
 
     const collected: AppendedIframe[] = [];
     const afterAppend = (builtNode: Node, id: number) => {
@@ -934,9 +938,10 @@ export class Replayer {
       const sn = (mirror as TMirror).getMeta(builtNode as unknown as TNode);
       if (
         sn?.type === NodeType.Element &&
-        sn?.tagName.toUpperCase() === 'HTML'
+        sn?.tagName.toUpperCase() === 'HTML' &&
+        iframeContentDoc
       ) {
-        const { documentElement, head } = iframeEl.contentDocument!;
+        const { documentElement, head } = iframeContentDoc;
         this.insertStyleRules(
           documentElement as HTMLElement | RRElement,
           head as HTMLElement | RRElement,
@@ -955,14 +960,14 @@ export class Replayer {
     };
 
     buildNodeWithSN(mutation.node, {
-      doc: iframeEl.contentDocument! as Document,
+      doc: iframeContentDoc as Document,
       mirror: mirror as Mirror,
       hackCss: true,
       skipChild: false,
       afterAppend,
       cache: this.cache,
     });
-    afterAppend(iframeEl.contentDocument! as Document, mutation.node.id);
+    afterAppend(iframeContentDoc as Document, mutation.node.id);
 
     for (const { mutationInQueue, builtNode } of collected) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
@@ -993,7 +998,8 @@ export class Replayer {
    * pause when loading style sheet, resume when loaded all timeout exceed
    */
   private waitForStylesheetLoad() {
-    const head = this.iframe.contentDocument?.head;
+    const iframeDoc = getIFrameContentDocument(this.iframe);
+    const head = iframeDoc?.head;
     if (head) {
       const unloadSheets: Set<HTMLLinkElement> = new Set();
       let timer: ReturnType<typeof setTimeout> | -1;
@@ -1433,7 +1439,7 @@ export class Replayer {
               : d.fontSource,
             d.descriptors,
           );
-          this.iframe.contentDocument?.fonts.add(fontFace);
+          getIFrameContentDocument(this.iframe)?.fonts.add(fontFace);
         } catch (error) {
           this.warn(error);
         }
@@ -1460,7 +1466,10 @@ export class Replayer {
     // Only apply virtual dom optimization if the fast-forward process has node mutation. Because the cost of creating a virtual dom tree and executing the diff algorithm is usually higher than directly applying other kind of events.
     if (this.config.useVirtualDom && !this.usingVirtualDom && isSync) {
       this.usingVirtualDom = true;
-      buildFromDom(this.iframe.contentDocument!, this.mirror, this.virtualDom);
+      const iframeDoc = getIFrameContentDocument(this.iframe);
+      if (iframeDoc) {
+        buildFromDom(iframeDoc, this.mirror, this.virtualDom);
+      }
       // If these legacy missing nodes haven't been resolved, they should be converted to virtual nodes.
       if (Object.keys(this.legacy_missingNodeRetryMap).length) {
         for (const key in this.legacy_missingNodeRetryMap) {
@@ -1559,7 +1568,8 @@ export class Replayer {
     };
 
     const appendNode = (mutation: addedNodeMutation) => {
-      if (!this.iframe.contentDocument) {
+      const iframeDoc = getIFrameContentDocument(this.iframe);
+      if (!iframeDoc) {
         return this.warn('Looks like your replayer has been destroyed.');
       }
       let parent: Node | null | ShadowRoot | RRNode = mirror.getNode(
@@ -1601,7 +1611,7 @@ export class Replayer {
         ? mirror.getNode(mutation.node.rootId)
         : this.usingVirtualDom
         ? this.virtualDom
-        : this.iframe.contentDocument;
+        : iframeDoc;
       if (isSerializedIframe<typeof parent>(parent, mirror)) {
         this.attachDocumentToIframe(
           mutation,
@@ -1893,7 +1903,8 @@ export class Replayer {
       return this.debugNodeNotFound(d, d.id);
     }
     const sn = this.mirror.getMeta(target);
-    if (target === this.iframe.contentDocument) {
+    const iframeDoc = getIFrameContentDocument(this.iframe);
+    if (target === iframeDoc) {
       this.iframe.contentWindow?.scrollTo({
         top: d.y,
         left: d.x,
@@ -2235,7 +2246,8 @@ export class Replayer {
   }
 
   private hoverElements(el: Element) {
-    const rootElement = this.lastHoveredRootNode || this.iframe.contentDocument;
+    const iframeDoc = getIFrameContentDocument(this.iframe);
+    const rootElement = this.lastHoveredRootNode || iframeDoc;
 
     // Sometimes this throws because `querySelectorAll` is not a function,
     // unsure of value of rootElement when this occurs

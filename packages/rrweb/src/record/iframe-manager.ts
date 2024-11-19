@@ -12,6 +12,7 @@ import type {
   mutationCallBack,
 } from '@sentry-internal/rrweb-types';
 import type { StylesheetManager } from './stylesheet-manager';
+import { getIFrameContentDocument } from '@sentry-internal/rrdom';
 
 export interface IframeManagerInterface {
   crossOriginIframeMirror: CrossOriginIframeMirror;
@@ -109,14 +110,16 @@ export class IframeManager implements IframeManagerInterface {
     });
     this.loadListener?.(iframeEl);
 
+    const iframeDoc = getIFrameContentDocument(iframeEl);
+
     if (
-      iframeEl.contentDocument &&
-      iframeEl.contentDocument.adoptedStyleSheets &&
-      iframeEl.contentDocument.adoptedStyleSheets.length > 0
+      iframeDoc &&
+      iframeDoc.adoptedStyleSheets &&
+      iframeDoc.adoptedStyleSheets.length > 0
     )
       this.stylesheetManager.adoptStyleSheets(
-        iframeEl.contentDocument.adoptedStyleSheets,
-        this.mirror.getId(iframeEl.contentDocument),
+        iframeDoc.adoptedStyleSheets,
+        this.mirror.getId(iframeDoc),
       );
   }
   private handleMessage(message: MessageEvent | CrossOriginIframeMessageEvent) {

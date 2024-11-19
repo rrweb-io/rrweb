@@ -12,6 +12,10 @@ import {
 import { patch, inDom, setTimeout } from '../utils';
 import type { Mirror } from '@sentry-internal/rrweb-snapshot';
 import { isNativeShadowDom } from '@sentry-internal/rrweb-snapshot';
+import {
+  getIFrameContentDocument,
+  getIFrameContentWindow,
+} from '@sentry-internal/rrdom';
 
 type BypassOptions = Omit<
   MutationBufferParam,
@@ -122,15 +126,16 @@ export class ShadowDomManager implements ShadowDomManagerInterface {
    * Monkey patch 'attachShadow' of an IFrameElement to observe newly added shadow doms.
    */
   public observeAttachShadow(iframeElement: HTMLIFrameElement) {
-    if (!iframeElement.contentWindow || !iframeElement.contentDocument) return;
-
+    const iframeDoc = getIFrameContentDocument(iframeElement);
+    const iframeWindow = getIFrameContentWindow(iframeElement);
+    if (!iframeDoc || !iframeWindow) return;
     this.patchAttachShadow(
       (
-        iframeElement.contentWindow as Window & {
+        iframeWindow as Window & {
           Element: { prototype: Element };
         }
       ).Element,
-      iframeElement.contentDocument,
+      iframeDoc,
     );
   }
 
