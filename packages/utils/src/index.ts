@@ -33,10 +33,6 @@ const isFunction = (x: unknown): x is (...args: any[]) => any => {
     return typeof x === 'function'
 }
 
-function isNativeFunction(x: unknown): boolean {
-  return isFunction(x) && x.toString().includes("[native code]");
-}
-
 /*
  When angular patches things they pass the above `isNativeFunction` check
  That then causes performance issues
@@ -66,16 +62,12 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
   const isUntaintedAccessors = Boolean(
     accessorNames &&
       // @ts-expect-error 2345
-      accessorNames.every((accessor: keyof typeof defaultPrototype) => {
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        const candidate = Object.getOwnPropertyDescriptor(defaultPrototype, accessor)
-          ?.get;
-        let isUntainted = isNativeFunction(candidate)
-        if (key === 'MutationObserver') {
-          isUntainted = isUntainted && !isAngularZonePatchedFunction(candidate)
-        }
-        return isUntainted
-        },
+      accessorNames.every((accessor: keyof typeof defaultPrototype) =>
+        Boolean(
+          Object.getOwnPropertyDescriptor(defaultPrototype, accessor)
+            ?.get?.toString()
+            .includes('[native code]'),
+        ),
       ),
   );
 
@@ -90,7 +82,7 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
       ),
   );
 
-  if (isUntaintedAccessors && isUntaintedMethods) {
+  if (isUntaintedAccessors && isUntaintedMethods && !isAngularZonePatchedFunction(defaultObj)) {
     untaintedBasePrototype[key] = defaultObj.prototype as BasePrototypeCache[T];
     return defaultObj.prototype as BasePrototypeCache[T];
   }
