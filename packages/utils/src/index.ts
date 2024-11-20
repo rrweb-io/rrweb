@@ -30,8 +30,8 @@ const untaintedBasePrototype: Partial<BasePrototypeCache> = {};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isFunction = (x: unknown): x is (...args: any[]) => any => {
-    return typeof x === 'function'
-}
+  return typeof x === 'function';
+};
 
 /*
  When angular patches things they pass the above `isNativeFunction` check
@@ -40,12 +40,12 @@ const isFunction = (x: unknown): x is (...args: any[]) => any => {
  doesn't like sharing a mutation observer
  */
 export const isAngularZonePatchedFunction = (x: unknown): boolean => {
-    if (!isFunction(x)) {
-        return false
-    }
-    const prototypeKeys = Object.getOwnPropertyNames(x.prototype || {})
-    return prototypeKeys.some((key) => key.indexOf('__zone'))
-}
+  if (!isFunction(x)) {
+    return false;
+  }
+  const prototypeKeys = Object.getOwnPropertyNames(x.prototype || {});
+  return prototypeKeys.some((key) => key.indexOf('__zone'));
+};
 
 export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
   key: T,
@@ -82,7 +82,11 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
       ),
   );
 
-  if (isUntaintedAccessors && isUntaintedMethods && !isAngularZonePatchedFunction(defaultObj)) {
+  if (
+    isUntaintedAccessors &&
+    isUntaintedMethods &&
+    !isAngularZonePatchedFunction(defaultObj)
+  ) {
     untaintedBasePrototype[key] = defaultObj.prototype as BasePrototypeCache[T];
     return defaultObj.prototype as BasePrototypeCache[T];
   }
