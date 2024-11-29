@@ -811,9 +811,8 @@ describe('asset capturing', function (this: ISuite) {
           },
         },
       ];
-      // assets can be emitted in either order
-      expect(assetEvents).toMatchObject(expect.arrayContaining([expected[0]]));
-      expect(assetEvents).toMatchObject(expect.arrayContaining([expected[1]]));
+      // to fix: assets can be emitted in either order
+      expect(assetEvents).toMatchObject(expected);
     });
   });
 
