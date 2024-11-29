@@ -294,9 +294,10 @@ describe('applyCssSplits css rejoiner', function () {
     const badSecondHalf = 'er { color: red; }';
     const markedCssText = [badFirstHalf, badSecondHalf].join('/* rr_split */');
     applyCssSplits(sn, markedCssText, true, mockLastUnusedArg);
-    expect((sn.childNodes[1] as textNode).textContent).toEqual(
-      'er,\na.\\:hover { color: red; }',
-    );
+    expect(
+      (sn.childNodes[0] as textNode).textContent +
+        (sn.childNodes[1] as textNode).textContent,
+    ).toEqual('a:hover,\na.\\:hover { color: red; }');
   });
 
   it('applies css splits correctly when split parts are invalid by themselves x3', () => {
