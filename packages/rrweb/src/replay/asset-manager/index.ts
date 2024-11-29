@@ -212,13 +212,11 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       // includes <link>s (these are recreated as <style> elements)
       isCssTextElement = true;
     }
-    const prevValue = node.getAttribute(attribute);
-
     const promises: Promise<unknown>[] = [];
 
     if (attribute === 'srcset') {
       const values = getSourcesFromSrcset(serializedValue);
-      let expectedValue: string | null = prevValue;
+      let expectedValue: string | null = node.getAttribute(attribute);
       values.forEach((value) => {
         promises.push(
           this.whenReady(value).then((status) => {
@@ -266,17 +264,29 @@ export default class AssetManager implements RebuildAssetManagerInterface {
         },
       );
     } else {
-      // In live mode we removes the attribute while it loads so it doesn't show the broken image icon
-      if (this.liveMode && nodeId > 0 && !isCssTextElement) {
+      if (nodeId > 0 && !isCssTextElement) {
         let hijackedAttributes = this.nodeIdAttributeHijackedMap.get(nodeId);
         if (!hijackedAttributes) {
           hijackedAttributes = new Map();
           this.nodeIdAttributeHijackedMap.set(nodeId, hijackedAttributes);
         }
         hijackedAttributes.set(attribute, serializedValue);
-        if (node.tagName === 'IMG' && attribute === 'src') {
-          // special value to prevent a broken image icon while asset is being loaded
-          node.setAttribute('src', '//:0');
+      }
+
+      if (node.tagName === 'IMG' && attribute === 'src') {
+        if (
+          preloadedStatus.status === 'unknown' &&
+          node.getAttribute(attribute) === null
+        ) {
+          if (this.liveMode) {
+            // special value to prevent a broken image icon while asset is being loaded
+            node.setAttribute('src', '//:0');
+          } else {
+            // we don't have any confidence that image will load as an asset
+            // as it should have showed up via preloadAllAssets.
+            // set it to the potentially broken original value
+            node.setAttribute('src', serializedValue);
+          }
         }
       }
       promises.push(
@@ -290,12 +300,13 @@ export default class AssetManager implements RebuildAssetManagerInterface {
             return;
           }
           if (!isCssTextElement) {
-            const attributeUnchanged = this.liveMode
-              ? serializedValue ===
-                this.nodeIdAttributeHijackedMap.get(nodeId)?.get(attribute)
-              : node.getAttribute(attribute) === prevValue;
-
-            if (!attributeUnchanged) return; // attribute was changed since we started loading the asset
+            if (
+              serializedValue !==
+              this.nodeIdAttributeHijackedMap.get(nodeId)?.get(attribute)
+            ) {
+              // attribute was changed since we started loading the asset
+              return;
+            }
           }
           if (status.cssTexts) {
             buildStyleNode(
