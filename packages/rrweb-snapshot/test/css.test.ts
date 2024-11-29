@@ -289,6 +289,51 @@ describe('applyCssSplits css rejoiner', function () {
     expect((sn3.childNodes[2] as textNode).textContent).toEqual('');
   });
 
+  it('applies css splits correctly when split parts are invalid by themselves', () => {
+    const badFirstHalf = 'a:hov';
+    const badSecondHalf = 'er { color: red; }';
+    const markedCssText = [badFirstHalf, badSecondHalf].join('/* rr_split */');
+    applyCssSplits(sn, markedCssText, true, mockLastUnusedArg);
+    expect((sn.childNodes[1] as textNode).textContent).toEqual(
+      'er,\na.\\:hover { color: red; }',
+    );
+  });
+
+  it('applies css splits correctly when split parts are invalid by themselves x3', () => {
+    let sn3 = {
+      type: NodeType.Element,
+      tagName: 'style',
+      childNodes: [
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+      ],
+    } as serializedElementNodeWithId;
+    const badStartThird = '.a:hover { background-color';
+    const badMidThird = ': red; } input:hover {';
+    const badEndThird = 'border: 1px solid purple; }';
+    const markedCssText = [badStartThird, badMidThird, badEndThird].join(
+      '/* rr_split */',
+    );
+    applyCssSplits(sn3, markedCssText, true, mockLastUnusedArg);
+    expect((sn3.childNodes[0] as textNode).textContent).toEqual(
+      badStartThird.replace('.a:hover', '.a:hover,\n.a.\\:hover'),
+    );
+    expect((sn3.childNodes[1] as textNode).textContent).toEqual(
+      badMidThird.replace('input:hover', 'input:hover,\ninput.\\:hover'),
+    );
+    expect((sn3.childNodes[2] as textNode).textContent).toEqual(badEndThird);
+  });
+
   it('maintains entire css text when there are too few child nodes', () => {
     let sn1 = {
       type: NodeType.Element,

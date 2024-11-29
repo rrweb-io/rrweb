@@ -102,15 +102,65 @@ export function applyCssSplits(
     // unexpected: remerge the last two so that we don't discard any css
     cssTextSplits.splice(-2, 2, cssTextSplits.slice(-2).join(''));
   }
+  let adaptionFailures = [];
   for (let i = 0; i < childTextNodes.length; i++) {
     const childTextNode = childTextNodes[i];
-    const cssTextSection = cssTextSplits[i];
+    let cssTextSection = cssTextSplits[i];
     if (childTextNode && cssTextSection) {
       // id will be assigned when these child nodes are
       // iterated over in buildNodeWithSN
-      childTextNode.textContent = hackCss
-        ? adaptCssForReplay(cssTextSection, cache)
-        : cssTextSection;
+      if (hackCss) {
+        try {
+          cssTextSection = adaptCssForReplay(cssTextSection, cache);
+        } catch (e) {
+          // css section might not have been valid on it's own
+          adaptionFailures.push(i);
+        }
+      }
+      childTextNode.textContent = cssTextSection;
+    }
+  }
+  if (adaptionFailures.length) {
+    // this time, can throw an exception
+    const fullAdaptedCss = adaptCssForReplay(cssTextSplits.join(''), cache);
+    let ix_start = 0;
+    for (let i = 0; i < childTextNodes.length; i++) {
+      const childTextNode = childTextNodes[i];
+      if (adaptionFailures.includes(i)) {
+        if (i === childTextNodes.length - 1) {
+          console.log('he' + i, ix_start, fullAdaptedCss.substring(ix_start));
+          childTextNode.textContent = fullAdaptedCss.substring(ix_start);
+        } else {
+          let ix_end = -1;
+          let end_search = childTextNodes[i + 1].textContent.length;
+          while (ix_end === -1) {
+            let search_bit = childTextNodes[i + 1].textContent.substring(
+              0,
+              end_search,
+            );
+            ix_end =
+              ix_start + fullAdaptedCss.substring(ix_start).indexOf(search_bit);
+            end_search -= 1;
+            if (end_search <= 2) {
+              break;
+            }
+          }
+          console.log(
+            're' + i,
+            ix_start,
+            ix_end,
+            fullAdaptedCss.substring(ix_start, ix_end),
+          );
+          if (ix_end !== -1) {
+            childTextNode.textContent = fullAdaptedCss.substring(
+              ix_start,
+              ix_end,
+            );
+          } else {
+          }
+        }
+      }
+      ix_start += childTextNode.textContent.length;
     }
   }
 }
