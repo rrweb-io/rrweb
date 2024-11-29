@@ -28,23 +28,21 @@ const testableMethods = {
 
 const untaintedBasePrototype: Partial<BasePrototypeCache> = {};
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const isFunction = (x: unknown): x is (...args: any[]) => any => {
-  return typeof x === 'function';
-};
-
 /*
- When angular patches things they pass the above `isNativeFunction` check
+ When angular patches things - particularly the MutationObserver -
+ they pass the `isNativeFunction` check
  That then causes performance issues
- because angular's change detection
+ because Angular's change detection
  doesn't like sharing a mutation observer
+ Checking for the presence of the Zone object
+ on global is a good-enough proxy for Angular
+ to cover most cases
+ (you can configure zone.js to have a different name
+  on the global object and should then manually run rrweb
+  outside the Zone)
  */
-export const isAngularZonePatchedFunction = (x: unknown): boolean => {
-  if (!isFunction(x)) {
-    return false;
-  }
-  const prototypeKeys = Object.getOwnPropertyNames(x.prototype || {});
-  return prototypeKeys.some((key) => key.indexOf('__zone'));
+export const isAngularZonePresent = (): boolean => {
+  return !!(globalThis as { Zone?: unknown }).Zone;
 };
 
 export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
@@ -85,7 +83,7 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
   if (
     isUntaintedAccessors &&
     isUntaintedMethods &&
-    !isAngularZonePatchedFunction(defaultObj)
+    !isAngularZonePresent()
   ) {
     untaintedBasePrototype[key] = defaultObj.prototype as BasePrototypeCache[T];
     return defaultObj.prototype as BasePrototypeCache[T];
