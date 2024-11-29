@@ -80,11 +80,7 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
       ),
   );
 
-  if (
-    isUntaintedAccessors &&
-    isUntaintedMethods &&
-    !isAngularZonePresent()
-  ) {
+  if (isUntaintedAccessors && isUntaintedMethods && !isAngularZonePresent()) {
     untaintedBasePrototype[key] = defaultObj.prototype as BasePrototypeCache[T];
     return defaultObj.prototype as BasePrototypeCache[T];
   }
