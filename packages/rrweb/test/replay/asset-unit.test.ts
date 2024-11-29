@@ -301,7 +301,7 @@ describe('AssetManager', () => {
       expect(element.getAttribute('src')).toBe('//:0');
     });
 
-    it("should be able to modify a node's attribute multiple times", async () => {
+    it("should be able to modify a node's attribute multiple times (assets arrive in reverse order)", async () => {
       const originalUrl = 'https://example.com/original-image.png';
       const newUrl = 'https://example.com/new-image.png';
       const originalAsset: assetEvent = {
@@ -338,7 +338,7 @@ describe('AssetManager', () => {
       expect(element.getAttribute('src')).toBe('objectURL1');
     });
 
-    it("should be able to modify a node's attribute multiple times 2", async () => {
+    it("should be able to modify a node's attribute multiple times (assets arrive in correct order)", async () => {
       const originalUrl = 'https://example.com/original-image.png';
       const newUrl = 'https://example.com/new-image.png';
       const originalAsset: assetEvent = {
