@@ -5694,7 +5694,7 @@ exports[`record integration tests > mutations should work when blocked class is 
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"rr_css_text\\": \\"about: blank#rr_style_el:1\\"
+                      \\"_cssText\\": \\"#b-class, #b-class-2 { height: 33px; width: 200px; }\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -6137,25 +6137,6 @@ exports[`record integration tests > mutations should work when blocked class is 
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
-      },
-      \\"capturedAssetStatuses\\": [
-        {
-          \\"url\\": \\"about: blank#rr_style_el:1\\",
-          \\"status\\": \\"capturing\\",
-          \\"timeout\\": 25
-        }
-      ]
-    }
-  },
-  {
-    \\"type\\": 7,
-    \\"data\\": {
-      \\"url\\": \\"about: blank#rr_style_el:1\\",
-      \\"payload\\": {
-        \\"rr_type\\": \\"CssText\\",
-        \\"cssTexts\\": [
-          \\"#b-class, #b-class-2 { height: 33px; width: 200px; }\\"
-        ]
       }
     }
   },
@@ -8430,7 +8411,7 @@ exports[`record integration tests > should nest record iframe 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"rr_css_text\\": \\"http://localhost:3030/html#rr_style_el:1\\"
+                      \\"_cssText\\": \\"iframe { width: 500px; height: 500px; }\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -8526,14 +8507,7 @@ exports[`record integration tests > should nest record iframe 1`] = `
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
-      },
-      \\"capturedAssetStatuses\\": [
-        {
-          \\"url\\": \\"http://localhost:3030/html#rr_style_el:1\\",
-          \\"status\\": \\"capturing\\",
-          \\"timeout\\": 25
-        }
-      ]
+      }
     }
   },
   {
@@ -8582,18 +8556,6 @@ exports[`record integration tests > should nest record iframe 1`] = `
       \\"texts\\": [],
       \\"attributes\\": [],
       \\"isAttachIframe\\": true
-    }
-  },
-  {
-    \\"type\\": 7,
-    \\"data\\": {
-      \\"url\\": \\"http://localhost:3030/html#rr_style_el:1\\",
-      \\"payload\\": {
-        \\"rr_type\\": \\"CssText\\",
-        \\"cssTexts\\": [
-          \\"iframe { width: 500px; height: 500px; }\\"
-        ]
-      }
     }
   },
   {
@@ -12111,7 +12073,7 @@ exports[`record integration tests > should record dynamic CSS changes 1`] = `
                     \\"attributes\\": {
                       \\"data-styled\\": \\"active\\",
                       \\"data-styled-version\\": \\"5.0.1\\",
-                      \\"rr_css_text\\": \\"about:blank#rr_style_el:1\\"
+                      \\"_cssText\\": \\".ixzlRK { font-size: 1.5em; text-align: center; color: palevioletred; }.eOXmez { font-size: 1.5em; text-align: center; color: rebeccapurple; }.bJCmFu { padding: 4em; background: papayawhip; }\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -12316,25 +12278,6 @@ exports[`record integration tests > should record dynamic CSS changes 1`] = `
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
-      },
-      \\"capturedAssetStatuses\\": [
-        {
-          \\"url\\": \\"about:blank#rr_style_el:1\\",
-          \\"status\\": \\"capturing\\",
-          \\"timeout\\": 25
-        }
-      ]
-    }
-  },
-  {
-    \\"type\\": 7,
-    \\"data\\": {
-      \\"url\\": \\"about:blank#rr_style_el:1\\",
-      \\"payload\\": {
-        \\"rr_type\\": \\"CssText\\",
-        \\"cssTexts\\": [
-          \\".ixzlRK { font-size: 1.5em; text-align: center; color: palevioletred; }.eOXmez { font-size: 1.5em; text-align: center; color: rebeccapurple; }.bJCmFu { padding: 4em; background: papayawhip; }\\"
-        ]
       }
     }
   },
