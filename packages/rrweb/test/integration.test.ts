@@ -25,9 +25,9 @@ describe('record integration tests', function (this: ISuite) {
     options: recordOptions<eventWithTime> = {},
   ): string => {
     if (!options.captureAssets) {
-      // for consistency in the tests
+      // for consistency in the tests, don't create small stylesheet assets
       options.captureAssets = {
-        processStylesheetsWithin: 50,
+        stylesheetsRuleThreshold: 10,
       };
     }
     const filePath = path.resolve(__dirname, `./html/${fileName}`);
