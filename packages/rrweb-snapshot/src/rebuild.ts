@@ -108,28 +108,33 @@ export function applyCssSplits(
   }
   let ix_start = 0;
   for (let i = 0; i < childTextNodes.length; i++) {
+    if (i === cssTextSplits.length) {
+      break;
+    }
     const childTextNode = childTextNodes[i];
     if (!hackCss) {
-      if (i === cssTextSplits.length) {
-        break;
-      }
       childTextNode.textContent = cssTextSplits[i];
     } else if (i < childTextNodes.length - 1) {
-      let ix_end = -1;
+      let ix_end = ix_start;
       let end_search = cssTextSplits[i + 1].length;
-      while (ix_end === -1) {
+
+      // don't do hundreds of searches, in case a mismatch
+      // is caused close to start of string
+      end_search = Math.min(end_search, 30);
+
+      let found = false;
+      for (; end_search > 2; end_search--) {
         let search_bit = cssTextSplits[i + 1].substring(0, end_search);
-        ix_end = ix_start + adaptedCss.substring(ix_start).indexOf(search_bit);
-        if (ix_end === -1) {
-          end_search -= 1;
-          continue;
-        } else if (ix_end <= 2) {
+        let search_ix = adaptedCss.substring(ix_start).indexOf(search_bit);
+        found = search_ix !== -1;
+        if (found) {
+          ix_end += search_ix;
           break;
         }
       }
-      if (ix_end === -1) {
+      if (!found) {
         // something went wrong, put a similar sized chunk in the right place
-        ix_end = ix_start + cssTextSplits[i].length;
+        ix_end += cssTextSplits[i].length;
       }
       childTextNode.textContent = adaptedCss.substring(ix_start, ix_end);
       ix_start = ix_end;
