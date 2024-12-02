@@ -571,6 +571,8 @@ describe('asset capturing', function (this: ISuite) {
         <html>
           <body background="{SERVER_URL}/html/assets/robot.png?body">
             <img src="{SERVER_URL}/html/assets/robot.png?img" />
+            <img class="rr-block" src="{SERVER_URL}/html/assets/robot.png?should-be-blocked" />
+            <div class="rr-block"><img src="{SERVER_URL}/html/assets/robot.png?should-be-blocked2" /></div>
             <video><track default kind="captions" srclang="en" src="{SERVER_URL}/html/assets/subtitles.vtt" /><source src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?source" /></video>
             <video src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?video" type="audio/mp3"></video>
             <audio src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?audio" type="audio/mp3"></audio>
@@ -651,6 +653,25 @@ describe('asset capturing', function (this: ISuite) {
       });
     });
 
+    it("shouldn't capture assets within a blocked section", async () => {
+      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+      await waitForRAF(ctx.page);
+
+      const events = await ctx.page?.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+
+      expect(events).not.toContainEqual(
+        expect.objectContaining({
+          type: EventType.Asset,
+          data: {
+            url: expect.stringContaining('should-be-blocked'),
+            payload: expect.any(Object),
+          },
+        }),
+      );
+    });
+
     it("shouldn't capture assets with origin not defined in config", async () => {
       await ctx.page.waitForNetworkIdle({ idleTime: 100 });
       await waitForRAF(ctx.page);
@@ -659,7 +680,6 @@ describe('asset capturing', function (this: ISuite) {
         () => (window as unknown as IWindow).snapshots,
       );
 
-      // expect an event to be emitted with `event.type` === EventType.Asset
       expect(events).not.toContainEqual(
         expect.objectContaining({
           type: EventType.Asset,
