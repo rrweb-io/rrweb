@@ -635,7 +635,7 @@ function serializeElementNode(
 
   // legacy, the stringifyCssRules badly blocks the main thread as web page loads when taking an initial snapshot
   // prefer to capture as an asset instead
-  if (tagName === 'link' && inlineStylesheet) {
+  if (tagName === 'link' && inlineStylesheet && !needBlock) {
     const l = n as HTMLLinkElement;
     if (l.href && lowerIfExists(l.rel) === 'stylesheet' && l.sheet) {
       let sheetRules;
@@ -660,7 +660,7 @@ function serializeElementNode(
     const attr = n.attributes[i];
     if (attributes._cssText && ['href', 'rel'].includes(attr.name)) {
       // ignore in snapshot, and no need to try to asset capture the href (already done)
-    } else if (!ignoreAttribute(tagName, attr.name, attr.value)) {
+    } else if (!ignoreAttribute(tagName, attr.name, attr.value) && !needBlock) {
       const value = transformAttribute(
         doc,
         tagName,
