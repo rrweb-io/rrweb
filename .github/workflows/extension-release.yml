@@ -1,7 +1,6 @@
 name: Extension Release
 
-on:
-  workflow_dispatch:
+on: [push]
 
 jobs:
   chrome-web-store:
