@@ -640,6 +640,10 @@ export function shouldCaptureAsset(
   value: string,
   config: captureAssetsParam,
 ): boolean {
+  let parentOfSource = '';
+  if (n.nodeName === 'SOURCE' && n.parentNode) {
+    parentOfSource = n.parentNode.nodeName;
+  }
   if (
     config.stylesheets !== false &&
     n.nodeName === 'LINK' &&
@@ -667,11 +671,23 @@ export function shouldCaptureAsset(
     }
     return false;
   } else if (
-    config.images &&
-    n.nodeName === 'IMG' &&
-    ['src', 'srcset'].includes(attribute)
+    config.images && (
+      (n.nodeName === 'IMG' && ['src', 'srcset'].includes(attribute))
+        || (parentOfSource === 'PICTURE' && attribute === 'srcset'))
   ) {
     return true;
+  } else if (
+    config.video &&
+      attribute === 'src' && 
+      [n.nodeName, parentOfSource].includes('VIDEO')
+  ) {
+    return true;
+  } else if (
+    config.audio &&
+      attribute === 'src' &&
+    [n.nodeName, parentOfSource].includes('AUDIO')    
+  ) {
+    return true;        
   }
   return (
     isAttributeCapturable(n, attribute) && !shouldIgnoreAsset(value, config)

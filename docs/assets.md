@@ -24,6 +24,10 @@ The `captureAssets` configuration option allows you to customize the asset captu
 
 - `images` (default: `false` or `true` if `inlineImages` is true in rrweb.record config): When set, this option turns on asset capturing for all images irrespective of their origin. When this configuration option is false, images may still be captured if their src url matches the `origins` setting above.
 
+- `video` (default: `false`): When set, this option turns on asset capturing for videos irrespective of their origin. When this configuration option is false, videos may still be captured if their src url matches the `origins` setting above.
+
+- `audio` (default: `false`): When set, this option turns on asset capturing for videos irrespective of their origin. When this configuration option is false, videos may still be captured if their src url matches the `origins` setting above.
+
 - `stylesheets` (default: `'without-fetch'`): When set to `true`, this turns on capturing of all stylesheets and style elements via the asset system irrespective of origin. The default of `'without-fetch'` is designed to match with the previous `inlineStylesheet` behaviour, whereas the `true` value allows capturing of stylesheets which are otherwise inaccessible due to CORS restrictions to be captured via a fetch call, which will normally use the browser cache. If a stylesheet matches via the `origins` config above, it will be captured irrespective of this config setting (either directly or via fetch).
 
 - `stylesheetsRuleThreshold` (default: `0`): only invoke the asset system for stylesheets with more than this number of rules. Defaults to zero (rather than say 100) as it only looks at the 'outer' rules (e.g. could have a single media rule which nests 1000s of sub rules). This default may be increased based on feedback.
