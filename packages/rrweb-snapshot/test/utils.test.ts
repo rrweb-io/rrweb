@@ -362,6 +362,85 @@ describe('utils', () => {
       });
     });
 
+    it(`should identify a <source> child of a <picture> element as a capturable image`, () => {
+      const picture = document.createElement('picture');
+      const source = document.createElement('source');
+      source.srcset = 'https://example.com/img1.png';
+
+      // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source
+      // "Not allowed if parent is a picture"
+      source.src = 'https://example.com/img2.png';
+
+      const fallback_img = document.createElement('img');
+      fallback_img.src = 'https://example.com/img3.png';
+
+      picture.append(source);
+      picture.append(fallback_img);
+
+      expect(
+        shouldCaptureAsset(source, 'srcset', source.srcset, { images: true }),
+      ).toBe(true);
+      expect(
+        shouldCaptureAsset(source, 'src', source.srcset, { images: true }),
+      ).toBe(false); // not allowed
+      expect(
+        shouldCaptureAsset(fallback_img, 'src', source.src, { images: true }),
+      ).toBe(true);
+
+      expect(
+        shouldCaptureAsset(source, 'srcset', source.srcset, { images: false }),
+      ).toBe(false);
+      expect(
+        shouldCaptureAsset(fallback_img, 'src', source.src, { images: false }),
+      ).toBe(false);
+    });
+
+    it(`should correctly identify <source> child of a <video> element as capturable if captureAssets.video is true`, () => {
+      const video = document.createElement('video');
+      const source = document.createElement('source');
+      source.src = 'https://example.com/show1.mov';
+
+      // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source
+      // "Not allowed if parent is a audio or video"
+      source.srcset = 'https://example.com/show2.mov';
+
+      video.append(source);
+
+      expect(
+        shouldCaptureAsset(source, 'src', source.src, { video: true }),
+      ).toBe(true);
+      expect(
+        shouldCaptureAsset(source, 'srcset', source.srcset, { video: true }),
+      ).toBe(false); // not allowed
+
+      expect(
+        shouldCaptureAsset(source, 'src', source.src, { video: false }),
+      ).toBe(false); // false because of lack of origins
+    });
+
+    it(`should correctly identify <source> child of a <audio> element as capturable if captureAssets.audio is true`, () => {
+      const audio = document.createElement('audio');
+      const source = document.createElement('source');
+      source.src = 'https://example.com/recording1.mp3';
+
+      // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/source
+      // "Not allowed if parent is a audio or video"
+      source.srcset = 'https://example.com/recording2.mp3';
+
+      audio.append(source);
+
+      expect(
+        shouldCaptureAsset(source, 'src', source.src, { audio: true }),
+      ).toBe(true);
+      expect(
+        shouldCaptureAsset(source, 'srcset', source.srcset, { audio: true }),
+      ).toBe(false); // not allowed
+
+      expect(
+        shouldCaptureAsset(source, 'src', source.src, { audio: false }),
+      ).toBe(false);
+    });
+
     it(`should correctly identify <link href rel="stylesheet"> as capturable if inlineStylesheet == 'all'`, () => {
       const element = document.createElement('link');
       element.setAttribute('rel', 'StyleSheet');

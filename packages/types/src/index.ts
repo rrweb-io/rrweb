@@ -93,6 +93,14 @@ export type captureAssetsParam = Partial<{
    */
   images: boolean;
   /**
+   * capture videos irrespective of origin
+   */
+  video: boolean;
+  /**
+   * capture audio irrespective of origin
+   */
+  audio: boolean;
+  /**
    * capture stylesheets irrespective of origin (populated from inlineStylesheets setting)
    */
   stylesheets: boolean | 'without-fetch';
