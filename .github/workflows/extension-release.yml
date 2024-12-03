@@ -1,0 +1,29 @@
+name: Extension Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  chrome-web-store:
+    name: Chrome Web Store
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+      - name: Build Project
+        run: NODE_OPTIONS='--max-old-space-size=4096' DISABLE_WORKER_INLINING=true yarn turbo run prepublish --filter=@rrweb/web-extension
+
+      - uses: mnao305/chrome-extension-upload@v5.0.0
+        with:
+          extension-id: 'pdaldeopoccdhlkabbkcjmecmmoninhe'
+          file-path: ./packages/web-extension/dist/chrome.zip
+          client-id: ${{ secrets.CWS_CLIENT_ID }}
+          client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
+          publish: false
