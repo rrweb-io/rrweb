@@ -1143,14 +1143,19 @@ export class Replayer {
     e: incrementalSnapshotEvent & { timestamp: number; delay?: number },
     isSync: boolean,
   ) {
-    const { data: d } = e;
+    const { data: d, timestamp } = e;
+
     switch (d.source) {
       case IncrementalSource.Mutation: {
         try {
           this.applyMutation(d, isSync);
         } catch (error) {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
-          this.warn(`Exception in mutation ${error.message || error}`, d);
+          this.warn(
+            `Exception in mutation ${error.message || error}`,
+            d,
+            timestamp,
+          );
         }
         break;
       }
