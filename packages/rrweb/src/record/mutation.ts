@@ -533,7 +533,7 @@ export default class MutationBuffer {
       this.attributes.push(item);
       this.attributeMap.set(textarea, item);
     }
-    let value = Array.from(
+    const value = Array.from(
       dom.childNodes(textarea),
       (cn) => dom.textContent(cn) || '',
     ).join('');
