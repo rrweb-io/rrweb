@@ -7,12 +7,12 @@ import postcss, { type AcceptedPlugin } from 'postcss';
 import { JSDOM } from 'jsdom';
 import { splitCssText, stringifyStylesheet } from './../src/utils';
 import { applyCssSplits } from './../src/rebuild';
-import {
-  NodeType,
-  type serializedElementNodeWithId,
-  type BuildCache,
-  type textNode,
+import type {
+  serializedElementNodeWithId,
+  BuildCache,
+  textNode,
 } from '../src/types';
+import { NodeType } from '@rrweb/types';
 import { Window } from 'happy-dom';
 
 describe('css parser', () => {
