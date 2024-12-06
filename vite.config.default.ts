@@ -4,8 +4,10 @@ import { copyFileSync } from 'node:fs';
 import { defineConfig, LibraryOptions, LibraryFormats, Plugin } from 'vite';
 import glob from 'fast-glob';
 import { build, Format } from 'esbuild';
-import { resolve } from 'path';
+import path, { resolve } from 'path';
 import { umdWrapper } from 'esbuild-plugin-umd-wrapper';
+import * as fs from 'node:fs';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // don't empty out dir if --watch flag is passed
 const emptyOutDir = !process.argv.includes('--watch');
@@ -157,6 +159,30 @@ export default function (
         },
       }),
       minifyAndUMDPlugin({ name, outDir }),
+      {
+        name: 'outout-graph',
+        buildEnd() {
+          console.log('on build end running for: ', name);
+          const deps = [];
+          for (const id of Array.from(this.getModuleIds())) {
+            const m = this.getModuleInfo(id);
+            if (m != null && !m.isExternal) {
+              for (const target of m.importedIds) {
+                deps.push({ source: m.id, target });
+              }
+            }
+          }
+
+          fs.writeFileSync(
+            path.join(__dirname, name + '-graph.json'),
+            JSON.stringify(deps, null, 2),
+          );
+        },
+      },
+      visualizer({
+        filename: path.resolve(__dirname, name + '-bundle-analysis.html'), // Path for the HTML report
+        open: false, // don't Automatically open the report in the browser
+      }),
       ...plugins,
     ],
   }));
