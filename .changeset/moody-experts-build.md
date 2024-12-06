@@ -2,4 +2,4 @@
 "@rrweb/record": patch
 ---
 
-correctly detect when angular has wrapped mutation observer"
+Correctly detect when angular has wrapped mutation observer
