@@ -3,6 +3,8 @@
   "version": "2.0.0-alpha.18",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
+    "format": "yarn prettier --write '**/*.{ts,md}'",
+    "format:head": "git diff --name-only HEAD^ |grep '/rrweb-snapshot/.*\\.ts$\\|\\.md$' |sed 's|packages/rrweb-snapshot/||'|xargs yarn prettier --write",
     "prepare": "npm run prepack",
     "prepack": "npm run build",
     "retest": "vitest run",
