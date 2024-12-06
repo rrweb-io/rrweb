@@ -3,7 +3,7 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import { beforeEach, describe, expect as _expect, it } from 'vitest';
+import { beforeEach, describe, expect as _expect, it, vi } from 'vitest';
 import {
   adaptCssForReplay,
   buildNodeWithSN,
@@ -268,6 +268,19 @@ ul li.specified c.\\:hover img {
       '@import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,400;0,500;0,700;1,400&display=:hover");';
     expect(adaptCssForReplay(should_not_modify, cache)).toMatchCss(
       should_not_modify,
+    );
+  });
+
+  it('handles exceptions from postcss when calling adaptCssForReplay', () => {
+    const consoleWarnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => {});
+    // trigger CssSyntaxError by passing invalid css
+    const cssText = 'a{';
+    adaptCssForReplay(cssText, cache);
+    expect(consoleWarnSpy).toHaveBeenLastCalledWith(
+      'Failed to adapt css for replay',
+      expect.any(Error),
     );
   });
 });
