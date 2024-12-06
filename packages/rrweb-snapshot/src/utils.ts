@@ -3,6 +3,10 @@ import type {
   MaskInputFn,
   MaskInputOptions,
   nodeMetaMap,
+} from './types';
+
+import { NodeType } from '@rrweb/types';
+import type {
   IMirror,
   serializedNodeWithId,
   serializedNode,
@@ -10,9 +14,8 @@ import type {
   documentTypeNode,
   textNode,
   elementNode,
-} from './types';
+} from '@rrweb/types';
 import dom from '@rrweb/utils';
-import { NodeType } from './types';
 
 export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;
