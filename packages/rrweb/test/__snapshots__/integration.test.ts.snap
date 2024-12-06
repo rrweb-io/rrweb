@@ -9966,6 +9966,21 @@ exports[`record integration tests > should not record input values if dynamicall
           \\"nextId\\": 16,
           \\"node\\": {
             \\"type\\": 2,
+            \\"tagName\\": \\"textarea\\",
+            \\"attributes\\": {
+              \\"id\\": \\"textarea\\",
+              \\"size\\": \\"50\\",
+              \\"value\\": \\"*************************\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 21
+          }
+        },
+        {
+          \\"parentId\\": 14,
+          \\"nextId\\": 21,
+          \\"node\\": {
+            \\"type\\": 2,
             \\"tagName\\": \\"input\\",
             \\"attributes\\": {
               \\"size\\": \\"50\\",
@@ -9973,7 +9988,7 @@ exports[`record integration tests > should not record input values if dynamicall
               \\"value\\": \\"**********************\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 21
+            \\"id\\": 22
           }
         }
       ]
@@ -9985,7 +10000,59 @@ exports[`record integration tests > should not record input values if dynamicall
       \\"source\\": 5,
       \\"text\\": \\"**********************\\",
       \\"isChecked\\": false,
+      \\"id\\": 22
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*************************\\",
+      \\"isChecked\\": false,
       \\"id\\": 21
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 5,
+      \\"id\\": 22
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"***********************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 22
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"************************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 22
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*************************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 22
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 2,
+      \\"type\\": 6,
+      \\"id\\": 22
     }
   },
   {
@@ -10000,7 +10067,7 @@ exports[`record integration tests > should not record input values if dynamicall
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"***********************\\",
+      \\"text\\": \\"**************************\\",
       \\"isChecked\\": false,
       \\"id\\": 21
     }
@@ -10009,7 +10076,7 @@ exports[`record integration tests > should not record input values if dynamicall
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"************************\\",
+      \\"text\\": \\"***************************\\",
       \\"isChecked\\": false,
       \\"id\\": 21
     }
@@ -10018,9 +10085,67 @@ exports[`record integration tests > should not record input values if dynamicall
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 5,
-      \\"text\\": \\"*************************\\",
+      \\"text\\": \\"****************************\\",
       \\"isChecked\\": false,
       \\"id\\": 21
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"**********************************************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 22
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 5,
+      \\"text\\": \\"*************************************************\\",
+      \\"isChecked\\": false,
+      \\"id\\": 21
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 22,
+          \\"attributes\\": {
+            \\"value\\": \\"**********************************************************************************************\\"
+          }
+        },
+        {
+          \\"id\\": 21,
+          \\"attributes\\": {
+            \\"value\\": \\"*************************************************************************************************\\"
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 21,
+          \\"attributes\\": {
+            \\"value\\": \\"****************************************************************\\"
+          }
+        }
+      ],
+      \\"removes\\": [],
+      \\"adds\\": []
     }
   }
 ]"
