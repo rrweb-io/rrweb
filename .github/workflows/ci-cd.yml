@@ -39,7 +39,7 @@ jobs:
           install-script: "yarn install --frozen-lockfile"
           build-script: "build:all"
           compression: "none"
-          pattern: "**/dist/*.js"
+          pattern: "**/dist/*.{js,cjs,mjs,css}"
 
       - name: Upload diff images to GitHub
         uses: actions/upload-artifact@v3
