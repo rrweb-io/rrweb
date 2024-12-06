@@ -2,14 +2,17 @@
  * @vitest-environment jsdom
  */
 import { describe, it, test, expect } from 'vitest';
-import { NodeType, serializedNode } from '../src/types';
+import { NodeType } from '@rrweb/types';
 import {
   escapeImportStatement,
   extractFileExtension,
   fixSafariColons,
+  shouldIgnoreAsset,
+  isAttributeCapturable,
+  shouldCaptureAsset,
   isNodeMetaEqual,
 } from '../src/utils';
-import type { serializedNodeWithId } from 'rrweb-snapshot';
+import type { serializedNode, serializedNodeWithId } from '@rrweb/types';
 
 describe('utils', () => {
   describe('isNodeMetaEqual()', () => {
@@ -153,6 +156,7 @@ describe('utils', () => {
       expect(isNodeMetaEqual(element2, element3)).toBeFalsy();
     });
   });
+
   describe('extractFileExtension', () => {
     test('absolute path', () => {
       const path = 'https://example.com/styles/main.css';
@@ -278,6 +282,164 @@ describe('utils', () => {
 
       const out3 = fixSafariColons('[data-aa\\:other] { color: red; }');
       expect(out3).toEqual('[data-aa\\:other] { color: red; }');
+    });
+  });
+
+  describe('shouldIgnoreAsset()', () => {
+    it(`should ignore assets when config not specified`, () => {
+      expect(shouldIgnoreAsset('http://example.com', {})).toBe(true);
+    });
+
+    it(`should not ignore matching origin`, () => {
+      expect(
+        shouldIgnoreAsset('http://example.com/', {
+          origins: ['http://example.com'],
+        }),
+      ).toBe(false);
+    });
+
+    it(`should ignore mismatched origin`, () => {
+      expect(
+        shouldIgnoreAsset('http://123.com/', {
+          origins: ['http://example.com'],
+        }),
+      ).toBe(true);
+    });
+
+    it(`should ignore malformed url`, () => {
+      expect(
+        shouldIgnoreAsset('http:', { origins: ['http://example.com'] }),
+      ).toBe(true);
+    });
+
+    it(`should ignore malformed url even with origins: true`, () => {
+      expect(shouldIgnoreAsset('http:', { origins: true })).toBe(true);
+    });
+  });
+
+  describe('isAttributeCapturable()', () => {
+    const validAttributeCombinations = [
+      ['img', ['src', 'srcset']],
+      ['video', ['src']],
+      ['audio', ['src']],
+      ['embed', ['src']],
+      ['source', ['src']],
+      ['track', ['src']],
+      ['input', ['src']],
+      ['object', ['src']],
+    ] as const;
+
+    const invalidAttributeCombinations = [
+      ['img', ['href']],
+      ['script', ['href']],
+      ['link', ['src']],
+      ['video', ['href']],
+      ['audio', ['href']],
+      ['div', ['src']],
+      ['source', ['href']],
+      ['track', ['href']],
+      ['input', ['href']],
+      ['iframe', ['href']],
+      ['object', ['href']],
+      ['link', ['href']], // without rel="stylesheet"
+    ] as const;
+
+    validAttributeCombinations.forEach(([tagName, attributes]) => {
+      const element = document.createElement(tagName);
+      attributes.forEach((attribute) => {
+        it(`should correctly identify <${tagName} ${attribute}> as capturable`, () => {
+          expect(isAttributeCapturable(element, attribute)).toBe(true);
+        });
+      });
+    });
+
+    invalidAttributeCombinations.forEach(([tagName, attributes]) => {
+      const element = document.createElement(tagName);
+      attributes.forEach((attribute) => {
+        it(`should correctly identify <${tagName} ${attribute}> as NOT capturable`, () => {
+          expect(isAttributeCapturable(element, attribute)).toBe(false);
+        });
+      });
+    });
+
+    it(`should correctly identify <link href rel="stylesheet"> as capturable if inlineStylesheet == 'all'`, () => {
+      const element = document.createElement('link');
+      element.setAttribute('rel', 'StyleSheet');
+
+      // pretend it has loaded but isn't CORS accessible
+      Object.defineProperty(element, 'sheet', {
+        value: true,
+      });
+
+      const ca = {
+        objectURLs: false,
+        origins: false,
+      };
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          ...ca,
+          stylesheets: false,
+        }),
+      ).toBe(false);
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          ...ca,
+          stylesheets: 'without-fetch',
+        }),
+      ).toBe(false); // this is false for backwards compatibility
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          ...ca,
+          stylesheets: true,
+        }),
+      ).toBe(true);
+    });
+
+    it(`should not identify <link href rel="stylesheet"> as capturable if it hasn't loaded yet`, () => {
+      const element = document.createElement('link');
+      element.setAttribute('rel', 'StyleSheet');
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          objectURLs: false,
+          origins: false,
+          stylesheets: true,
+        }),
+      ).toBe(false); // will capture as mutation when it loads
+    });
+
+    it(`should correctly identify stylesheet as capturable due to origin match, but respect a hard stylesheets=false`, () => {
+      const element = document.createElement('link');
+      element.setAttribute('rel', 'StyleSheet');
+
+      // pretend it has loaded but isn't CORS accessible
+      Object.defineProperty(element, 'sheet', {
+        value: true,
+      });
+
+      const ca = {
+        objectURLs: false,
+        origins: ['https://example.com'],
+      };
+      expect(
+        shouldCaptureAsset(
+          element,
+          'href',
+          'https://example.com/style.css',
+          ca, // stylesheets undefined (not actually possible from rrweb)
+        ),
+      ).toBe(true);
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          ...ca,
+          stylesheets: 'without-fetch', // the default from rrweb
+        }),
+      ).toBe(true); // because of origins
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          ...ca,
+          stylesheets: false, // explicit off, override origins
+        }),
+      ).toBe(false);
     });
   });
 });

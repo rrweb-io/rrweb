@@ -4,7 +4,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
-import { NodeType as RRNodeType } from 'rrweb-snapshot';
+import { NodeType as RRNodeType } from '@rrweb/types';
 import {
   RRCanvasElement,
   RRCDATASection,
