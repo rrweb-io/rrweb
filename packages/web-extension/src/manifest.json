@@ -14,7 +14,7 @@
       "48": "icon48.png",
       "128": "icon128.png"
     },
-    "permissions": ["activeTab", "tabs", "storage", "unlimitedStorage"]
+    "permissions": ["activeTab", "storage", "unlimitedStorage"]
   },
   "v2": {
     "common": {

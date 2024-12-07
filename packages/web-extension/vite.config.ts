@@ -4,6 +4,7 @@ import zip from 'vite-plugin-zip-pack';
 import * as path from 'path';
 import type { PackageJson } from 'type-fest';
 import react from '@vitejs/plugin-react';
+import semver from 'semver';
 
 const emptyOutDir = !process.argv.includes('--watch');
 
@@ -37,6 +38,29 @@ function useSpecialFormat(
       }
     },
   };
+}
+
+/**
+ * Get the extension version based on the rrweb version.
+ */
+function getExtensionVersion(rrwebVersion: string): string {
+  const parsedVersion = semver.parse(rrwebVersion.replace('^', ''));
+
+  if (!parsedVersion) {
+    throw new Error('Invalid version format');
+  }
+
+  if (parsedVersion.prerelease.length > 0) {
+    // If it's a pre-release version like alpha or beta, strip the pre-release identifier
+    return `${parsedVersion.major}.${parsedVersion.minor}.${
+      parsedVersion.patch
+    }.${parsedVersion.prerelease[1] || 0}`;
+  } else if (rrwebVersion === '2.0.0') {
+    // This version has already been released as the first version. We need to add a patch version to it to avoid publishing conflicts.
+    return '2.0.0.100';
+  } else {
+    return rrwebVersion;
+  }
 }
 
 export default defineConfig({
@@ -73,10 +97,11 @@ export default defineConfig({
         const BrowserName =
           process.env.TARGET_BROWSER === 'chrome' ? 'chrome' : 'firefox';
         const commonManifest = originalManifest.common;
+        const rrwebVersion = packageJson.dependencies!.rrweb!.replace('^', '');
         const manifest = {
-          version: '2.0.0',
+          version: getExtensionVersion(rrwebVersion),
           author: packageJson.author,
-          version_name: packageJson.dependencies?.rrweb?.replace('^', ''),
+          version_name: rrwebVersion,
           ...commonManifest,
         };
         Object.assign(
@@ -92,7 +117,7 @@ export default defineConfig({
         watchIgnored: ['*.md', '*.log'],
       },
       additionalInputs: ['pages/index.html', 'content/inject.ts'],
-    }),
+    }) as PluginOption,
     // https://github.com/aklinker1/vite-plugin-web-extension/issues/50#issuecomment-1317922947
     // transfer inject.ts to iife format to avoid error
     useSpecialFormat(
