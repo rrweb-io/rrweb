@@ -46,7 +46,7 @@ export default function Player() {
         console.error(err);
       });
     return () => {
-      playerRef.current?.pause();
+      playerRef.current?.getReplayer().pause();
     };
   }, [sessionId]);
 
