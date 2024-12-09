@@ -1,9 +1,9 @@
 # The PostHog fork of RRWeb
 
-We're using this fork 
+We're using this fork
 
-* to make it easier to test new versions of rrweb in production at PostHog
-* because patching rrweb has a poor DevEx compared to Pull Requests on this repo
+- to make it easier to test new versions of rrweb in production at PostHog
+- because patching rrweb has a poor DevEx compared to Pull Requests on this repo
 
 We're publishing it to NPM because transparency and being open is one of our core principles
 
