@@ -1,10 +1,11 @@
 name: Extension Release
 
-on: [push]
+on:
+  workflow_dispatch:
 
 jobs:
-  chrome-web-store:
-    name: Chrome Web Store
+  publish-extension:
+    name: Publish to Chrome Web Store
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,4 +26,4 @@ jobs:
           client-id: ${{ secrets.CWS_CLIENT_ID }}
           client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
           refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
-          publish: false
+          publish: true
