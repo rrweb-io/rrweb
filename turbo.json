@@ -7,7 +7,7 @@
     "vite.config.defaults.ts",
     "tsconfig.json"
   ],
-  "globalPassThroughEnv": ["PUPPETEER_HEADLESS"],
+  "globalPassThroughEnv": ["PUPPETEER_HEADLESS", "DISABLE_WORKER_INLINING"],
   "tasks": {
     "prepublish": {
       "dependsOn": ["^prepublish", "//#references:update"],

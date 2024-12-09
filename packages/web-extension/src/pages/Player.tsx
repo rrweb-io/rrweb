@@ -31,7 +31,7 @@ export default function Player() {
 
         const linkEl = document.createElement('link');
         linkEl.href =
-          'https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css';
+          'https://cdn.jsdelivr.net/npm/rrweb-player@alpha/dist/style.min.css';
         linkEl.rel = 'stylesheet';
         document.head.appendChild(linkEl);
         playerRef.current = new Replayer({
@@ -46,7 +46,7 @@ export default function Player() {
         console.error(err);
       });
     return () => {
-      playerRef.current?.pause();
+      playerRef.current?.getReplayer().pause();
     };
   }, [sessionId]);
 
