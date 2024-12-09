@@ -1,4 +1,4 @@
-import Browser, { type Storage } from 'webextension-polyfill';
+import Browser from 'webextension-polyfill';
 import { nanoid } from 'nanoid';
 import type { eventWithTime } from '@rrweb/types';
 import {
@@ -166,9 +166,7 @@ async function initMainPage() {
 async function initCrossOriginIframe() {
   Browser.storage.local.onChanged.addListener((change) => {
     if (change[LocalDataKey.recorderStatus]) {
-      const statusChange = change[
-        LocalDataKey.recorderStatus
-      ] as Storage.StorageChange;
+      const statusChange = change[LocalDataKey.recorderStatus];
       const newStatus =
         statusChange.newValue as LocalData[LocalDataKey.recorderStatus];
       if (newStatus.status === RecorderStatus.RECORDING) startRecord();
