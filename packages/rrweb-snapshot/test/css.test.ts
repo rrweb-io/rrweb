@@ -7,12 +7,12 @@ import postcss, { type AcceptedPlugin } from 'postcss';
 import { JSDOM } from 'jsdom';
 import { splitCssText, stringifyStylesheet } from './../src/utils';
 import { applyCssSplits } from './../src/rebuild';
-import {
-  NodeType,
-  type serializedElementNodeWithId,
-  type BuildCache,
-  type textNode,
+import type {
+  serializedElementNodeWithId,
+  BuildCache,
+  textNode,
 } from '../src/types';
+import { NodeType } from '@rrweb/types';
 import { Window } from 'happy-dom';
 
 describe('css parser', () => {
@@ -50,8 +50,16 @@ describe('css parser', () => {
   describe('pseudoClassPlugin', () => {
     it('parses nested commas in selectors correctly', () => {
       const cssText =
-        'body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) {background: red;}';
+        'body > ul :is(li:not(:first-of-type) a.current, li:not(:first-of-type).active a) {background: red;}';
       expect(parse(pseudoClassPlugin, cssText)).toEqual(cssText);
+    });
+
+    it("doesn't ignore :hover within :is brackets", () => {
+      const cssText =
+        'body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) {background: red;}';
+      expect(parse(pseudoClassPlugin, cssText))
+        .toEqual(`body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a),
+body > ul :is(li:not(:first-of-type) a.\\:hover, li:not(:first-of-type).active a) {background: red;}`);
     });
 
     it('should parse selector with comma nested inside ()', () => {

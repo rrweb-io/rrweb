@@ -2,13 +2,11 @@ import { mediaSelectorPlugin, pseudoClassPlugin } from './css';
 import {
   type serializedNodeWithId,
   type serializedElementNodeWithId,
-  type serializedTextNodeWithId,
   NodeType,
-  type tagMap,
   type elementNode,
-  type BuildCache,
   type legacyAttributes,
-} from './types';
+} from '@rrweb/types';
+import { type tagMap, type BuildCache } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
 import postcss from 'postcss';
 
@@ -90,7 +88,7 @@ export function applyCssSplits(
   hackCss: boolean,
   cache: BuildCache,
 ): void {
-  const childTextNodes: serializedTextNodeWithId[] = [];
+  const childTextNodes = [];
   for (const scn of n.childNodes) {
     if (scn.type === NodeType.Text) {
       childTextNodes.push(scn);
@@ -328,9 +326,9 @@ function buildNode(
         }
 
         if (name === 'rr_width') {
-          (node as HTMLElement).style.width = value.toString();
+          (node as HTMLElement).style.setProperty('width', value.toString());
         } else if (name === 'rr_height') {
-          (node as HTMLElement).style.height = value.toString();
+          (node as HTMLElement).style.setProperty('height', value.toString());
         } else if (
           name === 'rr_mediaCurrentTime' &&
           typeof value === 'number'

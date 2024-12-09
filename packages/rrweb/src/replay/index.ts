@@ -2,13 +2,10 @@ import {
   rebuild,
   adaptCssForReplay,
   buildNodeWithSN,
-  NodeType,
   type BuildCache,
   createCache,
   Mirror,
   createMirror,
-  type attributes,
-  type serializedElementNodeWithId,
   toLowerCase,
 } from 'rrweb-snapshot';
 import {
@@ -40,12 +37,14 @@ import {
 } from './machine';
 import type { playerConfig, missingNodeMap } from '../types';
 import {
+  NodeType,
   EventType,
   IncrementalSource,
   MouseInteractions,
   ReplayerEvents,
 } from '@rrweb/types';
 import type {
+  attributes,
   fullSnapshotEvent,
   eventWithTime,
   playerMetaData,
@@ -70,6 +69,7 @@ import type {
   styleSheetRuleData,
   styleDeclarationData,
   adoptedStyleSheetData,
+  serializedElementNodeWithId,
 } from '@rrweb/types';
 import {
   polyfill,
