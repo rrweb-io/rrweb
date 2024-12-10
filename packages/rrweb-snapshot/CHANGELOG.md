@@ -1,5 +1,7 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.19
+
 ## 2.0.0-alpha.18
 
 ### Major Changes
