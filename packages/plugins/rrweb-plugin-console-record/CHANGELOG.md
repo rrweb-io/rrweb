@@ -1,5 +1,12 @@
 # @rrweb/rrweb-plugin-console-record
 
+## 2.0.0-alpha.19
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb@2.0.0-alpha.19
+
 ## 2.0.0-alpha.18
 
 ### Patch Changes
