@@ -46,7 +46,8 @@ export default function Player() {
         console.error(err);
       });
     return () => {
-      playerRef.current?.getReplayer().pause();
+      // eslint-disable-next-line
+      playerRef.current?.pause();
     };
   }, [sessionId]);
 
