@@ -8,6 +8,7 @@ import {
   launchPuppeteer,
   sampleEvents as events,
   sampleStyleSheetRemoveEvents as stylesheetRemoveEvents,
+  sampleRemoteStyleSheetEvents as remoteStyleSheetEvents,
   waitForRAF,
 } from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
@@ -203,6 +204,23 @@ describe('replayer', function () {
     expect(actionLength).toEqual(
       stylesheetRemoveEvents.filter(
         (e) => e.timestamp - stylesheetRemoveEvents[0].timestamp >= 2500,
+      ).length,
+    );
+
+    await assertDomSnapshot(page);
+  });
+
+  it('can handle remote stylesheets', async () => {
+    await page.evaluate(`events = ${JSON.stringify(remoteStyleSheetEvents)}`);
+    const actionLength = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play(2500);
+      replayer['timer']['actions'].length;
+    `);
+    expect(actionLength).toEqual(
+      remoteStyleSheetEvents.filter(
+        (e) => e.timestamp - remoteStyleSheetEvents[0].timestamp >= 2500,
       ).length,
     );
 
