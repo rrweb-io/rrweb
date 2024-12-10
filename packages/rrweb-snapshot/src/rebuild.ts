@@ -102,15 +102,44 @@ export function applyCssSplits(
     // unexpected: remerge the last two so that we don't discard any css
     cssTextSplits.splice(-2, 2, cssTextSplits.slice(-2).join(''));
   }
+  let adaptedCss = '';
+  if (hackCss) {
+    adaptedCss = adaptCssForReplay(cssTextSplits.join(''), cache);
+  }
+  let ix_start = 0;
   for (let i = 0; i < childTextNodes.length; i++) {
+    if (i === cssTextSplits.length) {
+      break;
+    }
     const childTextNode = childTextNodes[i];
-    const cssTextSection = cssTextSplits[i];
-    if (childTextNode && cssTextSection) {
-      // id will be assigned when these child nodes are
-      // iterated over in buildNodeWithSN
-      childTextNode.textContent = hackCss
-        ? adaptCssForReplay(cssTextSection, cache)
-        : cssTextSection;
+    if (!hackCss) {
+      childTextNode.textContent = cssTextSplits[i];
+    } else if (i < childTextNodes.length - 1) {
+      let ix_end = ix_start;
+      let end_search = cssTextSplits[i + 1].length;
+
+      // don't do hundreds of searches, in case a mismatch
+      // is caused close to start of string
+      end_search = Math.min(end_search, 30);
+
+      let found = false;
+      for (; end_search > 2; end_search--) {
+        let search_bit = cssTextSplits[i + 1].substring(0, end_search);
+        let search_ix = adaptedCss.substring(ix_start).indexOf(search_bit);
+        found = search_ix !== -1;
+        if (found) {
+          ix_end += search_ix;
+          break;
+        }
+      }
+      if (!found) {
+        // something went wrong, put a similar sized chunk in the right place
+        ix_end += cssTextSplits[i].length;
+      }
+      childTextNode.textContent = adaptedCss.substring(ix_start, ix_end);
+      ix_start = ix_end;
+    } else {
+      childTextNode.textContent = adaptedCss.substring(ix_start);
     }
   }
 }
