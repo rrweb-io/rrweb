@@ -1,5 +1,5 @@
 ---
-'@rrweb/cutter': patch
+"@rrweb/cutter": patch
 ---
 
 Feat: Add two tools to process the recording data
