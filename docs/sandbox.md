@@ -20,7 +20,7 @@ When you click the a element link, the default event is to jump to the URL corre
 
 Usually we will capture all an elements click events through the event handler proxy and disable the default event via `event.preventDefault()`. But when we put the replay page in the sandbox, all the event handlers will not be executed, and we will not be able to implement the event delegation.
 
-When replaying interactive events, note that replaying the JS `click` event is not nessecary because click events do not have any impact when JS is disabled. However, in order to optimize the replay effect, we can add special animation effects to visualize elements being clicked with the mouse, to clearly show the viewer that a click has occurred.
+When replaying interactive events, note that replaying the JS `click` event is not necessary because click events do not have any impact when JS is disabled. However, in order to optimize the replay effect, we can add special animation effects to visualize elements being clicked with the mouse, to clearly show the viewer that a click has occurred.
 
 ## iframe style settings
 

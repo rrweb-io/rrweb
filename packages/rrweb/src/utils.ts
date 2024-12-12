@@ -8,10 +8,12 @@ import type {
   IWindow,
   DeprecatedMirror,
   textMutation,
+  IMirror,
 } from '@rrweb/types';
-import type { IMirror, Mirror } from 'rrweb-snapshot';
+import type { Mirror, SlimDOMOptions } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
-import type { RRNode, RRIFrameElement } from 'rrdom';
+import { RRNode, RRIFrameElement, BaseRRNode } from 'rrdom';
+import dom from '@rrweb/utils';
 
 export function on(
   type: string,
@@ -168,6 +170,15 @@ export function patch(
   }
 }
 
+// guard against old third party libraries which redefine Date.now
+let nowTimestamp = Date.now;
+
+if (!(/*@__PURE__*/ /[1-9][0-9]{12}/.test(Date.now().toString()))) {
+  // they have already redefined it! use a fallback
+  nowTimestamp = () => new Date().getTime();
+}
+export { nowTimestamp };
+
 export function getWindowScroll(win: Window) {
   const doc = win.document;
   return {
@@ -175,8 +186,8 @@ export function getWindowScroll(win: Window) {
       ? doc.scrollingElement.scrollLeft
       : win.pageXOffset !== undefined
       ? win.pageXOffset
-      : doc?.documentElement.scrollLeft ||
-        doc?.body?.parentElement?.scrollLeft ||
+      : doc.documentElement.scrollLeft ||
+        (doc?.body && dom.parentElement(doc.body)?.scrollLeft) ||
         doc?.body?.scrollLeft ||
         0,
     top: doc.scrollingElement
@@ -184,7 +195,7 @@ export function getWindowScroll(win: Window) {
       : win.pageYOffset !== undefined
       ? win.pageYOffset
       : doc?.documentElement.scrollTop ||
-        doc?.body?.parentElement?.scrollTop ||
+        (doc?.body && dom.parentElement(doc.body)?.scrollTop) ||
         doc?.body?.scrollTop ||
         0,
   };
@@ -207,6 +218,23 @@ export function getWindowWidth(): number {
 }
 
 /**
+ * Returns the given node as an HTMLElement if it is one, otherwise the parent node as an HTMLElement
+ * @param node - node to check
+ * @returns HTMLElement or null
+ */
+
+export function closestElementOfNode(node: Node | null): HTMLElement | null {
+  if (!node) {
+    return null;
+  }
+  const el: HTMLElement | null =
+    node.nodeType === node.ELEMENT_NODE
+      ? (node as HTMLElement)
+      : dom.parentElement(node);
+  return el;
+}
+
+/**
  * Checks if the given element set to be blocked by rrweb
  * @param node - node to check
  * @param blockClass - class name to check
@@ -223,11 +251,11 @@ export function isBlocked(
   if (!node) {
     return false;
   }
-  const el: HTMLElement | null =
-    node.nodeType === node.ELEMENT_NODE
-      ? (node as HTMLElement)
-      : node.parentElement;
-  if (!el) return false;
+  const el = closestElementOfNode(node);
+
+  if (!el) {
+    return false;
+  }
 
   try {
     if (typeof blockClass === 'string') {
@@ -250,7 +278,17 @@ export function isSerialized(n: Node, mirror: Mirror): boolean {
   return mirror.getId(n) !== -1;
 }
 
-export function isIgnored(n: Node, mirror: Mirror): boolean {
+export function isIgnored(
+  n: Node,
+  mirror: Mirror,
+  slimDOMOptions: SlimDOMOptions,
+): boolean {
+  if ((n as Element).tagName === 'TITLE' && slimDOMOptions.headTitleMutations) {
+    // we do this check here but not in rrweb-snapshot
+    // to block mutations/animations on the title.
+    // the headTitleMutations option isn't intended to block recording of the initial value
+    return true;
+  }
   // The main part of the slimDOM check happens in
   // rrweb-snapshot::serializeNodeWithId
   return mirror.getId(n) === IGNORED_NODE;
@@ -264,17 +302,15 @@ export function isAncestorRemoved(target: Node, mirror: Mirror): boolean {
   if (!mirror.has(id)) {
     return true;
   }
-  if (
-    target.parentNode &&
-    target.parentNode.nodeType === target.DOCUMENT_NODE
-  ) {
+  const parent = dom.parentNode(target);
+  if (parent && parent.nodeType === target.DOCUMENT_NODE) {
     return false;
   }
   // if the root is not document, it means the node is not in the DOM tree anymore
-  if (!target.parentNode) {
+  if (!parent) {
     return true;
   }
-  return isAncestorRemoved(target.parentNode, mirror);
+  return isAncestorRemoved(parent, mirror);
 }
 
 export function legacy_isTouchEvent(
@@ -294,24 +330,6 @@ export function polyfill(win = window) {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     win.DOMTokenList.prototype.forEach = Array.prototype
       .forEach as unknown as DOMTokenList['forEach'];
-  }
-
-  // https://github.com/Financial-Times/polyfill-service/pull/183
-  if (!Node.prototype.contains) {
-    Node.prototype.contains = (...args: unknown[]) => {
-      let node = args[0] as Node | null;
-      if (!(0 in args)) {
-        throw new TypeError('1 argument is required');
-      }
-
-      do {
-        if (this === node) {
-          return true;
-        }
-      } while ((node = node && node.parentNode));
-
-      return false;
-    };
   }
 }
 
@@ -438,7 +456,11 @@ export function getBaseDimension(
 export function hasShadowRoot<T extends Node | RRNode>(
   n: T,
 ): n is T & { shadowRoot: ShadowRoot } {
-  return Boolean((n as unknown as Element)?.shadowRoot);
+  if (!n) return false;
+  if (n instanceof BaseRRNode && 'shadowRoot' in n) {
+    return Boolean(n.shadowRoot);
+  }
+  return Boolean(dom.shadowRoot(n as unknown as Element));
 }
 
 export function getNestedRule(
@@ -530,10 +552,11 @@ export class StyleSheetMirror {
 export function getShadowHost(n: Node): Element | null {
   let shadowHost: Element | null = null;
   if (
-    n.getRootNode?.()?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
-    (n.getRootNode() as ShadowRoot).host
+    'getRootNode' in n &&
+    dom.getRootNode(n)?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
+    dom.host(dom.getRootNode(n) as ShadowRoot)
   )
-    shadowHost = (n.getRootNode() as ShadowRoot).host;
+    shadowHost = dom.host(dom.getRootNode(n) as ShadowRoot);
   return shadowHost;
 }
 
@@ -555,11 +578,11 @@ export function shadowHostInDom(n: Node): boolean {
   const doc = n.ownerDocument;
   if (!doc) return false;
   const shadowHost = getRootShadowHost(n);
-  return doc.contains(shadowHost);
+  return dom.contains(doc, shadowHost);
 }
 
 export function inDom(n: Node): boolean {
   const doc = n.ownerDocument;
   if (!doc) return false;
-  return doc.contains(n) || shadowHostInDom(n);
+  return dom.contains(doc, n) || shadowHostInDom(n);
 }

@@ -1,3 +1,4 @@
+/// <reference types="chrome"/>
 import { useRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Replayer from 'rrweb-player';
@@ -27,11 +28,12 @@ export default function Player() {
       });
     getEvents(sessionId)
       .then((events) => {
-        if (!playerElRef.current || !sessionId) return;
+        if (!playerElRef.current) return;
 
+        const manifest = chrome.runtime.getManifest();
+        const rrwebPlayerVersion = manifest.version_name || manifest.version;
         const linkEl = document.createElement('link');
-        linkEl.href =
-          'https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css';
+        linkEl.href = `https://cdn.jsdelivr.net/npm/rrweb-player@${rrwebPlayerVersion}/dist/style.min.css`;
         linkEl.rel = 'stylesheet';
         document.head.appendChild(linkEl);
         console.log(`var events = ${JSON.stringify(events, null, 2)}`);
@@ -47,6 +49,7 @@ export default function Player() {
         console.error(err);
       });
     return () => {
+      // eslint-disable-next-line
       playerRef.current?.pause();
     };
   }, [sessionId]);

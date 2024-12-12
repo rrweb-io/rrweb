@@ -19,17 +19,18 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
-
+      
       - name: Install Dependencies
-        run: yarn
+        run: yarn install --frozen-lockfile
 
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
 
       - name: Check types
-        run: yarn turbo run check-types
+        run: yarn check-types
 
       - name: Run tests
+        # run: PUPPETEER_EXECUTABLE_PATH=${{ steps.setup-chrome.outputs.chrome-path }} PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
         run: PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
 
       - name: Upload diff images to GitHub
@@ -37,5 +38,5 @@ jobs:
         if: failure()
         with:
           name: image-diff
-          path: packages/rrweb/test/e2e/__image_snapshots__/__diff_output__/*.png
+          path: packages/**/__image_snapshots__/__diff_output__/*.png
           if-no-files-found: ignore

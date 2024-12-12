@@ -1,0 +1,37 @@
+<html>
+  <body>
+    <div id="app"></div>
+  </body>
+  <script>
+    function appendNodes(parentNode, total) {
+      const el = document.createElement('div');
+      for (let i = 0; i < total; i++) {
+        const div = document.createElement('div');
+        div.innerHTML = `div-${i + 1}`;
+        el.append(div);
+      }
+      parentNode.append(el);
+      return el;
+    }
+
+    function addAndMove() {
+      const app = document.getElementById('app');
+
+      const elContainer = appendNodes(app, 10000);
+
+      const newAppContainer = document.createElement('div');
+
+      newAppContainer.append(elContainer);
+
+      document.body.append(newAppContainer);
+
+      app.remove();
+
+      // necessary
+      appendNodes(document.body, 1);
+    }
+    window.workload = () => {
+      addAndMove();
+    };
+  </script>
+</html>

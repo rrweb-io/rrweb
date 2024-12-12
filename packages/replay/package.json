@@ -1,0 +1,65 @@
+{
+  "name": "@rrweb/replay",
+  "version": "2.0.0-alpha.18",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "rrweb",
+    "@rrweb/replay"
+  ],
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "yarn turbo run prepublish",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "check-types": "tsc -noEmit",
+    "prepublish": "tsc -noEmit && vite build",
+    "lint": "yarn eslint src/**/*.ts"
+  },
+  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/replay#readme",
+  "bugs": {
+    "url": "https://github.com/rrweb-io/rrweb/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb.git"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/replay.cjs",
+  "module": "./dist/replay.js",
+  "unpkg": "./dist/replay.umd.cjs",
+  "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/replay.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/replay.cjs"
+      }
+    },
+    "./dist/style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "devDependencies": {
+    "puppeteer": "^20.9.0",
+    "vite": "^5.3.1",
+    "vite-plugin-dts": "^3.9.1",
+    "vitest": "^1.4.0",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@rrweb/types": "^2.0.0-alpha.18",
+    "rrweb": "^2.0.0-alpha.18"
+  },
+  "browserslist": [
+    "supports es6-class"
+  ]
+}

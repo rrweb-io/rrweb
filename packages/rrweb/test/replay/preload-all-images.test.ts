@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
 import { polyfillWebGLGlobals } from '../utils';
 polyfillWebGLGlobals();

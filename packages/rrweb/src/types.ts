@@ -4,9 +4,7 @@ import type {
   SlimDOMOptions,
   MaskInputFn,
   MaskTextFn,
-  DataURLOptions,
 } from 'rrweb-snapshot';
-import type { PackFn, UnpackFn } from './packer/base';
 import type { IframeManager } from './record/iframe-manager';
 import type { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
@@ -14,9 +12,11 @@ import type { RRNode } from 'rrdom';
 import type { CanvasManager } from './record/observers/canvas/canvas-manager';
 import type { StylesheetManager } from './record/stylesheet-manager';
 import type {
+  DataURLOptions,
   addedNodeMutation,
   blockClass,
   canvasMutationCallback,
+  customElementCallback,
   eventWithTime,
   fontCallback,
   hooksParam,
@@ -36,6 +36,8 @@ import type {
   styleDeclarationCallback,
   styleSheetRuleCallback,
   viewportResizeCallback,
+  PackFn,
+  UnpackFn,
 } from '@rrweb/types';
 import type ProcessedNodeManager from './record/processed-node-manager';
 
@@ -46,6 +48,7 @@ export type recordOptions<T> = {
   blockClass?: blockClass;
   blockSelector?: string;
   ignoreClass?: string;
+  ignoreSelector?: string;
   maskTextClass?: maskTextClass;
   maskTextSelector?: string;
   maskAllInputs?: boolean;
@@ -59,6 +62,7 @@ export type recordOptions<T> = {
   packFn?: PackFn;
   sampling?: SamplingStrategy;
   dataURLOptions?: DataURLOptions;
+  recordDOM?: boolean;
   recordCanvas?: boolean;
   recordCrossOriginIframes?: boolean;
   recordAfter?: 'DOMContentLoaded' | 'load';
@@ -84,6 +88,7 @@ export type observerParam = {
   blockClass: blockClass;
   blockSelector: string | null;
   ignoreClass: string;
+  ignoreSelector: string | null;
   maskTextClass: maskTextClass;
   maskTextSelector: string | null;
   maskInputOptions: MaskInputOptions;
@@ -94,8 +99,10 @@ export type observerParam = {
   styleSheetRuleCb: styleSheetRuleCallback;
   styleDeclarationCb: styleDeclarationCallback;
   canvasMutationCb: canvasMutationCallback;
+  customElementCb: customElementCallback;
   fontCb: fontCallback;
   sampling: SamplingStrategy;
+  recordDOM: boolean;
   recordCanvas: boolean;
   inlineImages: boolean;
   userTriggeredOnInput: boolean;
@@ -158,12 +165,14 @@ export type ReplayPlugin = {
   ) => void;
   getMirror?: (mirrors: { nodeMirror: Mirror }) => void;
 };
+export type { Replayer } from './replay';
 export type playerConfig = {
   speed: number;
   maxSpeed: number;
   root: Element;
   loadTimeout: number;
   skipInactive: boolean;
+  inactivePeriodThreshold: number;
   showWarning: boolean;
   showDebug: boolean;
   blockClass: string;
@@ -200,6 +209,7 @@ export type missingNodeMap = {
 declare global {
   interface Window {
     FontFace: typeof FontFace;
+    Array: typeof Array;
   }
 }
 

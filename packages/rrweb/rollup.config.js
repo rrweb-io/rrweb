@@ -137,6 +137,7 @@ function getPlugins(options = {}) {
     webWorkerLoader({
       targetPlatform: 'browser',
       inline: true,
+      preserveSource: true,
       sourceMap,
     }),
     esbuild({
@@ -156,7 +157,11 @@ for (const c of baseConfigs) {
     resolve({ browser: true }),
 
     // supports bundling `web-worker:..filename`
-    webWorkerLoader({ targetPlatform: 'browser' }),
+    webWorkerLoader({
+      targetPlatform: 'browser',
+      inline: true,
+      preserveSource: true,
+    }),
 
     typescript(),
   ];

@@ -1,0 +1,54 @@
+{
+  "name": "@rrweb/rrweb-plugin-canvas-webrtc-replay",
+  "version": "2.0.0-alpha.18",
+  "description": "",
+  "type": "module",
+  "main": "./dist/rrweb-plugin-canvas-webrtc-replay.umd.cjs",
+  "module": "./dist/rrweb-plugin-canvas-webrtc-replay.js",
+  "unpkg": "./dist/rrweb-plugin-canvas-webrtc-replay.umd.cjs",
+  "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/rrweb-plugin-canvas-webrtc-replay.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/rrweb-plugin-canvas-webrtc-replay.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "yarn turbo run prepublish",
+    "check-types": "tsc -noEmit",
+    "prepublish": "tsc -noEmit && vite build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb.git"
+  },
+  "keywords": [
+    "rrweb"
+  ],
+  "author": "justin@recordonce.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rrweb-io/rrweb/issues"
+  },
+  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "devDependencies": {
+    "rrweb": "^2.0.0-alpha.18",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.1",
+    "vite-plugin-dts": "^3.9.1"
+  },
+  "peerDependencies": {
+    "rrweb": "^2.0.0-alpha.18"
+  }
+}

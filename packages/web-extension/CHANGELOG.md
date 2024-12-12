@@ -1,5 +1,97 @@
 # @rrweb/web-extension
 
+## 2.0.0-alpha.18
+
+### Patch Changes
+
+- Updated dependencies [[`04ee6ed`](https://github.com/rrweb-io/rrweb/commit/04ee6eda57157f0e04f18f907d8f3e59ababc753), [`5fbb904`](https://github.com/rrweb-io/rrweb/commit/5fbb904edb653f3da17e6775ee438d81ef0bba83), [`5a78938`](https://github.com/rrweb-io/rrweb/commit/5a789385a341311ba327a768fe0e2f0f2f5002ee), [`53b83bb`](https://github.com/rrweb-io/rrweb/commit/53b83bb037f9cb30c93179548f436ed776f143ab)]:
+  - rrweb@2.0.0-alpha.18
+  - rrweb-player@2.0.0-alpha.18
+
+## 2.0.0-alpha.17
+
+### Minor Changes
+
+- [#1522](https://github.com/rrweb-io/rrweb/pull/1522) [`b1f9daa`](https://github.com/rrweb-io/rrweb/commit/b1f9daaa42f007a641104613bb07f141585f9e77) Thanks [@kirankunigiri](https://github.com/kirankunigiri)! - Added session downloader for chrome extension
+
+### Patch Changes
+
+- Updated dependencies [[`40bbc25`](https://github.com/rrweb-io/rrweb/commit/40bbc25fc287badc317a53f2d3f21b1c9f2b211b), [`68076b7`](https://github.com/rrweb-io/rrweb/commit/68076b724ff19d198d4f351a05063b85e1705a8c), [`8059d96`](https://github.com/rrweb-io/rrweb/commit/8059d9695146626b102b2059a3a9b932d5f598f6), [`335639a`](https://github.com/rrweb-io/rrweb/commit/335639af9b0ce7f70eb0f38ce113d877c7325158), [`be6bf52`](https://github.com/rrweb-io/rrweb/commit/be6bf52c248c35de1b3491e3a3440ff61f876414)]:
+  - rrweb@2.0.0-alpha.17
+  - rrweb-player@2.0.0-alpha.17
+
+## 2.0.0-alpha.16
+
+### Patch Changes
+
+- Updated dependencies [[`a2c8a1a`](https://github.com/rrweb-io/rrweb/commit/a2c8a1a37bfcf8389b280af792262c8263a979a3), [`d08624c`](https://github.com/rrweb-io/rrweb/commit/d08624cb28add386c3618a0e6607424c3f1884d8)]:
+  - rrweb@2.0.0-alpha.16
+  - rrweb-player@2.0.0-alpha.16
+
+## 2.0.0-alpha.15
+
+### Patch Changes
+
+- Updated dependencies [[`7261c43`](https://github.com/rrweb-io/rrweb/commit/7261c43f60973e88325edf832e4d0e057fbff0ae), [`4014305`](https://github.com/rrweb-io/rrweb/commit/40143059446cee5c042c007b1c2e976f36e172f5), [`609b7fa`](https://github.com/rrweb-io/rrweb/commit/609b7fac79a552f746dc880a28927dee382cd082), [`82f6fec`](https://github.com/rrweb-io/rrweb/commit/82f6fecf36413ecbc994a510144487f1de20d1d5), [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf), [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf), [`5c27b76`](https://github.com/rrweb-io/rrweb/commit/5c27b763192bda9dd91806f95df7c1cd0ab083a6), [`d38893f`](https://github.com/rrweb-io/rrweb/commit/d38893f6338facf331fd1f6e63c121120b81177d), [`d7cf8dd`](https://github.com/rrweb-io/rrweb/commit/d7cf8dd07547f6fb22ef82e341a88357c4053bd3), [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf), [`e08706a`](https://github.com/rrweb-io/rrweb/commit/e08706ae60268b6eb05c6292ef948c71bd423ce3)]:
+  - rrweb@2.0.0-alpha.15
+  - rrweb-player@2.0.0-alpha.15
+
+## 2.0.0-alpha.14
+
+### Patch Changes
+
+- Updated dependencies [[`03b5216`](https://github.com/rrweb-io/rrweb/commit/03b5216a9403f1509b4f69d1d71ef9874277fe91), [`ae6908d`](https://github.com/rrweb-io/rrweb/commit/ae6908dcdcd7c732c1ce79eea19de5240bec1151), [`46f1b25`](https://github.com/rrweb-io/rrweb/commit/46f1b252a5919c68c68e825bd6089cc2e7d34e7c), [`cbbd1e5`](https://github.com/rrweb-io/rrweb/commit/cbbd1e55f1f7fa2eed9fa11e4152b509bdfd88f7), [`e96f668`](https://github.com/rrweb-io/rrweb/commit/e96f668c86bd0ab5dc190bb2957a170271bb2ebc)]:
+  - rrweb@2.0.0-alpha.14
+  - rrweb-player@2.0.0-alpha.14
+
+## 2.0.0-alpha.13
+
+### Patch Changes
+
+- Updated dependencies [[`3d1877c`](https://github.com/rrweb-io/rrweb/commit/3d1877cff83d9a018630674fb6e730050ceef812), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`02f50d2`](https://github.com/rrweb-io/rrweb/commit/02f50d260cfe72209c94de1679336737f238e216)]:
+  - rrweb@2.0.0-alpha.13
+  - rrweb-player@2.0.0-alpha.13
+
+## 2.0.0-alpha.12
+
+### Patch Changes
+
+- [#1333](https://github.com/rrweb-io/rrweb/pull/1333) [`40f484d`](https://github.com/rrweb-io/rrweb/commit/40f484d088390b480f088d1b1c1c152641cd5878) Thanks [@billyvg](https://github.com/billyvg)! - Update `vite.config.ts` to account for all potential entry types.
+
+- [#1360](https://github.com/rrweb-io/rrweb/pull/1360) [`0f004af`](https://github.com/rrweb-io/rrweb/commit/0f004af18dd8ba204fd80a68328fc48bf229e7f0) Thanks [@huangkairan](https://github.com/huangkairan)! - 🎈 perf(web-extension): conditional check in Player component
+
+- [#1307](https://github.com/rrweb-io/rrweb/pull/1307) [`8444cb2`](https://github.com/rrweb-io/rrweb/commit/8444cb2dad6ceb4bef3e32a6adba05ab65b56e52) Thanks [@huangkairan](https://github.com/huangkairan)! - 🐞 fix(web-extension): typo
+
+- [#1330](https://github.com/rrweb-io/rrweb/pull/1330) [`9e65dda`](https://github.com/rrweb-io/rrweb/commit/9e65dda258c9b8169a4a6486b5c018f42f6c512a) Thanks [@huangkairan](https://github.com/huangkairan)! - 🐞 fix(web-extension): beforeunload logic
+
+- Updated dependencies [[`af0962c`](https://github.com/rrweb-io/rrweb/commit/af0962cc6c80b693bbc622520032d17342685cf6), [`57a940a`](https://github.com/rrweb-io/rrweb/commit/57a940afac0bdd14cd82937915d53110b5311673), [`8aea5b0`](https://github.com/rrweb-io/rrweb/commit/8aea5b00a4dfe5a6f59bd2ae72bb624f45e51e81), [`9c6edfe`](https://github.com/rrweb-io/rrweb/commit/9c6edfe2261680b4e92284be69f9d183b1eca8f4), [`1e0b273`](https://github.com/rrweb-io/rrweb/commit/1e0b27382210db0168d2a79d82c13698082b0983), [`1fe39ab`](https://github.com/rrweb-io/rrweb/commit/1fe39ab0db7f5d2b04f4a4f39fb5c0cfee33a1f8), [`05478c3`](https://github.com/rrweb-io/rrweb/commit/05478c36dde03a118099783d908bb3e465e9859c), [`58c9104`](https://github.com/rrweb-io/rrweb/commit/58c9104eddc8b7994a067a97daae5684e42f892f), [`980a38c`](https://github.com/rrweb-io/rrweb/commit/980a38c816d763833fc3491f56d03c959a41122d), [`a2be77b`](https://github.com/rrweb-io/rrweb/commit/a2be77b82826c4be0e7f3c7c9f7ee50476d5f6f8), [`a7c33f2`](https://github.com/rrweb-io/rrweb/commit/a7c33f2093c4d92faf7ae25e8bb0e088d122c13b), [`314a8dd`](https://github.com/rrweb-io/rrweb/commit/314a8dde5a13095873b89d07bac7c949918bf817), [`7c0dc9d`](https://github.com/rrweb-io/rrweb/commit/7c0dc9dfe1564c9d6624557c5b394e7844955882), [`07ac5c9`](https://github.com/rrweb-io/rrweb/commit/07ac5c9e1371824ec3ffb705f9250bbe10f4b73e)]:
+  - rrweb@2.0.0-alpha.12
+  - rrweb-player@2.0.0-alpha.12
+
+## 2.0.0-alpha.11
+
+### Patch Changes
+
+- Updated dependencies [[`11f6567`](https://github.com/rrweb-io/rrweb/commit/11f6567fd81ef9ed0f954a7b6d5e39653f56004f), [`efdc167`](https://github.com/rrweb-io/rrweb/commit/efdc167ca6c039d04af83612e3d92498bb9b41a7)]:
+  - rrweb@2.0.0-alpha.11
+  - rrweb-player@2.0.0-alpha.11
+
+## 2.0.0-alpha.10
+
+### Patch Changes
+
+- Updated dependencies [[`7103625`](https://github.com/rrweb-io/rrweb/commit/7103625b4683cbd75732ee03973e38f573847b1c), [`d872d28`](https://github.com/rrweb-io/rrweb/commit/d872d2809e3ec8d6ff5d3d5f43bc81aff70e7548), [`36da39d`](https://github.com/rrweb-io/rrweb/commit/36da39db366a9f80c28549771ed331090a1c6647), [`bbbfa22`](https://github.com/rrweb-io/rrweb/commit/bbbfa226fc5882a01ecc1607b713f0caf797775e), [`d0fbe23`](https://github.com/rrweb-io/rrweb/commit/d0fbe23c632021410a6dd45f9028a9a012467261), [`a3de582`](https://github.com/rrweb-io/rrweb/commit/a3de582e9c32be9e0ccd84bb7df756af6b0594f7)]:
+  - rrweb@2.0.0-alpha.10
+  - rrweb-player@2.0.0-alpha.10
+
+## 2.0.0-alpha.9
+
+### Patch Changes
+
+- Updated dependencies [[`490b3e2`](https://github.com/rrweb-io/rrweb/commit/490b3e2b62b62d61e6f6f5391d5b879194c9a221), [`a1ec9a2`](https://github.com/rrweb-io/rrweb/commit/a1ec9a273e6634eec67098fdd880ee681648fbbd), [`490b3e2`](https://github.com/rrweb-io/rrweb/commit/490b3e2b62b62d61e6f6f5391d5b879194c9a221), [`d7c72bf`](https://github.com/rrweb-io/rrweb/commit/d7c72bff0724b46a6fa94af455220626a27104fe), [`ebcbe8b`](https://github.com/rrweb-io/rrweb/commit/ebcbe8b0d746a0a4c07d3530387f920900f35215), [`a01a12e`](https://github.com/rrweb-io/rrweb/commit/a01a12ef6769f26aa922ccd6ac76499f0837f0c2)]:
+  - rrweb@2.0.0-alpha.9
+  - rrweb-player@2.0.0-alpha.9
+
 ## 2.0.0-alpha.8
 
 ### Patch Changes

@@ -1,5 +1,5 @@
 import mitt from 'mitt';
-import Browser, { Runtime } from 'webextension-polyfill';
+import Browser, { type Runtime } from 'webextension-polyfill';
 
 export type Message = EventType | ServiceType;
 export type EventType = {
@@ -33,7 +33,7 @@ class Channel {
   private emitter = mitt();
   constructor() {
     /**
-     * Register massage listener.
+     * Register message listener.
      */
     Browser.runtime.onMessage.addListener(
       ((message: string, sender: Runtime.MessageSender) => {

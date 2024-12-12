@@ -9,6 +9,7 @@ import {
   Mirror,
   isNativeShadowDom,
   getInputType,
+  toLowerCase,
 } from 'rrweb-snapshot';
 import type { observerParam, MutationBufferParam } from '../types';
 import type {
@@ -17,7 +18,6 @@ import type {
   attributeCursor,
   removedNodeMutation,
   addedNodeMutation,
-  styleAttributeValue,
   Optional,
 } from '@rrweb/types';
 import {
@@ -30,7 +30,9 @@ import {
   isSerializedStylesheet,
   inDom,
   getShadowHost,
+  closestElementOfNode,
 } from '../utils';
+import dom from '@rrweb/utils';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -48,6 +50,7 @@ function isNodeInLinkedList(n: Node | NodeInLinkedList): n is NodeInLinkedList {
 class DoubleLinkedList {
   public length = 0;
   public head: DoubleLinkedListNode | null = null;
+  public tail: DoubleLinkedListNode | null = null;
 
   public get(position: number) {
     if (position >= this.length) {
@@ -95,6 +98,9 @@ class DoubleLinkedList {
       node.next = this.head;
       this.head = node;
     }
+    if (node.next === null) {
+      this.tail = node;
+    }
     this.length++;
   }
 
@@ -108,11 +114,15 @@ class DoubleLinkedList {
       this.head = current.next;
       if (this.head) {
         this.head.previous = null;
+      } else {
+        this.tail = null;
       }
     } else {
       current.previous.next = current.next;
       if (current.next) {
         current.next.previous = current.previous;
+      } else {
+        this.tail = current.previous;
       }
     }
     if (n.__ln) {
@@ -133,6 +143,7 @@ export default class MutationBuffer {
 
   private texts: textCursor[] = [];
   private attributes: attributeCursor[] = [];
+  private attributeMap = new WeakMap<Node, attributeCursor>();
   private removes: removedNodeMutation[] = [];
   private mapRemoves: Node[] = [];
 
@@ -158,6 +169,7 @@ export default class MutationBuffer {
   private addedSet = new Set<Node>();
   private movedSet = new Set<Node>();
   private droppedSet = new Set<Node>();
+  private removesSubTreeCache = new Set<Node>();
 
   private mutationCb: observerParam['mutationCb'];
   private blockClass: observerParam['blockClass'];
@@ -180,6 +192,7 @@ export default class MutationBuffer {
   private shadowDomManager: observerParam['shadowDomManager'];
   private canvasManager: observerParam['canvasManager'];
   private processedNodeManager: observerParam['processedNodeManager'];
+  private unattachedDoc: HTMLDocument;
 
   public init(options: MutationBufferParam) {
     (
@@ -257,6 +270,7 @@ export default class MutationBuffer {
     // so that the mirror for takeFullSnapshot doesn't get mutated while it's event is being processed
 
     const adds: addedNodeMutation[] = [];
+    const addedIds = new Set<number>();
 
     /**
      * Sometimes child node may be pushed before its newly added
@@ -273,12 +287,27 @@ export default class MutationBuffer {
       return nextId;
     };
     const pushAdd = (n: Node) => {
-      if (!n.parentNode || !inDom(n)) {
+      const parent = dom.parentNode(n);
+      if (!parent || !inDom(n)) {
         return;
       }
-      const parentId = isShadowRoot(n.parentNode)
+      let cssCaptured = false;
+      if (n.nodeType === Node.TEXT_NODE) {
+        const parentTag = (parent as Element).tagName;
+        if (parentTag === 'TEXTAREA') {
+          // genTextAreaValueMutation already called via parent
+          return;
+        } else if (parentTag === 'STYLE' && this.addedSet.has(parent)) {
+          // css content will be recorded via parent's _cssText attribute when
+          // mutation adds entire <style> element
+          cssCaptured = true;
+        }
+      }
+
+      const parentId = isShadowRoot(parent)
         ? this.mirror.getId(getShadowHost(n))
-        : this.mirror.getId(n.parentNode);
+        : this.mirror.getId(parent);
+
       const nextId = getNextId(n);
       if (parentId === -1 || nextId === -1) {
         return addList.addNode(n);
@@ -310,7 +339,8 @@ export default class MutationBuffer {
             );
           }
           if (hasShadowRoot(n)) {
-            this.shadowDomManager.addShadowRoot(n.shadowRoot, this.doc);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.shadowDomManager.addShadowRoot(dom.shadowRoot(n)!, this.doc);
           }
         },
         onIframeLoad: (iframe, childSn) => {
@@ -320,6 +350,7 @@ export default class MutationBuffer {
         onStylesheetLoad: (link, childSn) => {
           this.stylesheetManager.attachLinkElement(link, childSn);
         },
+        cssCaptured,
       });
       if (sn) {
         adds.push({
@@ -327,6 +358,7 @@ export default class MutationBuffer {
           nextId,
           node: sn,
         });
+        addedIds.add(sn.id);
       }
     };
 
@@ -336,8 +368,8 @@ export default class MutationBuffer {
 
     for (const n of this.movedSet) {
       if (
-        isParentRemoved(this.removes, n, this.mirror) &&
-        !this.movedSet.has(n.parentNode!)
+        isParentRemoved(this.removesSubTreeCache, n, this.mirror) &&
+        !this.movedSet.has(dom.parentNode(n)!)
       ) {
         continue;
       }
@@ -347,7 +379,7 @@ export default class MutationBuffer {
     for (const n of this.addedSet) {
       if (
         !isAncestorInSet(this.droppedSet, n) &&
-        !isParentRemoved(this.removes, n, this.mirror)
+        !isParentRemoved(this.removesSubTreeCache, n, this.mirror)
       ) {
         pushAdd(n);
       } else if (isAncestorInSet(this.movedSet, n)) {
@@ -361,18 +393,20 @@ export default class MutationBuffer {
     while (addList.length) {
       let node: DoubleLinkedListNode | null = null;
       if (candidate) {
-        const parentId = this.mirror.getId(candidate.value.parentNode);
+        const parentId = this.mirror.getId(dom.parentNode(candidate.value));
         const nextId = getNextId(candidate.value);
         if (parentId !== -1 && nextId !== -1) {
           node = candidate;
         }
       }
       if (!node) {
-        for (let index = addList.length - 1; index >= 0; index--) {
-          const _node = addList.get(index);
+        let tailNode = addList.tail;
+        while (tailNode) {
+          const _node = tailNode;
+          tailNode = tailNode.previous;
           // ensure _node is defined before attempting to find value
           if (_node) {
-            const parentId = this.mirror.getId(_node.value.parentNode);
+            const parentId = this.mirror.getId(dom.parentNode(_node.value));
             const nextId = getNextId(_node.value);
 
             if (nextId === -1) continue;
@@ -384,14 +418,10 @@ export default class MutationBuffer {
             // nextId !== -1 && parentId === -1 This branch can happen if the node is the child of shadow root
             else {
               const unhandledNode = _node.value;
+              const parent = dom.parentNode(unhandledNode);
               // If the node is the direct child of a shadow root, we treat the shadow host as its parent node.
-              if (
-                unhandledNode.parentNode &&
-                unhandledNode.parentNode.nodeType ===
-                  Node.DOCUMENT_FRAGMENT_NODE
-              ) {
-                const shadowHost = (unhandledNode.parentNode as ShadowRoot)
-                  .host;
+              if (parent && parent.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+                const shadowHost = dom.host(parent as ShadowRoot);
                 const parentId = this.mirror.getId(shadowHost);
                 if (parentId !== -1) {
                   node = _node;
@@ -420,17 +450,48 @@ export default class MutationBuffer {
 
     const payload = {
       texts: this.texts
-        .map((text) => ({
-          id: this.mirror.getId(text.node),
-          value: text.value,
-        }))
+        .map((text) => {
+          const n = text.node;
+          const parent = dom.parentNode(n);
+          if (parent && (parent as Element).tagName === 'TEXTAREA') {
+            // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
+            this.genTextAreaValueMutation(parent as HTMLTextAreaElement);
+          }
+          return {
+            id: this.mirror.getId(n),
+            value: text.value,
+          };
+        })
+        // no need to include them on added elements, as they have just been serialized with up to date attribubtes
+        .filter((text) => !addedIds.has(text.id))
         // text mutation's id was not in the mirror map means the target node has been removed
         .filter((text) => this.mirror.has(text.id)),
       attributes: this.attributes
-        .map((attribute) => ({
-          id: this.mirror.getId(attribute.node),
-          attributes: attribute.attributes,
-        }))
+        .map((attribute) => {
+          const { attributes } = attribute;
+          if (typeof attributes.style === 'string') {
+            const diffAsStr = JSON.stringify(attribute.styleDiff);
+            const unchangedAsStr = JSON.stringify(attribute._unchangedStyles);
+            // check if the style diff is actually shorter than the regular string based mutation
+            // (which was the whole point of #464 'compact style mutation').
+            if (diffAsStr.length < attributes.style.length) {
+              // also: CSSOM fails badly when var() is present on shorthand properties, so only proceed with
+              // the compact style mutation if these have all been accounted for
+              if (
+                (diffAsStr + unchangedAsStr).split('var(').length ===
+                attributes.style.split('var(').length
+              ) {
+                attributes.style = attribute.styleDiff;
+              }
+            }
+          }
+          return {
+            id: this.mirror.getId(attribute.node),
+            attributes: attributes,
+          };
+        })
+        // no need to include them on added elements, as they have just been serialized with up to date attribubtes
+        .filter((attribute) => !addedIds.has(attribute.id))
         // attribute mutation's id was not in the mirror map means the target node has been removed
         .filter((attribute) => this.mirror.has(attribute.id)),
       removes: this.removes,
@@ -449,22 +510,43 @@ export default class MutationBuffer {
     // reset
     this.texts = [];
     this.attributes = [];
+    this.attributeMap = new WeakMap<Node, attributeCursor>();
     this.removes = [];
     this.addedSet = new Set<Node>();
     this.movedSet = new Set<Node>();
     this.droppedSet = new Set<Node>();
+    this.removesSubTreeCache = new Set<Node>();
     this.movedMap = {};
 
     this.mutationCb(payload);
   };
 
+  private genTextAreaValueMutation = (textarea: HTMLTextAreaElement) => {
+    let item = this.attributeMap.get(textarea);
+    if (!item) {
+      item = {
+        node: textarea,
+        attributes: {},
+        styleDiff: {},
+        _unchangedStyles: {},
+      };
+      this.attributes.push(item);
+      this.attributeMap.set(textarea, item);
+    }
+    item.attributes.value = Array.from(
+      dom.childNodes(textarea),
+      (cn) => dom.textContent(cn) || '',
+    ).join('');
+  };
+
   private processMutation = (m: mutationRecord) => {
-    if (isIgnored(m.target, this.mirror)) {
+    if (isIgnored(m.target, this.mirror, this.slimDOMOptions)) {
       return;
     }
     switch (m.type) {
       case 'characterData': {
-        const value = m.target.textContent;
+        const value = dom.textContent(m.target);
+
         if (
           !isBlocked(m.target, this.blockClass, this.blockSelector, false) &&
           value !== m.oldValue
@@ -475,9 +557,10 @@ export default class MutationBuffer {
                 m.target,
                 this.maskTextClass,
                 this.maskTextSelector,
+                true, // checkAncestors
               ) && value
                 ? this.maskTextFn
-                  ? this.maskTextFn(value)
+                  ? this.maskTextFn(value, closestElementOfNode(m.target))
                   : value.replace(/[\S]/g, '*')
                 : value,
             node: m.target,
@@ -509,9 +592,7 @@ export default class MutationBuffer {
           return;
         }
 
-        let item: attributeCursor | undefined = this.attributes.find(
-          (a) => a.node === m.target,
-        );
+        let item = this.attributeMap.get(m.target);
         if (
           target.tagName === 'IFRAME' &&
           attributeName === 'src' &&
@@ -529,8 +610,11 @@ export default class MutationBuffer {
           item = {
             node: m.target,
             attributes: {},
+            styleDiff: {},
+            _unchangedStyles: {},
           };
           this.attributes.push(item);
+          this.attributeMap.set(m.target, item);
         }
 
         // Keep this property on inputs that used to be password inputs
@@ -543,46 +627,59 @@ export default class MutationBuffer {
           target.setAttribute('data-rr-is-password', 'true');
         }
 
-        if (attributeName === 'style') {
-          const old = this.doc.createElement('span');
-          if (m.oldValue) {
-            old.setAttribute('style', m.oldValue);
-          }
-          if (
-            item.attributes.style === undefined ||
-            item.attributes.style === null
-          ) {
-            item.attributes.style = {};
-          }
-          const styleObj = item.attributes.style as styleAttributeValue;
-          for (const pname of Array.from(target.style)) {
-            const newValue = target.style.getPropertyValue(pname);
-            const newPriority = target.style.getPropertyPriority(pname);
-            if (
-              newValue !== old.style.getPropertyValue(pname) ||
-              newPriority !== old.style.getPropertyPriority(pname)
-            ) {
-              if (newPriority === '') {
-                styleObj[pname] = newValue;
-              } else {
-                styleObj[pname] = [newValue, newPriority];
-              }
-            }
-          }
-          for (const pname of Array.from(old.style)) {
-            if (target.style.getPropertyValue(pname) === '') {
-              // "if not set, returns the empty string"
-              styleObj[pname] = false; // delete
-            }
-          }
-        } else if (!ignoreAttribute(target.tagName, attributeName, value)) {
+        if (!ignoreAttribute(target.tagName, attributeName, value)) {
           // overwrite attribute if the mutations was triggered in same time
           item.attributes[attributeName] = transformAttribute(
             this.doc,
-            target.tagName,
-            attributeName,
+            toLowerCase(target.tagName),
+            toLowerCase(attributeName),
             value,
           );
+          if (attributeName === 'style') {
+            if (!this.unattachedDoc) {
+              try {
+                // avoid upsetting original document from a Content Security point of view
+                this.unattachedDoc =
+                  document.implementation.createHTMLDocument();
+              } catch (e) {
+                // fallback to more direct method
+                this.unattachedDoc = this.doc;
+              }
+            }
+            const old = this.unattachedDoc.createElement('span');
+            if (m.oldValue) {
+              old.setAttribute('style', m.oldValue);
+            }
+            for (const pname of Array.from(target.style)) {
+              const newValue = target.style.getPropertyValue(pname);
+              const newPriority = target.style.getPropertyPriority(pname);
+              if (
+                newValue !== old.style.getPropertyValue(pname) ||
+                newPriority !== old.style.getPropertyPriority(pname)
+              ) {
+                if (newPriority === '') {
+                  item.styleDiff[pname] = newValue;
+                } else {
+                  item.styleDiff[pname] = [newValue, newPriority];
+                }
+              } else {
+                // for checking
+                item._unchangedStyles[pname] = [newValue, newPriority];
+              }
+            }
+            for (const pname of Array.from(old.style)) {
+              if (target.style.getPropertyValue(pname) === '') {
+                // "if not set, returns the empty string"
+                item.styleDiff[pname] = false; // delete
+              }
+            }
+          } else if (attributeName === 'open' && target.tagName === 'DIALOG') {
+            if (target.matches('dialog:modal')) {
+              item.attributes['rr_open_mode'] = 'modal';
+            } else {
+              item.attributes['rr_open_mode'] = 'non-modal';
+            }
+          }
         }
         break;
       }
@@ -593,15 +690,21 @@ export default class MutationBuffer {
         if (isBlocked(m.target, this.blockClass, this.blockSelector, true))
           return;
 
+        if ((m.target as Element).tagName === 'TEXTAREA') {
+          // children would be ignored in genAdds as they aren't in the mirror
+          this.genTextAreaValueMutation(m.target as HTMLTextAreaElement);
+          return; // any removedNodes won't have been in mirror either
+        }
+
         m.addedNodes.forEach((n) => this.genAdds(n, m.target));
         m.removedNodes.forEach((n) => {
           const nodeId = this.mirror.getId(n);
           const parentId = isShadowRoot(m.target)
-            ? this.mirror.getId(m.target.host)
+            ? this.mirror.getId(dom.host(m.target))
             : this.mirror.getId(m.target);
           if (
             isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
-            isIgnored(n, this.mirror) ||
+            isIgnored(n, this.mirror, this.slimDOMOptions) ||
             !isSerialized(n, this.mirror)
           ) {
             return;
@@ -639,6 +742,7 @@ export default class MutationBuffer {
                   ? true
                   : undefined,
             });
+            processRemoves(n, this.removesSubTreeCache);
           }
           this.mapRemoves.push(n);
         });
@@ -660,7 +764,7 @@ export default class MutationBuffer {
     if (this.addedSet.has(n) || this.movedSet.has(n)) return;
 
     if (this.mirror.hasNode(n)) {
-      if (isIgnored(n, this.mirror)) {
+      if (isIgnored(n, this.mirror, this.slimDOMOptions)) {
         return;
       }
       this.movedSet.add(n);
@@ -679,9 +783,10 @@ export default class MutationBuffer {
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
     if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
-      n.childNodes.forEach((childN) => this.genAdds(childN));
+      dom.childNodes(n).forEach((childN) => this.genAdds(childN));
       if (hasShadowRoot(n)) {
-        n.shadowRoot.childNodes.forEach((childN) => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        dom.childNodes(dom.shadowRoot(n)!).forEach((childN) => {
           this.processedNodeManager.add(childN, this);
           this.genAdds(childN, n);
         });
@@ -698,32 +803,36 @@ export default class MutationBuffer {
  */
 function deepDelete(addsSet: Set<Node>, n: Node) {
   addsSet.delete(n);
-  n.childNodes.forEach((childN) => deepDelete(addsSet, childN));
+  dom.childNodes(n).forEach((childN) => deepDelete(addsSet, childN));
 }
 
-function isParentRemoved(
-  removes: removedNodeMutation[],
-  n: Node,
-  mirror: Mirror,
-): boolean {
-  if (removes.length === 0) return false;
+function processRemoves(n: Node, cache: Set<Node>) {
+  const queue = [n];
+
+  while (queue.length) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const next = queue.pop()!;
+    if (cache.has(next)) continue;
+    cache.add(next);
+    dom.childNodes(next).forEach((n) => queue.push(n));
+  }
+
+  return;
+}
+
+function isParentRemoved(removes: Set<Node>, n: Node, mirror: Mirror): boolean {
+  if (removes.size === 0) return false;
   return _isParentRemoved(removes, n, mirror);
 }
 
 function _isParentRemoved(
-  removes: removedNodeMutation[],
+  removes: Set<Node>,
   n: Node,
-  mirror: Mirror,
+  _mirror: Mirror,
 ): boolean {
-  const { parentNode } = n;
-  if (!parentNode) {
-    return false;
-  }
-  const parentId = mirror.getId(parentNode);
-  if (removes.some((r) => r.id === parentId)) {
-    return true;
-  }
-  return _isParentRemoved(removes, parentNode, mirror);
+  const node: ParentNode | null = dom.parentNode(n);
+  if (!node) return false;
+  return removes.has(node);
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
@@ -732,12 +841,12 @@ function isAncestorInSet(set: Set<Node>, n: Node): boolean {
 }
 
 function _isAncestorInSet(set: Set<Node>, n: Node): boolean {
-  const { parentNode } = n;
-  if (!parentNode) {
+  const parent = dom.parentNode(n);
+  if (!parent) {
     return false;
   }
-  if (set.has(parentNode)) {
+  if (set.has(parent)) {
     return true;
   }
-  return _isAncestorInSet(set, parentNode);
+  return _isAncestorInSet(set, parent);
 }

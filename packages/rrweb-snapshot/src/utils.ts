@@ -1,32 +1,41 @@
-import {
+import type {
   idNodeMap,
   MaskInputFn,
   MaskInputOptions,
   nodeMetaMap,
+} from './types';
+
+import { NodeType } from '@rrweb/types';
+import type {
   IMirror,
   serializedNodeWithId,
   serializedNode,
-  NodeType,
   documentNode,
   documentTypeNode,
   textNode,
   elementNode,
-} from './types';
+} from '@rrweb/types';
+import dom from '@rrweb/utils';
 
 export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;
 }
 
 export function isShadowRoot(n: Node): n is ShadowRoot {
-  const host: Element | null = (n as ShadowRoot)?.host;
-  return Boolean(host?.shadowRoot === n);
+  const hostEl: Element | null =
+    // anchor and textarea elements also have a `host` property
+    // but only shadow roots have a `mode` property
+    (n && 'host' in n && 'mode' in n && dom.host(n as ShadowRoot)) || null;
+  return Boolean(
+    hostEl && 'shadowRoot' in hostEl && dom.shadowRoot(hostEl) === n,
+  );
 }
 
 /**
  * To fix the issue https://github.com/rrweb-io/rrweb/issues/933.
  * Some websites use polyfilled shadow dom and this function is used to detect this situation.
  */
-export function isNativeShadowDom(shadowRoot: ShadowRoot) {
+export function isNativeShadowDom(shadowRoot: ShadowRoot): boolean {
   return Object.prototype.toString.call(shadowRoot) === '[object ShadowRoot]';
 }
 
@@ -47,40 +56,125 @@ function fixBrowserCompatibilityIssuesInCSS(cssText: string): string {
     !cssText.includes(' -webkit-background-clip: text;')
   ) {
     cssText = cssText.replace(
-      ' background-clip: text;',
+      /\sbackground-clip:\s*text;/g,
       ' -webkit-background-clip: text; background-clip: text;',
     );
   }
   return cssText;
 }
 
-export function getCssRulesString(s: CSSStyleSheet): string | null {
+// Remove this declaration once typescript has added `CSSImportRule.supportsText` to the lib.
+declare interface CSSImportRule extends CSSRule {
+  readonly href: string;
+  readonly layerName: string | null;
+  readonly media: MediaList;
+  readonly styleSheet: CSSStyleSheet;
+  /**
+   * experimental API, currently only supported in firefox
+   * https://developer.mozilla.org/en-US/docs/Web/API/CSSImportRule/supportsText
+   */
+  readonly supportsText?: string | null;
+}
+
+/**
+ * Browsers sometimes incorrectly escape `@import` on `.cssText` statements.
+ * This function tries to correct the escaping.
+ * more info: https://bugs.chromium.org/p/chromium/issues/detail?id=1472259
+ * @param cssImportRule
+ * @returns `cssText` with browser inconsistencies fixed, or null if not applicable.
+ */
+export function escapeImportStatement(rule: CSSImportRule): string {
+  const { cssText } = rule;
+  if (cssText.split('"').length < 3) return cssText;
+
+  const statement = ['@import', `url(${JSON.stringify(rule.href)})`];
+  if (rule.layerName === '') {
+    statement.push(`layer`);
+  } else if (rule.layerName) {
+    statement.push(`layer(${rule.layerName})`);
+  }
+  if (rule.supportsText) {
+    statement.push(`supports(${rule.supportsText})`);
+  }
+  if (rule.media.length) {
+    statement.push(rule.media.mediaText);
+  }
+  return statement.join(' ') + ';';
+}
+
+/*
+ * serialize the css rules from the .sheet property
+ * for <link rel="stylesheet"> elements, this is the only way of getting the rules without a FETCH
+ * for <style> elements, this is less preferable to looking at childNodes[0].textContent
+ * (which will include vendor prefixed rules which may not be used or visible to the recorded browser,
+ * but which might be needed by the replayer browser)
+ * however, at snapshot time, we don't know whether the style element has suffered
+ * any programmatic manipulation prior to the snapshot, in which case the .sheet would be more up to date
+ */
+export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
-    return rules
-      ? fixBrowserCompatibilityIssuesInCSS(
-          Array.from(rules).map(getCssRuleString).join(''),
-        )
-      : null;
+    if (!rules) {
+      return null;
+    }
+    let sheetHref = s.href;
+    if (!sheetHref && s.ownerNode && s.ownerNode.ownerDocument) {
+      // an inline <style> element
+      sheetHref = s.ownerNode.ownerDocument.location.href;
+    }
+    const stringifiedRules = Array.from(rules, (rule: CSSRule) =>
+      stringifyRule(rule, sheetHref),
+    ).join('');
+    return fixBrowserCompatibilityIssuesInCSS(stringifiedRules);
   } catch (error) {
     return null;
   }
 }
 
-export function getCssRuleString(rule: CSSRule): string {
-  let cssStringified = rule.cssText;
+export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
   if (isCSSImportRule(rule)) {
+    let importStringified;
     try {
-      cssStringified = getCssRulesString(rule.styleSheet) || cssStringified;
-    } catch {
-      // ignore
+      importStringified =
+        // for same-origin stylesheets,
+        // we can access the imported stylesheet rules directly
+        stringifyStylesheet(rule.styleSheet) ||
+        // work around browser issues with the raw string `@import url(...)` statement
+        escapeImportStatement(rule);
+    } catch (error) {
+      importStringified = rule.cssText;
     }
+    if (rule.styleSheet.href) {
+      // url()s within the imported stylesheet are relative to _that_ sheet's href
+      return absolutifyURLs(importStringified, rule.styleSheet.href);
+    }
+    return importStringified;
+  } else {
+    let ruleStringified = rule.cssText;
+    if (isCSSStyleRule(rule) && rule.selectorText.includes(':')) {
+      // Safari does not escape selectors with : properly
+      // see https://bugs.webkit.org/show_bug.cgi?id=184604
+      ruleStringified = fixSafariColons(ruleStringified);
+    }
+    if (sheetHref) {
+      return absolutifyURLs(ruleStringified, sheetHref);
+    }
+    return ruleStringified;
   }
-  return cssStringified;
+}
+
+export function fixSafariColons(cssStringified: string): string {
+  // Replace e.g. [aa:bb] with [aa\\:bb]
+  const regex = /(\[(?:[\w-]+)[^\\])(:(?:[\w-]+)\])/gm;
+  return cssStringified.replace(regex, '$1\\$2');
 }
 
 export function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
   return 'styleSheet' in rule;
+}
+
+export function isCSSStyleRule(rule: CSSRule): rule is CSSStyleRule {
+  return 'selectorText' in rule;
 }
 
 export class Mirror implements IMirror<Node> {
@@ -169,7 +263,7 @@ export function maskInputValue({
   maskInputFn?: MaskInputFn;
 }): string {
   let text = value || '';
-  const actualType = type && type.toLowerCase();
+  const actualType = type && toLowerCase(type);
 
   if (
     maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
@@ -182,6 +276,10 @@ export function maskInputValue({
     }
   }
   return text;
+}
+
+export function toLowerCase<T extends string>(str: T): Lowercase<T> {
+  return str.toLowerCase() as unknown as Lowercase<T>;
 }
 
 const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';
@@ -265,6 +363,144 @@ export function getInputType(element: HTMLElement): Lowercase<string> | null {
     ? 'password'
     : type
     ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      (type.toLowerCase() as Lowercase<string>)
+      toLowerCase(type)
     : null;
+}
+
+/**
+ * Extracts the file extension from an a path, considering search parameters and fragments.
+ * @param path - Path to file
+ * @param baseURL - [optional] Base URL of the page, used to resolve relative paths. Defaults to current page URL.
+ */
+export function extractFileExtension(
+  path: string,
+  baseURL?: string,
+): string | null {
+  let url;
+  try {
+    url = new URL(path, baseURL ?? window.location.href);
+  } catch (err) {
+    return null;
+  }
+  const regex = /\.([0-9a-z]+)(?:$)/i;
+  const match = url.pathname.match(regex);
+  return match?.[1] ?? null;
+}
+
+function extractOrigin(url: string): string {
+  let origin = '';
+  if (url.indexOf('//') > -1) {
+    origin = url.split('/').slice(0, 3).join('/');
+  } else {
+    origin = url.split('/')[0];
+  }
+  origin = origin.split('?')[0];
+  return origin;
+}
+
+const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
+const URL_PROTOCOL_MATCH = /^(?:[a-z+]+:)?\/\//i;
+const URL_WWW_MATCH = /^www\..*/i;
+const DATA_URI = /^(data:)([^,]*),(.*)/i;
+export function absolutifyURLs(cssText: string | null, href: string): string {
+  return (cssText || '').replace(
+    URL_IN_CSS_REF,
+    (
+      origin: string,
+      quote1: string,
+      path1: string,
+      quote2: string,
+      path2: string,
+      path3: string,
+    ) => {
+      const filePath = path1 || path2 || path3;
+      const maybeQuote = quote1 || quote2 || '';
+      if (!filePath) {
+        return origin;
+      }
+      if (URL_PROTOCOL_MATCH.test(filePath) || URL_WWW_MATCH.test(filePath)) {
+        return `url(${maybeQuote}${filePath}${maybeQuote})`;
+      }
+      if (DATA_URI.test(filePath)) {
+        return `url(${maybeQuote}${filePath}${maybeQuote})`;
+      }
+      if (filePath[0] === '/') {
+        return `url(${maybeQuote}${
+          extractOrigin(href) + filePath
+        }${maybeQuote})`;
+      }
+      const stack = href.split('/');
+      const parts = filePath.split('/');
+      stack.pop();
+      for (const part of parts) {
+        if (part === '.') {
+          continue;
+        } else if (part === '..') {
+          stack.pop();
+        } else {
+          stack.push(part);
+        }
+      }
+      return `url(${maybeQuote}${stack.join('/')}${maybeQuote})`;
+    },
+  );
+}
+
+/**
+ * Intention is to normalize by remove spaces, semicolons and CSS comments
+ * so that we can compare css as authored vs. output of stringifyStylesheet
+ */
+export function normalizeCssString(cssText: string): string {
+  return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '');
+}
+
+/**
+ * Maps the output of stringifyStylesheet to individual text nodes of a <style> element
+ * performance is not considered as this is anticipated to be very much an edge case
+ * (javascript is needed to add extra text nodes to a <style>)
+ */
+export function splitCssText(
+  cssText: string,
+  style: HTMLStyleElement,
+): string[] {
+  const childNodes = Array.from(style.childNodes);
+  const splits: string[] = [];
+  if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
+    const cssTextNorm = normalizeCssString(cssText);
+    for (let i = 1; i < childNodes.length; i++) {
+      if (
+        childNodes[i].textContent &&
+        typeof childNodes[i].textContent === 'string'
+      ) {
+        const textContentNorm = normalizeCssString(childNodes[i].textContent!);
+        for (let j = 3; j < textContentNorm.length; j++) {
+          // find a  substring that appears only once
+          const bit = textContentNorm.substring(0, j);
+          if (cssTextNorm.split(bit).length === 2) {
+            const splitNorm = cssTextNorm.indexOf(bit);
+            // find the split point in the original text
+            for (let k = splitNorm; k < cssText.length; k++) {
+              if (
+                normalizeCssString(cssText.substring(0, k)).length === splitNorm
+              ) {
+                splits.push(cssText.substring(0, k));
+                cssText = cssText.substring(k);
+                break;
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+  splits.push(cssText); // either the full thing if no splits were found, or the last split
+  return splits;
+}
+
+export function markCssSplits(
+  cssText: string,
+  style: HTMLStyleElement,
+): string {
+  return splitCssText(cssText, style).join('/* rr_split */');
 }
