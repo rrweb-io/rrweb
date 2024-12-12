@@ -1,15 +1,15 @@
 {
   "name": "@rrweb/cutter",
-  "version": "2.0.0-alpha.8",
+  "version": "2.0.0-alpha.18",
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "dev": "vite",
-    "test": "jest",
-    "build": "tsc -noEmit && vite build",
+    "dev": "vite build --watch",
+    "build": "yarn turbo run prepublish",
     "check-types": "tsc -noEmit",
-    "prepublish": "npm run build",
+    "test": "vitest run",
+    "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts",
     "prune-events": "npx vite-node scripts/prune.ts --"
   },
@@ -34,22 +34,20 @@
   "module": "dist/index.js",
   "typings": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "package.json"
   ],
   "devDependencies": {
-    "@types/jest": "^27.4.1",
-    "@types/lodash.clonedeep": "^4.5.7",
-    "jest": "^27.5.1",
-    "ts-jest": "^27.1.3",
-    "typescript": "^4.7.3",
-    "vite": "^4.1.1",
-    "vite-plugin-dts": "^1.7.2"
+    "@types/lodash.clonedeep": "^4.5.9",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.1",
+    "vite-plugin-dts": "^3.9.1"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.8",
+    "@rrweb/types": "^2.0.0-alpha.18",
     "lodash.clonedeep": "^4.5.0",
-    "rrdom": "^2.0.0-alpha.8",
-    "rrweb-snapshot": "^2.0.0-alpha.8",
-    "rrweb": "^2.0.0-alpha.8"
+    "rrdom": "^2.0.0-alpha.18",
+    "rrweb-snapshot": "^2.0.0-alpha.18",
+    "rrweb": "^2.0.0-alpha.18"
   }
 }
