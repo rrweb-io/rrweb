@@ -76,6 +76,10 @@
     {
       "name": "@rrweb/rrweb-plugin-canvas-webrtc-replay",
       "path": "../packages/plugins/rrweb-plugin-canvas-webrtc-replay"
+    },
+    {
+      "name": "@rrweb/cutter (package)",
+      "path": "../packages/rrweb-cutter"
     }
   ],
   "settings": {

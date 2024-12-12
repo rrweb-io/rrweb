@@ -1,0 +1,53 @@
+{
+  "name": "@rrweb/cutter",
+  "version": "2.0.0-alpha.18",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "yarn turbo run prepublish",
+    "check-types": "tsc -noEmit",
+    "test": "vitest run",
+    "prepublish": "tsc -noEmit && vite build",
+    "lint": "yarn eslint src/**/*.ts",
+    "prune-events": "npx vite-node scripts/prune.ts --"
+  },
+  "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-cutter#README.md",
+  "bugs": {
+    "url": "https://github.com/rrweb-io/rrweb/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb.git"
+  },
+  "author": "yun.feng0817@gmail.com",
+  "keywords": [
+    "rrweb",
+    "rrdom",
+    "session cutter"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "unpkg": "dist/index.iife.js",
+  "module": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "devDependencies": {
+    "@types/lodash.clonedeep": "^4.5.9",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.1",
+    "vite-plugin-dts": "^3.9.1"
+  },
+  "dependencies": {
+    "@rrweb/types": "^2.0.0-alpha.18",
+    "lodash.clonedeep": "^4.5.0",
+    "rrdom": "^2.0.0-alpha.18",
+    "rrweb-snapshot": "^2.0.0-alpha.18",
+    "rrweb": "^2.0.0-alpha.18"
+  }
+}
