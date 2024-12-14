@@ -35,3 +35,6 @@ dist
 # for vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# bundle analysis files
+*-bundle-analysis.html

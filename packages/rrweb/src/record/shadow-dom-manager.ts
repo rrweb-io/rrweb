@@ -9,10 +9,10 @@ import {
   initScrollObserver,
   initAdoptedStyleSheetObserver,
 } from './observer';
-import { patch, inDom } from '../utils';
+import { inDom } from '../utils';
 import type { Mirror } from 'rrweb-snapshot';
 import { isNativeShadowDom } from 'rrweb-snapshot';
-import dom from '@rrweb/utils';
+import dom, { patch } from '@rrweb/utils';
 
 type BypassOptions = Omit<
   MutationBufferParam,

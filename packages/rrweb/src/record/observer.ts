@@ -15,10 +15,10 @@ import {
   getWindowWidth,
   isBlocked,
   legacy_isTouchEvent,
-  patch,
   StyleSheetMirror,
   nowTimestamp,
 } from '../utils';
+import { patch } from '@rrweb/utils';
 import type { observerParam, MutationBufferParam } from '../types';
 import {
   IncrementalSource,
