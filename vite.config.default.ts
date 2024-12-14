@@ -2,7 +2,6 @@
 import dts from 'vite-plugin-dts';
 import { copyFileSync } from 'node:fs';
 import { defineConfig, LibraryOptions, LibraryFormats, Plugin } from 'vite';
-import glob from 'fast-glob';
 import { build, Format } from 'esbuild';
 import path, { resolve } from 'path';
 import { umdWrapper } from 'esbuild-plugin-umd-wrapper';
@@ -11,6 +10,11 @@ import { visualizer } from 'rollup-plugin-visualizer';
 
 // don't empty out dir if --watch flag is passed
 const emptyOutDir = !process.argv.includes('--watch');
+/**
+ * Chrome web store does not allow base64 inline workers.
+ * For chrome extension, we need to disable worker inlining to pass the review.
+ */
+const disableWorkerInlining = process.env.DISABLE_WORKER_INLINING === 'true';
 
 function minifyAndUMDPlugin({
   name,
@@ -183,6 +187,18 @@ export default function (
         filename: path.resolve(__dirname, name + '-bundle-analysis.html'), // Path for the HTML report
         open: false, // don't Automatically open the report in the browser
       }),
+        name: 'remove-worker-inline',
+        enforce: 'pre',
+        transform(code, id) {
+          if (!disableWorkerInlining) return;
+          if (/\.(js|ts|jsx|tsx)$/.test(id)) {
+            return {
+              code: code.replace(/\?worker&inline/g, '?worker'),
+              map: null,
+            };
+          }
+        },
+      },
       ...plugins,
     ],
   }));
