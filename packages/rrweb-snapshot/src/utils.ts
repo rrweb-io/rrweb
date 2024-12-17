@@ -456,8 +456,9 @@ export function normalizeCssString(cssText: string): string {
 
 /**
  * Maps the output of stringifyStylesheet to individual text nodes of a <style> element
- * performance is not considered as this is anticipated to be very much an edge case
- * (javascript is needed to add extra text nodes to a <style>)
+ * which occurs when javascript is used to append to the style element
+ * and may also occur when browsers opt to break up large text nodes
+ * performance needs to be considered, see e.g. #1603
  */
 export function splitCssText(
   cssText: string,
@@ -468,6 +469,7 @@ export function splitCssText(
   let iter_limit = 0;
   if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
     let cssTextNorm = normalizeCssString(cssText);
+    const normFactor = cssTextNorm.length / cssText.length;
     for (let i = 1; i < childNodes.length; i++) {
       if (
         childNodes[i].textContent &&
@@ -501,13 +503,10 @@ export function splitCssText(
           }
           if (splitNorm !== -1) {
             // find the split point in the original text
-            let k = Math.floor(
-              (cssText.length * splitNorm) / cssTextNorm.length,
-            );
-            let dir = 0;
-            for (; k > 0 && k < cssText.length; k += dir) {
+            let k = Math.floor(splitNorm / normFactor);
+            for (; k > 0 && k < cssText.length; ) {
               iter_limit += 1;
-              if (iter_limit > 300 * childNodes.length) {
+              if (iter_limit > 50 * childNodes.length) {
                 // quit for performance purposes
                 splits.push(cssText);
                 return splits;
@@ -518,12 +517,16 @@ export function splitCssText(
                 cssText = cssText.substring(k);
                 cssTextNorm = cssTextNorm.substring(splitNorm);
                 break;
-              } else if (dir === 0) {
-                if (normPart.length < splitNorm) {
-                  dir = 1;
-                } else {
-                  dir = -1;
-                }
+              } else if (normPart.length < splitNorm) {
+                k += Math.max(
+                  1,
+                  Math.floor((splitNorm - normPart.length) / normFactor),
+                );
+              } else {
+                k -= Math.max(
+                  1,
+                  Math.floor((normPart.length - splitNorm) * normFactor),
+                );
               }
             }
             break;
