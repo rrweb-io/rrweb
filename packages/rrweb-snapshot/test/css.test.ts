@@ -145,6 +145,28 @@ describe('css splitter', () => {
     }
   });
 
+  it('finds css textElement splits correctly with two identical text nodes', () => {
+    const window = new Window({ url: 'https://localhost:8080' });
+    const document = window.document;
+    // as authored, with comment, missing semicolons
+    const textContent = '.a { color:red; } .b { color:blue; }';
+    document.head.innerHTML = '<style></style>';
+    const style = document.querySelector('style');
+    if (style) {
+      style.append(textContent);
+      style.append(textContent);
+
+      const expected = [textContent, textContent];
+      const browserSheet = expected.join('');
+      expect(splitCssText(browserSheet, style)).toEqual(expected);
+
+      style.append(textContent);
+      const expected3 = [textContent, textContent, textContent];
+      const browserSheet3 = expected3.join('');
+      expect(splitCssText(browserSheet3, style)).toEqual(expected3);
+    }
+  });
+
   it('finds css textElement splits correctly when vendor prefixed rules have been removed', () => {
     const style = JSDOM.fragment(`<style></style>`).querySelector('style');
     if (style) {
