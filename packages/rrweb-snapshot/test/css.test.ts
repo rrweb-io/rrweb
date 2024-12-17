@@ -7,6 +7,8 @@ import postcss, { type AcceptedPlugin } from 'postcss';
 import { JSDOM } from 'jsdom';
 import { splitCssText, stringifyStylesheet } from './../src/utils';
 import { applyCssSplits } from './../src/rebuild';
+import * as fs from 'fs';
+import * as path from 'path';
 import type {
   serializedElementNodeWithId,
   BuildCache,
@@ -174,6 +176,34 @@ describe('css splitter', () => {
 
       expect(splitCssText(browserSheet, style)).toEqual(expected);
     }
+  });
+
+  it('efficiently finds split points in large files', () => {
+    const cssText = fs.readFileSync(
+      path.resolve(__dirname, './css/benchmark.css'),
+      'utf8',
+    );
+
+    const parts = cssText.split('}');
+    const sections = [];
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (i % 100 === 0) {
+        sections.push(parts[i] + '}');
+      } else {
+        sections[sections.length - 1] += parts[i] + '}';
+      }
+    }
+    sections[sections.length - 1] += parts[parts.length - 1];
+
+    expect(cssText.length).toEqual(sections.join('').length);
+
+    const style = JSDOM.fragment(`<style></style>`).querySelector('style');
+    if (style) {
+      sections.forEach((section) => {
+        style.appendChild(JSDOM.fragment(section));
+      });
+    }
+    expect(splitCssText(cssText, style)).toEqual(sections);
   });
 });
 
