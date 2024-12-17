@@ -501,20 +501,29 @@ export function splitCssText(
           }
           if (splitNorm !== -1) {
             // find the split point in the original text
-            for (let k = splitNorm; k < cssText.length; k++) {
+            let k = Math.floor(
+              (cssText.length * splitNorm) / cssTextNorm.length,
+            );
+            let dir = 0;
+            for (; k > 0 && k < cssText.length; k += dir) {
               iter_limit += 1;
               if (iter_limit > 300 * childNodes.length) {
                 // quit for performance purposes
                 splits.push(cssText);
                 return splits;
               }
-              if (
-                normalizeCssString(cssText.substring(0, k)).length === splitNorm
-              ) {
+              let normPart = normalizeCssString(cssText.substring(0, k));
+              if (normPart.length === splitNorm) {
                 splits.push(cssText.substring(0, k));
                 cssText = cssText.substring(k);
                 cssTextNorm = cssTextNorm.substring(splitNorm);
                 break;
+              } else if (dir === 0) {
+                if (normPart.length < splitNorm) {
+                  dir = 1;
+                } else {
+                  dir = -1;
+                }
               }
             }
             break;
