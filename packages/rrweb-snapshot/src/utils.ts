@@ -474,11 +474,32 @@ export function splitCssText(
         typeof childNodes[i].textContent === 'string'
       ) {
         const textContentNorm = normalizeCssString(childNodes[i].textContent!);
-        for (let j = 3; j < textContentNorm.length; j++) {
-          // find a  substring that appears only once
+        let j = 3;
+        for (; j < textContentNorm.length; j++) {
+          if (
+            textContentNorm.indexOf(textContentNorm.substring(0, j), 1) !== -1
+          ) {
+            // substring needs to be unique to this section
+            continue;
+          }
+          break;
+        }
+        for (; j < textContentNorm.length; j++) {
           const bit = textContentNorm.substring(0, j);
-          if (cssTextNorm.split(bit).length === 2) {
-            const splitNorm = cssTextNorm.indexOf(bit);
+          // this substring should appears only once in overall text too
+          const bits = cssTextNorm.split(bit);
+          let splitNorm = -1;
+          if (bits.length === 2) {
+            splitNorm = cssTextNorm.indexOf(bit);
+          } else if (
+            bits.length > 2 &&
+            bits[0] === '' &&
+            childNodes[i - 1].textContent !== ''
+          ) {
+            // this childNode has same starting content as previous
+            splitNorm = cssTextNorm.indexOf(bit, 1);
+          }
+          if (splitNorm !== -1) {
             // find the split point in the original text
             for (let k = splitNorm; k < cssText.length; k++) {
               iter_limit += 1;
