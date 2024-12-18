@@ -465,6 +465,7 @@ export function splitCssText(
 ): string[] {
   const childNodes = Array.from(style.childNodes);
   const splits: string[] = [];
+  let iter_limit = 0;
   if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
     let cssTextNorm = normalizeCssString(cssText);
     for (let i = 1; i < childNodes.length; i++) {
@@ -480,6 +481,12 @@ export function splitCssText(
             const splitNorm = cssTextNorm.indexOf(bit);
             // find the split point in the original text
             for (let k = splitNorm; k < cssText.length; k++) {
+              iter_limit += 1;
+              if (iter_limit > 300 * childNodes.length) {
+                // quit for performance purposes
+                splits.push(cssText);
+                return splits;
+              }
               if (
                 normalizeCssString(cssText.substring(0, k)).length === splitNorm
               ) {
