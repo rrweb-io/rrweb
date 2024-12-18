@@ -513,7 +513,7 @@ export function splitCssText(
                 splits.push(cssText);
                 return splits;
               }
-              let normPart = normalizeCssString(cssText.substring(0, k));
+              const normPart = normalizeCssString(cssText.substring(0, k));
               if (normPart.length === splitNorm) {
                 splits.push(cssText.substring(0, k));
                 cssText = cssText.substring(k);
