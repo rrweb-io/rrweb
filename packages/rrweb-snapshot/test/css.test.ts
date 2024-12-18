@@ -105,10 +105,16 @@ describe('css splitter', () => {
       // as authored, e.g. no spaces
       style.append('.a{background-color:black;}');
 
+      // test how normalization finds the right sections
+      style.append('.b      {background-color:black;}');
+      style.append('.c{      background-color:                     black}');
+
       // how it is currently stringified (spaces present)
       const expected = [
         '.a { background-color: red; }',
         '.a { background-color: black; }',
+        '.b { background-color: black; }',
+        '.c { background-color: black; }',
       ];
       const browserSheet = expected.join('');
       expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);

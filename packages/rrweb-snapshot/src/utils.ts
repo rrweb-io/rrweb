@@ -466,7 +466,7 @@ export function splitCssText(
   const childNodes = Array.from(style.childNodes);
   const splits: string[] = [];
   if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
-    const cssTextNorm = normalizeCssString(cssText);
+    let cssTextNorm = normalizeCssString(cssText);
     for (let i = 1; i < childNodes.length; i++) {
       if (
         childNodes[i].textContent &&
@@ -485,6 +485,7 @@ export function splitCssText(
               ) {
                 splits.push(cssText.substring(0, k));
                 cssText = cssText.substring(k);
+                cssTextNorm = cssTextNorm.substring(splitNorm);
                 break;
               }
             }
