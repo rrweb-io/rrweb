@@ -479,9 +479,11 @@ export function splitCssText(
         let j = 3;
         for (; j < textContentNorm.length; j++) {
           if (
+            // keep consuming css identifiers (to get a decent chunk more quickly)
+            textContentNorm[j].match(/[a-zA-Z0-9]/) ||
+            // substring needs to be unique to this section
             textContentNorm.indexOf(textContentNorm.substring(0, j), 1) !== -1
           ) {
-            // substring needs to be unique to this section
             continue;
           }
           break;
