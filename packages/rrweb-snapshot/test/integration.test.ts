@@ -103,6 +103,7 @@ describe('integration tests', function (this: ISuite) {
     serverURL = getServerURL(server);
     browser = await puppeteer.launch({
       // headless: false,
+      args: ['--no-sandbox'],
     });
 
     code = fs.readFileSync(
