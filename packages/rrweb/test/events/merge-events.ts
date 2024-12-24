@@ -3,7 +3,7 @@ import type { eventWithTime } from '@rrweb/types';
 
 const events: eventWithTime[] = [
   {
-    type: 4,
+    type: EventType.Meta,
     data: {
       href: 'http://localhost',
       width: 417,
@@ -12,7 +12,7 @@ const events: eventWithTime[] = [
     timestamp: 1734952276181,
   },
   {
-    type: 2,
+    type: EventType.FullSnapshot,
     data: {
       node: {
         type: 0,
@@ -314,9 +314,9 @@ const events: eventWithTime[] = [
     timestamp: 1734952276197,
   },
   {
-    type: 3,
+    type: EventType.IncrementalSnapshot,
     data: {
-      source: 5,
+      source: IncrementalSource.Input,
       text: 'dog',
       isChecked: false,
       id: 15,
@@ -324,9 +324,9 @@ const events: eventWithTime[] = [
     timestamp: 1734952277674,
   },
   {
-    type: 3,
+    type: EventType.IncrementalSnapshot,
     data: {
-      source: 5,
+      source: IncrementalSource.Input,
       text: 'cat',
       isChecked: false,
       id: 15,
@@ -334,9 +334,9 @@ const events: eventWithTime[] = [
     timestamp: 1734952279091,
   },
   {
-    type: 3,
+    type: EventType.IncrementalSnapshot,
     data: {
-      source: 5,
+      source: IncrementalSource.Input,
       text: 'on',
       isChecked: false,
       id: 29,
@@ -344,9 +344,9 @@ const events: eventWithTime[] = [
     timestamp: 1734952280046,
   },
   {
-    type: 3,
+    type: EventType.IncrementalSnapshot,
     data: {
-      source: 5,
+      source: IncrementalSource.Input,
       text: 'on',
       isChecked: true,
       id: 29,

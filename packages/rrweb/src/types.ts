@@ -230,7 +230,6 @@ export type MergeOptions = {
   // row events to deal with
   events: eventWithTime[];
   // options for take fullsnapshot, and mirror is required
-  // snapshotOptions: Parameters<typeof snapshot>[1];
   snapshotOptions: Parameters<typeof snapshot>[1] & { mirror: Mirror };
   // startTimeStamp to generate from
   startTimeStamp: number;
