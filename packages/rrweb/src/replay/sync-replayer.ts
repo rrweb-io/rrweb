@@ -1,14 +1,41 @@
 import {
   rebuild,
+  adaptCssForReplay,
   buildNodeWithSN,
-  NodeType,
-  BuildCache,
+  type BuildCache,
   createCache,
   Mirror,
+} from 'rrweb-snapshot';
+import type {
   attributes,
   serializedElementNodeWithId,
   IMirror,
-} from 'rrweb-snapshot';
+  fullSnapshotEvent,
+  eventWithTime,
+  playerMetaData,
+  addedNodeMutation,
+  incrementalSnapshotEvent,
+  incrementalData,
+  Handler,
+  Emitter,
+  metaEvent,
+  mutationData,
+  styleValueWithPriority,
+  mouseMovePos,
+  canvasEventWithTime,
+  selectionData,
+  styleSheetRuleData,
+  styleDeclarationData,
+  adoptedStyleSheetData,
+} from '@rrweb/types';
+import {
+  EventType,
+  IncrementalSource,
+  MouseInteractions,
+  NodeType,
+  ReplayerEvents,
+  MediaInteractions,
+} from '@rrweb/types';
 import { RRDocument as BaseRRDocument } from 'rrdom';
 import type {
   RRNode,
@@ -21,30 +48,6 @@ import type {
 } from 'rrdom';
 import * as mittProxy from 'mitt';
 import type { playerConfig } from '../types';
-import {
-  EventType,
-  IncrementalSource,
-  fullSnapshotEvent,
-  eventWithTime,
-  MouseInteractions,
-  playerMetaData,
-  addedNodeMutation,
-  incrementalSnapshotEvent,
-  incrementalData,
-  ReplayerEvents,
-  Handler,
-  Emitter,
-  MediaInteractions,
-  metaEvent,
-  mutationData,
-  styleValueWithPriority,
-  mouseMovePos,
-  canvasEventWithTime,
-  selectionData,
-  styleSheetRuleData,
-  styleDeclarationData,
-  adoptedStyleSheetData,
-} from '@rrweb/types';
 import {
   queueToResolveTrees,
   iterateResolveTree,
@@ -150,7 +153,7 @@ export class SyncReplayer {
     // maybe we can cache it for performance optimization
     const firstMeta = this.events.find((e) => e.type === EventType.Meta);
     if (firstMeta) {
-      const { width, height } = firstMeta.data as metaEvent['data'];
+      const { width, height } = firstMeta.data;
       setTimeout(() => {
         this.emitter.emit(ReplayerEvents.Resize, {
           width,
@@ -249,6 +252,7 @@ export class SyncReplayer {
    */
   public destroy() {
     this.emitter.emit(ReplayerEvents.Destroy);
+    this.mirror.reset();
   }
 
   public startLive() {
@@ -345,10 +349,10 @@ export class SyncReplayer {
       );
     }
     this.legacy_missingNodeRetryMap = {};
-    const collected: AppendedIframe[] = [];
+    const collectedIframes: AppendedIframe[] = [];
     const afterAppend = (builtNode: Node, id: number) => {
       this.collectIframeAndAttachDocument(
-        collected,
+        collectedIframes,
         builtNode as unknown as RRNode,
       );
       for (const plugin of this.config.plugins || []) {
@@ -369,7 +373,7 @@ export class SyncReplayer {
     });
     afterAppend(this.virtualDom as unknown as Document, event.data.node.id);
 
-    for (const { mutationInQueue, builtNode } of collected) {
+    for (const { mutationInQueue, builtNode } of collectedIframes) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
       this.newDocumentQueue = this.newDocumentQueue.filter(
         (m) => m !== mutationInQueue,
@@ -382,10 +386,10 @@ export class SyncReplayer {
     mutation: addedNodeMutation,
     iframeEl: RRIFrameElement,
   ) {
-    const collected: AppendedIframe[] = [];
+    const collectedIframes: AppendedIframe[] = [];
     const afterAppend = (builtNode: Node, id: number) => {
       this.collectIframeAndAttachDocument(
-        collected,
+        collectedIframes,
         builtNode as unknown as RRNode,
       );
 
@@ -411,7 +415,7 @@ export class SyncReplayer {
       mutation.node.id,
     );
 
-    for (const { mutationInQueue, builtNode } of collected) {
+    for (const { mutationInQueue, builtNode } of collectedIframes) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
       this.newDocumentQueue = this.newDocumentQueue.filter(
         (m) => m !== mutationInQueue,
@@ -493,8 +497,8 @@ export class SyncReplayer {
           case MouseInteractions.TouchStart:
           case MouseInteractions.TouchEnd:
             this.mousePos = {
-              x: d.x,
-              y: d.y,
+              x: d.x || 0,
+              y: d.y || 0,
               id: d.id,
               debugData: d,
             };
@@ -777,14 +781,39 @@ export class SyncReplayer {
       if (
         parentSn &&
         parentSn.type === NodeType.Element &&
-        parentSn.tagName === 'textarea' &&
         mutation.node.type === NodeType.Text
       ) {
-        // https://github.com/rrweb-io/rrweb/issues/745
-        // parent is textarea, will only keep one child node as the value
-        for (const c of parent.childNodes) {
-          if (c.nodeType === parent.TEXT_NODE) {
-            parent.removeChild(c);
+        const prospectiveSiblings: RRNode[] = Array.isArray(parent.childNodes)
+          ? parent.childNodes
+          : Array.from(parent.childNodes);
+        if (parentSn.tagName === 'textarea') {
+          // This should be redundant now as we are either recording the value or the childNode, and not both
+          // keeping around for backwards compatibility with old bad double data, see
+
+          // https://github.com/rrweb-io/rrweb/issues/745
+          // parent is textarea, will only keep one child node as the value
+          for (const c of prospectiveSiblings) {
+            if (c.nodeType === parent.TEXT_NODE) {
+              parent.removeChild(c);
+            }
+          }
+        } else if (
+          parentSn.tagName === 'style' &&
+          prospectiveSiblings.length === 1
+        ) {
+          // https://github.com/rrweb-io/rrweb/pull/1417
+          /**
+           * If both _cssText and textContent are present for a style element due to some existing bugs, the element was ending up with two child text nodes
+           * We need to remove the textNode created by _cssText as it doesn't have an id in the mirror, and thus cannot be further mutated.
+           */
+          for (const cssText of prospectiveSiblings as (Node & RRNode)[]) {
+            if (
+              cssText.nodeType === parent.TEXT_NODE &&
+              !mirror.hasNode(cssText)
+            ) {
+              target.textContent = cssText.textContent;
+              parent.removeChild(cssText);
+            }
           }
         }
       } else if (parentSn?.type === NodeType.Document) {
@@ -908,7 +937,13 @@ export class SyncReplayer {
         }
         return this.warnNodeNotFound(d, mutation.id);
       }
-      target.textContent = mutation.value;
+      const parentEl = target.parentElement as RRElement;
+      if (mutation.value && parentEl && parentEl.tagName === 'STYLE') {
+        // assumes hackCss: true (which isn't currently configurable from rrweb)
+        target.textContent = adaptCssForReplay(mutation.value, this.cache);
+      } else {
+        target.textContent = mutation.value;
+      }
 
       /**
        * https://github.com/rrweb-io/rrweb/pull/865
@@ -965,7 +1000,18 @@ export class SyncReplayer {
                   // for safe
                 }
               }
-              (target as RRElement).setAttribute(attributeName, value);
+              if (attributeName === 'value' && target.nodeName === 'TEXTAREA') {
+                // this may or may not have an effect on the value property (which is what is displayed)
+                // depending on whether the textarea has been modified by the user yet
+                const textarea = target;
+                textarea.childNodes.forEach((c) => textarea.removeChild(c));
+                const tn = target.ownerDocument?.createTextNode(value);
+                if (tn) {
+                  textarea.appendChild(tn);
+                }
+              } else {
+                (target as RRElement).setAttribute(attributeName, value);
+              }
             } catch (error) {
               this.warn(
                 'An error occurred may due to the checkout feature.',
@@ -982,7 +1028,7 @@ export class SyncReplayer {
                 const svp = styleValues[s] as styleValueWithPriority;
                 targetEl.style.setProperty(s, svp[0], svp[1]);
               } else {
-                const svs = styleValues[s] as string;
+                const svs = styleValues[s];
                 targetEl.style.setProperty(s, svs);
               }
             }
