@@ -386,7 +386,7 @@ function buildNode(
     case NodeType.Text:
       return doc.createTextNode(
         n.isStyle && hackCss
-          ? adaptCssForReplay(n.textContent, cache)
+          ? adaptCssForReplay(n.textContent, cache, removeAnimationCss)
           : n.textContent,
       );
     case NodeType.CDATA:

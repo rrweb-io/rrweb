@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.0.16
+
+### Patch Changes
+
+- [DEV-1270] removeAnimationCSS in text nodes
+
 ## 2.0.15
 
 ### Patch Changes
