@@ -1,5 +1,16 @@
 # rrweb
 
+## 2.0.17
+
+### Patch Changes
+
+- [DEV-1270] Fix remote CSS being ignored when applying the mutation
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-snapshot@2.0.17
+  - @saola.ai/rrdom@2.0.17
+  - @saola.ai/rrweb-types@2.0.17
+
 ## 2.0.16
 
 ### Patch Changes

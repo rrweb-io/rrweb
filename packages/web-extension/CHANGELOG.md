@@ -1,5 +1,13 @@
 # @rrweb/web-extension
 
+## 2.0.17
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @saola.ai/rrweb@2.0.17
+  - @saola.ai/rrweb-player@2.0.17
+
 ## 2.0.16
 
 ### Patch Changes

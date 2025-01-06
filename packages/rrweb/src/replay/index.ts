@@ -1798,18 +1798,24 @@ export class Replayer {
                   const newSn = mirror.getMeta(
                     target as Node & RRNode,
                   ) as serializedElementNodeWithId;
-                  Object.assign(
-                    newSn.attributes,
-                    mutation.attributes as attributes,
+
+                  const newNode = buildNodeWithSN(
+                    {
+                      ...newSn,
+                      attributes: {
+                        ...newSn.attributes,
+                        ...(mutation.attributes as attributes),
+                      },
+                    },
+                    {
+                      doc: target.ownerDocument as Document, // can be Document or RRDocument
+                      mirror: mirror as Mirror,
+                      skipChild: true,
+                      hackCss: true,
+                      cache: this.cache,
+                      removeAnimationCss: this.config.removeAnimationCss,
+                    },
                   );
-                  const newNode = buildNodeWithSN(newSn, {
-                    doc: target.ownerDocument as Document, // can be Document or RRDocument
-                    mirror: mirror as Mirror,
-                    skipChild: true,
-                    hackCss: true,
-                    cache: this.cache,
-                    removeAnimationCss: this.config.removeAnimationCss,
-                  });
                   const siblingNode = target.nextSibling;
                   const parentNode = target.parentNode;
                   if (newNode && parentNode) {

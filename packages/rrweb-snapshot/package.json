@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/rrweb-snapshot",
-  "version": "2.0.16",
+  "version": "2.0.17",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",
