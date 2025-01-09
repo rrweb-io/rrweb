@@ -1,24 +1,29 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { nanoid } from 'nanoid';
 import {
+  Box,
+  Button,
   chakra,
+  Checkbox,
+  Divider,
+  Editable,
+  EditableInput,
+  EditablePreview,
+  Flex,
+  IconButton,
+  Input,
+  Select,
+  Spacer,
   Table,
-  Thead,
+  TableContainer,
   Tbody,
-  Tr,
-  Th,
   Td,
   Text,
-  TableContainer,
-  Flex,
-  Checkbox,
-  Button,
-  Spacer,
-  IconButton,
-  Select,
+  Th,
+  Thead,
+  Tr,
+  useEditableControls,
   useToast,
-  Input,
-  Divider,
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -30,6 +35,7 @@ import {
   type PaginationState,
 } from '@tanstack/react-table';
 import { VscTriangleDown, VscTriangleUp } from 'react-icons/vsc';
+import { FiEdit3 as EditIcon } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import type { eventWithTime } from 'rrweb';
 import { type Session, EventName } from '~/types';
@@ -38,7 +44,8 @@ import {
   deleteSessions,
   getAllSessions,
   downloadSessions,
-  saveSession,
+  addSession,
+  updateSession,
 } from '~/utils/storage';
 import {
   FiChevronLeft,
@@ -110,7 +117,58 @@ export function SessionList() {
         ),
       }),
       columnHelper.accessor((row) => row.name, {
-        cell: (info) => info.getValue(),
+        cell: (info) => {
+          const [isHovered, setIsHovered] = useState(false);
+          function EditableControls() {
+            const { isEditing, getEditButtonProps } = useEditableControls();
+            return (
+              isHovered &&
+              !isEditing && (
+                <Box
+                  position="absolute"
+                  top="0"
+                  right="0"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <IconButton
+                    aria-label="edit name"
+                    size="sm"
+                    icon={<EditIcon />}
+                    variant="ghost"
+                    {...getEditButtonProps()}
+                  />
+                </Box>
+              )
+            );
+          }
+
+          return (
+            <Flex
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              alignItems="center"
+              position="relative"
+            >
+              <Editable
+                defaultValue={info.getValue()}
+                isPreviewFocusable={false}
+                onSubmit={(nextValue) => {
+                  const newSession = { ...info.row.original, name: nextValue };
+                  setSessions(
+                    sessions.map((s) =>
+                      s.id === newSession.id ? newSession : s,
+                    ),
+                  );
+                  void updateSession(newSession);
+                }}
+              >
+                <EditablePreview cursor="pointer" />
+                <EditableControls />
+                <EditableInput onClick={(e) => e.stopPropagation()} />
+              </Editable>
+            </Flex>
+          );
+        },
         header: 'Name',
       }),
       columnHelper.accessor((row) => row.createTimestamp, {
@@ -124,7 +182,7 @@ export function SessionList() {
         header: 'RRWEB Version',
       }),
     ],
-    [],
+    [sessions],
   );
   const table = useReactTable<Session>({
     columns,
@@ -169,7 +227,7 @@ export function SessionList() {
         };
         const id = nanoid();
         data.session.id = id;
-        await saveSession(data.session, data.events);
+        await addSession(data.session, data.events);
         toast({
           title: 'Session imported',
           description: 'The session was successfully imported.',

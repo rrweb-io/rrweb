@@ -19,7 +19,7 @@ import type {
   SyncData,
 } from '~/types';
 import { isFirefox } from '~/utils';
-import { saveSession } from '~/utils/storage';
+import { addSession } from '~/utils/storage';
 
 void (async () => {
   // assign default value to settings of this extension
@@ -105,7 +105,7 @@ void (async () => {
           // ignore error
         })) ?? 'new session';
     const newSession = generateSession(title);
-    await saveSession(newSession, events).catch((e) => {
+    await addSession(newSession, events).catch((e) => {
       recorderStatus.errorMessage = (e as { message: string }).message;
       void Browser.storage.local.set({
         [LocalDataKey.recorderStatus]: recorderStatus,
