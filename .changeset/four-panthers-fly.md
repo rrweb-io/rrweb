@@ -2,4 +2,4 @@
 "@rrweb/web-extension": patch
 ---
 
-refactor: improved tab recording to improve stability
+web-extension: improve recording stability across tabs and enable session import

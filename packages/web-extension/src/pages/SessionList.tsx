@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { nanoid } from 'nanoid';
 import {
   chakra,
   Table,
@@ -15,6 +16,7 @@ import {
   Spacer,
   IconButton,
   Select,
+  useToast,
   Input,
   Divider,
 } from '@chakra-ui/react';
@@ -29,9 +31,15 @@ import {
 } from '@tanstack/react-table';
 import { VscTriangleDown, VscTriangleUp } from 'react-icons/vsc';
 import { useNavigate } from 'react-router-dom';
+import type { eventWithTime } from 'rrweb';
 import { type Session, EventName } from '~/types';
 import Channel from '~/utils/channel';
-import { deleteSessions, getAllSessions, downloadSessions } from '~/utils/storage';
+import {
+  deleteSessions,
+  getAllSessions,
+  downloadSessions,
+  saveSession,
+} from '~/utils/storage';
 import {
   FiChevronLeft,
   FiChevronRight,
@@ -43,8 +51,10 @@ const columnHelper = createColumnHelper<Session>();
 const channel = new Channel();
 
 export function SessionList() {
-  const [sessions, setSessions] = useState<Session[]>([]);
   const navigate = useNavigate();
+  const toast = useToast();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [sorting, setSorting] = useState<SortingState>([
     {
       id: 'createTimestamp',
@@ -145,8 +155,63 @@ export function SessionList() {
     });
   }, []);
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const content = e.target?.result as string;
+        const data = JSON.parse(content) as {
+          session: Session;
+          events: eventWithTime[];
+        };
+        const id = nanoid();
+        data.session.id = id;
+        await saveSession(data.session, data.events);
+        toast({
+          title: 'Session imported',
+          description: 'The session was successfully imported.',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+        await updateSessions();
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        toast({
+          title: 'Error importing session',
+          description: (error as Error).message,
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <>
+      <Flex justify="flex-end" mb={4}>
+        <Button
+          onClick={() => {
+            fileInputRef.current?.click();
+          }}
+          size="sm"
+          m={4}
+        >
+          Import Session
+        </Button>
+        <input
+          type="file"
+          accept="application/json"
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          onChange={handleFileUpload}
+        />
+      </Flex>
       <TableContainer fontSize="md">
         <Table variant="simple">
           <Thead>
@@ -318,7 +383,9 @@ export function SessionList() {
                 onClick={() => {
                   const selectedRows = table.getSelectedRowModel().flatRows;
                   if (selectedRows.length === 0) return;
-                  void downloadSessions(selectedRows.map((row) => row.original.id));
+                  void downloadSessions(
+                    selectedRows.map((row) => row.original.id),
+                  );
                 }}
               >
                 Download
