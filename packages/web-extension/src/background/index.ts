@@ -1,17 +1,25 @@
 import Browser from 'webextension-polyfill';
+import { nanoid } from 'nanoid';
 import type { eventWithTime } from '@rrweb/types';
 import Channel from '~/utils/channel';
 import {
-  type LocalData,
+  EventName,
   LocalDataKey,
+  MessageName,
   RecorderStatus,
-  type Settings,
-  type SyncData,
+  ServiceName,
   SyncDataKey,
 } from '~/types';
-import { pauseRecording, resumeRecording } from '~/utils/recording';
-
-const channel = new Channel();
+import type {
+  LocalData,
+  RecordStartedMessage,
+  RecordStoppedMessage,
+  Session,
+  Settings,
+  SyncData,
+} from '~/types';
+import { isFirefox } from '~/utils';
+import { saveSession } from '~/utils/storage';
 
 void (async () => {
   // assign default value to settings of this extension
@@ -28,105 +36,214 @@ void (async () => {
     settings,
   } as SyncData);
 
+  const events: eventWithTime[] = [];
+  const channel = new Channel();
+  let recorderStatus: LocalData[LocalDataKey.recorderStatus] = {
+    status: RecorderStatus.IDLE,
+    activeTabId: -1,
+  };
+  // Reset recorder status when the extension is reloaded.
+  await Browser.storage.local.set({
+    [LocalDataKey.recorderStatus]: recorderStatus,
+  });
+
+  channel.on(EventName.StartButtonClicked, async () => {
+    if (recorderStatus.status !== RecorderStatus.IDLE) return;
+    recorderStatus = {
+      status: RecorderStatus.IDLE,
+      activeTabId: -1,
+    };
+    await Browser.storage.local.set({
+      [LocalDataKey.recorderStatus]: recorderStatus,
+    });
+
+    events.length = 0; // clear events before recording
+    const tabId = await channel.getCurrentTabId();
+    if (tabId === -1) return;
+
+    const res = (await channel
+      .requestToTab(tabId, ServiceName.StartRecord, {})
+      .catch(async (error: Error) => {
+        recorderStatus.errorMessage = error.message;
+        await Browser.storage.local.set({
+          [LocalDataKey.recorderStatus]: recorderStatus,
+        });
+      })) as RecordStartedMessage;
+    if (!res) return;
+    Object.assign(recorderStatus, {
+      status: RecorderStatus.RECORDING,
+      activeTabId: tabId,
+      startTimestamp: res.startTimestamp,
+    });
+    await Browser.storage.local.set({
+      [LocalDataKey.recorderStatus]: recorderStatus,
+    });
+  });
+
+  channel.on(EventName.StopButtonClicked, async () => {
+    if (recorderStatus.status === RecorderStatus.IDLE) return;
+
+    if (recorderStatus.status === RecorderStatus.RECORDING)
+      (await channel
+        .requestToTab(recorderStatus.activeTabId, ServiceName.StopRecord, {})
+        .catch(() => ({
+          message: MessageName.RecordStopped,
+          endTimestamp: Date.now(),
+        }))) as RecordStoppedMessage;
+    recorderStatus = {
+      status: RecorderStatus.IDLE,
+      activeTabId: -1,
+    };
+    await Browser.storage.local.set({
+      [LocalDataKey.recorderStatus]: recorderStatus,
+    });
+    const title = (
+      await Browser.tabs.query({
+        active: true,
+        currentWindow: true,
+      })
+    )[0].title;
+    const newSession = generateSession(title || '');
+    await saveSession(newSession, events).catch((e) => {
+      recorderStatus.errorMessage = (e as { message: string }).message;
+      void Browser.storage.local.set({
+        [LocalDataKey.recorderStatus]: recorderStatus,
+      });
+    });
+    channel.emit(EventName.SessionUpdated, {
+      session: newSession,
+    });
+    events.length = 0;
+  });
+
+  async function pauseRecording(newStatus: RecorderStatus) {
+    if (
+      recorderStatus.status !== RecorderStatus.RECORDING ||
+      recorderStatus.activeTabId === -1
+    )
+      return;
+
+    const stopResponse = (await channel
+      .requestToTab(recorderStatus.activeTabId, ServiceName.StopRecord, {})
+      .catch(() => {
+        // ignore error
+      })) as RecordStoppedMessage | undefined;
+    Object.assign(recorderStatus, {
+      status: newStatus,
+      activeTabId: -1,
+      pausedTimestamp: stopResponse?.endTimestamp,
+    });
+    await Browser.storage.local.set({
+      [LocalDataKey.recorderStatus]: recorderStatus,
+    });
+  }
+  channel.on(EventName.PauseButtonClicked, async () => {
+    if (recorderStatus.status !== RecorderStatus.RECORDING) return;
+    await pauseRecording(RecorderStatus.PAUSED);
+  });
+
+  async function resumeRecording(newTabId: number) {
+    if (
+      ![RecorderStatus.PAUSED, RecorderStatus.PausedSwitch].includes(
+        recorderStatus.status,
+      )
+    )
+      return;
+    const { startTimestamp, pausedTimestamp } = recorderStatus;
+    // On Firefox, the new tab is not communicable immediately after it is created.
+    if (isFirefox()) await new Promise((r) => setTimeout(r, 50));
+    const pausedTime = pausedTimestamp ? Date.now() - pausedTimestamp : 0;
+    // Decrease the time spent in the pause state and make them look like a continuous recording.
+    events.forEach((event) => {
+      event.timestamp += pausedTime;
+    });
+    const startResponse = (await channel
+      .requestToTab(newTabId, ServiceName.StartRecord, {})
+      .catch((e: { message: string }) => {
+        recorderStatus.errorMessage = e.message;
+        void Browser.storage.local.set({
+          [LocalDataKey.recorderStatus]: recorderStatus,
+        });
+      })) as RecordStartedMessage | undefined;
+    if (!startResponse) {
+      // Restore the events data when the recording fails to start.
+      events.forEach((event) => {
+        event.timestamp -= pausedTime;
+      });
+      return;
+    }
+    recorderStatus = {
+      status: RecorderStatus.RECORDING,
+      activeTabId: newTabId,
+      startTimestamp: (startTimestamp || Date.now()) + pausedTime,
+    };
+    await Browser.storage.local.set({
+      [LocalDataKey.recorderStatus]: recorderStatus,
+    });
+  }
+  channel.on(EventName.ResumeButtonClicked, async () => {
+    if (recorderStatus.status !== RecorderStatus.PAUSED) return;
+    recorderStatus.errorMessage = undefined;
+    await Browser.storage.local.set({
+      [LocalDataKey.recorderStatus]: recorderStatus,
+    });
+    const tabId = await channel.getCurrentTabId();
+    await resumeRecording(tabId);
+  });
+
+  channel.on(EventName.ContentScriptEmitEvent, (data) => {
+    events.push(data as eventWithTime);
+  });
+
   // When tab is changed during the recording process, pause recording in the old tab and start a new one in the new tab.
   Browser.tabs.onActivated.addListener((activeInfo) => {
-    Browser.storage.local
-      .get(LocalDataKey.recorderStatus)
-      .then(async (data) => {
-        const localData = data as LocalData;
-        if (!localData || !localData[LocalDataKey.recorderStatus]) return;
-        let statusData = localData[LocalDataKey.recorderStatus];
-        let { status } = statusData;
-        let bufferedEvents: eventWithTime[] | undefined;
-
-        if (status === RecorderStatus.RECORDING) {
-          const result = await pauseRecording(
-            channel,
-            RecorderStatus.PausedSwitch,
-            statusData,
-          ).catch(async () => {
-            /**
-             * This error happen when the old tab is closed.
-             * In this case, the recording process would be stopped through Browser.tabs.onRemoved API.
-             * So we just read the new status here.
-             */
-            const localData = (await Browser.storage.local.get(
-              LocalDataKey.recorderStatus,
-            )) as LocalData;
-            return {
-              status: localData[LocalDataKey.recorderStatus],
-              bufferedEvents,
-            };
-          });
-          if (!result) return;
-          statusData = result.status;
-          status = statusData.status;
-          bufferedEvents = result.bufferedEvents;
-        }
-        if (status === RecorderStatus.PausedSwitch)
-          await resumeRecording(
-            channel,
-            activeInfo.tabId,
-            statusData,
-            bufferedEvents,
-          );
-      })
-      .catch(() => {
-        // the extension can't access to the tab
-      });
+    void (async () => {
+      if (
+        recorderStatus.status !== RecorderStatus.RECORDING &&
+        recorderStatus.status !== RecorderStatus.PausedSwitch
+      )
+        return;
+      if (activeInfo.tabId === recorderStatus.activeTabId) return;
+      if (recorderStatus.status === RecorderStatus.RECORDING)
+        await pauseRecording(RecorderStatus.PausedSwitch);
+      if (recorderStatus.status === RecorderStatus.PausedSwitch)
+        await resumeRecording(activeInfo.tabId);
+    })();
+    return;
   });
 
   // If the recording can't start on an invalid tab, resume it when the tab content is updated.
   Browser.tabs.onUpdated.addListener(function (tabId, info) {
     if (info.status !== 'complete') return;
-    Browser.storage.local
-      .get(LocalDataKey.recorderStatus)
-      .then(async (data) => {
-        const localData = data as LocalData;
-        if (!localData || !localData[LocalDataKey.recorderStatus]) return;
-        const { status, activeTabId } = localData[LocalDataKey.recorderStatus];
-        if (status !== RecorderStatus.PausedSwitch || activeTabId === tabId)
-          return;
-        await resumeRecording(
-          channel,
-          tabId,
-          localData[LocalDataKey.recorderStatus],
-        );
-      })
-      .catch(() => {
-        // the extension can't access to the tab
-      });
+    if (
+      recorderStatus.status !== RecorderStatus.PausedSwitch ||
+      recorderStatus.activeTabId === tabId
+    )
+      return;
+    void resumeRecording(tabId);
   });
 
   /**
-   * When the current tab is closed, the recording events will be lost because this event is fired after it is closed.
-   * This event listener is just used to make sure the recording status is updated.
+   * When the current tab is closed, and there's no other tab to resume recording, make sure the recording status is updated to SwitchPaused.
    */
   Browser.tabs.onRemoved.addListener((tabId) => {
-    Browser.storage.local
-      .get(LocalDataKey.recorderStatus)
-      .then(async (data) => {
-        const localData = data as LocalData;
-        if (!localData || !localData[LocalDataKey.recorderStatus]) return;
-        const { status, activeTabId, startTimestamp } =
-          localData[LocalDataKey.recorderStatus];
-        if (activeTabId !== tabId || status !== RecorderStatus.RECORDING)
-          return;
-
-        // Update the recording status to make it resumable after users switch to other tabs.
-        const statusData: LocalData[LocalDataKey.recorderStatus] = {
-          status: RecorderStatus.PausedSwitch,
-          activeTabId,
-          startTimestamp,
-          pausedTimestamp: Date.now(),
-        };
-        await Browser.storage.local.set({
-          [LocalDataKey.recorderStatus]: statusData,
-        });
-      })
-      .catch((err) => {
-        console.error(err);
+    void (async () => {
+      if (
+        recorderStatus.activeTabId !== tabId ||
+        recorderStatus.status !== RecorderStatus.RECORDING
+      )
+        return;
+      // Update the recording status to make it resumable after users switch to other tabs.
+      Object.assign(recorderStatus, {
+        status: RecorderStatus.PausedSwitch,
+        activeTabId: -1,
+        pausedTimestamp: Date.now(),
       });
+
+      await Browser.storage.local.set({
+        [LocalDataKey.recorderStatus]: recorderStatus,
+      });
+    })();
   });
 })();
 
@@ -159,4 +276,16 @@ function setDefaultSettings(
       existedSettings[i] = newSettings[i];
     }
   }
+}
+
+function generateSession(title: string) {
+  const newSession: Session = {
+    id: nanoid(),
+    name: title,
+    tags: [],
+    createTimestamp: Date.now(),
+    modifyTimestamp: Date.now(),
+    recorderVersion: Browser.runtime.getManifest().version_name || 'unknown',
+  };
+  return newSession;
 }
