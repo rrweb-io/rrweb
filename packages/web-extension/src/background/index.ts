@@ -97,13 +97,14 @@ void (async () => {
     await Browser.storage.local.set({
       [LocalDataKey.recorderStatus]: recorderStatus,
     });
-    const title = (
-      await Browser.tabs.query({
-        active: true,
-        currentWindow: true,
-      })
-    )[0].title;
-    const newSession = generateSession(title || '');
+    const title =
+      (await Browser.tabs
+        .query({ active: true, currentWindow: true })
+        .then((tabs) => tabs[0]?.title)
+        .catch(() => {
+          // ignore error
+        })) ?? 'new session';
+    const newSession = generateSession(title);
     await saveSession(newSession, events).catch((e) => {
       recorderStatus.errorMessage = (e as { message: string }).message;
       void Browser.storage.local.set({
