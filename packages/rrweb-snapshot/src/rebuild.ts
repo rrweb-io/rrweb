@@ -106,7 +106,7 @@ export function applyCssSplits(
   if (hackCss) {
     adaptedCss = adaptCssForReplay(cssTextSplits.join(''), cache);
   }
-  let ix_start = 0;
+  let startIndex = 0;
   for (let i = 0; i < childTextNodes.length; i++) {
     if (i === cssTextSplits.length) {
       break;
@@ -115,31 +115,31 @@ export function applyCssSplits(
     if (!hackCss) {
       childTextNode.textContent = cssTextSplits[i];
     } else if (i < childTextNodes.length - 1) {
-      let ix_end = ix_start;
-      let end_search = cssTextSplits[i + 1].length;
+      let endIndex = startIndex;
+      let endSearch = cssTextSplits[i + 1].length;
 
       // don't do hundreds of searches, in case a mismatch
       // is caused close to start of string
-      end_search = Math.min(end_search, 30);
+      endSearch = Math.min(endSearch, 30);
 
       let found = false;
-      for (; end_search > 2; end_search--) {
-        let search_bit = cssTextSplits[i + 1].substring(0, end_search);
-        let search_ix = adaptedCss.substring(ix_start).indexOf(search_bit);
-        found = search_ix !== -1;
+      for (; endSearch > 2; endSearch--) {
+        let searchBit = cssTextSplits[i + 1].substring(0, endSearch);
+        let searchIndex = adaptedCss.substring(startIndex).indexOf(searchBit);
+        found = searchIndex !== -1;
         if (found) {
-          ix_end += search_ix;
+          endIndex += searchIndex;
           break;
         }
       }
       if (!found) {
         // something went wrong, put a similar sized chunk in the right place
-        ix_end += cssTextSplits[i].length;
+        endIndex += cssTextSplits[i].length;
       }
-      childTextNode.textContent = adaptedCss.substring(ix_start, ix_end);
-      ix_start = ix_end;
+      childTextNode.textContent = adaptedCss.substring(startIndex, endIndex);
+      startIndex = endIndex;
     } else {
-      childTextNode.textContent = adaptedCss.substring(ix_start);
+      childTextNode.textContent = adaptedCss.substring(startIndex);
     }
   }
 }
