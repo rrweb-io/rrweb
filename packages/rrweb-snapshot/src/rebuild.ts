@@ -124,8 +124,8 @@ export function applyCssSplits(
 
       let found = false;
       for (; endSearch > 2; endSearch--) {
-        let searchBit = cssTextSplits[i + 1].substring(0, endSearch);
-        let searchIndex = adaptedCss.substring(startIndex).indexOf(searchBit);
+        const searchBit = cssTextSplits[i + 1].substring(0, endSearch);
+        const searchIndex = adaptedCss.substring(startIndex).indexOf(searchBit);
         found = searchIndex !== -1;
         if (found) {
           endIndex += searchIndex;
