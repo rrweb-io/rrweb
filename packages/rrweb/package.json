@@ -3,8 +3,6 @@
   "version": "2.0.0-alpha.18",
   "description": "record and replay the web",
   "scripts": {
-    "format": "yarn prettier --write '**/*.{ts,md}'",
-    "format:head": "git diff --name-only HEAD^ |grep '/rrweb/.*\\.ts$\\|\\.md$' |sed 's|packages/rrweb/||'|xargs yarn prettier --write",
     "prepare": "npm run prepack",
     "prepack": "npm run build",
     "retest": "cross-env PUPPETEER_HEADLESS=true yarn retest:headful",
