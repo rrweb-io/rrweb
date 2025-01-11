@@ -7,6 +7,11 @@ export type StringifyOptions = {
   // limit of string length
   stringLengthLimit?: number;
   /**
+   * When truncating an entry you can provide a custom suffix.
+   * Defaults to "...".
+   */
+  truncationSuffix?: string;
+  /**
    * limit of number of keys in an object
    * if an object contains more keys than this limit, we would call its toString function directly
    */
