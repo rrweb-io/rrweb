@@ -173,7 +173,7 @@ export class Replayer {
     | styleSheetRuleData
     | styleDeclarationData
   )[] = [];
-  
+
   // Similar to the reason for constructedStyleMutations.
   private adoptedStyleSheets: adoptedStyleSheetData[] = [];
 
