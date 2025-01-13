@@ -173,7 +173,7 @@ export class Replayer {
     | styleSheetRuleData
     | styleDeclarationData
   )[] = [];
-
+  
   // Similar to the reason for constructedStyleMutations.
   private adoptedStyleSheets: adoptedStyleSheetData[] = [];
 
@@ -1507,6 +1507,18 @@ export class Replayer {
           return this.newDocumentQueue.push(mutation);
         }
         return queue.push(mutation);
+      }
+
+      if (
+        mutation.node.type === NodeType.Document &&
+        parent?.nodeName?.toLowerCase() !== 'iframe'
+      ) {
+        console.warn(
+          '[Replayer] Skipping invalid document append to a non-iframe parent.',
+          mutation,
+          parent
+        );
+        return;
       }
 
       if (mutation.node.isShadow) {
