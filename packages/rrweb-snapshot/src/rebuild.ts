@@ -61,16 +61,21 @@ function getTagName(n: elementNode): string {
 }
 
 export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
-  const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
-  if (cachedStyle) return cachedStyle;
+  try {
+    const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
+    if (cachedStyle) return cachedStyle;
 
-  const ast: { css: string } = postcss([
-    mediaSelectorPlugin,
-    pseudoClassPlugin,
-  ]).process(cssText);
-  const result = ast.css;
-  cache?.stylesWithHoverClass.set(cssText, result);
-  return result;
+    const ast: { css: string } = postcss([
+      mediaSelectorPlugin,
+      pseudoClassPlugin,
+    ]).process(cssText);
+    const result = ast.css;
+    cache?.stylesWithHoverClass.set(cssText, result);
+    return result;
+  } catch (e) {
+    console.warn('Failed to adapt css for replay. Using default cssText', e);
+    return cssText;
+  }
 }
 
 export function createCache(): BuildCache {
@@ -288,7 +293,10 @@ function buildNode(
               'rrweb-original-srcset',
               n.attributes.srcset as string,
             );
-          } else {
+          }
+          // Set the sandbox attribute on the iframe element will make it lose its contentDocument access and therefore cause additional playback errors.
+          else if (tagName === 'iframe' && name === 'sandbox') continue;
+          else {
             node.setAttribute(name, value.toString());
           }
         } catch (error) {
