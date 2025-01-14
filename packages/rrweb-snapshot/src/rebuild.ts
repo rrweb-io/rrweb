@@ -2,13 +2,11 @@ import { mediaSelectorPlugin, pseudoClassPlugin } from './css';
 import {
   type serializedNodeWithId,
   type serializedElementNodeWithId,
-  type serializedTextNodeWithId,
   NodeType,
-  type tagMap,
   type elementNode,
-  type BuildCache,
   type legacyAttributes,
-} from './types';
+} from '@rrweb/types';
+import { type tagMap, type BuildCache } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
 import postcss from 'postcss';
 
@@ -95,7 +93,7 @@ export function applyCssSplits(
   hackCss: boolean,
   cache: BuildCache,
 ): void {
-  const childTextNodes: serializedTextNodeWithId[] = [];
+  const childTextNodes = [];
   for (const scn of n.childNodes) {
     if (scn.type === NodeType.Text) {
       childTextNodes.push(scn);

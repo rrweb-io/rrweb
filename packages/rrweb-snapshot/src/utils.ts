@@ -3,6 +3,10 @@ import type {
   MaskInputFn,
   MaskInputOptions,
   nodeMetaMap,
+} from './types';
+
+import { NodeType } from '@rrweb/types';
+import type {
   IMirror,
   serializedNodeWithId,
   serializedNode,
@@ -10,9 +14,8 @@ import type {
   documentTypeNode,
   textNode,
   elementNode,
-} from './types';
+} from '@rrweb/types';
 import dom from '@rrweb/utils';
-import { NodeType } from './types';
 
 export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;
@@ -453,8 +456,9 @@ export function normalizeCssString(cssText: string): string {
 
 /**
  * Maps the output of stringifyStylesheet to individual text nodes of a <style> element
- * performance is not considered as this is anticipated to be very much an edge case
- * (javascript is needed to add extra text nodes to a <style>)
+ * which occurs when javascript is used to append to the style element
+ * and may also occur when browsers opt to break up large text nodes
+ * performance needs to be considered, see e.g. #1603
  */
 export function splitCssText(
   cssText: string,
@@ -462,27 +466,69 @@ export function splitCssText(
 ): string[] {
   const childNodes = Array.from(style.childNodes);
   const splits: string[] = [];
+  let iterLimit = 0;
   if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
-    const cssTextNorm = normalizeCssString(cssText);
+    let cssTextNorm = normalizeCssString(cssText);
+    const normFactor = cssTextNorm.length / cssText.length;
     for (let i = 1; i < childNodes.length; i++) {
       if (
         childNodes[i].textContent &&
         typeof childNodes[i].textContent === 'string'
       ) {
         const textContentNorm = normalizeCssString(childNodes[i].textContent!);
-        for (let j = 3; j < textContentNorm.length; j++) {
-          // find a  substring that appears only once
+        let j = 3;
+        for (; j < textContentNorm.length; j++) {
+          if (
+            // keep consuming css identifiers (to get a decent chunk more quickly)
+            textContentNorm[j].match(/[a-zA-Z0-9]/) ||
+            // substring needs to be unique to this section
+            textContentNorm.indexOf(textContentNorm.substring(0, j), 1) !== -1
+          ) {
+            continue;
+          }
+          break;
+        }
+        for (; j < textContentNorm.length; j++) {
           const bit = textContentNorm.substring(0, j);
-          if (cssTextNorm.split(bit).length === 2) {
-            const splitNorm = cssTextNorm.indexOf(bit);
+          // this substring should appears only once in overall text too
+          const bits = cssTextNorm.split(bit);
+          let splitNorm = -1;
+          if (bits.length === 2) {
+            splitNorm = cssTextNorm.indexOf(bit);
+          } else if (
+            bits.length > 2 &&
+            bits[0] === '' &&
+            childNodes[i - 1].textContent !== ''
+          ) {
+            // this childNode has same starting content as previous
+            splitNorm = cssTextNorm.indexOf(bit, 1);
+          }
+          if (splitNorm !== -1) {
             // find the split point in the original text
-            for (let k = splitNorm; k < cssText.length; k++) {
-              if (
-                normalizeCssString(cssText.substring(0, k)).length === splitNorm
-              ) {
+            let k = Math.floor(splitNorm / normFactor);
+            for (; k > 0 && k < cssText.length; ) {
+              iterLimit += 1;
+              if (iterLimit > 50 * childNodes.length) {
+                // quit for performance purposes
+                splits.push(cssText);
+                return splits;
+              }
+              const normPart = normalizeCssString(cssText.substring(0, k));
+              if (normPart.length === splitNorm) {
                 splits.push(cssText.substring(0, k));
                 cssText = cssText.substring(k);
+                cssTextNorm = cssTextNorm.substring(splitNorm);
                 break;
+              } else if (normPart.length < splitNorm) {
+                k += Math.max(
+                  1,
+                  Math.floor((splitNorm - normPart.length) / normFactor),
+                );
+              } else {
+                k -= Math.max(
+                  1,
+                  Math.floor((normPart.length - splitNorm) * normFactor),
+                );
               }
             }
             break;

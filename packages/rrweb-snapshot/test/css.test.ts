@@ -7,12 +7,14 @@ import postcss, { type AcceptedPlugin } from 'postcss';
 import { JSDOM } from 'jsdom';
 import { splitCssText, stringifyStylesheet } from './../src/utils';
 import { applyCssSplits } from './../src/rebuild';
-import {
-  NodeType,
-  type serializedElementNodeWithId,
-  type BuildCache,
-  type textNode,
+import * as fs from 'fs';
+import * as path from 'path';
+import type {
+  serializedElementNodeWithId,
+  BuildCache,
+  textNode,
 } from '../src/types';
+import { NodeType } from '@rrweb/types';
 import { Window } from 'happy-dom';
 
 describe('css parser', () => {
@@ -105,10 +107,16 @@ describe('css splitter', () => {
       // as authored, e.g. no spaces
       style.append('.a{background-color:black;}');
 
+      // test how normalization finds the right sections
+      style.append('.b      {background-color:black;}');
+      style.append('.c{      background-color:                     black}');
+
       // how it is currently stringified (spaces present)
       const expected = [
         '.a { background-color: red; }',
         '.a { background-color: black; }',
+        '.b { background-color: black; }',
+        '.c { background-color: black; }',
       ];
       const browserSheet = expected.join('');
       expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
@@ -134,6 +142,28 @@ describe('css splitter', () => {
       ];
       const browserSheet = expected.join('');
       expect(splitCssText(browserSheet, style)).toEqual(expected);
+    }
+  });
+
+  it('finds css textElement splits correctly with two identical text nodes', () => {
+    const window = new Window({ url: 'https://localhost:8080' });
+    const document = window.document;
+    // as authored, with comment, missing semicolons
+    const textContent = '.a { color:red; } .b { color:blue; }';
+    document.head.innerHTML = '<style></style>';
+    const style = document.querySelector('style');
+    if (style) {
+      style.append(textContent);
+      style.append(textContent);
+
+      const expected = [textContent, textContent];
+      const browserSheet = expected.join('');
+      expect(splitCssText(browserSheet, style)).toEqual(expected);
+
+      style.append(textContent);
+      const expected3 = [textContent, textContent, textContent];
+      const browserSheet3 = expected3.join('');
+      expect(splitCssText(browserSheet3, style)).toEqual(expected3);
     }
   });
 
@@ -168,6 +198,34 @@ describe('css splitter', () => {
 
       expect(splitCssText(browserSheet, style)).toEqual(expected);
     }
+  });
+
+  it('efficiently finds split points in large files', () => {
+    const cssText = fs.readFileSync(
+      path.resolve(__dirname, './css/benchmark.css'),
+      'utf8',
+    );
+
+    const parts = cssText.split('}');
+    const sections = [];
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (i % 100 === 0) {
+        sections.push(parts[i] + '}');
+      } else {
+        sections[sections.length - 1] += parts[i] + '}';
+      }
+    }
+    sections[sections.length - 1] += parts[parts.length - 1];
+
+    expect(cssText.length).toEqual(sections.join('').length);
+
+    const style = JSDOM.fragment(`<style></style>`).querySelector('style');
+    if (style) {
+      sections.forEach((section) => {
+        style.appendChild(JSDOM.fragment(section));
+      });
+    }
+    expect(splitCssText(cssText, style)).toEqual(sections);
   });
 });
 

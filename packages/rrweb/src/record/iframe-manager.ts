@@ -1,11 +1,12 @@
-import type { Mirror, serializedNodeWithId } from 'rrweb-snapshot';
-import { genId, NodeType } from 'rrweb-snapshot';
+import type { Mirror } from 'rrweb-snapshot';
+import { genId } from 'rrweb-snapshot';
 import type { CrossOriginIframeMessageEvent } from '../types';
 import CrossOriginIframeMirror from './cross-origin-iframe-mirror';
-import { EventType, IncrementalSource } from '@rrweb/types';
+import { EventType, NodeType, IncrementalSource } from '@rrweb/types';
 import type {
   eventWithTime,
   eventWithoutTime,
+  serializedNodeWithId,
   mutationCallBack,
 } from '@rrweb/types';
 import type { StylesheetManager } from './stylesheet-manager';
