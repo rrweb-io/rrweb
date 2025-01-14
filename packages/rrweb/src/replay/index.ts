@@ -1516,7 +1516,7 @@ export class Replayer {
         console.warn(
           '[Replayer] Skipping invalid document append to a non-iframe parent.',
           mutation,
-          parent
+          parent,
         );
         return;
       }
