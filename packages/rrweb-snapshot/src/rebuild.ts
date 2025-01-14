@@ -114,7 +114,7 @@ export function applyCssSplits(
     const childTextNode = childTextNodes[i];
     if (!hackCss) {
       childTextNode.textContent = cssTextSplits[i];
-    } else if (i < childTextNodes.length - 1) {
+    } else if (i < cssTextSplits.length - 1) {
       let endIndex = startIndex;
       let endSearch = cssTextSplits[i + 1].length;
 
