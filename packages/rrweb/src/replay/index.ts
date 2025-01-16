@@ -1808,6 +1808,11 @@ export class Replayer {
                       cache: this.cache,
                     },
                   );
+                  // Update mirror meta's attributes
+                  Object.assign(
+                    newSn.attributes,
+                    mutation.attributes as attributes,
+                  );
                   const siblingNode = target.nextSibling;
                   const parentNode = target.parentNode;
                   if (newNode && parentNode) {
