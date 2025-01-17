@@ -1,44 +1,44 @@
 /// <reference types="vite/client" />
-import dts from "vite-plugin-dts";
-import { copyFileSync } from "node:fs";
-import { defineConfig, LibraryOptions, LibraryFormats, Plugin } from "vite";
-import { build, Format } from "esbuild";
-import { resolve } from "path";
-import { umdWrapper } from "esbuild-plugin-umd-wrapper";
-import * as fs from "node:fs";
-import { visualizer } from "rollup-plugin-visualizer";
+import dts from 'vite-plugin-dts';
+import { copyFileSync } from 'node:fs';
+import { defineConfig, LibraryOptions, LibraryFormats, Plugin } from 'vite';
+import { build, Format } from 'esbuild';
+import { resolve } from 'path';
+import { umdWrapper } from 'esbuild-plugin-umd-wrapper';
+import * as fs from 'node:fs';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // don't empty out dir if --watch flag is passed
-const emptyOutDir = !process.argv.includes("--watch");
+const emptyOutDir = !process.argv.includes('--watch');
 /**
  * Chrome web store does not allow base64 inline workers.
  * For chrome extension, we need to disable worker inlining to pass the review.
  */
-const disableWorkerInlining = process.env.DISABLE_WORKER_INLINING === "true";
+const disableWorkerInlining = process.env.DISABLE_WORKER_INLINING === 'true';
 
 function minifyAndUMDPlugin({
-                              name,
-                              outDir,
-                            }: {
-  name: LibraryOptions["name"];
+  name,
+  outDir,
+}: {
+  name: LibraryOptions['name'];
   outDir: string;
 }): Plugin {
   return {
-    name: "minify-plugin",
+    name: 'minify-plugin',
     async writeBundle(outputOptions, bundle) {
       for (const file of Object.values(bundle)) {
         if (
-          file.type === "asset" &&
-          (file.fileName.endsWith(".cjs.map") || file.fileName.endsWith(".css"))
+          file.type === 'asset' &&
+          (file.fileName.endsWith('.cjs.map') || file.fileName.endsWith('.css'))
         ) {
-          const isCSS = file.fileName.endsWith(".css");
+          const isCSS = file.fileName.endsWith('.css');
           const inputFilePath = resolve(
             outputOptions.dir!,
             file.fileName,
-          ).replace(/\.map$/, "");
+          ).replace(/\.map$/, '');
           const baseFileName = file.fileName.replace(
             /(\.cjs|\.css)(\.map)?$/,
-            "",
+            '',
           );
           const outputFilePath = resolve(outputOptions.dir!, baseFileName);
           // console.log(outputFilePath, 'minifying', file.fileName);
@@ -75,14 +75,14 @@ function minifyAndUMDPlugin({
 }
 
 async function buildFile({
-                           name,
-                           input,
-                           output,
-                           minify,
-                           isCss,
-                           outDir,
-                         }: {
-  name?: LibraryOptions["name"];
+  name,
+  input,
+  output,
+  minify,
+  isCss,
+  outDir,
+}: {
+  name?: LibraryOptions['name'];
   input: string;
   output: string;
   outDir: string;
@@ -94,8 +94,8 @@ async function buildFile({
     outfile: output,
     minify,
     sourcemap: true,
-    format: isCss ? undefined : ("umd" as Format),
-    target: isCss ? undefined : "es2017",
+    format: isCss ? undefined : ('umd' as Format),
+    target: isCss ? undefined : 'es2017',
     treeShaking: !isCss,
     plugins: [
       umdWrapper({
@@ -103,19 +103,19 @@ async function buildFile({
       }),
     ],
   });
-  const filename = output.replace(new RegExp(`^.+/(${outDir}/)`), "$1");
+  const filename = output.replace(new RegExp(`^.+/(${outDir}/)`), '$1');
   console.log(filename);
   console.log(`${filename}.map`);
 }
 
-export default function(
-  entry: LibraryOptions["entry"],
-  name: LibraryOptions["name"],
+export default function (
+  entry: LibraryOptions['entry'],
+  name: LibraryOptions['name'],
   options?: { outputDir?: string; fileName?: string; plugins?: Plugin[] },
 ) {
-  const { fileName, outputDir: outDir = "dist", plugins = [] } = options || {};
+  const { fileName, outputDir: outDir = 'dist', plugins = [] } = options || {};
 
-  let formats: LibraryFormats[] = ["es", "cjs"];
+  let formats: LibraryFormats[] = ['es', 'cjs'];
 
   return defineConfig(() => ({
     build: {
@@ -157,24 +157,24 @@ export default function(
           // correct extension supplied in the package.json exports field.
           const files: string[] = Array.from(emittedFiles.keys());
           files.forEach((file) => {
-            const ctsFile = file.replace(".d.ts", ".d.cts");
+            const ctsFile = file.replace('.d.ts', '.d.cts');
             copyFileSync(file, ctsFile);
           });
         },
       }),
       minifyAndUMDPlugin({ name, outDir }),
       visualizer({
-        filename: resolve(__dirname, name + "-bundle-analysis.html"), // Path for the HTML report
+        filename: resolve(__dirname, name + '-bundle-analysis.html'), // Path for the HTML report
         open: false, // don't Automatically open the report in the browser
       }),
       {
-        name: "remove-worker-inline",
-        enforce: "pre",
+        name: 'remove-worker-inline',
+        enforce: 'pre',
         transform(code, id) {
           if (!disableWorkerInlining) return;
           if (/\.(js|ts|jsx|tsx)$/.test(id)) {
             return {
-              code: code.replace(/\?worker&inline/g, "?worker"),
+              code: code.replace(/\?worker&inline/g, '?worker'),
               map: null,
             };
           }
