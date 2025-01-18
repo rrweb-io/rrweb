@@ -80,29 +80,34 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
       ),
   );
 
-  if (isUntaintedAccessors && isUntaintedMethods && !isAngularZonePresent()) {
-    untaintedBasePrototype[key] = defaultObj.prototype as BasePrototypeCache[T];
-    return defaultObj.prototype as BasePrototypeCache[T];
+  const isUntainted = isUntaintedAccessors && isUntaintedMethods && !isAngularZonePresent();
+  // we're going to default to what we do have
+  let impl: BasePrototypeCache[T] = defaultObj.prototype as BasePrototypeCache[T]
+  // but if it is tainted
+  if (!isUntainted) {
+    // try to load a fresh copy from a sandbox iframe
+    let iframeEl: HTMLIFrameElement | undefined = undefined;
+    try {
+      iframeEl = document.createElement('iframe');
+      iframeEl.hidden = true;
+      document.head.appendChild(iframeEl);
+      const win = iframeEl.contentWindow;
+      if (win) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+        const candidate = (win as any)[key].prototype as BasePrototypeCache[T];
+        if (candidate) {
+          impl = candidate
+        }
+      }
+    } finally {
+      if (iframeEl) {
+        document.head.removeChild(iframeEl);
+      }
+    }
   }
 
-  try {
-    const iframeEl = document.createElement('iframe');
-    document.body.appendChild(iframeEl);
-    const win = iframeEl.contentWindow;
-    if (!win) return defaultObj.prototype as BasePrototypeCache[T];
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-    const untaintedObject = (win as any)[key]
-      .prototype as BasePrototypeCache[T];
-    // cleanup
-    document.body.removeChild(iframeEl);
-
-    if (!untaintedObject) return defaultPrototype;
-
-    return (untaintedBasePrototype[key] = untaintedObject);
-  } catch {
-    return defaultPrototype;
-  }
+  untaintedBasePrototype[key] = impl;
+    return impl
 }
 
 const untaintedAccessorCache: Record<
