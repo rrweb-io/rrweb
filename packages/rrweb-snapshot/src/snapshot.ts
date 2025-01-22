@@ -308,6 +308,7 @@ export function needMaskingText(
 }
 
 // https://stackoverflow.com/a/36155560
+// https://stackoverflow.com/a/69694808 (for handling blank frames in chrome)
 function onceIframeLoaded(
   iframeEl: HTMLIFrameElement,
   listener: () => unknown,
@@ -342,16 +343,15 @@ function onceIframeLoaded(
   }
   // check blank frame for Chrome
   const blankUrl = 'about:blank';
-  if (
-    win.location.href !== blankUrl ||
-    iframeEl.src === blankUrl ||
-    iframeEl.src === ''
+  if ((iframeEl.src === blankUrl ||
+    (iframeEl.src !== blankUrl && win.location.href !== blankUrl)) &&
+    readyState === 'complete'
   ) {
     // iframe was already loaded, make sure we wait to trigger the listener
     // till _after_ the mutation that found this iframe has had time to process
     setTimeout(listener, 0);
 
-    return iframeEl.addEventListener('load', listener); // keep listing for future loads
+    return iframeEl.addEventListener('load', listener); // keep listening for future loads
   }
   // use default listener
   iframeEl.addEventListener('load', listener);
