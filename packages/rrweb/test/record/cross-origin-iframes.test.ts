@@ -222,6 +222,7 @@ describe('cross origin iframes', function (this: ISuite) {
       const events: eventWithTime[] = await ctx.page.evaluate(
         () => (window as unknown as IWindow).snapshots,
       );
+
       expect(events).toMatchObject([
         {
           data: {
