@@ -277,8 +277,8 @@ describe('cross origin iframes', function (this: ISuite) {
                 "childNodes": [
                   {
                     "id": 8,
-                    "textContent": "
-             ",
+                    "textContent": `
+              `,
                     "type": 3,
                   },
                   {
@@ -293,10 +293,10 @@ describe('cross origin iframes', function (this: ISuite) {
                   },
                   {
                     "id": 10,
-                    "textContent": "
-           
+                    "textContent": `
+            
          
-       ",
+       `,
                     "type": 3,
                   },
                 ],
@@ -342,8 +342,8 @@ describe('cross origin iframes', function (this: ISuite) {
                       {
                         "id": 15,
                         "rootId": 11,
-                        "textContent": "
-     ",
+                        "textContent": `
+      `,
                         "type": 3,
                       },
                       {
@@ -359,8 +359,8 @@ describe('cross origin iframes', function (this: ISuite) {
                       {
                         "id": 17,
                         "rootId": 11,
-                        "textContent": "
-     ",
+                        "textContent": `
+      `,
                         "type": 3,
                       },
                       {
@@ -377,8 +377,8 @@ describe('cross origin iframes', function (this: ISuite) {
                       {
                         "id": 19,
                         "rootId": 11,
-                        "textContent": "
-     ",
+                        "textContent": `
+      `,
                         "type": 3,
                       },
                       {
@@ -395,8 +395,8 @@ describe('cross origin iframes', function (this: ISuite) {
                       {
                         "id": 21,
                         "rootId": 11,
-                        "textContent": "
-     ",
+                        "textContent": `
+      `,
                         "type": 3,
                       },
                       {
@@ -417,8 +417,8 @@ describe('cross origin iframes', function (this: ISuite) {
                       {
                         "id": 24,
                         "rootId": 11,
-                        "textContent": "
-   ",
+                        "textContent": `
+    `,
                         "type": 3,
                       },
                       {
@@ -447,9 +447,9 @@ describe('cross origin iframes', function (this: ISuite) {
                   {
                     "id": 27,
                     "rootId": 11,
-                    "textContent": "
-
-   ",
+                    "textContent": `
+ 
+   `,
                     "type": 3,
                   },
                   {
@@ -458,8 +458,8 @@ describe('cross origin iframes', function (this: ISuite) {
                       {
                         "id": 29,
                         "rootId": 11,
-                        "textContent": "
-     ",
+                        "textContent": `
+      `,
                         "type": 3,
                       },
                       {
@@ -468,8 +468,8 @@ describe('cross origin iframes', function (this: ISuite) {
                           {
                             "id": 31,
                             "rootId": 11,
-                            "textContent": "
-       ",
+                            "textContent": `
+        `,
                             "type": 3,
                           },
                           {
@@ -480,8 +480,8 @@ describe('cross origin iframes', function (this: ISuite) {
                               {
                                 "id": 33,
                                 "rootId": 11,
-                                "textContent": "
-         ",
+                                "textContent": `
+          `,
                                 "type": 3,
                               },
                               {
@@ -497,8 +497,8 @@ describe('cross origin iframes', function (this: ISuite) {
                               {
                                 "id": 35,
                                 "rootId": 11,
-                                "textContent": "
-       ",
+                                "textContent": `
+        `,
                                 "type": 3,
                               },
                             ],
@@ -510,8 +510,8 @@ describe('cross origin iframes', function (this: ISuite) {
                           {
                             "id": 36,
                             "rootId": 11,
-                            "textContent": "
-       ",
+                            "textContent": `
+        `,
                             "type": 3,
                           },
                           {
@@ -520,8 +520,8 @@ describe('cross origin iframes', function (this: ISuite) {
                               {
                                 "id": 38,
                                 "rootId": 11,
-                                "textContent": "
-         ",
+                                "textContent": `
+          `,
                                 "type": 3,
                               },
                               {
@@ -539,8 +539,8 @@ describe('cross origin iframes', function (this: ISuite) {
                               {
                                 "id": 40,
                                 "rootId": 11,
-                                "textContent": "
-       ",
+                                "textContent": `
+        `,
                                 "type": 3,
                               },
                             ],
@@ -552,8 +552,8 @@ describe('cross origin iframes', function (this: ISuite) {
                           {
                             "id": 41,
                             "rootId": 11,
-                            "textContent": "
-       ",
+                            "textContent": `
+        `,
                             "type": 3,
                           },
                           {
@@ -562,8 +562,8 @@ describe('cross origin iframes', function (this: ISuite) {
                               {
                                 "id": 43,
                                 "rootId": 11,
-                                "textContent": "
-         ",
+                                "textContent": `
+          `,
                                 "type": 3,
                               },
                               {
@@ -582,8 +582,8 @@ describe('cross origin iframes', function (this: ISuite) {
                               {
                                 "id": 45,
                                 "rootId": 11,
-                                "textContent": "
-       ",
+                                "textContent": `
+        `,
                                 "type": 3,
                               },
                             ],
@@ -595,8 +595,8 @@ describe('cross origin iframes', function (this: ISuite) {
                           {
                             "id": 46,
                             "rootId": 11,
-                            "textContent": "
-       ",
+                            "textContent": `
+        `,
                             "type": 3,
                           },
                           {
@@ -607,8 +607,8 @@ describe('cross origin iframes', function (this: ISuite) {
                               {
                                 "id": 48,
                                 "rootId": 11,
-                                "textContent": "
-         ",
+                                "textContent": `
+          `,
                                 "type": 3,
                               },
                               {
@@ -624,8 +624,8 @@ describe('cross origin iframes', function (this: ISuite) {
                               {
                                 "id": 50,
                                 "rootId": 11,
-                                "textContent": "
-       ",
+                                "textContent": `
+        `,
                                 "type": 3,
                               },
                             ],
@@ -637,8 +637,8 @@ describe('cross origin iframes', function (this: ISuite) {
                           {
                             "id": 51,
                             "rootId": 11,
-                            "textContent": "
-       ",
+                            "textContent": `
+        `,
                             "type": 3,
                           },
                           {
@@ -649,8 +649,8 @@ describe('cross origin iframes', function (this: ISuite) {
                               {
                                 "id": 53,
                                 "rootId": 11,
-                                "textContent": "
-         ",
+                                "textContent": `
+          `,
                                 "type": 3,
                               },
                               {
@@ -670,8 +670,8 @@ describe('cross origin iframes', function (this: ISuite) {
                               {
                                 "id": 55,
                                 "rootId": 11,
-                                "textContent": "
-       ",
+                                "textContent": `
+        `,
                                 "type": 3,
                               },
                             ],
@@ -683,8 +683,8 @@ describe('cross origin iframes', function (this: ISuite) {
                           {
                             "id": 56,
                             "rootId": 11,
-                            "textContent": "
-       ",
+                            "textContent": `
+        `,
                             "type": 3,
                           },
                           {
@@ -695,8 +695,8 @@ describe('cross origin iframes', function (this: ISuite) {
                               {
                                 "id": 58,
                                 "rootId": 11,
-                                "textContent": "
-         ",
+                                "textContent": `
+          `,
                                 "type": 3,
                               },
                               {
@@ -709,8 +709,8 @@ describe('cross origin iframes', function (this: ISuite) {
                                   {
                                     "id": 60,
                                     "rootId": 11,
-                                    "textContent": "
-           ",
+                                    "textContent": `
+            `,
                                     "type": 3,
                                   },
                                   {
@@ -734,8 +734,8 @@ describe('cross origin iframes', function (this: ISuite) {
                                   {
                                     "id": 63,
                                     "rootId": 11,
-                                    "textContent": "
-           ",
+                                    "textContent": `
+            `,
                                     "type": 3,
                                   },
                                   {
@@ -758,8 +758,8 @@ describe('cross origin iframes', function (this: ISuite) {
                                   {
                                     "id": 66,
                                     "rootId": 11,
-                                    "textContent": "
-         ",
+                                    "textContent": `
+          `,
                                     "type": 3,
                                   },
                                 ],
@@ -771,8 +771,8 @@ describe('cross origin iframes', function (this: ISuite) {
                               {
                                 "id": 67,
                                 "rootId": 11,
-                                "textContent": "
-       ",
+                                "textContent": `
+        `,
                                 "type": 3,
                               },
                             ],
@@ -784,8 +784,8 @@ describe('cross origin iframes', function (this: ISuite) {
                           {
                             "id": 68,
                             "rootId": 11,
-                            "textContent": "
-       ",
+                            "textContent": `
+        `,
                             "type": 3,
                           },
                           {
@@ -796,8 +796,8 @@ describe('cross origin iframes', function (this: ISuite) {
                               {
                                 "id": 70,
                                 "rootId": 11,
-                                "textContent": "
-         ",
+                                "textContent": `
+          `,
                                 "type": 3,
                               },
                               {
@@ -813,8 +813,8 @@ describe('cross origin iframes', function (this: ISuite) {
                               {
                                 "id": 72,
                                 "rootId": 11,
-                                "textContent": "
-       ",
+                                "textContent": `
+        `,
                                 "type": 3,
                               },
                             ],
@@ -826,8 +826,8 @@ describe('cross origin iframes', function (this: ISuite) {
                           {
                             "id": 73,
                             "rootId": 11,
-                            "textContent": "
-       ",
+                            "textContent": `
+        `,
                             "type": 3,
                           },
                           {
@@ -843,8 +843,8 @@ describe('cross origin iframes', function (this: ISuite) {
                           {
                             "id": 75,
                             "rootId": 11,
-                            "textContent": "
-     ",
+                            "textContent": `
+      `,
                             "type": 3,
                           },
                         ],
@@ -856,10 +856,10 @@ describe('cross origin iframes', function (this: ISuite) {
                       {
                         "id": 76,
                         "rootId": 11,
-                        "textContent": "
-   
+                        "textContent": `
+    
 
- ",
+ `,
                         "type": 3,
                       },
                     ],
@@ -967,8 +967,8 @@ describe('cross origin iframes', function (this: ISuite) {
                       {
                         "id": 83,
                         "rootId": 79,
-                        "textContent": "
-     ",
+                        "textContent": `
+      `,
                         "type": 3,
                       },
                       {
@@ -984,8 +984,8 @@ describe('cross origin iframes', function (this: ISuite) {
                       {
                         "id": 85,
                         "rootId": 79,
-                        "textContent": "
-     ",
+                        "textContent": `
+      `,
                         "type": 3,
                       },
                       {
@@ -1002,8 +1002,8 @@ describe('cross origin iframes', function (this: ISuite) {
                       {
                         "id": 87,
                         "rootId": 79,
-                        "textContent": "
-     ",
+                        "textContent": `
+      `,
                         "type": 3,
                       },
                       {
@@ -1020,8 +1020,8 @@ describe('cross origin iframes', function (this: ISuite) {
                       {
                         "id": 89,
                         "rootId": 79,
-                        "textContent": "
-     ",
+                        "textContent": `
+      `,
                         "type": 3,
                       },
                       {
