@@ -213,15 +213,22 @@ describe('cross origin iframes', function (this: ISuite) {
     it('should replace the existing DOM nodes on iframe navigation with `isAttachIframe`', async () => {
       await ctx.page.evaluate((url) => {
         const iframe = document.querySelector('iframe') as HTMLIFrameElement;
-        iframe.src = `${url}/html/form.html?2`;
+        iframe.src = `${url}/html/empty.html`;
       }, ctx.serverURL);
-      await waitForRAF(ctx.page); // loads iframe
+      await waitForRAF(ctx.page); // should load iframe (but sometimes doesn't)
+      const frame = ctx.page.mainFrame().childFrames()[0];
+      await frame.waitForSelector('#one'); // ensure frame has changed
 
       await injectRecordScript(ctx.page.mainFrame().childFrames()[0]); // injects script into new iframe
 
       const events: eventWithTime[] = await ctx.page.evaluate(
         () => (window as unknown as IWindow).snapshots,
       );
+
+      // for future detailed debugging of this test, the full output is available
+      // 'out of band' in test/record/__snapshots__/cross-origin-iframes.test.ts.snap.extra
+      // assertSnapshot(events);
+
       expect(
         (events[events.length - 1].data as mutationData).removes,
       ).toMatchObject([]);
