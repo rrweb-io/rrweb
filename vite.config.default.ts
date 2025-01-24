@@ -115,6 +115,7 @@ export default function (
     build: {
       // See https://vitejs.dev/guide/build.html#library-mode
       lib: {
+        cssFileName: 'style',
         entry,
         name,
         fileName,
@@ -133,12 +134,6 @@ export default function (
       minify: false,
 
       sourcemap: true,
-
-      // rollupOptions: {
-      //   output: {
-      //     manualChunks: {},
-      //   },
-      // },
     },
     plugins: [
       dts({
