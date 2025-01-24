@@ -45,7 +45,7 @@
   "devDependencies": {
     "rrweb": "^2.0.0-alpha.17",
     "typescript": "^5.4.5",
-    "vite": "^5.3.1",
+    "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1"
   },
   "peerDependencies": {
