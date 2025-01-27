@@ -83,6 +83,7 @@ import {
   getPositionsAndIndex,
   uniqueTextMutations,
   StyleSheetMirror,
+  type ResolveTree
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
@@ -1707,6 +1708,18 @@ export class Replayer {
       appendNode(mutation);
     });
 
+    const nodeIdsToBeAdded = (resolveTrees: Array<ResolveTree>) => {
+      const ids = new Set();
+      for (const tree of resolveTrees) {
+        ids.add(tree.value.node.id);
+        if (tree.children && tree.children.length > 0) {
+          const res = nodeIdsToBeAdded(tree.children);
+          res.forEach(id => ids.add(id));
+        }
+      }
+      return ids;
+    };
+
     const startTime = Date.now();
     while (queue.length) {
       // transform queue to resolve tree
@@ -1721,7 +1734,8 @@ export class Replayer {
       }
       for (const tree of resolveTrees) {
         const parent = mirror.getNode(tree.value.parentId);
-        if (!parent) {
+        const ids = nodeIdsToBeAdded(resolveTrees);
+        if (!parent && !ids.has(tree.value.parentId)) {
           this.debug(
             'Drop resolve tree since there is no parent for the root node.',
             tree,
