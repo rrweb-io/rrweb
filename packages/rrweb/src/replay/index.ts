@@ -83,7 +83,7 @@ import {
   getPositionsAndIndex,
   uniqueTextMutations,
   StyleSheetMirror,
-  type ResolveTree
+  type ResolveTree,
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
@@ -1714,7 +1714,7 @@ export class Replayer {
         ids.add(tree.value.node.id);
         if (tree.children && tree.children.length > 0) {
           const res = nodeIdsToBeAdded(tree.children);
-          res.forEach(id => ids.add(id));
+          res.forEach((id) => ids.add(id));
         }
       }
       return ids;
