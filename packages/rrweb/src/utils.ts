@@ -354,7 +354,7 @@ export function polyfill(win = window) {
   }
 }
 
-type ResolveTree = {
+export type ResolveTree = {
   value: addedNodeMutation;
   children: ResolveTree[];
   parent: ResolveTree | null;
