@@ -247,7 +247,7 @@ describe('css splitter', () => {
       // happydom? bug avoid: strangely a greater than symbol in the template string below
       // e.g. '.prose > :last-child' causes more than one child to be appended
       style.append(`ass~="not-prose"] *)) {
-    margin-top: 0;
+    margin-top: 0;  /* this line triggers the bug as we would do a simpler match if it was authored as 'margin-top: 0px;' */
 }
 
 .section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 :where(.prose :last-child):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
