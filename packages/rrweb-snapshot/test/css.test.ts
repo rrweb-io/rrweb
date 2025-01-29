@@ -178,7 +178,6 @@ describe('css splitter', () => {
   transition: all 4s ease;
 }`),
       );
-      // TODO: splitCssText can't handle it yet if both start with .x
       style.appendChild(
         JSDOM.fragment(`.y {
   -moz-transition: all 5s ease;
@@ -226,6 +225,31 @@ describe('css splitter', () => {
       });
     }
     expect(splitCssText(cssText, style)).toEqual(sections);
+  });
+
+  it('finds css textElement splits correctly, even with repeated sections', () => {
+    const window = new Window({ url: 'https://localhost:8080' });
+    const document = window.document;
+    document.head.innerHTML = '<style>.a{background-color: black; }        </style>';
+    const style = document.querySelector('style');
+    if (style) {
+      style.append('.x{background-color:red;}');
+      style.append('.b      {background-color:black;}');
+      style.append('.x{background-color:red;}');
+      style.append('.c{      background-color:                     black}');
+
+      const expected = [
+        '.a { background-color: black; }',
+        '.x { background-color: red; }',
+        '.b { background-color: black; }',
+        '.x { background-color: red; }',
+        '.c { background-color: black; }',
+      ];
+      const browserSheet = expected.join('');
+      expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
+
+      expect(splitCssText(browserSheet, style)).toEqual(expected);
+    }
   });
 });
 
