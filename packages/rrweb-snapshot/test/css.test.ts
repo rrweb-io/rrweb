@@ -247,7 +247,7 @@ describe('css splitter', () => {
       // happydom? bug avoid: strangely a greater than symbol in the template string below
       // e.g. '.prose > :last-child' causes more than one child to be appended
       style.append(`ass~="not-prose"] *)) {
-    margin-top: 0;  /* this line triggers the bug as we would do a simpler match if it was authored as 'margin-top: 0px;' */
+    margin-top: 0;  /* cssRules transforms this to '0px' which was preventing matching prior to normalization */
 }
 
 .section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 :where(.prose :last-child):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
@@ -273,7 +273,10 @@ describe('css splitter', () => {
       ];
       const browserSheet = expected.join('');
       expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
-      expect(splitCssText(browserSheet, style)).toEqual(expected);
+      let _testNoPxNorm = true; // trigger the original motivating scenario for this test
+      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual(expected);
+      _testNoPxNorm = false; // this case should also be solved by normalizing '0px' -> '0'
+      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual(expected);
     }
   });
 

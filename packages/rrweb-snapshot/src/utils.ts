@@ -450,8 +450,12 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
  * Intention is to normalize by remove spaces, semicolons and CSS comments
  * so that we can compare css as authored vs. output of stringifyStylesheet
  */
-export function normalizeCssString(cssText: string): string {
-  return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '');
+export function normalizeCssString(cssText: string, _testNoPxNorm=false): string {
+  if (_testNoPxNorm) {
+    return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '');
+  } else {
+    return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '').replace(/0px/g, '0');
+  }
 }
 
 /**
@@ -463,19 +467,20 @@ export function normalizeCssString(cssText: string): string {
 export function splitCssText(
   cssText: string,
   style: HTMLStyleElement,
+  _testNoPxNorm=false,
 ): string[] {
   const childNodes = Array.from(style.childNodes);
   const splits: string[] = [];
   let iterLimit = 0;
   if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
-    let cssTextNorm = normalizeCssString(cssText);
+    let cssTextNorm = normalizeCssString(cssText, _testNoPxNorm);
     const normFactor = cssTextNorm.length / cssText.length;
     for (let i = 1; i < childNodes.length; i++) {
       if (
         childNodes[i].textContent &&
         typeof childNodes[i].textContent === 'string'
       ) {
-        const textContentNorm = normalizeCssString(childNodes[i].textContent!);
+        const textContentNorm = normalizeCssString(childNodes[i].textContent!, _testNoPxNorm);
         let j = 3;
         for (; j < textContentNorm.length; j++) {
           if (
@@ -538,7 +543,7 @@ export function splitCssText(
                 splits.push(cssText);
                 return splits;
               }
-              const normPart = normalizeCssString(cssText.substring(0, k));
+              const normPart = normalizeCssString(cssText.substring(0, k), _testNoPxNorm);
               if (normPart.length === splitNorm) {
                 splits.push(cssText.substring(0, k));
                 cssText = cssText.substring(k);
