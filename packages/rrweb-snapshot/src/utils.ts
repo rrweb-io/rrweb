@@ -502,7 +502,7 @@ export function splitCssText(
           ) {
             // this childNode has same starting content as previous
             splitNorm = cssTextNorm.indexOf(bit, 1);
-          } else if (bits.length === 1) {
+          } else if (false && bits.length === 1) {
             // try to roll back, and just pick the first matching point,
             // not the only matching point
             splitNorm = cssTextNorm.indexOf(textContentNorm.substring(0, j - 1));
