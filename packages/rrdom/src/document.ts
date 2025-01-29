@@ -1,4 +1,4 @@
-import { NodeType as RRNodeType } from '@saola.ai/rrweb-snapshot';
+import { NodeType as RRNodeType } from '@saola.ai/rrweb-types';
 import { parseCSSText, camelize, toCSSText } from './style';
 export interface IRRNode {
   parentElement: IRRNode | null;
@@ -474,7 +474,8 @@ export class BaseRRElement extends BaseRRNode implements IRRElement {
   }
 
   public getAttribute(name: string): string | null {
-    return this.attributes[name] || null;
+    if (this.attributes[name] === undefined) return null;
+    return this.attributes[name];
   }
 
   public setAttribute(name: string, attribute: string) {
@@ -544,6 +545,30 @@ export class BaseRRMediaElement extends BaseRRElement {
   }
   public pause() {
     this.paused = true;
+  }
+}
+
+export class BaseRRDialogElement extends BaseRRElement {
+  public readonly tagName = 'DIALOG' as const;
+  public readonly nodeName = 'DIALOG' as const;
+
+  get isModal() {
+    return this.getAttribute('rr_open_mode') === 'modal';
+  }
+  get open() {
+    return this.getAttribute('open') !== null;
+  }
+  public close() {
+    this.removeAttribute('open');
+    this.removeAttribute('rr_open_mode');
+  }
+  public show() {
+    this.setAttribute('open', '');
+    this.setAttribute('rr_open_mode', 'non-modal');
+  }
+  public showModal() {
+    this.setAttribute('open', '');
+    this.setAttribute('rr_open_mode', 'modal');
   }
 }
 

@@ -1,5 +1,5 @@
-import { NodeType } from '@saola.ai/rrweb-snapshot';
 import {
+  NodeType,
   EventType,
   IncrementalSource,
   eventWithTime,
@@ -110,9 +110,17 @@ export function stringifySnapshots(snapshots: eventWithTime[]): string {
     snapshots
       .filter((s) => {
         if (
-          s.type === EventType.IncrementalSnapshot &&
-          (s.data.source === IncrementalSource.MouseMove ||
-            s.data.source === IncrementalSource.ViewportResize)
+          // mouse move or viewport resize can happen on accidental user interference
+          // so we ignore them
+          (s.type === EventType.IncrementalSnapshot &&
+            (s.data.source === IncrementalSource.MouseMove ||
+              s.data.source === IncrementalSource.ViewportResize)) ||
+          // ignore '[vite] connected' messages from vite
+          (s.type === EventType.Plugin &&
+            s.data.plugin === 'rrweb/console@1' &&
+            (s.data.payload as { payload: string[] })?.payload?.find((msg) =>
+              msg.includes('[vite] connected'),
+            ))
         ) {
           return false;
         }
@@ -242,18 +250,18 @@ export function stringifySnapshots(snapshots: eventWithTime[]): string {
 
 function stripBlobURLsFromAttributes(node: {
   attributes: {
-    src?: string;
+    [key: string]: any;
   };
 }) {
-  if (
-    'src' in node.attributes &&
-    node.attributes.src &&
-    typeof node.attributes.src === 'string' &&
-    node.attributes.src.startsWith('blob:')
-  ) {
-    node.attributes.src = node.attributes.src
-      .replace(/[\w-]+$/, '...')
-      .replace(/:[0-9]+\//, ':xxxx/');
+  for (const attr in node.attributes) {
+    if (
+      typeof node.attributes[attr] === 'string' &&
+      node.attributes[attr].startsWith('blob:')
+    ) {
+      node.attributes[attr] = node.attributes[attr]
+        .replace(/[\w-]+$/, '...')
+        .replace(/:[0-9]+\//, ':xxxx/');
+    }
   }
 }
 
@@ -547,6 +555,98 @@ export const sampleStyleSheetRemoveEvents: eventWithTime[] = [
           id: 4,
         },
       ],
+      adds: [],
+    },
+    timestamp: now + 2000,
+  },
+];
+
+export const sampleRemoteStyleSheetEvents: eventWithTime[] = [
+  {
+    type: EventType.DomContentLoaded,
+    data: {},
+    timestamp: now,
+  },
+  {
+    type: EventType.Load,
+    data: {},
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.Meta,
+    data: {
+      href: 'http://localhost',
+      width: 1000,
+      height: 800,
+    },
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.FullSnapshot,
+    data: {
+      node: {
+        type: 0,
+        childNodes: [
+          {
+            type: 2,
+            tagName: 'html',
+            attributes: {},
+            childNodes: [
+              {
+                type: 2,
+                tagName: 'head',
+                attributes: {},
+                childNodes: [
+                  {
+                    type: 2,
+                    tagName: 'link',
+                    attributes: {
+                      rel: 'stylesheet',
+                      href: '',
+                    },
+                    childNodes: [],
+                    id: 4,
+                  },
+                ],
+                id: 3,
+              },
+              {
+                type: 2,
+                tagName: 'body',
+                attributes: {},
+                childNodes: [],
+                id: 6,
+              },
+            ],
+            id: 2,
+          },
+        ],
+        id: 1,
+      },
+      initialOffset: {
+        top: 0,
+        left: 0,
+      },
+    },
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.Mutation,
+      texts: [],
+      attributes: [
+        {
+          id: 4,
+          attributes: {
+            href: null,
+            rel: null,
+            _cssText:
+              '.OverlayDrawer-modal-187 { }.OverlayDrawer-paper-188 { width: 100%; }@media (min-width: 48em) {\n  .OverlayDrawer-paper-188 { width: 38rem; }\n}@media (min-width: 48em) {\n}@media (min-width: 48em) {\n}',
+          },
+        },
+      ],
+      removes: [],
       adds: [],
     },
     timestamp: now + 2000,

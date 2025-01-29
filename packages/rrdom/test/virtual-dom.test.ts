@@ -6,17 +6,17 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import { vi } from 'vitest';
 import { JSDOM } from 'jsdom';
+import { buildNodeWithSN, Mirror } from '@saola.ai/rrweb-snapshot';
 import {
   cdataNode,
   commentNode,
   documentNode,
   documentTypeNode,
   elementNode,
-  Mirror,
   NodeType,
   NodeType as RRNodeType,
   textNode,
-} from '@saola.ai/rrweb-snapshot';
+} from '@saola.ai/rrweb-types';
 import {
   buildFromDom,
   buildFromNode,
@@ -206,6 +206,33 @@ describe('RRDocument for browser environment', () => {
       expect(rrNode.RRNodeType).toEqual(RRNodeType.Element);
       expect((rrNode as RRElement).tagName).toEqual('SHADOWROOT');
       expect(rrNode).toBe(parentRRNode.shadowRoot);
+    });
+
+    it('can rebuild blocked element with correct dimensions', () => {
+      // @ts-expect-error Testing buildNodeWithSN with rr elements
+      const node = buildNodeWithSN(
+        {
+          id: 1,
+          tagName: 'svg',
+          type: NodeType.Element,
+          isSVG: true,
+          attributes: {
+            rr_width: '50px',
+            rr_height: '50px',
+          },
+          childNodes: [],
+        },
+        {
+          // @ts-expect-error
+          doc: new RRDocument(),
+          mirror,
+          blockSelector: '*',
+          slimDOMOptions: {},
+        },
+      ) as RRElement;
+
+      expect(node.style.width).toBe('50px');
+      expect(node.style.height).toBe('50px');
     });
   });
 

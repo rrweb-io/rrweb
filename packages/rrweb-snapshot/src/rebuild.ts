@@ -1,13 +1,14 @@
-import { Rule, Media, NodeWithRules, parse } from './css';
+import { mediaSelectorPlugin, pseudoClassPlugin } from './css';
 import {
-  serializedNodeWithId,
+  type serializedNodeWithId,
+  type serializedElementNodeWithId,
   NodeType,
-  tagMap,
-  elementNode,
-  BuildCache,
-  legacyAttributes,
-} from './types';
+  type elementNode,
+  type legacyAttributes,
+} from '@saola.ai/rrweb-types';
+import { type tagMap, type BuildCache } from './types';
 import { isElement, Mirror, isNodeMetaEqual } from './utils';
+import postcss from 'postcss';
 
 const tagMap: tagMap = {
   script: 'noscript',
@@ -57,87 +58,19 @@ function getTagName(n: elementNode): string {
   return tagName;
 }
 
-// based on https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
-function escapeRegExp(str: string) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-}
-
-const MEDIA_SELECTOR = /(max|min)-device-(width|height)/;
-const MEDIA_SELECTOR_GLOBAL = new RegExp(MEDIA_SELECTOR.source, 'g');
-const HOVER_SELECTOR = /([^\\]):hover/;
-const HOVER_SELECTOR_GLOBAL = new RegExp(HOVER_SELECTOR.source, 'g');
 export function adaptCssForReplay(
   cssText: string,
   cache: BuildCache,
-  removeAnimationCss = false,
+  removeAnimationCss: boolean,
 ): string {
   const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
   if (cachedStyle) return cachedStyle;
 
-  const ast = parse(cssText, {
-    silent: true,
-  });
-
-  if (!ast.stylesheet) {
-    return cssText;
-  }
-
-  const selectors: string[] = [];
-  const medias: string[] = [];
-  function getSelectors(rule: Rule | Media | NodeWithRules) {
-    if ('selectors' in rule && rule.selectors) {
-      rule.selectors.forEach((selector: string) => {
-        if (HOVER_SELECTOR.test(selector)) {
-          selectors.push(selector);
-        }
-      });
-    }
-    if ('media' in rule && rule.media && MEDIA_SELECTOR.test(rule.media)) {
-      medias.push(rule.media);
-    }
-    if ('rules' in rule && rule.rules) {
-      rule.rules.forEach(getSelectors);
-    }
-  }
-  getSelectors(ast.stylesheet);
-
-  let result = cssText;
-  if (selectors.length > 0) {
-    const selectorMatcher = new RegExp(
-      selectors
-        .filter((selector, index) => selectors.indexOf(selector) === index)
-        .sort((a, b) => b.length - a.length)
-        .map((selector) => {
-          return escapeRegExp(selector);
-        })
-        .join('|'),
-      'g',
-    );
-    result = result.replace(selectorMatcher, (selector) => {
-      const newSelector = selector.replace(
-        HOVER_SELECTOR_GLOBAL,
-        '$1.\\:hover',
-      );
-      return `${selector}, ${newSelector}`;
-    });
-  }
-  if (medias.length > 0) {
-    const mediaMatcher = new RegExp(
-      medias
-        .filter((media, index) => medias.indexOf(media) === index)
-        .sort((a, b) => b.length - a.length)
-        .map((media) => {
-          return escapeRegExp(media);
-        })
-        .join('|'),
-      'g',
-    );
-    result = result.replace(mediaMatcher, (media) => {
-      // not attempting to maintain min-device-width along with min-width
-      // (it's non standard)
-      return media.replace(MEDIA_SELECTOR_GLOBAL, '$1-$2');
-    });
-  }
+  const ast: { css: string } = postcss([
+    mediaSelectorPlugin,
+    pseudoClassPlugin,
+  ]).process(cssText);
+  let result = ast.css;
   if (removeAnimationCss) result = result.replace(/animation.+?;/g, '');
   cache?.stylesWithHoverClass.set(cssText, result);
   return result;
@@ -148,6 +81,79 @@ export function createCache(): BuildCache {
   return {
     stylesWithHoverClass,
   };
+}
+
+/**
+ * undo splitCssText/markCssSplits
+ * (would move to utils.ts but uses `adaptCssForReplay`)
+ */
+export function applyCssSplits(
+  n: serializedElementNodeWithId,
+  cssText: string,
+  hackCss: boolean,
+  cache: BuildCache,
+  removeAnimationCss: boolean,
+): void {
+  const childTextNodes = [];
+  for (const scn of n.childNodes) {
+    if (scn.type === NodeType.Text) {
+      childTextNodes.push(scn);
+    }
+  }
+  const cssTextSplits = cssText.split('/* rr_split */');
+  while (
+    cssTextSplits.length > 1 &&
+    cssTextSplits.length > childTextNodes.length
+  ) {
+    // unexpected: remerge the last two so that we don't discard any css
+    cssTextSplits.splice(-2, 2, cssTextSplits.slice(-2).join(''));
+  }
+  for (let i = 0; i < childTextNodes.length; i++) {
+    const childTextNode = childTextNodes[i];
+    const cssTextSection = cssTextSplits[i];
+    if (childTextNode && cssTextSection) {
+      // id will be assigned when these child nodes are
+      // iterated over in buildNodeWithSN
+      childTextNode.textContent = hackCss
+        ? adaptCssForReplay(cssTextSection, cache, removeAnimationCss)
+        : cssTextSection;
+    }
+  }
+}
+
+/**
+ * Normally a <style> element has a single textNode containing the rules.
+ * During serialization, we bypass this (`styleEl.sheet`) to get the rules the
+ * browser sees and serialize this to a special _cssText attribute, blanking
+ * out any text nodes. This function reverses that and also handles cases where
+ * there were no textNode children present (dynamic css/or a <link> element) as
+ * well as multiple textNodes, which need to be repopulated (based on presence of
+ * a special `rr_split` marker in case they are modified by subsequent mutations.
+ */
+export function buildStyleNode(
+  n: serializedElementNodeWithId,
+  styleEl: HTMLStyleElement, // when inlined, a <link type="stylesheet"> also gets rebuilt as a <style>
+  cssText: string,
+  options: {
+    doc: Document;
+    hackCss: boolean;
+    cache: BuildCache;
+    removeAnimationCss: boolean;
+  },
+) {
+  const { doc, hackCss, cache, removeAnimationCss } = options;
+  if (n.childNodes.length) {
+    applyCssSplits(n, cssText, hackCss, cache, removeAnimationCss);
+  } else {
+    if (hackCss) {
+      cssText = adaptCssForReplay(cssText, cache, removeAnimationCss);
+    }
+    /**
+       <link> element or dynamic <style> are serialized without any child nodes
+       we create the text node without an ID or presence in mirror as it can't
+    */
+    styleEl.appendChild(doc.createTextNode(cssText));
+  }
 }
 
 function buildNode(
@@ -227,14 +233,14 @@ function buildNode(
           continue;
         }
 
-        const isTextarea = tagName === 'textarea' && name === 'value';
-        const isRemoteOrDynamicCss = tagName === 'style' && name === '_cssText';
-        if (isRemoteOrDynamicCss && hackCss && typeof value === 'string') {
-          value = adaptCssForReplay(value, cache, removeAnimationCss);
-        }
-        if ((isTextarea || isRemoteOrDynamicCss) && typeof value === 'string') {
+        if (typeof value !== 'string') {
+          // pass
+        } else if (tagName === 'style' && name === '_cssText') {
+          buildStyleNode(n, node as HTMLStyleElement, value, options);
+          continue; // no need to set _cssText as attribute
+        } else if (tagName === 'textarea' && name === 'value') {
+          // create without an ID or presence in mirror
           node.appendChild(doc.createTextNode(value));
-          // https://github.com/rrweb-io/rrweb/issues/112
           n.childNodes = []; // value overrides childNodes
           continue;
         }
@@ -328,9 +334,9 @@ function buildNode(
         }
 
         if (name === 'rr_width') {
-          (node as HTMLElement).style.width = value.toString();
+          (node as HTMLElement).style.setProperty('width', value.toString());
         } else if (name === 'rr_height') {
-          (node as HTMLElement).style.height = value.toString();
+          (node as HTMLElement).style.setProperty('height', value.toString());
         } else if (
           name === 'rr_mediaCurrentTime' &&
           typeof value === 'number'
@@ -359,6 +365,11 @@ function buildNode(
           (node as HTMLMediaElement).loop = value;
         } else if (name === 'rr_mediaVolume' && typeof value === 'number') {
           (node as HTMLMediaElement).volume = value;
+        } else if (name === 'rr_open_mode') {
+          (node as HTMLDialogElement).setAttribute(
+            'rr_open_mode',
+            value as string,
+          ); // keep this attribute for rrweb to trigger showModal
         }
       }
 
@@ -384,11 +395,13 @@ function buildNode(
       return node;
     }
     case NodeType.Text:
-      return doc.createTextNode(
-        n.isStyle && hackCss
-          ? adaptCssForReplay(n.textContent, cache, removeAnimationCss)
-          : n.textContent,
-      );
+      if (n.isStyle && hackCss) {
+        // support legacy style
+        return doc.createTextNode(
+          adaptCssForReplay(n.textContent, cache, removeAnimationCss),
+        );
+      }
+      return doc.createTextNode(n.textContent);
     case NodeType.CDATA:
       return doc.createCDATASection(n.textContent);
     case NodeType.Comment:

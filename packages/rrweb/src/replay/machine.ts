@@ -1,10 +1,15 @@
-import { createMachine, interpret, assign, StateMachine } from '@xstate/fsm';
+import {
+  createMachine,
+  interpret,
+  assign,
+  type StateMachine,
+} from '@xstate/fsm';
 import type { playerConfig } from '../types';
 import {
-  eventWithTime,
+  type eventWithTime,
   ReplayerEvents,
   EventType,
-  Emitter,
+  type Emitter,
   IncrementalSource,
 } from '@saola.ai/rrweb-types';
 import { Timer, addDelay } from './timer';

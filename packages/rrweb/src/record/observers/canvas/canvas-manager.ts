@@ -1,4 +1,4 @@
-import type { ICanvas, Mirror, DataURLOptions } from '@saola.ai/rrweb-snapshot';
+import type { ICanvas, Mirror } from '@saola.ai/rrweb-snapshot';
 import type {
   blockClass,
   canvasManagerMutationCallback,
@@ -8,6 +8,7 @@ import type {
   IWindow,
   listenerHandler,
   CanvasArg,
+  DataURLOptions,
 } from '@saola.ai/rrweb-types';
 import { isBlocked } from '../../../utils';
 import { CanvasContext } from '@saola.ai/rrweb-types';
@@ -262,7 +263,6 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
-      this.mirror,
     );
 
     this.resetObservers = () => {

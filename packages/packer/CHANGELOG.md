@@ -26,6 +26,12 @@
 
 - Updated dependencies []:
   - @saola.ai/rrweb-types@2.0.13
+## 2.0.0-alpha.18
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @rrweb/types@2.0.0-alpha.18
 
 ## 2.0.0-alpha.17
 

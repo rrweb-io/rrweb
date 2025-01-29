@@ -5,12 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import { vi, MockInstance } from 'vitest';
-import {
-  NodeType as RRNodeType,
-  createMirror,
-  Mirror as NodeMirror,
-  serializedNodeWithId,
-} from '@saola.ai/rrweb-snapshot';
+import { createMirror, Mirror as NodeMirror } from '@saola.ai/rrweb-snapshot';
 import {
   buildFromDom,
   getDefaultSN,
@@ -28,10 +23,15 @@ import {
 } from '../src/diff';
 import type { IRRElement, IRRNode } from '../src/document';
 import type {
+  serializedNodeWithId,
   canvasMutationData,
   styleSheetRuleData,
 } from '@saola.ai/rrweb-types';
-import { EventType, IncrementalSource } from '@saola.ai/rrweb-types';
+import {
+  NodeType as RRNodeType,
+  EventType,
+  IncrementalSource,
+} from '@saola.ai/rrweb-types';
 
 const elementSn = {
   type: RRNodeType.Element,
@@ -336,6 +336,32 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect((node as Node as HTMLElement).id).toBe('node1');
       expect((node as Node as HTMLElement).className).toBe('node');
+    });
+
+    it('ignores invalid attributes', () => {
+      const tagName = 'DIV';
+      const node = document.createElement(tagName);
+      const sn = Object.assign({}, elementSn, {
+        attributes: { '@click': 'foo' },
+        tagName,
+      });
+      mirror.add(node, sn);
+
+      const rrDocument = new RRDocument();
+      const rrNode = rrDocument.createElement(tagName);
+      const sn2 = Object.assign({}, elementSn, {
+        attributes: { '@click': 'foo' },
+        tagName,
+      });
+      rrDocument.mirror.add(rrNode, sn2);
+
+      rrNode.attributes = { id: 'node1', class: 'node', '@click': 'foo' };
+      diff(node, rrNode, replayer);
+      expect((node as Node as HTMLElement).id).toBe('node1');
+      expect((node as Node as HTMLElement).className).toBe('node');
+      expect('@click' in (node as Node as HTMLElement)).toBe(false);
+      expect(warn).toHaveBeenCalledTimes(1);
+      warn.mockClear();
     });
 
     it('can update exist properties', () => {

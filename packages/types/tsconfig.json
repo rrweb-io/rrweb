@@ -6,9 +6,5 @@
     "rootDir": "src",
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
   },
-  "references": [
-    {
-      "path": "../rrweb-snapshot"
-    }
-  ]
+  "references": []
 }

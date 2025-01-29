@@ -40,6 +40,7 @@
 
 - Updated dependencies []:
   - @saola.ai/rrweb-snapshot@2.0.13
+## 2.0.0-alpha.18
 
 ## 2.0.0-alpha.17
 

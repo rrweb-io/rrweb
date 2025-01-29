@@ -53,7 +53,11 @@ async function injectRecordScript(
   } catch (e) {
     // we get this error: `Protocol error (DOM.resolveNode): Node with given id does not belong to the document`
     // then the page wasn't loaded yet and we try again
-    if (!e.message.includes('DOM.resolveNode')) throw e;
+    if (
+      !e.message.includes('DOM.resolveNode') ||
+      !e.message.includes('DOM.describeNode')
+    )
+      throw e;
     await injectRecordScript(frame, options);
     return;
   }
@@ -238,7 +242,7 @@ describe('cross origin iframes', function (this: ISuite) {
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      assertSnapshot(snapshots);
+      await assertSnapshot(snapshots);
     });
 
     it('should map scroll events correctly', async () => {
@@ -261,7 +265,7 @@ describe('cross origin iframes', function (this: ISuite) {
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      assertSnapshot(snapshots);
+      await assertSnapshot(snapshots);
     });
   });
 
@@ -289,7 +293,7 @@ describe('cross origin iframes', function (this: ISuite) {
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      assertSnapshot(snapshots);
+      await assertSnapshot(snapshots);
     });
 
     it('should record DOM node removal', async () => {
@@ -301,7 +305,7 @@ describe('cross origin iframes', function (this: ISuite) {
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      assertSnapshot(snapshots);
+      await assertSnapshot(snapshots);
     });
 
     it('should record DOM attribute changes', async () => {
@@ -313,7 +317,7 @@ describe('cross origin iframes', function (this: ISuite) {
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      assertSnapshot(snapshots);
+      await assertSnapshot(snapshots);
     });
 
     it('should record DOM text changes', async () => {
@@ -325,7 +329,7 @@ describe('cross origin iframes', function (this: ISuite) {
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      assertSnapshot(snapshots);
+      await assertSnapshot(snapshots);
     });
 
     it('should record canvas elements', async () => {
@@ -342,7 +346,7 @@ describe('cross origin iframes', function (this: ISuite) {
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      assertSnapshot(snapshots);
+      await assertSnapshot(snapshots);
     });
 
     it('should record custom events', async () => {
@@ -358,7 +362,7 @@ describe('cross origin iframes', function (this: ISuite) {
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      assertSnapshot(snapshots);
+      await assertSnapshot(snapshots);
     });
 
     it('captures mutations on adopted stylesheets', async () => {
@@ -421,7 +425,7 @@ describe('cross origin iframes', function (this: ISuite) {
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      assertSnapshot(snapshots);
+      await assertSnapshot(snapshots);
     });
 
     it('captures mutations on stylesheets', async () => {
@@ -476,7 +480,7 @@ describe('cross origin iframes', function (this: ISuite) {
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      assertSnapshot(snapshots);
+      await assertSnapshot(snapshots);
     });
   });
 
@@ -505,7 +509,7 @@ describe('cross origin iframes', function (this: ISuite) {
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      assertSnapshot(snapshots);
+      await assertSnapshot(snapshots);
     });
   });
 
@@ -537,7 +541,7 @@ describe('cross origin iframes', function (this: ISuite) {
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      assertSnapshot(snapshots);
+      await assertSnapshot(snapshots);
     });
 
     it('should filter out forwarded cross origin rrweb messages', async () => {
@@ -564,7 +568,7 @@ describe('cross origin iframes', function (this: ISuite) {
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
-      assertSnapshot(snapshots);
+      await assertSnapshot(snapshots);
     });
   });
 });
@@ -592,7 +596,7 @@ describe('same origin iframes', function (this: ISuite) {
     // two events (full snapshot + meta) from main frame,
     // and two (full snapshot + mutation) from iframe
     expect(events.length).toBe(4);
-    assertSnapshot(events);
+    await assertSnapshot(events);
   });
 
   it('should record cross-origin iframe in same-origin iframe', async () => {
@@ -616,6 +620,6 @@ describe('same origin iframes', function (this: ISuite) {
     const snapshots = (await ctx.page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 });

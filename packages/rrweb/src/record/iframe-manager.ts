@@ -1,11 +1,12 @@
-import type { Mirror, serializedNodeWithId } from '@saola.ai/rrweb-snapshot';
-import { genId, NodeType } from '@saola.ai/rrweb-snapshot';
+import type { Mirror } from '@saola.ai/rrweb-snapshot';
+import { genId } from '@saola.ai/rrweb-snapshot';
 import type { CrossOriginIframeMessageEvent } from '../types';
 import CrossOriginIframeMirror from './cross-origin-iframe-mirror';
-import { EventType, IncrementalSource } from '@saola.ai/rrweb-types';
+import { EventType, NodeType, IncrementalSource } from '@saola.ai/rrweb-types';
 import type {
   eventWithTime,
   eventWithoutTime,
+  serializedNodeWithId,
   mutationCallBack,
 } from '@saola.ai/rrweb-types';
 import type { StylesheetManager } from './stylesheet-manager';

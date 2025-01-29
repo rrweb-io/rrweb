@@ -1,6 +1,6 @@
 import { encode } from 'base64-arraybuffer';
-import type { DataURLOptions } from '@saola.ai/rrweb-snapshot';
 import type {
+  DataURLOptions,
   ImageBitmapDataURLWorkerParams,
   ImageBitmapDataURLWorkerResponse,
 } from '@saola.ai/rrweb-types';

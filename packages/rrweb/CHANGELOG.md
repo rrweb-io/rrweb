@@ -53,6 +53,25 @@
   - @saola.ai/rrdom@2.0.13
   - @saola.ai/rrweb-types@2.0.13
   - @saola.ai/rrweb-utils@2.0.13
+## 2.0.0-alpha.18
+
+### Minor Changes
+
+- [#1543](https://github.com/rrweb-io/rrweb/pull/1543) [`53b83bb`](https://github.com/rrweb-io/rrweb/commit/53b83bb037f9cb30c93179548f436ed776f143ab) Thanks [@JonasBa](https://github.com/JonasBa)! - Optimize isParentRemoved check
+
+### Patch Changes
+
+- [#1535](https://github.com/rrweb-io/rrweb/pull/1535) [`04ee6ed`](https://github.com/rrweb-io/rrweb/commit/04ee6eda57157f0e04f18f907d8f3e59ababc753) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Slight simplification to how we replace :hover after #1458
+
+- [#1437](https://github.com/rrweb-io/rrweb/pull/1437) [`5fbb904`](https://github.com/rrweb-io/rrweb/commit/5fbb904edb653f3da17e6775ee438d81ef0bba83) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Edge case: Provide support for mutations on a <style> element which (unusually) has multiple text nodes
+
+- [#1593](https://github.com/rrweb-io/rrweb/pull/1593) [`5a78938`](https://github.com/rrweb-io/rrweb/commit/5a789385a341311ba327a768fe0e2f0f2f5002ee) Thanks [@daibhin](https://github.com/daibhin)! - `NodeType` enum was moved from rrweb-snapshot to @rrweb/types
+  The following types where moved from rrweb-snapshot to @rrweb/types: `documentNode`, `documentTypeNode`, `legacyAttributes`, `textNode`, `cdataNode`, `commentNode`, `elementNode`, `serializedNode`, `serializedNodeWithId`, `serializedElementNodeWithId`, `serializedTextNodeWithId`, `IMirror`, `INode`, `mediaAttributes`, `attributes` and `DataURLOptions`
+- Updated dependencies [[`8e55c45`](https://github.com/rrweb-io/rrweb/commit/8e55c455ff2987a3b5f367f23f48c1f2de74ce45), [`02cc62d`](https://github.com/rrweb-io/rrweb/commit/02cc62dd44b52f579a332b55c49896a5cb7cc694), [`04ee6ed`](https://github.com/rrweb-io/rrweb/commit/04ee6eda57157f0e04f18f907d8f3e59ababc753), [`5fbb904`](https://github.com/rrweb-io/rrweb/commit/5fbb904edb653f3da17e6775ee438d81ef0bba83), [`5a78938`](https://github.com/rrweb-io/rrweb/commit/5a789385a341311ba327a768fe0e2f0f2f5002ee)]:
+  - rrdom@2.0.0-alpha.18
+  - rrweb-snapshot@2.0.0-alpha.18
+  - @rrweb/types@2.0.0-alpha.18
+  - @rrweb/utils@2.0.0-alpha.18
 
 ## 2.0.0-alpha.17
 

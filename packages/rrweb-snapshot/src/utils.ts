@@ -1,25 +1,34 @@
-import {
+import type {
   idNodeMap,
   MaskInputFn,
   MaskInputOptions,
   nodeMetaMap,
+} from './types';
+
+import { NodeType } from '@saola.ai/rrweb-types';
+import type {
   IMirror,
   serializedNodeWithId,
   serializedNode,
-  NodeType,
   documentNode,
   documentTypeNode,
   textNode,
   elementNode,
-} from './types';
+} from '@saola.ai/rrweb-types';
+import dom from '@saola.ai/rrweb-utils';
 
 export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;
 }
 
 export function isShadowRoot(n: Node): n is ShadowRoot {
-  const host: Element | null = (n as ShadowRoot)?.host;
-  return Boolean(host?.shadowRoot === n);
+  const hostEl: Element | null =
+    // anchor and textarea elements also have a `host` property
+    // but only shadow roots have a `mode` property
+    (n && 'host' in n && 'mode' in n && dom.host(n as ShadowRoot)) || null;
+  return Boolean(
+    hostEl && 'shadowRoot' in hostEl && dom.shadowRoot(hostEl) === n,
+  );
 }
 
 /**
@@ -93,22 +102,38 @@ export function escapeImportStatement(rule: CSSImportRule): string {
   return statement.join(' ') + ';';
 }
 
+/*
+ * serialize the css rules from the .sheet property
+ * for <link rel="stylesheet"> elements, this is the only way of getting the rules without a FETCH
+ * for <style> elements, this is less preferable to looking at childNodes[0].textContent
+ * (which will include vendor prefixed rules which may not be used or visible to the recorded browser,
+ * but which might be needed by the replayer browser)
+ * however, at snapshot time, we don't know whether the style element has suffered
+ * any programmatic manipulation prior to the snapshot, in which case the .sheet would be more up to date
+ */
 export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
-    return rules
-      ? fixBrowserCompatibilityIssuesInCSS(
-          Array.from(rules, stringifyRule).join(''),
-        )
-      : null;
+    if (!rules) {
+      return null;
+    }
+    let sheetHref = s.href;
+    if (!sheetHref && s.ownerNode && s.ownerNode.ownerDocument) {
+      // an inline <style> element
+      sheetHref = s.ownerNode.ownerDocument.location.href;
+    }
+    const stringifiedRules = Array.from(rules, (rule: CSSRule) =>
+      stringifyRule(rule, sheetHref),
+    ).join('');
+    return fixBrowserCompatibilityIssuesInCSS(stringifiedRules);
   } catch (error) {
     return null;
   }
 }
 
-export function stringifyRule(rule: CSSRule): string {
-  let importStringified;
+export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
   if (isCSSImportRule(rule)) {
+    let importStringified;
     try {
       importStringified =
         // for same-origin stylesheets,
@@ -117,15 +142,25 @@ export function stringifyRule(rule: CSSRule): string {
         // work around browser issues with the raw string `@import url(...)` statement
         escapeImportStatement(rule);
     } catch (error) {
-      // ignore
+      importStringified = rule.cssText;
     }
-  } else if (isCSSStyleRule(rule) && rule.selectorText.includes(':')) {
-    // Safari does not escape selectors with : properly
-    // see https://bugs.webkit.org/show_bug.cgi?id=184604
-    return fixSafariColons(rule.cssText);
+    if (rule.styleSheet.href) {
+      // url()s within the imported stylesheet are relative to _that_ sheet's href
+      return absolutifyURLs(importStringified, rule.styleSheet.href);
+    }
+    return importStringified;
+  } else {
+    let ruleStringified = rule.cssText;
+    if (isCSSStyleRule(rule) && rule.selectorText.includes(':')) {
+      // Safari does not escape selectors with : properly
+      // see https://bugs.webkit.org/show_bug.cgi?id=184604
+      ruleStringified = fixSafariColons(ruleStringified);
+    }
+    if (sheetHref) {
+      return absolutifyURLs(ruleStringified, sheetHref);
+    }
+    return ruleStringified;
   }
-
-  return importStringified || rule.cssText;
 }
 
 export function fixSafariColons(cssStringified: string): string {
@@ -350,4 +385,165 @@ export function extractFileExtension(
   const regex = /\.([0-9a-z]+)(?:$)/i;
   const match = url.pathname.match(regex);
   return match?.[1] ?? null;
+}
+
+function extractOrigin(url: string): string {
+  let origin = '';
+  if (url.indexOf('//') > -1) {
+    origin = url.split('/').slice(0, 3).join('/');
+  } else {
+    origin = url.split('/')[0];
+  }
+  origin = origin.split('?')[0];
+  return origin;
+}
+
+const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
+const URL_PROTOCOL_MATCH = /^(?:[a-z+]+:)?\/\//i;
+const URL_WWW_MATCH = /^www\..*/i;
+const DATA_URI = /^(data:)([^,]*),(.*)/i;
+export function absolutifyURLs(cssText: string | null, href: string): string {
+  return (cssText || '').replace(
+    URL_IN_CSS_REF,
+    (
+      origin: string,
+      quote1: string,
+      path1: string,
+      quote2: string,
+      path2: string,
+      path3: string,
+    ) => {
+      const filePath = path1 || path2 || path3;
+      const maybeQuote = quote1 || quote2 || '';
+      if (!filePath) {
+        return origin;
+      }
+      if (URL_PROTOCOL_MATCH.test(filePath) || URL_WWW_MATCH.test(filePath)) {
+        return `url(${maybeQuote}${filePath}${maybeQuote})`;
+      }
+      if (DATA_URI.test(filePath)) {
+        return `url(${maybeQuote}${filePath}${maybeQuote})`;
+      }
+      if (filePath[0] === '/') {
+        return `url(${maybeQuote}${
+          extractOrigin(href) + filePath
+        }${maybeQuote})`;
+      }
+      const stack = href.split('/');
+      const parts = filePath.split('/');
+      stack.pop();
+      for (const part of parts) {
+        if (part === '.') {
+          continue;
+        } else if (part === '..') {
+          stack.pop();
+        } else {
+          stack.push(part);
+        }
+      }
+      return `url(${maybeQuote}${stack.join('/')}${maybeQuote})`;
+    },
+  );
+}
+
+/**
+ * Intention is to normalize by remove spaces, semicolons and CSS comments
+ * so that we can compare css as authored vs. output of stringifyStylesheet
+ */
+export function normalizeCssString(cssText: string): string {
+  return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '');
+}
+
+/**
+ * Maps the output of stringifyStylesheet to individual text nodes of a <style> element
+ * which occurs when javascript is used to append to the style element
+ * and may also occur when browsers opt to break up large text nodes
+ * performance needs to be considered, see e.g. #1603
+ */
+export function splitCssText(
+  cssText: string,
+  style: HTMLStyleElement,
+): string[] {
+  const childNodes = Array.from(style.childNodes);
+  const splits: string[] = [];
+  let iterLimit = 0;
+  if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
+    let cssTextNorm = normalizeCssString(cssText);
+    const normFactor = cssTextNorm.length / cssText.length;
+    for (let i = 1; i < childNodes.length; i++) {
+      if (
+        childNodes[i].textContent &&
+        typeof childNodes[i].textContent === 'string'
+      ) {
+        const textContentNorm = normalizeCssString(childNodes[i].textContent!);
+        let j = 3;
+        for (; j < textContentNorm.length; j++) {
+          if (
+            // keep consuming css identifiers (to get a decent chunk more quickly)
+            textContentNorm[j].match(/[a-zA-Z0-9]/) ||
+            // substring needs to be unique to this section
+            textContentNorm.indexOf(textContentNorm.substring(0, j), 1) !== -1
+          ) {
+            continue;
+          }
+          break;
+        }
+        for (; j < textContentNorm.length; j++) {
+          const bit = textContentNorm.substring(0, j);
+          // this substring should appears only once in overall text too
+          const bits = cssTextNorm.split(bit);
+          let splitNorm = -1;
+          if (bits.length === 2) {
+            splitNorm = cssTextNorm.indexOf(bit);
+          } else if (
+            bits.length > 2 &&
+            bits[0] === '' &&
+            childNodes[i - 1].textContent !== ''
+          ) {
+            // this childNode has same starting content as previous
+            splitNorm = cssTextNorm.indexOf(bit, 1);
+          }
+          if (splitNorm !== -1) {
+            // find the split point in the original text
+            let k = Math.floor(splitNorm / normFactor);
+            for (; k > 0 && k < cssText.length; ) {
+              iterLimit += 1;
+              if (iterLimit > 50 * childNodes.length) {
+                // quit for performance purposes
+                splits.push(cssText);
+                return splits;
+              }
+              const normPart = normalizeCssString(cssText.substring(0, k));
+              if (normPart.length === splitNorm) {
+                splits.push(cssText.substring(0, k));
+                cssText = cssText.substring(k);
+                cssTextNorm = cssTextNorm.substring(splitNorm);
+                break;
+              } else if (normPart.length < splitNorm) {
+                k += Math.max(
+                  1,
+                  Math.floor((splitNorm - normPart.length) / normFactor),
+                );
+              } else {
+                k -= Math.max(
+                  1,
+                  Math.floor((normPart.length - splitNorm) * normFactor),
+                );
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+  splits.push(cssText); // either the full thing if no splits were found, or the last split
+  return splits;
+}
+
+export function markCssSplits(
+  cssText: string,
+  style: HTMLStyleElement,
+): string {
+  return splitCssText(cssText, style).join('/* rr_split */');
 }

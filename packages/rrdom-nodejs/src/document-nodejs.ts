@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { NodeType as RRNodeType } from '@saola.ai/rrweb-snapshot';
+import { NodeType as RRNodeType } from '@saola.ai/rrweb-types';
 import type { NWSAPI } from 'nwsapi';
 import type { CSSStyleDeclaration as CSSStyleDeclarationType } from 'cssstyle';
 import {
@@ -12,8 +11,8 @@ import {
   BaseRRNode,
   BaseRRText,
   ClassList,
-  IRRDocument,
-  CSSStyleDeclaration,
+  type IRRDocument,
+  type CSSStyleDeclaration,
 } from '@saola.ai/rrdom';
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
 const nwsapi = require('nwsapi');
@@ -345,7 +344,7 @@ export class RRStyleElement extends RRElement {
       for (const child of this.childNodes)
         if (child.RRNodeType === RRNodeType.Text)
           result += (child as RRText).textContent;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
       this._sheet = cssom.parse(result);
     }
     return this._sheet;

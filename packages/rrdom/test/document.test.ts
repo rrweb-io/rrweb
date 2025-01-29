@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { NodeType as RRNodeType } from '@saola.ai/rrweb-snapshot';
+import { NodeType as RRNodeType } from '@saola.ai/rrweb-types';
 import {
   BaseRRDocument,
   BaseRRDocumentType,

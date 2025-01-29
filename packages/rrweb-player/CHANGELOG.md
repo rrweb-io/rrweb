@@ -33,6 +33,13 @@
 - Updated dependencies []:
   - @saola.ai/rrweb-packer@2.0.13
   - @saola.ai/replay@2.0.13
+## 2.0.0-alpha.18
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @rrweb/replay@2.0.0-alpha.18
+  - @rrweb/packer@2.0.0-alpha.18
 
 ## 2.0.0-alpha.17
 

@@ -1,6 +1,7 @@
 # rrvideo
 
 ## 2.0.17
+## 2.0.0-alpha.18
 
 ### Patch Changes
 
@@ -44,6 +45,10 @@
 ## 2.0.0-alpha.17
 
 ## 2.0.12
+
+  - rrweb-player@2.0.0-alpha.18
+
+## 2.0.0-alpha.17
 
 ### Patch Changes
 

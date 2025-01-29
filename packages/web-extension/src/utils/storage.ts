@@ -44,11 +44,23 @@ export async function getSessionStore() {
   });
 }
 
-export async function saveSession(session: Session, events: eventWithTime[]) {
+export async function addSession(session: Session, events: eventWithTime[]) {
   const eventStore = await getEventStore();
   await eventStore.put(EventStoreName, { id: session.id, events });
   const store = await getSessionStore();
   await store.add(SessionStoreName, session);
+}
+
+export async function updateSession(
+  session: Session,
+  events?: eventWithTime[],
+) {
+  const eventStore = await getEventStore();
+  if (events) {
+    await eventStore.put(EventStoreName, { id: session.id, events });
+  }
+  const store = await getSessionStore();
+  await store.put(SessionStoreName, session);
 }
 
 export async function getSession(id: string) {
@@ -87,4 +99,23 @@ export async function deleteSessions(ids: string[]) {
   await Promise.all(promises).then(() => {
     return Promise.all([eventTransition.done, sessionTransition.done]);
   });
+}
+
+export async function downloadSessions(ids: string[]) {
+  for (const sessionId of ids) {
+    const events = await getEvents(sessionId);
+    const session = await getSession(sessionId);
+    const blob = new Blob([JSON.stringify({ session, events }, null, 2)], {
+      type: 'application/json',
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${session.name}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 }

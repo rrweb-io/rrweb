@@ -32,6 +32,7 @@ import {
   getShadowHost,
   closestElementOfNode,
 } from '../utils';
+import dom from '@saola.ai/rrweb-utils';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -168,6 +169,7 @@ export default class MutationBuffer {
   private addedSet = new Set<Node>();
   private movedSet = new Set<Node>();
   private droppedSet = new Set<Node>();
+  private removesSubTreeCache = new Set<Node>();
 
   private mutationCb: observerParam['mutationCb'];
   private blockClass: observerParam['blockClass'];
@@ -285,16 +287,27 @@ export default class MutationBuffer {
       return nextId;
     };
     const pushAdd = (n: Node) => {
-      if (
-        !n.parentNode ||
-        !inDom(n) ||
-        (n.parentNode as Element).tagName === 'TEXTAREA'
-      ) {
+      const parent = dom.parentNode(n);
+      if (!parent || !inDom(n)) {
         return;
       }
-      const parentId = isShadowRoot(n.parentNode)
+      let cssCaptured = false;
+      if (n.nodeType === Node.TEXT_NODE) {
+        const parentTag = (parent as Element).tagName;
+        if (parentTag === 'TEXTAREA') {
+          // genTextAreaValueMutation already called via parent
+          return;
+        } else if (parentTag === 'STYLE' && this.addedSet.has(parent)) {
+          // css content will be recorded via parent's _cssText attribute when
+          // mutation adds entire <style> element
+          cssCaptured = true;
+        }
+      }
+
+      const parentId = isShadowRoot(parent)
         ? this.mirror.getId(getShadowHost(n))
-        : this.mirror.getId(n.parentNode);
+        : this.mirror.getId(parent);
+
       const nextId = getNextId(n);
       if (parentId === -1 || nextId === -1) {
         return addList.addNode(n);
@@ -326,7 +339,8 @@ export default class MutationBuffer {
             );
           }
           if (hasShadowRoot(n)) {
-            this.shadowDomManager.addShadowRoot(n.shadowRoot, this.doc);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.shadowDomManager.addShadowRoot(dom.shadowRoot(n)!, this.doc);
           }
         },
         onIframeLoad: (iframe, childSn) => {
@@ -336,6 +350,7 @@ export default class MutationBuffer {
         onStylesheetLoad: (link, childSn) => {
           this.stylesheetManager.attachLinkElement(link, childSn);
         },
+        cssCaptured,
       });
       if (sn) {
         adds.push({
@@ -353,8 +368,8 @@ export default class MutationBuffer {
 
     for (const n of this.movedSet) {
       if (
-        isParentRemoved(this.removes, n, this.mirror) &&
-        !this.movedSet.has(n.parentNode!)
+        isParentRemoved(this.removesSubTreeCache, n, this.mirror) &&
+        !this.movedSet.has(dom.parentNode(n)!)
       ) {
         continue;
       }
@@ -364,7 +379,7 @@ export default class MutationBuffer {
     for (const n of this.addedSet) {
       if (
         !isAncestorInSet(this.droppedSet, n) &&
-        !isParentRemoved(this.removes, n, this.mirror)
+        !isParentRemoved(this.removesSubTreeCache, n, this.mirror)
       ) {
         pushAdd(n);
       } else if (isAncestorInSet(this.movedSet, n)) {
@@ -378,7 +393,7 @@ export default class MutationBuffer {
     while (addList.length) {
       let node: DoubleLinkedListNode | null = null;
       if (candidate) {
-        const parentId = this.mirror.getId(candidate.value.parentNode);
+        const parentId = this.mirror.getId(dom.parentNode(candidate.value));
         const nextId = getNextId(candidate.value);
         if (parentId !== -1 && nextId !== -1) {
           node = candidate;
@@ -391,7 +406,7 @@ export default class MutationBuffer {
           tailNode = tailNode.previous;
           // ensure _node is defined before attempting to find value
           if (_node) {
-            const parentId = this.mirror.getId(_node.value.parentNode);
+            const parentId = this.mirror.getId(dom.parentNode(_node.value));
             const nextId = getNextId(_node.value);
 
             if (nextId === -1) continue;
@@ -403,14 +418,10 @@ export default class MutationBuffer {
             // nextId !== -1 && parentId === -1 This branch can happen if the node is the child of shadow root
             else {
               const unhandledNode = _node.value;
+              const parent = dom.parentNode(unhandledNode);
               // If the node is the direct child of a shadow root, we treat the shadow host as its parent node.
-              if (
-                unhandledNode.parentNode &&
-                unhandledNode.parentNode.nodeType ===
-                  Node.DOCUMENT_FRAGMENT_NODE
-              ) {
-                const shadowHost = (unhandledNode.parentNode as ShadowRoot)
-                  .host;
+              if (parent && parent.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+                const shadowHost = dom.host(parent as ShadowRoot);
                 const parentId = this.mirror.getId(shadowHost);
                 if (parentId !== -1) {
                   node = _node;
@@ -441,12 +452,10 @@ export default class MutationBuffer {
       texts: this.texts
         .map((text) => {
           const n = text.node;
-          if (
-            n.parentNode &&
-            (n.parentNode as Element).tagName === 'TEXTAREA'
-          ) {
+          const parent = dom.parentNode(n);
+          if (parent && (parent as Element).tagName === 'TEXTAREA') {
             // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
-            this.genTextAreaValueMutation(n.parentNode as HTMLTextAreaElement);
+            this.genTextAreaValueMutation(parent as HTMLTextAreaElement);
           }
           return {
             id: this.mirror.getId(n),
@@ -506,6 +515,7 @@ export default class MutationBuffer {
     this.addedSet = new Set<Node>();
     this.movedSet = new Set<Node>();
     this.droppedSet = new Set<Node>();
+    this.removesSubTreeCache = new Set<Node>();
     this.movedMap = {};
 
     this.mutationCb(payload);
@@ -524,8 +534,8 @@ export default class MutationBuffer {
       this.attributeMap.set(textarea, item);
     }
     item.attributes.value = Array.from(
-      textarea.childNodes,
-      (cn) => cn.textContent || '',
+      dom.childNodes(textarea),
+      (cn) => dom.textContent(cn) || '',
     ).join('');
   };
 
@@ -535,7 +545,7 @@ export default class MutationBuffer {
     }
     switch (m.type) {
       case 'characterData': {
-        const value = m.target.textContent;
+        const value = dom.textContent(m.target);
 
         if (
           !isBlocked(m.target, this.blockClass, this.blockSelector, false) &&
@@ -663,6 +673,12 @@ export default class MutationBuffer {
                 item.styleDiff[pname] = false; // delete
               }
             }
+          } else if (attributeName === 'open' && target.tagName === 'DIALOG') {
+            if (target.matches('dialog:modal')) {
+              item.attributes['rr_open_mode'] = 'modal';
+            } else {
+              item.attributes['rr_open_mode'] = 'non-modal';
+            }
           }
         }
         break;
@@ -684,7 +700,7 @@ export default class MutationBuffer {
         m.removedNodes.forEach((n) => {
           const nodeId = this.mirror.getId(n);
           const parentId = isShadowRoot(m.target)
-            ? this.mirror.getId(m.target.host)
+            ? this.mirror.getId(dom.host(m.target))
             : this.mirror.getId(m.target);
           if (
             isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
@@ -726,6 +742,7 @@ export default class MutationBuffer {
                   ? true
                   : undefined,
             });
+            processRemoves(n, this.removesSubTreeCache);
           }
           this.mapRemoves.push(n);
         });
@@ -766,9 +783,10 @@ export default class MutationBuffer {
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
     if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
-      n.childNodes.forEach((childN) => this.genAdds(childN));
+      dom.childNodes(n).forEach((childN) => this.genAdds(childN));
       if (hasShadowRoot(n)) {
-        n.shadowRoot.childNodes.forEach((childN) => {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        dom.childNodes(dom.shadowRoot(n)!).forEach((childN) => {
           this.processedNodeManager.add(childN, this);
           this.genAdds(childN, n);
         });
@@ -785,32 +803,36 @@ export default class MutationBuffer {
  */
 function deepDelete(addsSet: Set<Node>, n: Node) {
   addsSet.delete(n);
-  n.childNodes.forEach((childN) => deepDelete(addsSet, childN));
+  dom.childNodes(n).forEach((childN) => deepDelete(addsSet, childN));
 }
 
-function isParentRemoved(
-  removes: removedNodeMutation[],
-  n: Node,
-  mirror: Mirror,
-): boolean {
-  if (removes.length === 0) return false;
+function processRemoves(n: Node, cache: Set<Node>) {
+  const queue = [n];
+
+  while (queue.length) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const next = queue.pop()!;
+    if (cache.has(next)) continue;
+    cache.add(next);
+    dom.childNodes(next).forEach((n) => queue.push(n));
+  }
+
+  return;
+}
+
+function isParentRemoved(removes: Set<Node>, n: Node, mirror: Mirror): boolean {
+  if (removes.size === 0) return false;
   return _isParentRemoved(removes, n, mirror);
 }
 
 function _isParentRemoved(
-  removes: removedNodeMutation[],
+  removes: Set<Node>,
   n: Node,
-  mirror: Mirror,
+  _mirror: Mirror,
 ): boolean {
-  let node: ParentNode | null = n.parentNode;
-  while (node) {
-    const parentId = mirror.getId(node);
-    if (removes.some((r) => r.id === parentId)) {
-      return true;
-    }
-    node = node.parentNode;
-  }
-  return false;
+  const node: ParentNode | null = dom.parentNode(n);
+  if (!node) return false;
+  return removes.has(node);
 }
 
 function isAncestorInSet(set: Set<Node>, n: Node): boolean {
@@ -819,12 +841,12 @@ function isAncestorInSet(set: Set<Node>, n: Node): boolean {
 }
 
 function _isAncestorInSet(set: Set<Node>, n: Node): boolean {
-  const { parentNode } = n;
-  if (!parentNode) {
+  const parent = dom.parentNode(n);
+  if (!parent) {
     return false;
   }
-  if (set.has(parentNode)) {
+  if (set.has(parent)) {
     return true;
   }
-  return _isAncestorInSet(set, parentNode);
+  return _isAncestorInSet(set, parent);
 }

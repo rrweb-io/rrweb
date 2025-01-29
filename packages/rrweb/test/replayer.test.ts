@@ -8,6 +8,7 @@ import {
   launchPuppeteer,
   sampleEvents as events,
   sampleStyleSheetRemoveEvents as stylesheetRemoveEvents,
+  sampleRemoteStyleSheetEvents as remoteStyleSheetEvents,
   waitForRAF,
 } from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
@@ -18,7 +19,8 @@ import inputEvents from './events/input';
 import iframeEvents from './events/iframe';
 import selectionEvents from './events/selection';
 import shadowDomEvents from './events/shadow-dom';
-import textareaEvents from './events/bad-textarea';
+import badTextareaEvents from './events/bad-textarea';
+import badStyleEvents from './events/bad-style';
 import StyleSheetTextMutation from './events/style-sheet-text-mutation';
 import canvasInIframe from './events/canvas-in-iframe';
 import adoptedStyleSheet from './events/adopted-style-sheet';
@@ -202,6 +204,23 @@ describe('replayer', function () {
     expect(actionLength).toEqual(
       stylesheetRemoveEvents.filter(
         (e) => e.timestamp - stylesheetRemoveEvents[0].timestamp >= 2500,
+      ).length,
+    );
+
+    await assertDomSnapshot(page);
+  });
+
+  it('can handle remote stylesheets', async () => {
+    await page.evaluate(`events = ${JSON.stringify(remoteStyleSheetEvents)}`);
+    const actionLength = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play(2500);
+      replayer['timer']['actions'].length;
+    `);
+    expect(actionLength).toEqual(
+      remoteStyleSheetEvents.filter(
+        (e) => e.timestamp - remoteStyleSheetEvents[0].timestamp >= 2500,
       ).length,
     );
 
@@ -1142,7 +1161,7 @@ describe('replayer', function () {
   });
 
   it('can deal with legacy duplicate/conflicting values on textareas', async () => {
-    await page.evaluate(`events = ${JSON.stringify(textareaEvents)}`);
+    await page.evaluate(`events = ${JSON.stringify(badTextareaEvents)}`);
 
     const displayValue = await page.evaluate(`
       const { Replayer } = rrweb;
@@ -1154,5 +1173,26 @@ describe('replayer', function () {
     // If the custom element is not defined, the display value will be 'none'.
     // If the custom element is defined, the display value will be 'block'.
     expect(displayValue).toEqual('this value is used for replay');
+  });
+
+  it('can deal with duplicate/conflicting values on style elements', async () => {
+    await page.evaluate(`events = ${JSON.stringify(badStyleEvents)}`);
+
+    const changedColors = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(1000);
+      // Get the color of the elements after applying the style mutation event
+      [
+        replayer.iframe.contentWindow.getComputedStyle(
+          replayer.iframe.contentDocument.querySelector('#one'),
+        ).color,
+        replayer.iframe.contentWindow.getComputedStyle(
+          replayer.iframe.contentDocument.querySelector('#two'),
+        ).color,
+      ];
+`);
+    const newColor = 'rgb(255, 255, 0)'; // yellow
+    expect(changedColors).toEqual([newColor, newColor]);
   });
 });

@@ -14,8 +14,8 @@ import {
   ISuite,
 } from './utils';
 import type { recordOptions } from '../src/types';
-import { eventWithTime, EventType, RecordPlugin } from '@saola.ai/rrweb-types';
-import { visitSnapshot, NodeType } from '@saola.ai/rrweb-snapshot';
+import { eventWithTime, NodeType, EventType } from '@saola.ai/rrweb-types';
+import { visitSnapshot } from '@saola.ai/rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
   vi.setConfig({ testTimeout: 10_000 });
@@ -81,7 +81,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('can record form interactions', async () => {
@@ -98,10 +98,10 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
-  it('can record textarea mutations correctly', async () => {
+  it('can record and replay textarea mutations correctly', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
     await page.setContent(getHtml.call(this, 'empty.html'));
@@ -112,20 +112,29 @@ describe('record integration tests', function (this: ISuite) {
       const ta = document.createElement('textarea');
       ta.innerText = 'pre value';
       document.body.append(ta);
+
+      const ta2 = document.createElement('textarea');
+      ta2.id = 'ta2';
+      document.body.append(ta2);
     });
-    await page.waitForTimeout(5);
+    await waitForRAF(page);
     await page.evaluate(() => {
       const t = document.querySelector('textarea') as HTMLTextAreaElement;
       t.innerText = 'ok'; // this mutation should be recorded
+
+      const ta2t = document.createTextNode('added');
+      document.getElementById('ta2').append(ta2t);
     });
-    await page.waitForTimeout(5);
+    await waitForRAF(page);
     await page.evaluate(() => {
       const t = document.querySelector('textarea') as HTMLTextAreaElement;
       (t.childNodes[0] as Text).appendData('3'); // this mutation is also valid
+
+      document.getElementById('ta2').remove(); // done with this
     });
-    await page.waitForTimeout(5);
+    await waitForRAF(page);
     await page.type('textarea', '1'); // types (inserts) at index 0, in front of existing text
-    await page.waitForTimeout(5);
+    await waitForRAF(page);
     await page.evaluate(() => {
       const t = document.querySelector('textarea') as HTMLTextAreaElement;
       // user has typed so childNode content should now be ignored
@@ -136,13 +145,13 @@ describe('record integration tests', function (this: ISuite) {
       // there is nothing explicit in rrweb which enforces this, but this test may protect against
       // a future change where a mutation on a textarea incorrectly updates the .value
     });
-    await page.waitForTimeout(5);
+    await waitForRAF(page);
     await page.type('textarea', '2'); // cursor is at index 1
 
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
 
     // check after each mutation and text input
     const replayTextareaValues = await page.evaluate(`
@@ -153,16 +162,147 @@ describe('record integration tests', function (this: ISuite) {
         replayer.pause((e.timestamp - window.snapshots[0].timestamp)+1);
         let ts = replayer.iframe.contentDocument.querySelector('textarea');
         vals.push((e.data.source === 0 ? 'Mutation' : 'User') + ':' + ts.value);
+        let ts2 = replayer.iframe.contentDocument.getElementById('ta2');
+        if (ts2) {
+          vals.push('ta2:' + ts2.value);
+        }
       });
       vals;
     `);
     expect(replayTextareaValues).toEqual([
       'Mutation:pre value',
+      'ta2:',
       'Mutation:ok',
+      'ta2:added',
       'Mutation:ok3',
       'User:1ok3',
       'Mutation:1ok3', // if this gets set to 'ignore', it's an error, as the 'user' has modified the textarea
       'User:12ok3',
+    ]);
+  });
+
+  it('can record and replay style mutations', async () => {
+    // This test shows that the `isStyle` attribute on textContent is not needed in a mutation
+    // TODO: we could get a lot more elaborate here with mixed textContent and insertRule mutations
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto(`${serverURL}/html`);
+    await page.setContent(getHtml.call(this, 'style.html'));
+
+    await waitForRAF(page); // ensure mutations aren't included in fullsnapshot
+
+    await page.evaluate(() => {
+      let styleEl = document.querySelector('style#dual-textContent');
+      if (styleEl) {
+        styleEl.append(
+          document.createTextNode('body { background-color: darkgreen; }'),
+        );
+        styleEl.append(
+          document.createTextNode(
+            '.absolutify { background-image: url("./rel"); }',
+          ),
+        );
+      }
+    });
+    await waitForRAF(page);
+    await page.evaluate(() => {
+      let styleEl = document.querySelector('style#dual-textContent');
+      if (styleEl) {
+        styleEl.childNodes.forEach((cn) => {
+          if (cn.textContent) {
+            cn.textContent = cn.textContent.replace('darkgreen', 'purple');
+            cn.textContent = cn.textContent.replace(
+              'orange !important',
+              'yellow',
+            );
+          }
+        });
+      }
+    });
+    await waitForRAF(page);
+    await page.evaluate(() => {
+      let styleEl = document.querySelector('style#dual-textContent');
+      if (styleEl) {
+        styleEl.childNodes.forEach((cn) => {
+          if (cn.textContent) {
+            cn.textContent = cn.textContent.replace(
+              'black',
+              'black !important',
+            );
+          }
+        });
+      }
+      let hoverMutationStyleEl = document.querySelector('style#hover-mutation');
+      if (hoverMutationStyleEl) {
+        hoverMutationStyleEl.childNodes.forEach((cn) => {
+          if (cn.textContent) {
+            cn.textContent = 'a:hover { outline: cyan solid 1px; }';
+          }
+        });
+      }
+      let st = document.createElement('style');
+      st.id = 'goldilocks';
+      st.innerText = 'body { color: brown }';
+      document.body.append(st);
+    });
+
+    await waitForRAF(page);
+    await page.evaluate(() => {
+      let styleEl = document.querySelector('style#goldilocks');
+      if (styleEl) {
+        styleEl.childNodes.forEach((cn) => {
+          if (cn.textContent) {
+            cn.textContent = cn.textContent.replace('brown', 'gold');
+          }
+        });
+      }
+    });
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+
+    // following ensures that the ./rel url has been absolutized (in a mutation)
+    await assertSnapshot(snapshots);
+
+    // check after each mutation and text input
+    const replayStyleValues = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(window.snapshots);
+      const vals = [];
+      window.snapshots.filter((e)=>e.data.attributes || e.data.source === 5).forEach((e)=>{
+        replayer.pause((e.timestamp - window.snapshots[0].timestamp)+1);
+        let bodyStyle = getComputedStyle(replayer.iframe.contentDocument.querySelector('body'))
+        vals.push({
+          'background-color': bodyStyle['background-color'],
+          'color': bodyStyle['color'],
+        });
+      });
+      vals.push(replayer.iframe.contentDocument.getElementById('single-textContent').innerText);
+      vals.push(replayer.iframe.contentDocument.getElementById('empty').innerText);
+      vals.push(replayer.iframe.contentDocument.getElementById('hover-mutation').innerText);
+      vals;
+`);
+
+    expect(replayStyleValues).toEqual([
+      {
+        'background-color': 'rgb(0, 100, 0)', // darkgreen
+        color: 'rgb(255, 165, 0)', // orange (from style.html)
+      },
+      {
+        'background-color': 'rgb(128, 0, 128)', // purple
+        color: 'rgb(255, 255, 0)', // yellow
+      },
+      {
+        'background-color': 'rgb(0, 0, 0)', // black !important
+        color: 'rgb(165, 42, 42)', // brown
+      },
+      {
+        'background-color': 'rgb(0, 0, 0)',
+        color: 'rgb(255, 215, 0)', // gold
+      },
+      'a:hover,\na.\\:hover { outline: red solid 1px; }', // has run adaptCssForReplay
+      'a:hover,\na.\\:hover { outline: blue solid 1px; }', // has run adaptCssForReplay
+      'a:hover,\na.\\:hover { outline: cyan solid 1px; }', // has run adaptCssForReplay after text mutation
     ]);
   });
 
@@ -183,7 +323,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('can record character data muatations', async () => {
@@ -205,7 +345,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('can record attribute mutation', async () => {
@@ -225,7 +365,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('handles null attribute values', async () => {
@@ -253,7 +393,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('can record node mutations', async () => {
@@ -272,7 +412,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('can record style changes compactly and preserve css var() functions', async () => {
@@ -322,7 +462,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('can freeze mutations', async () => {
@@ -358,7 +498,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should not record input events on ignored elements', async () => {
@@ -394,7 +534,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('can use maskInputOptions to configure which type of inputs should be masked', async () => {
@@ -420,7 +560,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should mask password value attribute with maskInputOptions', async () => {
@@ -444,7 +584,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should mask inputs via function call', async () => {
@@ -474,7 +614,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record input userTriggered values if userTriggeredOnInput is enabled', async () => {
@@ -494,7 +634,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should not record blocked elements and its child nodes', async () => {
@@ -509,7 +649,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should not record blocked elements dynamically added', async () => {
@@ -531,7 +671,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('mutations should work when blocked class is unblocked', async () => {
@@ -552,7 +692,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record DOM node movement 1', async () => {
@@ -572,7 +712,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record DOM node movement 2', async () => {
@@ -589,7 +729,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record dynamic CSS changes', async () => {
@@ -600,7 +740,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record canvas mutations', async () => {
@@ -625,7 +765,7 @@ describe('record integration tests', function (this: ISuite) {
         });
       }
     }
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should not record input values if dynamically added and maskAllInputs is true', async () => {
@@ -662,7 +802,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('can correctly serialize a shader and multiple webgl contexts', async () => {
@@ -677,7 +817,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('will serialize node before record', async () => {
@@ -698,7 +838,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('will defer missing next node mutation', async () => {
@@ -735,7 +875,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record images with blob url', async () => {
@@ -752,7 +892,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record images inside iframe with blob url', async () => {
@@ -769,7 +909,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record images inside iframe with blob url after iframe was reloaded', async () => {
@@ -792,7 +932,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record shadow DOM', async () => {
@@ -842,7 +982,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record shadow DOM 2', async () => {
@@ -867,7 +1007,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record shadow DOM 3', async () => {
@@ -888,7 +1028,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record moved shadow DOM', async () => {
@@ -917,7 +1057,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record moved shadow DOM 2', async () => {
@@ -955,7 +1095,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record nested iframes and shadow doms', async () => {
@@ -1000,7 +1140,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record mutations in iframes accross pages', async () => {
@@ -1030,7 +1170,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   // https://github.com/webcomponents/polyfills/tree/master/packages/shadydom
@@ -1064,7 +1204,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   // https://github.com/salesforce/lwc/tree/master/packages/%40lwc/synthetic-shadow
@@ -1106,7 +1246,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should mask texts', async () => {
@@ -1121,7 +1261,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should mask texts using maskTextFn', async () => {
@@ -1137,7 +1277,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should unmask texts using maskTextFn', async () => {
@@ -1157,7 +1297,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('can mask character data mutations', async () => {
@@ -1186,7 +1326,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('can mask character data mutations with regexp', async () => {
@@ -1219,7 +1359,7 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
   });
 
   it('should record after DOMContentLoaded event', async () => {
@@ -1234,6 +1374,175 @@ describe('record integration tests', function (this: ISuite) {
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    assertSnapshot(snapshots);
+    await assertSnapshot(snapshots);
+  });
+
+  /**
+   * the regression part of the following is now handled by replayer.test.ts::'can deal with duplicate/conflicting values on style elements'
+   * so this test could be dropped if we add more robust mixing of `insertRule` into 'can record and replay style mutations'
+   */
+  it('should record style mutations and replay them correctly', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    const OldColor = 'rgb(255, 0, 0)'; // red color
+    const NewColor = 'rgb(255, 255, 0)'; // yellow color
+
+    await page.setContent(
+      `
+      <!DOCTYPE html><html lang="en">
+        <head>
+	        <style> 
+          </style>
+        </head>
+        <body>
+	        <div id="one"></div>
+          <div id="two"></div>
+	        <script>
+		        document.querySelector("style").sheet.insertRule('#one { color: ${OldColor}; }', 0);
+	        </script>
+        </body></html>
+      `,
+    );
+    // Start rrweb recording
+    await page.evaluate(
+      (code, recordSnippet) => {
+        const script = document.createElement('script');
+        script.textContent = `${code}window.Date.now = () => new Date(Date.UTC(2018, 10, 15, 8)).valueOf();${recordSnippet}`;
+        document.head.appendChild(script);
+      },
+      code,
+      generateRecordSnippet({}),
+    );
+
+    await page.evaluate(
+      async (OldColor, NewColor) => {
+        // Create a new style element with the same content as the existing style element and apply it to the #two div element
+        const incrementalStyle = document.createElement(
+          'style',
+        ) as HTMLStyleElement;
+        incrementalStyle.textContent = ` \n`;
+        document.head.appendChild(incrementalStyle);
+        incrementalStyle.sheet!.insertRule(`#two { color: ${OldColor}; }`, 0);
+
+        await new Promise((resolve) =>
+          requestAnimationFrame(() => {
+            requestAnimationFrame(resolve);
+          }),
+        );
+
+        // Change the color of the #one div element to yellow as an incremental style mutation
+        const styleElement = document.querySelector('style')!;
+        (styleElement.sheet!.cssRules[0] as any).style.setProperty(
+          'color',
+          NewColor,
+        );
+        // Change the color of the #two div element to yellow as an incremental style mutation
+        (incrementalStyle.sheet!.cssRules[0] as any).style.setProperty(
+          'color',
+          NewColor,
+        );
+      },
+      OldColor,
+      NewColor,
+    );
+    await waitForRAF(page);
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    await assertSnapshot(snapshots);
+
+    /**
+     * Replay the recorded events and check if the style mutation is applied correctly
+     */
+    const changedColors = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(window.snapshots);
+      replayer.pause(1000);
+
+      // Get the color of the element after applying the style mutation event
+      [
+        window.getComputedStyle(
+          replayer.iframe.contentDocument.querySelector('#one'),
+        ).color,
+        window.getComputedStyle(
+          replayer.iframe.contentDocument.querySelector('#two'),
+        ).color,
+      ];
+    `);
+    expect(changedColors).toEqual([NewColor, NewColor]);
+    await page.close();
+  });
+
+  it('should record style mutations with multiple child nodes and replay them correctly', async () => {
+    // ensure that presence of multiple text nodes doesn't interfere with programmatic insertRule operations
+
+    const page: puppeteer.Page = await browser.newPage();
+    const Color = 'rgb(255, 0, 0)'; // red color
+
+    await page.setContent(
+      `
+      <!DOCTYPE html><html lang="en">
+        <head>
+	        <style>
+          /* hello */
+          </style>
+        </head>
+        <body>
+	        <div id="one"></div>
+          <div id="two"></div>
+	        <script>
+		        document.querySelector("style").append(document.createTextNode("/* world */"));
+		        document.querySelector("style").sheet.insertRule('#one { color: ${Color}; }', 0);
+	        </script>
+        </body></html>
+      `,
+    );
+    // Start rrweb recording
+    await page.evaluate(
+      (code, recordSnippet) => {
+        const script = document.createElement('script');
+        script.textContent = `${code};${recordSnippet}`;
+        document.head.appendChild(script);
+      },
+      code,
+      generateRecordSnippet({}),
+    );
+
+    await page.evaluate(async (Color) => {
+      // Create a new style element with the same content as the existing style element and apply it to the #two div element
+      const incrementalStyle = document.createElement(
+        'style',
+      ) as HTMLStyleElement;
+      incrementalStyle.append(document.createTextNode('/* hello */'));
+      incrementalStyle.append(document.createTextNode('/* world */'));
+      document.head.appendChild(incrementalStyle);
+      incrementalStyle.sheet!.insertRule(`#two { color: ${Color}; }`, 0);
+    }, Color);
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    await assertSnapshot(snapshots);
+
+    /**
+     * Replay the recorded events and check if the style mutation is applied correctly
+     */
+    const changedColors = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(window.snapshots);
+      replayer.pause(1000);
+
+      // Get the color of the element after applying the style mutation event
+      [
+        window.getComputedStyle(
+          replayer.iframe.contentDocument.querySelector('#one'),
+        ).color,
+        window.getComputedStyle(
+          replayer.iframe.contentDocument.querySelector('#two'),
+        ).color,
+      ];
+    `);
+    expect(changedColors).toEqual([Color, Color]);
+    await page.close();
   });
 });

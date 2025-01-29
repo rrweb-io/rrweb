@@ -1,22 +1,19 @@
 import { record } from '@saola.ai/rrweb';
 import type { recordOptions } from '@saola.ai/rrweb';
 import type { eventWithTime } from '@saola.ai/rrweb-types';
-import { MessageName, RecordStartedMessage } from '~/types';
+import { MessageName, type RecordStartedMessage } from '~/types';
 import { isInCrossOriginIFrame } from '~/utils';
 
 /**
  * This script is injected into both main page and cross-origin IFrames through <script> tags.
  */
 
-const events: eventWithTime[] = [];
 let stopFn: (() => void) | null = null;
 
 function startRecord(config: recordOptions<eventWithTime>) {
-  events.length = 0;
   stopFn =
     record({
       emit: (event) => {
-        events.push(event);
         postMessage({
           message: MessageName.EmitEvent,
           event,
@@ -52,7 +49,6 @@ const messageHandler = (
       }
       postMessage({
         message: MessageName.RecordStopped,
-        events,
         endTimestamp: Date.now(),
       });
       window.removeEventListener('message', messageHandler);

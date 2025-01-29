@@ -40,6 +40,16 @@
 
 - Updated dependencies []:
   - @saola.ai/rrweb-snapshot@2.0.13
+## 2.0.0-alpha.18
+
+### Patch Changes
+
+- [#1561](https://github.com/rrweb-io/rrweb/pull/1561) [`8e55c45`](https://github.com/rrweb-io/rrweb/commit/8e55c455ff2987a3b5f367f23f48c1f2de74ce45) Thanks [@billyvg](https://github.com/billyvg)! - Ignore invalid DOM attributes when diffing
+
+- [#1593](https://github.com/rrweb-io/rrweb/pull/1593) [`5a78938`](https://github.com/rrweb-io/rrweb/commit/5a789385a341311ba327a768fe0e2f0f2f5002ee) Thanks [@daibhin](https://github.com/daibhin)! - `NodeType` enum was moved from rrweb-snapshot to @rrweb/types
+  The following types where moved from rrweb-snapshot to @rrweb/types: `documentNode`, `documentTypeNode`, `legacyAttributes`, `textNode`, `cdataNode`, `commentNode`, `elementNode`, `serializedNode`, `serializedNodeWithId`, `serializedElementNodeWithId`, `serializedTextNodeWithId`, `IMirror`, `INode`, `mediaAttributes`, `attributes` and `DataURLOptions`
+- Updated dependencies [[`02cc62d`](https://github.com/rrweb-io/rrweb/commit/02cc62dd44b52f579a332b55c49896a5cb7cc694), [`04ee6ed`](https://github.com/rrweb-io/rrweb/commit/04ee6eda57157f0e04f18f907d8f3e59ababc753), [`5fbb904`](https://github.com/rrweb-io/rrweb/commit/5fbb904edb653f3da17e6775ee438d81ef0bba83), [`5a78938`](https://github.com/rrweb-io/rrweb/commit/5a789385a341311ba327a768fe0e2f0f2f5002ee)]:
+  - rrweb-snapshot@2.0.0-alpha.18
 
 ## 2.0.0-alpha.17
 
