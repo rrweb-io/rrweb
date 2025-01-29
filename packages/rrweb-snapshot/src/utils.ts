@@ -474,7 +474,7 @@ export function splitCssText(
 ): string[] {
   const childNodes = Array.from(style.childNodes);
   const splits: string[] = [];
-  let iterLimit = 0;
+  let iterCount = 0;
   if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
     let cssTextNorm = normalizeCssString(cssText, _testNoPxNorm);
     const normFactor = cssTextNorm.length / cssText.length;
@@ -487,6 +487,7 @@ export function splitCssText(
           childNodes[i].textContent!,
           _testNoPxNorm,
         );
+        const jLimit = 100; // how many iterations for the first part of searching
         let j = 3;
         for (; j < textContentNorm.length; j++) {
           if (
@@ -525,6 +526,12 @@ export function splitCssText(
               splits.push(cssText);
               return splits;
             }
+            j = jLimit + 1; // trigger end of search
+          } else if (j === textContentNorm.length - 1) {
+            // we're about to end loop without a split point
+            splitNorm = cssTextNorm.indexOf(startSubstring);
+          }
+          if (cssNormSplits.length >= 2 && j > jLimit) {
             const prevTextContent = childNodes[i - 1].textContent;
             if (prevTextContent && typeof prevTextContent === 'string') {
               // pick the first matching point which respects the previous chunk's approx size
@@ -535,16 +542,13 @@ export function splitCssText(
               // fall back to pick the first matching point of many
               splitNorm = cssNormSplits[0].length;
             }
-          } else if (j === textContentNorm.length - 1) {
-            // we're about to end loop without a split point
-            splitNorm = cssTextNorm.indexOf(startSubstring);
           }
           if (splitNorm !== -1) {
             // find the split point in the original text
             let k = Math.floor(splitNorm / normFactor);
             for (; k > 0 && k < cssText.length; ) {
-              iterLimit += 1;
-              if (iterLimit > 50 * childNodes.length) {
+              iterCount += 1;
+              if (iterCount > 50 * childNodes.length) {
                 // quit for performance purposes
                 splits.push(cssText);
                 return splits;
