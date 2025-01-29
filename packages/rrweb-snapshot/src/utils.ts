@@ -450,7 +450,10 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
  * Intention is to normalize by remove spaces, semicolons and CSS comments
  * so that we can compare css as authored vs. output of stringifyStylesheet
  */
-export function normalizeCssString(cssText: string, _testNoPxNorm=false): string {
+export function normalizeCssString(
+  cssText: string,
+  _testNoPxNorm = false,
+): string {
   if (_testNoPxNorm) {
     return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '');
   } else {
@@ -467,7 +470,7 @@ export function normalizeCssString(cssText: string, _testNoPxNorm=false): string
 export function splitCssText(
   cssText: string,
   style: HTMLStyleElement,
-  _testNoPxNorm=false,
+  _testNoPxNorm = false,
 ): string[] {
   const childNodes = Array.from(style.childNodes);
   const splits: string[] = [];
@@ -480,7 +483,10 @@ export function splitCssText(
         childNodes[i].textContent &&
         typeof childNodes[i].textContent === 'string'
       ) {
-        const textContentNorm = normalizeCssString(childNodes[i].textContent!, _testNoPxNorm);
+        const textContentNorm = normalizeCssString(
+          childNodes[i].textContent!,
+          _testNoPxNorm,
+        );
         let j = 3;
         for (; j < textContentNorm.length; j++) {
           if (
@@ -543,7 +549,10 @@ export function splitCssText(
                 splits.push(cssText);
                 return splits;
               }
-              const normPart = normalizeCssString(cssText.substring(0, k), _testNoPxNorm);
+              const normPart = normalizeCssString(
+                cssText.substring(0, k),
+                _testNoPxNorm,
+              );
               if (normPart.length === splitNorm) {
                 splits.push(cssText.substring(0, k));
                 cssText = cssText.substring(k);

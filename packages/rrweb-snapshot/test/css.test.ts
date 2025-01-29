@@ -274,9 +274,13 @@ describe('css splitter', () => {
       const browserSheet = expected.join('');
       expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
       let _testNoPxNorm = true; // trigger the original motivating scenario for this test
-      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual(expected);
+      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual(
+        expected,
+      );
       _testNoPxNorm = false; // this case should also be solved by normalizing '0px' -> '0'
-      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual(expected);
+      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual(
+        expected,
+      );
     }
   });
 
