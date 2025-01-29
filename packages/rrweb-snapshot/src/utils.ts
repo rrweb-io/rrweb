@@ -494,7 +494,7 @@ export function splitCssText(
           let bits = cssTextNorm.split(bit);
           let splitNorm = -1;
           if (bits.length === 2) {
-            splitNorm = cssTextNorm.indexOf(bit);
+            splitNorm = bits[0].length;
           } else if (
             bits.length > 2 &&
             bits[0] === '' &&
