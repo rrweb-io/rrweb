@@ -1,5 +1,14 @@
 # rrdom
 
+## 2.0.19
+
+### Patch Changes
+
+- rebase rrweb from remote - jan 25
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-snapshot@2.0.19
+
 ## 2.0.17
 
 ### Patch Changes
@@ -40,6 +49,7 @@
 
 - Updated dependencies []:
   - @saola.ai/rrweb-snapshot@2.0.13
+
 ## 2.0.0-alpha.18
 
 ### Patch Changes

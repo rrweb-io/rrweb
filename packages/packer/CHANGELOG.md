@@ -1,5 +1,14 @@
 # @rrweb/packer
 
+## 2.0.19
+
+### Patch Changes
+
+- rebase rrweb from remote - jan 25
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-types@2.0.19
+
 ## 2.0.15
 
 ### Patch Changes
@@ -26,6 +35,7 @@
 
 - Updated dependencies []:
   - @saola.ai/rrweb-types@2.0.13
+
 ## 2.0.0-alpha.18
 
 ### Patch Changes

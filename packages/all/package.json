@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/rrweb-all",
-  "version": "2.0.18",
+  "version": "2.0.19",
   "publishConfig": {
     "access": "public"
   },
@@ -56,9 +56,9 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@saola.ai/rrweb-types": "^2.0.18",
-    "@saola.ai/rrweb-packer": "^2.0.18",
-    "@saola.ai/rrweb": "^2.0.18"
+    "@saola.ai/rrweb-types": "^2.0.19",
+    "@saola.ai/rrweb-packer": "^2.0.19",
+    "@saola.ai/rrweb": "^2.0.19"
   },
   "browserslist": [
     "supports es6-class"

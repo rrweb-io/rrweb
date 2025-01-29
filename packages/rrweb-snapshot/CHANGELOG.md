@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.0.19
+
+### Patch Changes
+
+- rebase rrweb from remote - jan 25
+
 ## 2.0.17
 
 ## 2.0.16
@@ -25,6 +31,7 @@
 ### Patch Changes
 
 - Merge from rrweb remote upstream
+
 ## 2.0.0-alpha.18
 
 ### Major Changes
