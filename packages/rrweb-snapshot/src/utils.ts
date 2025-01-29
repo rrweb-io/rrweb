@@ -502,6 +502,15 @@ export function splitCssText(
           ) {
             // this childNode has same starting content as previous
             splitNorm = cssTextNorm.indexOf(bit, 1);
+          } else if (bits.length === 1) {
+            // try to roll back, and just pick the first matching point,
+            // not the only matching point
+            splitNorm = cssTextNorm.indexOf(textContentNorm.substring(0, j - 1));
+            if (splitNorm === -1) {
+              // no split possible
+              splits.push(cssText);
+              return splits;
+            }
           } else if (j === textContentNorm.length - 1) {
             // we're about to end loop without a split point
             splitNorm = cssTextNorm.indexOf(bit);
