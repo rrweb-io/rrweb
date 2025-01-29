@@ -48,10 +48,6 @@
       "name": "@rrweb/packer",
       "path": "../packages/packer"
     },
-    {
-      "name": "web-extension (package)",
-      "path": "../packages/web-extension"
-    },
     { "name": "rrvideo (package)", "path": "../packages/rrvideo" },
     {
       "name": "@rrweb/rrweb-plugin-console-record",

@@ -26,7 +26,6 @@
       "@saola.ai/rrdom-nodejs",
       "@saola.ai/rrweb-player",
       "@saola.ai/rrweb-types",
-      "@saola.ai/rrweb-web-extension",
       "@saola.ai/rrvideo"
     ]
   ],
