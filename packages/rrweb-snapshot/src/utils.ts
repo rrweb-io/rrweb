@@ -489,24 +489,24 @@ export function splitCssText(
           break;
         }
         for (; j < textContentNorm.length; j++) {
-          let bit = textContentNorm.substring(0, j);
+          let startSubstring = textContentNorm.substring(0, j);
           // this substring should appears only once in overall text too
-          let bits = cssTextNorm.split(bit);
+          let cssNormSplits = cssTextNorm.split(startSubstring);
           let splitNorm = -1;
-          if (bits.length === 2) {
-            splitNorm = bits[0].length;
+          if (cssNormSplits.length === 2) {
+            splitNorm = cssNormSplits[0].length;
           } else if (
-            bits.length > 2 &&
-            bits[0] === '' &&
+            cssNormSplits.length > 2 &&
+            cssNormSplits[0] === '' &&
             childNodes[i - 1].textContent !== ''
           ) {
             // this childNode has same starting content as previous
-            splitNorm = cssTextNorm.indexOf(bit, 1);
-          } else if (bits.length === 1) {
+            splitNorm = cssTextNorm.indexOf(startSubstring, 1);
+          } else if (cssNormSplits.length === 1) {
             // try to roll back to get multiple matches again
-            bit = bit.substring(0, bit.length - 1)
-            bits = cssTextNorm.split(bit);
-            if (bits.length <= 1) {
+            startSubstring = startSubstring.substring(0, startSubstring.length - 1)
+            cssNormSplits = cssTextNorm.split(startSubstring);
+            if (cssNormSplits.length <= 1) {
               // no split possible
               splits.push(cssText);
               return splits;
@@ -516,15 +516,15 @@ export function splitCssText(
                 typeof prevTextContent === 'string') {
               // pick the first matching point which respects the previous chunk's approx size
               const prevMinLength = normalizeCssString(prevTextContent).length;
-              splitNorm = cssTextNorm.indexOf(bit, prevMinLength);
+              splitNorm = cssTextNorm.indexOf(startSubstring, prevMinLength);
             }
             if (splitNorm === -1) {
               // fall back to pick the first matching point of many
-              splitNorm = bits[0].length;
+              splitNorm = cssNormSplits[0].length;
             }
           } else if (j === textContentNorm.length - 1) {
             // we're about to end loop without a split point
-            splitNorm = cssTextNorm.indexOf(bit);
+            splitNorm = cssTextNorm.indexOf(startSubstring);
           }
           if (splitNorm !== -1) {
             // find the split point in the original text
