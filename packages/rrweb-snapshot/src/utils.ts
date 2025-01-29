@@ -489,9 +489,9 @@ export function splitCssText(
           break;
         }
         for (; j < textContentNorm.length; j++) {
-          const bit = textContentNorm.substring(0, j);
+          let bit = textContentNorm.substring(0, j);
           // this substring should appears only once in overall text too
-          const bits = cssTextNorm.split(bit);
+          let bits = cssTextNorm.split(bit);
           let splitNorm = -1;
           if (bits.length === 2) {
             splitNorm = cssTextNorm.indexOf(bit);
@@ -502,14 +502,25 @@ export function splitCssText(
           ) {
             // this childNode has same starting content as previous
             splitNorm = cssTextNorm.indexOf(bit, 1);
-          } else if (false && bits.length === 1) {
-            // try to roll back, and just pick the first matching point,
-            // not the only matching point
-            splitNorm = cssTextNorm.indexOf(textContentNorm.substring(0, j - 1));
-            if (splitNorm === -1) {
+          } else if (bits.length === 1) {
+            // try to roll back to get multiple matches again
+            bit = bit.substring(0, bit.length - 1)
+            bits = cssTextNorm.split(bit);
+            if (bits.length <= 1) {
               // no split possible
               splits.push(cssText);
               return splits;
+            }
+            const prevTextContent = childNodes[i - 1].textContent;
+            if (prevTextContent &&
+                typeof prevTextContent === 'string') {
+              // pick the first matching point which respects the previous chunk's approx size
+              const prevMinLength = normalizeCssString(prevTextContent).length;
+              splitNorm = cssTextNorm.indexOf(bit, prevMinLength);
+            }
+            if (splitNorm === -1) {
+              // fall back to pick the first matching point of many
+              splitNorm = bits[0].length;
             }
           } else if (j === textContentNorm.length - 1) {
             // we're about to end loop without a split point
