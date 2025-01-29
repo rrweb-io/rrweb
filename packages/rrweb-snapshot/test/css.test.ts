@@ -280,7 +280,8 @@ describe('css splitter', () => {
   it('finds css textElement splits correctly, even with repeated sections', () => {
     const window = new Window({ url: 'https://localhost:8080' });
     const document = window.document;
-    document.head.innerHTML = '<style>.a{background-color: black; }        </style>';
+    document.head.innerHTML =
+      '<style>.a{background-color: black; }        </style>';
     const style = document.querySelector('style');
     if (style) {
       style.append('.x{background-color:red;}');

@@ -504,7 +504,10 @@ export function splitCssText(
             splitNorm = cssTextNorm.indexOf(startSubstring, 1);
           } else if (cssNormSplits.length === 1) {
             // try to roll back to get multiple matches again
-            startSubstring = startSubstring.substring(0, startSubstring.length - 1)
+            startSubstring = startSubstring.substring(
+              0,
+              startSubstring.length - 1,
+            );
             cssNormSplits = cssTextNorm.split(startSubstring);
             if (cssNormSplits.length <= 1) {
               // no split possible
@@ -512,8 +515,7 @@ export function splitCssText(
               return splits;
             }
             const prevTextContent = childNodes[i - 1].textContent;
-            if (prevTextContent &&
-                typeof prevTextContent === 'string') {
+            if (prevTextContent && typeof prevTextContent === 'string') {
               // pick the first matching point which respects the previous chunk's approx size
               const prevMinLength = normalizeCssString(prevTextContent).length;
               splitNorm = cssTextNorm.indexOf(startSubstring, prevMinLength);
