@@ -2,4 +2,4 @@
 "@rrweb/utils": patch
 ---
 
-safer access to iframes in safari for untainted prototypes
+load unpatched versions of things from Angular zone when present
