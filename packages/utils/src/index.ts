@@ -66,7 +66,9 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
   if (untaintedBasePrototype[key])
     return untaintedBasePrototype[key] as BasePrototypeCache[T];
 
-  const defaultObj = angularZoneUnpatchedAlternative(key) || globalThis[key] as TypeofPrototypeOwner;
+  const defaultObj =
+    angularZoneUnpatchedAlternative(key) ||
+    (globalThis[key] as TypeofPrototypeOwner);
   const defaultPrototype = defaultObj.prototype as BasePrototypeCache[T];
 
   // use list of testable accessors to check if the prototype is tainted
@@ -95,8 +97,7 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
       ),
   );
 
-  const isUntainted =
-    isUntaintedAccessors && isUntaintedMethods;
+  const isUntainted = isUntaintedAccessors && isUntaintedMethods;
   // we're going to default to what we do have
   let impl: BasePrototypeCache[T] =
     defaultObj.prototype as BasePrototypeCache[T];
