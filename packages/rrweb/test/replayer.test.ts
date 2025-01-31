@@ -884,25 +884,28 @@ describe('replayer', function () {
       ).toEqual(colorRGBMap.green);
 
       // check the adopted stylesheet #5 is applied on the shadow dom #4's root
-      expect(await contentDocument!.evaluate(() => 
-          window.getComputedStyle(
-            document
-              .querySelector('#shadow-host4')!
-              .shadowRoot!.querySelector('button')!,
-          ).color,
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            window.getComputedStyle(
+              document
+                .querySelector('#shadow-host4')!
+                .shadowRoot!.querySelector('button')!,
+            ).color,
         ),
       ).toEqual(colorRGBMap.blue);
 
       // check the adopted stylesheet #6 is applied on the shadow dom #4's root
-      expect(await contentDocument!.evaluate(() => 
-        window.getComputedStyle(
-          document
-            .querySelector('#shadow-host4')!
-            .shadowRoot!.querySelector('button')!,
-        ).border,
-      ),
-    ).toEqual(`1px solid ${colorRGBMap.green}`);
-
+      expect(
+        await contentDocument!.evaluate(
+          () =>
+            window.getComputedStyle(
+              document
+                .querySelector('#shadow-host4')!
+                .shadowRoot!.querySelector('button')!,
+            ).border,
+        ),
+      ).toEqual(`1px solid ${colorRGBMap.green}`);
     };
     await checkCorrectness();
 

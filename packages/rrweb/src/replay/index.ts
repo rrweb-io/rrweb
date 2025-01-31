@@ -70,7 +70,7 @@ import type {
   styleDeclarationData,
   adoptedStyleSheetData,
   serializedElementNodeWithId,
-  styleParam
+  styleParam,
 } from '@rrweb/types';
 import {
   polyfill,
@@ -2077,13 +2077,14 @@ export class Replayer {
       // if node was removed before styles were applied, we want to store the styles for future nodes
       data.styles?.forEach((style) => {
         const key = style.styleId;
-        if (this.styleMirror.getStyle(key) === null) this.styleMap.set(key, style);
+        if (this.styleMirror.getStyle(key) === null)
+          this.styleMap.set(key, style);
       });
 
       return;
     }
     if (!data.styles || data.styles?.length < data.styleIds?.length) {
-      const styles: styleParam[] = [...data.styles || []];
+      const styles: styleParam[] = [...(data.styles || [])];
       data.styleIds?.forEach((styleId) => {
         // styles either already exist in style mirror or in the data
         if (this.styleMirror.getStyle(styleId) !== null) return;
