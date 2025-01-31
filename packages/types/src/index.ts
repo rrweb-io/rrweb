@@ -459,14 +459,16 @@ export type styleSheetRuleParam = {
 
 export type styleSheetRuleCallback = (s: styleSheetRuleParam) => void;
 
+export type styleParam = {
+  styleId: number;
+  rules: styleSheetAddRule[];
+};
+
 export type adoptedStyleSheetParam = {
   // id indicates the node id of document or shadow DOMs' host element.
   id: number;
   // New CSSStyleSheets which have never appeared before.
-  styles?: {
-    styleId: number;
-    rules: styleSheetAddRule[];
-  }[];
+  styles?: styleParam[];
   // StyleSheet ids to be adopted.
   styleIds: number[];
 };
