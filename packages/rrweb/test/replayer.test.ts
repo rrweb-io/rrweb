@@ -828,7 +828,7 @@ describe('replayer', function () {
       var replayer = new Replayer(events,{showDebug:true});
       replayer.play();
     `);
-    await page.waitForTimeout(600);
+    await page.waitForTimeout(900);
     const iframe = await page.$('iframe');
     const contentDocument = await iframe!.contentFrame()!;
     const colorRGBMap = {
@@ -882,13 +882,34 @@ describe('replayer', function () {
             ).color,
         ),
       ).toEqual(colorRGBMap.green);
+
+      // check the adopted stylesheet #5 is applied on the shadow dom #4's root
+      expect(await contentDocument!.evaluate(() => 
+          window.getComputedStyle(
+            document
+              .querySelector('#shadow-host4')!
+              .shadowRoot!.querySelector('button')!,
+          ).color,
+        ),
+      ).toEqual(colorRGBMap.blue);
+
+      // check the adopted stylesheet #6 is applied on the shadow dom #4's root
+      expect(await contentDocument!.evaluate(() => 
+        window.getComputedStyle(
+          document
+            .querySelector('#shadow-host4')!
+            .shadowRoot!.querySelector('button')!,
+        ).border,
+      ),
+    ).toEqual(`1px solid ${colorRGBMap.green}`);
+
     };
     await checkCorrectness();
 
     // To test the correctness of replaying adopted stylesheet events in the fast-forward mode.
     await page.evaluate('replayer.play(0);');
     await waitForRAF(page);
-    await page.evaluate('replayer.pause(600);');
+    await page.evaluate('replayer.pause(900);');
     await checkCorrectness();
   });
 

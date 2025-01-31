@@ -70,6 +70,7 @@ import type {
   styleDeclarationData,
   adoptedStyleSheetData,
   serializedElementNodeWithId,
+  styleParam
 } from '@rrweb/types';
 import {
   polyfill,
@@ -150,6 +151,9 @@ export class Replayer {
 
   // Used to track StyleSheetObjects adopted on multiple document hosts.
   private styleMirror: StyleSheetMirror = new StyleSheetMirror();
+
+  // Used to store adopted styles that get skipped over when using virtual dom and skipping in the timeline.
+  private styleMap: Map<number, styleParam> = new Map();
 
   // Used to track video & audio elements, and keep them in sync with general playback.
   private mediaManager: MediaManager;
@@ -336,6 +340,7 @@ export class Replayer {
       this.firstFullSnapshot = null;
       this.mirror.reset();
       this.styleMirror.reset();
+      this.styleMap = new Map();
       this.mediaManager.reset();
     });
 
@@ -556,6 +561,7 @@ export class Replayer {
     this.mirror.reset();
     this.styleMirror.reset();
     this.mediaManager.reset();
+    this.styleMap = new Map();
     this.config.root.removeChild(this.wrapper);
     this.emitter.emit(ReplayerEvents.Destroy);
   }
@@ -698,6 +704,7 @@ export class Replayer {
           }
           this.mediaManager.reset();
           this.styleMirror.reset();
+          this.styleMap = new Map();
           this.rebuildFullSnapshot(event, isSync);
           this.iframe.contentWindow?.scrollTo(event.data.initialOffset);
         };
@@ -2066,7 +2073,30 @@ export class Replayer {
 
   private applyAdoptedStyleSheet(data: adoptedStyleSheetData) {
     const targetHost = this.mirror.getNode(data.id);
-    if (!targetHost) return;
+    if (!targetHost) {
+      // if node was removed before styles were applied, we want to store the styles for future nodes
+      data.styles?.forEach((style) => {
+        const key = style.styleId;
+        if (this.styleMirror.getStyle(key) === null) this.styleMap.set(key, style);
+      });
+
+      return;
+    }
+    if (!data.styles || data.styles?.length < data.styleIds?.length) {
+      const styles: styleParam[] = [...data.styles || []];
+      data.styleIds?.forEach((styleId) => {
+        // styles either already exist in style mirror or in the data
+        if (this.styleMirror.getStyle(styleId) !== null) return;
+        if (styles.find((style) => style.styleId === styleId)) return;
+
+        // backup styles from removed nodes where original styles were not applied
+        const style: styleParam | undefined = this.styleMap.get(styleId);
+        if (style) styles.push(style);
+        this.styleMap.delete(styleId);
+      });
+
+      if (styles.length > 0) data.styles = [...styles];
+    }
     // Create StyleSheet objects which will be adopted after.
     data.styles?.forEach((style) => {
       let newStyleSheet: CSSStyleSheet | null = null;
