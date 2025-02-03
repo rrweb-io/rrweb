@@ -918,6 +918,7 @@ export function serializeNodeWithId(
     doc: Document;
     mirror: Mirror;
     blockClass: string | RegExp;
+    blockElementFn: BlockElementFn | null;
     blockSelector: string | null;
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
@@ -952,6 +953,7 @@ export function serializeNodeWithId(
     doc,
     mirror,
     blockClass,
+    blockElementFn,
     blockSelector,
     maskTextClass,
     maskTextSelector,
@@ -1236,7 +1238,7 @@ function snapshot(
   options?: {
     mirror?: Mirror;
     blockClass?: string | RegExp;
-    blockElementFn?: BlockElementFn;
+    blockElementFn?: BlockElementFn | null;
     blockSelector?: string | null;
     maskTextClass?: string | RegExp;
     maskTextSelector?: string | null;

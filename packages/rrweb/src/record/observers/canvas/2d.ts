@@ -13,8 +13,8 @@ export default function initCanvas2DMutationObserver(
   cb: canvasManagerMutationCallback,
   win: IWindow,
   blockClass: blockClass,
-  blockElementFn: BlockElementFn | null,
   blockSelector: string | null,
+  blockElementFn: BlockElementFn | null,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
   const props2D = Object.getOwnPropertyNames(

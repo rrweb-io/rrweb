@@ -14,8 +14,8 @@ function getNormalizedContextName(contextType: string) {
 export default function initCanvasContextObserver(
   win: IWindow,
   blockClass: blockClass,
-  blockElementFn: BlockElementFn | null,
   blockSelector: string | null,
+  blockElementFn: BlockElementFn | null,
   setPreserveDrawingBufferToTrue: boolean,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];

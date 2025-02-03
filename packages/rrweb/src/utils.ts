@@ -247,8 +247,8 @@ export function closestElementOfNode(node: Node | null): HTMLElement | null {
 export function isBlocked(
   node: Node | null,
   blockClass: blockClass,
-  blockElementFn: BlockElementFn | null,
   blockSelector: string | null,
+  blockElementFn: BlockElementFn | null,
   checkAncestors: boolean,
 ): boolean {
   if (!node) {
