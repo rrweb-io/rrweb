@@ -15,6 +15,7 @@ import type {
   DataURLOptions,
   addedNodeMutation,
   blockClass,
+  BlockElementFn,
   canvasMutationCallback,
   customElementCallback,
   eventWithTime,
@@ -46,6 +47,7 @@ export type recordOptions<T> = {
   checkoutEveryNth?: number;
   checkoutEveryNms?: number;
   blockClass?: blockClass;
+  blockElementFn?: BlockElementFn;
   blockSelector?: string;
   ignoreClass?: string;
   ignoreSelector?: string;
@@ -86,6 +88,7 @@ export type observerParam = {
   mediaInteractionCb: mediaInteractionCallback;
   selectionCb: selectionCallback;
   blockClass: blockClass;
+  blockElementFn: BlockElementFn | null;
   blockSelector: string | null;
   ignoreClass: string;
   ignoreSelector: string | null;
@@ -132,6 +135,7 @@ export type MutationBufferParam = Pick<
   observerParam,
   | 'mutationCb'
   | 'blockClass'
+  | 'blockElementFn'
   | 'blockSelector'
   | 'maskTextClass'
   | 'maskTextSelector'

@@ -1,5 +1,6 @@
 import {
   type blockClass,
+  type BlockElementFn,
   CanvasContext,
   type canvasManagerMutationCallback,
   type canvasMutationWithType,
@@ -15,6 +16,7 @@ function patchGLPrototype(
   cb: canvasManagerMutationCallback,
   blockClass: blockClass,
   blockSelector: string | null,
+  blockElementFn: BlockElementFn | null,
   win: IWindow,
 ): listenerHandler[] {
   const handlers: listenerHandler[] = [];
@@ -49,7 +51,13 @@ function patchGLPrototype(
             saveWebGLVar(result, win, this);
             if (
               'tagName' in this.canvas &&
-              !isBlocked(this.canvas, blockClass, blockSelector, true)
+              !isBlocked(
+                this.canvas,
+                blockClass,
+                blockSelector,
+                blockElementFn,
+                true,
+              )
             ) {
               const recordArgs = serializeArgs(args, win, this);
               const mutation: canvasMutationWithType = {
@@ -91,6 +99,7 @@ export default function initCanvasWebGLMutationObserver(
   win: IWindow,
   blockClass: blockClass,
   blockSelector: string | null,
+  blockElementFn: BlockElementFn | null,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
 
@@ -101,6 +110,7 @@ export default function initCanvasWebGLMutationObserver(
       cb,
       blockClass,
       blockSelector,
+      blockElementFn,
       win,
     ),
   );
@@ -113,6 +123,7 @@ export default function initCanvasWebGLMutationObserver(
         cb,
         blockClass,
         blockSelector,
+        blockElementFn,
         win,
       ),
     );

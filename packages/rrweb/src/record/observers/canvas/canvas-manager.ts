@@ -1,6 +1,7 @@
 import type { ICanvas, Mirror } from 'rrweb-snapshot';
 import type {
   blockClass,
+  BlockElementFn,
   canvasManagerMutationCallback,
   canvasMutationCallback,
   canvasMutationCommand,
@@ -61,6 +62,7 @@ export class CanvasManager {
     mutationCb: canvasMutationCallback;
     win: IWindow;
     blockClass: blockClass;
+    blockElementFn: BlockElementFn | null;
     blockSelector: string | null;
     mirror: Mirror;
     sampling?: 'all' | number;
@@ -70,6 +72,7 @@ export class CanvasManager {
       sampling = 'all',
       win,
       blockClass,
+      blockElementFn,
       blockSelector,
       recordCanvas,
       dataURLOptions,
@@ -78,11 +81,23 @@ export class CanvasManager {
     this.mirror = options.mirror;
 
     if (recordCanvas && sampling === 'all')
-      this.initCanvasMutationObserver(win, blockClass, blockSelector);
+      this.initCanvasMutationObserver(
+        win,
+        blockClass,
+        blockSelector,
+        blockElementFn,
+      );
     if (recordCanvas && typeof sampling === 'number')
-      this.initCanvasFPSObserver(sampling, win, blockClass, blockSelector, {
-        dataURLOptions,
-      });
+      this.initCanvasFPSObserver(
+        sampling,
+        win,
+        blockClass,
+        blockSelector,
+        blockElementFn,
+        {
+          dataURLOptions,
+        },
+      );
   }
 
   private processMutation: canvasManagerMutationCallback = (
@@ -107,6 +122,7 @@ export class CanvasManager {
     win: IWindow,
     blockClass: blockClass,
     blockSelector: string | null,
+    blockElementFn: BlockElementFn | null,
     options: {
       dataURLOptions: DataURLOptions;
     },
@@ -115,6 +131,7 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
+      blockElementFn,
       true,
     );
     const snapshotInProgressMap: Map<number, boolean> = new Map();
@@ -163,7 +180,9 @@ export class CanvasManager {
     const getCanvas = (): HTMLCanvasElement[] => {
       const matchedCanvas: HTMLCanvasElement[] = [];
       win.document.querySelectorAll('canvas').forEach((canvas) => {
-        if (!isBlocked(canvas, blockClass, blockSelector, true)) {
+        if (
+          !isBlocked(canvas, blockClass, blockSelector, blockElementFn, true)
+        ) {
           matchedCanvas.push(canvas);
         }
       });
@@ -241,6 +260,7 @@ export class CanvasManager {
     win: IWindow,
     blockClass: blockClass,
     blockSelector: string | null,
+    blockElementFn: BlockElementFn | null,
   ): void {
     this.startRAFTimestamping();
     this.startPendingCanvasMutationFlusher();
@@ -249,6 +269,7 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
+      blockElementFn,
       false,
     );
     const canvas2DReset = initCanvas2DMutationObserver(
@@ -256,6 +277,7 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
+      blockElementFn,
     );
 
     const canvasWebGL1and2Reset = initCanvasWebGLMutationObserver(
@@ -263,6 +285,7 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
+      blockElementFn,
     );
 
     this.resetObservers = () => {

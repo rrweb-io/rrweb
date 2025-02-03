@@ -70,6 +70,7 @@ function record<T = eventWithTime>(
     checkoutEveryNms,
     checkoutEveryNth,
     blockClass = 'rr-block',
+    blockElementFn = null,
     blockSelector = null,
     ignoreClass = 'rr-ignore',
     ignoreSelector = null,
@@ -157,8 +158,8 @@ function record<T = eventWithTime>(
           password: true,
         }
       : _maskInputOptions !== undefined
-      ? _maskInputOptions
-      : { password: true };
+        ? _maskInputOptions
+        : { password: true };
 
   const slimDOMOptions: SlimDOMOptions =
     _slimDOMOptions === true || _slimDOMOptions === 'all'
@@ -178,8 +179,8 @@ function record<T = eventWithTime>(
           headTitleMutations: _slimDOMOptions === 'all',
         }
       : _slimDOMOptions
-      ? _slimDOMOptions
-      : {};
+        ? _slimDOMOptions
+        : {};
 
   polyfill();
 
@@ -321,6 +322,7 @@ function record<T = eventWithTime>(
     mutationCb: wrappedCanvasMutationEmit,
     win: window,
     blockClass,
+    blockElementFn,
     blockSelector,
     mirror,
     sampling: sampling.canvas,
@@ -332,6 +334,7 @@ function record<T = eventWithTime>(
     scrollCb: wrappedScrollEmit,
     bypassOptions: {
       blockClass,
+      blockElementFn,
       blockSelector,
       maskTextClass,
       maskTextSelector,
@@ -378,6 +381,7 @@ function record<T = eventWithTime>(
     const node = snapshot(document, {
       mirror,
       blockClass,
+      blockElementFn,
       blockSelector,
       maskTextClass,
       maskTextSelector,
@@ -543,6 +547,7 @@ function record<T = eventWithTime>(
           maskInputFn,
           maskTextFn,
           keepIframeSrcFn,
+          blockElementFn,
           blockSelector,
           slimDOMOptions,
           dataURLOptions,

@@ -3,6 +3,7 @@ import type {
   listenerHandler,
   hookResetter,
   blockClass,
+  BlockElementFn,
   addedNodeMutation,
   DocumentDimension,
   IWindow,
@@ -185,19 +186,19 @@ export function getWindowScroll(win: Window) {
     left: doc.scrollingElement
       ? doc.scrollingElement.scrollLeft
       : win.pageXOffset !== undefined
-      ? win.pageXOffset
-      : doc.documentElement.scrollLeft ||
-        (doc?.body && dom.parentElement(doc.body)?.scrollLeft) ||
-        doc?.body?.scrollLeft ||
-        0,
+        ? win.pageXOffset
+        : doc.documentElement.scrollLeft ||
+          (doc?.body && dom.parentElement(doc.body)?.scrollLeft) ||
+          doc?.body?.scrollLeft ||
+          0,
     top: doc.scrollingElement
       ? doc.scrollingElement.scrollTop
       : win.pageYOffset !== undefined
-      ? win.pageYOffset
-      : doc?.documentElement.scrollTop ||
-        (doc?.body && dom.parentElement(doc.body)?.scrollTop) ||
-        doc?.body?.scrollTop ||
-        0,
+        ? win.pageYOffset
+        : doc?.documentElement.scrollTop ||
+          (doc?.body && dom.parentElement(doc.body)?.scrollTop) ||
+          doc?.body?.scrollTop ||
+          0,
   };
 }
 
@@ -239,12 +240,14 @@ export function closestElementOfNode(node: Node | null): HTMLElement | null {
  * @param node - node to check
  * @param blockClass - class name to check
  * @param blockSelector - css selectors to check
+ * @param blockElementFn - callback function to manually check node
  * @param checkAncestors - whether to search through parent nodes for the block class
  * @returns true/false if the node was blocked or not
  */
 export function isBlocked(
   node: Node | null,
   blockClass: blockClass,
+  blockElementFn: BlockElementFn | null,
   blockSelector: string | null,
   checkAncestors: boolean,
 ): boolean {
@@ -255,6 +258,10 @@ export function isBlocked(
 
   if (!el) {
     return false;
+  }
+
+  if (blockElementFn) {
+    return blockElementFn(el);
   }
 
   try {

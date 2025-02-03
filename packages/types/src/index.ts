@@ -182,6 +182,7 @@ export type canvasEventWithTime = eventWithTime & {
 };
 
 export type blockClass = string | RegExp;
+export type BlockElementFn = (element: HTMLElement) => boolean;
 
 export type maskTextClass = string | RegExp;
 

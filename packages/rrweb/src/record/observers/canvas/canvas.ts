@@ -1,5 +1,10 @@
 import type { ICanvas } from 'rrweb-snapshot';
-import type { blockClass, IWindow, listenerHandler } from '@rrweb/types';
+import type {
+  blockClass,
+  BlockElementFn,
+  IWindow,
+  listenerHandler,
+} from '@rrweb/types';
 import { isBlocked, patch } from '../../../utils';
 
 function getNormalizedContextName(contextType: string) {
@@ -9,6 +14,7 @@ function getNormalizedContextName(contextType: string) {
 export default function initCanvasContextObserver(
   win: IWindow,
   blockClass: blockClass,
+  blockElementFn: BlockElementFn | null,
   blockSelector: string | null,
   setPreserveDrawingBufferToTrue: boolean,
 ): listenerHandler {
@@ -29,7 +35,9 @@ export default function initCanvasContextObserver(
           contextType: string,
           ...args: Array<unknown>
         ) {
-          if (!isBlocked(this, blockClass, blockSelector, true)) {
+          if (
+            !isBlocked(this, blockClass, blockSelector, blockElementFn, true)
+          ) {
             const ctxName = getNormalizedContextName(contextType);
             if (!('__context' in this)) (this as ICanvas).__context = ctxName;
 
