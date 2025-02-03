@@ -168,8 +168,8 @@ function initMoveObserver({
           typeof DragEvent !== 'undefined' && evt instanceof DragEvent
             ? IncrementalSource.Drag
             : evt instanceof MouseEvent
-              ? IncrementalSource.MouseMove
-              : IncrementalSource.TouchMove,
+            ? IncrementalSource.MouseMove
+            : IncrementalSource.TouchMove,
         );
       }),
       threshold,

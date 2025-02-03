@@ -1309,10 +1309,10 @@ function snapshot(
           password: true,
         }
       : maskAllInputs === false
-        ? {
-            password: true,
-          }
-        : maskAllInputs;
+      ? {
+          password: true,
+        }
+      : maskAllInputs;
   const slimDOMOptions: SlimDOMOptions =
     slimDOM === true || slimDOM === 'all'
       ? // if true: set of sensible options that should not throw away any information
@@ -1329,8 +1329,8 @@ function snapshot(
           headMetaVerification: true,
         }
       : slimDOM === false
-        ? {}
-        : slimDOM;
+      ? {}
+      : slimDOM;
   return serializeNodeWithId(n, {
     doc: n,
     mirror,

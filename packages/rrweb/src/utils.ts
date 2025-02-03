@@ -186,19 +186,19 @@ export function getWindowScroll(win: Window) {
     left: doc.scrollingElement
       ? doc.scrollingElement.scrollLeft
       : win.pageXOffset !== undefined
-        ? win.pageXOffset
-        : doc.documentElement.scrollLeft ||
-          (doc?.body && dom.parentElement(doc.body)?.scrollLeft) ||
-          doc?.body?.scrollLeft ||
-          0,
+      ? win.pageXOffset
+      : doc.documentElement.scrollLeft ||
+        (doc?.body && dom.parentElement(doc.body)?.scrollLeft) ||
+        doc?.body?.scrollLeft ||
+        0,
     top: doc.scrollingElement
       ? doc.scrollingElement.scrollTop
       : win.pageYOffset !== undefined
-        ? win.pageYOffset
-        : doc?.documentElement.scrollTop ||
-          (doc?.body && dom.parentElement(doc.body)?.scrollTop) ||
-          doc?.body?.scrollTop ||
-          0,
+      ? win.pageYOffset
+      : doc?.documentElement.scrollTop ||
+        (doc?.body && dom.parentElement(doc.body)?.scrollTop) ||
+        doc?.body?.scrollTop ||
+        0,
   };
 }
 
