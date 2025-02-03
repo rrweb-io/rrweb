@@ -380,10 +380,10 @@ const events: eventWithTime[] = [
             childNodes: [],
             isShadowHost: true,
             attributes: {
-              id: 'shadow-host3'
-            }
+              id: 'shadow-host3',
+            },
           },
-        }
+        },
       ],
     },
     timestamp: now + 600,
@@ -425,11 +425,9 @@ const events: eventWithTime[] = [
       styles: [
         {
           styleId: 5,
-          rules: [
-            { rule: '.blue-btn { color: blue; }' }
-          ]
-        }
-      ]
+          rules: [{ rule: '.blue-btn { color: blue; }' }],
+        },
+      ],
     },
     timestamp: now + 700,
   },
@@ -443,7 +441,7 @@ const events: eventWithTime[] = [
         {
           parentId: 7,
           id: 36,
-        }
+        },
       ],
       adds: [
         {
@@ -467,10 +465,10 @@ const events: eventWithTime[] = [
             childNodes: [],
             isShadowHost: true,
             attributes: {
-              id: 'shadow-host4'
-            }
+              id: 'shadow-host4',
+            },
           },
-        }
+        },
       ],
       texts: [],
       attributes: [],
@@ -514,11 +512,9 @@ const events: eventWithTime[] = [
       styles: [
         {
           styleId: 6,
-          rules: [
-            { rule: '.blue-btn { border: 1px solid green }' }
-          ]
-        }
-      ]
+          rules: [{ rule: '.blue-btn { border: 1px solid green }' }],
+        },
+      ],
     },
     timestamp: now + 850,
   },
