@@ -137,7 +137,8 @@ The parameter of `rrweb.record` accepts the following options.
 | checkoutEveryNth         | -                  | take a full snapshot after every N events<br />refer to the [checkout](#checkout) chapter                                                                                                     |
 | checkoutEveryNms         | -                  | take a full snapshot after every N ms<br />refer to the [checkout](#checkout) chapter                                                                                                         |
 | blockClass               | 'rr-block'         | Use a string or RegExp to configure which elements should be blocked, refer to the [privacy](#privacy) chapter                                                                                |
-| blockSelector            | null               | Use a string to configure which selector should be blocked, refer to the [privacy](#privacy) chapter                                                                                          |
+| blockElementFN           | null               | Use a string to configure which selector should be blocked, refer to the [privacy](#privacy) chapter                                                                                          |
+| blockSelector            | null               | Manually determine what element should be blocked, refer to the [privacy](#privacy) chapter                                                                                                   |
 | ignoreClass              | 'rr-ignore'        | Use a string or RegExp to configure which elements should be ignored, refer to the [privacy](#privacy) chapter                                                                                |
 | ignoreSelector           | null               | Use a string to configure which selector should be ignored, refer to the [privacy](#privacy) chapter                                                                                          |
 | ignoreCSSAttributes      | null               | array of CSS attributes that should be ignored                                                                                                                                                |
@@ -171,6 +172,7 @@ You may find some contents on the webpage which are not willing to be recorded, 
 - All text of elements with the class name `.rr-mask` and their children will be masked.
 - `input[type="password"]` will be masked by default.
 - Mask options to mask the content in input elements.
+- `blockElementFN` takes precedence over `blockSelector` and `blockClass`, this callback function is passed a single argument: the elment to block.
 
 #### Checkout
 
