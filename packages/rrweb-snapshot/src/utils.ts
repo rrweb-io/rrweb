@@ -452,6 +452,10 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
  */
 export function normalizeCssString(
   cssText: string,
+  /**
+   * _testNoPxNorm: only used as part of the 'substring matching going from many to none'
+   * test case so that it will trigger a failure if the conditions that let to the creation of that test arise again
+   */
   _testNoPxNorm = false,
 ): string {
   if (_testNoPxNorm) {
