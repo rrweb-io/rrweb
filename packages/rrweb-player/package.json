@@ -1,8 +1,12 @@
 {
   "name": "rrweb-player",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.1-alpha.18",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  },
   "devDependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
+    "@rrweb/types": "^2.0.1-alpha.18",
     "@sveltejs/adapter-auto": "^3.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/package": "^2.0.0",
@@ -20,8 +24,8 @@
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
-    "@rrweb/replay": "^2.0.0-alpha.18",
-    "@rrweb/packer": "^2.0.0-alpha.18"
+    "@rrweb/replay": "^2.0.1-alpha.18",
+    "@rrweb/packer": "^2.0.1-alpha.18"
   },
   "scripts": {
     "dev": "vite build --watch",
@@ -57,15 +61,15 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/Midpath-Software/rrweb.git"
   },
   "keywords": [
     "rrweb"
   ],
-  "author": "yanzhen@smartx.com",
+  "author": "gnpaone@gmail.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/Midpath-Software/rrweb/issues"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb#readme"
+  "homepage": "https://github.com/Midpath-Software/rrweb#readme"
 }

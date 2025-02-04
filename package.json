@@ -1,20 +1,24 @@
 {
   "name": "@rrweb/_monorepo",
   "description": "record and replay the web",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
+    "url": "git+ssh://git@github.com/Midpath-Software/rrweb.git"
   },
   "keywords": [
     "rrweb"
   ],
-  "author": "yanzhen@smartx.com",
+  "author": "gnpaone@gmail.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/Midpath-Software/rrweb/issues"
   },
   "private": true,
-  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "homepage": "https://github.com/Midpath-Software/rrweb#readme",
   "workspaces": [
     "packages/*",
     "packages/plugins/*"
@@ -53,8 +57,8 @@
     "dev": "yarn turbo run dev --concurrency=18",
     "repl": "cd packages/rrweb && npm run repl",
     "live-stream": "cd packages/rrweb && yarn live-stream",
-    "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'ESLINT_USE_FLAT_CONFIG=false yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'",
-    "lint:report": "ESLINT_USE_FLAT_CONFIG=false yarn eslint --output-file eslint_report.json --format json packages/*/src --ext .ts,.tsx,.js,.jsx",
+    "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'",
+    "lint:report": "yarn eslint --output-file eslint_report.json --format json packages/*/src --ext .ts,.tsx,.js,.jsx",
     "release": "yarn build:all && changeset publish"
   },
   "resolutions": {
@@ -65,5 +69,5 @@
     "defaults",
     "not op_mini all"
   ],
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.22"
 }

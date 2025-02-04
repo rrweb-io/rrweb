@@ -1,6 +1,10 @@
 {
   "name": "rrweb",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.1-alpha.18",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  },
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",
@@ -26,7 +30,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
+    "url": "git+ssh://git@github.com/Midpath-Software/rrweb.git"
   },
   "keywords": [
     "rrweb"
@@ -53,12 +57,12 @@
     "package.json"
   ],
   "sideEffects": false,
-  "author": "yanzhen@smartx.com",
+  "author": "gnpaone@gmail.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/Midpath-Software/rrweb/issues"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "homepage": "https://github.com/Midpath-Software/rrweb#readme",
   "devDependencies": {
     "@types/dom-mediacapture-transform": "0.1.4",
     "@types/inquirer": "^8.2.1",
@@ -80,13 +84,13 @@
     "vite-plugin-dts": "^3.9.1"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
-    "@rrweb/utils": "^2.0.0-alpha.18",
+    "@rrweb/types": "^2.0.1-alpha.18",
+    "@rrweb/utils": "^2.0.1-alpha.18",
     "@types/css-font-loading-module": "0.0.7",
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",
     "mitt": "^3.0.0",
-    "rrdom": "^2.0.0-alpha.18",
-    "rrweb-snapshot": "^2.0.0-alpha.18"
+    "rrdom": "^2.0.1-alpha.18",
+    "rrweb-snapshot": "^2.0.1-alpha.18"
   }
 }

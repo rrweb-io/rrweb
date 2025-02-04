@@ -1,6 +1,10 @@
 {
   "name": "rrweb-snapshot",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.1-alpha.18",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  },
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",
@@ -20,7 +24,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/Midpath-Software/rrweb.git"
   },
   "keywords": [
     "rrweb",
@@ -47,15 +51,15 @@
     "dist",
     "package.json"
   ],
-  "author": "yanzhen@smartx.com",
+  "author": "gnpaone@gmail.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/Midpath-Software/rrweb/issues"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot#readme",
+  "homepage": "https://github.com/Midpath-Software/rrweb/tree/master/packages/rrweb-snapshot#readme",
   "devDependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
-    "@rrweb/utils": "^2.0.0-alpha.18",
+    "@rrweb/types": "^2.0.1-alpha.18",
+    "@rrweb/utils": "^2.0.1-alpha.18",
     "@types/jsdom": "^20.0.0",
     "@types/node": "^18.15.11",
     "@types/puppeteer": "^5.4.4",

@@ -1,6 +1,10 @@
 {
   "name": "@rrweb/rrweb-plugin-console-replay",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.1-alpha.18",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  },
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-console-replay.umd.cjs",
@@ -31,25 +35,25 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/Midpath-Software/rrweb.git"
   },
   "keywords": [
     "rrweb"
   ],
-  "author": "yanzhen@smartx.com",
+  "author": "gnpaone@gmail.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/Midpath-Software/rrweb/issues"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "homepage": "https://github.com/Midpath-Software/rrweb#readme",
   "devDependencies": {
-    "@rrweb/rrweb-plugin-console-record": "^2.0.0-alpha.18",
-    "rrweb": "^2.0.0-alpha.18",
+    "@rrweb/rrweb-plugin-console-record": "^2.0.1-alpha.18",
+    "rrweb": "^2.0.1-alpha.18",
     "typescript": "^5.4.5",
     "vite": "^5.3.1",
     "vite-plugin-dts": "^3.9.1"
   },
   "peerDependencies": {
-    "rrweb": "^2.0.0-alpha.18"
+    "rrweb": "^2.0.1-alpha.18"
   }
 }

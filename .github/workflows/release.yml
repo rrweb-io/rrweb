@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js lts/*
         uses: actions/setup-node@v3
@@ -21,7 +21,9 @@ jobs:
           node-version: lts/*
 
       - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: |
+          yarn config set registry https://npm.pkg.github.com
+          yarn install --frozen-lockfile
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
@@ -31,19 +33,4 @@ jobs:
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Build Chrome Extension
-        if: steps.changesets.outputs.published == 'true'
-        run: NODE_OPTIONS='--max-old-space-size=4096' DISABLE_WORKER_INLINING=true yarn turbo run prepublish --filter=@rrweb/web-extension
-
-      - name: Publish Chrome Extension
-        uses: mnao305/chrome-extension-upload@v5.0.0
-        if: steps.changesets.outputs.published == 'true'
-        with:
-          extension-id: 'pdaldeopoccdhlkabbkcjmecmmoninhe'
-          file-path: ./packages/web-extension/dist/chrome.zip
-          client-id: ${{ secrets.CWS_CLIENT_ID }}
-          client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
-          refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
-          publish: true
+          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}

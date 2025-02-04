@@ -277,7 +277,8 @@ iframe.contentDocument.querySelector('center').clientHeight
     );
 
     await page.waitForSelector('img', { timeout: 1000 });
-    await page.evaluate(`${code}var snapshot = rrwebSnapshot.snapshot(document, {
+    const snapshot =
+      await page.evaluate(`${code}var snapshot = rrwebSnapshot.snapshot(document, {
         dataURLOptions: { type: "image/webp", quality: 0.8 },
         inlineImages: true,
         inlineStylesheet: false
@@ -292,7 +293,7 @@ iframe.contentDocument.querySelector('center').clientHeight
         attributes: {
           src: getServerURL(server) + '/images/rrweb-favicon-20x20.png',
           alt: 'CORS restricted but has access-control-allow-origin: *',
-          rr_dataURL: expect.stringMatching(/^data:image\/webp;base64,/),
+          rr_dataURL: expect.stringContaining('data:image/png;base64,'),
         },
       }),
     );

@@ -689,7 +689,7 @@ function serializeElementNode(
       }
     }
   }
-  // save image offline
+  // Save image offline
   if (tagName === 'img' && inlineImages) {
     if (!canvasService) {
       canvasService = doc.createElement('canvas');
@@ -699,6 +699,7 @@ function serializeElementNode(
     const imageSrc: string =
       image.currentSrc || image.getAttribute('src') || '<unknown-src>';
     const priorCrossOrigin = image.crossOrigin;
+    let retryingWithAnonymous = false;
     const recordInlineImage = () => {
       image.removeEventListener('load', recordInlineImage);
       try {
@@ -710,12 +711,14 @@ function serializeElementNode(
           dataURLOptions.quality,
         );
       } catch (err) {
-        if (image.crossOrigin !== 'anonymous') {
+        if (!retryingWithAnonymous && image.crossOrigin !== 'anonymous') {
+          console.warn(
+            `Retrying with crossOrigin='anonymous' for img src=${imageSrc}`,
+          );
+          retryingWithAnonymous = true; // Prevent infinite loop
           image.crossOrigin = 'anonymous';
-          if (image.complete && image.naturalWidth !== 0)
-            recordInlineImage(); // too early due to image reload
-          else image.addEventListener('load', recordInlineImage);
-          return;
+          image.addEventListener('load', recordInlineImage, { once: true });
+          image.src = imageSrc; // Reload image
         } else {
           console.warn(
             `Cannot inline img src=${imageSrc}! Error: ${err as string}`,
@@ -726,11 +729,73 @@ function serializeElementNode(
         priorCrossOrigin
           ? (attributes.crossOrigin = priorCrossOrigin)
           : image.removeAttribute('crossorigin');
+        try {
+          if (!attributes.rr_dataURL) {
+            const convertImageToDataURL = (
+              img: HTMLImageElement,
+            ): Promise<string | null> => {
+              return new Promise((resolve, reject) => {
+                const fetchImage = (mode: RequestMode) => {
+                  fetch(img.src, { mode })
+                    .then((response) => {
+                      if (!response.ok && mode !== 'no-cors') {
+                        throw new Error(
+                          `Failed to fetch image: ${response.status}`,
+                        );
+                      }
+                      return response.blob();
+                    })
+                    .then((blob) => {
+                      const reader = new FileReader();
+                      reader.onloadend = () => resolve(reader.result as string);
+                      reader.onerror = () =>
+                        reject(new Error('Failed to read image as Data URL'));
+                      reader.readAsDataURL(blob);
+                    })
+                    .catch((err) => {
+                      if (mode === 'no-cors') {
+                        console.warn(
+                          'Both normal fetch and no-cors fetch failed:',
+                          err,
+                        );
+                        reject(new Error('Network error while fetching image'));
+                      } else {
+                        console.warn(
+                          'Fetch failed, retrying with no-cors:',
+                          err,
+                        );
+                        fetchImage('no-cors'); // Retry with 'no-cors'
+                      }
+                    });
+                };
+                fetchImage('cors');
+              });
+            };
+            convertImageToDataURL(image)
+              .then((dataURL) => {
+                attributes.rr_dataURL = dataURL;
+              })
+              .catch((err) => {
+                console.warn(
+                  `Failed to generate rr_dataURL for ${image.src}:`,
+                  err,
+                );
+                attributes.rr_dataURL = null; // Ensure it doesn't remain undefined
+              });
+          }
+        } catch (err) {
+          console.warn(`Failed to generate rr_dataURL for ${imageSrc}:`, err);
+          attributes.rr_dataURL = null; // Ensure it doesn't remain undefined
+        }
+        image.src = imageSrc; // Force reload with new crossOrigin
       }
     };
-    // The image content may not have finished loading yet.
-    if (image.complete && image.naturalWidth !== 0) recordInlineImage();
-    else image.addEventListener('load', recordInlineImage);
+    // Handle already loaded images
+    if (image.complete && image.naturalWidth !== 0) {
+      recordInlineImage();
+    } else {
+      image.addEventListener('load', recordInlineImage, { once: true });
+    }
   }
   // media elements
   if (tagName === 'audio' || tagName === 'video') {

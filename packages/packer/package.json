@@ -1,8 +1,9 @@
 {
   "name": "@rrweb/packer",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.1-alpha.18",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
   },
   "keywords": [
     "rrweb",
@@ -17,13 +18,13 @@
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/packer#readme",
+  "homepage": "https://github.com/Midpath-Software/rrweb/tree/main/packages/@rrweb/packer#readme",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/Midpath-Software/rrweb/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/Midpath-Software/rrweb.git"
   },
   "license": "MIT",
   "type": "module",
@@ -78,7 +79,7 @@
   },
   "dependencies": {
     "fflate": "^0.4.4",
-    "@rrweb/types": "^2.0.0-alpha.18"
+    "@rrweb/types": "^2.0.1-alpha.18"
   },
   "browserslist": [
     "supports es6-class"
