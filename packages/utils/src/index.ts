@@ -28,6 +28,23 @@ const testableMethods = {
 
 const untaintedBasePrototype: Partial<BasePrototypeCache> = {};
 
+/*
+ When angular patches things - particularly the MutationObserver -
+ they pass the `isNativeFunction` check
+ That then causes performance issues
+ because Angular's change detection
+ doesn't like sharing a mutation observer
+ Checking for the presence of the Zone object
+ on global is a good-enough proxy for Angular
+ to cover most cases
+ (you can configure zone.js to have a different name
+  on the global object and should then manually run rrweb
+  outside the Zone)
+ */
+export const isAngularZonePresent = (): boolean => {
+  return !!(globalThis as { Zone?: unknown }).Zone;
+};
+
 export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
   key: T,
 ): BasePrototypeCache[T] {
@@ -63,7 +80,7 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
       ),
   );
 
-  if (isUntaintedAccessors && isUntaintedMethods) {
+  if (isUntaintedAccessors && isUntaintedMethods && !isAngularZonePresent()) {
     untaintedBasePrototype[key] = defaultObj.prototype as BasePrototypeCache[T];
     return defaultObj.prototype as BasePrototypeCache[T];
   }
@@ -205,6 +222,49 @@ export function mutationObserverCtor(): (typeof MutationObserver)['prototype']['
   return getUntaintedPrototype('MutationObserver').constructor;
 }
 
+// copy from https://github.com/getsentry/sentry-javascript/blob/b2109071975af8bf0316d3b5b38f519bdaf5dc15/packages/utils/src/object.ts
+export function patch(
+  source: { [key: string]: any },
+  name: string,
+  replacement: (...args: unknown[]) => unknown,
+): () => void {
+  try {
+    if (!(name in source)) {
+      return () => {
+        //
+      };
+    }
+
+    const original = source[name] as () => unknown;
+    const wrapped = replacement(original);
+
+    // Make sure it's a function first, as we need to attach an empty prototype for `defineProperties` to work
+    // otherwise it'll throw "TypeError: Object.defineProperties called on non-object"
+    if (typeof wrapped === 'function') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      wrapped.prototype = wrapped.prototype || {};
+      Object.defineProperties(wrapped, {
+        __rrweb_original__: {
+          enumerable: false,
+          value: original,
+        },
+      });
+    }
+
+    source[name] = wrapped;
+
+    return () => {
+      source[name] = original;
+    };
+  } catch {
+    return () => {
+      //
+    };
+    // This can throw if multiple fill happens on a global object like XMLHttpRequest
+    // Fixes https://github.com/getsentry/sentry-javascript/issues/2043
+  }
+}
+
 export default {
   childNodes,
   parentNode,
@@ -218,4 +278,5 @@ export default {
   querySelector,
   querySelectorAll,
   mutationObserver: mutationObserverCtor,
+  patch,
 };

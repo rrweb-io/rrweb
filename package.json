@@ -34,9 +34,11 @@
     "eslint-plugin-compat": "^5.0.0",
     "eslint-plugin-jest": "^27.6.0",
     "eslint-plugin-tsdoc": "^0.2.17",
+    "happy-dom": "^14.12.0",
     "markdownlint": "^0.25.1",
     "markdownlint-cli": "^0.31.1",
     "prettier": "2.8.4",
+    "rollup-plugin-visualizer": "^5.12.0",
     "turbo": "^2.0.4",
     "typescript": "^5.4.5"
   },
@@ -52,8 +54,8 @@
     "dev": "yarn turbo run dev --concurrency=18",
     "repl": "cd packages/rrweb && npm run repl",
     "live-stream": "cd packages/rrweb && yarn live-stream",
-    "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'",
-    "lint:report": "yarn eslint --output-file eslint_report.json --format json packages/*/src --ext .ts,.tsx,.js,.jsx",
+    "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'ESLINT_USE_FLAT_CONFIG=false yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'",
+    "lint:report": "ESLINT_USE_FLAT_CONFIG=false yarn eslint --output-file eslint_report.json --format json packages/*/src --ext .ts,.tsx,.js,.jsx",
     "release": "yarn build:all && changeset publish"
   },
   "resolutions": {

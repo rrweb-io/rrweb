@@ -6,7 +6,8 @@ import {
   type IWindow,
   type listenerHandler,
 } from '@rrweb/types';
-import { hookSetter, isBlocked, patch } from '../../../utils';
+import { hookSetter, isBlocked } from '../../../utils';
+import { patch } from '@rrweb/utils';
 import { saveWebGLVar, serializeArgs } from './serialize-args';
 
 function patchGLPrototype(

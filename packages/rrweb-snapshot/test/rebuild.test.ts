@@ -3,14 +3,14 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import { beforeEach, describe, expect as _expect, it } from 'vitest';
+import { beforeEach, describe, expect as _expect, it, vi } from 'vitest';
 import {
   adaptCssForReplay,
   buildNodeWithSN,
   createCache,
 } from '../src/rebuild';
-import { NodeType } from '../src/types';
-import { createMirror, Mirror } from '../src/utils';
+import { NodeType } from '@rrweb/types';
+import { createMirror, Mirror, normalizeCssString } from '../src/utils';
 
 const expect = _expect as unknown as {
   <T = unknown>(actual: T): {
@@ -20,7 +20,7 @@ const expect = _expect as unknown as {
 
 expect.extend({
   toMatchCss: function (received: string, expected: string) {
-    const pass = normCss(received) === normCss(expected);
+    const pass = normalizeCssString(received) === normalizeCssString(expected);
     const message: () => string = () =>
       pass
         ? ''
@@ -31,10 +31,6 @@ expect.extend({
     };
   },
 });
-
-function normCss(cssText: string): string {
-  return cssText.replace(/[\s;]/g, '');
-}
 
 function getDuration(hrtime: [number, number]) {
   const [seconds, nanoseconds] = hrtime;
@@ -73,6 +69,32 @@ describe('rebuild', function () {
         },
       ) as HTMLImageElement;
       expect(node?.src).toBe(dataURI);
+    });
+  });
+
+  describe('rr_width/rr_height', function () {
+    it('rebuild blocked element with correct dimensions', function () {
+      const node = buildNodeWithSN(
+        {
+          id: 1,
+          tagName: 'svg',
+          type: NodeType.Element,
+          isSVG: true,
+          attributes: {
+            rr_width: '50px',
+            rr_height: '50px',
+          },
+          childNodes: [],
+        },
+        {
+          doc: document,
+          mirror,
+          hackCss: false,
+          cache,
+        },
+      ) as HTMLDivElement;
+      expect(node.style.width).toBe('50px');
+      expect(node.style.height).toBe('50px');
     });
   });
 
@@ -246,6 +268,19 @@ ul li.specified c.\\:hover img {
       '@import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,400;0,500;0,700;1,400&display=:hover");';
     expect(adaptCssForReplay(should_not_modify, cache)).toMatchCss(
       should_not_modify,
+    );
+  });
+
+  it('handles exceptions from postcss when calling adaptCssForReplay', () => {
+    const consoleWarnSpy = vi
+      .spyOn(console, 'warn')
+      .mockImplementation(() => {});
+    // trigger CssSyntaxError by passing invalid css
+    const cssText = 'a{';
+    adaptCssForReplay(cssText, cache);
+    expect(consoleWarnSpy).toHaveBeenLastCalledWith(
+      'Failed to adapt css for replay',
+      expect.any(Error),
     );
   });
 });
