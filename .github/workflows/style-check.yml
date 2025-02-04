@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     name: ESLint Annotation
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: eslint_report.json
       - name: Annotate Code Linting Results
