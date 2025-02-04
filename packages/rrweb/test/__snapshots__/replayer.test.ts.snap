@@ -72,7 +72,7 @@ file-cid-3
 
 .css-added-at-200 { position: fixed; top: 0px; right: 0px; left: 4rem; z-index: 15; flex-shrink: 0; height: 0.25rem; overflow: hidden; background-color: rgb(17, 171, 209); }
 
-.css-added-at-200.alt { height: 0.25rem; background-color: rgb(190, 232, 242); opacity: 0; transition: opacity 0.5s ease 0s; }
+.css-added-at-200.alt { height: 0.25rem; background-color: rgb(190, 232, 242); opacity: 0; transition: opacity 0.5s ease-in 0.1s; }
 
 .css-added-at-1000-deleted-at-2500 { display: flex; flex-direction: column; min-width: 60rem; min-height: 100vh; color: blue; }
 
@@ -152,9 +152,76 @@ file-cid-3
 
 .css-added-at-200 { position: fixed; top: 0px; right: 0px; left: 4rem; z-index: 15; flex-shrink: 0; height: 0.25rem; overflow: hidden; background-color: rgb(17, 171, 209); }
 
-.css-added-at-200.alt { height: 0.25rem; background-color: rgb(190, 232, 242); opacity: 0; transition: opacity 0.5s ease 0s; }
+.css-added-at-200.alt { height: 0.25rem; background-color: rgb(190, 232, 242); opacity: 0; transition: opacity 0.5s ease-in 0.1s; }
 
 .css-added-at-200.alt2 { padding-left: 4rem; }
+"
+`;
+
+exports[`replayer > can handle remote stylesheets 1`] = `
+"file-frame-2
+<html>
+  <head>
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\" />
+  </head>
+  <body>
+    <div class=\\"replayer-wrapper\\">
+      <div class=\\"replayer-mouse\\"></div>
+      <canvas
+        class=\\"replayer-mouse-tail\\"
+        width=\\"1000\\"
+        height=\\"800\\"
+        style=\\"display: inherit\\"
+      ></canvas
+      ><iframe
+        sandbox=\\"allow-same-origin\\"
+        scrolling=\\"no\\"
+        width=\\"1000\\"
+        height=\\"800\\"
+        style=\\"display: inherit; pointer-events: none\\"
+      ></iframe>
+    </div>
+  </body>
+</html>
+
+
+file-frame-3
+<html>
+  <head>
+    <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\" />
+    <link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"file-cid-0\\" />
+    <link rel=\\"stylesheet\\" type=\\"text/css\\" href=\\"file-cid-1\\" />
+  </head>
+  <body></body>
+</html>
+
+
+file-cid-0
+@charset \\"utf-8\\";
+
+.rr-block { background: currentcolor; }
+
+noscript { display: none !important; }
+
+html.rrweb-paused *, html.rrweb-paused ::before, html.rrweb-paused ::after { animation-play-state: paused !important; }
+
+
+file-cid-1
+@charset \\"utf-8\\";
+
+.OverlayDrawer-modal-187 { }
+
+.OverlayDrawer-paper-188 { width: 100%; }
+
+@media (min-width: 48em) {
+  .OverlayDrawer-paper-188 { width: 38rem; }
+}
+
+@media (min-width: 48em) {
+}
+
+@media (min-width: 48em) {
+}
 "
 `;
 

@@ -3,6 +3,10 @@ import type {
   MaskInputFn,
   MaskInputOptions,
   nodeMetaMap,
+} from './types';
+
+import { NodeType } from '@rrweb/types';
+import type {
   IMirror,
   serializedNodeWithId,
   serializedNode,
@@ -10,9 +14,8 @@ import type {
   documentTypeNode,
   textNode,
   elementNode,
-} from './types';
+} from '@rrweb/types';
 import dom from '@rrweb/utils';
-import { NodeType } from './types';
 
 export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;
@@ -99,14 +102,28 @@ export function escapeImportStatement(rule: CSSImportRule): string {
   return statement.join(' ') + ';';
 }
 
+/*
+ * serialize the css rules from the .sheet property
+ * for <link rel="stylesheet"> elements, this is the only way of getting the rules without a FETCH
+ * for <style> elements, this is less preferable to looking at childNodes[0].textContent
+ * (which will include vendor prefixed rules which may not be used or visible to the recorded browser,
+ * but which might be needed by the replayer browser)
+ * however, at snapshot time, we don't know whether the style element has suffered
+ * any programmatic manipulation prior to the snapshot, in which case the .sheet would be more up to date
+ */
 export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
     if (!rules) {
       return null;
     }
+    let sheetHref = s.href;
+    if (!sheetHref && s.ownerNode && s.ownerNode.ownerDocument) {
+      // an inline <style> element
+      sheetHref = s.ownerNode.ownerDocument.location.href;
+    }
     const stringifiedRules = Array.from(rules, (rule: CSSRule) =>
-      stringifyRule(rule, s.href),
+      stringifyRule(rule, sheetHref),
     ).join('');
     return fixBrowserCompatibilityIssuesInCSS(stringifiedRules);
   } catch (error) {
@@ -427,4 +444,106 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
       return `url(${maybeQuote}${stack.join('/')}${maybeQuote})`;
     },
   );
+}
+
+/**
+ * Intention is to normalize by remove spaces, semicolons and CSS comments
+ * so that we can compare css as authored vs. output of stringifyStylesheet
+ */
+export function normalizeCssString(cssText: string): string {
+  return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '');
+}
+
+/**
+ * Maps the output of stringifyStylesheet to individual text nodes of a <style> element
+ * which occurs when javascript is used to append to the style element
+ * and may also occur when browsers opt to break up large text nodes
+ * performance needs to be considered, see e.g. #1603
+ */
+export function splitCssText(
+  cssText: string,
+  style: HTMLStyleElement,
+): string[] {
+  const childNodes = Array.from(style.childNodes);
+  const splits: string[] = [];
+  let iterLimit = 0;
+  if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
+    let cssTextNorm = normalizeCssString(cssText);
+    const normFactor = cssTextNorm.length / cssText.length;
+    for (let i = 1; i < childNodes.length; i++) {
+      if (
+        childNodes[i].textContent &&
+        typeof childNodes[i].textContent === 'string'
+      ) {
+        const textContentNorm = normalizeCssString(childNodes[i].textContent!);
+        let j = 3;
+        for (; j < textContentNorm.length; j++) {
+          if (
+            // keep consuming css identifiers (to get a decent chunk more quickly)
+            textContentNorm[j].match(/[a-zA-Z0-9]/) ||
+            // substring needs to be unique to this section
+            textContentNorm.indexOf(textContentNorm.substring(0, j), 1) !== -1
+          ) {
+            continue;
+          }
+          break;
+        }
+        for (; j < textContentNorm.length; j++) {
+          const bit = textContentNorm.substring(0, j);
+          // this substring should appears only once in overall text too
+          const bits = cssTextNorm.split(bit);
+          let splitNorm = -1;
+          if (bits.length === 2) {
+            splitNorm = cssTextNorm.indexOf(bit);
+          } else if (
+            bits.length > 2 &&
+            bits[0] === '' &&
+            childNodes[i - 1].textContent !== ''
+          ) {
+            // this childNode has same starting content as previous
+            splitNorm = cssTextNorm.indexOf(bit, 1);
+          }
+          if (splitNorm !== -1) {
+            // find the split point in the original text
+            let k = Math.floor(splitNorm / normFactor);
+            for (; k > 0 && k < cssText.length; ) {
+              iterLimit += 1;
+              if (iterLimit > 50 * childNodes.length) {
+                // quit for performance purposes
+                splits.push(cssText);
+                return splits;
+              }
+              const normPart = normalizeCssString(cssText.substring(0, k));
+              if (normPart.length === splitNorm) {
+                splits.push(cssText.substring(0, k));
+                cssText = cssText.substring(k);
+                cssTextNorm = cssTextNorm.substring(splitNorm);
+                break;
+              } else if (normPart.length < splitNorm) {
+                k += Math.max(
+                  1,
+                  Math.floor((splitNorm - normPart.length) / normFactor),
+                );
+              } else {
+                k -= Math.max(
+                  1,
+                  Math.floor((normPart.length - splitNorm) * normFactor),
+                );
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+  splits.push(cssText); // either the full thing if no splits were found, or the last split
+  return splits;
+}
+
+export function markCssSplits(
+  cssText: string,
+  style: HTMLStyleElement,
+): string {
+  return splitCssText(cssText, style).join('/* rr_split */');
 }

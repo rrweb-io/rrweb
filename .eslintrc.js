@@ -23,5 +23,8 @@ module.exports = {
   rules: {
     'tsdoc/syntax': 'warn',
     '@typescript-eslint/prefer-as-const': 'warn',
+    'camelcase': ['error', {
+      allow: ['rr_.*', 'legacy_.*', 'UNSAFE_.*', '__rrweb_.*'],
+    }],
   },
 };

@@ -1,22 +1,29 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { nanoid } from 'nanoid';
 import {
+  Box,
+  Button,
   chakra,
+  Checkbox,
+  Divider,
+  Editable,
+  EditableInput,
+  EditablePreview,
+  Flex,
+  IconButton,
+  Input,
+  Select,
+  Spacer,
   Table,
-  Thead,
+  TableContainer,
   Tbody,
-  Tr,
-  Th,
   Td,
   Text,
-  TableContainer,
-  Flex,
-  Checkbox,
-  Button,
-  Spacer,
-  IconButton,
-  Select,
-  Input,
-  Divider,
+  Th,
+  Thead,
+  Tr,
+  useEditableControls,
+  useToast,
 } from '@chakra-ui/react';
 import {
   createColumnHelper,
@@ -28,10 +35,18 @@ import {
   type PaginationState,
 } from '@tanstack/react-table';
 import { VscTriangleDown, VscTriangleUp } from 'react-icons/vsc';
+import { FiEdit3 as EditIcon } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import type { eventWithTime } from 'rrweb';
 import { type Session, EventName } from '~/types';
 import Channel from '~/utils/channel';
-import { deleteSessions, getAllSessions, downloadSessions } from '~/utils/storage';
+import {
+  deleteSessions,
+  getAllSessions,
+  downloadSessions,
+  addSession,
+  updateSession,
+} from '~/utils/storage';
 import {
   FiChevronLeft,
   FiChevronRight,
@@ -43,8 +58,10 @@ const columnHelper = createColumnHelper<Session>();
 const channel = new Channel();
 
 export function SessionList() {
-  const [sessions, setSessions] = useState<Session[]>([]);
   const navigate = useNavigate();
+  const toast = useToast();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [sorting, setSorting] = useState<SortingState>([
     {
       id: 'createTimestamp',
@@ -100,7 +117,58 @@ export function SessionList() {
         ),
       }),
       columnHelper.accessor((row) => row.name, {
-        cell: (info) => info.getValue(),
+        cell: (info) => {
+          const [isHovered, setIsHovered] = useState(false);
+          function EditableControls() {
+            const { isEditing, getEditButtonProps } = useEditableControls();
+            return (
+              isHovered &&
+              !isEditing && (
+                <Box
+                  position="absolute"
+                  top="0"
+                  right="0"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <IconButton
+                    aria-label="edit name"
+                    size="sm"
+                    icon={<EditIcon />}
+                    variant="ghost"
+                    {...getEditButtonProps()}
+                  />
+                </Box>
+              )
+            );
+          }
+
+          return (
+            <Flex
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              alignItems="center"
+              position="relative"
+            >
+              <Editable
+                defaultValue={info.getValue()}
+                isPreviewFocusable={false}
+                onSubmit={(nextValue) => {
+                  const newSession = { ...info.row.original, name: nextValue };
+                  setSessions(
+                    sessions.map((s) =>
+                      s.id === newSession.id ? newSession : s,
+                    ),
+                  );
+                  void updateSession(newSession);
+                }}
+              >
+                <EditablePreview cursor="pointer" />
+                <EditableControls />
+                <EditableInput onClick={(e) => e.stopPropagation()} />
+              </Editable>
+            </Flex>
+          );
+        },
         header: 'Name',
       }),
       columnHelper.accessor((row) => row.createTimestamp, {
@@ -114,7 +182,7 @@ export function SessionList() {
         header: 'RRWEB Version',
       }),
     ],
-    [],
+    [sessions],
   );
   const table = useReactTable<Session>({
     columns,
@@ -145,8 +213,63 @@ export function SessionList() {
     });
   }, []);
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const content = e.target?.result as string;
+        const data = JSON.parse(content) as {
+          session: Session;
+          events: eventWithTime[];
+        };
+        const id = nanoid();
+        data.session.id = id;
+        await addSession(data.session, data.events);
+        toast({
+          title: 'Session imported',
+          description: 'The session was successfully imported.',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+        await updateSessions();
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        toast({
+          title: 'Error importing session',
+          description: (error as Error).message,
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <>
+      <Flex justify="flex-end" mb={4}>
+        <Button
+          onClick={() => {
+            fileInputRef.current?.click();
+          }}
+          size="sm"
+          m={4}
+        >
+          Import Session
+        </Button>
+        <input
+          type="file"
+          accept="application/json"
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          onChange={handleFileUpload}
+        />
+      </Flex>
       <TableContainer fontSize="md">
         <Table variant="simple">
           <Thead>
@@ -318,7 +441,9 @@ export function SessionList() {
                 onClick={() => {
                   const selectedRows = table.getSelectedRowModel().flatRows;
                   if (selectedRows.length === 0) return;
-                  void downloadSessions(selectedRows.map((row) => row.original.id));
+                  void downloadSessions(
+                    selectedRows.map((row) => row.original.id),
+                  );
                 }}
               >
                 Download

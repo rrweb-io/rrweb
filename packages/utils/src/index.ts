@@ -28,6 +28,23 @@ const testableMethods = {
 
 const untaintedBasePrototype: Partial<BasePrototypeCache> = {};
 
+/*
+ When angular patches things - particularly the MutationObserver -
+ they pass the `isNativeFunction` check
+ That then causes performance issues
+ because Angular's change detection
+ doesn't like sharing a mutation observer
+ Checking for the presence of the Zone object
+ on global is a good-enough proxy for Angular
+ to cover most cases
+ (you can configure zone.js to have a different name
+  on the global object and should then manually run rrweb
+  outside the Zone)
+ */
+export const isAngularZonePresent = (): boolean => {
+  return !!(globalThis as { Zone?: unknown }).Zone;
+};
+
 export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
   key: T,
 ): BasePrototypeCache[T] {
@@ -63,7 +80,7 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
       ),
   );
 
-  if (isUntaintedAccessors && isUntaintedMethods) {
+  if (isUntaintedAccessors && isUntaintedMethods && !isAngularZonePresent()) {
     untaintedBasePrototype[key] = defaultObj.prototype as BasePrototypeCache[T];
     return defaultObj.prototype as BasePrototypeCache[T];
   }

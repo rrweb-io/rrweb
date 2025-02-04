@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>style</title>
+    <style id="dual-textContent">
+      body { background-color: black; }
+    </style>
+    <script>
+      // not the same from the POV of the DOM of just sticking this text in above
+      document.querySelector('style').append(
+        document.createTextNode('body { color: orange !important; }')
+      );
+    </script>
+    <style id="single-textContent">
+      a:hover { outline: 1px solid red; }
+    </style>
+    <style id="empty"></style>
+    <script>
+      // this simulates how <link> is stringified
+      let empty = document.getElementById('empty');
+      empty.sheet.insertRule('a:hover { outline: 1px solid blue; }');
+    </script>
+    <style id="hover-mutation">
+      /* replaceme */
+    </style>
+  </head>
+  <body>
+  </body>
+</html>

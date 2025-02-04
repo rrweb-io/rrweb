@@ -1386,18 +1386,18 @@ exports[`record > captures inserted style text nodes correctly 1`] = `
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"_cssText\\": \\"div { color: red; }/* rr_split */section { color: blue; }\\"
+                    },
                     \\"childNodes\\": [
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"div { color: red; }\\",
-                        \\"isStyle\\": true,
+                        \\"textContent\\": \\"\\",
                         \\"id\\": 6
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"section { color: blue; }\\",
-                        \\"isStyle\\": true,
+                        \\"textContent\\": \\"\\",
                         \\"id\\": 7
                       }
                     ],
@@ -1460,7 +1460,6 @@ exports[`record > captures inserted style text nodes correctly 1`] = `
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"h1 { color: pink; }\\",
-            \\"isStyle\\": true,
             \\"id\\": 12
           }
         },
@@ -1470,7 +1469,6 @@ exports[`record > captures inserted style text nodes correctly 1`] = `
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"span { color: orange; }\\",
-            \\"isStyle\\": true,
             \\"id\\": 13
           }
         }

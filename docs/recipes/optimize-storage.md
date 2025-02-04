@@ -49,7 +49,7 @@ rrweb.record({
 rrweb.record({
   emit(event) {},
   sampling: {
-    // Configure which kins of mouse interaction should be recorded
+    // Configure which kinds of mouse interaction should be recorded
     mouseInteraction: {
       MouseUp: false,
       MouseDown: false,
@@ -78,7 +78,7 @@ import { pack } from '@rrweb/packer';
 
 rrweb.record({
   emit(event) {},
-  packFn: rrweb.pack,
+  packFn: pack,
 });
 ```
 
@@ -88,7 +88,7 @@ And you need to pass packer.unpack as the `unpackFn` in replaying.
 import { unpack } from '@rrweb/packer';
 
 const replayer = new rrweb.Replayer(events, {
-  unpackFn: rrweb.unpack,
+  unpackFn: unpack,
 });
 ```
 

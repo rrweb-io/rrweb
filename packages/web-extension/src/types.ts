@@ -14,7 +14,6 @@ export type Settings = {
 
 export enum LocalDataKey {
   recorderStatus = 'recorder_status',
-  bufferedEvents = 'buffered_events',
 }
 
 export type LocalData = {
@@ -24,8 +23,8 @@ export type LocalData = {
     startTimestamp?: number;
     // the timestamp when the recording is paused
     pausedTimestamp?: number;
+    errorMessage?: string; // error message when recording failed
   };
-  [LocalDataKey.bufferedEvents]: eventWithTime[];
 };
 
 export enum RecorderStatus {
@@ -49,13 +48,16 @@ export type Session = {
 export enum ServiceName {
   StartRecord = 'start-record',
   StopRecord = 'stop-record',
-  PauseRecord = 'pause-record',
-  ResumeRecord = 'resume-record',
 }
 
 // all event names for channel
 export enum EventName {
   SessionUpdated = 'session-updated',
+  ContentScriptEmitEvent = 'content-script-emit-event',
+  StartButtonClicked = 'start-recording-button-clicked',
+  StopButtonClicked = 'stop-recording-button-clicked',
+  PauseButtonClicked = 'pause-recording-button-clicked',
+  ResumeButtonClicked = 'resume-recording-button-clicked',
 }
 
 // all message names for postMessage API
@@ -75,9 +77,7 @@ export type RecordStartedMessage = {
 
 export type RecordStoppedMessage = {
   message: MessageName.RecordStopped;
-  events: eventWithTime[];
   endTimestamp: number;
-  session?: Session;
 };
 
 export type EmitEventMessage = {
