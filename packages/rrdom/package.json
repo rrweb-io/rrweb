@@ -1,6 +1,6 @@
 {
   "name": "rrdom",
-  "version": "2.0.1-alpha.19",
+  "version": "2.0.1-alpha.20",
   "publishConfig": {
     "access": "public",
     "registry": "https://npm.pkg.github.com"
@@ -45,7 +45,7 @@
     "url": "https://github.com/Midpath-Software/rrweb/issues"
   },
   "devDependencies": {
-    "@rrweb/types": "^2.0.1-alpha.19",
+    "@rrweb/types": "^2.0.1-alpha.20",
     "@types/puppeteer": "^5.4.4",
     "@typescript-eslint/eslint-plugin": "^5.23.0",
     "@typescript-eslint/parser": "^5.23.0",
@@ -56,6 +56,6 @@
     "vite-plugin-dts": "^3.9.1"
   },
   "dependencies": {
-    "rrweb-snapshot": "^2.0.1-alpha.19"
+    "rrweb-snapshot": "^2.0.1-alpha.20"
   }
 }

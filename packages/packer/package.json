@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/packer",
-  "version": "2.0.1-alpha.19",
+  "version": "2.0.1-alpha.20",
   "publishConfig": {
     "access": "public",
     "registry": "https://npm.pkg.github.com"
@@ -79,7 +79,7 @@
   },
   "dependencies": {
     "fflate": "^0.4.4",
-    "@rrweb/types": "^2.0.1-alpha.19"
+    "@rrweb/types": "^2.0.1-alpha.20"
   },
   "browserslist": [
     "supports es6-class"

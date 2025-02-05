@@ -1,5 +1,17 @@
 # rrweb
 
+## 2.0.1-alpha.20
+
+### Patch Changes
+
+- [`3e6ea35`](https://github.com/rrweb-io/rrweb/commit/3e6ea3574f9e587c5e66967fe62ba63a9a02d5c8) Thanks [@gnpaone](https://github.com/gnpaone)! - #1596 Add masking for innerText mutations on textarea elements
+
+- Updated dependencies []:
+  - rrweb-snapshot@2.0.1-alpha.20
+  - rrdom@2.0.1-alpha.20
+  - @rrweb/types@2.0.1-alpha.20
+  - @rrweb/utils@2.0.1-alpha.20
+
 ## 2.0.1-alpha.19
 
 ### Patch Changes
