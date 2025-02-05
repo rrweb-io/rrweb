@@ -1,5 +1,12 @@
 # @rrweb/rrweb-plugin-canvas-webrtc-replay
 
+## 2.0.1-alpha.19
+
+### Patch Changes
+
+- Updated dependencies [[`dc20cd4`](https://github.com/rrweb-io/rrweb/commit/dc20cd45cc63058325784444af6bd32ed2cace48), [`79837ac`](https://github.com/rrweb-io/rrweb/commit/79837ac8f2f459935f6737210890b5c12033a53b)]:
+  - rrweb@2.0.1-alpha.19
+
 ## 2.0.0-alpha.18
 
 ### Patch Changes

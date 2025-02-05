@@ -1,5 +1,7 @@
 # @rrweb/types
 
+## 2.0.1-alpha.19
+
 ## 2.0.0-alpha.18
 
 ## 2.0.0-alpha.17

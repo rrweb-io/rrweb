@@ -1,5 +1,12 @@
 # rrdom
 
+## 2.0.1-alpha.19
+
+### Patch Changes
+
+- Updated dependencies [[`dc20cd4`](https://github.com/rrweb-io/rrweb/commit/dc20cd45cc63058325784444af6bd32ed2cace48)]:
+  - rrweb-snapshot@2.0.1-alpha.19
+
 ## 2.0.0-alpha.18
 
 ### Patch Changes

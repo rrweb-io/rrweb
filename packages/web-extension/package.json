@@ -1,7 +1,7 @@
 {
   "name": "@rrweb/web-extension",
   "private": true,
-  "version": "2.0.1-alpha.18",
+  "version": "2.0.1-alpha.19",
   "publishConfig": {
     "access": "public",
     "registry": "https://npm.pkg.github.com"
@@ -26,7 +26,7 @@
     "prepublish": "yarn build"
   },
   "devDependencies": {
-    "@rrweb/types": "^2.0.1-alpha.18",
+    "@rrweb/types": "^2.0.1-alpha.19",
     "@types/chrome": "^0.0.287",
     "@types/react-dom": "^18.0.6",
     "@types/semver": "^7.5.8",
@@ -52,7 +52,7 @@
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
     "react-router-dom": "^6.4.1",
-    "rrweb": "^2.0.1-alpha.18",
-    "rrweb-player": "^2.0.1-alpha.18"
+    "rrweb": "^2.0.1-alpha.19",
+    "rrweb-player": "^2.0.1-alpha.19"
   }
 }

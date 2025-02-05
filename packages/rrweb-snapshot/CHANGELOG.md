@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.0.1-alpha.19
+
+### Patch Changes
+
+- [#1615](https://github.com/rrweb-io/rrweb/pull/1615) [`dc20cd4`](https://github.com/rrweb-io/rrweb/commit/dc20cd45cc63058325784444af6bd32ed2cace48) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Improve performance of splitCssText for <style> elements with large css content - see #1603
+
 ## 2.0.0-alpha.18
 
 ### Major Changes

@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/utils",
-  "version": "2.0.1-alpha.18",
+  "version": "2.0.1-alpha.19",
   "publishConfig": {
     "access": "public",
     "registry": "https://npm.pkg.github.com"

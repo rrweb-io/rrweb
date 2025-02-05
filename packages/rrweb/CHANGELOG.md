@@ -1,5 +1,19 @@
 # rrweb
 
+## 2.0.1-alpha.19
+
+### Patch Changes
+
+- [#1615](https://github.com/rrweb-io/rrweb/pull/1615) [`dc20cd4`](https://github.com/rrweb-io/rrweb/commit/dc20cd45cc63058325784444af6bd32ed2cace48) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Improve performance of splitCssText for <style> elements with large css content - see #1603
+
+- [#1618](https://github.com/rrweb-io/rrweb/pull/1618) [`79837ac`](https://github.com/rrweb-io/rrweb/commit/79837ac8f2f459935f6737210890b5c12033a53b) Thanks [@billyvg](https://github.com/billyvg)! - This fixes an issue where inlined CSS from a remotely loaded `<link>` does not get applied properly due to object reference mutation.
+
+- Updated dependencies [[`dc20cd4`](https://github.com/rrweb-io/rrweb/commit/dc20cd45cc63058325784444af6bd32ed2cace48)]:
+  - rrweb-snapshot@2.0.1-alpha.19
+  - rrdom@2.0.1-alpha.19
+  - @rrweb/types@2.0.1-alpha.19
+  - @rrweb/utils@2.0.1-alpha.19
+
 ## 2.0.0-alpha.18
 
 ### Minor Changes
