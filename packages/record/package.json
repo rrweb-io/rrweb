@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/record",
-  "version": "2.0.1-alpha.20",
+  "version": "2.0.1-alpha.19",
   "publishConfig": {
     "access": "public",
     "registry": "https://npm.pkg.github.com"
@@ -56,8 +56,8 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.1-alpha.20",
-    "rrweb": "^2.0.1-alpha.20"
+    "@rrweb/types": "^2.0.1-alpha.19",
+    "rrweb": "^2.0.1-alpha.19"
   },
   "browserslist": [
     "supports es6-class"

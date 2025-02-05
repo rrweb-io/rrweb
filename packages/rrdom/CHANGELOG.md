@@ -1,12 +1,5 @@
 # rrdom
 
-## 2.0.1-alpha.20
-
-### Patch Changes
-
-- Updated dependencies []:
-  - rrweb-snapshot@2.0.1-alpha.20
-
 ## 2.0.1-alpha.19
 
 ### Patch Changes

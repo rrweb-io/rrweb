@@ -1,12 +1,12 @@
 {
   "name": "rrweb-player",
-  "version": "2.0.1-alpha.20",
+  "version": "2.0.1-alpha.19",
   "publishConfig": {
     "access": "public",
     "registry": "https://npm.pkg.github.com"
   },
   "devDependencies": {
-    "@rrweb/types": "^2.0.1-alpha.20",
+    "@rrweb/types": "^2.0.1-alpha.19",
     "@sveltejs/adapter-auto": "^3.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/package": "^2.0.0",
@@ -24,8 +24,8 @@
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
-    "@rrweb/replay": "^2.0.1-alpha.20",
-    "@rrweb/packer": "^2.0.1-alpha.20"
+    "@rrweb/replay": "^2.0.1-alpha.19",
+    "@rrweb/packer": "^2.0.1-alpha.19"
   },
   "scripts": {
     "dev": "vite build --watch",

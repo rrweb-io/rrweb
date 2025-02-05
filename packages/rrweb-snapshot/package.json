@@ -1,6 +1,6 @@
 {
   "name": "rrweb-snapshot",
-  "version": "2.0.1-alpha.20",
+  "version": "2.0.1-alpha.19",
   "publishConfig": {
     "access": "public",
     "registry": "https://npm.pkg.github.com"
@@ -58,8 +58,8 @@
   },
   "homepage": "https://github.com/Midpath-Software/rrweb/tree/master/packages/rrweb-snapshot#readme",
   "devDependencies": {
-    "@rrweb/types": "^2.0.1-alpha.20",
-    "@rrweb/utils": "^2.0.1-alpha.20",
+    "@rrweb/types": "^2.0.1-alpha.19",
+    "@rrweb/utils": "^2.0.1-alpha.19",
     "@types/jsdom": "^20.0.0",
     "@types/node": "^18.15.11",
     "@types/puppeteer": "^5.4.4",
