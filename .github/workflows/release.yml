@@ -23,7 +23,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          yarn config set registry https://npm.pkg.github.com
+          npm config set registry https://npm.pkg.github.com
           yarn install --frozen-lockfile
 
       - name: Create Release Pull Request or Publish to npm
