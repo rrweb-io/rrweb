@@ -56,7 +56,7 @@ rrweb is mainly composed of 3 parts:
 
 ## Contribute Guide
 
-Since we want the record and replay sides to share a strongly typed data structure, rrweb is developed with typescript which provides stronger type support.
+Rrweb is developed with Typescript so that both the recording and replay components of the application share a strongly typed data structure.
 
 [Typescript handbook](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
 
