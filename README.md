@@ -39,9 +39,9 @@ rrweb is mainly composed of 3 parts:
 
 ## Roadmap
 
-- storage engine: do deduplication on a large number of rrweb sessions
-- compact mutation data in common patterns
-- provide plugins via the new plugin API, including:
+- Storage engine: do deduplication on a large number of rrweb sessions
+- Compact mutation data in common patterns
+- Provide plugins via the new plugin API, including:
   - XHR plugin
   - fetch plugin
   - GraphQL plugin
@@ -64,11 +64,11 @@ Since we want the record and replay sides to share a strongly typed data structu
 2. Run `yarn install` in the root to install required dependencies for all sub-packages (note: `npm install` is _not_ recommended).
 3. Run `yarn build:all` to build all packages and get a stable base, then `yarn dev` in the root to get auto-building for all the sub-packages whenever you modify anything.
 4. Navigate to one of the sub-packages (in the `packages` folder) where you'd like to make a change.
-5. Patch the code and run `yarn test` to run the tests, make sure they pass before you commit anything. Add test cases in order to avoid future regression.
-6. If tests are failing, but the change in output is desirable, run `yarn test:update` and carefully commit the changes in test output.
+5. Patch the code and run `yarn test` to run the tests. Make sure the tests pass before commiting code. Add test cases in order to avoid future regressions.
+6. If tests are failing - but the change in output is desirable - run `yarn test:update` and carefully commit the changes in test output.
 7. Push the code and create a pull request.
 
-Protip: You can run `yarn test` in the root folder to run all the tests.
+**Protip:** You can run `yarn test` in the root folder to run all the tests.
 
 In addition to adding integration tests and unit tests, rrweb also provides a REPL testing tool.
 
