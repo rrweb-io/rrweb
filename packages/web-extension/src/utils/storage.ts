@@ -44,11 +44,23 @@ export async function getSessionStore() {
   });
 }
 
-export async function saveSession(session: Session, events: eventWithTime[]) {
+export async function addSession(session: Session, events: eventWithTime[]) {
   const eventStore = await getEventStore();
   await eventStore.put(EventStoreName, { id: session.id, events });
   const store = await getSessionStore();
   await store.add(SessionStoreName, session);
+}
+
+export async function updateSession(
+  session: Session,
+  events?: eventWithTime[],
+) {
+  const eventStore = await getEventStore();
+  if (events) {
+    await eventStore.put(EventStoreName, { id: session.id, events });
+  }
+  const store = await getSessionStore();
+  await store.put(SessionStoreName, session);
 }
 
 export async function getSession(id: string) {

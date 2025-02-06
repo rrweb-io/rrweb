@@ -19,7 +19,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
-      
+          cache: 'yarn'
+
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
 
@@ -33,8 +34,16 @@ jobs:
         # run: PUPPETEER_EXECUTABLE_PATH=${{ steps.setup-chrome.outputs.chrome-path }} PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
         run: PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
 
+      - name: Check bundle sizes
+        uses: preactjs/compressed-size-action@v2
+        with:
+          install-script: "yarn install --frozen-lockfile"
+          build-script: "build:all"
+          compression: "none"
+          pattern: "**/dist/*.{js,cjs,mjs,css}"
+
       - name: Upload diff images to GitHub
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: image-diff
