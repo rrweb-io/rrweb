@@ -5,7 +5,8 @@ import type {
   IWindow,
   listenerHandler,
 } from '@rrweb/types';
-import { isBlocked, patch } from '../../../utils';
+import { isBlocked } from '../../../utils';
+import { patch } from '@rrweb/utils';
 
 function getNormalizedContextName(contextType: string) {
   return contextType === 'experimental-webgl' ? 'webgl' : contextType;
