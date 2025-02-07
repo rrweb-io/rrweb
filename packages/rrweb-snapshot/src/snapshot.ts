@@ -343,8 +343,9 @@ function onceIframeLoaded(
   }
   // check blank frame for Chrome
   const blankUrl = 'about:blank';
-  if ((iframeEl.src === blankUrl ||
-    (iframeEl.src !== blankUrl && win.location.href !== blankUrl)) &&
+  if (
+    (iframeEl.src === blankUrl ||
+      (iframeEl.src !== blankUrl && win.location.href !== blankUrl)) &&
     readyState === 'complete'
   ) {
     // iframe was already loaded, make sure we wait to trigger the listener
