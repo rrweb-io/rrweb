@@ -4104,6 +4104,57 @@ exports[`record integration tests > can record node mutations 1`] = `
           }
         },
         {
+          \\"parentId\\": 45,
+          \\"nextId\\": 67,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"li\\",
+            \\"attributes\\": {
+              \\"class\\": \\"select2-results-dept-0 select2-result select2-result-selectable select2-highlighted\\",
+              \\"role\\": \\"presentation\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 68
+          }
+        },
+        {
+          \\"parentId\\": 68,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"div\\",
+            \\"attributes\\": {
+              \\"class\\": \\"select2-result-label\\",
+              \\"id\\": \\"select2-result-label-2\\",
+              \\"role\\": \\"option\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 69
+          }
+        },
+        {
+          \\"parentId\\": 69,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"A\\",
+            \\"id\\": 70
+          }
+        },
+        {
+          \\"parentId\\": 69,
+          \\"nextId\\": 70,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"span\\",
+            \\"attributes\\": {
+              \\"class\\": \\"select2-match\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 71
+          }
+        },
+        {
           \\"parentId\\": 67,
           \\"nextId\\": null,
           \\"node\\": {
@@ -4115,16 +4166,29 @@ exports[`record integration tests > can record node mutations 1`] = `
               \\"role\\": \\"option\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 68
+            \\"id\\": 72
           }
         },
         {
-          \\"parentId\\": 68,
+          \\"parentId\\": 72,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"B\\",
-            \\"id\\": 69
+            \\"id\\": 73
+          }
+        },
+        {
+          \\"parentId\\": 72,
+          \\"nextId\\": 73,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"span\\",
+            \\"attributes\\": {
+              \\"class\\": \\"select2-match\\"
+            },
+            \\"childNodes\\": [],
+            \\"id\\": 74
           }
         },
         {
@@ -4139,7 +4203,7 @@ exports[`record integration tests > can record node mutations 1`] = `
               \\"style\\": \\"\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 70
+            \\"id\\": 75
           }
         },
         {
@@ -4148,70 +4212,6 @@ exports[`record integration tests > can record node mutations 1`] = `
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"2 results are available, use up and down arrow keys to navigate.\\",
-            \\"id\\": 71
-          }
-        },
-        {
-          \\"parentId\\": 45,
-          \\"nextId\\": 67,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"li\\",
-            \\"attributes\\": {
-              \\"class\\": \\"select2-results-dept-0 select2-result select2-result-selectable select2-highlighted\\",
-              \\"role\\": \\"presentation\\"
-            },
-            \\"childNodes\\": [],
-            \\"id\\": 72
-          }
-        },
-        {
-          \\"parentId\\": 72,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"div\\",
-            \\"attributes\\": {
-              \\"class\\": \\"select2-result-label\\",
-              \\"id\\": \\"select2-result-label-2\\",
-              \\"role\\": \\"option\\"
-            },
-            \\"childNodes\\": [],
-            \\"id\\": 73
-          }
-        },
-        {
-          \\"parentId\\": 73,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"A\\",
-            \\"id\\": 74
-          }
-        },
-        {
-          \\"parentId\\": 73,
-          \\"nextId\\": 74,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"span\\",
-            \\"attributes\\": {
-              \\"class\\": \\"select2-match\\"
-            },
-            \\"childNodes\\": [],
-            \\"id\\": 75
-          }
-        },
-        {
-          \\"parentId\\": 68,
-          \\"nextId\\": 69,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"span\\",
-            \\"attributes\\": {
-              \\"class\\": \\"select2-match\\"
-            },
-            \\"childNodes\\": [],
             \\"id\\": 76
           }
         }
@@ -4241,7 +4241,7 @@ exports[`record integration tests > can record node mutations 1`] = `
     \\"data\\": {
       \\"source\\": 2,
       \\"type\\": 0,
-      \\"id\\": 70
+      \\"id\\": 75
     }
   },
   {
@@ -6135,11 +6135,11 @@ exports[`record integration tests > mutations should work when blocked class is 
           }
         },
         {
-          \\"parentId\\": 76,
-          \\"nextId\\": null,
+          \\"parentId\\": 75,
+          \\"nextId\\": 76,
           \\"node\\": {
             \\"type\\": 2,
-            \\"tagName\\": \\"button\\",
+            \\"tagName\\": \\"div\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
             \\"id\\": 77
@@ -6149,24 +6149,24 @@ exports[`record integration tests > mutations should work when blocked class is 
           \\"parentId\\": 77,
           \\"nextId\\": null,
           \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"I1I2 VISIBLE\\",
+            \\"type\\": 2,
+            \\"tagName\\": \\"button\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
             \\"id\\": 78
           }
         },
         {
-          \\"parentId\\": 75,
-          \\"nextId\\": 76,
+          \\"parentId\\": 78,
+          \\"nextId\\": null,
           \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"div\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
+            \\"type\\": 3,
+            \\"textContent\\": \\"I1I1 VISIBLE\\",
             \\"id\\": 79
           }
         },
         {
-          \\"parentId\\": 79,
+          \\"parentId\\": 76,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -6181,7 +6181,7 @@ exports[`record integration tests > mutations should work when blocked class is 
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
-            \\"textContent\\": \\"I1I1 VISIBLE\\",
+            \\"textContent\\": \\"I1I2 VISIBLE\\",
             \\"id\\": 81
           }
         }
@@ -6267,11 +6267,11 @@ exports[`record integration tests > mutations should work when blocked class is 
           }
         },
         {
-          \\"parentId\\": 83,
-          \\"nextId\\": null,
+          \\"parentId\\": 82,
+          \\"nextId\\": 83,
           \\"node\\": {
             \\"type\\": 2,
-            \\"tagName\\": \\"button\\",
+            \\"tagName\\": \\"div\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
             \\"id\\": 84
@@ -6281,24 +6281,24 @@ exports[`record integration tests > mutations should work when blocked class is 
           \\"parentId\\": 84,
           \\"nextId\\": null,
           \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"I1I2 VISIBLE\\",
+            \\"type\\": 2,
+            \\"tagName\\": \\"button\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
             \\"id\\": 85
           }
         },
         {
-          \\"parentId\\": 82,
-          \\"nextId\\": 83,
+          \\"parentId\\": 85,
+          \\"nextId\\": null,
           \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"div\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
+            \\"type\\": 3,
+            \\"textContent\\": \\"I1I1 VISIBLE\\",
             \\"id\\": 86
           }
         },
         {
-          \\"parentId\\": 86,
+          \\"parentId\\": 83,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -6313,7 +6313,7 @@ exports[`record integration tests > mutations should work when blocked class is 
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
-            \\"textContent\\": \\"I1I1 VISIBLE\\",
+            \\"textContent\\": \\"I1I2 VISIBLE\\",
             \\"id\\": 88
           }
         }
