@@ -14258,7 +14258,9 @@ exports[`record integration tests > should record moved shadow DOM 1`] = `
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"div\\",
-            \\"attributes\\": {},
+            \\"attributes\\": {
+              \\"id\\": \\"shadowHost\\"
+            },
             \\"childNodes\\": [],
             \\"id\\": 9,
             \\"isShadowHost\\": true
@@ -14270,7 +14272,9 @@ exports[`record integration tests > should record moved shadow DOM 1`] = `
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"input\\",
-            \\"attributes\\": {},
+            \\"attributes\\": {
+              \\"id\\": \\"shadowContent\\"
+            },
             \\"childNodes\\": [],
             \\"id\\": 10,
             \\"isShadow\\": true
@@ -14298,7 +14302,9 @@ exports[`record integration tests > should record moved shadow DOM 1`] = `
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"input\\",
-            \\"attributes\\": {},
+            \\"attributes\\": {
+              \\"id\\": \\"shadowContent\\"
+            },
             \\"childNodes\\": [],
             \\"id\\": 10,
             \\"isShadow\\": true
@@ -14310,7 +14316,9 @@ exports[`record integration tests > should record moved shadow DOM 1`] = `
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"div\\",
-            \\"attributes\\": {},
+            \\"attributes\\": {
+              \\"id\\": \\"newParent\\"
+            },
             \\"childNodes\\": [],
             \\"id\\": 11
           }
@@ -14321,7 +14329,9 @@ exports[`record integration tests > should record moved shadow DOM 1`] = `
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"div\\",
-            \\"attributes\\": {},
+            \\"attributes\\": {
+              \\"id\\": \\"shadowHost\\"
+            },
             \\"childNodes\\": [],
             \\"id\\": 9,
             \\"isShadowHost\\": true
