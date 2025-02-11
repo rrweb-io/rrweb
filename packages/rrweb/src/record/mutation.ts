@@ -190,7 +190,7 @@ export default class MutationBuffer {
 
     let n: Node | null = null;
     let parentNode: Node | null = null;
-    let parentId: number | null = null;
+    let parentId: number = -1;
     let nextSibling: Node | null = null;
     let ancestorBad = false;
     const missingParents = new Set<Node>();
@@ -266,7 +266,7 @@ export default class MutationBuffer {
 
       this.addedSet.delete(n); // don't re-iterate
 
-      if (!parentNode || parentId === -1 || parentId === null) {
+      if (!parentNode || parentId === -1) {
         missingParents.add(n); // ensure any added child nodes can also early-out
         continue;
       } else if (ancestorBad) {
