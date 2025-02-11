@@ -287,11 +287,10 @@ export default class MutationBuffer {
         }
       }
 
-      let ns: Node | null = n;
-      let nextId: number | null = IGNORED_NODE; // slimDOM: ignored
+      let nextId = nextSibling ? this.mirror.getId(nextSibling) : null;
       while (nextId === IGNORED_NODE) {
-        ns = ns && ns.nextSibling;
-        nextId = ns && this.mirror.getId(ns);
+        nextSibling = nextSibling && nextSibling.nextSibling;
+        nextId = nextSibling && this.mirror.getId(nextSibling);
       }
       if (nextId === -1) {
         continue;
