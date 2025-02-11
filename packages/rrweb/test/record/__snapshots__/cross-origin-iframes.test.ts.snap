@@ -3916,80 +3916,6 @@ exports[`cross origin iframes > move-node.html > should record DOM node movement
       ],
       \\"adds\\": [
         {
-          \\"parentId\\": 24,
-          \\"nextId\\": 26,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"\\\\n      \\",
-            \\"rootId\\": 11,
-            \\"id\\": 25
-          }
-        },
-        {
-          \\"parentId\\": 24,
-          \\"nextId\\": 31,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"i\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"rootId\\": 11,
-            \\"id\\": 26
-          }
-        },
-        {
-          \\"parentId\\": 26,
-          \\"nextId\\": 28,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"\\\\n        \\",
-            \\"rootId\\": 11,
-            \\"id\\": 27
-          }
-        },
-        {
-          \\"parentId\\": 26,
-          \\"nextId\\": 30,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"b\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"rootId\\": 11,
-            \\"id\\": 28
-          }
-        },
-        {
-          \\"parentId\\": 28,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"1\\",
-            \\"rootId\\": 11,
-            \\"id\\": 29
-          }
-        },
-        {
-          \\"parentId\\": 26,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"\\\\n      \\",
-            \\"rootId\\": 11,
-            \\"id\\": 30
-          }
-        },
-        {
-          \\"parentId\\": 24,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"\\\\n    \\",
-            \\"rootId\\": 11,
-            \\"id\\": 31
-          }
-        },
-        {
           \\"parentId\\": 17,
           \\"nextId\\": null,
           \\"node\\": {
@@ -4011,6 +3937,80 @@ exports[`cross origin iframes > move-node.html > should record DOM node movement
             \\"childNodes\\": [],
             \\"rootId\\": 11,
             \\"id\\": 24
+          }
+        },
+        {
+          \\"parentId\\": 24,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\\\n    \\",
+            \\"rootId\\": 11,
+            \\"id\\": 31
+          }
+        },
+        {
+          \\"parentId\\": 24,
+          \\"nextId\\": 31,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"i\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"rootId\\": 11,
+            \\"id\\": 26
+          }
+        },
+        {
+          \\"parentId\\": 24,
+          \\"nextId\\": 26,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\\\n      \\",
+            \\"rootId\\": 11,
+            \\"id\\": 25
+          }
+        },
+        {
+          \\"parentId\\": 26,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\\\n      \\",
+            \\"rootId\\": 11,
+            \\"id\\": 30
+          }
+        },
+        {
+          \\"parentId\\": 26,
+          \\"nextId\\": 30,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"b\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"rootId\\": 11,
+            \\"id\\": 28
+          }
+        },
+        {
+          \\"parentId\\": 26,
+          \\"nextId\\": 28,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"\\\\n        \\",
+            \\"rootId\\": 11,
+            \\"id\\": 27
+          }
+        },
+        {
+          \\"parentId\\": 28,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"1\\",
+            \\"rootId\\": 11,
+            \\"id\\": 29
           }
         }
       ]
