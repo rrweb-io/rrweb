@@ -195,24 +195,24 @@ export default class MutationBuffer {
     let ancestorBad = false;
     const missingParents = new Set<Node>();
     while (this.addedSet.size) {
-      if (n !== null && this.addedSet.has(n.previousSibling)) {
+      if (n !== null && this.addedSet.has(n.previousSibling as Node)) {
         // reuse parentNode, parentId, ancestorBad
         nextSibling = n; // n is a good next sibling
-        n = n.previousSibling;
+        n = n.previousSibling as Node;
       } else {
-        n = this.addedSet.values().next().value;  // pop
+        n = this.addedSet.values().next().value as Node; // pop
 
         while (true) {
           parentNode = dom.parentNode(n);
-          if (this.addedSet.has(parentNode)) {
+          if (this.addedSet.has(parentNode as Node)) {
             // start at top of added tree so as not to serialize children before their parents (parentId requirement)
-            n = parentNode;
+            n = parentNode as Node;
             continue;
           }
           break;
         }
 
-        if (missingParents.has(parentNode)) {
+        if (missingParents.has(parentNode as Node)) {
           parentNode = null;
         } else if (parentNode) {
           // we have a new parentNode for a 'row' of DOM children
@@ -233,9 +233,9 @@ export default class MutationBuffer {
 
           while (true) {
             nextSibling = n.nextSibling;
-            if (this.addedSet.has(nextSibling)) {
+            if (this.addedSet.has(nextSibling as Node)) {
               // keep going as we can't serialize a node before it's next sibling (nextId requirement)
-              n = nextSibling;
+              n = nextSibling as Node;
               continue;
             }
             break;
@@ -258,7 +258,7 @@ export default class MutationBuffer {
 
       this.addedSet.delete(n); // don't re-iterate
 
-      if (!parentNode || parentId === -1) {
+      if (!parentNode || parentId === -1 || parentId === null) {
         missingParents.add(n); // ensure any added child nodes can also early-out
         continue;
       } else if (ancestorBad) {
@@ -316,9 +316,12 @@ export default class MutationBuffer {
               currentN as HTMLLinkElement,
             );
           }
-          if (hasShadowRoot(n)) {
+          if (hasShadowRoot(n as Node)) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.shadowDomManager.addShadowRoot(dom.shadowRoot(n)!, this.doc);
+            this.shadowDomManager.addShadowRoot(
+              dom.shadowRoot(n as Node)!,
+              this.doc,
+            );
           }
         },
         onIframeLoad: (iframe, childSn) => {
