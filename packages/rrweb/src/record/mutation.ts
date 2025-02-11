@@ -226,19 +226,25 @@ export default class MutationBuffer {
             // not bad, just moved
             ancestorBad = false;
           }
-
           if (!inDom(parentNode)) {
+            // this check should overrule moved also
             ancestorBad = true;
           }
 
-          while (true) {
-            nextSibling = n.nextSibling;
-            if (this.addedSet.has(nextSibling as Node)) {
-              // keep going as we can't serialize a node before it's next sibling (nextId requirement)
-              n = nextSibling as Node;
-              continue;
+          if (this.addedSet.has(parentNode.lastChild as Node)) {
+            // jump instead of crawling nextSibling to nextSibling
+            n = parentNode.lastChild as Node;
+            nextSibling = null;
+          } else {
+            while (true) {
+              nextSibling = n.nextSibling;
+              if (this.addedSet.has(nextSibling as Node)) {
+                // keep going as we can't serialize a node before it's next sibling (nextId requirement)
+                n = nextSibling as Node;
+                continue;
+              }
+              break;
             }
-            break;
           }
 
           parentId = isShadowRoot(parentNode)
