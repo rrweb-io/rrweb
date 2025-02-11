@@ -17,6 +17,13 @@ exports[`mutation > add elements at once 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -36,13 +43,13 @@ exports[`mutation > add elements at once 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 5
+                        \\"id\\": 6
                       }
                     ],
-                    \\"id\\": 4
+                    \\"id\\": 5
                   }
                 ],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -52,16 +59,15 @@ exports[`mutation > add elements at once 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
-                    \\"id\\": 7
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 6
+                \\"id\\": 7
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
-        \\"compatMode\\": \\"BackCompat\\",
         \\"id\\": 1
       },
       \\"initialOffset\\": {
@@ -79,7 +85,7 @@ exports[`mutation > add elements at once 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 6,
+          \\"parentId\\": 7,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -88,11 +94,11 @@ exports[`mutation > add elements at once 1`] = `
               \\"id\\": \\"d1\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 8
+            \\"id\\": 9
           }
         },
         {
-          \\"parentId\\": 8,
+          \\"parentId\\": 9,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -101,12 +107,12 @@ exports[`mutation > add elements at once 1`] = `
               \\"id\\": \\"d3\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 9
+            \\"id\\": 10
           }
         },
         {
-          \\"parentId\\": 8,
-          \\"nextId\\": 9,
+          \\"parentId\\": 9,
+          \\"nextId\\": 10,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"div\\",
@@ -114,18 +120,29 @@ exports[`mutation > add elements at once 1`] = `
               \\"id\\": \\"d2\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 10
+            \\"id\\": 11
           }
         },
         {
-          \\"parentId\\": 8,
-          \\"nextId\\": 10,
+          \\"parentId\\": 9,
+          \\"nextId\\": 11,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"span\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 11
+            \\"id\\": 12
+          }
+        },
+        {
+          \\"parentId\\": 11,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"span\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 13
           }
         },
         {
@@ -136,18 +153,7 @@ exports[`mutation > add elements at once 1`] = `
             \\"tagName\\": \\"span\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 12
-          }
-        },
-        {
-          \\"parentId\\": 9,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"span\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 13
+            \\"id\\": 14
           }
         }
       ]
@@ -173,6 +179,13 @@ exports[`mutation > add root first 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -192,13 +205,13 @@ exports[`mutation > add root first 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 5
+                        \\"id\\": 6
                       }
                     ],
-                    \\"id\\": 4
+                    \\"id\\": 5
                   }
                 ],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -208,16 +221,15 @@ exports[`mutation > add root first 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
-                    \\"id\\": 7
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 6
+                \\"id\\": 7
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
-        \\"compatMode\\": \\"BackCompat\\",
         \\"id\\": 1
       },
       \\"initialOffset\\": {
@@ -235,7 +247,7 @@ exports[`mutation > add root first 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 6,
+          \\"parentId\\": 7,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -244,23 +256,23 @@ exports[`mutation > add root first 1`] = `
               \\"id\\": \\"d1\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 8
+            \\"id\\": 9
           }
         },
         {
-          \\"parentId\\": 8,
+          \\"parentId\\": 9,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"div\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 9
+            \\"id\\": 10
           }
         },
         {
-          \\"parentId\\": 8,
-          \\"nextId\\": 9,
+          \\"parentId\\": 9,
+          \\"nextId\\": 10,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"div\\",
@@ -268,18 +280,29 @@ exports[`mutation > add root first 1`] = `
               \\"id\\": \\"d2\\"
             },
             \\"childNodes\\": [],
-            \\"id\\": 10
+            \\"id\\": 11
           }
         },
         {
-          \\"parentId\\": 8,
-          \\"nextId\\": 10,
+          \\"parentId\\": 9,
+          \\"nextId\\": 11,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"span\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 11
+            \\"id\\": 12
+          }
+        },
+        {
+          \\"parentId\\": 11,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"span\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 13
           }
         },
         {
@@ -290,18 +313,7 @@ exports[`mutation > add root first 1`] = `
             \\"tagName\\": \\"span\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 12
-          }
-        },
-        {
-          \\"parentId\\": 9,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"span\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 13
+            \\"id\\": 14
           }
         }
       ]
@@ -327,6 +339,13 @@ exports[`mutation > ignored ending comment 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -346,13 +365,13 @@ exports[`mutation > ignored ending comment 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 5
+                        \\"id\\": 6
                       }
                     ],
-                    \\"id\\": 4
+                    \\"id\\": 5
                   }
                 ],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -362,16 +381,15 @@ exports[`mutation > ignored ending comment 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
-                    \\"id\\": 7
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 6
+                \\"id\\": 7
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
-        \\"compatMode\\": \\"BackCompat\\",
         \\"id\\": 1
       },
       \\"initialOffset\\": {
@@ -389,18 +407,7 @@ exports[`mutation > ignored ending comment 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 6,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"div\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 8
-          }
-        },
-        {
-          \\"parentId\\": 8,
+          \\"parentId\\": 7,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -408,6 +415,17 @@ exports[`mutation > ignored ending comment 1`] = `
             \\"attributes\\": {},
             \\"childNodes\\": [],
             \\"id\\": 9
+          }
+        },
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"div\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 10
           }
         }
       ]
@@ -433,6 +451,13 @@ exports[`mutation > ignored middle comment 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -452,13 +477,13 @@ exports[`mutation > ignored middle comment 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 5
+                        \\"id\\": 6
                       }
                     ],
-                    \\"id\\": 4
+                    \\"id\\": 5
                   }
                 ],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -468,16 +493,15 @@ exports[`mutation > ignored middle comment 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
-                    \\"id\\": 7
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 6
+                \\"id\\": 7
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
-        \\"compatMode\\": \\"BackCompat\\",
         \\"id\\": 1
       },
       \\"initialOffset\\": {
@@ -495,18 +519,7 @@ exports[`mutation > ignored middle comment 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 6,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"div\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 8
-          }
-        },
-        {
-          \\"parentId\\": 8,
+          \\"parentId\\": 7,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -517,14 +530,25 @@ exports[`mutation > ignored middle comment 1`] = `
           }
         },
         {
-          \\"parentId\\": 8,
-          \\"nextId\\": 9,
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"div\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
             \\"id\\": 10
+          }
+        },
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": 10,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"div\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 11
           }
         }
       ]
@@ -550,6 +574,13 @@ exports[`mutation > ignored starting comment 1`] = `
         \\"type\\": 0,
         \\"childNodes\\": [
           {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
             \\"type\\": 2,
             \\"tagName\\": \\"html\\",
             \\"attributes\\": {},
@@ -569,13 +600,13 @@ exports[`mutation > ignored starting comment 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 5
+                        \\"id\\": 6
                       }
                     ],
-                    \\"id\\": 4
+                    \\"id\\": 5
                   }
                 ],
-                \\"id\\": 3
+                \\"id\\": 4
               },
               {
                 \\"type\\": 2,
@@ -585,16 +616,15 @@ exports[`mutation > ignored starting comment 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
-                    \\"id\\": 7
+                    \\"id\\": 8
                   }
                 ],
-                \\"id\\": 6
+                \\"id\\": 7
               }
             ],
-            \\"id\\": 2
+            \\"id\\": 3
           }
         ],
-        \\"compatMode\\": \\"BackCompat\\",
         \\"id\\": 1
       },
       \\"initialOffset\\": {
@@ -612,18 +642,7 @@ exports[`mutation > ignored starting comment 1`] = `
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 6,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 2,
-            \\"tagName\\": \\"div\\",
-            \\"attributes\\": {},
-            \\"childNodes\\": [],
-            \\"id\\": 8
-          }
-        },
-        {
-          \\"parentId\\": 8,
+          \\"parentId\\": 7,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
@@ -631,6 +650,17 @@ exports[`mutation > ignored starting comment 1`] = `
             \\"attributes\\": {},
             \\"childNodes\\": [],
             \\"id\\": 9
+          }
+        },
+        {
+          \\"parentId\\": 9,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 2,
+            \\"tagName\\": \\"div\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [],
+            \\"id\\": 10
           }
         }
       ]
