@@ -301,6 +301,7 @@ function stringifyDomSnapshot(mhtml: string): string {
 
 export async function assertSnapshot(
   snapshotsOrPage: eventWithTime[] | puppeteer.Page,
+  useOwnFile: boolean | string = false,
 ) {
   let snapshots: eventWithTime[];
   if (!Array.isArray(snapshotsOrPage)) {
@@ -318,7 +319,19 @@ export async function assertSnapshot(
   }
 
   expect(snapshots).toBeDefined();
-  expect(stringifySnapshots(snapshots)).toMatchSnapshot();
+
+  if (useOwnFile) {
+    if (typeof useOwnFile !== 'string') {
+      // e.g. 'mutation.test.ts > mutation > add elements at once'
+      useOwnFile = expect.getState().currentTestName.split('/').pop();
+    }
+    useOwnFile = useOwnFile.replace(/ > /g, '.').replace(/\s/g, '_');
+
+    const fname = `./__snapshots__/${useOwnFile}.snap.json`;
+    expect(stringifySnapshots(snapshots)).toMatchFileSnapshot(fname);
+  } else {
+    expect(stringifySnapshots(snapshots)).toMatchSnapshot();
+  }
 }
 
 export function replaceLast(str: string, find: string, replace: string) {
