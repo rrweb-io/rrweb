@@ -295,6 +295,13 @@ export default class MutationBuffer {
         nextId = nextSibling && this.mirror.getId(nextSibling);
       }
       if (nextId === -1) {
+        // sibling not included in addedNodes, but
+        // no id as not yet serialized?
+        console.warn(
+          "Couldn't record new node. Couldn't find mirror id for nextSibling:",
+          nextSibling,
+        );
+        n = null; // don't iterate to previousSibling as we haven't successful serialized this node
         continue;
       }
       const sn = serializeNodeWithId(n, {
