@@ -209,4 +209,57 @@ describe('mutation', () => {
     );
     await assertSnapshot(mutations, true);
   });
+
+  it('blocked firstchild element', async () => {
+    await page.evaluate(() => {
+      const d1 = document.createElement('div');
+      document.body.append(d1);
+      const b1 = document.createElement('div');
+      b1.className = 'rr-block';
+      b1.append(document.createElement('div')); // shouldn't show up
+      b1.append(document.createElement('div')); // shouldn't show up
+      const siblingDiv = document.createElement('div');
+      d1.append(b1);
+      d1.append(siblingDiv);
+    });
+    await waitForRAF(page);
+    const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);
+    await assertSnapshot(mutations, true);
+  });
+
+  it('blocked middlechild element', async () => {
+    await page.evaluate(() => {
+      const d1 = document.createElement('div');
+      document.body.append(d1);
+      const b1 = document.createElement('div');
+      b1.className = 'rr-block';
+      b1.append(document.createElement('div')); // shouldn't show up
+      b1.append(document.createElement('div')); // shouldn't show up
+      const siblingDiv = document.createElement('div');
+      const siblingDiv2 = document.createElement('div');
+      d1.append(siblingDiv);
+      d1.append(b1);
+      d1.append(siblingDiv2);
+    });
+    await waitForRAF(page);
+    const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);
+    await assertSnapshot(mutations, true);
+  });
+
+  it('blocked endchild element', async () => {
+    await page.evaluate(() => {
+      const d1 = document.createElement('div');
+      document.body.append(d1);
+      const b1 = document.createElement('div');
+      b1.className = 'rr-block';
+      b1.append(document.createElement('div')); // shouldn't show up
+      b1.append(document.createElement('div')); // shouldn't show up
+      const siblingDiv = document.createElement('div');
+      d1.append(siblingDiv);
+      d1.append(b1);
+    });
+    await waitForRAF(page);
+    const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);
+    await assertSnapshot(mutations, true);
+  });
 });
