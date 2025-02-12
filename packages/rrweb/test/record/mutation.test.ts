@@ -104,7 +104,7 @@ describe('mutation', () => {
     await waitForRAF(page);
   });
 
-  it('add elements at once', async () => {
+  it('add elements all at once', async () => {
     await page.evaluate(() => {
       const d1 = document.createElement('div');
       d1.id = 'd1';
@@ -124,7 +124,8 @@ describe('mutation', () => {
       document.body.append(d1);
     });
     await waitForRAF(page);
-    await assertSnapshot(events);
+    const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);;
+    await assertSnapshot(mutations, true);
   });
 
   it('add root first', async () => {
@@ -139,7 +140,7 @@ describe('mutation', () => {
       const s2 = document.createElement('span');
       d2.append(s2);
       const d3 = document.createElement('div');
-      d3.tagName = 'd3';
+      d3.id = 'd3';
       const s3 = document.createElement('span');
       d3.append(s3);
 
@@ -147,10 +148,15 @@ describe('mutation', () => {
       d1.append(d3);
     });
     await waitForRAF(page);
-    await assertSnapshot(events); // TODO: verify it's the same set of adds as 'add elements at once'
+    const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);
+
+    // assert has same output as previous test despite difference in way elements are added to DOM
+    //await assertSnapshot(mutations, 'mutation.test.ts.mutation.add_elements_all_at_once');
+
+    await assertSnapshot(mutations, true);
   });
 
-  it('ignored starting comment', async () => {
+  it('ignored firstchild comment', async () => {
     await page.evaluate(() => {
       const d1 = document.createElement('div');
       document.body.append(d1);
@@ -160,10 +166,11 @@ describe('mutation', () => {
       d1.append(siblingDiv);
     });
     await waitForRAF(page);
-    await assertSnapshot(events);
+    const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);
+    await assertSnapshot(mutations, true);
   });
 
-  it('ignored middle comment', async () => {
+  it('ignored middlechild comment', async () => {
     await page.evaluate(() => {
       const d1 = document.createElement('div');
       document.body.append(d1);
@@ -175,10 +182,11 @@ describe('mutation', () => {
       d1.append(siblingDiv2);
     });
     await waitForRAF(page);
-    await assertSnapshot(events);
+    const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);
+    await assertSnapshot(mutations, true);
   });
 
-  it('ignored ending comment', async () => {
+  it('ignored endchild comment', async () => {
     await page.evaluate(() => {
       const d1 = document.createElement('div');
       document.body.append(d1);
@@ -188,6 +196,8 @@ describe('mutation', () => {
       d1.append(c1);
     });
     await waitForRAF(page);
-    await assertSnapshot(events);
+    const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);
+    await assertSnapshot(mutations, true);
   });
+
 });
