@@ -7,6 +7,8 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
   release:
     name: Tests
+    permissions:
+      contents: read
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout Repo
