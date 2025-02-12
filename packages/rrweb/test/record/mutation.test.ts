@@ -124,7 +124,9 @@ describe('mutation', () => {
       document.body.append(d1);
     });
     await waitForRAF(page);
-    const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);;
+    const mutations = events.filter(
+      (e) => e.type === EventType.IncrementalSnapshot,
+    );
     await assertSnapshot(mutations, true);
   });
 
@@ -148,7 +150,9 @@ describe('mutation', () => {
       d1.append(d3);
     });
     await waitForRAF(page);
-    const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);
+    const mutations = events.filter(
+      (e) => e.type === EventType.IncrementalSnapshot,
+    );
 
     // assert has same output as previous test despite difference in way elements are added to DOM
     //await assertSnapshot(mutations, 'mutation.test.ts.mutation.add_elements_all_at_once');
@@ -166,7 +170,9 @@ describe('mutation', () => {
       d1.append(siblingDiv);
     });
     await waitForRAF(page);
-    const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);
+    const mutations = events.filter(
+      (e) => e.type === EventType.IncrementalSnapshot,
+    );
     await assertSnapshot(mutations, true);
   });
 
@@ -182,7 +188,9 @@ describe('mutation', () => {
       d1.append(siblingDiv2);
     });
     await waitForRAF(page);
-    const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);
+    const mutations = events.filter(
+      (e) => e.type === EventType.IncrementalSnapshot,
+    );
     await assertSnapshot(mutations, true);
   });
 
@@ -196,8 +204,9 @@ describe('mutation', () => {
       d1.append(c1);
     });
     await waitForRAF(page);
-    const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);
+    const mutations = events.filter(
+      (e) => e.type === EventType.IncrementalSnapshot,
+    );
     await assertSnapshot(mutations, true);
   });
-
 });
