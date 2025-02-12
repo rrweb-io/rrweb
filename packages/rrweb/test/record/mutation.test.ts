@@ -223,7 +223,9 @@ describe('mutation', () => {
       d1.append(siblingDiv);
     });
     await waitForRAF(page);
-    const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);
+    const mutations = events.filter(
+      (e) => e.type === EventType.IncrementalSnapshot,
+    );
     await assertSnapshot(mutations, true);
   });
 
@@ -242,7 +244,9 @@ describe('mutation', () => {
       d1.append(siblingDiv2);
     });
     await waitForRAF(page);
-    const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);
+    const mutations = events.filter(
+      (e) => e.type === EventType.IncrementalSnapshot,
+    );
     await assertSnapshot(mutations, true);
   });
 
@@ -259,7 +263,9 @@ describe('mutation', () => {
       d1.append(b1);
     });
     await waitForRAF(page);
-    const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);
+    const mutations = events.filter(
+      (e) => e.type === EventType.IncrementalSnapshot,
+    );
     await assertSnapshot(mutations, true);
   });
 
