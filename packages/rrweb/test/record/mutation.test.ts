@@ -262,4 +262,21 @@ describe('mutation', () => {
     const mutations = events.filter((e)=>e.type === EventType.IncrementalSnapshot);
     await assertSnapshot(mutations, true);
   });
+
+  it('siblings added in idleCallback', async () => {
+    await page.evaluate(() => {
+      document.body.childNodes.forEach((cn) => document.body.removeChild(cn)); // clear out text nodes created by server
+      document.body.prepend(document.createElement('div'));
+      requestAnimationFrame(() => {
+        //rrweb.freezePage();
+        document.body.prepend(document.createElement('div'));
+        document.body.append(document.createElement('div'));
+      });
+    });
+    await waitForRAF(page);
+    const mutations = events.filter(
+      (e) => e.type === EventType.IncrementalSnapshot,
+    );
+    await assertSnapshot(mutations, true);
+  });
 });
