@@ -190,7 +190,7 @@ export default class MutationBuffer {
 
     let n: Node | null = null;
     let parentNode: Node | null = null;
-    let parentId: number = -1;
+    let parentId = -1;
     let nextSibling: Node | null = null;
     let ancestorBad = false;
     const missingParents = new Set<Node>();
