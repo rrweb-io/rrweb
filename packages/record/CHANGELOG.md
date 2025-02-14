@@ -1,5 +1,15 @@
 # @amplitude/rrweb-record
 
+## 2.0.0-alpha.27
+
+### Patch Changes
+
+- [#47](https://github.com/amplitude/rrweb/pull/47) [`197466e`](https://github.com/amplitude/rrweb/commit/197466e020a06a29c67bd8e3b96f6f7341c82560) Thanks [@jxiwang](https://github.com/jxiwang)! - Correctly detect when angular has wrapped mutation observer
+
+- Updated dependencies [[`197466e`](https://github.com/amplitude/rrweb/commit/197466e020a06a29c67bd8e3b96f6f7341c82560), [`197466e`](https://github.com/amplitude/rrweb/commit/197466e020a06a29c67bd8e3b96f6f7341c82560), [`197466e`](https://github.com/amplitude/rrweb/commit/197466e020a06a29c67bd8e3b96f6f7341c82560), [`197466e`](https://github.com/amplitude/rrweb/commit/197466e020a06a29c67bd8e3b96f6f7341c82560)]:
+  - @amplitude/rrweb@2.0.0-alpha.27
+  - @amplitude/rrweb-types@2.0.0-alpha.27
+
 ## 2.0.0-alpha.26
 
 ### Patch Changes

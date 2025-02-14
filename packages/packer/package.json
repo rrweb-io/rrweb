@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrweb-packer",
-  "version": "2.0.0-alpha.26",
+  "version": "2.0.0-alpha.27",
   "publishConfig": {
     "access": "public"
   },
@@ -78,7 +78,7 @@
   },
   "dependencies": {
     "fflate": "^0.4.4",
-    "@amplitude/rrweb-types": "^2.0.0-alpha.26"
+    "@amplitude/rrweb-types": "^2.0.0-alpha.27"
   },
   "browserslist": [
     "supports es6-class"
