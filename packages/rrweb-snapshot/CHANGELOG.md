@@ -1,5 +1,19 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.19
+
+### Patch Changes
+
+- [#1580](https://github.com/rrweb-io/rrweb/pull/1580) [`47a7c3f`](https://github.com/rrweb-io/rrweb/commit/47a7c3faa6fdbd3a515f473dc3a979acd2c8276e) Thanks [@guntherjh](https://github.com/guntherjh)! - Handle exceptions thrown from postcss when calling adaptCssForReplay
+
+- [#1615](https://github.com/rrweb-io/rrweb/pull/1615) [`dc20cd4`](https://github.com/rrweb-io/rrweb/commit/dc20cd45cc63058325784444af6bd32ed2cace48) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Improve performance of splitCssText for <style> elements with large css content - see #1603
+
+- [#1640](https://github.com/rrweb-io/rrweb/pull/1640) [`3e9e42f`](https://github.com/rrweb-io/rrweb/commit/3e9e42fdfd6349087d7a0345af1b39dd56528502) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Improve performance of splitCssText for <style> elements with large css content - see #1603
+
+- [#1600](https://github.com/rrweb-io/rrweb/pull/1600) [`a6893f7`](https://github.com/rrweb-io/rrweb/commit/a6893f73abe217a95d28996e01b7ec8261e42de3) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - #1575 Fix that postcss could fall over when trying to process css content split arbitrarily
+
+- [#1614](https://github.com/rrweb-io/rrweb/pull/1614) [`6f4e691`](https://github.com/rrweb-io/rrweb/commit/6f4e691f39cc59b655d1be4f951128beecb88acb) Thanks [@billyvg](https://github.com/billyvg)! - Change to ignore all link[rel="modulepreload"] instead of including only those with `as="script"`
+
 ## 2.0.0-alpha.18
 
 ### Major Changes
