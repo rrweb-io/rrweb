@@ -54,6 +54,7 @@
   },
   "homepage": "https://github.com/amplitude/rrweb/tree/master/packages/rrweb-snapshot#readme",
   "devDependencies": {
+    "@amplitude/rrweb-types": "^2.0.0-alpha.26",
     "@amplitude/rrweb-utils": "^2.0.0-alpha.26",
     "@types/jsdom": "^20.0.0",
     "@types/node": "^18.15.11",

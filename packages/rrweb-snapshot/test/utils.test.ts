@@ -1,14 +1,18 @@
 /**
  * @vitest-environment jsdom
  */
-import type { serializedNodeWithId } from '@amplitude/rrweb-snapshot';
-import { NodeType, serializedNode } from '../src/types';
+import { describe, it, test, expect } from 'vitest';
 import {
   escapeImportStatement,
   extractFileExtension,
   fixSafariColons,
   isNodeMetaEqual,
 } from '../src/utils';
+import { NodeType } from '@amplitude/rrweb-types';
+import type {
+  serializedNode,
+  serializedNodeWithId,
+} from '@amplitude/rrweb-types';
 
 describe('utils', () => {
   describe('isNodeMetaEqual()', () => {

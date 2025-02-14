@@ -3,11 +3,11 @@
  */
 import { vi, MockInstance } from 'vitest';
 import {
-  NodeType as RRNodeType,
   createMirror,
   Mirror as NodeMirror,
   serializedNodeWithId,
 } from '@amplitude/rrweb-snapshot';
+import { NodeType as RRNodeType } from '@amplitude/rrweb-types';
 import { RRDocument } from '../../src';
 import { diff, ReplayerHandler } from '../../src/diff';
 

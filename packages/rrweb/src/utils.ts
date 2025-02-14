@@ -1,25 +1,22 @@
-import { RRNode, RRIFrameElement, BaseRRNode } from '@amplitude/rrdom';
 import type {
-  IMirror,
-  Mirror,
-  SlimDOMOptions,
-} from '@amplitude/rrweb-snapshot';
-import {
-  IGNORED_NODE,
-  classMatchesRegex,
-  isShadowRoot,
-} from '@amplitude/rrweb-snapshot';
-import type {
-  DeprecatedMirror,
+  throttleOptions,
+  listenerHandler,
+  hookResetter,
+  blockClass,
+  addedNodeMutation,
   DocumentDimension,
   IWindow,
-  addedNodeMutation,
-  blockClass,
-  hookResetter,
-  listenerHandler,
+  DeprecatedMirror,
   textMutation,
-  throttleOptions,
+  IMirror,
 } from '@amplitude/rrweb-types';
+import type { Mirror, SlimDOMOptions } from '@amplitude/rrweb-snapshot';
+import {
+  isShadowRoot,
+  IGNORED_NODE,
+  classMatchesRegex,
+} from '@amplitude/rrweb-snapshot';
+import { RRNode, RRIFrameElement, BaseRRNode } from '@amplitude/rrdom';
 import dom from '@amplitude/rrweb-utils';
 
 export function on(

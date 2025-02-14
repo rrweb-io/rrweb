@@ -1,11 +1,9 @@
-import {
-  Mirror as NodeMirror,
-  NodeType as NodeType_2,
-  type elementNode,
-} from '@amplitude/rrweb-snapshot';
+import { type Mirror as NodeMirror } from '@amplitude/rrweb-snapshot';
+import { NodeType as NodeType_2 } from '@amplitude/rrweb-types';
 import type {
   canvasEventWithTime,
   canvasMutationData,
+  elementNode,
   inputData,
   scrollData,
   styleDeclarationData,
@@ -354,7 +352,16 @@ function diffProps(
         }
       };
     } else if (newTree.tagName === 'IFRAME' && name === 'srcdoc') continue;
-    else oldTree.setAttribute(name, newValue);
+    else {
+      try {
+        oldTree.setAttribute(name, newValue);
+      } catch (err) {
+        // We want to continue diffing so we quietly catch
+        // this exception. Otherwise, this can throw and bubble up to
+        // the `ReplayerEvents.Flush` listener and break rendering
+        console.warn(err);
+      }
+    }
   }
 
   for (const { name } of Array.from(oldAttributes))

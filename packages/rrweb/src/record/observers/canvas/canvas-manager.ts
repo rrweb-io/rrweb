@@ -1,20 +1,17 @@
+import type { ICanvas, Mirror } from '@amplitude/rrweb-snapshot';
 import type {
-  DataURLOptions,
-  ICanvas,
-  Mirror,
-} from '@amplitude/rrweb-snapshot';
-import type {
-  CanvasArg,
-  IWindow,
   blockClass,
   canvasManagerMutationCallback,
   canvasMutationCallback,
   canvasMutationCommand,
   canvasMutationWithType,
+  IWindow,
   listenerHandler,
+  CanvasArg,
+  DataURLOptions,
 } from '@amplitude/rrweb-types';
-import { CanvasContext } from '@amplitude/rrweb-types';
 import { isBlocked } from '../../../utils';
+import { CanvasContext } from '@amplitude/rrweb-types';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';

@@ -1,37 +1,37 @@
 /**
  * @jest-environment jsdom
  */
-import {
-  Mirror as NodeMirror,
-  NodeType as RRNodeType,
-  createMirror,
-  serializedNodeWithId,
-} from '@amplitude/rrweb-snapshot';
-import type {
-  canvasMutationData,
-  styleSheetRuleData,
-} from '@amplitude/rrweb-types';
-import { EventType, IncrementalSource } from '@amplitude/rrweb-types';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import { vi, MockInstance } from 'vitest';
+import { createMirror, Mirror as NodeMirror } from '@amplitude/rrweb-snapshot';
 import {
-  RRDocument,
-  RRMediaElement,
-  Mirror as RRNodeMirror,
   buildFromDom,
   getDefaultSN,
+  Mirror as RRNodeMirror,
+  RRDocument,
+  RRMediaElement,
   printRRDom,
 } from '../src';
 import {
-  ReplayerHandler,
   createOrGetNode,
   diff,
+  ReplayerHandler,
   nodeMatching,
   sameNodeType,
 } from '../src/diff';
 import type { IRRElement, IRRNode } from '../src/document';
+import type {
+  serializedNodeWithId,
+  canvasMutationData,
+  styleSheetRuleData,
+} from '@amplitude/rrweb-types';
+import {
+  NodeType as RRNodeType,
+  EventType,
+  IncrementalSource,
+} from '@amplitude/rrweb-types';
 
 const elementSn = {
   type: RRNodeType.Element,
@@ -336,6 +336,32 @@ describe('diff algorithm for rrdom', () => {
       diff(node, rrNode, replayer);
       expect((node as Node as HTMLElement).id).toBe('node1');
       expect((node as Node as HTMLElement).className).toBe('node');
+    });
+
+    it('ignores invalid attributes', () => {
+      const tagName = 'DIV';
+      const node = document.createElement(tagName);
+      const sn = Object.assign({}, elementSn, {
+        attributes: { '@click': 'foo' },
+        tagName,
+      });
+      mirror.add(node, sn);
+
+      const rrDocument = new RRDocument();
+      const rrNode = rrDocument.createElement(tagName);
+      const sn2 = Object.assign({}, elementSn, {
+        attributes: { '@click': 'foo' },
+        tagName,
+      });
+      rrDocument.mirror.add(rrNode, sn2);
+
+      rrNode.attributes = { id: 'node1', class: 'node', '@click': 'foo' };
+      diff(node, rrNode, replayer);
+      expect((node as Node as HTMLElement).id).toBe('node1');
+      expect((node as Node as HTMLElement).className).toBe('node');
+      expect('@click' in (node as Node as HTMLElement)).toBe(false);
+      expect(warn).toHaveBeenCalledTimes(1);
+      warn.mockClear();
     });
 
     it('can update exist properties', () => {

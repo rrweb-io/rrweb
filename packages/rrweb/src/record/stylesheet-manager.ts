@@ -1,9 +1,7 @@
+import { stringifyRule } from '@amplitude/rrweb-snapshot';
 import type {
   elementNode,
   serializedNodeWithId,
-} from '@amplitude/rrweb-snapshot';
-import { stringifyRule } from '@amplitude/rrweb-snapshot';
-import type {
   adoptedStyleSheetCallback,
   adoptedStyleSheetParam,
   attributeMutation,

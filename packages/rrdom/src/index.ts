@@ -1,15 +1,11 @@
+import { createMirror as createNodeMirror } from '@amplitude/rrweb-snapshot';
+import type { Mirror as NodeMirror } from '@amplitude/rrweb-snapshot';
+import { NodeType as NodeType_2 } from '@amplitude/rrweb-types';
 import type {
   IMirror,
-  Mirror as NodeMirror,
   serializedNodeWithId,
-} from '@amplitude/rrweb-snapshot';
-import {
-  NodeType as NodeType_2,
-  createMirror as createNodeMirror,
-} from '@amplitude/rrweb-snapshot';
-import type {
-  canvasEventWithTime,
   canvasMutationData,
+  canvasEventWithTime,
   inputData,
   scrollData,
   styleDeclarationData,

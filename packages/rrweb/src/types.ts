@@ -1,17 +1,18 @@
+import type {
+  Mirror,
+  MaskInputOptions,
+  SlimDOMOptions,
+  MaskInputFn,
+  MaskTextFn,
+} from '@amplitude/rrweb-snapshot';
+import type { IframeManager } from './record/iframe-manager';
+import type { ShadowDomManager } from './record/shadow-dom-manager';
+import type { Replayer } from './replay';
 import type { RRNode } from '@amplitude/rrdom';
+import type { CanvasManager } from './record/observers/canvas/canvas-manager';
+import type { StylesheetManager } from './record/stylesheet-manager';
 import type {
   DataURLOptions,
-  MaskInputFn,
-  MaskInputOptions,
-  MaskTextFn,
-  Mirror,
-  SlimDOMOptions,
-} from '@amplitude/rrweb-snapshot';
-import type {
-  IWindow,
-  KeepIframeSrcFn,
-  RecordPlugin,
-  SamplingStrategy,
   addedNodeMutation,
   blockClass,
   canvasMutationCallback,
@@ -20,12 +21,16 @@ import type {
   fontCallback,
   hooksParam,
   inputCallback,
+  IWindow,
+  KeepIframeSrcFn,
   listenerHandler,
   maskTextClass,
   mediaInteractionCallback,
   mouseInteractionCallBack,
   mousemoveCallBack,
   mutationCallBack,
+  RecordPlugin,
+  SamplingStrategy,
   scrollCallback,
   selectionCallback,
   styleDeclarationCallback,
@@ -34,12 +39,7 @@ import type {
   PackFn,
   UnpackFn,
 } from '@amplitude/rrweb-types';
-import type { IframeManager } from './record/iframe-manager';
-import type { CanvasManager } from './record/observers/canvas/canvas-manager';
 import type ProcessedNodeManager from './record/processed-node-manager';
-import type { ShadowDomManager } from './record/shadow-dom-manager';
-import type { StylesheetManager } from './record/stylesheet-manager';
-import type { Replayer } from './replay';
 
 export type recordOptions<T> = {
   emit?: (e: T, isCheckout?: boolean) => void;

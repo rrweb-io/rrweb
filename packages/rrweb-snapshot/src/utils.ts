@@ -3,6 +3,10 @@ import type {
   MaskInputFn,
   MaskInputOptions,
   nodeMetaMap,
+} from './types';
+
+import { NodeType } from '@amplitude/rrweb-types';
+import type {
   IMirror,
   serializedNodeWithId,
   serializedNode,
@@ -10,9 +14,8 @@ import type {
   documentTypeNode,
   textNode,
   elementNode,
-} from './types';
+} from '@amplitude/rrweb-types';
 import dom from '@amplitude/rrweb-utils';
-import { NodeType } from './types';
 
 export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;
@@ -99,14 +102,28 @@ export function escapeImportStatement(rule: CSSImportRule): string {
   return statement.join(' ') + ';';
 }
 
+/*
+ * serialize the css rules from the .sheet property
+ * for <link rel="stylesheet"> elements, this is the only way of getting the rules without a FETCH
+ * for <style> elements, this is less preferable to looking at childNodes[0].textContent
+ * (which will include vendor prefixed rules which may not be used or visible to the recorded browser,
+ * but which might be needed by the replayer browser)
+ * however, at snapshot time, we don't know whether the style element has suffered
+ * any programmatic manipulation prior to the snapshot, in which case the .sheet would be more up to date
+ */
 export function stringifyStylesheet(s: CSSStyleSheet): string | null {
   try {
     const rules = s.rules || s.cssRules;
     if (!rules) {
       return null;
     }
+    let sheetHref = s.href;
+    if (!sheetHref && s.ownerNode && s.ownerNode.ownerDocument) {
+      // an inline <style> element
+      sheetHref = s.ownerNode.ownerDocument.location.href;
+    }
     const stringifiedRules = Array.from(rules, (rule: CSSRule) =>
-      stringifyRule(rule, s.href),
+      stringifyRule(rule, sheetHref),
     ).join('');
     return fixBrowserCompatibilityIssuesInCSS(stringifiedRules);
   } catch (error) {
@@ -427,4 +444,63 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
       return `url(${maybeQuote}${stack.join('/')}${maybeQuote})`;
     },
   );
+}
+
+/**
+ * Intention is to normalize by remove spaces, semicolons and CSS comments
+ * so that we can compare css as authored vs. output of stringifyStylesheet
+ */
+export function normalizeCssString(cssText: string): string {
+  return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '');
+}
+
+/**
+ * Maps the output of stringifyStylesheet to individual text nodes of a <style> element
+ * performance is not considered as this is anticipated to be very much an edge case
+ * (javascript is needed to add extra text nodes to a <style>)
+ */
+export function splitCssText(
+  cssText: string,
+  style: HTMLStyleElement,
+): string[] {
+  const childNodes = Array.from(style.childNodes);
+  const splits: string[] = [];
+  if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
+    const cssTextNorm = normalizeCssString(cssText);
+    for (let i = 1; i < childNodes.length; i++) {
+      if (
+        childNodes[i].textContent &&
+        typeof childNodes[i].textContent === 'string'
+      ) {
+        const textContentNorm = normalizeCssString(childNodes[i].textContent!);
+        for (let j = 3; j < textContentNorm.length; j++) {
+          // find a  substring that appears only once
+          const bit = textContentNorm.substring(0, j);
+          if (cssTextNorm.split(bit).length === 2) {
+            const splitNorm = cssTextNorm.indexOf(bit);
+            // find the split point in the original text
+            for (let k = splitNorm; k < cssText.length; k++) {
+              if (
+                normalizeCssString(cssText.substring(0, k)).length === splitNorm
+              ) {
+                splits.push(cssText.substring(0, k));
+                cssText = cssText.substring(k);
+                break;
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+  splits.push(cssText); // either the full thing if no splits were found, or the last split
+  return splits;
+}
+
+export function markCssSplits(
+  cssText: string,
+  style: HTMLStyleElement,
+): string {
+  return splitCssText(cssText, style).join('/* rr_split */');
 }

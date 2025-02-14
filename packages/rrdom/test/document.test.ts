@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { NodeType as RRNodeType } from '@amplitude/rrweb-snapshot';
+import { NodeType as RRNodeType } from '@amplitude/rrweb-types';
 import {
   BaseRRDocument,
   BaseRRDocumentType,

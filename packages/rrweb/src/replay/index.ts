@@ -1,13 +1,11 @@
 import {
   rebuild,
+  adaptCssForReplay,
   buildNodeWithSN,
-  NodeType,
   type BuildCache,
   createCache,
   Mirror,
   createMirror,
-  type attributes,
-  type serializedElementNodeWithId,
   toLowerCase,
 } from '@amplitude/rrweb-snapshot';
 import {
@@ -39,12 +37,14 @@ import {
 } from './machine';
 import type { playerConfig, missingNodeMap } from '../types';
 import {
+  NodeType,
   EventType,
   IncrementalSource,
   MouseInteractions,
   ReplayerEvents,
 } from '@amplitude/rrweb-types';
 import type {
+  attributes,
   fullSnapshotEvent,
   eventWithTime,
   playerMetaData,
@@ -69,6 +69,7 @@ import type {
   styleSheetRuleData,
   styleDeclarationData,
   adoptedStyleSheetData,
+  serializedElementNodeWithId,
 } from '@amplitude/rrweb-types';
 import {
   polyfill,
@@ -868,6 +869,9 @@ export class Replayer {
       injectStylesRules.push(
         'html.rrweb-paused *, html.rrweb-paused *:before, html.rrweb-paused *:after { animation-play-state: paused !important; }',
       );
+    }
+    if (!injectStylesRules.length) {
+      return;
     }
     if (this.usingVirtualDom) {
       const styleEl = this.virtualDom.createElement('style');
@@ -1731,7 +1735,14 @@ export class Replayer {
         }
         return this.warnNodeNotFound(d, mutation.id);
       }
-      target.textContent = mutation.value;
+
+      const parentEl = target.parentElement as Element | RRElement;
+      if (mutation.value && parentEl && parentEl.tagName === 'STYLE') {
+        // assumes hackCss: true (which isn't currently configurable from rrweb)
+        target.textContent = adaptCssForReplay(mutation.value, this.cache);
+      } else {
+        target.textContent = mutation.value;
+      }
 
       /**
        * https://github.com/rrweb-io/rrweb/pull/865

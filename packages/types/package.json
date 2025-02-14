@@ -49,9 +49,6 @@
     "vite": "^5.3.1",
     "vite-plugin-dts": "^3.9.1"
   },
-  "dependencies": {
-    "@amplitude/rrweb-snapshot": "^2.0.0-alpha.26"
-  },
   "browserslist": [
     "supports es6-class"
   ]

@@ -1,5 +1,5 @@
-import { NodeType as NodeType_2 } from '@amplitude/rrweb-snapshot';
-import { camelize, parseCSSText, toCSSText } from './style';
+import { NodeType as NodeType_2 } from '@amplitude/rrweb-types';
+import { parseCSSText, camelize, toCSSText } from './style';
 export interface IRRNode {
   parentElement: IRRNode | null;
   parentNode: IRRNode | null;

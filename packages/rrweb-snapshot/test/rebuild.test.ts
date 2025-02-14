@@ -9,8 +9,8 @@ import {
   buildNodeWithSN,
   createCache,
 } from '../src/rebuild';
-import { NodeType } from '../src/types';
-import { createMirror, Mirror } from '../src/utils';
+import { NodeType } from '@amplitude/rrweb-types';
+import { createMirror, Mirror, normalizeCssString } from '../src/utils';
 
 const expect = _expect as unknown as {
   <T = unknown>(actual: T): {
@@ -20,7 +20,7 @@ const expect = _expect as unknown as {
 
 expect.extend({
   toMatchCss: function (received: string, expected: string) {
-    const pass = normCss(received) === normCss(expected);
+    const pass = normalizeCssString(received) === normalizeCssString(expected);
     const message: () => string = () =>
       pass
         ? ''
@@ -31,10 +31,6 @@ expect.extend({
     };
   },
 });
-
-function normCss(cssText: string): string {
-  return cssText.replace(/[\s;]/g, '');
-}
 
 function getDuration(hrtime: [number, number]) {
   const [seconds, nanoseconds] = hrtime;
@@ -73,6 +69,32 @@ describe('rebuild', function () {
         },
       ) as HTMLImageElement;
       expect(node?.src).toBe(dataURI);
+    });
+  });
+
+  describe('rr_width/rr_height', function () {
+    it('rebuild blocked element with correct dimensions', function () {
+      const node = buildNodeWithSN(
+        {
+          id: 1,
+          tagName: 'svg',
+          type: NodeType.Element,
+          isSVG: true,
+          attributes: {
+            rr_width: '50px',
+            rr_height: '50px',
+          },
+          childNodes: [],
+        },
+        {
+          doc: document,
+          mirror,
+          hackCss: false,
+          cache,
+        },
+      ) as HTMLDivElement;
+      expect(node.style.width).toBe('50px');
+      expect(node.style.height).toBe('50px');
     });
   });
 

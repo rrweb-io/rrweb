@@ -1,9 +1,9 @@
-import type { DataURLOptions } from '@amplitude/rrweb-snapshot';
+import { encode } from 'base64-arraybuffer';
 import type {
+  DataURLOptions,
   ImageBitmapDataURLWorkerParams,
   ImageBitmapDataURLWorkerResponse,
 } from '@amplitude/rrweb-types';
-import { encode } from 'base64-arraybuffer';
 
 const lastBlobMap: Map<number, string> = new Map();
 const transparentBlobMap: Map<string, string> = new Map();
