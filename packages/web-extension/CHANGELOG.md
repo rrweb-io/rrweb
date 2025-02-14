@@ -1,5 +1,17 @@
 # @rrweb/web-extension
 
+## 2.0.0-alpha.19
+
+### Patch Changes
+
+- [#1632](https://github.com/rrweb-io/rrweb/pull/1632) [`24f5fd9`](https://github.com/rrweb-io/rrweb/commit/24f5fd99ba9490735420ce0275ff3874c9f2d120) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - web-extension: improve recording stability across tabs and enable session import
+
+- [#1568](https://github.com/rrweb-io/rrweb/pull/1568) [`4fd55c0`](https://github.com/rrweb-io/rrweb/commit/4fd55c0669df955001cbd362582c6bce179d7250) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - fix: remove the permission not needed and update the player style link
+
+- Updated dependencies [[`dc20cd4`](https://github.com/rrweb-io/rrweb/commit/dc20cd45cc63058325784444af6bd32ed2cace48), [`3e9e42f`](https://github.com/rrweb-io/rrweb/commit/3e9e42fdfd6349087d7a0345af1b39dd56528502), [`a6893f7`](https://github.com/rrweb-io/rrweb/commit/a6893f73abe217a95d28996e01b7ec8261e42de3), [`88ea2d0`](https://github.com/rrweb-io/rrweb/commit/88ea2d05c1869026111c91f7aa14ea7a7193fcd8), [`79837ac`](https://github.com/rrweb-io/rrweb/commit/79837ac8f2f459935f6737210890b5c12033a53b), [`6f4e691`](https://github.com/rrweb-io/rrweb/commit/6f4e691f39cc59b655d1be4f951128beecb88acb), [`9cd28b7`](https://github.com/rrweb-io/rrweb/commit/9cd28b703ec08a77dc6b790dbffb20dfb8e9a513)]:
+  - rrweb@2.0.0-alpha.19
+  - rrweb-player@2.0.0-alpha.19
+
 ## 2.0.0-alpha.18
 
 ### Patch Changes

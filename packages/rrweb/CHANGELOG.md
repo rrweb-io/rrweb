@@ -1,5 +1,29 @@
 # rrweb
 
+## 2.0.0-alpha.19
+
+### Patch Changes
+
+- [#1615](https://github.com/rrweb-io/rrweb/pull/1615) [`dc20cd4`](https://github.com/rrweb-io/rrweb/commit/dc20cd45cc63058325784444af6bd32ed2cace48) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Improve performance of splitCssText for <style> elements with large css content - see #1603
+
+- [#1640](https://github.com/rrweb-io/rrweb/pull/1640) [`3e9e42f`](https://github.com/rrweb-io/rrweb/commit/3e9e42fdfd6349087d7a0345af1b39dd56528502) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Improve performance of splitCssText for <style> elements with large css content - see #1603
+
+- [#1600](https://github.com/rrweb-io/rrweb/pull/1600) [`a6893f7`](https://github.com/rrweb-io/rrweb/commit/a6893f73abe217a95d28996e01b7ec8261e42de3) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - #1575 Fix that postcss could fall over when trying to process css content split arbitrarily
+
+- [#1631](https://github.com/rrweb-io/rrweb/pull/1631) [`88ea2d0`](https://github.com/rrweb-io/rrweb/commit/88ea2d05c1869026111c91f7aa14ea7a7193fcd8) Thanks [@pauldambra](https://github.com/pauldambra)! - Move patch function into @rrweb/utils to improve bundling
+
+- [#1618](https://github.com/rrweb-io/rrweb/pull/1618) [`79837ac`](https://github.com/rrweb-io/rrweb/commit/79837ac8f2f459935f6737210890b5c12033a53b) Thanks [@billyvg](https://github.com/billyvg)! - This fixes an issue where inlined CSS from a remotely loaded `<link>` does not get applied properly due to object reference mutation.
+
+- [#1614](https://github.com/rrweb-io/rrweb/pull/1614) [`6f4e691`](https://github.com/rrweb-io/rrweb/commit/6f4e691f39cc59b655d1be4f951128beecb88acb) Thanks [@billyvg](https://github.com/billyvg)! - Change to ignore all link[rel="modulepreload"] instead of including only those with `as="script"`
+
+- [#1599](https://github.com/rrweb-io/rrweb/pull/1599) [`9cd28b7`](https://github.com/rrweb-io/rrweb/commit/9cd28b703ec08a77dc6b790dbffb20dfb8e9a513) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - #1596 Add masking for innerText mutations on textarea elements
+
+- Updated dependencies [[`47a7c3f`](https://github.com/rrweb-io/rrweb/commit/47a7c3faa6fdbd3a515f473dc3a979acd2c8276e), [`dc20cd4`](https://github.com/rrweb-io/rrweb/commit/dc20cd45cc63058325784444af6bd32ed2cace48), [`3e9e42f`](https://github.com/rrweb-io/rrweb/commit/3e9e42fdfd6349087d7a0345af1b39dd56528502), [`a6893f7`](https://github.com/rrweb-io/rrweb/commit/a6893f73abe217a95d28996e01b7ec8261e42de3), [`88ea2d0`](https://github.com/rrweb-io/rrweb/commit/88ea2d05c1869026111c91f7aa14ea7a7193fcd8), [`6f4e691`](https://github.com/rrweb-io/rrweb/commit/6f4e691f39cc59b655d1be4f951128beecb88acb)]:
+  - rrweb-snapshot@2.0.0-alpha.19
+  - @rrweb/utils@2.0.0-alpha.19
+  - rrdom@2.0.0-alpha.19
+  - @rrweb/types@2.0.0-alpha.19
+
 ## 2.0.0-alpha.18
 
 ### Minor Changes
