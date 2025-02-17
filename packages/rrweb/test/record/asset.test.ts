@@ -9,6 +9,7 @@ import {
   launchPuppeteer,
   startServer,
   waitForRAF,
+  stripBase64,
 } from '../utils';
 import type * as http from 'http';
 import { vi } from 'vitest';
@@ -360,7 +361,7 @@ describe('asset capturing', function (this: ISuite) {
         () => (window as unknown as IWindow).snapshots,
       );
 
-      expect(events).not.toContainEqual(
+      expect(stripBase64(events)).not.toContainEqual(
         expect.objectContaining({
           type: EventType.Asset,
         }),
@@ -386,7 +387,7 @@ describe('asset capturing', function (this: ISuite) {
       );
 
       // expect no event to be emitted with `event.type` === EventType.Asset
-      expect(events).not.toContainEqual(
+      expect(stripBase64(events)).not.toContainEqual(
         expect.objectContaining({
           type: EventType.Asset,
         }),
@@ -418,7 +419,7 @@ describe('asset capturing', function (this: ISuite) {
       );
 
       // expect no event to be emitted with `event.type` === EventType.Asset
-      expect(events).not.toContainEqual(
+      expect(stripBase64(events)).not.toContainEqual(
         expect.objectContaining({
           type: EventType.Asset,
         }),
@@ -450,7 +451,7 @@ describe('asset capturing', function (this: ISuite) {
       );
 
       // expect no event to be emitted with `event.type` === EventType.Asset
-      expect(events).not.toContainEqual(
+      expect(stripBase64(events)).not.toContainEqual(
         expect.objectContaining({
           type: EventType.Asset,
         }),
@@ -485,7 +486,7 @@ describe('asset capturing', function (this: ISuite) {
       );
 
       // expect an event to be emitted with `event.type` === EventType.Asset
-      expect(events).toContainEqual(
+      expect(stripBase64(events)).toContainEqual(
         expect.objectContaining({
           type: EventType.Asset,
         }),
@@ -521,7 +522,7 @@ describe('asset capturing', function (this: ISuite) {
       );
 
       // expect an event to be emitted with `event.type` === EventType.Asset
-      expect(events).toContainEqual(
+      expect(stripBase64(events)).toContainEqual(
         expect.objectContaining({
           type: EventType.Asset,
           data: {
@@ -549,7 +550,7 @@ describe('asset capturing', function (this: ISuite) {
       );
 
       // expect an event to be emitted with `event.type` === EventType.Asset
-      expect(events).toContainEqual(
+      expect(stripBase64(events)).toContainEqual(
         expect.objectContaining({
           type: EventType.Asset,
           data: {
@@ -641,7 +642,7 @@ describe('asset capturing', function (this: ISuite) {
         );
 
         // expect an event to be emitted with `event.type` === EventType.Asset
-        expect(events).toContainEqual(
+        expect(stripBase64(events)).toContainEqual(
           expect.objectContaining({
             type: EventType.Asset,
             data: {
@@ -661,7 +662,7 @@ describe('asset capturing', function (this: ISuite) {
         () => (window as unknown as IWindow).snapshots,
       );
 
-      expect(events).not.toContainEqual(
+      expect(stripBase64(events)).not.toContainEqual(
         expect.objectContaining({
           type: EventType.Asset,
           data: {
@@ -680,7 +681,7 @@ describe('asset capturing', function (this: ISuite) {
         () => (window as unknown as IWindow).snapshots,
       );
 
-      expect(events).not.toContainEqual(
+      expect(stripBase64(events)).not.toContainEqual(
         expect.objectContaining({
           type: EventType.Asset,
           data: {
@@ -700,7 +701,7 @@ describe('asset capturing', function (this: ISuite) {
       );
 
       // expect an event to be emitted with `event.type` === EventType.Asset
-      expect(events).not.toContainEqual(
+      expect(stripBase64(events)).not.toContainEqual(
         expect.objectContaining({
           type: EventType.Asset,
           data: {
@@ -740,7 +741,7 @@ describe('asset capturing', function (this: ISuite) {
       );
 
       // expect an event to be emitted with `event.type` === EventType.Asset
-      expect(events).toContainEqual(
+      expect(stripBase64(events)).toContainEqual(
         expect.objectContaining({
           type: EventType.Asset,
           data: {
