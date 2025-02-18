@@ -1081,7 +1081,7 @@ describe('asset capturing', function (this: ISuite) {
       },
     );
 
-    it("should capture correct srcset asset", async () => {
+    it("should capture correct srcset asset on narrow viewport, and emit wide asset after viewport expands", async () => {
       const u = '{SERVER_URL}/html/assets/robot.png?narrow';
       const url = u.replace(/\{SERVER_URL\}/g, ctx.serverURL);
       await ctx.page.waitForNetworkIdle({ idleTime: 100 });
@@ -1145,6 +1145,26 @@ describe('asset capturing', function (this: ISuite) {
           }),
         }),
       );
+
+      await ctx.page.setViewport({
+        width: 850,
+        height: 500,
+      });
+      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+
+      const after_events = await ctx.page?.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+      expect(stripBase64(after_events)).toContainEqual(
+        expect.objectContaining({
+          type: EventType.Asset,
+          data: {
+            url: url.replace('narrow', 'wide'),
+            payload: expect.any(Object),
+          },
+        }),
+      );
+
     });
 
   });
