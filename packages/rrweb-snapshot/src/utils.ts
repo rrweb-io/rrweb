@@ -641,7 +641,7 @@ export function shouldCaptureAsset(
   config: captureAssetsParam,
 ): boolean {
   let parentOfSource = '';
-  if (n.nodeName === 'SOURCE' && n.parentNode) {
+  if (['SOURCE', 'TRACK'].includes(n.nodeName) && n.parentNode) {
     parentOfSource = n.parentNode.nodeName;
   }
   if (
@@ -671,23 +671,23 @@ export function shouldCaptureAsset(
     }
     return false;
   } else if (
-    config.images && (
-      (n.nodeName === 'IMG' && ['src', 'srcset'].includes(attribute))
-        || (parentOfSource === 'PICTURE' && attribute === 'srcset'))
+    config.images !== undefined &&
+    ((n.nodeName === 'IMG' && ['src', 'srcset'].includes(attribute)) ||
+      (parentOfSource === 'PICTURE' && attribute === 'srcset'))
   ) {
-    return true;
+    return config.images;
   } else if (
-    config.video &&
-      attribute === 'src' && 
-      [n.nodeName, parentOfSource].includes('VIDEO')
+    config.video !== undefined &&
+    attribute === 'src' &&
+    [n.nodeName, parentOfSource].includes('VIDEO')
   ) {
-    return true;
+    return config.video;
   } else if (
-    config.audio &&
-      attribute === 'src' &&
-    [n.nodeName, parentOfSource].includes('AUDIO')    
+    config.audio !== undefined &&
+    attribute === 'src' &&
+    [n.nodeName, parentOfSource].includes('AUDIO')
   ) {
-    return true;        
+    return config.audio;
   }
   return (
     isAttributeCapturable(n, attribute) && !shouldIgnoreAsset(value, config)
