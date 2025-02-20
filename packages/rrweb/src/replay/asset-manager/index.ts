@@ -30,7 +30,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
   private liveMode: boolean;
   private cache: BuildCache;
   public expectedAssets: Set<string> | null = null;
-  public replayerApproxTs: number = 0;
+  public replayerApproxTs = 0;
 
   constructor({ liveMode, cache }: { liveMode: boolean; cache: BuildCache }) {
     this.liveMode = liveMode;
