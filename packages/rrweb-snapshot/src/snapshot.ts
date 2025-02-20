@@ -46,9 +46,9 @@ export function genId(): number {
   return _id++;
 }
 
-let _style_id = 1;
+let _styleId = 1;
 export function genStyleId(): number {
-  return _style_id++;
+  return _styleId++;
 }
 
 function getValidTagName(element: HTMLElement): Lowercase<string> {
