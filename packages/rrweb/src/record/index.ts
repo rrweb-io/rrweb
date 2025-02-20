@@ -461,7 +461,7 @@ function record<T = eventWithTime>(
     if (!node) {
       return console.warn('Failed to snapshot the document');
     }
-    const data: any = {
+    const data = {
       node,
       initialOffset: getWindowScroll(window),
     };
