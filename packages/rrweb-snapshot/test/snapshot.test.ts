@@ -8,7 +8,12 @@ import snapshot, {
   _isBlockedElement,
   serializeNodeWithId,
 } from '../src/snapshot';
-import type { serializedNodeWithId, elementNode, asset } from '@rrweb/types';
+import type {
+  serializedNodeWithId,
+  elementNode,
+  asset,
+  captureAssetsParam,
+} from '@rrweb/types';
 import { Mirror, absolutifyURLs } from '../src/utils';
 
 const serializeNode = (node: Node): serializedNodeWithId | null => {
@@ -259,8 +264,15 @@ describe('onAssetDetected callback', () => {
     node: Node,
     onAssetDetected: (result: asset) => void,
     inlineImages?: boolean,
-    stylesheetsRuleThreshold?: number,
+    captureAssets?: captureAssetsParam,
   ): serializedNodeWithId | null => {
+    if (captureAssets === undefined) {
+      captureAssets = {
+        objectURLs: true,
+        origins: ['https://example.com'],
+      };
+    }
+
     return serializeNodeWithId(node, {
       doc: document,
       mirror: new Mirror(),
@@ -275,12 +287,8 @@ describe('onAssetDetected callback', () => {
       slimDOMOptions: {},
       newlyAddedElement: false,
       inlineImages: Boolean(inlineImages),
-      captureAssets: {
-        objectURLs: true,
-        origins: ['https://example.com'],
-        stylesheetsRuleThreshold,
-      },
       onAssetDetected,
+      captureAssets,
     });
   };
 
@@ -390,8 +398,8 @@ describe('onAssetDetected callback', () => {
 </div>`);
 
     const onAssetDetectedCallback = vi.fn();
-    const inlineImages = true;
-    serializeNode(el, onAssetDetectedCallback, inlineImages);
+    const inlineImagesTrue = true;
+    serializeNode(el, onAssetDetectedCallback, inlineImagesTrue);
     expect(onAssetDetectedCallback).toBeCalledTimes(0);
   });
 
@@ -426,9 +434,45 @@ describe('onAssetDetected callback', () => {
 </div>`);
 
     const onAssetDetectedCallback = vi.fn();
-    const stylesheetsRuleThreshold = 2;
-    const inlineImages = undefined;
-    serializeNode(el, onAssetDetectedCallback, inlineImages, stylesheetsRuleThreshold);
+    const captureAssets = {
+      objectURLs: true,
+      origins: ['https://example.com'],
+      stylesheetsRuleThreshold: 2,
+    };
+    const inlineImagesUndefined = undefined;
+    serializeNode(
+      el,
+      onAssetDetectedCallback,
+      inlineImagesUndefined,
+      captureAssets,
+    );
+    expect(onAssetDetectedCallback).toBeCalledTimes(1);
+  });
+
+  it('should not try to capture blob video under defaults', () => {
+    const el = render(`<div><video>
+      <source src="blob:https://example.com/e81acc2b-f460-4aec-91b3-ce9732b837c4" type="video/mp4" />
+    </video></div>`);
+
+    const onAssetDetectedCallback = vi.fn();
+    const captureAssets = {}; // defaults
+    const inlineImagesUndefined = undefined;
+    serializeNode(
+      el,
+      onAssetDetectedCallback,
+      inlineImagesUndefined,
+      captureAssets,
+    );
+    expect(onAssetDetectedCallback).toBeCalledTimes(0);
+
+    // make sure it would be called with video on
+    captureAssets.video = true;
+    serializeNode(
+      el,
+      onAssetDetectedCallback,
+      inlineImagesUndefined,
+      captureAssets,
+    );
     expect(onAssetDetectedCallback).toBeCalledTimes(1);
   });
 });
