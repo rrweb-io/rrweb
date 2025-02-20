@@ -713,6 +713,77 @@ describe('asset capturing', function (this: ISuite) {
     });
   });
 
+  describe('origins: ["http://localhost:xxxxx/"] with audio and video explicitly off', () => {
+    const ctx: ISuite = setup.call(
+      this,
+      `
+        <!DOCTYPE html>
+        <html>
+          <body>
+            <video><track default kind="captions" srclang="en" src="{SERVER_URL}/html/assets/subtitles.vtt" /><source src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?source" /></video>
+            <video src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?video" type="audio/mp3"></video>
+            <audio src="{SERVER_URL}/html/assets/1-minute-of-silence.mp3?audio" type="audio/mp3"></audio>
+            <img src="{SERVER_URL}/html/assets/robot.png?img" />
+          </body>
+        </html>
+      `,
+      {
+        captureAssets: {
+          origins: ['{SERVER_URL}'],
+          objectURLs: false,
+          video: false,
+          audio: false,
+        },
+      },
+    );
+
+    it(`should capture robot.png with origin defined in config (and it's not video/audio)`, async () => {
+      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+      await waitForRAF(ctx.page);
+
+      const events = stripBase64(
+        await ctx.page?.evaluate(
+          () => (window as unknown as IWindow).snapshots,
+        ),
+      );
+
+      const url = '{SERVER_URL}/html/assets/robot.png?img'.replace(
+        /\{SERVER_URL\}/g,
+        ctx.serverURL,
+      );
+
+      // make sure we are capturing other assets
+      expect(events).toContainEqual(
+        expect.objectContaining({
+          type: EventType.Asset,
+          data: {
+            url,
+            payload: expect.any(Object),
+          },
+        }),
+      );
+
+      [
+        '{SERVER_URL}/html/assets/1-minute-of-silence.mp3?audio',
+        '{SERVER_URL}/html/assets/1-minute-of-silence.mp3?video',
+        '{SERVER_URL}/html/assets/1-minute-of-silence.mp3?source',
+        '{SERVER_URL}/html/assets/subtitles.vtt',
+      ].forEach((u) => {
+        const url = u.replace(/\{SERVER_URL\}/g, ctx.serverURL);
+        // expect an event to be emitted with `event.type` === EventType.Asset
+        expect(events).not.toContainEqual(
+          expect.objectContaining({
+            type: EventType.Asset,
+            data: {
+              url,
+              payload: expect.any(Object),
+            },
+          }),
+        );
+      });
+    });
+  });
+
   describe('jsdelivr <link> with CORS restrictions', () => {
     const ctx: ISuite = setup.call(
       this,

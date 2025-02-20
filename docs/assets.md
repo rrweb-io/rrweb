@@ -22,11 +22,11 @@ The `captureAssets` configuration option allows you to customize the asset captu
   - `true`: Captures assets from all origins.
   - `[origin1, origin2, ...]`: Captures assets only from the specified origins. For example, `origins: ['https://s3.example.com/']` captures all assets from the origin `https://s3.example.com/`.
 
-- `images` (default: `false` or `true` if `inlineImages` is true in rrweb.record config): When set, this option turns on asset capturing for all images irrespective of their origin. When this configuration option is false, images may still be captured if their src url matches the `origins` setting above.
+- `images` (default: `true` if `inlineImages` is true in rrweb.record config): When set to true, this option turns on asset capturing for all images irrespective of their origin. When set to false, no images will be captured even if the origin matches. By default images will be captured if their src url matches the `origins` setting above, including if the `origins` is set to `true`.
 
-- `video` (default: `false`): When set, this option turns on asset capturing for videos irrespective of their origin. When this configuration option is false, videos may still be captured if their src url matches the `origins` setting above.
+- `video` When set to true, this option turns on asset capturing for videos irrespective of their origin. When set to false, no videos will be captured even if the origin matches. By default videos will be captured if their src url matches the `origins` setting above, including if the `origins` is set to `true`.
 
-- `audio` (default: `false`): When set, this option turns on asset capturing for videos irrespective of their origin. When this configuration option is false, videos may still be captured if their src url matches the `origins` setting above.
+- `audio` When set to true, this option turns on asset capturing for audio files irrespective of their origin. When set to false, no audio files will be captured even if the origin matches. By default audio files will be captured if their src url matches the `origins` setting above, including if the `origins` is set to `true`.
 
 - `stylesheets` (default: `'without-fetch'`): When set to `true`, this turns on capturing of all stylesheets and style elements via the asset system irrespective of origin. The default of `'without-fetch'` is designed to match with the previous `inlineStylesheet` behaviour, whereas the `true` value allows capturing of stylesheets which are otherwise inaccessible due to CORS restrictions to be captured via a fetch call, which will normally use the browser cache. If a stylesheet matches via the `origins` config above, it will be captured irrespective of this config setting (either directly or via fetch).
 
