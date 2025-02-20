@@ -11,7 +11,7 @@ import type {
 import type { assetCallback } from '@rrweb/types';
 import { encode } from 'base64-arraybuffer';
 
-import { patch } from '../../utils';
+import { patch } from '@rrweb/utils';
 
 import type { recordOptions, ProcessingStyleElement } from '../../types';
 import {
