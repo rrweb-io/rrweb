@@ -294,9 +294,9 @@ describe('onAssetDetected callback', () => {
       <img src="https://example.com/image.png" />
     </div>`);
 
-    const callback = vi.fn();
-    serializeNode(el, callback);
-    expect(callback).toHaveBeenCalledWith({
+    const onAssetDetectedCallback = vi.fn();
+    serializeNode(el, onAssetDetectedCallback);
+    expect(onAssetDetectedCallback).toHaveBeenCalledWith({
       element: el.querySelector('img'),
       attr: 'src',
       value: 'https://example.com/image.png',
@@ -308,9 +308,9 @@ describe('onAssetDetected callback', () => {
       <img src="blob:https://example.com/e81acc2b-f460-4aec-91b3-ce9732b837c4" />
     </div>`);
 
-    const callback = vi.fn();
-    serializeNode(el, callback);
-    expect(callback).toHaveBeenCalledWith({
+    const onAssetDetectedCallback = vi.fn();
+    serializeNode(el, onAssetDetectedCallback);
+    expect(onAssetDetectedCallback).toHaveBeenCalledWith({
       element: el.querySelector('img'),
       attr: 'src',
       value: 'blob:https://example.com/e81acc2b-f460-4aec-91b3-ce9732b837c4',
@@ -322,9 +322,9 @@ describe('onAssetDetected callback', () => {
     </div>`);
 
     // this used to trigger two calls, but now AssetManager is responsible for parsing the args
-    const callback = vi.fn();
-    serializeNode(el, callback);
-    expect(callback).toHaveBeenCalledWith({
+    const onAssetDetectedCallback = vi.fn();
+    serializeNode(el, onAssetDetectedCallback);
+    expect(onAssetDetectedCallback).toHaveBeenCalledWith({
       element: el.querySelector('img'),
       attr: 'srcset',
       value:
@@ -338,15 +338,15 @@ describe('onAssetDetected callback', () => {
       <img src="https://example.com/image2.png" />
     </div>`);
 
-    const callback = vi.fn();
-    serializeNode(el, callback);
-    expect(callback).toBeCalledTimes(2);
-    expect(callback).toHaveBeenCalledWith({
+    const onAssetDetectedCallback = vi.fn();
+    serializeNode(el, onAssetDetectedCallback);
+    expect(onAssetDetectedCallback).toBeCalledTimes(2);
+    expect(onAssetDetectedCallback).toHaveBeenCalledWith({
       element: el.querySelectorAll('img')[0],
       attr: 'src',
       value: 'https://example.com/image.png',
     });
-    expect(callback).toHaveBeenCalledWith({
+    expect(onAssetDetectedCallback).toHaveBeenCalledWith({
       element: el.querySelectorAll('img')[1],
       attr: 'src',
       value: 'https://example.com/image2.png',
@@ -364,10 +364,10 @@ describe('onAssetDetected callback', () => {
       value: true,
     });
 
-    const callback = vi.fn();
-    serializeNode(el, callback);
-    expect(callback).toBeCalledTimes(1);
-    expect(callback).toHaveBeenCalledWith({
+    const onAssetDetectedCallback = vi.fn();
+    serializeNode(el, onAssetDetectedCallback);
+    expect(onAssetDetectedCallback).toBeCalledTimes(1);
+    expect(onAssetDetectedCallback).toHaveBeenCalledWith({
       element: el.querySelector('link'),
       attr: 'href',
       value: 'https://example.com/css/style.css',
@@ -379,9 +379,9 @@ describe('onAssetDetected callback', () => {
 <link rel="stylesheet" href="https://rrweb.com/css/style.css" />
 </div>`);
 
-    const callback = vi.fn();
-    serializeNode(el, callback);
-    expect(callback).toBeCalledTimes(0);
+    const onAssetDetectedCallback = vi.fn();
+    serializeNode(el, onAssetDetectedCallback);
+    expect(onAssetDetectedCallback).toBeCalledTimes(0);
   });
 
   it('should not confuse inlineImages=true with capturing all stylesheets', () => {
@@ -389,10 +389,10 @@ describe('onAssetDetected callback', () => {
 <link rel="stylesheet" href="https://rrweb.com/css/style.css" />
 </div>`);
 
-    const callback = vi.fn();
+    const onAssetDetectedCallback = vi.fn();
     const inlineImages = true;
-    serializeNode(el, callback, inlineImages);
-    expect(callback).toBeCalledTimes(0);
+    serializeNode(el, onAssetDetectedCallback, inlineImages);
+    expect(onAssetDetectedCallback).toBeCalledTimes(0);
   });
 
   it('should detect style element as asset', () => {
@@ -402,10 +402,10 @@ describe('onAssetDetected callback', () => {
 </style>
 </div>`);
 
-    const callback = vi.fn();
-    serializeNode(el, callback);
-    expect(callback).toBeCalledTimes(1);
-    expect(callback).toHaveBeenCalledWith({
+    const onAssetDetectedCallback = vi.fn();
+    serializeNode(el, onAssetDetectedCallback);
+    expect(onAssetDetectedCallback).toBeCalledTimes(1);
+    expect(onAssetDetectedCallback).toHaveBeenCalledWith({
       element: el.querySelector('style'),
       attr: 'css_text',
       styleId: 1,
@@ -425,10 +425,10 @@ describe('onAssetDetected callback', () => {
 </style>
 </div>`);
 
-    const callback = vi.fn();
+    const onAssetDetectedCallback = vi.fn();
     const stylesheetsRuleThreshold = 2;
     const inlineImages = undefined;
-    serializeNode(el, callback, inlineImages, stylesheetsRuleThreshold);
-    expect(callback).toBeCalledTimes(1);
+    serializeNode(el, onAssetDetectedCallback, inlineImages, stylesheetsRuleThreshold);
+    expect(onAssetDetectedCallback).toBeCalledTimes(1);
   });
 });
