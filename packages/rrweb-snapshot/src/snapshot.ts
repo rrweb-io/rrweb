@@ -305,11 +305,14 @@ export function needMaskingText(
       // as masking is applied to child text nodes only
       return false;
     }
-  } else if (dom.parentElement(node) === null) {
-    // should warn? maybe a text node isn't attached to a parent node yet?
-    return false;
   } else {
-    el = dom.parentElement(node)!;
+    const p = dom.parentElement(node);
+    if (p === null) {
+      // should warn? maybe a text node isn't attached to a parent node yet?
+      return false;
+    } else {
+      el = p;
+    }
   }
   try {
     if (typeof maskTextClass === 'string') {
