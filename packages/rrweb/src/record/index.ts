@@ -447,7 +447,7 @@ function record<T = eventWithTime>(
       initialOffset: getWindowScroll(window),
     };
     if (capturedAssetStatuses.length) {
-      data.capturedAssetStatuses = capturedAssetStatuses;
+      data['capturedAssetStatuses'] = capturedAssetStatuses;
     }
     wrappedEmit(
       {
