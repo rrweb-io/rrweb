@@ -443,7 +443,7 @@ function record<T = eventWithTime>(
     if (!node) {
       return console.warn('Failed to snapshot the document');
     }
-    const data: fullSnapshotEvent.data = {
+    const data: fullSnapshotEvent['data'] = {
       node,
       initialOffset: getWindowScroll(window),
     };
