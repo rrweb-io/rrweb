@@ -30,6 +30,7 @@ import {
   type assetParam,
   type asset,
   type assetStatus,
+  type fullSnapshotEvent,
 } from '@rrweb/types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
@@ -461,7 +462,7 @@ function record<T = eventWithTime>(
     if (!node) {
       return console.warn('Failed to snapshot the document');
     }
-    const data = {
+    const data: fullSnapshotEvent.data = {
       node,
       initialOffset: getWindowScroll(window),
     };
