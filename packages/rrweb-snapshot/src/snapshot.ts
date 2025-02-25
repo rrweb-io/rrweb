@@ -868,7 +868,7 @@ function serializeElementNode(
   if (needBlock) {
     const { width, height } = n.getBoundingClientRect();
     attributes = {
-      class: attributes.class,
+      class: n.className,
       rr_width: `${width}px`,
       rr_height: `${height}px`,
     };
