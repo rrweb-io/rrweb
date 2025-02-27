@@ -219,7 +219,14 @@ export default class AssetManager {
     if (!timeout && timeout !== 0) {
       timeout = 2000;
     }
-    if (window.requestIdleCallback !== undefined && timeout > 0) {
+    if (timeout <= 0) {
+      // warning: stylesheet will be emitted with an earlier timestamp than snapshot it is associated with
+      processStylesheet();
+      return {
+        url,
+        status: 'captured',
+      };
+    } else if (window.requestIdleCallback !== undefined) {
       if (el.tagName === 'STYLE') {
         // mark it so mutations on it can be ignored until processed
         (el as ProcessingStyleElement).__rrProcessingStylesheet = true;
@@ -238,10 +245,16 @@ export default class AssetManager {
         timeout,
       };
     } else {
-      processStylesheet();
+      // fallback for e.g. iOS which doesn't have requestIdleCallback
+      // we still defer so that it isn't emitted before FullSnapshot
+      // and also so that we don't block the main thread.
+      // don't use the `timeout` variable as that should be seen
+      // as a maximum delay and not a minimum
+      setTimeout(processStylesheet, 0);
       return {
         url,
-        status: 'captured',
+        status: 'capturing', // 'processing' ?
+        timeout: 100, // not sure how to make this figure meaningful in the context of setTimeout; this is intended to be used by a live replayer to know how long it should wait before deciding that the asset isn't going to arrive
       };
     }
   }
