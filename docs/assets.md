@@ -32,7 +32,7 @@ The `captureAssets` configuration option allows you to customize the asset captu
 
 - `stylesheetsRuleThreshold` (default: `0`): only invoke the asset system for stylesheets with more than this number of rules. Defaults to zero (rather than say 100) as it only looks at the 'outer' rules (e.g. could have a single media rule which nests 1000s of sub rules). This default may be increased based on feedback.
 
-- `processStylesheetsWithin` (default: `2000`): This property defines the maximum time in milliseconds that the browser should delay before processing stylesheets. Inline `<style>` elements will be processed within half this value. Lower this value if you wish to improve the odds that short 'bounce' visits will emit the asset before visitor unloads page. Set to zero or a negative number to process stylesheets synchronously, which can cause poor scores on e.g. https://pagespeed.web.dev/ ("Third-party code blocked the main thread").
+- `processStylesheetsWithin` (default: `2000`): This property defines the maximum time in milliseconds that the browser should delay before processing stylesheets. Inline `<style>` elements will be processed within half this value. Lower this value if you wish to improve the odds that short 'bounce' visits will emit the asset before visitor unloads page. Set to zero or a negative number to process stylesheets synchronously, which can cause poor scores on e.g. https://pagespeed.web.dev/ ("Third-party code blocked the main thread"), and also cause assets to be emitted with an earlier timestamp than the snapshot they are associated with.
 
 ## TypeScript Type Definition
 
