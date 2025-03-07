@@ -69,13 +69,13 @@ describe('mutation', () => {
     await browser.close();
   });
 
-  beforeEach(async () => {
+  const setup = async (htmlfile) => {
     page = await browser.newPage();
     page.on('console', (msg) => {
       console.log(msg.text());
     });
 
-    await page.goto(`${serverURL}/html/mutation.html`);
+    await page.goto(`${serverURL}/html/${htmlfile}`);
     await page.addScriptTag({
       path: path.resolve(__dirname, '../../dist/rrweb.umd.cjs'),
     });
@@ -102,9 +102,10 @@ describe('mutation', () => {
     });
 
     await waitForRAF(page);
-  });
+  };
 
   it('add elements all at once', async () => {
+    await setup('mutation.html');
     await page.evaluate(() => {
       const d1 = document.createElement('div');
       d1.id = 'd1';
@@ -131,6 +132,7 @@ describe('mutation', () => {
   });
 
   it('add root first', async () => {
+    await setup('mutation.html');
     await page.evaluate(() => {
       const d1 = document.createElement('div');
       d1.id = 'd1';
@@ -161,6 +163,7 @@ describe('mutation', () => {
   });
 
   it('ignored firstchild comment', async () => {
+    await setup('mutation.html');
     await page.evaluate(() => {
       const d1 = document.createElement('div');
       document.body.append(d1);
@@ -177,6 +180,7 @@ describe('mutation', () => {
   });
 
   it('ignored middlechild comment', async () => {
+    await setup('mutation.html');
     await page.evaluate(() => {
       const d1 = document.createElement('div');
       document.body.append(d1);
@@ -195,6 +199,7 @@ describe('mutation', () => {
   });
 
   it('ignored endchild comment', async () => {
+    await setup('mutation.html');
     await page.evaluate(() => {
       const d1 = document.createElement('div');
       document.body.append(d1);
@@ -211,6 +216,7 @@ describe('mutation', () => {
   });
 
   it('blocked firstchild element', async () => {
+    await setup('mutation.html');
     await page.evaluate(() => {
       const d1 = document.createElement('div');
       document.body.append(d1);
@@ -230,6 +236,7 @@ describe('mutation', () => {
   });
 
   it('blocked middlechild element', async () => {
+    await setup('mutation.html');
     await page.evaluate(() => {
       const d1 = document.createElement('div');
       document.body.append(d1);
@@ -251,6 +258,7 @@ describe('mutation', () => {
   });
 
   it('blocked endchild element', async () => {
+    await setup('mutation.html');
     await page.evaluate(() => {
       const d1 = document.createElement('div');
       document.body.append(d1);
@@ -270,6 +278,7 @@ describe('mutation', () => {
   });
 
   it('siblings added in idleCallback', async () => {
+    await setup('mutation.html');
     await page.evaluate(() => {
       document.body.childNodes.forEach((cn) => document.body.removeChild(cn)); // clear out text nodes created by server
       document.body.prepend(document.createElement('div'));
@@ -282,6 +291,104 @@ describe('mutation', () => {
     await waitForRAF(page);
     const mutations = events.filter(
       (e) => e.type === EventType.IncrementalSnapshot,
+    );
+    await assertSnapshot(mutations, true);
+  });
+
+  it('ignored firstchild comment already there', async () => {
+    await setup('mutation-already-there.html');
+    await page.evaluate(() => {
+      const siblingDiv = document.createElement('div');
+      document.getElementById('with-comment').append(siblingDiv);
+    });
+    await waitForRAF(page);
+    const mutations = events.filter((e) =>
+      [EventType.IncrementalSnapshot, EventType.FullSnapshot].includes(e.type),
+    );
+    await assertSnapshot(mutations, true);
+  });
+
+  it('ignored middlechild comment already there', async () => {
+    await setup('mutation-already-there.html');
+    await page.evaluate(() => {
+      const siblingDiv = document.createElement('div');
+      const siblingDiv2 = document.createElement('div');
+      document
+        .getElementById('with-comment')
+        .insertAdjacentElement('afterbegin', siblingDiv);
+      document.getElementById('with-comment').append(siblingDiv2);
+    });
+    await waitForRAF(page);
+    const mutations = events.filter((e) =>
+      [EventType.IncrementalSnapshot, EventType.FullSnapshot].includes(e.type),
+    );
+    await assertSnapshot(mutations, true);
+  });
+
+  it('ignored endchild comment already there', async () => {
+    await setup('mutation-already-there.html');
+    await page.evaluate(() => {
+      const siblingDiv = document.createElement('div');
+      document
+        .getElementById('with-comment')
+        .insertAdjacentElement('afterbegin', siblingDiv);
+    });
+    await waitForRAF(page);
+    const mutations = events.filter((e) =>
+      [EventType.IncrementalSnapshot, EventType.FullSnapshot].includes(e.type),
+    );
+    await assertSnapshot(mutations, true);
+  });
+
+  it('blocked firstchild element already there', async () => {
+    await setup('mutation-already-there.html');
+    await page.evaluate(() => {
+      const d1 = document.getElementById('with-blocked');
+      const b1 = d1.querySelector('.rr-block');
+      b1.append(document.createElement('div')); // shouldn't show up
+      b1.append(document.createElement('div')); // shouldn't show up
+      const siblingDiv = document.createElement('div');
+      d1.append(siblingDiv);
+    });
+    await waitForRAF(page);
+    const mutations = events.filter((e) =>
+      [EventType.IncrementalSnapshot, EventType.FullSnapshot].includes(e.type),
+    );
+    await assertSnapshot(mutations, true);
+  });
+
+  it('blocked middlechild element already there', async () => {
+    await setup('mutation-already-there.html');
+    await page.evaluate(() => {
+      const d1 = document.getElementById('with-blocked');
+      const b1 = d1.querySelector('.rr-block');
+      b1.append(document.createElement('div')); // shouldn't show up
+      b1.append(document.createElement('div')); // shouldn't show up
+      const siblingDiv = document.createElement('div');
+      const siblingDiv2 = document.createElement('div');
+      d1.insertAdjacentElement('afterbegin', siblingDiv);
+      d1.append(siblingDiv2);
+    });
+    await waitForRAF(page);
+    const mutations = events.filter((e) =>
+      [EventType.IncrementalSnapshot, EventType.FullSnapshot].includes(e.type),
+    );
+    await assertSnapshot(mutations, true);
+  });
+
+  it('blocked endchild element already there', async () => {
+    await setup('mutation-already-there.html');
+    await page.evaluate(() => {
+      const d1 = document.getElementById('with-blocked');
+      const b1 = d1.querySelector('.rr-block');
+      b1.append(document.createElement('div')); // shouldn't show up
+      b1.append(document.createElement('div')); // shouldn't show up
+      const siblingDiv = document.createElement('div');
+      d1.insertAdjacentElement('afterbegin', siblingDiv);
+    });
+    await waitForRAF(page);
+    const mutations = events.filter((e) =>
+      [EventType.IncrementalSnapshot, EventType.FullSnapshot].includes(e.type),
     );
     await assertSnapshot(mutations, true);
   });
