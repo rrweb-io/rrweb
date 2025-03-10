@@ -1,13 +1,14 @@
 import { type Mirror as NodeMirror } from 'rrweb-snapshot';
 import { NodeType as RRNodeType } from '@rrweb/types';
 import type {
+  elementNode,
   canvasMutationData,
   canvasEventWithTime,
-  elementNode,
   inputData,
   scrollData,
   styleDeclarationData,
   styleSheetRuleData,
+  RebuildAssetManagerInterface,
 } from '@rrweb/types';
 import type {
   IRRCDATASection,
@@ -76,6 +77,7 @@ const SVGTagMap: Record<string, string> = {
 
 export type ReplayerHandler = {
   mirror: NodeMirror;
+  assetManager?: RebuildAssetManagerInterface;
   applyCanvas: (
     canvasEvent: canvasEventWithTime,
     canvasMutationData: canvasMutationData,
@@ -201,7 +203,7 @@ function diffBeforeUpdatingChildren(
        * by running `diffProps` on the parent node before `diffChildren` is called,
        * we can ensure that the correct attributes (and therefore styles) have applied to parent nodes
        */
-      diffProps(oldElement, newRRElement, rrnodeMirror);
+      diffProps(oldElement, newRRElement, rrnodeMirror, replayer.assetManager);
       break;
     }
   }
@@ -333,6 +335,7 @@ function diffProps(
   oldTree: HTMLElement,
   newTree: IRRElement,
   rrnodeMirror: Mirror,
+  assetManager?: RebuildAssetManagerInterface,
 ) {
   const oldAttributes = oldTree.attributes;
   const newAttributes = newTree.attributes;
@@ -352,6 +355,23 @@ function diffProps(
         }
       };
     } else if (newTree.tagName === 'IFRAME' && name === 'srcdoc') continue;
+    else if (
+      assetManager &&
+      name.startsWith('rr_captured_') &&
+      newValue &&
+      typeof newValue === 'string'
+    )
+      // can possibly remove the attribute again if it hasn't loaded yet
+      assetManager.manageAttribute(
+        oldTree,
+        rrnodeMirror.getId(newTree),
+        name.substring('rr_captured_'.length),
+        newValue,
+      );
+    else if (name === 'rr_css_text')
+      console.warn(
+        'styles should not be assigned during a mutation but rather inlined directly',
+      );
     else {
       try {
         oldTree.setAttribute(name, newValue);
@@ -570,6 +590,9 @@ export function createOrGetNode(
     case RRNodeType.CDATA:
       node = document.createCDATASection((rrNode as IRRCDATASection).data);
       break;
+    default:
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      throw new Error(`Unknown node type ${rrNode.RRNodeType}`);
   }
 
   if (sn) domMirror.add(node, { ...sn });

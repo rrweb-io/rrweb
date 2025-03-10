@@ -180,6 +180,125 @@ exports[`record > can add custom event 1`] = `
 ]"
 `;
 
+exports[`record > captures CORS stylesheets as assets 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"link\\",
+                    \\"attributes\\": {
+                      \\"rel\\": \\"stylesheet\\",
+                      \\"href\\": \\"https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 5
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n          \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"input\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"text\\",
+                      \\"size\\": \\"40\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
+                    \\"id\\": 9
+                  }
+                ],
+                \\"id\\": 6
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      }
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 0,
+      \\"adds\\": [],
+      \\"removes\\": [],
+      \\"texts\\": [],
+      \\"attributes\\": [
+        {
+          \\"id\\": 5,
+          \\"attributes\\": {
+            \\"rel\\": \\"stylesheet\\",
+            \\"rr_captured_href\\": \\"https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css\\"
+          }
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"https://cdn.jsdelivr.net/npm/pure@2.85.0/index.css\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssTexts\\": [
+          \\"body{\\\\n\\\\tfont-family:\\\\\\"verdana\\\\\\", \\\\\\"helvetica\\\\\\", \\\\\\"arial\\\\\\";\\\\n}\\\\n\\\\n.exampleList{margin:0; padding:0; list-style-type:none;}\\\\n\\\\nh3{margin:1em 0 .3em;float:left;clear:both;}\\\\na{\\\\n\\\\tcolor:#369;\\\\n\\\\ttext-decoration:none;\\\\n\\\\toutline: none;\\\\n\\\\tpadding:0 .5em;\\\\n}\\\\na:hover{\\\\n\\\\tbackground:#369;\\\\n\\\\tcolor:#FFF;\\\\n}\\\\n\\\\n.run, .debug{ display:block; float:left;margin:1.3em 0 0 1em;}\\\\n\\\\n.sources, .template{clear:both;padding:1em;background:#DEF;margin:0 0  0 1em;overflow:auto;}\\\\n#chooseLib a{\\\\n\\\\tfont-size:.8em;\\\\n\\\\tbackground:#FFB;\\\\n\\\\tpadding:.3em;\\\\n\\\\ttext-decoration:underline;\\\\n}\\\\n#chooseLib a:hover{\\\\n\\\\tbackground:#369;\\\\n}\\\\n#examples{display:none;}\\\\n#chooseLib{\\\\n\\\\tline-height:1.5em;\\\\n\\\\tborder:solid 1px #CCC;\\\\n\\\\tpadding:1em;\\\\n\\\\tbackground:#FFC;\\\\n}\\\\ninput.lib{\\\\n\\\\tfont-weight:bold;\\\\n}\\\\n.note{\\\\n\\\\tcolor:#999;\\\\n\\\\tfont-size:.75em;\\\\n}\\\\npre{\\\\n\\\\tfont-family:Monaco,\\\\\\"Courier New\\\\\\",monospace;\\\\n\\\\tcolor:#444444;\\\\n\\\\tfont-size:75%;\\\\n}\\\\n#sourceCodes{\\\\n\\\\tclear:both;\\\\n}\\\\n.sourceCode{\\\\n\\\\tbackground:#EEF;\\\\n\\\\tborder:solid 1px #CCC;\\\\n\\\\tpadding:1%;\\\\n\\\\tmargin:1%;\\\\n\\\\toverflow:auto;\\\\n\\\\tmax-height:300px;\\\\n}\\\\n.sourceCode pre{\\\\n}\\\\n.cols2 .sourceCode{\\\\n\\\\tfloat:left;\\\\n\\\\twidth:44%;\\\\n}\\\\n.cols3 .sourceCode{\\\\n\\\\tfloat:left;\\\\n\\\\twidth:27%;\\\\n}\\\\n/* ex 4 */ \\\\n.playerList td{\\\\n\\\\tpadding:0 1em;\\\\n\\\\tborder:1px solid #999;\\\\n}\\\\n.odd td{\\\\n\\\\tbackground:#FFF;\\\\n}\\\\n/* ex 5 */ \\\\n.partialTable td{\\\\n\\\\tpadding:0 1em;\\\\n\\\\tborder:1px solid #999;\\\\n}\\\\n/* ex 6 */ \\\\n.teamPlace table{\\\\n\\\\twidth:100%;\\\\n}\\\\n.scoreBoard td{\\\\n\\\\tpadding:0 1em;\\\\n\\\\tborder:1px solid #999;\\\\n}\\\\n\\"
+        ]
+      }
+    }
+  }
+]"
+`;
+
 exports[`record > captures CORS stylesheets that are still loading 1`] = `
 "[
   {
@@ -1387,7 +1506,7 @@ exports[`record > captures inserted style text nodes correctly 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"style\\",
                     \\"attributes\\": {
-                      \\"_cssText\\": \\"div { color: red; }/* rr_split */section { color: blue; }\\"
+                      \\"rr_css_text\\": \\"about:blank#rr_style_el:1\\"
                     },
                     \\"childNodes\\": [
                       {
@@ -1443,6 +1562,26 @@ exports[`record > captures inserted style text nodes correctly 1`] = `
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
+      },
+      \\"capturedAssetStatuses\\": [
+        {
+          \\"url\\": \\"about:blank#rr_style_el:1\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 1000
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"about:blank#rr_style_el:1\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssTexts\\": [
+          \\"div { color: red; }\\",
+          \\"section { color: blue; }\\"
+        ]
       }
     }
   },
@@ -2515,7 +2654,8 @@ exports[`record > captures stylesheets with \`blob:\` url 1`] = `
                     \\"type\\": 2,
                     \\"tagName\\": \\"link\\",
                     \\"attributes\\": {
-                      \\"_cssText\\": \\"body { color: pink; }\\"
+                      \\"rel\\": \\"stylesheet\\",
+                      \\"rr_captured_href\\": \\"blob:null/...\\"
                     },
                     \\"childNodes\\": [],
                     \\"id\\": 5
@@ -2560,6 +2700,132 @@ exports[`record > captures stylesheets with \`blob:\` url 1`] = `
       \\"initialOffset\\": {
         \\"left\\": 0,
         \\"top\\": 0
+      },
+      \\"capturedAssetStatuses\\": [
+        {
+          \\"url\\": \\"blob:null/...\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 2000
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"blob:null/...\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssTexts\\": [
+          \\"body { color: pink; }\\"
+        ]
+      }
+    }
+  }
+]"
+`;
+
+exports[`record > doesn't duplicate assets and mutations 1`] = `
+"[
+  {
+    \\"type\\": 4,
+    \\"data\\": {
+      \\"href\\": \\"about:blank\\",
+      \\"width\\": 1920,
+      \\"height\\": 1080
+    }
+  },
+  {
+    \\"type\\": 2,
+    \\"data\\": {
+      \\"node\\": {
+        \\"type\\": 0,
+        \\"childNodes\\": [
+          {
+            \\"type\\": 1,
+            \\"name\\": \\"html\\",
+            \\"publicId\\": \\"\\",
+            \\"systemId\\": \\"\\",
+            \\"id\\": 2
+          },
+          {
+            \\"type\\": 2,
+            \\"tagName\\": \\"html\\",
+            \\"attributes\\": {},
+            \\"childNodes\\": [
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"head\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"style\\",
+                    \\"attributes\\": {
+                      \\"rr_css_text\\": \\"about:blank#rr_style_el:1\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 5
+                  }
+                ],
+                \\"id\\": 4
+              },
+              {
+                \\"type\\": 2,
+                \\"tagName\\": \\"body\\",
+                \\"attributes\\": {},
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n          \\",
+                    \\"id\\": 7
+                  },
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"input\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"text\\",
+                      \\"size\\": \\"40\\"
+                    },
+                    \\"childNodes\\": [],
+                    \\"id\\": 8
+                  },
+                  {
+                    \\"type\\": 3,
+                    \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
+                    \\"id\\": 9
+                  }
+                ],
+                \\"id\\": 6
+              }
+            ],
+            \\"id\\": 3
+          }
+        ],
+        \\"id\\": 1
+      },
+      \\"initialOffset\\": {
+        \\"left\\": 0,
+        \\"top\\": 0
+      },
+      \\"capturedAssetStatuses\\": [
+        {
+          \\"url\\": \\"about:blank#rr_style_el:1\\",
+          \\"status\\": \\"capturing\\",
+          \\"timeout\\": 1000
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 7,
+    \\"data\\": {
+      \\"url\\": \\"about:blank#rr_style_el:1\\",
+      \\"payload\\": {
+        \\"rr_type\\": \\"CssText\\",
+        \\"cssTexts\\": [
+          \\"span { color: orange; }\\"
+        ]
       }
     }
   }
