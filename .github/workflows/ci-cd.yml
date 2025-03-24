@@ -7,6 +7,8 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 jobs:
   release:
     name: Tests
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -19,7 +21,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
-      
+
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
 

@@ -103,6 +103,7 @@ describe('integration tests', function (this: ISuite) {
     serverURL = getServerURL(server);
     browser = await puppeteer.launch({
       // headless: false,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     code = fs.readFileSync(
@@ -435,6 +436,7 @@ describe('iframe integration tests', function (this: ISuite) {
     serverURL = getServerURL(server);
     browser = await puppeteer.launch({
       // headless: false,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     code = fs.readFileSync(
@@ -479,6 +481,7 @@ describe('dialog integration tests', function (this: ISuite) {
     serverURL = getServerURL(server);
     browser = await puppeteer.launch({
       // headless: false,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     code = fs.readFileSync(
@@ -525,6 +528,7 @@ describe('shadow DOM integration tests', function (this: ISuite) {
     serverURL = getServerURL(server);
     browser = await puppeteer.launch({
       // headless: false,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     code = fs.readFileSync(

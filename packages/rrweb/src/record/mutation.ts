@@ -533,10 +533,18 @@ export default class MutationBuffer {
       this.attributes.push(item);
       this.attributeMap.set(textarea, item);
     }
-    item.attributes.value = Array.from(
+    const value = Array.from(
       dom.childNodes(textarea),
       (cn) => dom.textContent(cn) || '',
     ).join('');
+    item.attributes.value = maskInputValue({
+      element: textarea,
+      maskInputOptions: this.maskInputOptions,
+      tagName: textarea.tagName,
+      type: getInputType(textarea),
+      value,
+      maskInputFn: this.maskInputFn,
+    });
   };
 
   private processMutation = (m: mutationRecord) => {
