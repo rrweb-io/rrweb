@@ -450,42 +450,132 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
  * Intention is to normalize by remove spaces, semicolons and CSS comments
  * so that we can compare css as authored vs. output of stringifyStylesheet
  */
-export function normalizeCssString(cssText: string): string {
-  return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '');
+export function normalizeCssString(
+  cssText: string,
+  /**
+   * _testNoPxNorm: only used as part of the 'substring matching going from many to none'
+   * test case so that it will trigger a failure if the conditions that let to the creation of that test arise again
+   */
+  _testNoPxNorm = false,
+): string {
+  if (_testNoPxNorm) {
+    return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '');
+  } else {
+    return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '').replace(/0px/g, '0');
+  }
 }
 
 /**
  * Maps the output of stringifyStylesheet to individual text nodes of a <style> element
- * performance is not considered as this is anticipated to be very much an edge case
- * (javascript is needed to add extra text nodes to a <style>)
+ * which occurs when javascript is used to append to the style element
+ * and may also occur when browsers opt to break up large text nodes
+ * performance needs to be considered, see e.g. #1603
  */
 export function splitCssText(
   cssText: string,
   style: HTMLStyleElement,
+  _testNoPxNorm = false,
 ): string[] {
   const childNodes = Array.from(style.childNodes);
   const splits: string[] = [];
+  let iterCount = 0;
   if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
-    const cssTextNorm = normalizeCssString(cssText);
+    let cssTextNorm = normalizeCssString(cssText, _testNoPxNorm);
+    const normFactor = cssTextNorm.length / cssText.length;
     for (let i = 1; i < childNodes.length; i++) {
       if (
         childNodes[i].textContent &&
         typeof childNodes[i].textContent === 'string'
       ) {
-        const textContentNorm = normalizeCssString(childNodes[i].textContent!);
-        for (let j = 3; j < textContentNorm.length; j++) {
-          // find a  substring that appears only once
-          const bit = textContentNorm.substring(0, j);
-          if (cssTextNorm.split(bit).length === 2) {
-            const splitNorm = cssTextNorm.indexOf(bit);
+        const textContentNorm = normalizeCssString(
+          childNodes[i].textContent!,
+          _testNoPxNorm,
+        );
+        const jLimit = 100; // how many iterations for the first part of searching
+        let j = 3;
+        for (; j < textContentNorm.length; j++) {
+          if (
+            // keep consuming css identifiers (to get a decent chunk more quickly)
+            textContentNorm[j].match(/[a-zA-Z0-9]/) ||
+            // substring needs to be unique to this section
+            textContentNorm.indexOf(textContentNorm.substring(0, j), 1) !== -1
+          ) {
+            continue;
+          }
+          break;
+        }
+        for (; j < textContentNorm.length; j++) {
+          let startSubstring = textContentNorm.substring(0, j);
+          // this substring should appears only once in overall text too
+          let cssNormSplits = cssTextNorm.split(startSubstring);
+          let splitNorm = -1;
+          if (cssNormSplits.length === 2) {
+            splitNorm = cssNormSplits[0].length;
+          } else if (
+            cssNormSplits.length > 2 &&
+            cssNormSplits[0] === '' &&
+            childNodes[i - 1].textContent !== ''
+          ) {
+            // this childNode has same starting content as previous
+            splitNorm = cssTextNorm.indexOf(startSubstring, 1);
+          } else if (cssNormSplits.length === 1) {
+            // try to roll back to get multiple matches again
+            startSubstring = startSubstring.substring(
+              0,
+              startSubstring.length - 1,
+            );
+            cssNormSplits = cssTextNorm.split(startSubstring);
+            if (cssNormSplits.length <= 1) {
+              // no split possible
+              splits.push(cssText);
+              return splits;
+            }
+            j = jLimit + 1; // trigger end of search
+          } else if (j === textContentNorm.length - 1) {
+            // we're about to end loop without a split point
+            splitNorm = cssTextNorm.indexOf(startSubstring);
+          }
+          if (cssNormSplits.length >= 2 && j > jLimit) {
+            const prevTextContent = childNodes[i - 1].textContent;
+            if (prevTextContent && typeof prevTextContent === 'string') {
+              // pick the first matching point which respects the previous chunk's approx size
+              const prevMinLength = normalizeCssString(prevTextContent).length;
+              splitNorm = cssTextNorm.indexOf(startSubstring, prevMinLength);
+            }
+            if (splitNorm === -1) {
+              // fall back to pick the first matching point of many
+              splitNorm = cssNormSplits[0].length;
+            }
+          }
+          if (splitNorm !== -1) {
             // find the split point in the original text
-            for (let k = splitNorm; k < cssText.length; k++) {
-              if (
-                normalizeCssString(cssText.substring(0, k)).length === splitNorm
-              ) {
+            let k = Math.floor(splitNorm / normFactor);
+            for (; k > 0 && k < cssText.length; ) {
+              iterCount += 1;
+              if (iterCount > 50 * childNodes.length) {
+                // quit for performance purposes
+                splits.push(cssText);
+                return splits;
+              }
+              const normPart = normalizeCssString(
+                cssText.substring(0, k),
+                _testNoPxNorm,
+              );
+              if (normPart.length === splitNorm) {
                 splits.push(cssText.substring(0, k));
                 cssText = cssText.substring(k);
+                cssTextNorm = cssTextNorm.substring(splitNorm);
                 break;
+              } else if (normPart.length < splitNorm) {
+                k += Math.max(
+                  1,
+                  Math.floor((splitNorm - normPart.length) / normFactor),
+                );
+              } else {
+                k -= Math.max(
+                  1,
+                  Math.floor((normPart.length - splitNorm) * normFactor),
+                );
               }
             }
             break;

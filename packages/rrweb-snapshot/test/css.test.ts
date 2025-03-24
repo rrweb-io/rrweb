@@ -7,6 +7,8 @@ import postcss, { type AcceptedPlugin } from 'postcss';
 import { JSDOM } from 'jsdom';
 import { splitCssText, stringifyStylesheet } from './../src/utils';
 import { applyCssSplits } from './../src/rebuild';
+import * as fs from 'fs';
+import * as path from 'path';
 import type {
   serializedElementNodeWithId,
   BuildCache,
@@ -105,10 +107,16 @@ describe('css splitter', () => {
       // as authored, e.g. no spaces
       style.append('.a{background-color:black;}');
 
+      // test how normalization finds the right sections
+      style.append('.b      {background-color:black;}');
+      style.append('.c{      background-color:                     black}');
+
       // how it is currently stringified (spaces present)
       const expected = [
         '.a { background-color: red; }',
         '.a { background-color: black; }',
+        '.b { background-color: black; }',
+        '.c { background-color: black; }',
       ];
       const browserSheet = expected.join('');
       expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
@@ -137,6 +145,28 @@ describe('css splitter', () => {
     }
   });
 
+  it('finds css textElement splits correctly with two identical text nodes', () => {
+    const window = new Window({ url: 'https://localhost:8080' });
+    const document = window.document;
+    // as authored, with comment, missing semicolons
+    const textContent = '.a { color:red; } .b { color:blue; }';
+    document.head.innerHTML = '<style></style>';
+    const style = document.querySelector('style');
+    if (style) {
+      style.append(textContent);
+      style.append(textContent);
+
+      const expected = [textContent, textContent];
+      const browserSheet = expected.join('');
+      expect(splitCssText(browserSheet, style)).toEqual(expected);
+
+      style.append(textContent);
+      const expected3 = [textContent, textContent, textContent];
+      const browserSheet3 = expected3.join('');
+      expect(splitCssText(browserSheet3, style)).toEqual(expected3);
+    }
+  });
+
   it('finds css textElement splits correctly when vendor prefixed rules have been removed', () => {
     const style = JSDOM.fragment(`<style></style>`).querySelector('style');
     if (style) {
@@ -148,7 +178,6 @@ describe('css splitter', () => {
   transition: all 4s ease;
 }`),
       );
-      // TODO: splitCssText can't handle it yet if both start with .x
       style.appendChild(
         JSDOM.fragment(`.y {
   -moz-transition: all 5s ease;
@@ -165,6 +194,117 @@ describe('css splitter', () => {
       // can't do this as JSDOM doesn't have style.sheet
       // also happy-dom doesn't strip out vendor-prefixed rules like a real browser does
       //expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
+
+      expect(splitCssText(browserSheet, style)).toEqual(expected);
+    }
+  });
+
+  it('efficiently finds split points in large files', () => {
+    const cssText = fs.readFileSync(
+      path.resolve(__dirname, './css/benchmark.css'),
+      'utf8',
+    );
+
+    const parts = cssText.split('}');
+    const sections = [];
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (i % 100 === 0) {
+        sections.push(parts[i] + '}');
+      } else {
+        sections[sections.length - 1] += parts[i] + '}';
+      }
+    }
+    sections[sections.length - 1] += parts[parts.length - 1];
+
+    expect(cssText.length).toEqual(sections.join('').length);
+
+    const style = JSDOM.fragment(`<style></style>`).querySelector('style');
+    if (style) {
+      sections.forEach((section) => {
+        style.appendChild(JSDOM.fragment(section));
+      });
+    }
+    expect(splitCssText(cssText, style)).toEqual(sections);
+  });
+
+  it('finds css textElement splits correctly, with substring matching going from many to none', () => {
+    const window = new Window({ url: 'https://localhost:8080' });
+    const document = window.document;
+    document.head.innerHTML = `<style>
+.section-news-v3-detail .news-cnt-wrapper :where(p):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 :where(figure):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+    margin-top: 2em;
+    margin-bottom: 2em;
+}
+
+.section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 :where(.prose > :first-child):not(:where([class~="not-prose"],[cl</style>`;
+    const style = document.querySelector('style');
+    if (style) {
+      // happydom? bug avoid: strangely a greater than symbol in the template string below
+      // e.g. '.prose > :last-child' causes more than one child to be appended
+      style.append(`ass~="not-prose"] *)) {
+    margin-top: 0;  /* cssRules transforms this to '0px' which was preventing matching prior to normalization */
+}
+
+.section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 :where(.prose :last-child):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+    margin-bottom: 0;
+}
+
+.section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 {
+    width: 100%;
+    overflow-wrap: break-word;
+}
+
+.section-home {
+    height: 100%;
+    overflow-y: auto;
+}
+`);
+
+      expect(style.childNodes.length).toEqual(2);
+
+      const expected = [
+        '.section-news-v3-detail .news-cnt-wrapper :where(p):not(:where([class~="not-prose"], [class~="not-prose"] *)) { margin-top: 0px; margin-bottom: 0px; }.section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 :where(figure):not(:where([class~="not-prose"],[class~="not-prose"] *)) { margin-top: 2em; margin-bottom: 2em; }.section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 :where(.prose > :first-child):not(:where([class~="not-prose"],[cl',
+        'ass~="not-prose"] *)) { margin-top: 0px; }.section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 :where(.prose :last-child):not(:where([class~="not-prose"],[class~="not-prose"] *)) { margin-bottom: 0px; }.section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 { width: 100%; overflow-wrap: break-word; }.section-home { height: 100%; overflow-y: auto; }',
+      ];
+      const browserSheet = expected.join('');
+      expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
+      let _testNoPxNorm = true; // trigger the original motivating scenario for this test
+      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual(
+        expected,
+      );
+      _testNoPxNorm = false; // this case should also be solved by normalizing '0px' -> '0'
+      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual(
+        expected,
+      );
+    }
+  });
+
+  it('finds css textElement splits correctly, even with repeated sections', () => {
+    const window = new Window({ url: 'https://localhost:8080' });
+    const document = window.document;
+    document.head.innerHTML =
+      '<style>.a{background-color: black; }        </style>';
+    const style = document.querySelector('style');
+    if (style) {
+      style.append('.x{background-color:red;}');
+      style.append('.b      {background-color:black;}');
+      style.append('.x{background-color:red;}');
+      style.append('.c{      background-color:                     black}');
+
+      const expected = [
+        '.a { background-color: black; }',
+        '.x { background-color: red; }',
+        '.b { background-color: black; }',
+        '.x { background-color: red; }',
+        '.c { background-color: black; }',
+      ];
+      const browserSheet = expected.join('');
+      expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
 
       expect(splitCssText(browserSheet, style)).toEqual(expected);
     }
