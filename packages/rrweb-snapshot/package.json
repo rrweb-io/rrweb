@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrweb-snapshot",
-  "version": "2.0.0-alpha.27",
+  "version": "2.0.0-alpha.28",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",
@@ -54,8 +54,8 @@
   },
   "homepage": "https://github.com/amplitude/rrweb/tree/master/packages/rrweb-snapshot#readme",
   "devDependencies": {
-    "@amplitude/rrweb-types": "^2.0.0-alpha.27",
-    "@amplitude/rrweb-utils": "^2.0.0-alpha.27",
+    "@amplitude/rrweb-types": "^2.0.0-alpha.28",
+    "@amplitude/rrweb-utils": "^2.0.0-alpha.28",
     "@types/jsdom": "^20.0.0",
     "@types/node": "^18.15.11",
     "@types/puppeteer": "^5.4.4",

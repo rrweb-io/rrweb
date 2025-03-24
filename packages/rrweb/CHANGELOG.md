@@ -1,5 +1,17 @@
 # rrweb
 
+## 2.0.0-alpha.28
+
+### Patch Changes
+
+- [#51](https://github.com/amplitude/rrweb/pull/51) [`6b175a4`](https://github.com/amplitude/rrweb/commit/6b175a4a945ea79b4cea6c609544ad1502a65610) Thanks [@jpollock-ampl](https://github.com/jpollock-ampl)! - #1596 Add masking for innerText mutations on textarea elements
+
+- Updated dependencies []:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.28
+  - @amplitude/rrdom@2.0.0-alpha.28
+  - @amplitude/rrweb-types@2.0.0-alpha.28
+  - @amplitude/rrweb-utils@2.0.0-alpha.28
+
 ## 2.0.0-alpha.27
 
 ### Minor Changes

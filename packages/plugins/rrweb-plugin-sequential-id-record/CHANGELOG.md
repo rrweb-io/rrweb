@@ -1,5 +1,12 @@
 # @amplitude/rrweb-plugin-sequential-id-record
 
+## 2.0.0-alpha.28
+
+### Patch Changes
+
+- Updated dependencies [[`6b175a4`](https://github.com/amplitude/rrweb/commit/6b175a4a945ea79b4cea6c609544ad1502a65610)]:
+  - @amplitude/rrweb@2.0.0-alpha.28
+
 ## 2.0.0-alpha.27
 
 ### Patch Changes

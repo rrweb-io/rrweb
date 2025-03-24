@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrweb",
-  "version": "2.0.0-alpha.27",
+  "version": "2.0.0-alpha.28",
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",
@@ -80,10 +80,10 @@
     "vite-plugin-dts": "^3.9.1"
   },
   "dependencies": {
-    "@amplitude/rrdom": "^2.0.0-alpha.27",
-    "@amplitude/rrweb-types": "^2.0.0-alpha.27",
-    "@amplitude/rrweb-snapshot": "^2.0.0-alpha.27",
-    "@amplitude/rrweb-utils": "^2.0.0-alpha.27",
+    "@amplitude/rrdom": "^2.0.0-alpha.28",
+    "@amplitude/rrweb-types": "^2.0.0-alpha.28",
+    "@amplitude/rrweb-snapshot": "^2.0.0-alpha.28",
+    "@amplitude/rrweb-utils": "^2.0.0-alpha.28",
     "@types/css-font-loading-module": "0.0.7",
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",

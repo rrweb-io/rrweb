@@ -1,5 +1,7 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.28
+
 ## 2.0.0-alpha.27
 
 ### Major Changes
