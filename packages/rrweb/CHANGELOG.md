@@ -1,5 +1,19 @@
 # rrweb
 
+## 2.0.0-alpha.29
+
+### Patch Changes
+
+- [#50](https://github.com/amplitude/rrweb/pull/50) [`7824d62`](https://github.com/amplitude/rrweb/commit/7824d62c7cf227c678ee1a1f500902fbfdd6c36a) Thanks [@jpollock-ampl](https://github.com/jpollock-ampl)! - Improve performance of splitCssText for <style> elements with large css content - see #1603
+
+- [#50](https://github.com/amplitude/rrweb/pull/50) [`7824d62`](https://github.com/amplitude/rrweb/commit/7824d62c7cf227c678ee1a1f500902fbfdd6c36a) Thanks [@jpollock-ampl](https://github.com/jpollock-ampl)! - Improve performance of splitCssText for <style> elements with large css content - see #1603
+
+- Updated dependencies [[`7824d62`](https://github.com/amplitude/rrweb/commit/7824d62c7cf227c678ee1a1f500902fbfdd6c36a), [`7824d62`](https://github.com/amplitude/rrweb/commit/7824d62c7cf227c678ee1a1f500902fbfdd6c36a)]:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.29
+  - @amplitude/rrdom@2.0.0-alpha.29
+  - @amplitude/rrweb-types@2.0.0-alpha.29
+  - @amplitude/rrweb-utils@2.0.0-alpha.29
+
 ## 2.0.0-alpha.28
 
 ### Patch Changes

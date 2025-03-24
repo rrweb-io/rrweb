@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrdom-nodejs",
-  "version": "2.0.0-alpha.28",
+  "version": "2.0.0-alpha.29",
   "scripts": {
     "dev": "vite build --watch",
     "build": "yarn turbo run prepublish",
@@ -55,7 +55,7 @@
     "cssom": "^0.5.0",
     "cssstyle": "^2.3.0",
     "nwsapi": "2.2.0",
-    "@amplitude/rrdom": "^2.0.0-alpha.28",
-    "@amplitude/rrweb-types": "^2.0.0-alpha.28"
+    "@amplitude/rrdom": "^2.0.0-alpha.29",
+    "@amplitude/rrweb-types": "^2.0.0-alpha.29"
   }
 }
