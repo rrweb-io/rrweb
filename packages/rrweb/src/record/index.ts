@@ -4,7 +4,7 @@ import {
   SlimDOMOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import { initObservers, mutationBuffers } from './observer';
+import { flushMutationBuffers, initObservers, mutationBuffers } from './observer';
 import {
   on,
   getWindowWidth,
@@ -73,6 +73,7 @@ function record<T = eventWithTime>(
     ignoreClass = 'rr-ignore',
     ignoreSelector = null,
     maskTextClass = 'rr-mask',
+    maskInputClass = 'rr-input-mask',
     maskTextSelector = null,
     inlineStylesheet = true,
     maskAllInputs,
@@ -526,6 +527,7 @@ function record<T = eventWithTime>(
           ignoreClass,
           ignoreSelector,
           maskTextClass,
+          maskInputClass,
           maskTextSelector,
           maskInputOptions,
           inlineStylesheet,
@@ -617,6 +619,8 @@ function record<T = eventWithTime>(
       processedNodeManager.destroy();
       recording = false;
       unregisterErrorHandler();
+      flushMutationBuffers();
+      iframeManager.cleanup();
     };
   } catch (error) {
     // TODO: handle internal error

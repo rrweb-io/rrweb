@@ -24,6 +24,7 @@ export class IframeManager {
   private loadListener?: (iframeEl: HTMLIFrameElement) => unknown;
   private stylesheetManager: StylesheetManager;
   private recordCrossOriginIframes: boolean;
+  private boundHandleMessage;
 
   constructor(options: {
     mirror: Mirror;
@@ -42,8 +43,9 @@ export class IframeManager {
       ),
     );
     this.mirror = options.mirror;
+    this.boundHandleMessage = this.handleMessage.bind(this);
     if (this.recordCrossOriginIframes) {
-      window.addEventListener('message', this.handleMessage.bind(this));
+      window.addEventListener('message', this.boundHandleMessage);
     }
   }
 
@@ -298,5 +300,9 @@ export class IframeManager {
         this.patchRootIdOnNode(child, rootId);
       });
     }
+  }
+
+  public cleanup () {
+    window.removeEventListener('message', this.boundHandleMessage);
   }
 }

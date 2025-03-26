@@ -133,6 +133,8 @@ class DoubleLinkedList {
 
 const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
 
+const BLANK_IMAGE_SRC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAABNJREFUCB1jZGBg+A/EDEwgAgQADigBA//q6GsAAAAASUVORK5CYII%3D';
+
 /**
  * controls behaviour of a MutationObserver
  */
@@ -665,6 +667,16 @@ export default class MutationBuffer {
             }
           }
         }
+         // dont track img src changes if it has maskTextClass class
+         if (m.attributeName === 'src' && (m.target as HTMLElement).nodeName === 'IMG' && this.maskTextClass && typeof this.maskTextClass === 'string' &&
+         target.classList.toString().includes(this.maskTextClass)) {
+           item.attributes[m.attributeName!] = transformAttribute(
+             this.doc,
+             toLowerCase((m.target as HTMLElement).tagName),
+             m.attributeName!,
+             BLANK_IMAGE_SRC,
+         );
+       }
         break;
       }
       case 'childList': {

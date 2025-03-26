@@ -60,7 +60,11 @@ type WindowWithAngularZone = IWindow & {
   };
 };
 
-export const mutationBuffers: MutationBuffer[] = [];
+export let mutationBuffers: MutationBuffer[] = [];
+
+export const flushMutationBuffers = () => {
+  mutationBuffers = [];
+}
 
 // Event.path is non-standard and used in some older browsers
 type NonStandardEvent = Omit<Event, 'composedPath'> & {
@@ -418,6 +422,7 @@ function initInputObserver({
   ignoreSelector,
   maskInputOptions,
   maskInputFn,
+  maskInputClass,
   sampling,
   userTriggeredOnInput,
 }: observerParam): listenerHandler {
@@ -466,7 +471,10 @@ function initInputObserver({
         value: text,
         maskInputFn,
       });
+    } else if ((target as HTMLElement).classList.contains(maskInputClass)) {
+      text = "*".repeat(text.length)
     }
+    
     cbWithDedup(
       target,
       userTriggeredOnInput
