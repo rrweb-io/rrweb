@@ -138,7 +138,31 @@ export default class AssetManager {
     let url = sheetBaseHref; // linkEl.href for a link element
     if (styleId) {
       url += `#rr_style_el:${styleId}`;
+    } else if (el.getAttribute('media') !== null) {
+      const linkAppliedQuery = matchMedia(el.getAttribute('media') as string);
+      if (!linkAppliedQuery.matches) {
+        try {
+          try {
+            linkAppliedQuery.addEventListener(
+              'change',
+              () => this.captureStylesheet(sheetBaseHref, el, styleId),
+            );
+          } catch (e1) {
+            // deprecated Safari method
+            linkAppliedQuery.addListener(
+              () => this.captureStylesheet(sheetBaseHref, el, styleId),
+            );
+          }
+          return {
+            url,
+            status: 'media-mismatch',
+          };
+        } catch (e2) {
+          // can't listen, go ahead and capture now
+        }
+      }
     }
+
     try {
       cssRules = el.sheet!.cssRules;
     } catch (e) {
