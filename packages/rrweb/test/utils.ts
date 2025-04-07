@@ -26,7 +26,7 @@ export async function launchPuppeteer(
       width: 1920,
       height: 1080,
     },
-    args: ['--no-sandbox'],
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
     ...options,
   });
 }
@@ -555,6 +555,98 @@ export const sampleStyleSheetRemoveEvents: eventWithTime[] = [
           id: 4,
         },
       ],
+      adds: [],
+    },
+    timestamp: now + 2000,
+  },
+];
+
+export const sampleRemoteStyleSheetEvents: eventWithTime[] = [
+  {
+    type: EventType.DomContentLoaded,
+    data: {},
+    timestamp: now,
+  },
+  {
+    type: EventType.Load,
+    data: {},
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.Meta,
+    data: {
+      href: 'http://localhost',
+      width: 1000,
+      height: 800,
+    },
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.FullSnapshot,
+    data: {
+      node: {
+        type: 0,
+        childNodes: [
+          {
+            type: 2,
+            tagName: 'html',
+            attributes: {},
+            childNodes: [
+              {
+                type: 2,
+                tagName: 'head',
+                attributes: {},
+                childNodes: [
+                  {
+                    type: 2,
+                    tagName: 'link',
+                    attributes: {
+                      rel: 'stylesheet',
+                      href: '',
+                    },
+                    childNodes: [],
+                    id: 4,
+                  },
+                ],
+                id: 3,
+              },
+              {
+                type: 2,
+                tagName: 'body',
+                attributes: {},
+                childNodes: [],
+                id: 6,
+              },
+            ],
+            id: 2,
+          },
+        ],
+        id: 1,
+      },
+      initialOffset: {
+        top: 0,
+        left: 0,
+      },
+    },
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.Mutation,
+      texts: [],
+      attributes: [
+        {
+          id: 4,
+          attributes: {
+            href: null,
+            rel: null,
+            _cssText:
+              '.OverlayDrawer-modal-187 { }.OverlayDrawer-paper-188 { width: 100%; }@media (min-width: 48em) {\n  .OverlayDrawer-paper-188 { width: 38rem; }\n}@media (min-width: 48em) {\n}@media (min-width: 48em) {\n}',
+          },
+        },
+      ],
+      removes: [],
       adds: [],
     },
     timestamp: now + 2000,
