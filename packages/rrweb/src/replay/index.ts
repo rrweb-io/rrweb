@@ -1151,11 +1151,7 @@ export class Replayer {
           this.applyMutation(d, isSync);
         } catch (error) {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
-          this.warn(
-            `Exception in mutation ${error.message || error}`,
-            d,
-            timestamp,
-          );
+          this.warn(`Exception in mutation ${String(error)}`, d, timestamp);
         }
         break;
       }
