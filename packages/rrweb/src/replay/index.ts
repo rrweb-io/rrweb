@@ -1546,17 +1546,19 @@ export class Replayer {
         return queue.push(mutation);
       }
 
-      // if (
-      //   mutation.node.type === NodeType.Document &&
-      //   parent?.nodeName?.toLowerCase() !== 'iframe'
-      // ) {
-      //   console.warn(
-      //     '[Replayer] Skipping invalid document append to a non-iframe parent.',
-      //     mutation,
-      //     parent,
-      //   );
-      //   return;
-      // }
+      if (
+        mutation.node.type === NodeType.Document &&
+        parent?.nodeName?.toLowerCase() !== 'iframe' &&
+        parent?.nodeName?.toLowerCase() !== 'frame'
+      ) {
+        console.log(parent?.nodeName?.toLowerCase());
+        console.warn(
+          '[Replayer] Skipping invalid document append to a non-iframe parent. hi2',
+          mutation,
+          parent,
+        );
+        return;
+      }
 
       if (mutation.node.isShadow) {
         // If the parent is attached a shadow dom after it's created, it won't have a shadow root.
