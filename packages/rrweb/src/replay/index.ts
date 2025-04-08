@@ -1551,7 +1551,6 @@ export class Replayer {
         parent?.nodeName?.toLowerCase() !== 'iframe' &&
         parent?.nodeName?.toLowerCase() !== 'frame'
       ) {
-        console.log(parent?.nodeName?.toLowerCase());
         console.warn(
           '[Replayer] Skipping invalid document append to a non-iframe parent. hi2',
           mutation,
