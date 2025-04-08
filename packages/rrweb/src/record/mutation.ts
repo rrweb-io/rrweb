@@ -594,7 +594,7 @@ export default class MutationBuffer {
 
         let item = this.attributeMap.get(m.target);
         if (
-          target.tagName === 'IFRAME' &&
+          (target.tagName === 'IFRAME' || target.tagName === 'FRAME') &&
           attributeName === 'src' &&
           !this.keepIframeSrcFn(value as string)
         ) {

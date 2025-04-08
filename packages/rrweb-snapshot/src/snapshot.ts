@@ -767,7 +767,10 @@ function serializeElementNode(
     };
   }
   // iframe
-  if (tagName === 'iframe' && !keepIframeSrcFn(attributes.src as string)) {
+  if (
+    (tagName === 'iframe' || tagName === 'frame') &&
+    !keepIframeSrcFn(attributes.src as string)
+  ) {
     if (!(n as HTMLIFrameElement).contentDocument) {
       // we can't record it directly as we can't see into it
       // preserve the src attribute so a decision can be taken at replay time
@@ -1112,7 +1115,7 @@ export function serializeNodeWithId(
 
   if (
     serializedNode.type === NodeType.Element &&
-    serializedNode.tagName === 'iframe'
+    (serializedNode.tagName === 'iframe' || serializedNode.tagName === 'frame')
   ) {
     onceIframeLoaded(
       n as HTMLIFrameElement,

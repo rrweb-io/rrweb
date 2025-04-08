@@ -293,7 +293,11 @@ function buildNode(
             );
           }
           // Set the sandbox attribute on the iframe element will make it lose its contentDocument access and therefore cause additional playback errors.
-          else if (tagName === 'iframe' && name === 'sandbox') continue;
+          else if (
+            (tagName === 'iframe' || tagName === 'frame') &&
+            name === 'sandbox'
+          )
+            continue;
           else {
             node.setAttribute(name, value.toString());
           }

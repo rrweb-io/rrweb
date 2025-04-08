@@ -407,7 +407,9 @@ export function isSerializedIframe<TNode extends Node | RRNode>(
   n: TNode,
   mirror: IMirror<TNode>,
 ): boolean {
-  return Boolean(n.nodeName === 'IFRAME' && mirror.getMeta(n));
+  return Boolean(
+    (n.nodeName === 'IFRAME' || n.nodeName === 'FRAME') && mirror.getMeta(n),
+  );
 }
 
 export function isSerializedStylesheet<TNode extends Node | RRNode>(
