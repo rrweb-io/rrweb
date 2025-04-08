@@ -5,6 +5,8 @@ on: [push, pull_request_target]
 jobs:
   eslint_check_upload:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     name: ESLint Check and Report Upload
 
     steps:
@@ -28,7 +30,7 @@ jobs:
         # Continue to the next step even if this fails
         continue-on-error: true
       - name: Upload ESLint Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: eslint_report.json
           path: eslint_report.json
@@ -36,11 +38,13 @@ jobs:
   annotation:
     # Skip the annotation action in push events
     if: github.event_name == 'pull_request_target'
+    permissions:
+      checks: write
     needs: eslint_check_upload
     runs-on: ubuntu-latest
     name: ESLint Annotation
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: eslint_report.json
       - name: Annotate Code Linting Results
@@ -52,6 +56,8 @@ jobs:
   prettier_check:
     # In the forked PR, it's hard to format code and push to the branch directly, so the action only check the format correctness.
     if: github.event_name != 'push' && github.event.pull_request.head.repo.full_name != 'rrweb-io/rrweb'
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     name: Format Check
     steps:
@@ -73,6 +79,8 @@ jobs:
     # Skip the format code action in forked PRs
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == 'rrweb-io/rrweb'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     name: Format Code
     steps:
       - uses: actions/checkout@v3

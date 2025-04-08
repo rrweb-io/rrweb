@@ -792,13 +792,13 @@ export class Replayer {
       this.service.send({ type: 'CAST_EVENT', payload: { event } });
 
       // events are kept sorted by timestamp, check if this is the last event
-      const last_index = this.service.state.context.events.length - 1;
+      const lastIndex = this.service.state.context.events.length - 1;
       if (
         !this.config.liveMode &&
-        event === this.service.state.context.events[last_index]
+        event === this.service.state.context.events[lastIndex]
       ) {
         const finish = () => {
-          if (last_index < this.service.state.context.events.length - 1) {
+          if (lastIndex < this.service.state.context.events.length - 1) {
             // more events have been added since the setTimeout
             return;
           }
@@ -806,16 +806,16 @@ export class Replayer {
           this.service.send('END');
           this.emitter.emit(ReplayerEvents.Finish);
         };
-        let finish_buffer = 50; // allow for checking whether new events aren't just about to be loaded in
+        let finishBuffer = 50; // allow for checking whether new events aren't just about to be loaded in
         if (
           event.type === EventType.IncrementalSnapshot &&
           event.data.source === IncrementalSource.MouseMove &&
           event.data.positions.length
         ) {
           // extend finish event if the last event is a mouse move so that the timer isn't stopped by the service before checking the last event
-          finish_buffer += Math.max(0, -event.data.positions[0].timeOffset);
+          finishBuffer += Math.max(0, -event.data.positions[0].timeOffset);
         }
-        setTimeout(finish, finish_buffer);
+        setTimeout(finish, finishBuffer);
       }
 
       this.emitter.emit(ReplayerEvents.EventCast, event);
@@ -1841,17 +1841,27 @@ export class Replayer {
                   const newSn = mirror.getMeta(
                     target as Node & RRNode,
                   ) as serializedElementNodeWithId;
+                  const newNode = buildNodeWithSN(
+                    {
+                      ...newSn,
+                      attributes: {
+                        ...newSn.attributes,
+                        ...(mutation.attributes as attributes),
+                      },
+                    },
+                    {
+                      doc: target.ownerDocument as Document, // can be Document or RRDocument
+                      mirror: mirror as Mirror,
+                      skipChild: true,
+                      hackCss: true,
+                      cache: this.cache,
+                    },
+                  );
+                  // Update mirror meta's attributes
                   Object.assign(
                     newSn.attributes,
                     mutation.attributes as attributes,
                   );
-                  const newNode = buildNodeWithSN(newSn, {
-                    doc: target.ownerDocument as Document, // can be Document or RRDocument
-                    mirror: mirror as Mirror,
-                    skipChild: true,
-                    hackCss: true,
-                    cache: this.cache,
-                  });
                   const siblingNode = target.nextSibling;
                   const parentNode = target.parentNode;
                   if (newNode && parentNode) {
