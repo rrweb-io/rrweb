@@ -44,6 +44,10 @@ export type fullSnapshotEvent = {
   };
 };
 
+export type fullSnapshotEventWithTime = fullSnapshotEvent & {
+  timestamp: number;
+};
+
 export type incrementalSnapshotEvent = {
   type: EventType.IncrementalSnapshot;
   data: incrementalData;
@@ -125,6 +129,10 @@ export type captureAssetsParam = Partial<{
 export type assetEvent = {
   type: EventType.Asset;
   data: assetParam;
+};
+
+export type assetEventWithTime = assetEvent & {
+  timestamp: number;
 };
 
 export type asset = {
@@ -249,7 +257,7 @@ export type event = eventWithoutTime;
 
 export type eventWithTime = eventWithoutTime & {
   timestamp: number;
-  delay?: number;
+  delay?: number; // added during replay
 };
 
 export type canvasEventWithTime = eventWithTime & {
@@ -408,7 +416,10 @@ export type mutationCallbackParam = {
   isAttachIframe?: true;
 };
 
-export type mutationCallBack = (m: mutationCallbackParam) => void;
+export type mutationCallBack = (
+  m: mutationCallbackParam,
+  timestamp?: number,
+) => void;
 
 export type mousemoveCallBack = (
   p: mousePosition[],
@@ -695,6 +706,7 @@ export type assetParam =
   | {
       url: string;
       payload: SerializedCanvasArg | SerializedCssTextArg;
+      timestamp?: number;
     }
   | {
       url: string;
@@ -704,7 +716,7 @@ export type assetParam =
       };
     };
 
-export type assetCallback = (d: assetParam) => void;
+export type assetCallback = (d: assetParam, timestamp?: number | true) => void;
 
 /**
  *  @deprecated

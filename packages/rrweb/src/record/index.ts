@@ -31,6 +31,8 @@ import {
   type asset,
   type assetStatus,
   type fullSnapshotEvent,
+  type fullSnapshotEventWithTime,
+  type assetEventWithTime,
 } from '@rrweb/types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
@@ -225,9 +227,11 @@ function record<T = eventWithTime>(
     }
     return e as unknown as T;
   };
-  wrappedEmit = (r: eventWithoutTime, isCheckout?: boolean) => {
+  wrappedEmit = (r: eventWithoutTime | eventWithTime, isCheckout?: boolean) => {
     const e = r as eventWithTime;
-    e.timestamp = nowTimestamp();
+    if (!('timestamp' in e) || e.timestamp === undefined) {
+      e.timestamp = nowTimestamp();
+    }
     if (
       mutationBuffers[0]?.isFrozen() &&
       e.type !== EventType.FullSnapshot &&
@@ -303,11 +307,12 @@ function record<T = eventWithTime>(
       },
     });
 
-  const wrappedAssetEmit = (p: assetParam) =>
+  const wrappedAssetEmit = (p: assetParam, snapshotTimestamp: number) =>
     wrappedEmit({
       type: EventType.Asset,
       data: p,
-    });
+      timestamp: snapshotTimestamp,
+    } as assetEventWithTime);
 
   const wrappedAdoptedStyleSheetEmit = (a: adoptedStyleSheetParam) =>
     wrappedEmit({
@@ -448,7 +453,10 @@ function record<T = eventWithTime>(
         stylesheetManager.attachLinkElement(linkEl, childSn);
       },
       onAssetDetected: (asset: asset) => {
-        const assetStatus = assetManager.capture(asset);
+        const assetStatus = assetManager.capture(
+          asset,
+          true, // indicate it's a FullSnapshot
+        );
         if (Array.isArray(assetStatus)) {
           // removeme when we just capture one asset from srcset
           capturedAssetStatuses.push(...assetStatus);
@@ -469,11 +477,14 @@ function record<T = eventWithTime>(
     if (capturedAssetStatuses.length) {
       data['capturedAssetStatuses'] = capturedAssetStatuses;
     }
+    const now = nowTimestamp();
+    assetManager.lastFullSnapshotTimestamp = now;
     wrappedEmit(
       {
         type: EventType.FullSnapshot,
+        timestamp: now,
         data,
-      },
+      } as fullSnapshotEventWithTime,
       isCheckout,
     );
     mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
