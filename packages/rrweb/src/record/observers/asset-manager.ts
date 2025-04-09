@@ -41,6 +41,8 @@ export default class AssetManager {
     undefined
   >;
 
+  public lastFullSnapshotTimestamp: number;
+
   public reset() {
     this.urlObjectMap.clear();
     this.urlTextMap.clear();
@@ -133,6 +135,7 @@ export default class AssetManager {
     sheetBaseHref: string,
     el: HTMLLinkElement | HTMLStyleElement,
     styleId?: number,
+    snapshotTimestamp?: number | true,
   ): assetStatus {
     let cssRules: CSSRuleList;
     let url = sheetBaseHref; // linkEl.href for a link element
@@ -143,14 +146,13 @@ export default class AssetManager {
       if (!linkAppliedQuery.matches) {
         try {
           try {
-            linkAppliedQuery.addEventListener(
-              'change',
-              () => this.captureStylesheet(sheetBaseHref, el, styleId),
+            linkAppliedQuery.addEventListener('change', () =>
+              this.captureStylesheet(sheetBaseHref, el, styleId),
             );
           } catch (e1) {
             // deprecated Safari method
-            linkAppliedQuery.addListener(
-              () => this.captureStylesheet(sheetBaseHref, el, styleId),
+            linkAppliedQuery.addListener(() =>
+              this.captureStylesheet(sheetBaseHref, el, styleId),
             );
           }
           return {
@@ -202,10 +204,15 @@ export default class AssetManager {
               rr_type: 'CssText',
               cssTexts: [absolutifyURLs(cssText, sheetBaseHref)],
             };
-            this.mutationCb({
-              url,
-              payload,
-            });
+            this.mutationCb(
+              {
+                url,
+                payload,
+              },
+              snapshotTimestamp === true
+                ? this.lastFullSnapshotTimestamp
+                : snapshotTimestamp,
+            );
           }
         })
         .catch(this.fetchCatcher(url));
@@ -225,15 +232,25 @@ export default class AssetManager {
         if (el.childNodes.length > 1) {
           payload.cssTexts = splitCssText(cssText, el as HTMLStyleElement);
         }
-        this.mutationCb({
-          url,
-          payload,
-        });
+        this.mutationCb(
+          {
+            url,
+            payload,
+          },
+          snapshotTimestamp === true
+            ? this.lastFullSnapshotTimestamp
+            : snapshotTimestamp,
+        );
       } else {
-        this.mutationCb({
-          url: sheetBaseHref,
-          payload,
-        });
+        this.mutationCb(
+          {
+            url: sheetBaseHref,
+            payload,
+          },
+          snapshotTimestamp === true
+            ? this.lastFullSnapshotTimestamp
+            : snapshotTimestamp,
+        );
       }
       if (isProcessingStyleElement(el)) {
         delete el.__rrProcessingStylesheet;
@@ -283,25 +300,32 @@ export default class AssetManager {
     }
   }
 
-  public capture(asset: asset): assetStatus | assetStatus[] {
+  public capture(
+    asset: asset,
+    snapshotTimestamp?: number | true,
+  ): assetStatus | assetStatus[] {
     if ('sheet' in asset.element) {
       return this.captureStylesheet(
         asset.value,
         asset.element as HTMLStyleElement | HTMLLinkElement,
         asset.styleId,
+        snapshotTimestamp,
       );
     } else if (asset.attr === 'srcset') {
       const statuses: assetStatus[] = [];
       getSourcesFromSrcset(asset.value).forEach((url) => {
-        statuses.push(this.captureUrl(url));
+        statuses.push(this.captureUrl(url, snapshotTimestamp));
       });
       return statuses;
     } else {
-      return this.captureUrl(asset.value);
+      return this.captureUrl(asset.value, snapshotTimestamp);
     }
   }
 
-  private captureUrl(url: string): assetStatus {
+  private captureUrl(
+    url: string,
+    snapshotTimestamp?: number | true,
+  ): assetStatus {
     if (this.capturedURLs.has(url)) {
       return {
         url,
@@ -341,10 +365,15 @@ export default class AssetManager {
             this.capturedURLs.add(url);
             this.capturingURLs.delete(url);
 
-            this.mutationCb({
-              url,
-              payload,
-            });
+            this.mutationCb(
+              {
+                url,
+                payload,
+              },
+              snapshotTimestamp === true
+                ? this.lastFullSnapshotTimestamp
+                : snapshotTimestamp,
+            );
           }
         }
       })

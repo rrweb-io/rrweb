@@ -1090,7 +1090,7 @@ export class Replayer {
       });
     }
     for (const event of this.service.state.context.events) {
-      if (event.timestamp <= fullSnapshot.timestamp) continue;
+      if (event.timestamp < fullSnapshot.timestamp) continue;
       if (
         event.type === EventType.Meta &&
         event.timestamp !== fullSnapshot.timestamp

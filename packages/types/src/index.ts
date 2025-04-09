@@ -44,6 +44,10 @@ export type fullSnapshotEvent = {
   };
 };
 
+export type fullSnapshotEventWithTime = fullSnapshotEvent & {
+  timestamp: number;
+};
+
 export type incrementalSnapshotEvent = {
   type: EventType.IncrementalSnapshot;
   data: incrementalData;
@@ -318,7 +322,7 @@ export type event = eventWithoutTime;
 
 export type eventWithTime = eventWithoutTime & {
   timestamp: number;
-  delay?: number;
+  delay?: number; // added during replay
 };
 
 export type canvasEventWithTime = eventWithTime & {
@@ -477,7 +481,10 @@ export type mutationCallbackParam = {
   isAttachIframe?: true;
 };
 
-export type mutationCallBack = (m: mutationCallbackParam) => void;
+export type mutationCallBack = (
+  m: mutationCallbackParam,
+  timestamp?: number,
+) => void;
 
 export type mousemoveCallBack = (
   p: mousePosition[],

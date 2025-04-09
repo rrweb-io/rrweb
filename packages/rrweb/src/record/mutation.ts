@@ -34,6 +34,7 @@ import {
   inDom,
   getShadowHost,
   closestElementOfNode,
+  nowTimestamp,
 } from '../utils';
 import dom from '@rrweb/utils';
 import { isProcessingStyleElement } from './observers/asset-manager';
@@ -272,6 +273,8 @@ export default class MutationBuffer {
       return;
     }
 
+    const now = nowTimestamp(); // mutations and their asset events should have same timestamp
+
     // delay any modification of the mirror until this function
     // so that the mirror for takeFullSnapshot doesn't get mutated while it's event is being processed
 
@@ -362,7 +365,7 @@ export default class MutationBuffer {
         },
         cssCaptured,
         onAssetDetected: (asset: asset) => {
-          this.assetManager.capture(asset);
+          this.assetManager.capture(asset, now);
         },
       });
       if (sn) {
@@ -542,7 +545,7 @@ export default class MutationBuffer {
     this.removesSubTreeCache = new Set<Node>();
     this.movedMap = {};
 
-    this.mutationCb(payload);
+    this.mutationCb(payload, now);
   };
 
   private genTextAreaValueMutation = (textarea: HTMLTextAreaElement) => {
