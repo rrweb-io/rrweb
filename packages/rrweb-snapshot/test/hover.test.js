@@ -1,5 +1,5 @@
 import postcss from 'postcss';
-import { pseudoClassPlugin } from '../../src/css';
+import { pseudoClassPlugin } from '../src/css';
 
 const normalize = (str) =>
   str
