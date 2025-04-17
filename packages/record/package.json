@@ -1,8 +1,10 @@
 {
-  "name": "@rrweb/record",
-  "version": "2.0.0-alpha.18",
+  "name": "@kani-test/record",
+  "version": "1.0.1",
+  "author": "Kanishq",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "keywords": [
     "rrweb",
@@ -56,7 +58,7 @@
   },
   "dependencies": {
     "@rrweb/types": "^2.0.0-alpha.18",
-    "rrweb": "^2.0.0-alpha.18",
+    "@kani-test/rrweb": "^1.0.0",
     "@rrweb/utils": "^2.0.0-alpha.18"
   },
   "browserslist": [

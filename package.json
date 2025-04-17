@@ -1,20 +1,20 @@
 {
-  "name": "@rrweb/_monorepo",
-  "description": "record and replay the web",
+  "description": "record and replay the web - devrev",
+  "version": "1.0.1",
+  "name": "@kani-test/rrweb",
+  "author": "Devrev",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
+    "url": "git+ssh://git@github.com/devrev/rrweb.git"
   },
   "keywords": [
     "rrweb"
   ],
-  "author": "yanzhen@smartx.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/devrev/rrweb/issues"
   },
-  "private": true,
-  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "homepage": "https://github.com/devrev/rrweb#readme",
   "workspaces": [
     "packages/*",
     "packages/plugins/*"
@@ -23,40 +23,35 @@
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.1",
     "@monorepo-utils/workspaces-to-typescript-project-references": "^2.8.2",
-    "@types/prettier": "2.7.3",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "browserslist": "^4.22.1",
     "concurrently": "^7.1.0",
-    "cross-env": "^7.0.3",
     "esbuild-plugin-umd-wrapper": "^2.0.0",
     "eslint": "^8.53.0",
-    "eslint-plugin-compat": "^5.0.0",
+    "eslint-plugin-compat": "^4.2.0",
     "eslint-plugin-jest": "^27.6.0",
     "eslint-plugin-tsdoc": "^0.2.17",
-    "happy-dom": "^14.12.0",
     "markdownlint": "^0.25.1",
     "markdownlint-cli": "^0.31.1",
     "prettier": "2.8.4",
-    "rollup-plugin-visualizer": "^5.12.0",
-    "turbo": "^2.0.4",
-    "typescript": "^5.4.5"
+    "turbo": "^1.2.4",
+    "typescript": "^4.9.5"
   },
   "scripts": {
-    "build:all": "NODE_OPTIONS='--max-old-space-size=4096' yarn turbo run prepublish",
-    "references:update": "yarn workspaces-to-typescript-project-references",
-    "test": "yarn turbo run test --concurrency=1 --continue",
+    "build:all": "NODE_OPTIONS='--max-old-space-size=4096' yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references' 'yarn turbo run prepublish'",
+    "test": "yarn run concurrently --success=all -r -m=1 'yarn workspaces-to-typescript-project-references --check' 'yarn turbo run test --concurrency=1 --continue'",
     "test:watch": "yarn turbo run test:watch",
     "test:update": "yarn turbo run test:update",
     "check-types": "yarn turbo run check-types --continue",
     "format": "yarn prettier --write '**/*.{ts,md}'",
     "format:head": "git diff --name-only HEAD^ |grep '\\.ts$\\|\\.md$' |xargs yarn prettier --write",
-    "dev": "yarn turbo run dev --concurrency=18",
+    "dev": "yarn turbo run dev",
     "repl": "cd packages/rrweb && npm run repl",
     "live-stream": "cd packages/rrweb && yarn live-stream",
-    "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'ESLINT_USE_FLAT_CONFIG=false yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'",
-    "lint:report": "ESLINT_USE_FLAT_CONFIG=false yarn eslint --output-file eslint_report.json --format json packages/*/src --ext .ts,.tsx,.js,.jsx",
-    "release": "yarn build:all && changeset publish"
+    "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'",
+    "lint:report": "yarn eslint --output-file eslint_report.json --format json packages/*/src --ext .ts,.tsx,.js,.jsx",
+    "release": "yarn build:all && npm publish"
   },
   "resolutions": {
     "**/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz",
@@ -66,5 +61,7 @@
     "defaults",
     "not op_mini all"
   ],
-  "packageManager": "yarn@1.22.19"
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  }
 }
