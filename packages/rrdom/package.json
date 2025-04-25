@@ -6,7 +6,7 @@
   "type": "module",
   "main": "./dist/rrdom.cjs",
   "module": "./dist/rrdom.js",
-  "unpkg": "./dist/rrdom.umd.cjs",
+  "unpkg": "./dist/rrdom.umd.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {

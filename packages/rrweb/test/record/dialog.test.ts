@@ -56,7 +56,7 @@ describe('dialog', () => {
     serverURL = getServerURL(server);
     browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.umd.cjs');
+    const bundlePath = path.resolve(__dirname, '../../dist/rrweb.umd.js');
     code = fs.readFileSync(bundlePath, 'utf8');
   });
 
@@ -77,7 +77,7 @@ describe('dialog', () => {
 
     await page.goto(`${serverURL}/html/dialog.html`);
     await page.addScriptTag({
-      path: path.resolve(__dirname, '../../dist/rrweb.umd.cjs'),
+      path: path.resolve(__dirname, '../../dist/rrweb.umd.js'),
     });
     await waitForRAF(page);
     events = [];

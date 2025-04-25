@@ -91,7 +91,7 @@ describe('benchmark: mutation observer', () => {
 
   const addRecordingScript = async (page: Page) => {
     // const scriptUrl = `${getServerURL(server)}/rrweb-1.1.3.js`;
-    const scriptUrl = `${getServerURL(server)}/rrweb.umd.cjs`;
+    const scriptUrl = `${getServerURL(server)}/rrweb.umd.js`;
     await page.evaluate((url) => {
       const scriptEl = document.createElement('script');
       scriptEl.src = url;

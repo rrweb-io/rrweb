@@ -49,7 +49,7 @@ describe('replayer', function () {
   beforeAll(async () => {
     browser = await launchPuppeteer();
 
-    const bundlePath = path.resolve(__dirname, '../dist/rrweb.umd.cjs');
+    const bundlePath = path.resolve(__dirname, '../dist/rrweb.umd.js');
     code = fs.readFileSync(bundlePath, 'utf8');
   });
 

@@ -30,7 +30,7 @@ export const startServer = (defaultPort = 3030) =>
           __dirname,
           `../../plugins/`,
           pluginName,
-          `dist/${pluginName}.umd.cjs`,
+          `dist/${pluginName}.umd.js`,
         );
         console.log('pathname', pathname);
       }

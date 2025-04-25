@@ -6,7 +6,7 @@ import type Player from 'rrweb-player';
 
 const rrwebScriptPath = path.resolve(
   require.resolve('rrweb-player'),
-  '../../dist/rrweb-player.umd.cjs',
+  '../../dist/rrweb-player.umd.js',
 );
 const rrwebStylePath = path.resolve(rrwebScriptPath, '../style.css');
 const rrwebRaw = fs.readFileSync(rrwebScriptPath, 'utf-8');

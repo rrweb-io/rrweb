@@ -33,9 +33,9 @@
     "lint": "yarn eslint src/**/*.ts"
   },
   "description": "rrweb's replayer UI",
-  "main": "./dist/rrweb-player.umd.cjs",
+  "main": "./dist/rrweb-player.umd.js",
   "module": "./dist/rrweb-player.js",
-  "unpkg": "./dist/rrweb-player.umd.cjs",
+  "unpkg": "./dist/rrweb-player.umd.js",
   "typings": "dist/rrweb-player.d.ts",
   "exports": {
     ".": {

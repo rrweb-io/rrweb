@@ -1421,7 +1421,7 @@ describe('diff algorithm for rrdom', () => {
 
       try {
         const code = fs.readFileSync(
-          path.resolve(__dirname, '../dist/rrdom.umd.cjs'),
+          path.resolve(__dirname, '../dist/rrdom.umd.js'),
           'utf8',
         );
         await page.evaluate(code);

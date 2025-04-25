@@ -54,7 +54,7 @@ function minifyAndUMDPlugin({
             await buildFile({
               name,
               input: inputFilePath,
-              output: `${outputFilePath}.umd.cjs`,
+              output: `${outputFilePath}.umd.js`,
               minify: false,
               isCss: false,
               outDir,
@@ -62,7 +62,7 @@ function minifyAndUMDPlugin({
             await buildFile({
               name,
               input: inputFilePath,
-              output: `${outputFilePath}.umd.min.cjs`,
+              output: `${outputFilePath}.umd.min.js`,
               minify: true,
               isCss: false,
               outDir,

@@ -107,7 +107,7 @@ describe('integration tests', function (this: ISuite) {
     });
 
     code = fs.readFileSync(
-      path.resolve(__dirname, '../dist/rrweb-snapshot.umd.cjs'),
+      path.resolve(__dirname, '../dist/rrweb-snapshot.umd.js'),
       'utf-8',
     );
   });
@@ -440,7 +440,7 @@ describe('iframe integration tests', function (this: ISuite) {
     });
 
     code = fs.readFileSync(
-      path.resolve(__dirname, '../dist/rrweb-snapshot.umd.cjs'),
+      path.resolve(__dirname, '../dist/rrweb-snapshot.umd.js'),
       'utf-8',
     );
   });
@@ -485,7 +485,7 @@ describe('dialog integration tests', function (this: ISuite) {
     });
 
     code = fs.readFileSync(
-      path.resolve(__dirname, '../dist/rrweb-snapshot.umd.cjs'),
+      path.resolve(__dirname, '../dist/rrweb-snapshot.umd.js'),
       'utf-8',
     );
   });
@@ -532,7 +532,7 @@ describe('shadow DOM integration tests', function (this: ISuite) {
     });
 
     code = fs.readFileSync(
-      path.resolve(__dirname, '../dist/rrweb-snapshot.umd.cjs'),
+      path.resolve(__dirname, '../dist/rrweb-snapshot.umd.js'),
       'utf-8',
     );
   });

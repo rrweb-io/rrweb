@@ -57,7 +57,7 @@ async function injectRecordScript(
   options?: ExtraOptions,
 ) {
   await frame.addScriptTag({
-    path: path.resolve(__dirname, '../dist/all.umd.cjs'),
+    path: path.resolve(__dirname, '../dist/all.umd.js'),
   });
   options = options || {};
   await frame.evaluate((options) => {

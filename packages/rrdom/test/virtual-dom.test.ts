@@ -246,7 +246,7 @@ describe('RRDocument for browser environment', () => {
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       code = fs.readFileSync(
-        path.resolve(__dirname, '../dist/rrdom.umd.cjs'),
+        path.resolve(__dirname, '../dist/rrdom.umd.js'),
         'utf8',
       );
     });

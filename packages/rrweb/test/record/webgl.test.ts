@@ -51,7 +51,7 @@ const setup = function (
     await ctx.page.goto('about:blank');
     await ctx.page.setContent(content);
     await ctx.page.addScriptTag({
-      path: path.resolve(__dirname, '../../dist/rrweb.umd.cjs'),
+      path: path.resolve(__dirname, '../../dist/rrweb.umd.js'),
     });
     ctx.events = [];
     await ctx.page.exposeFunction('emit', (e: eventWithTime) => {

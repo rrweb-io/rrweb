@@ -3,9 +3,9 @@
   "version": "2.0.0-alpha.18",
   "description": "",
   "type": "module",
-  "main": "./dist/rrweb-plugin-sequential-id-replay.umd.cjs",
+  "main": "./dist/rrweb-plugin-sequential-id-replay.umd.js",
   "module": "./dist/rrweb-plugin-sequential-id-replay.js",
-  "unpkg": "./dist/rrweb-plugin-sequential-id-replay.umd.cjs",
+  "unpkg": "./dist/rrweb-plugin-sequential-id-replay.umd.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -15,7 +15,7 @@
       },
       "require": {
         "types": "./dist/index.d.cts",
-        "default": "./dist/rrweb-plugin-sequential-id-replay.umd.cjs"
+        "default": "./dist/rrweb-plugin-sequential-id-replay.umd.js"
       }
     }
   },

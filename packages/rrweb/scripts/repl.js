@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 const emitter = new EventEmitter();
 
 function getCode() {
-  const bundlePath = path.resolve(__dirname, '../dist/rrweb.umd.cjs');
+  const bundlePath = path.resolve(__dirname, '../dist/rrweb.umd.js');
   return fs.readFileSync(bundlePath, 'utf8');
 }
 
@@ -231,7 +231,7 @@ void (async () => {
     <link rel="stylesheet" href="../dist/style.css" />
   </head>
   <body>
-    <script src="../dist/rrweb.umd.cjs"></script>
+    <script src="../dist/rrweb.umd.js"></script>
     <script>
       /*<!--*/
       const events = ${JSON.stringify(events).replace(

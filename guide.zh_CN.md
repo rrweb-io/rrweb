@@ -13,13 +13,13 @@
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.umd.min.cjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.umd.min.js"></script>
 ```
 
 也可以在 URL 中指定具体的版本号，例如：
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.14/dist/rrweb.umd.min.cjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.19/dist/rrweb.umd.min.js"></script>
 ```
 
 #### 仅引入录制部分
@@ -27,7 +27,7 @@
 rrweb 代码分为录制和回放两部分，大多数时候用户在被录制的应用中只需要引入录制部分代码。同样可以通过使用 @rrweb/record 包和 CDN 服务来实现：
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@rrweb/record@latest/dist/record.umd.min.cjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@rrweb/record@latest/dist/record.umd.min.js"></script>
 ```
 
 #### 其他包

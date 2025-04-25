@@ -31,9 +31,9 @@
   "keywords": [
     "rrweb"
   ],
-  "main": "./dist/rrweb.umd.cjs",
+  "main": "./dist/rrweb.umd.js",
   "module": "./dist/rrweb.js",
-  "unpkg": "./dist/rrweb.umd.cjs",
+  "unpkg": "./dist/rrweb.umd.js",
   "typings": "dist/rrweb.d.ts",
   "exports": {
     ".": {

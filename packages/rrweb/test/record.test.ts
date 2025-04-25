@@ -50,7 +50,7 @@ const setup = function (this: ISuite, content: string): ISuite {
       devtools: true,
     });
 
-    const bundlePath = path.resolve(__dirname, '../dist/rrweb.umd.cjs');
+    const bundlePath = path.resolve(__dirname, '../dist/rrweb.umd.js');
     ctx.code = fs.readFileSync(bundlePath, 'utf8');
   });
 

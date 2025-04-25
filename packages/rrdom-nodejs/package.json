@@ -16,9 +16,9 @@
   ],
   "license": "MIT",
   "type": "module",
-  "main": "./dist/rrdom-nodejs.umd.cjs",
+  "main": "./dist/rrdom-nodejs.umd.js",
   "module": "./dist/rrdom-nodejs.js",
-  "unpkg": "./dist/rrdom-nodejs.umd.cjs",
+  "unpkg": "./dist/rrdom-nodejs.umd.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -28,7 +28,7 @@
       },
       "require": {
         "types": "./dist/index.d.cts",
-        "default": "./dist/rrdom-nodejs.umd.cjs"
+        "default": "./dist/rrdom-nodejs.umd.js"
       }
     }
   },

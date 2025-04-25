@@ -29,7 +29,7 @@
   "type": "module",
   "main": "./dist/all.cjs",
   "module": "./dist/all.js",
-  "unpkg": "./dist/all.umd.cjs",
+  "unpkg": "./dist/all.umd.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {

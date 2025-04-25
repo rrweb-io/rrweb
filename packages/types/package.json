@@ -25,9 +25,9 @@
   },
   "license": "MIT",
   "type": "module",
-  "main": "./dist/types.umd.cjs",
+  "main": "./dist/types.umd.js",
   "module": "./dist/types.js",
-  "unpkg": "./dist/types.umd.cjs",
+  "unpkg": "./dist/types.umd.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -37,7 +37,7 @@
       },
       "require": {
         "types": "./dist/index.d.cts",
-        "default": "./dist/types.umd.cjs"
+        "default": "./dist/types.umd.js"
       }
     }
   },

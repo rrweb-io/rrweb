@@ -3,9 +3,9 @@
   "version": "2.0.0-alpha.18",
   "description": "",
   "type": "module",
-  "main": "./dist/rrweb-plugin-canvas-webrtc-replay.umd.cjs",
+  "main": "./dist/rrweb-plugin-canvas-webrtc-replay.umd.js",
   "module": "./dist/rrweb-plugin-canvas-webrtc-replay.js",
-  "unpkg": "./dist/rrweb-plugin-canvas-webrtc-replay.umd.cjs",
+  "unpkg": "./dist/rrweb-plugin-canvas-webrtc-replay.umd.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
