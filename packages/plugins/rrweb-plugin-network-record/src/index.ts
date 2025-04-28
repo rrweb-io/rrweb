@@ -38,7 +38,7 @@ export type InitiatorType =
 
 type NetworkRecordOptions = {
   initiatorTypes?: InitiatorType[];
-  ignoreRequestFn?: (data: NetworkRequest) => boolean;
+  transformRequestFn?: (request: NetworkRequest) => NetworkRequest | undefined;
   recordHeaders?: boolean | { request: boolean; response: boolean };
   recordBody?:
     | boolean
@@ -71,7 +71,7 @@ const defaultNetworkOptions: NetworkRecordOptions = {
     'video',
     'xmlhttprequest',
   ],
-  ignoreRequestFn: () => false,
+  transformRequestFn: (request) => request,
   recordHeaders: false,
   recordBody: false,
   recordInitialRequests: false,
@@ -89,17 +89,18 @@ type Body =
   | ReadableStream<Uint8Array>
   | null;
 
-type NetworkRequest = {
-  url: string;
+type NetworkRequest = Omit<PerformanceEntry, 'toJSON'> & {
   method?: string;
-  initiatorType: InitiatorType;
+  initiatorType?: InitiatorType;
   status?: number;
-  startTime: number;
-  endTime: number;
+  startTime?: number;
+  endTime?: number;
   requestHeaders?: Headers;
   requestBody?: Body;
   responseHeaders?: Headers;
   responseBody?: Body;
+  // was this captured before fetch/xhr could have been wrapped
+  isInitial?: boolean;
 };
 
 export type NetworkData = {
@@ -141,8 +142,10 @@ function initPerformanceObserver(
       );
     cb({
       requests: initialPerformanceEntries.map((entry) => ({
-        url: entry.name,
         initiatorType: entry.initiatorType as InitiatorType,
+        duration: entry.duration,
+        entryType: entry.entryType,
+        name: entry.name,
         status: 'responseStatus' in entry ? entry.responseStatus : undefined,
         startTime: Math.round(entry.startTime),
         endTime: Math.round(entry.responseEnd),
@@ -165,11 +168,13 @@ function initPerformanceObserver(
       );
     cb({
       requests: performanceEntries.map((entry) => ({
-        url: entry.name,
         initiatorType: entry.initiatorType as InitiatorType,
         status: 'responseStatus' in entry ? entry.responseStatus : undefined,
         startTime: Math.round(entry.startTime),
         endTime: Math.round(entry.responseEnd),
+        duration: entry.duration,
+        entryType: entry.entryType,
+        name: entry.name,
       })),
     });
   });
@@ -216,9 +221,9 @@ async function getRequestPerformanceEntry(
   after?: number,
   before?: number,
   attempt = 0,
-): Promise<PerformanceResourceTiming> {
+): Promise<PerformanceResourceTiming | null> {
   if (attempt > 10) {
-    throw new Error('Cannot find performance entry');
+    return null;
   }
   const urlPerformanceEntries = win.performance.getEntriesByName(
     url,
@@ -340,10 +345,13 @@ function initXhrObserver(
             before,
           )
             .then((entry) => {
+              if (!entry) return;
               const request: NetworkRequest = {
-                url: entry.name,
                 method: req.method,
                 initiatorType: entry.initiatorType as InitiatorType,
+                duration: entry.duration,
+                entryType: entry.entryType,
+                name: entry.name,
                 status: xhr.status,
                 startTime: Math.round(entry.startTime),
                 endTime: Math.round(entry.responseEnd),
@@ -438,10 +446,13 @@ function initFetchObserver(
       } finally {
         getRequestPerformanceEntry(win, 'fetch', req.url, after, before)
           .then((entry) => {
+            if (!entry) return;
             const request: NetworkRequest = {
-              url: entry.name,
               method: req.method,
               initiatorType: entry.initiatorType as InitiatorType,
+              duration: entry.duration,
+              entryType: entry.entryType,
+              name: entry.name,
               status: res?.status,
               startTime: Math.round(entry.startTime),
               endTime: Math.round(entry.responseEnd),
@@ -480,9 +491,10 @@ function initNetworkObserver(
   ) as Required<NetworkRecordOptions>;
 
   const cb: networkCallback = (data) => {
-    const requests = data.requests.filter(
-      (request) => !networkOptions.ignoreRequestFn(request),
-    );
+    const requests = data.requests
+      .map((request) => networkOptions.transformRequestFn(request))
+      .filter(Boolean) as NetworkRequest[];
+
     if (requests.length > 0 || data.isInitial) {
       callback({ ...data, requests });
     }
