@@ -1,18 +1,6 @@
 import type { listenerHandler, RecordPlugin, IWindow } from '@rrweb/types';
 import { patch } from '@rrweb/utils';
 
-function findLast<T>(
-  array: Array<T>,
-  predicate: (value: T) => boolean,
-): T | undefined {
-  const length = array.length;
-  for (let i = length - 1; i >= 0; i -= 1) {
-    if (predicate(array[i])) {
-      return array[i];
-    }
-  }
-}
-
 export type InitiatorType =
   | 'audio'
   | 'beacon'
@@ -89,12 +77,17 @@ type Body =
   | ReadableStream<Uint8Array>
   | null;
 
-type NetworkRequest = Omit<PerformanceEntry, 'toJSON'> & {
+type NetworkRequest = Omit<
+  PerformanceEntry,
+  'toJSON' | 'startTime' | 'endTime' | 'duration' | 'entryType'
+> & {
   method?: string;
   initiatorType?: InitiatorType;
   status?: number;
   startTime?: number;
   endTime?: number;
+  duration?: number;
+  entryType?: string;
   requestHeaders?: Headers;
   requestBody?: Body;
   responseHeaders?: Headers;
@@ -345,22 +338,23 @@ function initXhrObserver(
             before,
           )
             .then((entry) => {
-              if (!entry) return;
-              const request: NetworkRequest = {
-                method: req.method,
-                initiatorType: entry.initiatorType as InitiatorType,
-                duration: entry.duration,
-                entryType: entry.entryType,
-                name: entry.name,
-                status: xhr.status,
-                startTime: Math.round(entry.startTime),
-                endTime: Math.round(entry.responseEnd),
-                requestHeaders: networkRequest.requestHeaders,
-                requestBody: networkRequest.requestBody,
-                responseHeaders: networkRequest.responseHeaders,
-                responseBody: networkRequest.responseBody,
-              };
-              cb({ requests: [request] });
+              if (!entry) {
+                // https://github.com/rrweb-io/rrweb/pull/1105#issuecomment-1953808336
+                const requests = prepareRequestWithoutPerformance(
+                  req,
+                  networkRequest,
+                );
+                cb({ requests });
+                return;
+              }
+
+              const requests = prepareRequest(
+                entry,
+                req.method,
+                xhr.status,
+                networkRequest,
+              );
+              cb({ requests });
             })
             .catch(() => {
               //
@@ -446,22 +440,23 @@ function initFetchObserver(
       } finally {
         getRequestPerformanceEntry(win, 'fetch', req.url, after, before)
           .then((entry) => {
-            if (!entry) return;
-            const request: NetworkRequest = {
-              method: req.method,
-              initiatorType: entry.initiatorType as InitiatorType,
-              duration: entry.duration,
-              entryType: entry.entryType,
-              name: entry.name,
-              status: res?.status,
-              startTime: Math.round(entry.startTime),
-              endTime: Math.round(entry.responseEnd),
-              requestHeaders: networkRequest.requestHeaders,
-              requestBody: networkRequest.requestBody,
-              responseHeaders: networkRequest.responseHeaders,
-              responseBody: networkRequest.responseBody,
-            };
-            cb({ requests: [request] });
+            if (!entry) {
+              // https://github.com/rrweb-io/rrweb/pull/1105#issuecomment-1953808336
+              const requests = prepareRequestWithoutPerformance(
+                req,
+                networkRequest,
+              );
+              cb({ requests });
+              return;
+            }
+
+            const requests = prepareRequest(
+              entry,
+              req.method,
+              res?.status,
+              networkRequest,
+            );
+            cb({ requests });
           })
           .catch(() => {
             //
@@ -507,6 +502,58 @@ function initNetworkObserver(
     xhrObserver();
     fetchObserver();
   };
+}
+
+function prepareRequest(
+  entry: PerformanceResourceTiming,
+  method: string | undefined,
+  status: number | undefined,
+  networkRequest: Partial<NetworkRequest>,
+): NetworkRequest[] {
+  const request: NetworkRequest = {
+    method,
+    initiatorType: entry.initiatorType as InitiatorType,
+    duration: entry.duration,
+    entryType: entry.entryType,
+    name: entry.name,
+    status,
+    startTime: Math.round(entry.startTime),
+    endTime: Math.round(entry.responseEnd),
+    requestHeaders: networkRequest.requestHeaders,
+    requestBody: networkRequest.requestBody,
+    responseHeaders: networkRequest.responseHeaders,
+    responseBody: networkRequest.responseBody,
+  };
+
+  return [request];
+}
+
+function prepareRequestWithoutPerformance(
+  req: Request,
+  networkRequest: Partial<NetworkRequest>,
+): NetworkRequest[] {
+  const request: NetworkRequest = {
+    name: req.url,
+    method: req.method,
+    requestHeaders: networkRequest.requestHeaders,
+    requestBody: networkRequest.requestBody,
+    responseHeaders: networkRequest.responseHeaders,
+    responseBody: networkRequest.responseBody,
+  };
+
+  return [request];
+}
+
+function findLast<T>(
+  array: Array<T>,
+  predicate: (value: T) => boolean,
+): T | undefined {
+  const length = array.length;
+  for (let i = length - 1; i >= 0; i -= 1) {
+    if (predicate(array[i])) {
+      return array[i];
+    }
+  }
 }
 
 export const PLUGIN_NAME = 'rrweb/network@1';
