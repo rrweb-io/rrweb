@@ -43,9 +43,9 @@ rrweb.record({
     getRecordNetworkPlugin({
       initiatorTypes: ['fetch', 'xmlhttprequest'],
       // mask/block recording event for request
-      transformRequestFn: (request)  => {
-        if (request.url.contains("rrweb-collector-api.com")) return; // skip request
-        delete request.requestHeaders["Authorization"]; // remove sensetive data
+      transformRequestFn: (request) => {
+        if (request.url.contains('rrweb-collector-api.com')) return; // skip request
+        delete request.requestHeaders['Authorization']; // remove sensetive data
         request.responseBody = maskTextFn(request.responseBody);
         return request;
       },
@@ -61,13 +61,13 @@ rrweb.record({
 
 All options are described below:
 
-| key | default                                    | description                                                                                                                                                                                         |
-| ---------------- |--------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| initiatorTypes | `['fetch','xmlhttprequest','img',...]`     | Default value contains names of all [initiator types](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming/initiatorType). You can override it by setting the types you need. |
-| transformRequestFn | `(request) => request` | Transform recording event for request to block (skip) or mask/transofrm request (e.g. to hide sensetive data)                                                                                       |
-| recordHeaders | `false`                                    | Record the request & response headers for `fetch` and `xmlhttprequest` requests                                                                                                                     |
-| recordBody | `false`                                    | Record the request & response bodies for `fetch` and `xmlhttprequest` requests                                                                                                                      |
-| recordInitialRequests | `false`                                    | Record an event for all requests prior to rrweb.record() being called                                                                                                                               |
+| key                   | default                                | description                                                                                                                                                                                         |
+| --------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| initiatorTypes        | `['fetch','xmlhttprequest','img',...]` | Default value contains names of all [initiator types](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming/initiatorType). You can override it by setting the types you need. |
+| transformRequestFn    | `(request) => request`                 | Transform recording event for request to block (skip) or mask/transofrm request (e.g. to hide sensetive data)                                                                                       |
+| recordHeaders         | `false`                                | Record the request & response headers for `fetch` and `xmlhttprequest` requests                                                                                                                     |
+| recordBody            | `false`                                | Record the request & response bodies for `fetch` and `xmlhttprequest` requests                                                                                                                      |
+| recordInitialRequests | `false`                                | Record an event for all requests prior to rrweb.record() being called                                                                                                                               |
 
 ## replay network
 
