@@ -44,7 +44,8 @@ rrweb.record({
       initiatorTypes: ['fetch', 'xmlhttprequest'],
       // mask/block recording event for request
       transformRequestFn: (request) => {
-        if (request.url.contains('rrweb-collector-api.com')) return; // skip request
+        // request.name is url
+        if (request.name.contains('rrweb-collector-api.com')) return; // skip request
         delete request.requestHeaders['Authorization']; // remove sensetive data
         request.responseBody = maskTextFn(request.responseBody);
         return request;
@@ -82,10 +83,10 @@ const replayer = new rrweb.Replayer(events, {
     getReplayNetworkPlugin({
       onNetworkData: ({ requests }) => {
         for (const request of requests) {
-          const url = request.url;
+          const name = request.name; // url
           const method = request.method;
           const status = request.status;
-          console.log(`${method} ${url} ${status}`);
+          console.log(`${method} ${name} ${status}`);
         }
       },
     }),
