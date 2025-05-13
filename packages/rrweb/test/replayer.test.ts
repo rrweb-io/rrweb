@@ -12,6 +12,7 @@ import {
   waitForRAF,
 } from './utils';
 import styleSheetRuleEvents from './events/style-sheet-rule-events';
+import insertedStyleSheetRuleEvents from './events/inserted-stylesheet-rule-events';
 import orderingEvents from './events/ordering';
 import scrollEvents from './events/scroll';
 import scrollWithParentStylesEvents from './events/scroll-with-parent-styles';
@@ -297,6 +298,26 @@ describe('replayer', function () {
     `);
 
     expect(result).toEqual(false);
+  });
+
+  it('should persist inserted stylesheet rules on fast forward', async () => {
+    await page.evaluate(`events = ${JSON.stringify(insertedStyleSheetRuleEvents)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(0);
+
+      // fast forward past the insertedRules at 500 and other mutations at 900
+      replayer.pause(905);
+
+      const allStylesheets = Array.from(replayer.iframe.contentDocument.styleSheets);
+      // find the stylesheet that has the cssRule with the selectorText '.original-style-rule'
+      const stylesheetWithInsertedRule = allStylesheets.find(sheet => Array.from(sheet.cssRules).find(rule => rule.selectorText === '.original-style-rule'));
+      stylesheetWithInsertedRule.cssRules.length;
+    `);
+
+    // verify the inserted cssRule wasn't dropped
+    expect(result).toEqual(2);
   });
 
   it('should apply fast-forwarded StyleSheetRules that came after stylesheet textContent overwrite', async () => {
