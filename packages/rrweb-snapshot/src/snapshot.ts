@@ -699,8 +699,21 @@ function serializeElementNode(
     const imageSrc: string =
       image.currentSrc || image.getAttribute('src') || '<unknown-src>';
     const priorCrossOrigin = image.crossOrigin;
+
+    const cleanupCrossOriginAttribute = () => {
+      if (image.crossOrigin === 'anonymous') {
+        if (priorCrossOrigin) {
+          image.setAttribute('crossorigin', priorCrossOrigin);
+          attributes.crossOrigin = priorCrossOrigin;
+        } else {
+          image.removeAttribute('crossorigin');
+        }
+      }
+    };
+
     const recordInlineImage = () => {
       image.removeEventListener('load', recordInlineImage);
+      image.removeEventListener('error', onImageLoadError);
       try {
         canvasService!.width = image.naturalWidth;
         canvasService!.height = image.naturalHeight;
@@ -714,7 +727,10 @@ function serializeElementNode(
           image.crossOrigin = 'anonymous';
           if (image.complete && image.naturalWidth !== 0)
             recordInlineImage(); // too early due to image reload
-          else image.addEventListener('load', recordInlineImage);
+          else {
+            image.addEventListener('load', recordInlineImage);
+            image.addEventListener('error', onImageLoadError);
+          }
           return;
         } else {
           console.warn(
@@ -722,15 +738,22 @@ function serializeElementNode(
           );
         }
       }
-      if (image.crossOrigin === 'anonymous') {
-        priorCrossOrigin
-          ? (attributes.crossOrigin = priorCrossOrigin)
-          : image.removeAttribute('crossorigin');
-      }
+
+      cleanupCrossOriginAttribute();
     };
+
+    const onImageLoadError = () => {
+      image.removeEventListener('load', recordInlineImage);
+      image.removeEventListener('error', onImageLoadError);
+      cleanupCrossOriginAttribute();
+    };
+
     // The image content may not have finished loading yet.
     if (image.complete && image.naturalWidth !== 0) recordInlineImage();
-    else image.addEventListener('load', recordInlineImage);
+    else {
+      image.addEventListener('load', recordInlineImage);
+      image.addEventListener('error', onImageLoadError);
+    }
   }
   // media elements
   if (tagName === 'audio' || tagName === 'video') {
@@ -1084,7 +1107,10 @@ export function serializeNodeWithId(
         bypassOptions.cssCaptured = true;
       }
       for (const childN of Array.from(dom.childNodes(n))) {
-        const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
+        const serializedChildNode = serializeNodeWithId(
+          childN as Node,
+          bypassOptions,
+        );
         if (serializedChildNode) {
           serializedNode.childNodes.push(serializedChildNode);
         }
@@ -1094,7 +1120,10 @@ export function serializeNodeWithId(
     let shadowRootEl: ShadowRoot | null = null;
     if (isElement(n) && (shadowRootEl = dom.shadowRoot(n))) {
       for (const childN of Array.from(dom.childNodes(shadowRootEl))) {
-        const serializedChildNode = serializeNodeWithId(childN, bypassOptions);
+        const serializedChildNode = serializeNodeWithId(
+          childN as Node,
+          bypassOptions,
+        );
         if (serializedChildNode) {
           isNativeShadowDom(shadowRootEl) &&
             (serializedChildNode.isShadow = true);
