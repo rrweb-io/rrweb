@@ -1730,8 +1730,6 @@ export class Replayer {
           'Timeout in the loop, please check the resolve tree data:',
           resolveTrees,
         );
-
-        this.warn('stringified resolve tree', JSON.stringify(resolveTrees));
         break;
       }
       for (const tree of resolveTrees) {
