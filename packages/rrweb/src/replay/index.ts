@@ -117,7 +117,7 @@ function indicatesTouchDevice(e: eventWithTime) {
 declare global {
   interface Window {
     replayerDebugConfig: {
-      suppressWarnings?: boolean;
+      suppressNodeNotFoundWarnings?: boolean;
     };
   }
 }
@@ -127,7 +127,8 @@ export class Replayer {
   public iframe: HTMLIFrameElement;
 
   private _debugConfig = {
-    suppressWarnings: window.replayerDebugConfig?.suppressWarnings ?? false,
+    suppressNodeNotFoundWarnings:
+      window.replayerDebugConfig?.suppressNodeNotFoundWarnings ?? false,
   };
 
   public service: ReturnType<typeof createPlayerService>;
@@ -1724,11 +1725,13 @@ export class Replayer {
       // transform queue to resolve tree
       const resolveTrees = queueToResolveTrees(queue);
       queue.length = 0;
-      if (Date.now() - startTime > 500) {
+      if (Date.now() - startTime > 125) {
         this.warn(
           'Timeout in the loop, please check the resolve tree data:',
           resolveTrees,
         );
+
+        this.warn('stringified resolve tree', JSON.stringify(resolveTrees));
         break;
       }
       for (const tree of resolveTrees) {
@@ -1753,7 +1756,7 @@ export class Replayer {
     uniqueTextMutations(d.texts).forEach((mutation) => {
       const target = mirror.getNode(mutation.id);
       if (!target) {
-        if (this._debugConfig.suppressWarnings) return;
+        if (this._debugConfig.suppressNodeNotFoundWarnings) return;
         if (d.removes.find((r) => r.id === mutation.id)) {
           // no need to warn, element was already removed
           return;
@@ -1781,7 +1784,7 @@ export class Replayer {
     d.attributes.forEach((mutation) => {
       const target = mirror.getNode(mutation.id);
       if (!target) {
-        if (this._debugConfig.suppressWarnings) return;
+        if (this._debugConfig.suppressNodeNotFoundWarnings) return;
         if (d.removes.find((r) => r.id === mutation.id)) {
           // no need to warn, element was already removed
           return;
@@ -2269,6 +2272,7 @@ export class Replayer {
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {
+    if (this._debugConfig.suppressNodeNotFoundWarnings) return;
     this.warn(`Node with id '${id}' not found. `, d);
   }
 
