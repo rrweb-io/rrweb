@@ -114,9 +114,21 @@ function indicatesTouchDevice(e: eventWithTime) {
   );
 }
 
+declare global {
+  interface Window {
+    replayerDebugConfig: {
+      suppressWarnings?: boolean;
+    };
+  }
+}
+
 export class Replayer {
   public wrapper: HTMLDivElement;
   public iframe: HTMLIFrameElement;
+
+  private _debugConfig = {
+    suppressWarnings: window.replayerDebugConfig?.suppressWarnings ?? false,
+  };
 
   public service: ReturnType<typeof createPlayerService>;
   public speedService: ReturnType<typeof createSpeedService>;
@@ -1741,6 +1753,7 @@ export class Replayer {
     uniqueTextMutations(d.texts).forEach((mutation) => {
       const target = mirror.getNode(mutation.id);
       if (!target) {
+        if (this._debugConfig.suppressWarnings) return;
         if (d.removes.find((r) => r.id === mutation.id)) {
           // no need to warn, element was already removed
           return;
@@ -1768,6 +1781,7 @@ export class Replayer {
     d.attributes.forEach((mutation) => {
       const target = mirror.getNode(mutation.id);
       if (!target) {
+        if (this._debugConfig.suppressWarnings) return;
         if (d.removes.find((r) => r.id === mutation.id)) {
           // no need to warn, element was already removed
           return;

@@ -1,7 +1,7 @@
 {
-  "name": "rrweb",
-  "version": "2.0.0-alpha.18",
-  "description": "record and replay the web",
+  "name": "@glimt/rrweb",
+  "version": "0.0.1",
+  "description": "",
   "scripts": {
     "prepare": "npm run prepack",
     "prepack": "npm run build",
@@ -24,13 +24,6 @@
     "benchmark": "vitest run --maxConcurrency 1 --no-file-parallelism test/benchmark"
   },
   "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
-  },
-  "keywords": [
-    "rrweb"
-  ],
   "main": "./dist/rrweb.umd.cjs",
   "module": "./dist/rrweb.js",
   "unpkg": "./dist/rrweb.umd.cjs",
@@ -53,7 +46,6 @@
     "package.json"
   ],
   "sideEffects": false,
-  "author": "yanzhen@smartx.com",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
