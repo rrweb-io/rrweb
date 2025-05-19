@@ -260,11 +260,8 @@ function buildNode(
          */
         if (value === true) value = '';
 
-        if (!name) {
-          console.log('name is null');
-        }
-
-        if (name.startsWith('rr_')) {
+        //added: "name &&"
+        if (name && name.startsWith('rr_')) {
           specialAttributes[name] = value;
           continue;
         }
@@ -359,11 +356,7 @@ function buildNode(
         } else if (tagName === 'img' && name === 'rr_dataURL') {
           const image = node as HTMLImageElement;
 
-          if (!image.currentSrc) {
-            console.log('image.currentSrc is null');
-          }
-
-          if (!image.currentSrc.startsWith('data:')) {
+          if (image.currentSrc && !image.currentSrc.startsWith('data:')) {
             // Backup original img src. It may not have been set yet.
             image.setAttribute(
               'rrweb-original-src',
