@@ -697,11 +697,15 @@ function serializeElementNode(
     }
     // const image = n as HTMLImageElement;
 
-    const image = n.cloneNode(true) as HTMLImageElement;
+    const orgImage = n as HTMLImageElement;
+    let image = n.cloneNode(true) as HTMLImageElement;
 
     const imageSrc: string =
-      image.currentSrc || image.getAttribute('src') || '<unknown-src>';
-    const priorCrossOrigin = image.crossOrigin;
+      orgImage.currentSrc || orgImage.getAttribute('src') || '<unknown-src>';
+
+    image.src = imageSrc;
+
+    const priorCrossOrigin = orgImage.crossOrigin;
 
     //in-case we somehow get a reference to the org image.
     //better to be safe than sorry
@@ -714,6 +718,8 @@ function serializeElementNode(
           image.removeAttribute('crossorigin');
         }
       }
+      //@ts-expect-error
+      image = null;
     };
 
     const recordInlineImage = () => {
