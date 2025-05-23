@@ -695,40 +695,29 @@ function serializeElementNode(
       canvasService = doc.createElement('canvas');
       canvasCtx = canvasService.getContext('2d');
     }
-    // const image = n as HTMLImageElement;
     let image = n.cloneNode(true) as HTMLImageElement;
 
     const imageSrc: string =
       image.currentSrc || image.getAttribute('src') || '<unknown-src>';
-    const priorCrossOrigin = image.crossOrigin;
 
-    console.log(
-      'initializing inlineImages with image:',
-      image,
-      'imageSrc:',
-      imageSrc,
-      'priorCrossOrigin:',
-      priorCrossOrigin,
-    );
+    //keeping for now
+    // const priorCrossOrigin = image.crossOrigin;
 
-    const cleanupCrossOriginAttribute = () => {
-      console.log('cleaning up attributes');
-      console.log('priorCrossOrigin', priorCrossOrigin);
-      console.log('currentCrossOrigin', image.crossOrigin);
-      if (image.crossOrigin === 'anonymous') {
-        if (priorCrossOrigin) {
-          image.setAttribute('crossorigin', priorCrossOrigin);
-          attributes.crossOrigin = priorCrossOrigin;
-        } else {
-          image.removeAttribute('crossorigin');
-        }
-      }
+    const inlineImageCleanup = () => {
+      //keeping for now - this should only lead to additional fetches of images, shouldnt have any negative impact
+      // if (image.crossOrigin === 'anonymous') {
+      //   if (priorCrossOrigin) {
+      //     image.setAttribute('crossorigin', priorCrossOrigin);
+      //     attributes.crossOrigin = priorCrossOrigin;
+      //   } else {
+      //     image.removeAttribute('crossorigin');
+      //   }
+      // }
       //@ts-expect-error
       image = null;
     };
 
     const recordInlineImage = () => {
-      console.log('recordInlineImage()');
       image.removeEventListener('load', recordInlineImage);
       image.removeEventListener('error', onImageLoadError);
       try {
@@ -740,7 +729,6 @@ function serializeElementNode(
           dataURLOptions.quality,
         );
       } catch (err) {
-        console.log('catched err', err);
         if (image.crossOrigin !== 'anonymous') {
           image.crossOrigin = 'anonymous';
           if (image.complete && image.naturalWidth !== 0)
@@ -757,14 +745,13 @@ function serializeElementNode(
         }
       }
 
-      cleanupCrossOriginAttribute();
+      inlineImageCleanup();
     };
 
     const onImageLoadError = () => {
-      console.log('onImageLoadError()');
       image.removeEventListener('load', recordInlineImage);
       image.removeEventListener('error', onImageLoadError);
-      cleanupCrossOriginAttribute();
+      inlineImageCleanup();
     };
 
     // The image content may not have finished loading yet.
