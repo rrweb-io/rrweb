@@ -695,7 +695,9 @@ function serializeElementNode(
       canvasService = doc.createElement('canvas');
       canvasCtx = canvasService.getContext('2d');
     }
-    const image = n as HTMLImageElement;
+    // const image = n as HTMLImageElement;
+    let image = n.cloneNode(true) as HTMLImageElement;
+
     const imageSrc: string =
       image.currentSrc || image.getAttribute('src') || '<unknown-src>';
     const priorCrossOrigin = image.crossOrigin;
@@ -721,6 +723,8 @@ function serializeElementNode(
           image.removeAttribute('crossorigin');
         }
       }
+      //@ts-expect-error
+      image = null;
     };
 
     const recordInlineImage = () => {

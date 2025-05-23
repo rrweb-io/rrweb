@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@rrweb/types": "^2.0.0-alpha.18",
-    "rrweb": "^2.0.0-alpha.18",
+    "rrweb": "file:../rrweb",
     "@rrweb/utils": "^2.0.0-alpha.18"
   },
   "browserslist": [
