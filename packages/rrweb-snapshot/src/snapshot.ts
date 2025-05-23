@@ -695,11 +695,16 @@ function serializeElementNode(
       canvasService = doc.createElement('canvas');
       canvasCtx = canvasService.getContext('2d');
     }
-    const image = n as HTMLImageElement;
+    // const image = n as HTMLImageElement;
+
+    const image = n.cloneNode(true) as HTMLImageElement;
+
     const imageSrc: string =
       image.currentSrc || image.getAttribute('src') || '<unknown-src>';
     const priorCrossOrigin = image.crossOrigin;
 
+    //in-case we somehow get a reference to the org image.
+    //better to be safe than sorry
     const cleanupCrossOriginAttribute = () => {
       if (image.crossOrigin === 'anonymous') {
         if (priorCrossOrigin) {
