@@ -712,13 +712,21 @@ function serializeElementNode(
     const cleanupCrossOriginAttribute = () => {
       if (image.crossOrigin === 'anonymous') {
         if (priorCrossOrigin) {
+          if (orgImage.crossOrigin !== priorCrossOrigin) {
+            orgImage.setAttribute('crossorigin', priorCrossOrigin);
+          }
+
           image.setAttribute('crossorigin', priorCrossOrigin);
           attributes.crossOrigin = priorCrossOrigin;
         } else {
           image.removeAttribute('crossorigin');
+
+          if (orgImage.crossOrigin != null) {
+            orgImage.removeAttribute('crossorigin');
+          }
         }
       }
-      //@ts-expect-error
+      //@ts-expect-error for gc
       image = null;
     };
 
