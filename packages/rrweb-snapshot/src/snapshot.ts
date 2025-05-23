@@ -700,7 +700,19 @@ function serializeElementNode(
       image.currentSrc || image.getAttribute('src') || '<unknown-src>';
     const priorCrossOrigin = image.crossOrigin;
 
+    console.log(
+      'initializing inlineImages with image:',
+      image,
+      'imageSrc:',
+      imageSrc,
+      'priorCrossOrigin:',
+      priorCrossOrigin,
+    );
+
     const cleanupCrossOriginAttribute = () => {
+      console.log('cleaning up attributes');
+      console.log('priorCrossOrigin', priorCrossOrigin);
+      console.log('currentCrossOrigin', image.crossOrigin);
       if (image.crossOrigin === 'anonymous') {
         if (priorCrossOrigin) {
           image.setAttribute('crossorigin', priorCrossOrigin);
@@ -712,6 +724,7 @@ function serializeElementNode(
     };
 
     const recordInlineImage = () => {
+      console.log('recordInlineImage()');
       image.removeEventListener('load', recordInlineImage);
       image.removeEventListener('error', onImageLoadError);
       try {
@@ -723,6 +736,7 @@ function serializeElementNode(
           dataURLOptions.quality,
         );
       } catch (err) {
+        console.log('catched err', err);
         if (image.crossOrigin !== 'anonymous') {
           image.crossOrigin = 'anonymous';
           if (image.complete && image.naturalWidth !== 0)
@@ -743,6 +757,7 @@ function serializeElementNode(
     };
 
     const onImageLoadError = () => {
+      console.log('onImageLoadError()');
       image.removeEventListener('load', recordInlineImage);
       image.removeEventListener('error', onImageLoadError);
       cleanupCrossOriginAttribute();
