@@ -695,39 +695,20 @@ function serializeElementNode(
       canvasService = doc.createElement('canvas');
       canvasCtx = canvasService.getContext('2d');
     }
-    // const image = n as HTMLImageElement;
-
-    const orgImage = n as HTMLImageElement;
-    let image = n.cloneNode(true) as HTMLImageElement;
-
+    const image = n as HTMLImageElement;
     const imageSrc: string =
-      orgImage.currentSrc || orgImage.getAttribute('src') || '<unknown-src>';
+      image.currentSrc || image.getAttribute('src') || '<unknown-src>';
+    const priorCrossOrigin = image.crossOrigin;
 
-    image.src = imageSrc;
-
-    const priorCrossOrigin = orgImage.crossOrigin;
-
-    //in-case we somehow get a reference to the org image.
-    //better to be safe than sorry
     const cleanupCrossOriginAttribute = () => {
       if (image.crossOrigin === 'anonymous') {
         if (priorCrossOrigin) {
-          if (orgImage.crossOrigin !== priorCrossOrigin) {
-            orgImage.setAttribute('crossorigin', priorCrossOrigin);
-          }
-
           image.setAttribute('crossorigin', priorCrossOrigin);
           attributes.crossOrigin = priorCrossOrigin;
         } else {
           image.removeAttribute('crossorigin');
-
-          if (orgImage.crossOrigin != null) {
-            orgImage.removeAttribute('crossorigin');
-          }
         }
       }
-      //@ts-expect-error for gc
-      image = null;
     };
 
     const recordInlineImage = () => {
