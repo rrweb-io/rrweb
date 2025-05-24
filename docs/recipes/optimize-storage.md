@@ -21,7 +21,7 @@ Some common patterns may emit lots of events are:
 
 ## Sampling
 
-Use the sampling config in the recording can reduce the storage size by dropping some events:
+Use the sampling config in the recording can reduce the storage size by dropping or merging some events:
 
 **Scenario 1**
 
@@ -37,6 +37,8 @@ record({
     mouseInteraction: false
     // set the interval of scrolling event
     scroll: 150 // do not emit twice in 150ms
+    // set the interval of mutation events (page changes)
+    mutation: 50 // do not emit more than 20 mutations per second
     // set the interval of media interaction event
     media: 800
     // set the timing of record input
