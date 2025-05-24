@@ -29,6 +29,7 @@ import {
   inDom,
   getShadowHost,
   closestElementOfNode,
+  throttle,
 } from '../utils';
 import dom from '@rrweb/utils';
 
@@ -85,6 +86,7 @@ export default class MutationBuffer {
   private recordCanvas: observerParam['recordCanvas'];
   private inlineImages: observerParam['inlineImages'];
   private slimDOMOptions: observerParam['slimDOMOptions'];
+  private sampling: observerParam['sampling'];
   private dataURLOptions: observerParam['dataURLOptions'];
   private doc: observerParam['doc'];
   private mirror: observerParam['mirror'];
@@ -111,6 +113,7 @@ export default class MutationBuffer {
         'recordCanvas',
         'inlineImages',
         'slimDOMOptions',
+        'sampling',
         'dataURLOptions',
         'doc',
         'mirror',
@@ -124,6 +127,10 @@ export default class MutationBuffer {
       // just a type trick, the runtime result is correct
       this[key] = options[key] as never;
     });
+
+    if (this.sampling.mutation) {
+      this.emit = throttle(this.emit, this.sampling.mutation);
+    }
   }
 
   public freeze() {

@@ -151,6 +151,7 @@ export type MutationBufferParam = Pick<
   | 'recordCanvas'
   | 'inlineImages'
   | 'slimDOMOptions'
+  | 'sampling'
   | 'dataURLOptions'
   | 'doc'
   | 'mirror'
