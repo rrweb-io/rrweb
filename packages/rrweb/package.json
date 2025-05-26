@@ -67,6 +67,7 @@
     "simple-peer-light": "^9.10.0",
     "ts-node": "^10.9.1",
     "tslib": "^2.3.1",
+    "turbo": "^2.5.3",
     "typescript": "^5.4.5",
     "vite": "^5.3.1",
     "vite-plugin-dts": "^3.9.1"
