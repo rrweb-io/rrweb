@@ -1,6 +1,6 @@
 {
   "name": "@glimt/record",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "scripts": {
     "dev": "vite build --watch",
     "build": "yarn turbo run prepublish",
@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@rrweb/types": "^2.0.0-alpha.18",
-    "rrweb": "file:../rrweb",
+    "rrweb": "^2.0.0-alpha.18",
     "@rrweb/utils": "^2.0.0-alpha.18"
   },
   "browserslist": [
