@@ -1,9 +1,8 @@
 {
   "name": "@glimt/rrweb",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "",
   "scripts": {
-    "prepare": "npm run prepack",
     "prepack": "npm run build",
     "retest": "cross-env PUPPETEER_HEADLESS=true npm run retest:headful",
     "retest:headful": "vitest run --exclude test/benchmark",
