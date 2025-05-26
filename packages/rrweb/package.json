@@ -1,6 +1,6 @@
 {
   "name": "@glimt/rrweb",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "",
   "scripts": {
     "prepare": "npm run prepack",
