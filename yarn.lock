@@ -7376,6 +7376,7 @@ rrweb@^2.0.0-alpha.18:
 
 "rrweb@file:../rrweb":
   version "0.0.5"
+  resolved "git+ssh://git@github.com/packages/rrweb.git"
   dependencies:
     "@rrweb/types" "^2.0.0-alpha.18"
     "@rrweb/utils" "^2.0.0-alpha.18"
