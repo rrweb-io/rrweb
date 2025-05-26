@@ -44,7 +44,6 @@
   },
   "scripts": {
     "build:all": "NODE_OPTIONS='--max-old-space-size=4096' yarn turbo run prepublish",
-    "build": "node preflight-build && yarn && yarn build:all && yarn && yarn build:all",
     "references:update": "yarn workspaces-to-typescript-project-references",
     "test": "yarn turbo run test --concurrency=1 --continue",
     "test:watch": "yarn turbo run test:watch",
