@@ -621,12 +621,19 @@ function record<T = eventWithTime>(
         try {
           handler();
         } catch (error) {
+          const msg = String(error).toLowerCase();
           /**
+           * https://github.com/rrweb-io/rrweb/pull/1695
            * This error can occur in a known scenario:
-           * If an iframe is initially same-origin and observed, but later its src attribute is changed to a cross-origin URL,
-           * attempting to execute the handler in the stop record function will throw a "cannot access cross-origin frame" error.
+           * If an iframe is initially same-origin and observed, but later its 
+           src attribute is changed to a cross-origin URL,
+           * attempting to execute the handler in the stop record function will 
+           throw a "cannot access cross-origin frame" error.
            * This error is expected and can be safely ignored.
            */
+          if (!msg.includes('cross-origin')) {
+            console.warn(error);
+          }
         }
       });
       processedNodeManager.destroy();
