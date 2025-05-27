@@ -990,6 +990,21 @@ describe('record', function (this: ISuite) {
 
     await assertSnapshot(ctx.events);
   });
+
+  it('does not throw error when stopping recording after iframe becomes cross-origin', async () => {
+    await ctx.page.evaluate(async () => {
+      const { record } = (window as unknown as IWindow).rrweb;
+      const stopRecord = record({
+        emit: (window as unknown as IWindow).emit,
+      });
+      const iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      iframe.src = 'https://www.example.com'; // Change the same origin iframe to a cross origin iframe after it's recorded
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      stopRecord?.();
+    });
+  });
 });
 
 describe('record iframes', function (this: ISuite) {
