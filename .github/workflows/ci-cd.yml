@@ -24,7 +24,9 @@ jobs:
           cache: 'yarn'
 
       - name: Install Dependencies
-        run: PUPPETEER_DOWNLOAD_BASE_URL="https://storage.googleapis.com/chrome-for-testing-public" yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile
+        env:
+          PUPPETEER_DOWNLOAD_BASE_URL: 'https://storage.googleapis.com/chrome-for-testing-public'
 
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all

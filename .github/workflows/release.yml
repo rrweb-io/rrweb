@@ -21,7 +21,9 @@ jobs:
           node-version: lts/*
 
       - name: Install Dependencies
-        run: PUPPETEER_SKIP_DOWNLOAD=true yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
