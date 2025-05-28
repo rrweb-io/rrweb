@@ -209,15 +209,16 @@ function record<T = eventWithTime>(
       e.type !== EventType.FullSnapshot &&
       !(
         e.type === EventType.IncrementalSnapshot &&
-          [IncrementalSource.Mutation,
-           IncrementalSource.MediaInteraction, // often automatic e.g. background video loop
-           IncrementalSource.StyleSheetRule,
-           IncrementalSource.CanvasMutation,
-           IncrementalSource.Font,
-           IncrementalSource.Log,
-           IncrementalSource.StyleDeclaration,
-           IncrementalSource.AdoptedStyleSheet,
-          ].includes(e.data.source)
+        [
+          IncrementalSource.Mutation,
+          IncrementalSource.MediaInteraction, // often automatic e.g. background video loop
+          IncrementalSource.StyleSheetRule,
+          IncrementalSource.CanvasMutation,
+          IncrementalSource.Font,
+          IncrementalSource.Log,
+          IncrementalSource.StyleDeclaration,
+          IncrementalSource.AdoptedStyleSheet,
+        ].includes(e.data.source)
       )
     ) {
       // we've got a user initiated event so first we need to apply
