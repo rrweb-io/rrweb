@@ -12,6 +12,9 @@
       "path": "../types"
     },
     {
+      "path": "../rrweb"
+    },
+    {
       "path": "../utils"
     }
   ]

@@ -1,3 +1,3 @@
-import { record } from 'rrweb';
+import { record } from '@glimt/rrweb';
 
 export { record };
