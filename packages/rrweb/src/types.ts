@@ -74,6 +74,7 @@ export type recordOptions<T> = {
   mousemoveWait?: number;
   keepIframeSrcFn?: KeepIframeSrcFn;
   errorHandler?: ErrorHandler;
+  applyBackgroundColorToBlockedElements?: boolean;
 };
 
 export type observerParam = {

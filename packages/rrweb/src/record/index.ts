@@ -99,6 +99,7 @@ export function record<T = eventWithTime>(
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
     errorHandler,
+    applyBackgroundColorToBlockedElements = false,
   } = options;
 
   registerErrorHandler(errorHandler);
@@ -389,6 +390,7 @@ export function record<T = eventWithTime>(
       dataURLOptions,
       recordCanvas,
       inlineImages,
+      applyBackgroundColorToBlockedElements,
       onSerialize: (n) => {
         if (isSerializedIframe(n, mirror)) {
           iframeManager.addIframe(n as HTMLIFrameElement);

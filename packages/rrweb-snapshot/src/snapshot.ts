@@ -33,6 +33,8 @@ import {
 } from './utils';
 import dom from '@amplitude/rrweb-utils';
 
+const _DEFAULT_BLOCKED_ELEMENT_BACKGROUND_COLOR = 'lightgrey';
+
 let _id = 1;
 const tagNameRegex = new RegExp('[^a-z0-9-_:]');
 
@@ -407,6 +409,7 @@ function serializeNode(
      */
     newlyAddedElement?: boolean;
     cssCaptured?: boolean;
+    applyBackgroundColorToBlockedElements?: boolean;
   },
 ): serializedNode | false {
   const {
@@ -425,6 +428,7 @@ function serializeNode(
     keepIframeSrcFn,
     newlyAddedElement = false,
     cssCaptured = false,
+    applyBackgroundColorToBlockedElements = false,
   } = options;
   // Only record root id when document object is not the base document
   const rootId = getRootId(doc, mirror);
@@ -464,6 +468,7 @@ function serializeNode(
         keepIframeSrcFn,
         newlyAddedElement,
         rootId,
+        applyBackgroundColorToBlockedElements,
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
@@ -557,6 +562,7 @@ function serializeElementNode(
      */
     newlyAddedElement?: boolean;
     rootId: number | undefined;
+    applyBackgroundColorToBlockedElements?: boolean;
   },
 ): serializedNode | false {
   const {
@@ -572,6 +578,7 @@ function serializeElementNode(
     keepIframeSrcFn,
     newlyAddedElement = false,
     rootId,
+    applyBackgroundColorToBlockedElements = false,
   } = options;
   const needBlock = _isBlockedElement(n, blockClass, blockSelector);
   const tagName = getValidTagName(n);
@@ -764,6 +771,9 @@ function serializeElementNode(
       class: attributes.class,
       rr_width: `${width}px`,
       rr_height: `${height}px`,
+      ...(applyBackgroundColorToBlockedElements
+        ? { rr_background_color: _DEFAULT_BLOCKED_ELEMENT_BACKGROUND_COLOR }
+        : {}),
     };
   }
   // iframe
@@ -931,6 +941,7 @@ export function serializeNodeWithId(
     ) => unknown;
     stylesheetLoadTimeout?: number;
     cssCaptured?: boolean;
+    applyBackgroundColorToBlockedElements?: boolean;
   },
 ): serializedNodeWithId | null {
   const {
@@ -957,6 +968,7 @@ export function serializeNodeWithId(
     keepIframeSrcFn = () => false,
     newlyAddedElement = false,
     cssCaptured = false,
+    applyBackgroundColorToBlockedElements = false,
   } = options;
   let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
@@ -988,6 +1000,7 @@ export function serializeNodeWithId(
     keepIframeSrcFn,
     newlyAddedElement,
     cssCaptured,
+    applyBackgroundColorToBlockedElements,
   });
   if (!_serializedNode) {
     // TODO: dev only
@@ -1068,6 +1081,7 @@ export function serializeNodeWithId(
       stylesheetLoadTimeout,
       keepIframeSrcFn,
       cssCaptured: false,
+      applyBackgroundColorToBlockedElements,
     };
 
     if (
@@ -1241,6 +1255,7 @@ function snapshot(
     ) => unknown;
     stylesheetLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
+    applyBackgroundColorToBlockedElements?: boolean;
   },
 ): serializedNodeWithId | null {
   const {
@@ -1264,6 +1279,7 @@ function snapshot(
     onStylesheetLoad,
     stylesheetLoadTimeout,
     keepIframeSrcFn = () => false,
+    applyBackgroundColorToBlockedElements = false,
   } = options || {};
   const maskInputOptions: MaskInputOptions =
     maskAllInputs === true
@@ -1332,6 +1348,7 @@ function snapshot(
     stylesheetLoadTimeout,
     keepIframeSrcFn,
     newlyAddedElement: false,
+    applyBackgroundColorToBlockedElements,
   });
 }
 

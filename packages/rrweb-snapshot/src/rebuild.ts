@@ -335,6 +335,11 @@ function buildNode(
           (node as HTMLElement).style.setProperty('width', value.toString());
         } else if (name === 'rr_height') {
           (node as HTMLElement).style.setProperty('height', value.toString());
+        } else if (name === 'rr_background_color') {
+          (node as HTMLElement).style.setProperty(
+            'background-color',
+            value.toString(),
+          );
         } else if (
           name === 'rr_mediaCurrentTime' &&
           typeof value === 'number'

@@ -11,7 +11,10 @@ import snapshot, {
 import { elementNode, serializedNodeWithId } from '../src/types';
 import { Mirror, absolutifyURLs } from '../src/utils';
 
-const serializeNode = (node: Node): serializedNodeWithId | null => {
+const serializeNode = (
+  node: Node,
+  applyBackgroundColorToBlockedElements: boolean = false,
+): serializedNodeWithId | null => {
   return serializeNodeWithId(node, {
     doc: document,
     mirror: new Mirror(),
@@ -24,6 +27,7 @@ const serializeNode = (node: Node): serializedNodeWithId | null => {
     maskTextFn: undefined,
     maskInputFn: undefined,
     slimDOMOptions: {},
+    applyBackgroundColorToBlockedElements,
   });
 };
 
@@ -151,6 +155,82 @@ describe('isBlockedElement()', () => {
       subject('<div data-rr-block />', { blockSelector: '[data-rr-block]' }),
     ).toEqual(true);
   });
+
+  it.each([
+    {
+      description: 'adds',
+      applyBackgroundColorToBlockedElements: true,
+      expectedAttributes: { rr_background_color: 'lightgrey' },
+    },
+    {
+      description: 'does not add',
+      applyBackgroundColorToBlockedElements: false,
+      expectedAttributes: {},
+    },
+  ])(
+    '$description background color attribute when element is blocked and applyBackgroundColorToBlockedElements is $applyBackground',
+    ({ applyBackgroundColorToBlockedElements, expectedAttributes }) => {
+      // Arrange
+      // NOTE: `blockblock` is the blockClass configured in the serializeNode helper above
+      const html = '<div class="blockblock">Blocked content</div>';
+      const el = render(html);
+
+      // Act
+      const serialized = serializeNode(
+        el,
+        applyBackgroundColorToBlockedElements,
+      );
+
+      // Assert
+      expect(serialized.attributes).toEqual({
+        rr_width: '0px',
+        rr_height: '0px',
+        class: 'blockblock',
+        ...expectedAttributes,
+      });
+    },
+  );
+
+  it.each([
+    {
+      description: 'should add',
+      applyBackgroundColorToBlockedElements: true,
+      expectedAttributes: { rr_background_color: 'lightgrey' },
+    },
+    {
+      description: 'should not add',
+      applyBackgroundColorToBlockedElements: false,
+      expectedAttributes: {},
+    },
+  ])(
+    '$description background color to blocked nested elements when applyBackgroundColorToBlockedElements is $applyBackground',
+    ({ applyBackgroundColorToBlockedElements, expectedAttributes }) => {
+      // Arrange
+      // NOTE: `blockblock` is the blockClass configured in the serializeNode helper above
+      const html =
+        '<div>Allowed Content with <span class="blockblock">Blocked content</span></div>';
+      const el = render(html);
+
+      // Act
+      const serialized = serializeNode(
+        el,
+        applyBackgroundColorToBlockedElements,
+      );
+
+      // Find the span child node
+      const spanNode = serialized.childNodes.find(
+        (node) => node.type === 2 && node.tagName === 'span',
+      ) as elementNode;
+
+      // Assert
+      expect(spanNode.attributes).toEqual({
+        class: 'blockblock',
+        rr_width: '0px',
+        rr_height: '0px',
+        ...expectedAttributes,
+      });
+    },
+  );
 });
 
 describe('style elements', () => {

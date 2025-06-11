@@ -72,7 +72,7 @@ describe('rebuild', function () {
     });
   });
 
-  describe('rr_width/rr_height', function () {
+  describe('rr_width/rr_height/rr_background_color', function () {
     it('rebuild blocked element with correct dimensions', function () {
       const node = buildNodeWithSN(
         {
@@ -95,6 +95,27 @@ describe('rebuild', function () {
       ) as HTMLDivElement;
       expect(node.style.width).toBe('50px');
       expect(node.style.height).toBe('50px');
+    });
+
+    it('rebuild blocked elements with correct background color', function () {
+      const node = buildNodeWithSN(
+        {
+          id: 1,
+          tagName: 'div',
+          type: NodeType.Element,
+          attributes: {
+            rr_background_color: 'lightgrey',
+          },
+          childNodes: [],
+        },
+        {
+          doc: document,
+          mirror,
+          hackCss: false,
+          cache,
+        },
+      ) as HTMLDivElement;
+      expect(node.style.backgroundColor).toBe('lightgrey');
     });
   });
 
