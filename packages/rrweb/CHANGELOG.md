@@ -1,5 +1,17 @@
 # rrweb
 
+## 2.0.0-alpha.30
+
+### Patch Changes
+
+- [#55](https://github.com/amplitude/rrweb/pull/55) [`a722f4d`](https://github.com/amplitude/rrweb/commit/a722f4df44580162ac3840864d286623f8d95488) Thanks [@jpollock-ampl](https://github.com/jpollock-ampl)! - Enable adding a background color on blocked elements
+
+- Updated dependencies [[`a722f4d`](https://github.com/amplitude/rrweb/commit/a722f4df44580162ac3840864d286623f8d95488)]:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.30
+  - @amplitude/rrdom@2.0.0-alpha.30
+  - @amplitude/rrweb-types@2.0.0-alpha.30
+  - @amplitude/rrweb-utils@2.0.0-alpha.30
+
 ## 2.0.0-alpha.29
 
 ### Patch Changes

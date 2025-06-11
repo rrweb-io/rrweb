@@ -1,5 +1,12 @@
 # @amplitude/rrweb-plugin-console-record
 
+## 2.0.0-alpha.30
+
+### Patch Changes
+
+- Updated dependencies [[`a722f4d`](https://github.com/amplitude/rrweb/commit/a722f4df44580162ac3840864d286623f8d95488)]:
+  - @amplitude/rrweb@2.0.0-alpha.30
+
 ## 2.0.0-alpha.29
 
 ### Patch Changes

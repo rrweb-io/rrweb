@@ -1,5 +1,12 @@
 # @amplitude/rrweb-packer
 
+## 2.0.0-alpha.30
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @amplitude/rrweb-types@2.0.0-alpha.30
+
 ## 2.0.0-alpha.29
 
 ### Patch Changes
