@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 import dts from 'vite-plugin-dts';
-import { copyFileSync, mkdirSync } from 'node:fs';
+import { copyFileSync, mkdirSync, existsSync } from 'node:fs';
 import { defineConfig, LibraryOptions, LibraryFormats, Plugin } from 'vite';
 import { build, Format } from 'esbuild';
 import { resolve, dirname } from 'path';
@@ -51,7 +51,10 @@ function minifyAndUMDPlugin({
               outDir,
             });
           } else {
-            mkdirSync(dirname(outputFilePath).replace('/dist', '/umd'));
+            const umdDir = dirname(outputFilePath).replace('/dist', '/umd');
+            if (!existsSync(umdDir)) {
+              mkdirSync(umdDir);
+            }
             const outUmd = `${outputFilePath}.umd.cjs`;
             await buildFile({
               name,
