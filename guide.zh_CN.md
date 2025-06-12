@@ -19,7 +19,7 @@
 也可以在 URL 中指定具体的版本号，例如：
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.14/umd/rrweb.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.19/umd/rrweb.min.js"></script>
 ```
 
 #### 仅引入录制部分
