@@ -61,7 +61,10 @@ function minifyAndUMDPlugin({
               isCss: false,
               outDir,
             });
-            copyFileSync(outUmd, `${outputFilePath.replace('/dist/', '/umd/')}.js`);
+            copyFileSync(
+              outUmd,
+              `${outputFilePath.replace('/dist/', '/umd/')}.js`,
+            );
             const outUmdMin = `${outputFilePath}.umd.min.cjs`;
             await buildFile({
               name,
@@ -71,7 +74,10 @@ function minifyAndUMDPlugin({
               isCss: false,
               outDir,
             });
-            copyFileSync(outUmdMin, `${outputFilePath.replace('/dist/', '/umd/')}.min.js`);
+            copyFileSync(
+              outUmdMin,
+              `${outputFilePath.replace('/dist/', '/umd/')}.min.js`,
+            );
           }
         }
       }
