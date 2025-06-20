@@ -372,18 +372,22 @@ function onceStylesheetLoaded(
 
   if (styleSheetLoaded) return;
 
+  const onStylesheetLoaded = () => {
+    link.removeEventListener('load', onStylesheetLoaded);
+    clearTimeout(timer);
+    fired = true;
+    listener();
+  };
+
   const timer = setTimeout(() => {
+    link.removeEventListener('load', onStylesheetLoaded);
     if (!fired) {
       listener();
       fired = true;
     }
   }, styleSheetLoadTimeout);
 
-  link.addEventListener('load', () => {
-    clearTimeout(timer);
-    fired = true;
-    listener();
-  });
+  link.addEventListener('load', onStylesheetLoaded);
 }
 
 function serializeNode(
