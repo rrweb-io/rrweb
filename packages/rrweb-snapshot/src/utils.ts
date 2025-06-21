@@ -288,6 +288,8 @@ type PatchedGetImageData = {
 } & CanvasImageData['getImageData'];
 
 export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
+  console.log('Creating context with willReadFrequently:', canvas);
+
   const ctx = canvas.getContext('2d', {
     willReadFrequently: true,
   });
@@ -308,6 +310,10 @@ export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
       // `getImageData` call that retrieves everything
       // even if we can already tell from the first chunk(s) that
       // the canvas isn't blank
+
+      console.log('Calling getImageData on ctx:', ctx);
+      console.trace();
+
       const pixelBuffer = new Uint32Array(
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         originalGetImageData.call(
