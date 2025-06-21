@@ -288,7 +288,9 @@ type PatchedGetImageData = {
 } & CanvasImageData['getImageData'];
 
 export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', {
+    willReadFrequently: true,
+  });
   if (!ctx) return true;
 
   const chunkSize = 50;
