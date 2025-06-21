@@ -299,14 +299,8 @@ const COPY_CANVAS_ON_VOLUME_GREATER_THAN = 250000;
 function getReadableCanvasContext(
   canvas: HTMLCanvasElement,
 ): CanvasRenderingContext2D | null {
-  if (canvas.width === 0 || canvas.height === 0) return canvas.getContext('2d');
-
   if (canvas.width * canvas.height < COPY_CANVAS_ON_VOLUME_GREATER_THAN)
     return canvas.getContext('2d');
-
-  console.log(
-    'detected large canvas, copying to offscreen canvas for willReadFrequently',
-  );
 
   const offscreen = document.createElement('canvas');
   offscreen.width = canvas.width;
@@ -319,20 +313,25 @@ function getReadableCanvasContext(
 }
 
 export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
+  if (canvas.width === 0 || canvas.height === 0) return true;
+
   const ctx = getReadableCanvasContext(canvas);
   if (!ctx) return true;
 
-  const chunkSize = 50;
+  const chunkSize = canvas.width > 512 || canvas.height > 512 ? 100 : 50;
+
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const getImageData = ctx.getImageData as PatchedGetImageData;
+  const originalGetImageData =
+    ORIGINAL_ATTRIBUTE_NAME in getImageData
+      ? getImageData[ORIGINAL_ATTRIBUTE_NAME]
+      : getImageData;
 
   // get chunks of the canvas and check if it is blank
   for (let x = 0; x < canvas.width; x += chunkSize) {
+    const w = Math.min(chunkSize, canvas.width - x);
     for (let y = 0; y < canvas.height; y += chunkSize) {
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      const getImageData = ctx.getImageData as PatchedGetImageData;
-      const originalGetImageData =
-        ORIGINAL_ATTRIBUTE_NAME in getImageData
-          ? getImageData[ORIGINAL_ATTRIBUTE_NAME]
-          : getImageData;
+      const h = Math.min(chunkSize, canvas.height - y);
       // by getting the canvas in chunks we avoid an expensive
       // `getImageData` call that retrieves everything
       // even if we can already tell from the first chunk(s) that
@@ -340,15 +339,16 @@ export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
 
       const pixelBuffer = new Uint32Array(
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-        originalGetImageData.call(
-          ctx,
-          x,
-          y,
-          Math.min(chunkSize, canvas.width - x),
-          Math.min(chunkSize, canvas.height - y),
-        ).data.buffer,
+        originalGetImageData.call(ctx, x, y, w, h).data.buffer,
       );
-      if (pixelBuffer.some((pixel) => pixel !== 0)) return false;
+
+      //original implementation:
+      // if (pixelBuffer.some((pixel) => pixel !== 0)) return false;
+
+      //optimized implementation:
+      for (let i = 0; i < pixelBuffer.length; i++) {
+        if (pixelBuffer[i] !== 0) return false;
+      }
     }
   }
   return true;
