@@ -287,12 +287,39 @@ type PatchedGetImageData = {
   [ORIGINAL_ATTRIBUTE_NAME]: CanvasImageData['getImageData'];
 } & CanvasImageData['getImageData'];
 
-export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
-  console.log('Creating context with willReadFrequently:', canvas);
+//e.g. if the canvas container 250000 pixels or more (500 * 500), we'll consider the canvas large
+const COPY_CANVAS_ON_VOLUME_GREATER_THAN = 250000;
 
-  const ctx = canvas.getContext('2d', {
-    willReadFrequently: true,
-  });
+//if a context is created for a canvas without willReadFrequently: true, the browser will have sent the data to the GPU so if another context
+//is created for the same canvas, the browser will re-use the GPU data. Therefore "willReadFrequently" wont have effect.
+//so if the canvas is large enough (so we'll not lose performance by copying it) we'll copy it and create a new context with willReadFrequently: true
+//otherwise we'll take the performance impact of communicating with the GPU
+
+//custom method
+function getReadableCanvasContext(
+  canvas: HTMLCanvasElement,
+): CanvasRenderingContext2D | null {
+  if (canvas.width === 0 || canvas.height === 0) return canvas.getContext('2d');
+
+  if (canvas.width * canvas.height < COPY_CANVAS_ON_VOLUME_GREATER_THAN)
+    return canvas.getContext('2d');
+
+  console.log(
+    'detected large canvas, copying to offscreen canvas for willReadFrequently',
+  );
+
+  const offscreen = document.createElement('canvas');
+  offscreen.width = canvas.width;
+  offscreen.height = canvas.height;
+  const ctx = offscreen.getContext('2d');
+  if (ctx) {
+    ctx.drawImage(canvas, 0, 0);
+  }
+  return offscreen.getContext('2d', { willReadFrequently: true });
+}
+
+export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
+  const ctx = getReadableCanvasContext(canvas);
   if (!ctx) return true;
 
   const chunkSize = 50;
@@ -310,9 +337,6 @@ export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
       // `getImageData` call that retrieves everything
       // even if we can already tell from the first chunk(s) that
       // the canvas isn't blank
-
-      console.log('Calling getImageData on ctx:', ctx);
-      console.trace();
 
       const pixelBuffer = new Uint32Array(
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
