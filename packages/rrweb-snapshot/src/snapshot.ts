@@ -661,7 +661,12 @@ function serializeElementNode(
   if (tagName === 'canvas' && recordCanvas) {
     if ((n as ICanvas).__context === '2d') {
       // only record this on 2d canvas
-      if (!is2DCanvasBlank(n as HTMLCanvasElement)) {
+
+      console.time('canvas-blank-check');
+      const tempBoolean = !is2DCanvasBlank(n as HTMLCanvasElement);
+      console.timeEnd('canvas-blank-check');
+
+      if (tempBoolean) {
         attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL(
           dataURLOptions.type,
           dataURLOptions.quality,
