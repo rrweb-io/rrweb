@@ -257,7 +257,11 @@ export default class MutationBuffer {
   }
 
   public processMutations = (mutations: mutationRecord[]) => {
-    mutations.forEach(this.processMutation); // adds mutations to the buffer
+    for (const mut of mutations) {
+      this.processMutation(mut);
+    }
+
+    // mutations.forEach(this.processMutation); // adds mutations to the buffer
     this.emit(); // clears buffer if not locked/frozen
   };
 
@@ -448,52 +452,109 @@ export default class MutationBuffer {
       pushAdd(node.value);
     }
 
+    const payloadTexts = [];
+
+    for (const text of this.texts) {
+      const n = text.node;
+      const parent = dom.parentNode(n);
+      if (parent && (parent as Element).tagName === 'TEXTAREA') {
+        // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
+        this.genTextAreaValueMutation(parent as HTMLTextAreaElement);
+      }
+
+      const id = this.mirror.getId(n);
+
+      if (!addedIds.has(id) && this.mirror.has(id)) {
+        payloadTexts.push({
+          id,
+          value: text.value,
+        });
+      }
+    }
+
+    const payloadAttributes = [];
+
+    for (const attribute of this.attributes) {
+      const { attributes } = attribute;
+      if (typeof attributes.style === 'string') {
+        const diffAsStr = JSON.stringify(attribute.styleDiff);
+        const unchangedAsStr = JSON.stringify(attribute._unchangedStyles);
+        // check if the style diff is actually shorter than the regular string based mutation
+        // (which was the whole point of #464 'compact style mutation').
+        if (diffAsStr.length < attributes.style.length) {
+          // also: CSSOM fails badly when var() is present on shorthand properties, so only proceed with
+          // the compact style mutation if these have all been accounted for
+          if (
+            (diffAsStr + unchangedAsStr).split('var(').length ===
+            attributes.style.split('var(').length
+          ) {
+            attributes.style = attribute.styleDiff;
+          }
+        }
+      }
+
+      const id = this.mirror.getId(attribute.node);
+
+      if (!addedIds.has(id) && this.mirror.has(id)) {
+        payloadAttributes.push({
+          id,
+          attributes,
+        });
+      }
+    }
+
     const payload = {
-      texts: this.texts
-        .map((text) => {
-          const n = text.node;
-          const parent = dom.parentNode(n);
-          if (parent && (parent as Element).tagName === 'TEXTAREA') {
-            // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
-            this.genTextAreaValueMutation(parent as HTMLTextAreaElement);
-          }
-          return {
-            id: this.mirror.getId(n),
-            value: text.value,
-          };
-        })
-        // no need to include them on added elements, as they have just been serialized with up to date attribubtes
-        .filter((text) => !addedIds.has(text.id))
-        // text mutation's id was not in the mirror map means the target node has been removed
-        .filter((text) => this.mirror.has(text.id)),
-      attributes: this.attributes
-        .map((attribute) => {
-          const { attributes } = attribute;
-          if (typeof attributes.style === 'string') {
-            const diffAsStr = JSON.stringify(attribute.styleDiff);
-            const unchangedAsStr = JSON.stringify(attribute._unchangedStyles);
-            // check if the style diff is actually shorter than the regular string based mutation
-            // (which was the whole point of #464 'compact style mutation').
-            if (diffAsStr.length < attributes.style.length) {
-              // also: CSSOM fails badly when var() is present on shorthand properties, so only proceed with
-              // the compact style mutation if these have all been accounted for
-              if (
-                (diffAsStr + unchangedAsStr).split('var(').length ===
-                attributes.style.split('var(').length
-              ) {
-                attributes.style = attribute.styleDiff;
-              }
-            }
-          }
-          return {
-            id: this.mirror.getId(attribute.node),
-            attributes: attributes,
-          };
-        })
-        // no need to include them on added elements, as they have just been serialized with up to date attribubtes
-        .filter((attribute) => !addedIds.has(attribute.id))
-        // attribute mutation's id was not in the mirror map means the target node has been removed
-        .filter((attribute) => this.mirror.has(attribute.id)),
+      texts: payloadTexts,
+      attributes: payloadAttributes,
+
+      //original implementation instead of "payloadTexts"
+      // this.texts
+      //   .map((text) => {
+      //     const n = text.node;
+      //     const parent = dom.parentNode(n);
+      //     if (parent && (parent as Element).tagName === 'TEXTAREA') {
+      //       // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
+      //       this.genTextAreaValueMutation(parent as HTMLTextAreaElement);
+      //     }
+      //     return {
+      //       id: this.mirror.getId(n),
+      //       value: text.value,
+      //     };
+      //   })
+      //   // no need to include them on added elements, as they have just been serialized with up to date attribubtes
+      //   .filter((text) => !addedIds.has(text.id))
+      //   // text mutation's id was not in the mirror map means the target node has been removed
+      //   .filter((text) => this.mirror.has(text.id)),
+
+      //original implementation instead of "payloadAttributes"
+      // this.attributes
+      //   .map((attribute) => {
+      //     const { attributes } = attribute;
+      //     if (typeof attributes.style === 'string') {
+      //       const diffAsStr = JSON.stringify(attribute.styleDiff);
+      //       const unchangedAsStr = JSON.stringify(attribute._unchangedStyles);
+      //       // check if the style diff is actually shorter than the regular string based mutation
+      //       // (which was the whole point of #464 'compact style mutation').
+      //       if (diffAsStr.length < attributes.style.length) {
+      //         // also: CSSOM fails badly when var() is present on shorthand properties, so only proceed with
+      //         // the compact style mutation if these have all been accounted for
+      //         if (
+      //           (diffAsStr + unchangedAsStr).split('var(').length ===
+      //           attributes.style.split('var(').length
+      //         ) {
+      //           attributes.style = attribute.styleDiff;
+      //         }
+      //       }
+      //     }
+      //     return {
+      //       id: this.mirror.getId(attribute.node),
+      //       attributes: attributes,
+      //     };
+      //   })
+      //   // no need to include them on added elements, as they have just been serialized with up to date attribubtes
+      //   .filter((attribute) => !addedIds.has(attribute.id))
+      //   // attribute mutation's id was not in the mirror map means the target node has been removed
+      //   .filter((attribute) => this.mirror.has(attribute.id)),
       removes: this.removes,
       adds,
     };
@@ -704,8 +765,17 @@ export default class MutationBuffer {
           return; // any removedNodes won't have been in mirror either
         }
 
-        m.addedNodes.forEach((n) => this.genAdds(n, m.target));
-        m.removedNodes.forEach((n) => {
+        //new:
+        for (let i = 0; i < m.addedNodes.length; i++) {
+          this.genAdds(m.addedNodes[i], m.target);
+        }
+        //org:
+        // m.addedNodes.forEach((n) => this.genAdds(n, m.target));
+
+        //new:
+        for (let i = 0; i < m.removedNodes.length; i++) {
+          const n = m.removedNodes[i];
+
           const nodeId = this.mirror.getId(n);
           const parentId = isShadowRoot(m.target)
             ? this.mirror.getId(dom.host(m.target))
@@ -753,7 +823,58 @@ export default class MutationBuffer {
             processRemoves(n, this.removesSubTreeCache);
           }
           this.mapRemoves.push(n);
-        });
+        }
+
+        //org:
+        // m.removedNodes.forEach((n) => {
+        //   const nodeId = this.mirror.getId(n);
+        //   const parentId = isShadowRoot(m.target)
+        //     ? this.mirror.getId(dom.host(m.target))
+        //     : this.mirror.getId(m.target);
+        //   if (
+        //     isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
+        //     isIgnored(n, this.mirror, this.slimDOMOptions) ||
+        //     !isSerialized(n, this.mirror)
+        //   ) {
+        //     return;
+        //   }
+        //   // removed node has not been serialized yet, just remove it from the Set
+        //   if (this.addedSet.has(n)) {
+        //     deepDelete(this.addedSet, n);
+        //     this.droppedSet.add(n);
+        //   } else if (this.addedSet.has(m.target) && nodeId === -1) {
+        //     /**
+        //      * If target was newly added and removed child node was
+        //      * not serialized, it means the child node has been removed
+        //      * before callback fired, so we can ignore it because
+        //      * newly added node will be serialized without child nodes.
+        //      * TODO: verify this
+        //      */
+        //   } else if (isAncestorRemoved(m.target, this.mirror)) {
+        //     /**
+        //      * If parent id was not in the mirror map any more, it
+        //      * means the parent node has already been removed. So
+        //      * the node is also removed which we do not need to track
+        //      * and replay.
+        //      */
+        //   } else if (
+        //     this.movedSet.has(n) &&
+        //     this.movedMap[moveKey(nodeId, parentId)]
+        //   ) {
+        //     deepDelete(this.movedSet, n);
+        //   } else {
+        //     this.removes.push({
+        //       parentId,
+        //       id: nodeId,
+        //       isShadow:
+        //         isShadowRoot(m.target) && isNativeShadowDom(m.target)
+        //           ? true
+        //           : undefined,
+        //     });
+        //     processRemoves(n, this.removesSubTreeCache);
+        //   }
+        //   this.mapRemoves.push(n);
+        // });
         break;
       }
       default:
@@ -791,13 +912,31 @@ export default class MutationBuffer {
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
     if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
-      dom.childNodes(n).forEach((childN) => this.genAdds(childN));
+      //new:
+      const childNodes = dom.childNodes(n);
+
+      for (let i = 0; i < childNodes.length; i++) {
+        this.genAdds(childNodes[i]);
+      }
+
+      //org:
+      // dom.childNodes(n).forEach((childN) => this.genAdds(childN));
+
       if (hasShadowRoot(n)) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        dom.childNodes(dom.shadowRoot(n)!).forEach((childN) => {
+        //new:
+        const shadowRootChildNodes = dom.childNodes(dom.shadowRoot(n)!);
+        for (let i = 0; i < shadowRootChildNodes.length; i++) {
+          const childN = shadowRootChildNodes[i];
           this.processedNodeManager.add(childN, this);
           this.genAdds(childN, n);
-        });
+        }
+
+        //org:
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        // dom.childNodes(dom.shadowRoot(n)!).forEach((childN) => {
+        //   this.processedNodeManager.add(childN, this);
+        //   this.genAdds(childN, n);
+        // });
       }
     }
   };
@@ -811,7 +950,15 @@ export default class MutationBuffer {
  */
 function deepDelete(addsSet: Set<Node>, n: Node) {
   addsSet.delete(n);
-  dom.childNodes(n).forEach((childN) => deepDelete(addsSet, childN));
+
+  //new:
+  const childNodes = dom.childNodes(n);
+  for (let i = 0; i < childNodes.length; i++) {
+    deepDelete(addsSet, childNodes[i]);
+  }
+
+  //org:
+  // dom.childNodes(n).forEach((childN) => deepDelete(addsSet, childN));
 }
 
 function processRemoves(n: Node, cache: Set<Node>) {
@@ -822,7 +969,15 @@ function processRemoves(n: Node, cache: Set<Node>) {
     const next = queue.pop()!;
     if (cache.has(next)) continue;
     cache.add(next);
-    dom.childNodes(next).forEach((n) => queue.push(n));
+
+    //new:
+    const childNodes = dom.childNodes(next);
+    for (let i = 0; i < childNodes.length; i++) {
+      queue.push(childNodes[i]);
+    }
+
+    //org:
+    // dom.childNodes(next).forEach((n) => queue.push(n));
   }
 
   return;

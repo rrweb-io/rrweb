@@ -329,7 +329,14 @@ export function buildFromDom(
       )
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         walk((node as HTMLElement).shadowRoot!, rrNode);
-      node.childNodes.forEach((childNode) => walk(childNode, rrNode));
+
+      //new:
+      for (let i = 0; i < node.childNodes.length; i++) {
+        walk(node.childNodes[i], rrNode);
+      }
+
+      //org:
+      // node.childNodes.forEach((childNode) => walk(childNode, rrNode));
     }
   }
   walk(dom, null);
@@ -373,7 +380,13 @@ export class Mirror implements IMirror<RRNode> {
     this.idNodeMap.delete(id);
 
     if (n.childNodes) {
-      n.childNodes.forEach((childNode) => this.removeNodeFromMap(childNode));
+      //new:
+      for (let i = 0; i < n.childNodes.length; i++) {
+        this.removeNodeFromMap(n.childNodes[i]);
+      }
+
+      //org:
+      // n.childNodes.forEach((childNode) => this.removeNodeFromMap(childNode));
     }
   }
   has(id: number): boolean {

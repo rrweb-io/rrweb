@@ -662,11 +662,7 @@ function serializeElementNode(
     if ((n as ICanvas).__context === '2d') {
       // only record this on 2d canvas
 
-      console.time('canvas-blank-check');
-      const tempBoolean = !is2DCanvasBlank(n as HTMLCanvasElement);
-      console.timeEnd('canvas-blank-check');
-
-      if (tempBoolean) {
+      if (!is2DCanvasBlank(n as HTMLCanvasElement)) {
         attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL(
           dataURLOptions.type,
           dataURLOptions.quality,
@@ -1384,7 +1380,13 @@ export function visitSnapshot(
       current.type === NodeType.Document ||
       current.type === NodeType.Element
     ) {
-      current.childNodes.forEach(walk);
+      //new:
+      for (let i = 0; i < current.childNodes.length; i++) {
+        walk(current.childNodes[i]);
+      }
+
+      //org:
+      // current.childNodes.forEach(walk);
     }
   }
 
