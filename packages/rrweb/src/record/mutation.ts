@@ -526,6 +526,10 @@ export default class MutationBuffer {
     this.mutationCb(payload);
   };
 
+  public destroy() {
+    this.serializeAbortController.abort();
+  }
+
   private genTextAreaValueMutation = (textarea: HTMLTextAreaElement) => {
     let item = this.attributeMap.get(textarea);
     if (!item) {

@@ -332,7 +332,7 @@ function onceIframeLoaded(
   if (signal.aborted) return;
 
   const handlers: listenerHandler[] = [];
-  const removeEventListener = () => handlers.forEach((h) => h())
+  const removeEventListener = () => handlers.forEach((h) => h());
   handlers.push(() => signal.removeEventListener('abort', removeEventListener));
   signal.addEventListener('abort', removeEventListener);
 
@@ -399,7 +399,7 @@ function onceStylesheetLoaded(
   if (signal.aborted) return;
 
   const handlers: listenerHandler[] = [];
-  const removeEventListener = () => handlers.forEach((h) => h())
+  const removeEventListener = () => handlers.forEach((h) => h());
   handlers.push(() => signal.removeEventListener('abort', removeEventListener));
   signal.addEventListener('abort', removeEventListener);
 
