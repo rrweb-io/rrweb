@@ -16,6 +16,7 @@ import type {
   attributes,
   mediaAttributes,
   DataURLOptions,
+  listenerHandler,
 } from '@rrweb/types';
 import {
   Mirror,
@@ -312,6 +313,7 @@ function onceIframeLoaded(
   iframeEl: HTMLIFrameElement,
   listener: () => unknown,
   iframeLoadTimeout: number,
+  signal: AbortSignal,
 ) {
   const win = iframeEl.contentWindow;
   if (!win) {
@@ -326,22 +328,40 @@ function onceIframeLoaded(
   } catch (error) {
     return;
   }
+
+  if (signal.aborted) return;
+
+  const handlers: listenerHandler[] = [];
+  const removeEventListener = () => handlers.forEach((h) => h())
+  handlers.push(() => signal.removeEventListener('abort', removeEventListener));
+  signal.addEventListener('abort', removeEventListener);
+
   if (readyState !== 'complete') {
     const timer = setTimeout(() => {
+      removeEventListener();
       if (!fired) {
         listener();
         fired = true;
       }
     }, iframeLoadTimeout);
-    iframeEl.addEventListener('load', () => {
-      clearTimeout(timer);
+    handlers.push(() => clearTimeout(timer));
+
+    const onIframeLoaded = () => {
+      removeEventListener();
       fired = true;
       listener();
-    });
+    };
+    handlers.push(() => iframeEl.removeEventListener('load', onIframeLoaded));
+
+    iframeEl.addEventListener('load', onIframeLoaded);
     return;
   }
   // check blank frame for Chrome
   const blankUrl = 'about:blank';
+  const onIframeLoaded = () => {
+    removeEventListener();
+    listener();
+  };
   if (
     win.location.href !== blankUrl ||
     iframeEl.src === blankUrl ||
@@ -349,18 +369,23 @@ function onceIframeLoaded(
   ) {
     // iframe was already loaded, make sure we wait to trigger the listener
     // till _after_ the mutation that found this iframe has had time to process
-    setTimeout(listener, 0);
+    const timer = setTimeout(() => {
+      removeEventListener();
+      listener();
+    }, 0);
+    handlers.push(() => clearTimeout(timer));
 
-    return iframeEl.addEventListener('load', listener); // keep listing for future loads
+    return iframeEl.addEventListener('load', onIframeLoaded); // keep listing for future loads
   }
   // use default listener
-  iframeEl.addEventListener('load', listener);
+  iframeEl.addEventListener('load', onIframeLoaded);
 }
 
 function onceStylesheetLoaded(
   link: HTMLLinkElement,
   listener: () => unknown,
   styleSheetLoadTimeout: number,
+  signal: AbortSignal,
 ) {
   let fired = false;
   let styleSheetLoaded: StyleSheet | null;
@@ -371,23 +396,30 @@ function onceStylesheetLoaded(
   }
 
   if (styleSheetLoaded) return;
+  if (signal.aborted) return;
 
-  const onStylesheetLoaded = () => {
-    link.removeEventListener('load', onStylesheetLoaded);
-    clearTimeout(timer);
-    fired = true;
-    listener();
-  };
+  const handlers: listenerHandler[] = [];
+  const removeEventListener = () => handlers.forEach((h) => h())
+  handlers.push(() => signal.removeEventListener('abort', removeEventListener));
+  signal.addEventListener('abort', removeEventListener);
 
   const timer = setTimeout(() => {
-    link.removeEventListener('load', onStylesheetLoaded);
+    removeEventListener();
     if (!fired) {
       listener();
       fired = true;
     }
   }, styleSheetLoadTimeout);
+  handlers.push(() => clearTimeout(timer));
+
+  const onStylesheetLoaded = () => {
+    removeEventListener();
+    fired = true;
+    listener();
+  };
 
   link.addEventListener('load', onStylesheetLoaded);
+  handlers.push(() => link.removeEventListener('load', onStylesheetLoaded));
 }
 
 function serializeNode(
@@ -911,6 +943,7 @@ export function serializeNodeWithId(
     maskTextSelector: string | null;
     skipChild: boolean;
     inlineStylesheet: boolean;
+    signal: AbortSignal;
     newlyAddedElement?: boolean;
     maskInputOptions?: MaskInputOptions;
     needsMask?: boolean;
@@ -960,6 +993,7 @@ export function serializeNodeWithId(
     keepIframeSrcFn = () => false,
     newlyAddedElement = false,
     cssCaptured = false,
+    signal,
   } = options;
   let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
@@ -1056,6 +1090,7 @@ export function serializeNodeWithId(
       maskTextSelector,
       skipChild,
       inlineStylesheet,
+      signal,
       maskInputOptions,
       maskTextFn,
       maskInputFn,
@@ -1132,6 +1167,7 @@ export function serializeNodeWithId(
             maskTextSelector,
             skipChild: false,
             inlineStylesheet,
+            signal,
             maskInputOptions,
             maskTextFn,
             maskInputFn,
@@ -1157,6 +1193,7 @@ export function serializeNodeWithId(
         }
       },
       iframeLoadTimeout,
+      signal,
     );
   }
 
@@ -1184,6 +1221,7 @@ export function serializeNodeWithId(
             maskTextSelector,
             skipChild: false,
             inlineStylesheet,
+            signal,
             maskInputOptions,
             maskTextFn,
             maskInputFn,
@@ -1209,6 +1247,7 @@ export function serializeNodeWithId(
         }
       },
       stylesheetLoadTimeout,
+      signal,
     );
   }
 
@@ -1244,6 +1283,7 @@ function snapshot(
     ) => unknown;
     stylesheetLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
+    signal?: AbortSignal;
   },
 ): serializedNodeWithId | null {
   const {
@@ -1253,6 +1293,7 @@ function snapshot(
     maskTextClass = 'rr-mask',
     maskTextSelector = null,
     inlineStylesheet = true,
+    signal = new AbortController().signal,
     inlineImages = false,
     recordCanvas = false,
     maskAllInputs = false,
@@ -1320,6 +1361,7 @@ function snapshot(
     maskTextSelector,
     skipChild: false,
     inlineStylesheet,
+    signal,
     maskInputOptions,
     maskTextFn,
     maskInputFn,
