@@ -193,6 +193,7 @@ export default class MutationBuffer {
   private canvasManager: observerParam['canvasManager'];
   private processedNodeManager: observerParam['processedNodeManager'];
   private unattachedDoc: HTMLDocument;
+  private serializeAbortController: AbortController = new AbortController();
 
   public init(options: MutationBufferParam) {
     (
@@ -262,6 +263,9 @@ export default class MutationBuffer {
   };
 
   public emit = () => {
+    this.serializeAbortController.abort();
+    this.serializeAbortController = new AbortController();
+
     if (this.frozen || this.locked) {
       return;
     }
@@ -351,6 +355,7 @@ export default class MutationBuffer {
           this.stylesheetManager.attachLinkElement(link, childSn);
         },
         cssCaptured,
+        signal: this.serializeAbortController.signal,
       });
       if (sn) {
         adds.push({
@@ -520,6 +525,10 @@ export default class MutationBuffer {
 
     this.mutationCb(payload);
   };
+
+  public destroy() {
+    this.serializeAbortController.abort();
+  }
 
   private genTextAreaValueMutation = (textarea: HTMLTextAreaElement) => {
     let item = this.attributeMap.get(textarea);

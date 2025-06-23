@@ -53,7 +53,7 @@ export class ShadowDomManager {
     if (!isNativeShadowDom(shadowRoot)) return;
     if (this.shadowDoms.has(shadowRoot)) return;
     this.shadowDoms.add(shadowRoot);
-    const observer = initMutationObserver(
+    const removeObserver = initMutationObserver(
       {
         ...this.bypassOptions,
         doc,
@@ -63,7 +63,7 @@ export class ShadowDomManager {
       },
       shadowRoot,
     );
-    this.restoreHandlers.push(() => observer.disconnect());
+    this.restoreHandlers.push(() => removeObserver());
     this.restoreHandlers.push(
       initScrollObserver({
         ...this.bypassOptions,

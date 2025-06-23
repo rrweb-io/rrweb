@@ -353,6 +353,8 @@ function record<T = eventWithTime>(
     mirror,
   });
 
+  let abortController = new AbortController();
+
   takeFullSnapshot = (isCheckout = false) => {
     if (!recordDOM) {
       return;
@@ -375,6 +377,8 @@ function record<T = eventWithTime>(
     shadowDomManager.init();
 
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
+    abortController.abort();
+    abortController = new AbortController();
     const node = snapshot(document, {
       mirror,
       blockClass,
@@ -409,6 +413,7 @@ function record<T = eventWithTime>(
         stylesheetManager.attachLinkElement(linkEl, childSn);
       },
       keepIframeSrcFn,
+      signal: abortController.signal,
     });
 
     if (!node) {
@@ -618,6 +623,7 @@ function record<T = eventWithTime>(
     }
     return () => {
       handlers.forEach((h) => h());
+      abortController.abort();
       processedNodeManager.destroy();
       recording = false;
       unregisterErrorHandler();

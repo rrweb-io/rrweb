@@ -81,7 +81,7 @@ function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
 export function initMutationObserver(
   options: MutationBufferParam,
   rootEl: Node,
-): MutationObserver {
+): listenerHandler {
   const mutationBuffer = new MutationBuffer();
   mutationBuffers.push(mutationBuffer);
   // see mutation.ts for details
@@ -99,7 +99,15 @@ export function initMutationObserver(
     childList: true,
     subtree: true,
   });
-  return observer;
+
+  return () => {
+    observer.disconnect();
+    mutationBuffer.destroy();
+    const idx = mutationBuffers.indexOf(mutationBuffer);
+    if (idx > -1) {
+      mutationBuffers.splice(idx, 1);
+    }
+  };
 }
 
 function initMoveObserver({
@@ -1306,9 +1314,9 @@ export function initObservers(
   }
 
   mergeHooks(o, hooks);
-  let mutationObserver: MutationObserver | undefined;
+  let removeMutationObserver: listenerHandler | undefined;
   if (o.recordDOM) {
-    mutationObserver = initMutationObserver(o, o.doc);
+    removeMutationObserver = initMutationObserver(o, o.doc);
   }
   const mousemoveHandler = initMoveObserver(o);
   const mouseInteractionHandler = initMouseInteractionObserver(o);
@@ -1350,7 +1358,7 @@ export function initObservers(
 
   return callbackWrapper(() => {
     mutationBuffers.forEach((b) => b.reset());
-    mutationObserver?.disconnect();
+    removeMutationObserver?.();
     mousemoveHandler();
     mouseInteractionHandler();
     scrollHandler();
