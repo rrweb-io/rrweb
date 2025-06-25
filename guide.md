@@ -6,7 +6,7 @@
 
 ## Installation
 
-### Direct `<script>` include
+### Option 1: Direct `<script>` include
 
 You are recommended to install rrweb via jsdelivr's CDN service:
 
@@ -22,6 +22,16 @@ Also, you can link to a specific version number that you can update manually:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.14/dist/rrweb.umd.min.cjs"></script>
+```
+
+If the above versions are not supported, you can try previous versions, such as:
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/rrweb@1.1.3/dist/rrweb.min.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@1.1.3/dist/rrweb.min.js"></script>
 ```
 
 #### Only include the recorder code
@@ -57,7 +67,7 @@ Besides the `rrweb` and `@rrweb/record` packages, rrweb also provides other pack
 - [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record): A plugin for stream `<canvas>` via WebRTC.
 - [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay): A plugin for playing streamed `<canvas>` via WebRTC.
 
-### NPM
+### Option 2: NPM
 
 ```shell
 npm install --save rrweb
