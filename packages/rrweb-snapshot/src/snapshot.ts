@@ -495,6 +495,15 @@ function getRootId(doc: Document, mirror: Mirror): number | undefined {
   return docId === 1 ? undefined : docId;
 }
 
+//own helper:
+const runIdleCallback = (cb: () => void) => {
+  if ('requestIdleCallback' in window) {
+    (window as any).requestIdleCallback(cb);
+  } else {
+    setTimeout(cb, 100);
+  }
+};
+
 function serializeTextNode(
   n: Text,
   options: {
@@ -673,6 +682,10 @@ function serializeElementNode(
   // canvas image data
   if (tagName === 'canvas' && recordCanvas) {
     //new:
+    //the old implementation might seem quicker because of these checks "(n as ICanvas).__context === '2d'" & "!('__context' in n)"
+    //but they can lead to false positives, resulting in a canvas which supports getContext
+    //instead uses multiple ".toDataURL" operations unnecessarily
+    //and it's by far the most expensive operation here is ".toDataURL"
     let context: CanvasRenderingContext2D | null =
       'getContext' in n ? (n as HTMLCanvasElement).getContext('2d') : null;
 
@@ -698,7 +711,7 @@ function serializeElementNode(
 
       //but we will be deleting the dataURL if it's the same as blank canvas
       //so we still save memory by not storing a blank canvas
-      requestIdleCallback(() => {
+      runIdleCallback(() => {
         try {
           const blankCanvas = doc.createElement('canvas');
           blankCanvas.width = (n as HTMLCanvasElement).width;
@@ -709,14 +722,9 @@ function serializeElementNode(
           );
 
           if (canvasDataURL === blankCanvasDataURL) {
-            console.log(
-              "deleting dataURL because it's the same as blank canvas",
-            );
             delete attributes.rr_dataURL;
           }
-        } catch (e) {
-          console.log('did get context canvas error', e);
-        }
+        } catch (e) {}
       });
     }
 

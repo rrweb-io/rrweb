@@ -303,9 +303,6 @@ function getReadableCanvasContext(
   if (canvas.width * canvas.height < COPY_CANVAS_ON_VOLUME_GREATER_THAN)
     return cachedContext ?? canvas.getContext('2d');
 
-  console.log('cloning canvas for is2DCanvasBlank');
-  const start = performance.now();
-
   const offscreen = document.createElement('canvas');
   offscreen.width = canvas.width;
   offscreen.height = canvas.height;
@@ -313,12 +310,6 @@ function getReadableCanvasContext(
   if (ctx) {
     ctx.drawImage(canvas, 0, 0);
   }
-
-  console.log(
-    'cloned canvas for is2DCanvasBlank took',
-    performance.now() - start,
-    'ms',
-  );
 
   return offscreen.getContext('2d', { willReadFrequently: true });
 }

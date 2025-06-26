@@ -816,26 +816,38 @@ export default class MutationBuffer {
         //org:
         // m.addedNodes.forEach((n) => this.genAdds(n, m.target));
 
+        const parentId = isShadowRoot(m.target)
+          ? this.mirror.getId(dom.host(m.target))
+          : this.mirror.getId(m.target);
+
+        if (isBlocked(m.target, this.blockClass, this.blockSelector, false))
+          return;
+
+        const addedSetHas = this.addedSet.has(m.target);
+        const ancestorRemoved = isAncestorRemoved(m.target, this.mirror);
+        const isShadow =
+          isShadowRoot(m.target) && isNativeShadowDom(m.target)
+            ? true
+            : undefined;
+
         //new:
         for (let i = 0; i < m.removedNodes.length; i++) {
           const n = m.removedNodes[i];
 
           const nodeId = this.mirror.getId(n);
-          const parentId = isShadowRoot(m.target)
-            ? this.mirror.getId(dom.host(m.target))
-            : this.mirror.getId(m.target);
+
           if (
-            isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
             isIgnored(n, this.mirror, this.slimDOMOptions) ||
             !isSerialized(n, this.mirror)
           ) {
             return;
           }
+
           // removed node has not been serialized yet, just remove it from the Set
           if (this.addedSet.has(n)) {
             deepDelete(this.addedSet, n);
             this.droppedSet.add(n);
-          } else if (this.addedSet.has(m.target) && nodeId === -1) {
+          } else if (addedSetHas && nodeId === -1) {
             /**
              * If target was newly added and removed child node was
              * not serialized, it means the child node has been removed
@@ -843,7 +855,7 @@ export default class MutationBuffer {
              * newly added node will be serialized without child nodes.
              * TODO: verify this
              */
-          } else if (isAncestorRemoved(m.target, this.mirror)) {
+          } else if (ancestorRemoved) {
             /**
              * If parent id was not in the mirror map any more, it
              * means the parent node has already been removed. So
@@ -859,10 +871,7 @@ export default class MutationBuffer {
             this.removes.push({
               parentId,
               id: nodeId,
-              isShadow:
-                isShadowRoot(m.target) && isNativeShadowDom(m.target)
-                  ? true
-                  : undefined,
+              isShadow,
             });
             processRemoves(n, this.removesSubTreeCache);
           }
