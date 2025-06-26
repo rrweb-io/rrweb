@@ -266,6 +266,7 @@ export default class MutationBuffer {
 
   public processMutations = (mutations: mutationRecord[]) => {
     const start = performance.now();
+    let uniqueTypes: string[] = [];
 
     for (const mut of mutations) {
       const mutStart = performance.now();
@@ -273,6 +274,8 @@ export default class MutationBuffer {
       this.processMutation(mut);
 
       const took = performance.now() - mutStart;
+
+      if (!uniqueTypes.includes(mut.type)) uniqueTypes.push(mut.type);
 
       if (!(mut.type in this.tempPerfStore)) {
         this.tempPerfStore[mut.type] = {
@@ -295,6 +298,8 @@ export default class MutationBuffer {
       'mutations processed in',
       performance.now() - start,
       'ms',
+      'types:',
+      uniqueTypes,
     );
 
     //@ts-expect-error

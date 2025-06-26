@@ -539,6 +539,18 @@ function serializeTextNode(
   };
 }
 
+declare global {
+  interface Window {
+    serialization_perf_map: Record<
+      string,
+      {
+        avg: number;
+        times: number[];
+      }
+    >;
+  }
+}
+
 function serializeElementNode(
   n: HTMLElement,
   options: {
@@ -559,6 +571,8 @@ function serializeElementNode(
     rootId: number | undefined;
   },
 ): serializedNode | false {
+  const start = performance.now();
+
   const {
     doc,
     blockClass,
@@ -812,6 +826,23 @@ function serializeElementNode(
   } catch (e) {
     // In case old browsers don't support customElements
   }
+
+  const took = performance.now() - start;
+
+  if (!(tagName in window.serialization_perf_map)) {
+    window.serialization_perf_map[tagName] = {
+      avg: 0,
+      times: [],
+    };
+  }
+
+  window.serialization_perf_map[tagName].times.push(took);
+  if (window.serialization_perf_map[tagName].times.length > 1000) {
+    window.serialization_perf_map[tagName].times.shift();
+  }
+  window.serialization_perf_map[tagName].avg =
+    window.serialization_perf_map[tagName].times.reduce((a, b) => a + b, 0) /
+    window.serialization_perf_map[tagName].times.length;
 
   return {
     type: NodeType.Element,
@@ -1126,7 +1157,11 @@ export function serializeNodeWithId(
 
     let shadowRootEl: ShadowRoot | null = null;
     if (isElement(n) && (shadowRootEl = dom.shadowRoot(n))) {
-      for (const childN of Array.from(dom.childNodes(shadowRootEl))) {
+      //new:
+      const childNodes = dom.childNodes(shadowRootEl);
+
+      for (let i = 0; i < childNodes.length; i++) {
+        const childN = childNodes[i];
         const serializedChildNode = serializeNodeWithId(
           childN as Node,
           bypassOptions,
@@ -1137,6 +1172,19 @@ export function serializeNodeWithId(
           serializedNode.childNodes.push(serializedChildNode);
         }
       }
+
+      //org:
+      // for (const childN of Array.from(dom.childNodes(shadowRootEl))) {
+      //   const serializedChildNode = serializeNodeWithId(
+      //     childN as Node,
+      //     bypassOptions,
+      //   );
+      //   if (serializedChildNode) {
+      //     isNativeShadowDom(shadowRootEl) &&
+      //       (serializedChildNode.isShadow = true);
+      //     serializedNode.childNodes.push(serializedChildNode);
+      //   }
+      // }
     }
   }
 
