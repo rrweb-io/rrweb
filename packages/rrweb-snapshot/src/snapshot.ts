@@ -829,6 +829,8 @@ function serializeElementNode(
 
   const took = performance.now() - start;
 
+  if (!window.serialization_perf_map) window.serialization_perf_map = {};
+
   if (!(tagName in window.serialization_perf_map)) {
     window.serialization_perf_map[tagName] = {
       avg: 0,
