@@ -257,9 +257,13 @@ export default class MutationBuffer {
   }
 
   public processMutations = (mutations: mutationRecord[]) => {
+    console.time('processMutations');
+
     for (const mut of mutations) {
       this.processMutation(mut);
     }
+
+    console.timeEnd('processMutations');
 
     // mutations.forEach(this.processMutation); // adds mutations to the buffer
     this.emit(); // clears buffer if not locked/frozen
