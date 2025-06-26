@@ -298,9 +298,10 @@ const COPY_CANVAS_ON_VOLUME_GREATER_THAN = 250000;
 //custom method
 function getReadableCanvasContext(
   canvas: HTMLCanvasElement,
+  cachedContext?: CanvasRenderingContext2D,
 ): CanvasRenderingContext2D | null {
   if (canvas.width * canvas.height < COPY_CANVAS_ON_VOLUME_GREATER_THAN)
-    return canvas.getContext('2d');
+    return cachedContext ?? canvas.getContext('2d');
 
   console.log('cloning canvas for is2DCanvasBlank');
   const start = performance.now();
@@ -322,10 +323,13 @@ function getReadableCanvasContext(
   return offscreen.getContext('2d', { willReadFrequently: true });
 }
 
-export function is2DCanvasBlank(canvas: HTMLCanvasElement): boolean {
+export function is2DCanvasBlank(
+  canvas: HTMLCanvasElement,
+  cachedContext?: CanvasRenderingContext2D,
+): boolean {
   if (canvas.width === 0 || canvas.height === 0) return true;
 
-  const ctx = getReadableCanvasContext(canvas);
+  const ctx = getReadableCanvasContext(canvas, cachedContext);
   if (!ctx) return true;
 
   const chunkSize = canvas.width > 512 || canvas.height > 512 ? 100 : 50;

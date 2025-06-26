@@ -673,21 +673,18 @@ function serializeElementNode(
 
   // canvas image data
   if (tagName === 'canvas' && recordCanvas) {
-    if ((n as ICanvas).__context === '2d') {
-      // only record this on 2d canvas
+    //new
+    let context: CanvasRenderingContext2D | null =
+      'getContext' in n ? (n as HTMLCanvasElement).getContext('2d') : null;
 
-      const start2dCanvas = performance.now();
-
-      if (!is2DCanvasBlank(n as HTMLCanvasElement)) {
+    if (context != null) {
+      if (!is2DCanvasBlank(n as HTMLCanvasElement, context)) {
         attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL(
           dataURLOptions.type,
           dataURLOptions.quality,
         );
       }
-
-      console.log('2d canvas took', performance.now() - start2dCanvas, 'ms');
-    } else if (!('__context' in n)) {
-      //new:
+    } else if((n as HTMLCanvasElement).width !== 0 && (n as HTMLCanvasElement).height !== 0) {
       const canvasDataURL = (n as HTMLCanvasElement).toDataURL(
         dataURLOptions.type,
         dataURLOptions.quality,
@@ -719,28 +716,38 @@ function serializeElementNode(
           console.log('did get context canvas error', e);
         }
       });
-
-      //org:
-      // context is unknown, better not call getContext to trigger it
-      // const canvasDataURL = (n as HTMLCanvasElement).toDataURL(
-      //   dataURLOptions.type,
-      //   dataURLOptions.quality,
-      // );
-
-      // // create blank canvas of same dimensions
-      // const blankCanvas = doc.createElement('canvas');
-      // blankCanvas.width = (n as HTMLCanvasElement).width;
-      // blankCanvas.height = (n as HTMLCanvasElement).height;
-      // const blankCanvasDataURL = blankCanvas.toDataURL(
-      //   dataURLOptions.type,
-      //   dataURLOptions.quality,
-      // );
-
-      // // no need to save dataURL if it's the same as blank canvas
-      // if (canvasDataURL !== blankCanvasDataURL) {
-      //   attributes.rr_dataURL = canvasDataURL;
-      // }
     }
+
+    //org:
+    // if ((n as ICanvas).__context === '2d') {
+    //   // only record this on 2d canvas
+    //   if (!is2DCanvasBlank(n as HTMLCanvasElement)) {
+    //     attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL(
+    //       dataURLOptions.type,
+    //       dataURLOptions.quality,
+    //     );
+    //   }
+    // } else if (!('__context' in n)) {
+    //   // context is unknown, better not call getContext to trigger it
+    //   const canvasDataURL = (n as HTMLCanvasElement).toDataURL(
+    //     dataURLOptions.type,
+    //     dataURLOptions.quality,
+    //   );
+
+    //   // create blank canvas of same dimensions
+    //   const blankCanvas = doc.createElement('canvas');
+    //   blankCanvas.width = (n as HTMLCanvasElement).width;
+    //   blankCanvas.height = (n as HTMLCanvasElement).height;
+    //   const blankCanvasDataURL = blankCanvas.toDataURL(
+    //     dataURLOptions.type,
+    //     dataURLOptions.quality,
+    //   );
+
+    //   // no need to save dataURL if it's the same as blank canvas
+    //   if (canvasDataURL !== blankCanvasDataURL) {
+    //     attributes.rr_dataURL = canvasDataURL;
+    //   }
+    // }
   }
   // save image offline
   if (tagName === 'img' && inlineImages) {
