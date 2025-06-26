@@ -676,17 +676,29 @@ function serializeElementNode(
     if ((n as ICanvas).__context === '2d') {
       // only record this on 2d canvas
 
+      const start2dCanvas = performance.now();
+
       if (!is2DCanvasBlank(n as HTMLCanvasElement)) {
         attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL(
           dataURLOptions.type,
           dataURLOptions.quality,
         );
       }
+
+      console.log('2d canvas took', performance.now() - start2dCanvas, 'ms');
     } else if (!('__context' in n)) {
+      const startContextCanvas = performance.now();
+
       // context is unknown, better not call getContext to trigger it
       const canvasDataURL = (n as HTMLCanvasElement).toDataURL(
         dataURLOptions.type,
         dataURLOptions.quality,
+      );
+
+      console.log(
+        'context canvas first step took',
+        performance.now() - startContextCanvas,
+        'ms',
       );
 
       // create blank canvas of same dimensions
@@ -702,6 +714,12 @@ function serializeElementNode(
       if (canvasDataURL !== blankCanvasDataURL) {
         attributes.rr_dataURL = canvasDataURL;
       }
+
+      console.log(
+        'context canvas took',
+        performance.now() - startContextCanvas,
+        'ms',
+      );
     }
   }
   // save image offline
