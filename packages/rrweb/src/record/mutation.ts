@@ -262,7 +262,7 @@ export default class MutationBuffer {
       avg: number;
       times: number[];
     }
-  >;
+  > = {};
 
   public processMutations = (mutations: mutationRecord[]) => {
     const start = performance.now();
