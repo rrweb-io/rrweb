@@ -687,39 +687,59 @@ function serializeElementNode(
 
       console.log('2d canvas took', performance.now() - start2dCanvas, 'ms');
     } else if (!('__context' in n)) {
-      const startContextCanvas = performance.now();
-
-      // context is unknown, better not call getContext to trigger it
+      //new:
       const canvasDataURL = (n as HTMLCanvasElement).toDataURL(
         dataURLOptions.type,
         dataURLOptions.quality,
       );
 
-      console.log(
-        'context canvas first step took',
-        performance.now() - startContextCanvas,
-        'ms',
-      );
+      //we're immediately setting the dataURL (even if blank)
+      //this is to prioritize raw performance.
+      attributes.rr_dataURL = canvasDataURL;
 
-      // create blank canvas of same dimensions
-      const blankCanvas = doc.createElement('canvas');
-      blankCanvas.width = (n as HTMLCanvasElement).width;
-      blankCanvas.height = (n as HTMLCanvasElement).height;
-      const blankCanvasDataURL = blankCanvas.toDataURL(
-        dataURLOptions.type,
-        dataURLOptions.quality,
-      );
+      //but we will be deleting the dataURL if it's the same as blank canvas
+      //so we still save memory by not storing a blank canvas
+      requestIdleCallback(() => {
+        try {
+          const blankCanvas = doc.createElement('canvas');
+          blankCanvas.width = (n as HTMLCanvasElement).width;
+          blankCanvas.height = (n as HTMLCanvasElement).height;
+          const blankCanvasDataURL = blankCanvas.toDataURL(
+            dataURLOptions.type,
+            dataURLOptions.quality,
+          );
 
-      // no need to save dataURL if it's the same as blank canvas
-      if (canvasDataURL !== blankCanvasDataURL) {
-        attributes.rr_dataURL = canvasDataURL;
-      }
+          if (canvasDataURL === blankCanvasDataURL) {
+            console.log(
+              "deleting dataURL because it's the same as blank canvas",
+            );
+            delete attributes.rr_dataURL;
+          }
+        } catch (e) {
+          console.log('did get context canvas error', e);
+        }
+      });
 
-      console.log(
-        'context canvas took',
-        performance.now() - startContextCanvas,
-        'ms',
-      );
+      //org:
+      // context is unknown, better not call getContext to trigger it
+      // const canvasDataURL = (n as HTMLCanvasElement).toDataURL(
+      //   dataURLOptions.type,
+      //   dataURLOptions.quality,
+      // );
+
+      // // create blank canvas of same dimensions
+      // const blankCanvas = doc.createElement('canvas');
+      // blankCanvas.width = (n as HTMLCanvasElement).width;
+      // blankCanvas.height = (n as HTMLCanvasElement).height;
+      // const blankCanvasDataURL = blankCanvas.toDataURL(
+      //   dataURLOptions.type,
+      //   dataURLOptions.quality,
+      // );
+
+      // // no need to save dataURL if it's the same as blank canvas
+      // if (canvasDataURL !== blankCanvasDataURL) {
+      //   attributes.rr_dataURL = canvasDataURL;
+      // }
     }
   }
   // save image offline
