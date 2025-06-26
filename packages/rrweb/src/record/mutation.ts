@@ -256,14 +256,49 @@ export default class MutationBuffer {
     this.canvasManager.reset();
   }
 
+  private tempPerfStore: Record<
+    string,
+    {
+      avg: number;
+      times: number[];
+    }
+  >;
+
   public processMutations = (mutations: mutationRecord[]) => {
-    console.time('processMutations');
+    const start = performance.now();
 
     for (const mut of mutations) {
+      const mutStart = performance.now();
+
       this.processMutation(mut);
+
+      const took = performance.now() - mutStart;
+
+      if (!(mut.type in this.tempPerfStore)) {
+        this.tempPerfStore[mut.type] = {
+          avg: 0,
+          times: [],
+        };
+      }
+
+      this.tempPerfStore[mut.type].times.push(took);
+      if (this.tempPerfStore[mut.type].times.length > 1000) {
+        this.tempPerfStore[mut.type].times.shift();
+      }
+      this.tempPerfStore[mut.type].avg =
+        this.tempPerfStore[mut.type].times.reduce((a, b) => a + b, 0) /
+        this.tempPerfStore[mut.type].times.length;
     }
 
-    console.timeEnd('processMutations');
+    console.log(
+      mutations.length,
+      'mutations processed in',
+      performance.now() - start,
+      'ms',
+    );
+
+    //@ts-expect-error
+    window.temp_perf_store = this.tempPerfStore;
 
     // mutations.forEach(this.processMutation); // adds mutations to the buffer
     this.emit(); // clears buffer if not locked/frozen
