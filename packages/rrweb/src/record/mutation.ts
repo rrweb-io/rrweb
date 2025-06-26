@@ -816,6 +816,7 @@ export default class MutationBuffer {
         //org:
         // m.addedNodes.forEach((n) => this.genAdds(n, m.target));
 
+        //new:
         const parentId = isShadowRoot(m.target)
           ? this.mirror.getId(dom.host(m.target))
           : this.mirror.getId(m.target);
@@ -830,7 +831,6 @@ export default class MutationBuffer {
             ? true
             : undefined;
 
-        //new:
         for (let i = 0; i < m.removedNodes.length; i++) {
           const n = m.removedNodes[i];
 
