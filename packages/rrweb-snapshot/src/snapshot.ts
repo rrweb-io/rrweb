@@ -1,37 +1,36 @@
 import type {
-  MaskInputOptions,
-  SlimDOMOptions,
-  MaskTextFn,
-  MaskInputFn,
-  KeepIframeSrcFn,
-  ICanvas,
-  DialogAttributes,
-} from './types';
-import { NodeType } from '@rrweb/types';
-import type {
+  DataURLOptions,
+  attributes,
+  elementNode,
+  mediaAttributes,
+  serializedElementNodeWithId,
   serializedNode,
   serializedNodeWithId,
-  serializedElementNodeWithId,
-  elementNode,
-  attributes,
-  mediaAttributes,
-  DataURLOptions,
 } from '@rrweb/types';
+import { NodeType } from '@rrweb/types';
+import dom from '@rrweb/utils';
+import type {
+  DialogAttributes,
+  KeepIframeSrcFn,
+  MaskInputFn,
+  MaskInputOptions,
+  MaskTextFn,
+  SlimDOMOptions,
+} from './types';
 import {
   Mirror,
+  absolutifyURLs,
+  extractFileExtension,
+  getInputType,
   is2DCanvasBlank,
   isElement,
-  isShadowRoot,
-  maskInputValue,
   isNativeShadowDom,
-  stringifyStylesheet,
-  getInputType,
-  toLowerCase,
-  extractFileExtension,
-  absolutifyURLs,
+  isShadowRoot,
   markCssSplits,
+  maskInputValue,
+  stringifyStylesheet,
+  toLowerCase,
 } from './utils';
-import dom from '@rrweb/utils';
 
 let _id = 1;
 const tagNameRegex = new RegExp('[^a-z0-9-_:]');
@@ -673,7 +672,7 @@ function serializeElementNode(
 
   // canvas image data
   if (tagName === 'canvas' && recordCanvas) {
-    //new
+    //new:
     let context: CanvasRenderingContext2D | null =
       'getContext' in n ? (n as HTMLCanvasElement).getContext('2d') : null;
 
@@ -684,7 +683,10 @@ function serializeElementNode(
           dataURLOptions.quality,
         );
       }
-    } else if((n as HTMLCanvasElement).width !== 0 && (n as HTMLCanvasElement).height !== 0) {
+    } else if (
+      (n as HTMLCanvasElement).width !== 0 &&
+      (n as HTMLCanvasElement).height !== 0
+    ) {
       const canvasDataURL = (n as HTMLCanvasElement).toDataURL(
         dataURLOptions.type,
         dataURLOptions.quality,
