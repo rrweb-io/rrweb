@@ -33,6 +33,7 @@ import {
   closestElementOfNode,
 } from '../utils';
 import dom from '@rrweb/utils';
+import { takeFullSnapshot } from '..';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -133,6 +134,11 @@ class DoubleLinkedList {
 }
 
 const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
+
+interface StormBatch {
+  ts: number;
+  mutations: mutationRecord[];
+}
 
 /**
  * controls behaviour of a MutationObserver
@@ -256,57 +262,158 @@ export default class MutationBuffer {
     this.canvasManager.reset();
   }
 
-  private tempPerfStore: Record<
-    string,
-    {
-      avg: number;
-      times: number[];
+  private stormBatches: StormBatch[] = [];
+  private stormInfo: null | {
+    startedAt: number;
+    totalMutations: number;
+    timeout?: ReturnType<typeof setTimeout>;
+    stormExceededLimit: boolean;
+  };
+
+  private stormSettings = {
+    batchSize: 300,
+    timeout: 50,
+    mutationLimit: 1500,
+  };
+
+  private handleStormMutations = (muts: mutationRecord[]) => {
+    const time = Date.now();
+
+    if (this.stormInfo == null) {
+      console.log('detected probable mutation storm start');
+      this.stormInfo = {
+        startedAt: time,
+        totalMutations: 0,
+        timeout: setTimeout(this.handleStormFinish, this.stormSettings.timeout),
+        stormExceededLimit: false,
+      };
     }
-  > = {};
 
-  public processMutations = (mutations: mutationRecord[]) => {
+    this.stormInfo.totalMutations += muts.length;
+
+    console.log('current storm mutations', this.stormInfo.totalMutations);
+
+    if (this.stormInfo.totalMutations >= this.stormSettings.mutationLimit) {
+      this.stormInfo.stormExceededLimit = true;
+      this.stormBatches = [];
+    } else {
+      this.stormBatches.push({
+        ts: time,
+        mutations: muts,
+      });
+    }
+
+    if (muts.length < this.stormSettings.batchSize) {
+      clearTimeout(this.stormInfo.timeout);
+      this.handleStormFinish();
+    }
+  };
+
+  private handleStormFinish = () => {
+    if (!this.stormInfo) return;
+
+    const { stormExceededLimit } = this.stormInfo;
+
+    console.log(
+      'mutation storm finished',
+      'totalMutations:',
+      this.stormInfo.totalMutations,
+      'stormExceededLimit:',
+      stormExceededLimit,
+    );
+
+    clearTimeout(this.stormInfo.timeout);
+
+    this.stormInfo = null;
+
+    if (!stormExceededLimit) {
+      let muts = [];
+      for (const batch of this.stormBatches) {
+        muts.push(...batch.mutations);
+      }
+      this.stormBatches = [];
+
+      this.processInternalMutations(muts, true);
+    } else {
+      this.stormBatches = [];
+      takeFullSnapshot();
+    }
+  };
+
+  private processInternalMutations = (
+    muts: mutationRecord[],
+    overrideStorm = false,
+  ) => {
+    if (
+      !overrideStorm &&
+      (this.stormInfo != null || muts.length >= this.stormSettings.batchSize)
+    ) {
+      this.handleStormMutations(muts);
+      return;
+    }
+
     const start = performance.now();
-    let uniqueTypes: string[] = [];
 
-    for (const mut of mutations) {
-      const mutStart = performance.now();
-
+    for (const mut of muts) {
       this.processMutation(mut);
-
-      const took = performance.now() - mutStart;
-
-      if (!uniqueTypes.includes(mut.type)) uniqueTypes.push(mut.type);
-
-      if (!(mut.type in this.tempPerfStore)) {
-        this.tempPerfStore[mut.type] = {
-          avg: 0,
-          times: [],
-        };
-      }
-
-      this.tempPerfStore[mut.type].times.push(took);
-      if (this.tempPerfStore[mut.type].times.length > 1000) {
-        this.tempPerfStore[mut.type].times.shift();
-      }
-      this.tempPerfStore[mut.type].avg =
-        this.tempPerfStore[mut.type].times.reduce((a, b) => a + b, 0) /
-        this.tempPerfStore[mut.type].times.length;
     }
 
     console.log(
-      mutations.length,
+      muts.length,
       'mutations processed in',
       performance.now() - start,
       'ms',
-      'types:',
-      uniqueTypes,
+      'overrideStorm',
+      overrideStorm,
     );
 
-    //@ts-expect-error
-    window.temp_perf_store = this.tempPerfStore;
+    this.emit();
+  };
 
-    // mutations.forEach(this.processMutation); // adds mutations to the buffer
-    this.emit(); // clears buffer if not locked/frozen
+  public processMutations = (mutations: mutationRecord[]) => {
+    this.processInternalMutations(mutations);
+
+    // const start = performance.now();
+    // let uniqueTypes: string[] = [];
+
+    // for (const mut of mutations) {
+    //   const mutStart = performance.now();
+
+    //   this.processMutation(mut);
+
+    //   const took = performance.now() - mutStart;
+
+    //   if (!uniqueTypes.includes(mut.type)) uniqueTypes.push(mut.type);
+
+    //   if (!(mut.type in this.tempPerfStore)) {
+    //     this.tempPerfStore[mut.type] = {
+    //       avg: 0,
+    //       times: [],
+    //     };
+    //   }
+
+    //   this.tempPerfStore[mut.type].times.push(took);
+    //   if (this.tempPerfStore[mut.type].times.length > 1000) {
+    //     this.tempPerfStore[mut.type].times.shift();
+    //   }
+    //   this.tempPerfStore[mut.type].avg =
+    //     this.tempPerfStore[mut.type].times.reduce((a, b) => a + b, 0) /
+    //     this.tempPerfStore[mut.type].times.length;
+    // }
+
+    // console.log(
+    //   mutations.length,
+    //   'mutations processed in',
+    //   performance.now() - start,
+    //   'ms',
+    //   'types:',
+    //   uniqueTypes,
+    // );
+
+    // //@ts-expect-error
+    // window.temp_perf_store = this.tempPerfStore;
+
+    // this.emit(); // clears buffer if not locked/frozen
   };
 
   public emit = () => {
