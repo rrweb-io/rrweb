@@ -363,7 +363,7 @@ export default class MutationBuffer {
       this.processInternalMutations(muts, true);
     } else {
       this.stormBatches = [];
-      stormSnapshotManager.requestFullSnapshot(this.bufId);
+      stormSnapshotManager.requestFullSnapshot();
     }
   };
 
