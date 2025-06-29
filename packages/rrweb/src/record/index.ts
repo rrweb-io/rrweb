@@ -1,46 +1,47 @@
 import {
+  EventType,
+  IncrementalSource,
+  type adoptedStyleSheetParam,
+  type canvasMutationParam,
+  type eventWithoutTime,
+  type eventWithTime,
+  type listenerHandler,
+  type mutationCallbackParam,
+  type scrollCallback,
+} from '@rrweb/types';
+import dom from '@rrweb/utils';
+import {
+  createMirror,
   snapshot,
   type MaskInputOptions,
   type SlimDOMOptions,
-  createMirror,
 } from 'rrweb-snapshot';
-import { initObservers, mutationBuffers } from './observer';
+import type {
+  CrossOriginIframeMessageEventContent,
+  recordOptions,
+} from '../types';
 import {
-  on,
-  getWindowWidth,
   getWindowHeight,
   getWindowScroll,
-  polyfill,
+  getWindowWidth,
   hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
   nowTimestamp,
+  on,
+  polyfill,
 } from '../utils';
-import type { recordOptions } from '../types';
-import {
-  EventType,
-  type eventWithoutTime,
-  type eventWithTime,
-  IncrementalSource,
-  type listenerHandler,
-  type mutationCallbackParam,
-  type scrollCallback,
-  type canvasMutationParam,
-  type adoptedStyleSheetParam,
-} from '@rrweb/types';
-import type { CrossOriginIframeMessageEventContent } from '../types';
-import { IframeManager } from './iframe-manager';
-import { ShadowDomManager } from './shadow-dom-manager';
-import { CanvasManager } from './observers/canvas/canvas-manager';
-import { StylesheetManager } from './stylesheet-manager';
-import ProcessedNodeManager from './processed-node-manager';
 import {
   callbackWrapper,
   registerErrorHandler,
   unregisterErrorHandler,
 } from './error-handler';
-import dom from '@rrweb/utils';
-import stormSnapshotManager from './storm-snapshot-manager';
+import { IframeManager } from './iframe-manager';
+import { initObservers, mutationBuffers } from './observer';
+import { CanvasManager } from './observers/canvas/canvas-manager';
+import ProcessedNodeManager from './processed-node-manager';
+import { ShadowDomManager } from './shadow-dom-manager';
+import { StylesheetManager } from './stylesheet-manager';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
 
@@ -657,7 +658,6 @@ record.takeFullSnapshot = (isCheckout?: boolean) => {
   }
   takeFullSnapshot(isCheckout);
 };
-stormSnapshotManager.bindFullSnapshotTaker(takeFullSnapshot);
 
 record.mirror = mirror;
 

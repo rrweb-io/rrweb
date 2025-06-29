@@ -1,7 +1,20 @@
+import { takeFullSnapshot } from '..';
+function makeid(length = 8) {
+  var result = '';
+  var characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for (var i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+
 class StormSnapshotManager {
   static instance: StormSnapshotManager;
 
-  private fullSnapshotTaker: (() => void) | null = null;
+  private id: string = makeid();
+
   private lastFullSnapshot: number = -1;
 
   private intervalBetweenSnapshots = 150;
@@ -14,28 +27,29 @@ class StormSnapshotManager {
     StormSnapshotManager.instance = this;
   }
 
-  public bindFullSnapshotTaker(takeFullSnapshot: () => void) {
-    this.fullSnapshotTaker = takeFullSnapshot;
-  }
-
   public requestFullSnapshot(bufferId: string) {
-    if (!this.fullSnapshotTaker) {
+    if (!takeFullSnapshot) return;
+
+    if (Date.now() - this.lastFullSnapshot < this.intervalBetweenSnapshots) {
       console.log(
-        'requestFullSnapshot: no full snapshot taker',
+        'requestFullSnapshot: too soon',
+        'storm snapshot mng id:',
+        this.id,
         'bufferId:',
         bufferId,
       );
       return;
     }
 
-    if (Date.now() - this.lastFullSnapshot < this.intervalBetweenSnapshots) {
-      console.log('requestFullSnapshot: too soon', 'bufferId:', bufferId);
-      return;
-    }
+    console.log(
+      'taking full snapshot',
+      'storm snapshot mng id:',
+      this.id,
+      'bufferId:',
+      bufferId,
+    );
 
-    console.log('taking full snapshot', 'bufferId:', bufferId);
-
-    this.fullSnapshotTaker();
+    takeFullSnapshot();
     this.lastFullSnapshot = Date.now();
   }
 }
