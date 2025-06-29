@@ -320,6 +320,9 @@ export default class MutationBuffer {
       this.stormInfo.totalMutations,
       'stormExceededLimit:',
       stormExceededLimit,
+      'storm duration:',
+      Date.now() - this.stormInfo.startedAt,
+      'ms',
     );
 
     clearTimeout(this.stormInfo.timeout);
