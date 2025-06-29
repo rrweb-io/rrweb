@@ -140,6 +140,17 @@ interface StormBatch {
   mutations: mutationRecord[];
 }
 
+function makeid(length = 8) {
+  var result = '';
+  var characters =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for (var i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+
 /**
  * controls behaviour of a MutationObserver
  */
@@ -199,6 +210,8 @@ export default class MutationBuffer {
   private canvasManager: observerParam['canvasManager'];
   private processedNodeManager: observerParam['processedNodeManager'];
   private unattachedDoc: HTMLDocument;
+
+  private myId: string = makeid();
 
   public init(options: MutationBufferParam) {
     (
@@ -280,7 +293,11 @@ export default class MutationBuffer {
     const time = Date.now();
 
     if (this.stormInfo == null) {
-      console.log('detected probable mutation storm start');
+      console.log(
+        'detected probable mutation storm start',
+        'buffer id:',
+        this.myId,
+      );
       this.stormInfo = {
         startedAt: time,
         totalMutations: 0,
@@ -291,7 +308,12 @@ export default class MutationBuffer {
 
     this.stormInfo.totalMutations += muts.length;
 
-    console.log('current storm mutations', this.stormInfo.totalMutations);
+    console.log(
+      'current storm mutations',
+      this.stormInfo.totalMutations,
+      'buffer id:',
+      this.myId,
+    );
 
     if (this.stormInfo.totalMutations >= this.stormSettings.mutationLimit) {
       this.stormInfo.stormExceededLimit = true;
@@ -323,6 +345,8 @@ export default class MutationBuffer {
       'storm duration:',
       Date.now() - this.stormInfo.startedAt,
       'ms',
+      'buffer id:',
+      this.myId,
     );
 
     clearTimeout(this.stormInfo.timeout);
@@ -368,6 +392,8 @@ export default class MutationBuffer {
       'ms',
       'overrideStorm',
       overrideStorm,
+      'buffer id:',
+      this.myId,
     );
 
     this.emit();
