@@ -281,7 +281,7 @@ export default class MutationBuffer {
     totalMutations: number;
     timeout?: ReturnType<typeof setTimeout>;
     stormExceededLimit: boolean;
-  };
+  } = null;
 
   private stormSettings = {
     batchSize: 300,
@@ -325,9 +325,17 @@ export default class MutationBuffer {
       });
     }
 
+    clearTimeout(this.stormInfo.timeout);
+
     if (muts.length < this.stormSettings.batchSize) {
-      clearTimeout(this.stormInfo.timeout);
+      //if we received a small batch, the storm is over
       this.handleStormFinish();
+    } else {
+      //otherwise, we'll just debounce: expecting more storm
+      this.stormInfo.timeout = setTimeout(
+        this.handleStormFinish,
+        this.stormSettings.timeout,
+      );
     }
   };
 
@@ -402,45 +410,9 @@ export default class MutationBuffer {
   public processMutations = (mutations: mutationRecord[]) => {
     this.processInternalMutations(mutations);
 
-    // const start = performance.now();
-    // let uniqueTypes: string[] = [];
-
     // for (const mut of mutations) {
-    //   const mutStart = performance.now();
-
     //   this.processMutation(mut);
-
-    //   const took = performance.now() - mutStart;
-
-    //   if (!uniqueTypes.includes(mut.type)) uniqueTypes.push(mut.type);
-
-    //   if (!(mut.type in this.tempPerfStore)) {
-    //     this.tempPerfStore[mut.type] = {
-    //       avg: 0,
-    //       times: [],
-    //     };
-    //   }
-
-    //   this.tempPerfStore[mut.type].times.push(took);
-    //   if (this.tempPerfStore[mut.type].times.length > 1000) {
-    //     this.tempPerfStore[mut.type].times.shift();
-    //   }
-    //   this.tempPerfStore[mut.type].avg =
-    //     this.tempPerfStore[mut.type].times.reduce((a, b) => a + b, 0) /
-    //     this.tempPerfStore[mut.type].times.length;
     // }
-
-    // console.log(
-    //   mutations.length,
-    //   'mutations processed in',
-    //   performance.now() - start,
-    //   'ms',
-    //   'types:',
-    //   uniqueTypes,
-    // );
-
-    // //@ts-expect-error
-    // window.temp_perf_store = this.tempPerfStore;
 
     // this.emit(); // clears buffer if not locked/frozen
   };

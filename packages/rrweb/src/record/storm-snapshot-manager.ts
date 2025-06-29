@@ -28,7 +28,10 @@ class StormSnapshotManager {
 
   //also, we want a low debounceTime, bc if theres multiple, distinctive mutation storms,
   //in a somewhat quick succession, we want to record activity between them
-  //not just one full snapshot after all the storms
+  //not just one full snapshot after all the storms:
+  //[mutation storm] [full snapshot] [mutation storm] [full snapshot]
+  //NOT
+  //[mutation storm] [timeout] [mutation storm] [full snapshot] (in this case, we probably miss all events which fired during the timeout)
   public requestFullSnapshot() {
     if (this.debounceTimeout) {
       clearTimeout(this.debounceTimeout);
