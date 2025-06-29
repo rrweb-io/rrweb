@@ -1,8 +1,18 @@
 class StormSnapshotManager {
+  static instance: StormSnapshotManager;
+
   private fullSnapshotTaker: (() => void) | null = null;
   private lastFullSnapshot: number = -1;
 
   private intervalBetweenSnapshots = 150;
+
+  constructor() {
+    if (StormSnapshotManager.instance) {
+      return StormSnapshotManager.instance;
+    }
+
+    StormSnapshotManager.instance = this;
+  }
 
   public bindFullSnapshotTaker(takeFullSnapshot: () => void) {
     this.fullSnapshotTaker = takeFullSnapshot;
