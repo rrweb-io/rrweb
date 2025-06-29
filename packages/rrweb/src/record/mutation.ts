@@ -33,7 +33,7 @@ import {
   closestElementOfNode,
 } from '../utils';
 import dom from '@rrweb/utils';
-import { takeFullSnapshot } from '..';
+import stormSnapshotManager from './storm-snapshot-manager';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -211,7 +211,7 @@ export default class MutationBuffer {
   private processedNodeManager: observerParam['processedNodeManager'];
   private unattachedDoc: HTMLDocument;
 
-  private myId: string = makeid();
+  private bufId: string = makeid();
 
   public init(options: MutationBufferParam) {
     (
@@ -296,7 +296,7 @@ export default class MutationBuffer {
       console.log(
         'detected probable mutation storm start',
         'buffer id:',
-        this.myId,
+        this.bufId,
       );
       this.stormInfo = {
         startedAt: time,
@@ -312,7 +312,7 @@ export default class MutationBuffer {
       'current storm mutations',
       this.stormInfo.totalMutations,
       'buffer id:',
-      this.myId,
+      this.bufId,
     );
 
     if (this.stormInfo.totalMutations >= this.stormSettings.mutationLimit) {
@@ -346,7 +346,7 @@ export default class MutationBuffer {
       Date.now() - this.stormInfo.startedAt,
       'ms',
       'buffer id:',
-      this.myId,
+      this.bufId,
     );
 
     clearTimeout(this.stormInfo.timeout);
@@ -363,7 +363,7 @@ export default class MutationBuffer {
       this.processInternalMutations(muts, true);
     } else {
       this.stormBatches = [];
-      takeFullSnapshot();
+      stormSnapshotManager.requestFullSnapshot(this.bufId);
     }
   };
 
@@ -393,7 +393,7 @@ export default class MutationBuffer {
       'overrideStorm',
       overrideStorm,
       'buffer id:',
-      this.myId,
+      this.bufId,
     );
 
     this.emit();

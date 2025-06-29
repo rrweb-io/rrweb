@@ -40,6 +40,7 @@ import {
   unregisterErrorHandler,
 } from './error-handler';
 import dom from '@rrweb/utils';
+import stormSnapshotManager from './storm-snapshot-manager';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
 
@@ -656,6 +657,7 @@ record.takeFullSnapshot = (isCheckout?: boolean) => {
   }
   takeFullSnapshot(isCheckout);
 };
+stormSnapshotManager.bindFullSnapshotTaker(takeFullSnapshot);
 
 record.mirror = mirror;
 
