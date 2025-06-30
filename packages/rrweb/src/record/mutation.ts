@@ -284,9 +284,9 @@ export default class MutationBuffer {
   } = null;
 
   private stormSettings = {
-    batchSize: 300,
-    timeout: 50,
-    mutationLimit: 1500,
+    batchSize: 150, //was 300
+    timeout: 30, //was 50
+    mutationLimit: 800, //was 1500
   };
 
   private handleStormMutations = (muts: mutationRecord[]) => {
@@ -307,13 +307,6 @@ export default class MutationBuffer {
     }
 
     this.stormInfo.totalMutations += muts.length;
-
-    console.log(
-      'current storm mutations',
-      this.stormInfo.totalMutations,
-      'buffer id:',
-      this.bufId,
-    );
 
     if (this.stormInfo.totalMutations >= this.stormSettings.mutationLimit) {
       this.stormInfo.stormExceededLimit = true;
@@ -387,22 +380,22 @@ export default class MutationBuffer {
       return;
     }
 
-    const start = performance.now();
+    // const start = performance.now();
 
     for (const mut of muts) {
       this.processMutation(mut);
     }
 
-    console.log(
-      muts.length,
-      'mutations processed in',
-      performance.now() - start,
-      'ms',
-      'overrideStorm',
-      overrideStorm,
-      'buffer id:',
-      this.bufId,
-    );
+    // console.log(
+    //   muts.length,
+    //   'mutations processed in',
+    //   performance.now() - start,
+    //   'ms',
+    //   'overrideStorm',
+    //   overrideStorm,
+    //   'buffer id:',
+    //   this.bufId,
+    // );
 
     this.emit();
   };
