@@ -293,11 +293,11 @@ export default class MutationBuffer {
     const time = Date.now();
 
     if (this.stormInfo == null) {
-      console.log(
-        'detected probable mutation storm start',
-        'buffer id:',
-        this.bufId,
-      );
+      // console.log(
+      //   'detected probable mutation storm start',
+      //   'buffer id:',
+      //   this.bufId,
+      // );
       this.stormInfo = {
         startedAt: time,
         totalMutations: 0,
@@ -337,18 +337,18 @@ export default class MutationBuffer {
 
     const { stormExceededLimit } = this.stormInfo;
 
-    console.log(
-      'mutation storm finished',
-      'totalMutations:',
-      this.stormInfo.totalMutations,
-      'stormExceededLimit:',
-      stormExceededLimit,
-      'storm duration:',
-      Date.now() - this.stormInfo.startedAt,
-      'ms',
-      'buffer id:',
-      this.bufId,
-    );
+    // console.log(
+    //   'mutation storm finished',
+    //   'totalMutations:',
+    //   this.stormInfo.totalMutations,
+    //   'stormExceededLimit:',
+    //   stormExceededLimit,
+    //   'storm duration:',
+    //   Date.now() - this.stormInfo.startedAt,
+    //   'ms',
+    //   'buffer id:',
+    //   this.bufId,
+    // );
 
     clearTimeout(this.stormInfo.timeout);
 

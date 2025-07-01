@@ -360,8 +360,6 @@ function record<T = eventWithTime>(
       return;
     }
 
-    const start = performance.now();
-
     wrappedEmit(
       {
         type: EventType.Meta,
@@ -438,8 +436,6 @@ function record<T = eventWithTime>(
         document.adoptedStyleSheets,
         mirror.getId(document),
       );
-
-    console.log('full snapshot took', performance.now() - start, 'ms');
   };
 
   try {

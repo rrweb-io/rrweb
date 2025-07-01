@@ -1,6 +1,6 @@
 {
   "name": "@glimt/record",
-  "version": "0.0.35",
+  "version": "0.0.36",
   "scripts": {
     "dev": "vite build --watch",
     "build": "yarn turbo run prepublish",

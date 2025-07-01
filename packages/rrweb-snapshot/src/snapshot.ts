@@ -579,8 +579,6 @@ function serializeElementNode(
     rootId: number | undefined;
   },
 ): serializedNode | false {
-  const start = performance.now();
-
   const {
     doc,
     blockClass,
@@ -881,25 +879,6 @@ function serializeElementNode(
   } catch (e) {
     // In case old browsers don't support customElements
   }
-
-  const took = performance.now() - start;
-
-  if (!window.serialization_perf_map) window.serialization_perf_map = {};
-
-  if (!(tagName in window.serialization_perf_map)) {
-    window.serialization_perf_map[tagName] = {
-      avg: 0,
-      times: [],
-    };
-  }
-
-  window.serialization_perf_map[tagName].times.push(took);
-  if (window.serialization_perf_map[tagName].times.length > 1000) {
-    window.serialization_perf_map[tagName].times.shift();
-  }
-  window.serialization_perf_map[tagName].avg =
-    window.serialization_perf_map[tagName].times.reduce((a, b) => a + b, 0) /
-    window.serialization_perf_map[tagName].times.length;
 
   return {
     type: NodeType.Element,
