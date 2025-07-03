@@ -113,6 +113,35 @@ const events: eventWithTime[] = [
     },
     timestamp: now + 500,
   },
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.Mutation,
+      texts: [],
+      attributes: [],
+      removes: [],
+      adds: [
+        {
+          parentId: 6,
+          nextId: null,
+          node: {
+            type: 2,
+            tagName: 'script',
+            attributes: {},
+            childNodes: [],
+            id: 12,
+            isShadow: true,
+          },
+        },
+        {
+          parentId: 12,
+          nextId: null,
+          node: { type: 3, textContent: 'SCRIPT_PLACEHOLDER', id: 13 },
+        },
+      ],
+    },
+    timestamp: now + 500,
+  },
   // add nested shadow dom elements
   {
     type: EventType.IncrementalSnapshot,
@@ -163,6 +192,35 @@ const events: eventWithTime[] = [
           parentId: 10,
           nextId: null,
           node: { type: 3, textContent: 'shadow dom two', id: 11 },
+        },
+      ],
+    },
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.Mutation,
+      texts: [],
+      attributes: [],
+      removes: [],
+      adds: [
+        {
+          parentId: 9,
+          nextId: null,
+          node: {
+            type: 2,
+            tagName: 'script',
+            attributes: {},
+            childNodes: [],
+            id: 14,
+            isShadow: true,
+          },
+        },
+        {
+          parentId: 14,
+          nextId: null,
+          node: { type: 3, textContent: 'SCRIPT_PLACEHOLDER', id: 15 },
         },
       ],
     },
