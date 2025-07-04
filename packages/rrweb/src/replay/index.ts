@@ -96,6 +96,8 @@ const mitt = mittProxy.default || mittProxy;
 
 const REPLAY_CONSOLE_PREFIX = '[replayer]';
 
+const INJECTED_STYLE_ID = '__rrweb-injected-style__';
+
 const defaultMouseTailConfig = {
   duration: 500,
   lineCap: 'round',
@@ -899,6 +901,53 @@ export class Replayer {
     }
   }
 
+  private isShadowRoot(root: RRNode | Node): root is ShadowRoot {
+    return root.nodeType === Node.DOCUMENT_FRAGMENT_NODE;
+  }
+
+  private insertStyleRulesIntoShadowRoot(root: RRNode | Node) {
+    const injectStylesRules = getInjectStyleRules(
+      this.config.blockClass,
+    ).concat(this.config.insertStyleRules);
+
+    if (!injectStylesRules.length) return;
+
+    if (
+      this.usingVirtualDom &&
+      (root as RRElement).getAttribute('id') !== INJECTED_STYLE_ID
+    ) {
+      const styleEl = this.virtualDom.createElement('style');
+      this.virtualDom.mirror.add(
+        styleEl,
+        getDefaultSN(styleEl, this.virtualDom.unserializedId),
+      );
+      styleEl.setAttribute('id', INJECTED_STYLE_ID);
+
+      // Insert as the first child so that the rules take precedence
+      (root as RRElement).insertBefore(
+        styleEl,
+        (root as RRElement).firstChild || null,
+      );
+
+      // Virtual DOM keeps rules in the StyleElement.rules array
+      styleEl.rules.push({
+        source: IncrementalSource.StyleSheetRule,
+        adds: injectStylesRules.map((rule, index) => ({ rule, index })),
+      });
+    } else if (
+      this.isShadowRoot(root) &&
+      !root.getElementById(INJECTED_STYLE_ID)
+    ) {
+      const styleEl: HTMLStyleElement = document.createElement('style');
+      styleEl.id = INJECTED_STYLE_ID;
+      root.insertBefore(styleEl, root.firstChild ?? null);
+
+      for (let idx = 0; idx < injectStylesRules.length; idx++) {
+        styleEl.sheet?.insertRule(injectStylesRules[idx], idx);
+      }
+    }
+  }
+
   private attachDocumentToIframe(
     mutation: addedNodeMutation,
     iframeEl: HTMLIFrameElement | RRIFrameElement,
@@ -1502,7 +1551,12 @@ export class Replayer {
         if (!hasShadowRoot(parent)) {
           (parent as Element | RRElement).attachShadow({ mode: 'open' });
           parent = (parent as Element | RRElement).shadowRoot! as Node | RRNode;
-        } else parent = parent.shadowRoot as Node | RRNode;
+        } else {
+          parent = parent.shadowRoot as Node | RRNode;
+        }
+
+        // Inject RRWeb internal style rules into the newly created shadow root
+        this.insertStyleRulesIntoShadowRoot(parent);
       }
 
       let previous: Node | RRNode | null = null;

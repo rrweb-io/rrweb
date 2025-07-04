@@ -1177,4 +1177,17 @@ describe('replayer', function () {
     const newColor = 'rgb(255, 255, 0)'; // yellow
     expect(changedColors).toEqual([newColor, newColor]);
   });
+
+  it('injects rrweb default styles into shadow roots', async () => {
+    await page.evaluate(`events = ${JSON.stringify(shadowDomEvents)}`);
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      window.replayer = new Replayer(events);
+      window.replayer.pause(1100); // ensure all shadow doms are created
+    `);
+    const iframe = await page.$('iframe');
+
+    // Assert the SCRIPT_PLACEHOLDER is not present on the page.
+    expect(iframe).not.toContain('SCRIPT_PLACEHOLDER');
+  });
 });
