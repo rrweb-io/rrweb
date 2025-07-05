@@ -622,6 +622,8 @@ function serializeElementNode(
       delete attributes.rel;
       delete attributes.href;
       attributes._cssText = cssText;
+    } else {
+      console.log('failed to extract stylesheets from link element', n);
     }
   }
   if (tagName === 'style' && (n as HTMLStyleElement).sheet) {

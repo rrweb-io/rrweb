@@ -585,15 +585,66 @@ function record<T = eventWithTime>(
       }
     });
 
+    let initedAt: number | null = null;
+
     const init = () => {
+      initedAt = Date.now();
       takeFullSnapshot();
       handlers.push(observe(document));
       recording = true;
     };
+
+    // We're doing this because of stylesheets.
+    // We want to run `record()` as early as possible to capture all events —
+    // but that means the page might not be fully loaded yet (especially CSS).
+    //
+    // This is where the logic below comes in:
+    // If document.readyState is 'interactive' or 'complete', rrweb calls `init()` immediately.
+    // Otherwise, it waits for 'DOMContentLoaded' or 'load' before calling `init()`.
+    //
+    // When `recordAfter` is set to 'load', rrweb delays `init()` until the 'load' event fires,
+    // ensuring the first snapshot happens only after the page (including all CSS) is fully loaded.
+    // This is what we want — because after 'load', all stylesheets are guaranteed to be accessible.
+    //
+    // However, there's a race condition:
+    // If `record()` is called after DOM is interactive but before the 'load' event has fired,
+    // rrweb sees `readyState === 'interactive'` and runs `init()` immediately.
+    // This can happen before all stylesheets have finished loading, causing missing or blocked CSS rules.
+    //
+    // Hence, we add `customOnLoad`:
+    //
+    // . Normal case (no race): rrweb runs `init()` on the 'load' event —
+    //     - CSS is guaranteed to be loaded
+    //     - recording = false in `customOnLoad`, so it does nothing
+    //
+    // . Race condition: rrweb runs `init()` early (during 'interactive')
+    //     - CSS might still be loading
+    //     - recording = true by the time 'load' fires
+    //     - So `customOnLoad` checks how long ago the first snapshot happened
+    //     - If it was too early, we take a second snapshot now, guaranteeing full CSS
+
+    const customOnLoad = () => {
+      window.removeEventListener('load', customOnLoad);
+
+      if (!recording || initedAt == null) return;
+
+      console.log('customOnLoad wants to take a full snapshot');
+      if (Date.now() - initedAt <= 10) {
+        console.log('customOnLoad skipping full snapshot bc it was too soon');
+        return;
+      }
+
+      console.log('customOnLoad taking full snapshot bc race condition');
+      takeFullSnapshot();
+    };
+
+    window.addEventListener('load', customOnLoad);
+
     if (
       document.readyState === 'interactive' ||
       document.readyState === 'complete'
     ) {
+      console.log("fired init() bc readyState === 'interactive' || 'complete'");
       init();
     } else {
       handlers.push(
@@ -602,7 +653,10 @@ function record<T = eventWithTime>(
             type: EventType.DomContentLoaded,
             data: {},
           });
-          if (recordAfter === 'DOMContentLoaded') init();
+          if (recordAfter === 'DOMContentLoaded') {
+            console.log("fired init() bc listener 'DOMContentLoaded'");
+            init();
+          }
         }),
       );
       handlers.push(
@@ -613,7 +667,11 @@ function record<T = eventWithTime>(
               type: EventType.Load,
               data: {},
             });
-            if (recordAfter === 'load') init();
+            if (recordAfter === 'load') {
+              console.log("fired init() bc listener 'load'");
+
+              init();
+            }
           },
           window,
         ),
