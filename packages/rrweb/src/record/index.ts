@@ -626,6 +626,8 @@ function record<T = eventWithTime>(
     const customOnLoad = () => {
       window.removeEventListener('load', customOnLoad);
 
+      console.log('customOnLoad fired', recording, initedAt);
+
       if (!recording || initedAt == null) return;
 
       console.log('customOnLoad wants to take a full snapshot');
@@ -644,7 +646,10 @@ function record<T = eventWithTime>(
       document.readyState === 'interactive' ||
       document.readyState === 'complete'
     ) {
-      console.log("fired init() bc readyState === 'interactive' || 'complete'");
+      console.log(
+        "fired init() bc readyState === 'interactive' || 'complete'",
+        document.readyState,
+      );
       init();
     } else {
       handlers.push(
