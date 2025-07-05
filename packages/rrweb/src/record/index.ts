@@ -623,20 +623,20 @@ function record<T = eventWithTime>(
     //     - So `customOnLoad` checks how long ago the first snapshot happened
     //     - If it was too early, we take a second snapshot now, guaranteeing full CSS
 
+    //Also, this implementation wont affect any options that record() can be initialized with
+
     const customOnLoad = () => {
       window.removeEventListener('load', customOnLoad);
 
-      console.log('customOnLoad fired', recording, initedAt);
-
       if (!recording || initedAt == null) return;
 
-      console.log('customOnLoad wants to take a full snapshot');
+      //in almost all cases we want to take a full snapshot here.
+      //but if we want to take one within 10ms, another load method
+      //just took a full snapshot, so we don't want to take another. (safekeeping performance)
       if (Date.now() - initedAt <= 10) {
-        console.log('customOnLoad skipping full snapshot bc it was too soon');
         return;
       }
 
-      console.log('customOnLoad taking full snapshot bc race condition');
       takeFullSnapshot();
     };
 
@@ -646,10 +646,12 @@ function record<T = eventWithTime>(
       document.readyState === 'interactive' ||
       document.readyState === 'complete'
     ) {
-      console.log(
-        "fired init() bc readyState === 'interactive' || 'complete'",
-        document.readyState,
-      );
+      if (document.readyState === 'complete') {
+        //the load event wont fire, so lets remove the listener
+        //(in all other cases the listener will fire, which will cause cleanup)
+        window.removeEventListener('load', customOnLoad);
+      }
+
       init();
     } else {
       handlers.push(
@@ -659,7 +661,6 @@ function record<T = eventWithTime>(
             data: {},
           });
           if (recordAfter === 'DOMContentLoaded') {
-            console.log("fired init() bc listener 'DOMContentLoaded'");
             init();
           }
         }),
@@ -673,8 +674,6 @@ function record<T = eventWithTime>(
               data: {},
             });
             if (recordAfter === 'load') {
-              console.log("fired init() bc listener 'load'");
-
               init();
             }
           },
