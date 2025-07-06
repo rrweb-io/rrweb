@@ -638,9 +638,19 @@ function serializeElementNode(
       delete attributes.href;
       attributes._cssText = cssText;
     } else {
-      asyncStylesheetManager.registerClone({
+      //the mutation / full snapshot wants the css, but was unable to get it synchronously
+      //which means that this mutation (/full snapshot) will be missing the css.
+      //so, we can use this id, later when we process our session data, to grab the css
+      //from an custom event which will be dispatched soon (async) with this id
+      //and copy it to this mutation (/full snapshot)
+      const requestCssId = `css-request-${Math.random().toString(36).slice(2)}`;
+
+      asyncStylesheetManager.requestClone({
         forElement: n as HTMLLinkElement,
+        requestCssId,
       });
+
+      attributes._requestCssId = requestCssId;
     }
   }
   if (tagName === 'style' && (n as HTMLStyleElement).sheet) {

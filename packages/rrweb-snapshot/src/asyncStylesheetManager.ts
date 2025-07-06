@@ -3,7 +3,10 @@ import { stringifyStylesheet } from './utils';
 //effectively, this becomes the time limit on all fetching (caused by cloning)
 //link tag is cloned -> triggers a fetch -> if the fetch is pending after this time, the cloned link element will forcefully be removed
 //and therefore it's associated "styleSheet" (if there is one or one will be created shortly) will also be removed
+//(but it's main purpose is just safe-keeping so we don't overflow the page with cloned links)
 const CLEANUP_DEBOUNCE_TIME = 1000 * 30;
+
+const DATA_ATTRIBUTE_CLONED_NAME = 'data-rrweb-link-cloned';
 
 const DISALLOWED_EXTENSIONS = [
   // Fonts
@@ -68,6 +71,7 @@ class AsyncStylesheetManager {
         loaded: boolean;
         cssText: string | null;
         cloneNodeAttrId: string;
+        requestCssId: string;
       }
     | undefined
   > = {};
@@ -78,7 +82,7 @@ class AsyncStylesheetManager {
     if (!(href in this.clones) || this.clones[href] === undefined) return;
 
     const clone = document.querySelector<HTMLLinkElement>(
-      `link[data-rrweb-link-cloned="${this.clones[href].cloneNodeAttrId}"]`,
+      `link[${DATA_ATTRIBUTE_CLONED_NAME}="${this.clones[href].cloneNodeAttrId}"]`,
     );
 
     if (!clone) return;
@@ -88,8 +92,6 @@ class AsyncStylesheetManager {
 
   onLoad(href: string) {
     if (!(href in this.clones) || this.clones[href] === undefined) return;
-
-    console.log('AsyncStylesheetManager, onLoad: href:', href);
 
     const styleSheets = Array.from(document.styleSheets);
 
@@ -103,48 +105,56 @@ class AsyncStylesheetManager {
       }
     }
 
-    if (!clonedStyleSheet) {
-      console.log(
-        "AsyncStylesheetManager, onLoad: couldn't find stylesheet for href:",
-        href,
-      );
-      return this.removeCloneNode(href);
-    }
+    if (!clonedStyleSheet) return this.removeCloneNode(href);
 
     const newCssText = stringifyStylesheet(clonedStyleSheet);
 
     this.removeCloneNode(href);
 
-    if (!newCssText) {
-      console.log(
-        "AsyncStylesheetManager, onLoad: couldn't stringify stylesheet for href:",
-        href,
-      );
-      return;
-    }
-
-    console.log(
-      'AsyncStylesheetManager, onLoad: success! did get new css text! forcing mutation... for href:',
-      href,
-    );
+    if (!newCssText) return;
 
     this.clones[href].cssText = newCssText;
     this.clones[href].loaded = true;
 
     const original = document.querySelector<HTMLLinkElement>(
-      `link[data-rrweb-link-cloned="source-${this.clones[href].cloneNodeAttrId}"]`,
+      `link[${DATA_ATTRIBUTE_CLONED_NAME}="source-${this.clones[href].cloneNodeAttrId}"]`,
     );
 
     //trigger a mutation on the original link element
-    if (!original) {
+    if (original) {
+      //just removing the attribute should be enough to trigger a mutation
+      //but in some cases, apparently, it doesn't have to trigger a mutation
+      //(so we'll also add "data-rrweb-mutation")
+      original.setAttribute('data-rrweb-mutation', Date.now().toString());
+      original.removeAttribute(DATA_ATTRIBUTE_CLONED_NAME);
+    } else {
+      //fallback
       this.clones[href].original.setAttribute(
         'data-rrweb-mutation',
         Date.now().toString(),
       );
-    } else {
-      //fallback
-      original.setAttribute('data-rrweb-mutation', Date.now().toString());
+
+      this.clones[href].original.removeAttribute(DATA_ATTRIBUTE_CLONED_NAME);
     }
+
+    //so, in our case, we're changing the "rrweb-snapshot" code to improve our recordings
+    //but this package "rrweb-snapshot" is used by other packages as well.
+    //so, we cannot access the rrweb-record code directly, so we'll use a custom event
+    //which the user needs to listen to (if they want)
+    //BUT, we'll keep rrweb's data structure.
+    window.dispatchEvent(
+      new CustomEvent('__rrweb_custom_event__', {
+        detail: {
+          type: 5,
+          timestamp: Date.now(),
+          data: {
+            tag: 'async-css-resolution',
+            requestCssId: this.clones[href].requestCssId,
+            cssText: this.clones[href].cssText,
+          },
+        },
+      }),
+    );
   }
 
   onLoadError(href: string) {
@@ -160,20 +170,22 @@ class AsyncStylesheetManager {
   }
 
   onCleanTimeout() {
-    console.log('AsyncStylesheetManager, onCleanTimeout: cleaning up');
-
     asyncStylesheetManager.cleanTimeout = null;
     asyncStylesheetManager.removeAllCloneElements();
   }
 
   blowCache() {
-    console.log('AsyncStylesheetManager, blowCache: blowing cache');
-
     this.removeAllCloneElements();
     this.clones = {};
   }
 
-  registerClone({ forElement }: { forElement: HTMLLinkElement }) {
+  requestClone({
+    forElement,
+    requestCssId,
+  }: {
+    forElement: HTMLLinkElement;
+    requestCssId: string;
+  }) {
     if (this.currentHref != null && document.location.href !== this.currentHref)
       this.blowCache();
 
@@ -203,20 +215,15 @@ class AsyncStylesheetManager {
       }
     }
 
-    console.log(
-      'AsyncStylesheetManager, registerClone: registering clone for href:',
-      href,
-    );
-
     const clone = forElement.cloneNode() as HTMLLinkElement;
 
     const cloneNodeAttrId = Math.random().toString(36).slice(2);
 
     clone.setAttribute('crossorigin', 'anonymous');
-    clone.setAttribute('data-rrweb-link-cloned', cloneNodeAttrId);
+    clone.setAttribute(DATA_ATTRIBUTE_CLONED_NAME, cloneNodeAttrId);
 
     forElement.setAttribute(
-      'data-rrweb-link-cloned',
+      DATA_ATTRIBUTE_CLONED_NAME,
       `source-${cloneNodeAttrId}`,
     );
 
@@ -228,6 +235,7 @@ class AsyncStylesheetManager {
       loaded: false,
       cssText: null,
       cloneNodeAttrId,
+      requestCssId,
     };
 
     clone.onload = () => {
@@ -252,11 +260,6 @@ class AsyncStylesheetManager {
       this.clones[href] !== undefined &&
       this.clones[href].loaded === true
     ) {
-      console.log(
-        'AsyncStylesheetManager, getClonedCssTextIfAvailable: returning cloned cssText, for href:',
-        href,
-      );
-
       return this.clones[href].cssText;
     }
     return null;
