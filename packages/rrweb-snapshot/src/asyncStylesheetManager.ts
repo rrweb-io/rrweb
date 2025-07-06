@@ -25,6 +25,11 @@ class AsyncStylesheetManager {
 
   private cleanTimeout: ReturnType<typeof setTimeout> | null = null;
 
+  private removeCloneNode(href: string) {
+    if (!(href in this.clones) || this.clones[href] === undefined) return;
+    document.head.removeChild(this.clones[href].clone);
+  }
+
   onLoad(href: string) {
     if (!(href in this.clones) || this.clones[href] === undefined) return;
 
@@ -47,12 +52,12 @@ class AsyncStylesheetManager {
         "AsyncStylesheetManager, onLoad: couldn't find stylesheet for href:",
         href,
       );
-      return document.head.removeChild(this.clones[href].clone);
+      return this.removeCloneNode(href);
     }
 
     const newCssText = stringifyStylesheet(clonedStyleSheet);
 
-    document.head.removeChild(this.clones[href].clone);
+    this.removeCloneNode(href);
 
     if (!newCssText) {
       console.log(
@@ -79,14 +84,13 @@ class AsyncStylesheetManager {
 
   onLoadError(href: string) {
     if (!(href in this.clones) || this.clones[href] === undefined) return;
-    document.head.removeChild(this.clones[href].clone);
+    this.removeCloneNode(href);
     //we'll keep the clone in memory, we still dont want to re-fetch it bc it will just fail again.
   }
 
   removeAllCloneElements() {
-    for (const clone of Object.values(this.clones)) {
-      if (!clone) continue;
-      document.head.removeChild(clone.clone);
+    for (const href of Object.keys(this.clones)) {
+      this.removeCloneNode(href);
     }
   }
 
