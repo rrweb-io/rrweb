@@ -1,6 +1,6 @@
 import { stringifyStylesheet } from './utils';
 
-const CLEANUP_DEBOUNCE_TIME = 1000 * 60 * 5;
+const CLEANUP_DEBOUNCE_TIME = 1000 * 60 * 2;
 
 class AsyncStylesheetManager {
   static instance: AsyncStylesheetManager;
@@ -19,6 +19,7 @@ class AsyncStylesheetManager {
         clone: HTMLLinkElement;
         loaded: boolean;
         cssText: string | null;
+        cloneNodeAttrId: string;
       }
     | undefined
   > = {};
@@ -27,7 +28,14 @@ class AsyncStylesheetManager {
 
   private removeCloneNode(href: string) {
     if (!(href in this.clones) || this.clones[href] === undefined) return;
-    document.head.removeChild(this.clones[href].clone);
+
+    const clone = document.querySelector<HTMLLinkElement>(
+      `link[data-rrweb-link-cloned="${this.clones[href].cloneNodeAttrId}"]`,
+    );
+
+    if (!clone) return;
+
+    document.head.removeChild(clone);
   }
 
   onLoad(href: string) {
@@ -128,8 +136,11 @@ class AsyncStylesheetManager {
     );
 
     const clone = forElement.cloneNode() as HTMLLinkElement;
+
+    const cloneNodeAttrId = Math.random().toString(36).slice(2);
+
     clone.setAttribute('crossorigin', 'anonymous');
-    clone.setAttribute('data-rrweb-link-cloned', 'true');
+    clone.setAttribute('data-rrweb-link-cloned', cloneNodeAttrId);
 
     document.head.appendChild(clone);
 
@@ -138,6 +149,7 @@ class AsyncStylesheetManager {
       clone,
       loaded: false,
       cssText: null,
+      cloneNodeAttrId,
     };
 
     clone.onload = () => {
