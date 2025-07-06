@@ -2,6 +2,51 @@ import { stringifyStylesheet } from './utils';
 
 const CLEANUP_DEBOUNCE_TIME = 1000 * 60 * 2;
 
+const DISALLOWED_EXTENSIONS = [
+  // Fonts
+  'woff',
+  'woff2',
+  'ttf',
+  'otf',
+  // Embedded OpenType font
+  'eot',
+  // Images
+  'png',
+  'jpg',
+  'jpeg',
+  'gif',
+  'svg',
+  'webp',
+  'ico',
+  // Scripts
+  'js',
+  'mjs',
+  'ts',
+  'jsx',
+  'tsx',
+  // Data files
+  'json',
+  'map',
+  // Media
+  'mp4',
+  'webm',
+  'ogg',
+  'mp3',
+  'wav',
+  // Archives
+  'zip',
+  'rar',
+  '7z',
+  'tar',
+  'gz',
+  // Documents
+  'pdf',
+  'doc',
+  'docx',
+  'xls',
+  'xlsx',
+];
+
 class AsyncStylesheetManager {
   static instance: AsyncStylesheetManager;
 
@@ -35,7 +80,7 @@ class AsyncStylesheetManager {
 
     if (!clone) return;
 
-    document.head.removeChild(clone);
+    clone.parentNode?.removeChild(clone);
   }
 
   onLoad(href: string) {
@@ -83,11 +128,19 @@ class AsyncStylesheetManager {
     this.clones[href].cssText = newCssText;
     this.clones[href].loaded = true;
 
-    //trigger a mutation on the original link element
-    this.clones[href].original.setAttribute(
-      'data-rrweb-mutation',
-      Date.now().toString(),
+    const original = document.querySelector<HTMLLinkElement>(
+      `link[data-rrweb-link-cloned="source-${this.clones[href].cloneNodeAttrId}"]`,
     );
+
+    //trigger a mutation on the original link element
+    if (!original) {
+      this.clones[href].original.setAttribute(
+        'data-rrweb-mutation',
+        Date.now().toString(),
+      );
+    } else {
+      original.setAttribute('data-rrweb-mutation', Date.now().toString());
+    }
   }
 
   onLoadError(href: string) {
@@ -130,6 +183,22 @@ class AsyncStylesheetManager {
 
     if (forElement.getAttribute('crossorigin') === 'anonymous') return;
 
+    if (forElement.rel !== 'stylesheet') {
+      //we want to handle some links which are not stylesheets (e.g. preloads which kinda creates a stylesheet)
+      //but we dont want to handle links which we are sure isn't css (hence the extension check)
+      //however, this check isn't exhastive, so we'll still probably gonna process some links which aren't css
+      //which is fine, and will be handled gracefully by this manager.
+      //this is just to avoid the majority of unnecessary re-fetches
+      const last = href.split('/').pop();
+      if (last && last.includes('.')) {
+        const [filename] = last.split('?');
+        const ext = filename.split('.').pop();
+        if (ext) {
+          if (DISALLOWED_EXTENSIONS.includes(ext.toLowerCase())) return;
+        }
+      }
+    }
+
     console.log(
       'AsyncStylesheetManager, registerClone: registering clone for href:',
       href,
@@ -141,6 +210,11 @@ class AsyncStylesheetManager {
 
     clone.setAttribute('crossorigin', 'anonymous');
     clone.setAttribute('data-rrweb-link-cloned', cloneNodeAttrId);
+
+    forElement.setAttribute(
+      'data-rrweb-link-cloned',
+      `source-${cloneNodeAttrId}`,
+    );
 
     document.head.appendChild(clone);
 
@@ -162,7 +236,10 @@ class AsyncStylesheetManager {
 
     //this is only for safe keeping in case a clone doesn't get removed normally
     if (this.cleanTimeout) clearTimeout(this.cleanTimeout);
-    this.cleanTimeout = setTimeout(this.onCleanTimeout, CLEANUP_DEBOUNCE_TIME);
+    this.cleanTimeout = setTimeout(
+      asyncStylesheetManager.onCleanTimeout,
+      CLEANUP_DEBOUNCE_TIME,
+    );
   }
 
   getClonedCssTextIfAvailable(href: string) {
