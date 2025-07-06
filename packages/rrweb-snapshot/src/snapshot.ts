@@ -636,6 +636,10 @@ function serializeElementNode(
       delete attributes.href;
       attributes._cssText = cssText;
     } else {
+      console.log(
+        'missing cssText on first passthrough for href:',
+        (n as HTMLLinkElement).href,
+      );
       asyncStylesheetManager.registerClone({
         forElement: n as HTMLLinkElement,
       });
