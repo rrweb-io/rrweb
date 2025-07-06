@@ -34,8 +34,6 @@ class AsyncStylesheetManager {
 
     let clonedStyleSheet: CSSStyleSheet | null = null;
 
-    document.head.removeChild(this.clones[href].clone);
-
     //looping backwards in case the original did create a stylesheet (we want the clone)
     for (let i = styleSheets.length - 1; i >= 0; i--) {
       if (styleSheets[i].href === href) {
@@ -44,14 +42,29 @@ class AsyncStylesheetManager {
       }
     }
 
-    if (!clonedStyleSheet) return;
+    if (!clonedStyleSheet) {
+      console.log(
+        "AsyncStylesheetManager, onLoad: couldn't find stylesheet for href:",
+        href,
+      );
+      return document.head.removeChild(this.clones[href].clone);
+    }
 
     const newCssText = stringifyStylesheet(clonedStyleSheet);
 
-    if (!newCssText) return;
+    document.head.removeChild(this.clones[href].clone);
+
+    if (!newCssText) {
+      console.log(
+        "AsyncStylesheetManager, onLoad: couldn't stringify stylesheet for href:",
+        href,
+      );
+      return;
+    }
 
     console.log(
-      'AsyncStylesheetManager, onLoad: success! did get new css text! forcing mutation...',
+      'AsyncStylesheetManager, onLoad: success! did get new css text! forcing mutation... for href:',
+      href,
     );
 
     this.clones[href].cssText = newCssText;
@@ -99,11 +112,6 @@ class AsyncStylesheetManager {
 
     const href = forElement.href;
 
-    console.log(
-      'AsyncStylesheetManager, registerClone: wants a clone for href:',
-      href,
-    );
-
     if (!href) return;
 
     if (href in this.clones && this.clones[href] !== undefined) return;
@@ -136,6 +144,7 @@ class AsyncStylesheetManager {
       this.onLoadError(href);
     };
 
+    //this is only for safe keeping in case a clone doesn't get removed normally
     if (this.cleanTimeout) clearTimeout(this.cleanTimeout);
     this.cleanTimeout = setTimeout(this.onCleanTimeout, CLEANUP_DEBOUNCE_TIME);
   }
@@ -147,7 +156,8 @@ class AsyncStylesheetManager {
       this.clones[href].loaded === true
     ) {
       console.log(
-        'AsyncStylesheetManager, getClonedCssTextIfAvailable: returning cloned cssText!',
+        'AsyncStylesheetManager, getClonedCssTextIfAvailable: returning cloned cssText, for href:',
+        href,
       );
 
       return this.clones[href].cssText;

@@ -614,11 +614,13 @@ function serializeElementNode(
     //TODO: maybe replace this `.styleSheets` with original one
     const styleSheets = Array.from(doc.styleSheets);
 
-    const styleSheetIndex = styleSheets.findIndex((s) => {
-      return s.href === (n as HTMLLinkElement).href;
-    });
-
-    const stylesheet = styleSheets[styleSheetIndex];
+    let stylesheet: CSSStyleSheet | null = null;
+    for (let i = 0; i < styleSheets.length; i++) {
+      if (styleSheets[i].href === (n as HTMLLinkElement).href) {
+        stylesheet = styleSheets[i];
+        break;
+      }
+    }
 
     let cssText: string | null = null;
     if (stylesheet) {
@@ -636,10 +638,6 @@ function serializeElementNode(
       delete attributes.href;
       attributes._cssText = cssText;
     } else {
-      console.log(
-        'missing cssText on first passthrough for href:',
-        (n as HTMLLinkElement).href,
-      );
       asyncStylesheetManager.registerClone({
         forElement: n as HTMLLinkElement,
       });
