@@ -139,7 +139,7 @@ class AsyncStylesheetManager {
 
     //so, in our case, we're changing the "rrweb-snapshot" code to improve our recordings
     //but this package "rrweb-snapshot" is used by other packages as well.
-    //so, we cannot access the rrweb-record code directly, so we'll use a custom event
+    //so, we cannot access the rrweb-record code directly, so we'll use a custom event (instead of record.addCustomEvent)
     //which the user needs to listen to (if they want)
     //BUT, we'll keep rrweb's data structure.
     window.dispatchEvent(
