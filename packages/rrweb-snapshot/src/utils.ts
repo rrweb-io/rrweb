@@ -127,7 +127,6 @@ export function stringifyStylesheet(s: CSSStyleSheet): string | null {
     ).join('');
     return fixBrowserCompatibilityIssuesInCSS(stringifiedRules);
   } catch (error) {
-    console.log('stringifyStylesheet error:', error);
     return null;
   }
 }
