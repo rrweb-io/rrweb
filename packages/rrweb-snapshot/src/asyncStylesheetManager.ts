@@ -1,6 +1,9 @@
 import { stringifyStylesheet } from './utils';
 
-const CLEANUP_DEBOUNCE_TIME = 1000 * 60 * 2;
+//effectively, this becomes the time limit on all fetching (caused by cloning)
+//link tag is cloned -> triggers a fetch -> if the fetch is pending after this time, the cloned link element will forcefully be removed
+//and therefore it's associated "styleSheet" (if there is one or one will be created shortly) will also be removed
+const CLEANUP_DEBOUNCE_TIME = 1000 * 30;
 
 const DISALLOWED_EXTENSIONS = [
   // Fonts
@@ -139,6 +142,7 @@ class AsyncStylesheetManager {
         Date.now().toString(),
       );
     } else {
+      //fallback
       original.setAttribute('data-rrweb-mutation', Date.now().toString());
     }
   }
@@ -158,15 +162,15 @@ class AsyncStylesheetManager {
   onCleanTimeout() {
     console.log('AsyncStylesheetManager, onCleanTimeout: cleaning up');
 
-    this.cleanTimeout = null;
-    this.removeAllCloneElements();
+    asyncStylesheetManager.cleanTimeout = null;
+    asyncStylesheetManager.removeAllCloneElements();
   }
 
   blowCache() {
     console.log('AsyncStylesheetManager, blowCache: blowing cache');
 
-    this.clones = {};
     this.removeAllCloneElements();
+    this.clones = {};
   }
 
   registerClone({ forElement }: { forElement: HTMLLinkElement }) {
@@ -194,7 +198,7 @@ class AsyncStylesheetManager {
         const [filename] = last.split('?');
         const ext = filename.split('.').pop();
         if (ext) {
-          if (DISALLOWED_EXTENSIONS.includes(ext.toLowerCase())) return;
+          if (DISALLOWED_EXTENSIONS.includes(ext.trim().toLowerCase())) return;
         }
       }
     }
