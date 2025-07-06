@@ -560,8 +560,6 @@ declare global {
   }
 }
 
-const cachedCssLinkRetries = new Set<string>();
-
 function serializeElementNode(
   n: HTMLElement,
   options: {
