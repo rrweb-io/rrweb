@@ -31,6 +31,7 @@ import {
   stringifyStylesheet,
   toLowerCase,
 } from './utils';
+import asyncStylesheetManager from './asyncStylesheetManager';
 
 let _id = 1;
 const tagNameRegex = new RegExp('[^a-z0-9-_:]');
@@ -559,6 +560,8 @@ declare global {
   }
 }
 
+const cachedCssLinkRetries = new Set<string>();
+
 function serializeElementNode(
   n: HTMLElement,
   options: {
@@ -611,19 +614,33 @@ function serializeElementNode(
   // remote css
   if (tagName === 'link' && inlineStylesheet) {
     //TODO: maybe replace this `.styleSheets` with original one
-    const stylesheet = Array.from(doc.styleSheets).find((s) => {
+    const styleSheets = Array.from(doc.styleSheets);
+
+    const styleSheetIndex = styleSheets.findIndex((s) => {
       return s.href === (n as HTMLLinkElement).href;
     });
+
+    const stylesheet = styleSheets[styleSheetIndex];
+
     let cssText: string | null = null;
     if (stylesheet) {
       cssText = stringifyStylesheet(stylesheet);
     }
+
+    if (!cssText) {
+      cssText = asyncStylesheetManager.getClonedCssTextIfAvailable(
+        (n as HTMLLinkElement).href,
+      );
+    }
+
     if (cssText) {
       delete attributes.rel;
       delete attributes.href;
       attributes._cssText = cssText;
     } else {
-      // console.log('failed to extract stylesheets from link element', n);
+      asyncStylesheetManager.registerClone({
+        forElement: n as HTMLLinkElement,
+      });
     }
   }
   if (tagName === 'style' && (n as HTMLStyleElement).sheet) {
