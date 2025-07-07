@@ -19,6 +19,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
+      
+      - name: Clean before install
+        run: yarn cache clean
 
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
