@@ -531,14 +531,14 @@ function diffChildren(
 
     if (isMismatch) {
       const newNode = createOrGetNode(newChild, replayer.mirror, rrnodeMirror);
-    
+
       try {
         handleInsertBefore(oldTree, newNode, oldChild);
       } catch (e) {
         console.warn(e);
       }
-    
-      diff(newNode, newChild, replayer, rrnodeMirror);    
+
+      diff(newNode, newChild, replayer, rrnodeMirror);
       newChild = newChild.nextSibling;
       continue;
     }
