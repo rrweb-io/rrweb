@@ -6,7 +6,6 @@ import {
   isShadowRoot,
   needMaskingText,
   maskInputValue,
-  Mirror,
   isNativeShadowDom,
   getInputType,
   toLowerCase,
@@ -18,7 +17,6 @@ import type {
   attributeCursor,
   removedNodeMutation,
   addedNodeMutation,
-  Optional,
 } from '@rrweb/types';
 import {
   isBlocked,
@@ -33,104 +31,6 @@ import {
   closestElementOfNode,
 } from '../utils';
 import dom from '@rrweb/utils';
-
-type DoubleLinkedListNode = {
-  previous: DoubleLinkedListNode | null;
-  next: DoubleLinkedListNode | null;
-  value: NodeInLinkedList;
-};
-type NodeInLinkedList = Node & {
-  __ln: DoubleLinkedListNode;
-};
-
-function isNodeInLinkedList(n: Node | NodeInLinkedList): n is NodeInLinkedList {
-  return '__ln' in n;
-}
-
-class DoubleLinkedList {
-  public length = 0;
-  public head: DoubleLinkedListNode | null = null;
-  public tail: DoubleLinkedListNode | null = null;
-
-  public get(position: number) {
-    if (position >= this.length) {
-      throw new Error('Position outside of list range');
-    }
-
-    let current = this.head;
-    for (let index = 0; index < position; index++) {
-      current = current?.next || null;
-    }
-    return current;
-  }
-
-  public addNode(n: Node) {
-    const node: DoubleLinkedListNode = {
-      value: n as NodeInLinkedList,
-      previous: null,
-      next: null,
-    };
-    (n as NodeInLinkedList).__ln = node;
-    if (n.previousSibling && isNodeInLinkedList(n.previousSibling)) {
-      const current = n.previousSibling.__ln.next;
-      node.next = current;
-      node.previous = n.previousSibling.__ln;
-      n.previousSibling.__ln.next = node;
-      if (current) {
-        current.previous = node;
-      }
-    } else if (
-      n.nextSibling &&
-      isNodeInLinkedList(n.nextSibling) &&
-      n.nextSibling.__ln.previous
-    ) {
-      const current = n.nextSibling.__ln.previous;
-      node.previous = current;
-      node.next = n.nextSibling.__ln;
-      n.nextSibling.__ln.previous = node;
-      if (current) {
-        current.next = node;
-      }
-    } else {
-      if (this.head) {
-        this.head.previous = node;
-      }
-      node.next = this.head;
-      this.head = node;
-    }
-    if (node.next === null) {
-      this.tail = node;
-    }
-    this.length++;
-  }
-
-  public removeNode(n: NodeInLinkedList) {
-    const current = n.__ln;
-    if (!this.head) {
-      return;
-    }
-
-    if (!current.previous) {
-      this.head = current.next;
-      if (this.head) {
-        this.head.previous = null;
-      } else {
-        this.tail = null;
-      }
-    } else {
-      current.previous.next = current.next;
-      if (current.next) {
-        current.next.previous = current.previous;
-      } else {
-        this.tail = current.previous;
-      }
-    }
-    if (n.__ln) {
-      delete (n as Optional<NodeInLinkedList, '__ln'>).__ln;
-    }
-    this.length--;
-  }
-}
 
 const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
 
@@ -272,45 +172,137 @@ export default class MutationBuffer {
     const adds: addedNodeMutation[] = [];
     const addedIds = new Set<number>();
 
-    /**
-     * Sometimes child node may be pushed before its newly added
-     * parent, so we init a queue to store these nodes.
-     */
-    const addList = new DoubleLinkedList();
-    const getNextId = (n: Node): number | null => {
-      let ns: Node | null = n;
-      let nextId: number | null = IGNORED_NODE; // slimDOM: ignored
-      while (nextId === IGNORED_NODE) {
-        ns = ns && ns.nextSibling;
-        nextId = ns && this.mirror.getId(ns);
+    while (this.mapRemoves.length) {
+      this.mirror.removeNodeFromMap(this.mapRemoves.shift()!);
+    }
+
+    for (const n of this.movedSet) {
+      const parentNode = dom.parentNode(n);
+      if (
+        parentNode && // can't be removed if it doesn't exist
+        this.removesSubTreeCache.has(parentNode) &&
+        !this.movedSet.has(parentNode)
+      ) {
+        continue;
       }
-      return nextId;
-    };
-    const pushAdd = (n: Node) => {
-      const parent = dom.parentNode(n);
-      if (!parent || !inDom(n)) {
-        return;
+      this.addedSet.add(n);
+    }
+
+    let n: Node | null = null;
+    let parentNode: Node | null = null;
+    let parentId = -1;
+    let nextSibling: Node | null = null;
+    let ancestorBad = false;
+    const missingParents = new Set<Node>();
+    while (this.addedSet.size) {
+      if (n !== null && this.addedSet.has(n.previousSibling as Node)) {
+        // reuse parentNode, parentId, ancestorBad
+        nextSibling = n; // n is a good next sibling
+        n = n.previousSibling as Node;
+      } else {
+        n = this.addedSet.values().next().value as Node; // pop
+
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          parentNode = dom.parentNode(n);
+          if (this.addedSet.has(parentNode as Node)) {
+            // start at top of added tree so as not to serialize children before their parents (parentId requirement)
+            n = parentNode as Node;
+            continue;
+          }
+          break;
+        }
+
+        if (missingParents.has(parentNode as Node)) {
+          parentNode = null;
+        } else if (parentNode) {
+          // we have a new parentNode for a 'row' of DOM children
+          // perf: we reuse these calculations across all child nodes
+
+          if (!inDom(parentNode)) {
+            ancestorBad = true;
+          } else {
+            ancestorBad =
+              isSelfOrAncestorInSet(this.droppedSet, parentNode) ||
+              this.removesSubTreeCache.has(parentNode);
+
+            if (ancestorBad && isSelfOrAncestorInSet(this.movedSet, n)) {
+              // not bad, just moved
+              ancestorBad = false;
+            }
+          }
+
+          if (this.addedSet.has(parentNode.lastChild as Node)) {
+            // jump instead of crawling nextSibling to nextSibling
+            n = parentNode.lastChild as Node;
+            nextSibling = null;
+          } else {
+            // eslint-disable-next-line no-constant-condition
+            while (true) {
+              nextSibling = n.nextSibling;
+              if (this.addedSet.has(nextSibling as Node)) {
+                // keep going as we can't serialize a node before it's next sibling (nextId requirement)
+                n = nextSibling as Node;
+                continue;
+              }
+              break;
+            }
+          }
+
+          parentId = isShadowRoot(parentNode)
+            ? this.mirror.getId(getShadowHost(n))
+            : this.mirror.getId(parentNode);
+
+          // If the node is the direct child of a shadow root, we treat the shadow host as its parent node.
+          if (
+            parentId === -1 &&
+            parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE
+          ) {
+            const shadowHost = dom.host(parentNode as ShadowRoot);
+            parentId = this.mirror.getId(shadowHost);
+          }
+        }
       }
+
+      this.addedSet.delete(n); // don't re-iterate
+
+      if (!parentNode || parentId === -1) {
+        missingParents.add(n); // ensure any added child nodes can also early-out
+        continue;
+      } else if (ancestorBad) {
+        // it's possible we could unify missingParents and this.droppedSet
+        // but would need to check the subtleties
+        this.droppedSet.add(n);
+        continue;
+      }
+
       let cssCaptured = false;
       if (n.nodeType === Node.TEXT_NODE) {
-        const parentTag = (parent as Element).tagName;
+        const parentTag = (parentNode as Element).tagName;
         if (parentTag === 'TEXTAREA') {
           // genTextAreaValueMutation already called via parent
-          return;
-        } else if (parentTag === 'STYLE' && this.addedSet.has(parent)) {
+          continue;
+        } else if (parentTag === 'STYLE' && addedIds.has(parentId)) {
           // css content will be recorded via parent's _cssText attribute when
           // mutation adds entire <style> element
           cssCaptured = true;
         }
       }
 
-      const parentId = isShadowRoot(parent)
-        ? this.mirror.getId(getShadowHost(n))
-        : this.mirror.getId(parent);
-
-      const nextId = getNextId(n);
-      if (parentId === -1 || nextId === -1) {
-        return addList.addNode(n);
+      let nextId = nextSibling ? this.mirror.getId(nextSibling) : null;
+      while (nextId === IGNORED_NODE) {
+        nextSibling = nextSibling && nextSibling.nextSibling;
+        nextId = nextSibling && this.mirror.getId(nextSibling);
+      }
+      if (nextId === -1) {
+        // sibling not included in addedNodes, but
+        // no id as not yet serialized?
+        console.warn(
+          "Couldn't record new node. Couldn't find mirror id for nextSibling:",
+          nextSibling,
+        );
+        n = null; // don't iterate to previousSibling as we haven't successful serialized this node
+        continue;
       }
       const sn = serializeNodeWithId(n, {
         doc: this.doc,
@@ -338,9 +330,12 @@ export default class MutationBuffer {
               currentN as HTMLLinkElement,
             );
           }
-          if (hasShadowRoot(n)) {
+          if (hasShadowRoot(n as Node)) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.shadowDomManager.addShadowRoot(dom.shadowRoot(n)!, this.doc);
+            this.shadowDomManager.addShadowRoot(
+              dom.shadowRoot(n as Node)!,
+              this.doc,
+            );
           }
         },
         onIframeLoad: (iframe, childSn) => {
@@ -360,92 +355,6 @@ export default class MutationBuffer {
         });
         addedIds.add(sn.id);
       }
-    };
-
-    while (this.mapRemoves.length) {
-      this.mirror.removeNodeFromMap(this.mapRemoves.shift()!);
-    }
-
-    for (const n of this.movedSet) {
-      if (
-        isParentRemoved(this.removesSubTreeCache, n, this.mirror) &&
-        !this.movedSet.has(dom.parentNode(n)!)
-      ) {
-        continue;
-      }
-      pushAdd(n);
-    }
-
-    for (const n of this.addedSet) {
-      if (
-        !isAncestorInSet(this.droppedSet, n) &&
-        !isParentRemoved(this.removesSubTreeCache, n, this.mirror)
-      ) {
-        pushAdd(n);
-      } else if (isAncestorInSet(this.movedSet, n)) {
-        pushAdd(n);
-      } else {
-        this.droppedSet.add(n);
-      }
-    }
-
-    let candidate: DoubleLinkedListNode | null = null;
-    while (addList.length) {
-      let node: DoubleLinkedListNode | null = null;
-      if (candidate) {
-        const parentId = this.mirror.getId(dom.parentNode(candidate.value));
-        const nextId = getNextId(candidate.value);
-        if (parentId !== -1 && nextId !== -1) {
-          node = candidate;
-        }
-      }
-      if (!node) {
-        let tailNode = addList.tail;
-        while (tailNode) {
-          const _node = tailNode;
-          tailNode = tailNode.previous;
-          // ensure _node is defined before attempting to find value
-          if (_node) {
-            const parentId = this.mirror.getId(dom.parentNode(_node.value));
-            const nextId = getNextId(_node.value);
-
-            if (nextId === -1) continue;
-            // nextId !== -1 && parentId !== -1
-            else if (parentId !== -1) {
-              node = _node;
-              break;
-            }
-            // nextId !== -1 && parentId === -1 This branch can happen if the node is the child of shadow root
-            else {
-              const unhandledNode = _node.value;
-              const parent = dom.parentNode(unhandledNode);
-              // If the node is the direct child of a shadow root, we treat the shadow host as its parent node.
-              if (parent && parent.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-                const shadowHost = dom.host(parent as ShadowRoot);
-                const parentId = this.mirror.getId(shadowHost);
-                if (parentId !== -1) {
-                  node = _node;
-                  break;
-                }
-              }
-            }
-          }
-        }
-      }
-      if (!node) {
-        /**
-         * If all nodes in queue could not find a serialized parent,
-         * it may be a bug or corner case. We need to escape the
-         * dead while loop at once.
-         */
-        while (addList.head) {
-          addList.removeNode(addList.head.value);
-        }
-        break;
-      }
-      candidate = node.previous;
-      addList.removeNode(node.value);
-      pushAdd(node.value);
     }
 
     const payload = {
@@ -828,33 +737,18 @@ function processRemoves(n: Node, cache: Set<Node>) {
   return;
 }
 
-function isParentRemoved(removes: Set<Node>, n: Node, mirror: Mirror): boolean {
-  if (removes.size === 0) return false;
-  return _isParentRemoved(removes, n, mirror);
-}
-
-function _isParentRemoved(
-  removes: Set<Node>,
-  n: Node,
-  _mirror: Mirror,
-): boolean {
-  const node: ParentNode | null = dom.parentNode(n);
-  if (!node) return false;
-  return removes.has(node);
-}
-
-function isAncestorInSet(set: Set<Node>, n: Node): boolean {
+function isSelfOrAncestorInSet(set: Set<Node>, n: Node): boolean {
   if (set.size === 0) return false;
-  return _isAncestorInSet(set, n);
+  return _isSelfOrAncestorInSet(set, n);
 }
 
-function _isAncestorInSet(set: Set<Node>, n: Node): boolean {
+function _isSelfOrAncestorInSet(set: Set<Node>, n: Node): boolean {
+  if (set.has(n)) {
+    return true;
+  }
   const parent = dom.parentNode(n);
   if (!parent) {
     return false;
   }
-  if (set.has(parent)) {
-    return true;
-  }
-  return _isAncestorInSet(set, parent);
+  return _isSelfOrAncestorInSet(set, parent);
 }
