@@ -998,11 +998,17 @@ describe('record', function (this: ISuite) {
         emit: (window as unknown as IWindow).emit,
       });
       const iframe = document.createElement('iframe');
+      (window as any).stopRecord = stopRecord;
+      (window as any).iframe = iframe;
       document.body.appendChild(iframe);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      iframe.src = 'https://www.example.com'; // Change the same origin iframe to a cross origin iframe after it's recorded
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      stopRecord?.();
+    });
+    await waitForRAF(ctx.page);
+    await ctx.page.evaluate(async () => {
+      (window as any).iframe.src = 'https://www.example.com'; // Change the same origin iframe to a cross origin iframe after it's recorded
+    });
+    await waitForRAF(ctx.page);
+    await ctx.page.evaluate(() => {
+      (window as any).stopRecord?.();
     });
   });
 });
