@@ -131,6 +131,7 @@ declare module '$env/static/private' {
 	export const npm_package_dependencies_kleur: string;
 	export const npm_package_dependencies_devalue: string;
 	export const npm_config_ignore_scripts: string;
+	export const STATS_BLT: string;
 	export const GITHUB_WORKFLOW_REF: string;
 	export const PERFLOG_LOCATION_SETTING: string;
 	export const GITHUB_ACTION_REPOSITORY: string;
@@ -375,6 +376,7 @@ declare module '$env/dynamic/private' {
 		npm_package_dependencies_kleur: string;
 		npm_package_dependencies_devalue: string;
 		npm_config_ignore_scripts: string;
+		STATS_BLT: string;
 		GITHUB_WORKFLOW_REF: string;
 		PERFLOG_LOCATION_SETTING: string;
 		GITHUB_ACTION_REPOSITORY: string;

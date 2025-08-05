@@ -2,13 +2,18 @@
  * @vitest-environment jsdom
  */
 import { JSDOM } from 'jsdom';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import snapshot, {
   _isBlockedElement,
   serializeNodeWithId,
 } from '../src/snapshot';
-import { elementNode, serializedNodeWithId } from '../src/types';
+import type {
+  serializedNodeWithId,
+  elementNode,
+  asset,
+  captureAssetsParam,
+} from '@rrweb/types';
 import { Mirror, absolutifyURLs } from '../src/utils';
 
 const serializeNode = (node: Node): serializedNodeWithId | null => {
@@ -194,7 +199,7 @@ describe('scrollTop/scrollLeft', () => {
   };
 
   it('should serialize scroll positions', () => {
-    const el = render(`<div stylel='overflow: auto; width: 1px; height: 1px;'>
+    const el = render(`<div style='overflow: auto; width: 1px; height: 1px;'>
       Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
     </div>`);
     el.scrollTop = 10;
@@ -251,5 +256,224 @@ describe('jsdom snapshot', () => {
     expect(sn).toMatchObject({
       type: 0,
     });
+  });
+});
+
+describe('onAssetDetected callback', () => {
+  const serializeNode = (
+    node: Node,
+    onAssetDetected: (result: asset) => void,
+    inlineImages?: boolean,
+    captureAssets?: captureAssetsParam,
+  ): serializedNodeWithId | null => {
+    if (captureAssets === undefined) {
+      captureAssets = {
+        objectURLs: true,
+        origins: ['https://example.com'],
+      };
+    }
+
+    return serializeNodeWithId(node, {
+      doc: document,
+      mirror: new Mirror(),
+      blockClass: 'blockblock',
+      blockSelector: null,
+      maskTextClass: 'maskmask',
+      maskTextSelector: null,
+      skipChild: false,
+      inlineStylesheet: true,
+      maskTextFn: undefined,
+      maskInputFn: undefined,
+      slimDOMOptions: {},
+      newlyAddedElement: false,
+      inlineImages: Boolean(inlineImages),
+      onAssetDetected,
+      captureAssets,
+    });
+  };
+
+  const render = (html: string): HTMLDivElement => {
+    document.write(html);
+    return document.querySelector('div')!;
+  };
+
+  it('should detect `src` attribute in image', () => {
+    const el = render(`<div>
+      <img src="https://example.com/image.png" />
+    </div>`);
+
+    const onAssetDetectedCallback = vi.fn();
+    serializeNode(el, onAssetDetectedCallback);
+    expect(onAssetDetectedCallback).toHaveBeenCalledWith({
+      element: el.querySelector('img'),
+      attr: 'src',
+      value: 'https://example.com/image.png',
+    });
+  });
+
+  it('should detect `set` attribute in image with ObjectURL', () => {
+    const el = render(`<div>
+      <img src="blob:https://example.com/e81acc2b-f460-4aec-91b3-ce9732b837c4" />
+    </div>`);
+
+    const onAssetDetectedCallback = vi.fn();
+    serializeNode(el, onAssetDetectedCallback);
+    expect(onAssetDetectedCallback).toHaveBeenCalledWith({
+      element: el.querySelector('img'),
+      attr: 'src',
+      value: 'blob:https://example.com/e81acc2b-f460-4aec-91b3-ce9732b837c4',
+    });
+  });
+  it('should detect `srcset` attribute in image', () => {
+    const el = render(`<div>
+      <img srcset="https://example.com/images/team-photo.jpg, https://example.com/images/team-photo-retina.jpg 2x" />
+    </div>`);
+
+    // this used to trigger two calls, but now AssetManager is responsible for parsing the args
+    const onAssetDetectedCallback = vi.fn();
+    serializeNode(el, onAssetDetectedCallback);
+    expect(onAssetDetectedCallback).toHaveBeenCalledWith({
+      element: el.querySelector('img'),
+      attr: 'srcset',
+      value:
+        'https://example.com/images/team-photo.jpg, https://example.com/images/team-photo-retina.jpg 2x',
+    });
+  });
+
+  it('should detect `src` attribute in two images', () => {
+    const el = render(`<div>
+      <img src="https://example.com/image.png" />
+      <img src="https://example.com/image2.png" />
+    </div>`);
+
+    const onAssetDetectedCallback = vi.fn();
+    serializeNode(el, onAssetDetectedCallback);
+    expect(onAssetDetectedCallback).toBeCalledTimes(2);
+    expect(onAssetDetectedCallback).toHaveBeenCalledWith({
+      element: el.querySelectorAll('img')[0],
+      attr: 'src',
+      value: 'https://example.com/image.png',
+    });
+    expect(onAssetDetectedCallback).toHaveBeenCalledWith({
+      element: el.querySelectorAll('img')[1],
+      attr: 'src',
+      value: 'https://example.com/image2.png',
+    });
+  });
+
+  it('should detect link stylesheet as asset', () => {
+    const el = render(`<div>
+<link rel="stylesheet" href="https://example.com/css/style.css" />
+</div>`);
+
+    // pretend it has loaded but isn't CORS accessible
+    let linkEl = el.querySelector('link');
+    Object.defineProperty(linkEl, 'sheet', {
+      value: true,
+    });
+
+    const onAssetDetectedCallback = vi.fn();
+    serializeNode(el, onAssetDetectedCallback);
+    expect(onAssetDetectedCallback).toBeCalledTimes(1);
+    expect(onAssetDetectedCallback).toHaveBeenCalledWith({
+      element: el.querySelector('link'),
+      attr: 'href',
+      value: 'https://example.com/css/style.css',
+    });
+  });
+
+  it('should not detect different origin stylesheet as asset', () => {
+    const el = render(`<div>
+<link rel="stylesheet" href="https://rrweb.com/css/style.css" />
+</div>`);
+
+    const onAssetDetectedCallback = vi.fn();
+    serializeNode(el, onAssetDetectedCallback);
+    expect(onAssetDetectedCallback).toBeCalledTimes(0);
+  });
+
+  it('should not confuse inlineImages=true with capturing all stylesheets', () => {
+    const el = render(`<div>
+<link rel="stylesheet" href="https://rrweb.com/css/style.css" />
+</div>`);
+
+    const onAssetDetectedCallback = vi.fn();
+    const inlineImagesTrue = true;
+    serializeNode(el, onAssetDetectedCallback, inlineImagesTrue);
+    expect(onAssetDetectedCallback).toBeCalledTimes(0);
+  });
+
+  it('should detect style element as asset', () => {
+    const el = render(`<div>
+<style>
+      body { background: pink; }
+</style>
+</div>`);
+
+    const onAssetDetectedCallback = vi.fn();
+    serializeNode(el, onAssetDetectedCallback);
+    expect(onAssetDetectedCallback).toBeCalledTimes(1);
+    expect(onAssetDetectedCallback).toHaveBeenCalledWith({
+      element: el.querySelector('style'),
+      attr: 'css_text',
+      styleId: 1,
+      value: 'http://localhost:3000/',
+    });
+  });
+
+  it('should detect style depending on if stylesheetsRuleThreshold is met', () => {
+    const el = render(`<div>
+<style>
+      body { background: pink; }
+</style>
+<style>
+      body { background: pink; }
+      div { background: pink; }
+      span { background: pink; }
+</style>
+</div>`);
+
+    const onAssetDetectedCallback = vi.fn();
+    const captureAssets = {
+      objectURLs: true,
+      origins: ['https://example.com'],
+      stylesheetsRuleThreshold: 2,
+    };
+    const inlineImagesUndefined = undefined;
+    serializeNode(
+      el,
+      onAssetDetectedCallback,
+      inlineImagesUndefined,
+      captureAssets,
+    );
+    expect(onAssetDetectedCallback).toBeCalledTimes(1);
+  });
+
+  // SKIP: TODO: avoid capturing large video blobs, but allow capture of (presumably smaller) image blobs
+  it.skip('should not try to capture blob video under defaults', () => {
+    const el = render(`<div><video>
+      <source src="blob:https://example.com/e81acc2b-f460-4aec-91b3-ce9732b837c4" type="video/mp4" />
+    </video></div>`);
+
+    const onAssetDetectedCallback = vi.fn();
+    const captureAssets = undefined; // defaults
+    const inlineImagesUndefined = undefined;
+    serializeNode(
+      el,
+      onAssetDetectedCallback,
+      inlineImagesUndefined,
+      captureAssets,
+    );
+    expect(onAssetDetectedCallback).toBeCalledTimes(0);
+
+    // make sure it would be called with video on
+    captureAssets.video = true;
+    serializeNode(
+      el,
+      onAssetDetectedCallback,
+      inlineImagesUndefined,
+      captureAssets,
+    );
+    expect(onAssetDetectedCallback).toBeCalledTimes(1);
   });
 });

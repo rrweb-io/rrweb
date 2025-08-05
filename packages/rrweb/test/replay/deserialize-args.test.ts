@@ -153,7 +153,7 @@ describe('deserializeArg', () => {
     // more info: https://github.com/jsdom/jsdom/issues/2555
     expect(deserialized).toEqual(expected);
     // thats why we test size of the blob as well
-    expect(deserialized.size).toEqual(expected.size);
+    expect((deserialized as Blob)?.size).toEqual(expected.size);
   });
 
   describe('isUnchanged', () => {
