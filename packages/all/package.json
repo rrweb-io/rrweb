@@ -50,14 +50,14 @@
   ],
   "devDependencies": {
     "puppeteer": "^20.9.0",
+    "typescript": "^5.4.5",
     "vite": "^5.3.1",
     "vite-plugin-dts": "^3.9.1",
-    "vitest": "^1.4.0",
-    "typescript": "^5.4.5"
+    "vitest": "^1.6.1"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
     "@rrweb/packer": "^2.0.0-alpha.18",
+    "@rrweb/types": "^2.0.0-alpha.18",
     "rrweb": "^2.0.0-alpha.18"
   },
   "browserslist": [
