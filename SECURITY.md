@@ -5,7 +5,7 @@ This document outlines rrweb's vulnerability disclosure policy.
 ## Reporting a Vulnerability
 
 Please do not report security vulnerabilities through public GitHub issues.
-Instead, please report them to our GitHub Security page. If you prefer to submit one without using GitHub, you can also email the 
+Instead, please report them to our GitHub Security page. If you prefer to submit one without using GitHub, you can also email the
 private Google Group rrweb-security@googlegroups.com, which will go to the core team members only.
 We commit to acknowledging vulnerability reports and will work to fix active vulnerabilities as soon as we can (noting this is a community run project).
 
