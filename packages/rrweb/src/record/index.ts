@@ -626,7 +626,7 @@ function record<T = eventWithTime>(
            * https://github.com/rrweb-io/rrweb/pull/1695
            * This error can occur in a known scenario:
            * If an iframe is initially same-origin and observed, but later its 
-           src attribute is changed to a cross-origin URL,
+           location is changed in an opaque way to a cross-origin URL (perhaps within the iframe via its `document.location` or a redirect) 
            * attempting to execute the handler in the stop record function will 
            throw a "cannot access cross-origin frame" error.
            * This error is expected and can be safely ignored.
