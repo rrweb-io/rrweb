@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@2.3.0/schema.json",
-  "changelog": ["@changesets/changelog-github", { "repo": "rrweb-io/rrweb" }],
+  "changelog": ["@changesets/changelog-github", { "repo": "mixpanel/rrweb" }],
   "commit": false,
   "fixed": [
     [
@@ -9,13 +9,13 @@
       "@mixpanel/rrdom",
       "@mixpanel/rrdom-nodejs",
       "@mixpanel/rrweb-player",
-      "@mixpanel/all",
-      "@mixpanel/replay",
-      "@mixpanel/record",
-      "@mixpanel/types",
-      "@mixpanel/packer",
-      "@mixpanel/utils",
-      "@mixpanel/web-extension",
+      "@mixpanel/rrweb-all",
+      "@mixpanel/rrweb-replay",
+      "@mixpanel/rrweb-record",
+      "@mixpanel/rrweb-types",
+      "@mixpanel/rrweb-packer",
+      "@mixpanel/rrweb-utils",
+      "@mixpanel/rrweb-web-extension",
       "@mixpanel/rrvideo",
       "@mixpanel/rrweb-plugin-console-record",
       "@mixpanel/rrweb-plugin-console-replay",
