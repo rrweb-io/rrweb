@@ -8,6 +8,12 @@ import {
   shadowHostInDom,
   getShadowHost,
 } from '../src/utils';
+import { vi } from 'vitest';
+import * as fs from 'fs';
+import * as path from 'path';
+import { ISuite, launchPuppeteer } from './utils';
+import events from './events/merge-events';
+import type { eventWithTime } from '@rrweb/types';
 
 describe('Utilities for other modules', () => {
   describe('StyleSheetMirror', () => {
@@ -141,6 +147,124 @@ describe('Utilities for other modules', () => {
       expect(getRootShadowHost(a.childNodes[0])).toBe(a.childNodes[0]);
       expect(shadowHostInDom(a.childNodes[0])).toBeTruthy();
       expect(inDom(a.childNodes[0])).toBeTruthy();
+    });
+  });
+
+  describe('mergeEvents()', () => {
+    vi.setConfig({ testTimeout: 10_000 });
+
+    let code: ISuite['code'];
+    let browser: ISuite['browser'];
+    let page: ISuite['page'];
+
+    beforeAll(async () => {
+      browser = await launchPuppeteer();
+
+      const bundlePath = path.resolve(__dirname, '../dist/rrweb.umd.cjs');
+      code = fs.readFileSync(bundlePath, 'utf8');
+    });
+
+    beforeEach(async () => {
+      page = await browser.newPage();
+      await page.goto('about:blank');
+      await page.evaluate(code);
+      await page.evaluate(`var events = ${JSON.stringify(events)}`);
+      page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
+    });
+
+    afterEach(async () => {
+      await page.close();
+    });
+
+    afterAll(async () => {
+      await browser.close();
+    });
+
+    const startTimeStamp = 1734952277674;
+    it('Merge existing timestamp', async () => {
+      // merge events
+      const mergedEvents = (await page.evaluate(`
+        const { Replayer, utils } = rrweb;
+        let replayer = new Replayer(events);
+        const startTimeStamp = ${startTimeStamp};
+        replayer.pause(startTimeStamp - events[0].timestamp);
+        const mirror = replayer.getMirror();
+        utils.mergeEvents({
+          events: events,
+          startTimeStamp,
+          snapshotOptions: {
+            mirror,
+          },
+        });
+      `)) as eventWithTime[];
+
+      // expect timestamp
+      const [meta, fullsnapshot, targetEvent] = mergedEvents;
+      expect(targetEvent.timestamp).toEqual(startTimeStamp);
+      expect(fullsnapshot.timestamp).toEqual(startTimeStamp - 1);
+      expect(meta.timestamp).toEqual(startTimeStamp - 2);
+      expect(mergedEvents.length).toEqual(6);
+
+      // will start actions when play
+      const actionLength1 = await page.evaluate(`
+        replayer.destroy();
+        replayer = new Replayer(${JSON.stringify(mergedEvents)});
+        replayer.play();
+        replayer['timer']['actions'].length;
+      `);
+      expect(actionLength1).toEqual(mergedEvents.length);
+
+      // can play at any time offset
+      const actionLength2 = await page.evaluate(`
+        replayer.destroy();
+        replayer = new Replayer(${JSON.stringify(mergedEvents)});
+        replayer.play(1500);
+        replayer['timer']['actions'].length;
+      `);
+      expect(actionLength2).toEqual(
+        mergedEvents.filter((e) => e.timestamp - startTimeStamp >= 1500).length,
+      );
+    });
+
+    it('Merge non-existing timestamp from start to the end', async () => {
+      const newStartTimeStamp = startTimeStamp + 1;
+      const newEndTimeStamp = events[events.length - 1].timestamp - 1;
+
+      // merge events
+      const mergedEvents = (await page.evaluate(`
+        const { Replayer, utils } = rrweb;
+        let replayer = new Replayer(events);
+        const startTimeStamp = ${newStartTimeStamp};
+        const endTimeStamp = ${newEndTimeStamp};
+        replayer.pause(startTimeStamp - events[0].timestamp);
+        const mirror = replayer.getMirror();
+        utils.mergeEvents({
+          events: events,
+          startTimeStamp,
+          endTimeStamp,
+          snapshotOptions: {
+            mirror,
+          },
+        });
+      `)) as eventWithTime[];
+
+      // expect timestamp
+      const [meta, fullsnapshot, targetEvent] = mergedEvents;
+      const target = events.find((item) => item.timestamp > newStartTimeStamp);
+      const targetTimestamp = target?.timestamp || 0;
+      expect(targetEvent.timestamp).toEqual(targetTimestamp);
+      expect(fullsnapshot.timestamp).toEqual(targetTimestamp - 1);
+      expect(meta.timestamp).toEqual(targetTimestamp - 2);
+      expect(mergedEvents.length).toEqual(4);
+
+      // will start actions when play
+      const actionLength1 = await page.evaluate(`
+        replayer.destroy();
+        replayer = new Replayer(${JSON.stringify(mergedEvents)});
+        replayer.play();
+        replayer['timer']['actions'].length;
+      `);
+      expect(actionLength1).toEqual(mergedEvents.length);
     });
   });
 });
