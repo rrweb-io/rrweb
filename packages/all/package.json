@@ -1,5 +1,5 @@
 {
-  "name": "@rrweb/all",
+  "name": "@mixpanel/rrweb-all",
   "version": "2.0.0-alpha.18",
   "publishConfig": {
     "access": "public"
@@ -17,13 +17,13 @@
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/all#readme",
+  "homepage": "https://github.com/mixpanel/rrweb/tree/main/packages/@rrweb/all#readme",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/mixpanel/rrweb/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/mixpanel/rrweb.git"
   },
   "license": "MIT",
   "type": "module",
@@ -56,9 +56,9 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
-    "@rrweb/packer": "^2.0.0-alpha.18",
-    "rrweb": "^2.0.0-alpha.18"
+    "@mixpanel/rrweb-types": "^2.0.0-alpha.18",
+    "@mixpanel/rrweb-packer": "^2.0.0-alpha.18",
+    "@mixpanel/rrweb": "^2.0.0-alpha.18"
   },
   "browserslist": [
     "supports es6-class"

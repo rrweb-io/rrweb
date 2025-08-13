@@ -1,5 +1,5 @@
 {
-  "name": "@rrweb/rrweb-plugin-console-replay",
+  "name": "@mixpanel/rrweb-plugin-console-replay",
   "version": "2.0.0-alpha.18",
   "description": "",
   "type": "module",
@@ -31,7 +31,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/mixpanel/rrweb.git"
   },
   "keywords": [
     "rrweb"
@@ -39,17 +39,17 @@
   "author": "yanzhen@smartx.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/mixpanel/rrweb/issues"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "homepage": "https://github.com/mixpanel/rrweb#readme",
   "devDependencies": {
-    "@rrweb/rrweb-plugin-console-record": "^2.0.0-alpha.18",
-    "rrweb": "^2.0.0-alpha.18",
+    "@mixpanel/rrweb-plugin-console-record": "^2.0.0-alpha.18",
+    "@mixpanel/rrweb": "^2.0.0-alpha.18",
     "typescript": "^5.4.5",
     "vite": "^5.3.1",
     "vite-plugin-dts": "^3.9.1"
   },
   "peerDependencies": {
-    "rrweb": "^2.0.0-alpha.18"
+    "@mixpanel/rrweb": "^2.0.0-alpha.18"
   }
 }
