@@ -1,6 +1,6 @@
 {
   "name": "@mixpanel/rrweb-packer",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.0-alpha.18.1",
   "publishConfig": {
     "access": "public"
   },
@@ -27,9 +27,9 @@
   },
   "license": "MIT",
   "type": "module",
-  "main": "./dist/packer.cjs",
-  "module": "./dist/packer.js",
-  "unpkg": "./dist/packer.js",
+  "main": "./dist/rrweb-packer.cjs",
+  "module": "./dist/rrweb-packer.js",
+  "unpkg": "./dist/rrweb-packer.js",
   "typings": "dist/packer.d.ts",
   "exports": {
     ".": {

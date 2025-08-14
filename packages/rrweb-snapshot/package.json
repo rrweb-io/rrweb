@@ -1,6 +1,6 @@
 {
   "name": "@mixpanel/rrweb-snapshot",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.0-alpha.18.1",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",
@@ -12,7 +12,7 @@
     "test:update": "yarn build && vitest run --update",
     "bench": "vite build && vitest bench",
     "dev": "vite build --watch",
-    "build": "yarn turbo prepublish -F rrweb-snapshot",
+    "build": "yarn turbo prepublish -F @mixpanel/rrweb-snapshot",
     "check-types": "tsc --noEmit",
     "prepublish": "yarn check-types && vite build",
     "lint": "yarn eslint src"

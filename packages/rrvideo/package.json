@@ -1,6 +1,6 @@
 {
   "name": "@mixpanel/rrvideo",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.0-alpha.18.1",
   "description": "transform rrweb session into video",
   "main": "build/index.js",
   "bin": {
