@@ -576,6 +576,7 @@ describe('stylesheet asset tests', function (this: ISuite) {
     server = await startServer();
     browser = await puppeteer.launch({
       // headless: false,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     code = fs.readFileSync(
