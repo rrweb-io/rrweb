@@ -6,6 +6,7 @@ import type * as puppeteer from 'puppeteer';
 import events from '../events/assets';
 import mutationEvents from '../events/assets-mutation';
 import assetsChangedEvents from '../events/assets-src-changed-before-asset-loaded';
+import assetsBodyInlineStyleEvents from '../events/assets-body-inline-style';
 import type { assetEvent } from '@rrweb/types';
 import { vi } from 'vitest';
 
@@ -46,6 +47,11 @@ describe('replayer', function () {
     );
     await page.evaluate(
       `let assetsChangedEvents = ${JSON.stringify(assetsChangedEvents)}`,
+    );
+    await page.evaluate(
+      `let assetsBodyInlineStyleEvents = ${JSON.stringify(
+        assetsBodyInlineStyleEvents,
+      )}`,
     );
 
     page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
@@ -319,5 +325,21 @@ describe('replayer', function () {
         ),
       ).toMatchInlineSnapshot(`"ftp://example.com/red.png"`);
     });
+  });
+
+  it('should correctly rebuild style elements within the body', async () => {
+    await page.evaluate(`
+      const { Replayer } = rrweb;
+      window.replayer = new Replayer(assetsBodyInlineStyleEvents.filter(e=>e.type!==7));
+      replayer.pause((assetsBodyInlineStyleEvents[2].timestamp - assetsBodyInlineStyleEvents[0].timestamp) + 1);
+      // make asset events available after rebuild so preloadedStatus.status in asset manager is not 'loaded'
+      assetsBodyInlineStyleEvents.filter(e=>e.type===7).forEach(assetEvent=>replayer.addEvent(assetEvent));
+      replayer.pause((assetsBodyInlineStyleEvents[assetsBodyInlineStyleEvents.length - 1].timestamp - assetsBodyInlineStyleEvents[0].timestamp) + 1);
+  `);
+
+    await waitForRAF(page);
+
+    const image = await page.screenshot();
+    expect(image).toMatchImageSnapshot();
   });
 });
