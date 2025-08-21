@@ -308,9 +308,17 @@ export default class AssetManager implements RebuildAssetManagerInterface {
               return;
             }
           }
+          let rebuildTarget: serializedElementNodeWithId | HTMLStyleElement;
+          if (node.childNodes || !serializedNode) {
+            // presence of childNodes indicates it has already been built (although should really check mirror)
+            // so it is too late to use the serializedNode
+            rebuildTarget = node as HTMLStyleElement;
+          } else {
+            rebuildTarget = serializedNode;
+          }
           if (status.cssTexts) {
             buildStyleNode(
-              serializedNode || (node as HTMLStyleElement),
+              rebuildTarget,
               node as HTMLStyleElement,
               status.cssTexts.join('/* rr_split */'),
               {

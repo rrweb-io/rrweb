@@ -2,7 +2,7 @@ import { EventType, type eventWithTime } from '@rrweb/types';
 
 const events: eventWithTime[] = [
   {
-    type: 4,
+    type: EventType.Meta,
     data: {
       href: '',
       width: 1600,
@@ -11,7 +11,7 @@ const events: eventWithTime[] = [
     timestamp: 1636379531385,
   },
   {
-    type: 2,
+    type: EventType.FullSnapshot,
     data: {
       node: {
         type: 0,

@@ -190,6 +190,7 @@ export function buildStyleNode(
 ) {
   const { hackCss, cache } = options;
   if (n.childNodes.length) {
+    // caller has to make sure to pass in the HTMLStyleElement if serialized node has already rebuilt
     applyCssSplits(n, cssText, hackCss, cache);
   } else {
     if (hackCss) {
@@ -286,7 +287,12 @@ function buildNode(
         } else if (tagName === 'style' && name === '_cssText') {
           // with rrweb this is not the preferred way to build a style node, but rather via an asset
           buildStyleNode(n, node as HTMLStyleElement, value, options);
-          continue; // no need to set _cssText as attribute
+          /*
+           * no need to set _cssText as attribute
+           * instead we've now got new childNodes which will get rebuilt as buildNodeWithSN continues to walk tree
+           * (or else we've added the css directly as a child node if no id is required)
+           */
+          continue;
         } else if (tagName === 'textarea' && name === 'value') {
           // create without an ID or presence in mirror
           node.appendChild(doc.createTextNode(value));
