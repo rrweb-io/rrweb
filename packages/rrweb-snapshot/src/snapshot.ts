@@ -9,6 +9,7 @@ import type {
 } from '@rrweb/types';
 import { NodeType } from '@rrweb/types';
 import dom from '@rrweb/utils';
+import asyncStylesheetManager from './asyncStylesheetManager';
 import type {
   DialogAttributes,
   KeepIframeSrcFn,
@@ -611,17 +612,45 @@ function serializeElementNode(
   // remote css
   if (tagName === 'link' && inlineStylesheet) {
     //TODO: maybe replace this `.styleSheets` with original one
-    const stylesheet = Array.from(doc.styleSheets).find((s) => {
-      return s.href === (n as HTMLLinkElement).href;
-    });
+    const styleSheets = Array.from(doc.styleSheets);
+
+    let stylesheet: CSSStyleSheet | null = null;
+    for (let i = 0; i < styleSheets.length; i++) {
+      if (styleSheets[i].href === (n as HTMLLinkElement).href) {
+        stylesheet = styleSheets[i];
+        break;
+      }
+    }
+
     let cssText: string | null = null;
     if (stylesheet) {
       cssText = stringifyStylesheet(stylesheet);
     }
+
+    if (!cssText) {
+      cssText = asyncStylesheetManager.getClonedCssTextIfAvailable(
+        (n as HTMLLinkElement).href,
+      );
+    }
+
     if (cssText) {
       delete attributes.rel;
       delete attributes.href;
       attributes._cssText = cssText;
+    } else {
+      //the mutation / full snapshot wants the css, but was unable to get it synchronously
+      //which means that this mutation (/full snapshot) will be missing the css.
+      //so, we can use this id, later when we process our session data, to grab the css
+      //from an custom event which will be dispatched soon (async) with this id
+      //and copy it to this mutation (/full snapshot)
+      const requestCssId = `css-request-${Math.random().toString(36).slice(2)}`;
+
+      asyncStylesheetManager.requestClone({
+        forElement: n as HTMLLinkElement,
+        requestCssId,
+      });
+
+      attributes._requestCssId = requestCssId;
     }
   }
   if (tagName === 'style' && (n as HTMLStyleElement).sheet) {
