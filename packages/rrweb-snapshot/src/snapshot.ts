@@ -9,6 +9,7 @@ import type {
 } from '@rrweb/types';
 import { NodeType } from '@rrweb/types';
 import dom from '@rrweb/utils';
+import asyncStylesheetManager from './asyncStylesheetManager';
 import type {
   DialogAttributes,
   KeepIframeSrcFn,
@@ -31,7 +32,6 @@ import {
   stringifyStylesheet,
   toLowerCase,
 } from './utils';
-import asyncStylesheetManager from './asyncStylesheetManager';
 
 let _id = 1;
 const tagNameRegex = new RegExp('[^a-z0-9-_:]');
@@ -792,48 +792,49 @@ function serializeElementNode(
       canvasService = doc.createElement('canvas');
       canvasCtx = canvasService.getContext('2d');
     }
-    let image = n.cloneNode(true) as HTMLImageElement;
+
+    let image = n as HTMLImageElement;
 
     const imageSrc: string =
       image.currentSrc || image.getAttribute('src') || '<unknown-src>';
 
-    //keeping for now
-    // const priorCrossOrigin = image.crossOrigin;
+    const imageHeight = image.naturalHeight;
+    const imageWidth = image.naturalWidth;
 
     const inlineImageCleanup = () => {
-      //keeping for now - this should only lead to additional fetches of images, shouldnt have any negative impact
-      // if (image.crossOrigin === 'anonymous') {
-      //   if (priorCrossOrigin) {
-      //     image.setAttribute('crossorigin', priorCrossOrigin);
-      //     attributes.crossOrigin = priorCrossOrigin;
-      //   } else {
-      //     image.removeAttribute('crossorigin');
-      //   }
-      // }
       //@ts-expect-error
       image = null;
     };
 
     const recordInlineImage = () => {
-      image.removeEventListener('load', recordInlineImage);
       image.removeEventListener('error', onImageLoadError);
+
       try {
-        canvasService!.width = image.naturalWidth;
-        canvasService!.height = image.naturalHeight;
+        canvasService!.width = imageWidth;
+        canvasService!.height = imageHeight;
+
         canvasCtx!.drawImage(image, 0, 0);
+
         attributes.rr_dataURL = canvasService!.toDataURL(
           dataURLOptions.type,
           dataURLOptions.quality,
         );
       } catch (err) {
         if (image.crossOrigin !== 'anonymous') {
+          image = new Image();
+
+          image.src = imageSrc;
           image.crossOrigin = 'anonymous';
-          if (image.complete && image.naturalWidth !== 0)
+          image.height = imageHeight;
+          image.width = imageWidth;
+
+          if (image.complete && image.naturalWidth !== 0) {
             recordInlineImage(); // too early due to image reload
-          else {
-            image.addEventListener('load', recordInlineImage);
-            image.addEventListener('error', onImageLoadError);
+          } else {
+            image.addEventListener('load', recordInlineImage, { once: true });
+            image.addEventListener('error', onImageLoadError, { once: true });
           }
+
           return;
         } else {
           console.warn(
@@ -847,15 +848,14 @@ function serializeElementNode(
 
     const onImageLoadError = () => {
       image.removeEventListener('load', recordInlineImage);
-      image.removeEventListener('error', onImageLoadError);
       inlineImageCleanup();
     };
 
     // The image content may not have finished loading yet.
     if (image.complete && image.naturalWidth !== 0) recordInlineImage();
     else {
-      image.addEventListener('load', recordInlineImage);
-      image.addEventListener('error', onImageLoadError);
+      image.addEventListener('load', recordInlineImage, { once: true });
+      image.addEventListener('error', onImageLoadError, { once: true });
     }
   }
   // media elements
