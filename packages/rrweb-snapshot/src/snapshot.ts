@@ -32,6 +32,7 @@ import {
   stringifyStylesheet,
   toLowerCase,
 } from './utils';
+import { shouldTryAnonymousFetchingOnCorsError } from './customHelpers';
 
 let _id = 1;
 const tagNameRegex = new RegExp('[^a-z0-9-_:]');
@@ -821,21 +822,23 @@ function serializeElementNode(
         );
       } catch (err) {
         if (image.crossOrigin !== 'anonymous') {
-          image = new Image();
+          if (shouldTryAnonymousFetchingOnCorsError()) {
+            image = new Image();
 
-          image.src = imageSrc;
-          image.crossOrigin = 'anonymous';
-          image.height = imageHeight;
-          image.width = imageWidth;
+            image.src = imageSrc;
+            image.crossOrigin = 'anonymous';
+            image.height = imageHeight;
+            image.width = imageWidth;
 
-          if (image.complete && image.naturalWidth !== 0) {
-            recordInlineImage(); // too early due to image reload
-          } else {
-            image.addEventListener('load', recordInlineImage, { once: true });
-            image.addEventListener('error', onImageLoadError, { once: true });
+            if (image.complete && image.naturalWidth !== 0) {
+              recordInlineImage(); // too early due to image reload
+            } else {
+              image.addEventListener('load', recordInlineImage, { once: true });
+              image.addEventListener('error', onImageLoadError, { once: true });
+            }
+
+            return;
           }
-
-          return;
         } else {
           console.warn(
             `Cannot inline img src=${imageSrc}! Error: ${err as string}`,

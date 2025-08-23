@@ -1,3 +1,4 @@
+import { shouldTryAnonymousFetchingOnCorsError } from './customHelpers';
 import { stringifyStylesheet } from './utils';
 
 //effectively, this becomes the time limit on all fetching (caused by cloning)
@@ -186,6 +187,8 @@ class AsyncStylesheetManager {
     forElement: HTMLLinkElement;
     requestCssId: string;
   }) {
+    if (!shouldTryAnonymousFetchingOnCorsError()) return;
+
     if (this.currentHref != null && document.location.href !== this.currentHref)
       this.blowCache();
 

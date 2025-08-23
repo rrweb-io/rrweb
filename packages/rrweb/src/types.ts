@@ -224,3 +224,9 @@ export type CrossOriginIframeMessageEvent =
   MessageEvent<CrossOriginIframeMessageEventContent>;
 
 export type ErrorHandler = (error: unknown) => void | boolean;
+
+declare global {
+  interface Window {
+    _rrweb_skip_re_fetching_to_suppress_cors_errors?: boolean;
+  }
+}
