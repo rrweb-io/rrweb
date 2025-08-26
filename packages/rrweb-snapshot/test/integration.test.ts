@@ -230,6 +230,8 @@ iframe.contentDocument.querySelector('center').clientHeight
 
   it('correctly saves images offline', async () => {
     const page: puppeteer.Page = await browser.newPage();
+    // console for debug
+    page.on('console', (msg) => console.log(msg.text()));
 
     await page.goto(`${serverURL}/html/picture.html`, {
       waitUntil: 'load',
@@ -344,7 +346,7 @@ iframe.contentDocument.querySelector('center').clientHeight
     assert(snapshot.includes('data:image/webp;base64,'));
   });
 
-  it('correctly saves blob:images in iframes offline', async () => {
+  it('[deprecated] correctly saves blob:images in iframes offline', async () => {
     const page: puppeteer.Page = await browser.newPage();
 
     await page.goto(`${serverURL}/html/picture-blob-in-frame.html`, {
@@ -359,6 +361,9 @@ iframe.contentDocument.querySelector('center').clientHeight
         inlineStylesheet: false,
         onIframeLoad: function(iframe, sn) {
           window.snapshot = sn;
+        },
+        captureAssets: {
+          origins: false,
         }
     })`);
     await waitForRAF(page);
@@ -557,5 +562,52 @@ describe('shadow DOM integration tests', function (this: ISuite) {
       2,
     );
     await assertSnapshot(snapshotResult);
+  });
+});
+
+describe('stylesheet asset tests', function (this: ISuite) {
+  vi.setConfig({ testTimeout: 30_000 });
+  let server: ISuite['server'];
+  let browser: ISuite['browser'];
+  let code: ISuite['code'];
+
+  beforeAll(async () => {
+    server = await startServer();
+    browser = await puppeteer.launch({
+      // headless: false,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+
+    code = fs.readFileSync(
+      path.resolve(__dirname, '../dist/rrweb-snapshot.umd.cjs'),
+      'utf-8',
+    );
+  });
+
+  afterAll(async () => {
+    await browser.close();
+    await server.close();
+  });
+
+  it('omits css contents for asset managed stylesheet', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    // console for debug
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.goto(`http://localhost:3030/html/with-style-sheet.html`, {
+      waitUntil: 'load',
+    });
+    // presence of onAssetDetected means we should get
+    // rr_captured_href (with contents promised later - i.e. using rrweb/record)
+    const snapshotResult = JSON.stringify(
+      await page.evaluate(`${code};
+rrwebSnapshot.snapshot(document, {
+inlineStylesheet: true,
+onAssetDetected: () => { /* throw away */ },
+});
+    `),
+      null,
+      2,
+    );
+    expect(snapshotResult).toMatchSnapshot(); // overkill? we just want to check for rr_captured_href and absence of _cssText
   });
 });

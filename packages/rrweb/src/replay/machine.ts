@@ -11,6 +11,7 @@ import {
   EventType,
   type Emitter,
   IncrementalSource,
+  type metaEvent,
 } from '@rrweb/types';
 import { Timer, addDelay } from './timer';
 
@@ -59,6 +60,15 @@ export type PlayerState =
       context: PlayerContext;
     };
 
+type metaEventWithTime = metaEvent & {
+  timestamp: number;
+  delay?: number;
+};
+
+function isMetaEvent(e: eventWithTime): e is metaEventWithTime {
+  return e.type === EventType.Meta;
+}
+
 /**
  * If the array have multiple meta and fullsnapshot events,
  * return the events from last meta to the end.
@@ -87,6 +97,11 @@ export function createPlayerService(
   context: PlayerContext,
   { getCastFn, applyEventsSynchronously, emitter }: PlayerAssets,
 ) {
+  const addEventQueue: Array<eventWithTime> = [];
+  let addEventQueueTimeout: ReturnType<typeof setTimeout> | -1;
+  const awaitAssets = new Set();
+  let awaitAssetsHref = '';
+
   const playerMachine = createMachine<PlayerContext, PlayerEvent, PlayerState>(
     {
       id: 'player',
@@ -236,10 +251,9 @@ export function createPlayerService(
           },
         }),
         addEvent: assign((ctx, machineEvent) => {
-          const { baselineTime, timer, events } = ctx;
+          const { events } = ctx;
           if (machineEvent.type === 'ADD_EVENT') {
             const { event } = machineEvent.payload;
-            addDelay(event, baselineTime);
 
             let end = events.length - 1;
             if (!events[end] || events[end].timestamp <= event.timestamp) {
@@ -262,17 +276,81 @@ export function createPlayerService(
               events.splice(insertionIndex, 0, event);
             }
 
-            const isSync = event.timestamp < baselineTime;
-            const castFn = getCastFn(event, isSync);
-            if (isSync) {
-              castFn();
-            } else if (timer.isActive()) {
-              timer.addAction({
-                doAction: () => {
-                  castFn();
-                },
-                delay: event.delay!,
-              });
+            const castOrScheduleEvent = (event: eventWithTime) => {
+              const { baselineTime, timer } = ctx;
+              addDelay(event, baselineTime);
+              const isSync = event.timestamp < baselineTime;
+              const castFn = getCastFn(event, isSync);
+              if (isSync) {
+                castFn();
+              } else if (timer.isActive()) {
+                timer.addAction({
+                  doAction: () => {
+                    castFn();
+                  },
+                  delay: event.delay!,
+                });
+              }
+            };
+
+            const flushAddEventQueue = () => {
+              addEventQueueTimeout = -1;
+              while (addEventQueue.length) {
+                castOrScheduleEvent(addEventQueue.shift()!);
+              }
+            };
+
+            if (event.type === EventType.Asset && addEventQueueTimeout) {
+              let matchUrl = event.data.url;
+              if (matchUrl.startsWith('rr_css_text')) {
+                matchUrl = awaitAssetsHref + '#' + matchUrl;
+              }
+              awaitAssets.delete(matchUrl);
+            }
+            if (addEventQueue.length) {
+              addEventQueue.push(event);
+              // TODO: support appearance of a second FullSnapshot before first one's assets load
+              if (awaitAssets.size == 0) {
+                clearTimeout(addEventQueueTimeout);
+                flushAddEventQueue();
+              }
+            } else {
+              let liveBuffer = 0;
+              if (
+                event.type === EventType.FullSnapshot &&
+                event.data.capturedAssetStatuses
+              ) {
+                awaitAssetsHref = '';
+                const earlierMetas: metaEvent[] = events
+                  .filter(isMetaEvent)
+                  .filter((e) => e.timestamp <= event.timestamp);
+                if (earlierMetas.length) {
+                  awaitAssetsHref =
+                    earlierMetas[earlierMetas.length - 1].data.href;
+                } else {
+                  // error: no meta event associated with this FullSnapshot
+                }
+                awaitAssets.clear();
+                event.data.capturedAssetStatuses.forEach((status) => {
+                  if (status.timeout) {
+                    // currently only stylesheet assets return a timeout
+                    awaitAssets.add(status.url);
+                    liveBuffer = Math.max(
+                      liveBuffer,
+                      status.timeout + 100, // add a guess for worst case processing time
+                    );
+                  }
+                });
+              }
+              if (liveBuffer > 0) {
+                addEventQueue.push(event);
+                addEventQueueTimeout = setTimeout(
+                  flushAddEventQueue,
+                  liveBuffer,
+                );
+              } else {
+                castOrScheduleEvent(event);
+              }
             }
           }
           return { ...ctx, events };

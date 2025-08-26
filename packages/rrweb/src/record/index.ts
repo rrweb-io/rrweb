@@ -27,6 +27,12 @@ import {
   type scrollCallback,
   type canvasMutationParam,
   type adoptedStyleSheetParam,
+  type assetParam,
+  type asset,
+  type assetStatus,
+  type fullSnapshotEvent,
+  type fullSnapshotEventWithTime,
+  type assetEventWithTime,
 } from '@rrweb/types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
@@ -40,11 +46,13 @@ import {
   unregisterErrorHandler,
 } from './error-handler';
 import dom from '@rrweb/utils';
+import AssetManager from './observers/asset-manager';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
 
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
 let canvasManager!: CanvasManager;
+let assetManager!: AssetManager;
 let recording = false;
 
 // Multiple tools (i.e. MooTools, Prototype.js) override Array.from and drop support for the 2nd parameter
@@ -95,11 +103,29 @@ function record<T = eventWithTime>(
     userTriggeredOnInput = false,
     collectFonts = false,
     inlineImages = false,
+    captureAssets = {
+      objectURLs: true,
+      origins: false,
+    },
     plugins,
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
     errorHandler,
   } = options;
+
+  if (inlineImages && captureAssets.images === undefined) {
+    captureAssets.images = inlineImages;
+  }
+  if (captureAssets.stylesheets === undefined) {
+    if (inlineStylesheet === 'all') {
+      captureAssets.stylesheets = true;
+    } else if (inlineStylesheet) {
+      // the prior default setting
+      captureAssets.stylesheets = 'without-fetch';
+    } else {
+      captureAssets.stylesheets = false;
+    }
+  }
 
   registerErrorHandler(errorHandler);
 
@@ -201,9 +227,11 @@ function record<T = eventWithTime>(
     }
     return e as unknown as T;
   };
-  wrappedEmit = (r: eventWithoutTime, isCheckout?: boolean) => {
+  wrappedEmit = (r: eventWithoutTime | eventWithTime, isCheckout?: boolean) => {
     const e = r as eventWithTime;
-    e.timestamp = nowTimestamp();
+    if (!('timestamp' in e) || e.timestamp === undefined) {
+      e.timestamp = nowTimestamp();
+    }
     if (
       mutationBuffers[0]?.isFrozen() &&
       e.type !== EventType.FullSnapshot &&
@@ -279,6 +307,13 @@ function record<T = eventWithTime>(
       },
     });
 
+  const wrappedAssetEmit = (p: assetParam, snapshotTimestamp: number) =>
+    wrappedEmit({
+      type: EventType.Asset,
+      data: p,
+      timestamp: snapshotTimestamp,
+    } as assetEventWithTime);
+
   const wrappedAdoptedStyleSheetEmit = (a: adoptedStyleSheetParam) =>
     wrappedEmit({
       type: EventType.IncrementalSnapshot,
@@ -327,6 +362,12 @@ function record<T = eventWithTime>(
     dataURLOptions,
   });
 
+  assetManager = new AssetManager({
+    mutationCb: wrappedAssetEmit,
+    win: window,
+    captureAssets,
+  });
+
   const shadowDomManager = new ShadowDomManager({
     mutationCb: wrappedMutationEmit,
     scrollCb: wrappedScrollEmit,
@@ -338,10 +379,10 @@ function record<T = eventWithTime>(
       inlineStylesheet,
       maskInputOptions,
       dataURLOptions,
+      captureAssets,
       maskTextFn,
       maskInputFn,
       recordCanvas,
-      inlineImages,
       sampling,
       slimDOMOptions,
       iframeManager,
@@ -349,6 +390,7 @@ function record<T = eventWithTime>(
       canvasManager,
       keepIframeSrcFn,
       processedNodeManager,
+      assetManager,
     },
     mirror,
   });
@@ -374,6 +416,8 @@ function record<T = eventWithTime>(
 
     shadowDomManager.init();
 
+    const capturedAssetStatuses: assetStatus[] = [];
+
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
       mirror,
@@ -381,14 +425,14 @@ function record<T = eventWithTime>(
       blockSelector,
       maskTextClass,
       maskTextSelector,
-      inlineStylesheet,
+      inlineStylesheet: Boolean(inlineStylesheet), // 'all' value can be discarded as has already been transferred into `captureAssets`
       maskAllInputs: maskInputOptions,
       maskTextFn,
       maskInputFn,
       slimDOM: slimDOMOptions,
       dataURLOptions,
+      captureAssets,
       recordCanvas,
-      inlineImages,
       onSerialize: (n) => {
         if (isSerializedIframe(n, mirror)) {
           iframeManager.addIframe(n as HTMLIFrameElement);
@@ -408,21 +452,39 @@ function record<T = eventWithTime>(
       onStylesheetLoad: (linkEl, childSn) => {
         stylesheetManager.attachLinkElement(linkEl, childSn);
       },
+      onAssetDetected: (asset: asset) => {
+        const assetStatus = assetManager.capture(
+          asset,
+          true, // indicate it's a FullSnapshot
+        );
+        if (Array.isArray(assetStatus)) {
+          // removeme when we just capture one asset from srcset
+          capturedAssetStatuses.push(...assetStatus);
+        } else {
+          capturedAssetStatuses.push(assetStatus);
+        }
+      },
       keepIframeSrcFn,
     });
 
     if (!node) {
       return console.warn('Failed to snapshot the document');
     }
-
+    const data: fullSnapshotEvent['data'] = {
+      node,
+      initialOffset: getWindowScroll(window),
+    };
+    if (capturedAssetStatuses.length) {
+      data['capturedAssetStatuses'] = capturedAssetStatuses;
+    }
+    const now = nowTimestamp();
+    assetManager.lastFullSnapshotTimestamp = now;
     wrappedEmit(
       {
         type: EventType.FullSnapshot,
-        data: {
-          node,
-          initialOffset: getWindowScroll(window),
-        },
-      },
+        timestamp: now,
+        data,
+      } as fullSnapshotEventWithTime,
       isCheckout,
     );
     mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
@@ -536,7 +598,6 @@ function record<T = eventWithTime>(
           sampling,
           recordDOM,
           recordCanvas,
-          inlineImages,
           userTriggeredOnInput,
           collectFonts,
           doc,
@@ -545,6 +606,7 @@ function record<T = eventWithTime>(
           keepIframeSrcFn,
           blockSelector,
           slimDOMOptions,
+          captureAssets,
           dataURLOptions,
           mirror,
           iframeManager,
@@ -552,6 +614,7 @@ function record<T = eventWithTime>(
           shadowDomManager,
           processedNodeManager,
           canvasManager,
+          assetManager,
           ignoreCSSAttributes,
           plugins:
             plugins

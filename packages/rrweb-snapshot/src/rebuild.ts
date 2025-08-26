@@ -1,5 +1,6 @@
 import { mediaSelectorPlugin, pseudoClassPlugin } from './css';
 import {
+  type RebuildAssetManagerInterface,
   type serializedNodeWithId,
   type serializedElementNodeWithId,
   NodeType,
@@ -12,6 +13,7 @@ import {
   Mirror,
   isNodeMetaEqual,
   extractFileExtension,
+  lowerIfExists,
 } from './utils';
 import postcss from 'postcss';
 
@@ -57,7 +59,13 @@ const tagMap: tagMap = {
 };
 function getTagName(n: elementNode): string {
   let tagName = tagMap[n.tagName] ? tagMap[n.tagName] : n.tagName;
-  if (tagName === 'link' && n.attributes._cssText) {
+  if (
+    tagName === 'link' &&
+    (n.attributes._cssText ||
+      n.attributes.rr_css_text ||
+      (n.attributes.rr_captured_href &&
+        lowerIfExists(n.attributes.rel) === 'stylesheet'))
+  ) {
     tagName = 'style';
   }
   return tagName;
@@ -94,14 +102,15 @@ export function createCache(): BuildCache {
  * (would move to utils.ts but uses `adaptCssForReplay`)
  */
 export function applyCssSplits(
-  n: serializedElementNodeWithId,
+  n: serializedElementNodeWithId | HTMLStyleElement,
   cssText: string,
   hackCss: boolean,
   cache: BuildCache,
 ): void {
   const childTextNodes = [];
-  for (const scn of n.childNodes) {
-    if (scn.type === NodeType.Text) {
+  for (let i = 0; i < n.childNodes.length; i++) {
+    const scn = n.childNodes[i];
+    if ('textContent' in scn) {
       childTextNodes.push(scn);
     }
   }
@@ -158,24 +167,30 @@ export function applyCssSplits(
 /**
  * Normally a <style> element has a single textNode containing the rules.
  * During serialization, we bypass this (`styleEl.sheet`) to get the rules the
- * browser sees and serialize this to a special _cssText attribute, blanking
- * out any text nodes. This function reverses that and also handles cases where
+ * browser sees, blanking out any text nodes in the serialized data.
+ * This function reverses that and also handles cases where
  * there were no textNode children present (dynamic css/or a <link> element) as
- * well as multiple textNodes, which need to be repopulated (based on presence of
- * a special `rr_split` marker in case they are modified by subsequent mutations.
+ * well as multiple textNodes, which need to be repopulated correctly (based on
+ * presence of a special `rr_split` marker) in case they are modified by subsequent
+ * mutations.
  */
 export function buildStyleNode(
-  n: serializedElementNodeWithId,
+  n:
+    | serializedElementNodeWithId
+    /* when rebuilding via assets, we might have already created the <style> element.
+     * This function only cares about childNodes and cn.textContent so can also rebuild directly to the DOM
+     */
+    | HTMLStyleElement,
   styleEl: HTMLStyleElement, // when inlined, a <link type="stylesheet"> also gets rebuilt as a <style>
   cssText: string,
   options: {
-    doc: Document;
     hackCss: boolean;
     cache: BuildCache;
   },
 ) {
-  const { doc, hackCss, cache } = options;
+  const { hackCss, cache } = options;
   if (n.childNodes.length) {
+    // caller has to make sure to pass in the HTMLStyleElement if serialized node has already rebuilt
     applyCssSplits(n, cssText, hackCss, cache);
   } else {
     if (hackCss) {
@@ -183,9 +198,10 @@ export function buildStyleNode(
     }
     /**
        <link> element or dynamic <style> are serialized without any child nodes
-       we create the text node without an ID or presence in mirror as it can't
+       we create the text node without an ID or presence in mirror
+       as it can't have been subsequently mutated directly as a text node
     */
-    styleEl.appendChild(doc.createTextNode(cssText));
+    styleEl.appendChild(styleEl.ownerDocument.createTextNode(cssText));
   }
 }
 
@@ -195,6 +211,7 @@ function buildNode(
     doc: Document;
     hackCss: boolean;
     cache: BuildCache;
+    assetManager?: RebuildAssetManagerInterface;
   },
 ): Node | null {
   const { doc, hackCss, cache } = options;
@@ -268,8 +285,14 @@ function buildNode(
         if (typeof value !== 'string') {
           // pass
         } else if (tagName === 'style' && name === '_cssText') {
+          // with rrweb this is not the preferred way to build a style node, but rather via an asset
           buildStyleNode(n, node as HTMLStyleElement, value, options);
-          continue; // no need to set _cssText as attribute
+          /*
+           * no need to set _cssText as attribute
+           * instead we've now got new childNodes which will get rebuilt as buildNodeWithSN continues to walk tree
+           * (or else we've added the css directly as a child node if no id is required)
+           */
+          continue;
         } else if (tagName === 'textarea' && name === 'value') {
           // create without an ID or presence in mirror
           node.appendChild(doc.createTextNode(value));
@@ -325,6 +348,7 @@ function buildNode(
               'rrweb-original-srcset',
               n.attributes.srcset as string,
             );
+            continue;
           } else {
             node.setAttribute(name, value.toString());
           }
@@ -335,6 +359,22 @@ function buildNode(
 
       for (const name in specialAttributes) {
         const value = specialAttributes[name];
+
+        if (
+          (name.startsWith('rr_captured_') || name === 'rr_css_text') &&
+          value &&
+          typeof value === 'string'
+        ) {
+          options.assetManager?.manageAttribute(
+            node,
+            n.id,
+            name.substring('rr_captured_'.length), // ok that 'rr_css_text' gets erased
+            value,
+            n,
+          );
+          continue;
+        }
+
         // handle internal attributes
         if (tagName === 'canvas' && name === 'rr_dataURL') {
           const image = doc.createElement('img');
@@ -453,6 +493,7 @@ export function buildNodeWithSN(
      */
     afterAppend?: (n: Node, id: number) => unknown;
     cache: BuildCache;
+    assetManager?: RebuildAssetManagerInterface;
   },
 ): Node | null {
   const {
@@ -462,6 +503,7 @@ export function buildNodeWithSN(
     hackCss = true,
     afterAppend,
     cache,
+    assetManager,
   } = options;
   /**
    * Add a check to see if the node is already in the mirror. If it is, we can skip the whole process.
@@ -476,7 +518,7 @@ export function buildNodeWithSN(
     // For safety concern, check if the node in mirror is the same as the node we are trying to build
     if (isNodeMetaEqual(meta, n)) return mirror.getNode(n.id);
   }
-  let node = buildNode(n, { doc, hackCss, cache });
+  let node = buildNode(n, { doc, hackCss, cache, assetManager });
   if (!node) {
     return null;
   }
@@ -528,6 +570,7 @@ export function buildNodeWithSN(
         hackCss,
         afterAppend,
         cache,
+        assetManager,
       });
       if (!childNode) {
         console.warn('Failed to rebuild', childN);
@@ -617,6 +660,7 @@ function rebuild(
     afterAppend?: (n: Node, id: number) => unknown;
     cache: BuildCache;
     mirror: Mirror;
+    assetManager?: RebuildAssetManagerInterface;
   },
 ): Node | null {
   const {
@@ -626,6 +670,7 @@ function rebuild(
     afterAppend,
     cache,
     mirror = new Mirror(),
+    assetManager,
   } = options;
   const node = buildNodeWithSN(n, {
     doc,
@@ -634,6 +679,7 @@ function rebuild(
     hackCss,
     afterAppend,
     cache,
+    assetManager,
   });
   visit(mirror, (visitedNode) => {
     if (onVisit) {
