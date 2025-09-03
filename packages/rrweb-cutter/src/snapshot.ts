@@ -1,5 +1,6 @@
-import type { serializedNodeWithId, attributes } from 'rrweb-snapshot';
-import { elementNode, NodeType, serializedNode } from 'rrweb-snapshot';
+import type { elementNode, serializedNode, serializedNodeWithId, attributes } from '@rrweb/types';
+import { NodeType } from '@rrweb/types';
+
 import type {
   IRRComment,
   IRRDocument,

@@ -1,8 +1,7 @@
-import { NodeType } from 'rrweb-snapshot';
-import {
+import { NodeType, MediaInteractions } from '@rrweb/types';
+import type {
   adoptedStyleSheetData,
   eventWithTime,
-  MediaInteractions,
   styleDeclarationData,
   styleSheetRuleData,
 } from '@rrweb/types';
@@ -15,7 +14,7 @@ import {
 } from 'rrdom';
 import type { IRRNode, RRElement } from 'rrdom';
 import { IncrementalSource, EventType, SyncReplayer } from 'rrweb';
-import { playerConfig } from 'rrweb/typings/types';
+import type { playerConfig } from '@rrweb/replay';
 import cloneDeep from 'lodash.clonedeep';
 import snapshot from './snapshot';
 export type CutterConfig = {
