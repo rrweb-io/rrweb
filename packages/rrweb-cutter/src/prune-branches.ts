@@ -1,5 +1,5 @@
-import { serializedNodeWithId } from 'rrweb-snapshot';
 import type {
+  serializedNodeWithId,
   addedNodeMutation,
   eventWithTime,
   mousePosition,
