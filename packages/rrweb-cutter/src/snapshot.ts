@@ -1,4 +1,9 @@
-import type { elementNode, serializedNode, serializedNodeWithId, attributes } from '@rrweb/types';
+import type {
+  elementNode,
+  serializedNode,
+  serializedNodeWithId,
+  attributes,
+} from '@rrweb/types';
 import { NodeType } from '@rrweb/types';
 
 import type {
