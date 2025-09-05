@@ -64,6 +64,8 @@ function minifyAndUMDPlugin({
               isCss: false,
               outDir,
             });
+            // Workaround because jsdelivr does use correct mime types for .umd.cjs
+            // More info: https://github.com/jsdelivr/jsdelivr/issues/18584 https://github.com/rrweb-io/rrweb/pull/1704 
             copyFileSync(
               outUmd,
               `${outputFilePath.replace('/dist/', '/umd/')}.js`,
