@@ -1474,6 +1474,8 @@ export class Replayer {
     const legacy_missingNodeMap: missingNodeMap = {
       ...this.legacy_missingNodeRetryMap,
     };
+    // this structure should not now normally be needed after #1652
+    // but is definitely needed for recordings produced prior to that
     const legacy_queue: addedNodeMutation[] = [];
 
     // next not present at this moment
