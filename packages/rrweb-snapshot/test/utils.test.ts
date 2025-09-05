@@ -7,6 +7,7 @@ import {
   extractFileExtension,
   fixSafariColons,
   isNodeMetaEqual,
+  stringifyStylesheet,
 } from '../src/utils';
 import { NodeType } from '@rrweb/types';
 import type { serializedNode, serializedNodeWithId } from '@rrweb/types';
