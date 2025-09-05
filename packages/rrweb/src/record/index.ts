@@ -190,7 +190,7 @@ function record<T = eventWithTime>(
       e.type !== EventType.FullSnapshot &&
       !(
         e.type === EventType.IncrementalSnapshot &&
-        e.data.source ===IncrementalSource.Mutation
+        e.data.source === IncrementalSource.Mutation
       )
     ) {
       // we've got a user initiated event so first we need to apply
