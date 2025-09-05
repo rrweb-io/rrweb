@@ -2,4 +2,4 @@
 "rrweb-snapshot": patch
 ---
 
-use ownerNode.baseURI for stringifying sheet hrefs
+Use ownerNode.baseURI for stringifying sheet hrefs
