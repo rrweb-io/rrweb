@@ -206,7 +206,7 @@ export default class MutationBuffer {
         while (true) {
           parentNode = dom.parentNode(n);
           if (this.addedSet.has(parentNode as Node)) {
-            // start at top of added tree so as not to serialize children before their parents (parentId requirement)
+            // keep searching for the top of added tree so as not to serialize children before their parents (parentId requirement)
             n = parentNode as Node;
             continue;
           }
