@@ -429,7 +429,10 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
           extractOrigin(href) + filePath
         }${maybeQuote})`;
       }
-      return `url(${maybeQuote}${new URL(filePath, href).toString()}${maybeQuote})`;
+      return `url(${maybeQuote}${new URL(
+        filePath,
+        href,
+      ).toString()}${maybeQuote})`;
     },
   );
 }

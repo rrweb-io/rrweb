@@ -126,7 +126,7 @@ describe('absolute url to stylesheet', () => {
     it('can handle empty path', () => {
       expect(absolutifyURLs(`url('')`, href)).toEqual(`url('')`);
     });
-  })
+  });
 });
 
 describe('isBlockedElement()', () => {
