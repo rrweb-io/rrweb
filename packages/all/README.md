@@ -33,6 +33,9 @@ See the [guide](../../guide.md) for more info on rrweb.
 
 <div dir="auto">
 
+<a href="https://sentry.io/" target="_blank"><img src="../../assets/sentry.png" alt="Sentry" style="height: 113px;"></a>
+<a href="https://recordonce.com/" target="_blank"><img src="../../assets/recordonce.png" alt="Record Once" style="height: 113px;"></a>
+<a href="https://statcounter.com/" target="_blank"><img src="../../assets/statcounter.png" alt="Statcounter" style="height: 113px;"></a>
 <a href="https://opencollective.com/rrweb/tiers/gold-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/0/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
 <a href="https://opencollective.com/rrweb/tiers/gold-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/1/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
 <a href="https://opencollective.com/rrweb/tiers/gold-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/2/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
