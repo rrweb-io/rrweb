@@ -174,7 +174,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
           alt=""
         />
         <br /><sub><b>Juice10</b></sub>
-        <br /><br />
+        <br /><sub>open for rrweb consulting</sub>
       </a>
     </td>
   </tr>
