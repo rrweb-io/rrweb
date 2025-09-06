@@ -72,6 +72,9 @@ rrweb 主要由 3 部分组成：
 
 <div dir="auto">
 
+<a href="https://sentry.io/" target="_blank"><img src="./assets/sentry.png" alt="Sentry" style="height: 113px;"></a>
+<a href="https://recordonce.com/" target="_blank"><img src="./assets/recordonce.png" alt="Record Once" style="height: 113px;"></a>
+<a href="https://statcounter.com/" target="_blank"><img src="./assets/statcounter.png" alt="Statcounter" style="height: 113px;"></a>
 <a href="https://opencollective.com/rrweb/tiers/gold-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/0/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
 <a href="https://opencollective.com/rrweb/tiers/gold-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/1/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
 <a href="https://opencollective.com/rrweb/tiers/gold-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/2/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
@@ -79,10 +82,6 @@ rrweb 主要由 3 部分组成：
 <a href="https://opencollective.com/rrweb/tiers/gold-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/4/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
 <a href="https://opencollective.com/rrweb/tiers/gold-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/5/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
 <a href="https://opencollective.com/rrweb/tiers/gold-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/6/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
-
-<a href="https://sentry.io/" target="_blank"><img src="./assets/sentry.png" alt="Sentry" style="height: 225px;"></a>
-<a href="https://recordonce.com/" target="_blank"><img src="./assets/recordonce.png" alt="Record Once" style="height: 225px;"></a>
-<a href="https://statcounter.com/" target="_blank"><img src="./assets/statcounter.png" alt="Statcounter" style="height: 225px;"></a>
 
 </div>
 
