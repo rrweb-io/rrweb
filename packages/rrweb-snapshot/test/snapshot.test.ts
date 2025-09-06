@@ -28,103 +28,105 @@ const serializeNode = (node: Node): serializedNodeWithId | null => {
 };
 
 describe('absolute url to stylesheet', () => {
-  const href = 'http://localhost/css/style.css';
+  const styleSheetHref = 'http://localhost/css/style.css';
+  const inlineStyleHref = 'http://localhost/css/#/spa-route'; // inline style fallback to node.baseURL
+  [styleSheetHref, inlineStyleHref].forEach((href) => {
+    it('can handle relative path', () => {
+      expect(absolutifyURLs('url(a.jpg)', href)).toEqual(
+        `url(http://localhost/css/a.jpg)`,
+      );
+    });
 
-  it('can handle relative path', () => {
-    expect(absolutifyURLs('url(a.jpg)', href)).toEqual(
-      `url(http://localhost/css/a.jpg)`,
-    );
-  });
+    it('can handle same level path', () => {
+      expect(absolutifyURLs('url("./a.jpg")', href)).toEqual(
+        `url("http://localhost/css/a.jpg")`,
+      );
+    });
 
-  it('can handle same level path', () => {
-    expect(absolutifyURLs('url("./a.jpg")', href)).toEqual(
-      `url("http://localhost/css/a.jpg")`,
-    );
-  });
+    it('can handle parent level path', () => {
+      expect(absolutifyURLs('url("../a.jpg")', href)).toEqual(
+        `url("http://localhost/a.jpg")`,
+      );
+    });
 
-  it('can handle parent level path', () => {
-    expect(absolutifyURLs('url("../a.jpg")', href)).toEqual(
-      `url("http://localhost/a.jpg")`,
-    );
-  });
+    it('can handle absolute path', () => {
+      expect(absolutifyURLs('url("/a.jpg")', href)).toEqual(
+        `url("http://localhost/a.jpg")`,
+      );
+    });
 
-  it('can handle absolute path', () => {
-    expect(absolutifyURLs('url("/a.jpg")', href)).toEqual(
-      `url("http://localhost/a.jpg")`,
-    );
-  });
+    it('can handle external path', () => {
+      expect(absolutifyURLs('url("http://localhost/a.jpg")', href)).toEqual(
+        `url("http://localhost/a.jpg")`,
+      );
+    });
 
-  it('can handle external path', () => {
-    expect(absolutifyURLs('url("http://localhost/a.jpg")', href)).toEqual(
-      `url("http://localhost/a.jpg")`,
-    );
-  });
+    it('can handle single quote path', () => {
+      expect(absolutifyURLs(`url('./a.jpg')`, href)).toEqual(
+        `url('http://localhost/css/a.jpg')`,
+      );
+    });
 
-  it('can handle single quote path', () => {
-    expect(absolutifyURLs(`url('./a.jpg')`, href)).toEqual(
-      `url('http://localhost/css/a.jpg')`,
-    );
-  });
+    it('can handle no quote path', () => {
+      expect(absolutifyURLs('url(./a.jpg)', href)).toEqual(
+        `url(http://localhost/css/a.jpg)`,
+      );
+    });
 
-  it('can handle no quote path', () => {
-    expect(absolutifyURLs('url(./a.jpg)', href)).toEqual(
-      `url(http://localhost/css/a.jpg)`,
-    );
-  });
+    it('can handle multiple no quote paths', () => {
+      expect(
+        absolutifyURLs(
+          'background-image: url(images/b.jpg);background: #aabbcc url(images/a.jpg) 50% 50% repeat;',
+          href,
+        ),
+      ).toEqual(
+        `background-image: url(http://localhost/css/images/b.jpg);` +
+          `background: #aabbcc url(http://localhost/css/images/a.jpg) 50% 50% repeat;`,
+      );
+    });
 
-  it('can handle multiple no quote paths', () => {
-    expect(
-      absolutifyURLs(
-        'background-image: url(images/b.jpg);background: #aabbcc url(images/a.jpg) 50% 50% repeat;',
-        href,
-      ),
-    ).toEqual(
-      `background-image: url(http://localhost/css/images/b.jpg);` +
-        `background: #aabbcc url(http://localhost/css/images/a.jpg) 50% 50% repeat;`,
-    );
-  });
+    it('can handle data url image', () => {
+      expect(absolutifyURLs('url(data:image/gif;base64,ABC)', href)).toEqual(
+        'url(data:image/gif;base64,ABC)',
+      );
+      expect(
+        absolutifyURLs(
+          'url(data:application/font-woff;base64,d09GMgABAAAAAAm)',
+          href,
+        ),
+      ).toEqual('url(data:application/font-woff;base64,d09GMgABAAAAAAm)');
+    });
 
-  it('can handle data url image', () => {
-    expect(absolutifyURLs('url(data:image/gif;base64,ABC)', href)).toEqual(
-      'url(data:image/gif;base64,ABC)',
-    );
-    expect(
-      absolutifyURLs(
-        'url(data:application/font-woff;base64,d09GMgABAAAAAAm)',
-        href,
-      ),
-    ).toEqual('url(data:application/font-woff;base64,d09GMgABAAAAAAm)');
-  });
-
-  it('preserves quotes around inline svgs with spaces', () => {
-    expect(
-      absolutifyURLs(
+    it('preserves quotes around inline svgs with spaces', () => {
+      expect(
+        absolutifyURLs(
+          "url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%2328a745' d='M3'/%3E%3C/svg%3E\")",
+          href,
+        ),
+      ).toEqual(
         "url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%2328a745' d='M3'/%3E%3C/svg%3E\")",
-        href,
-      ),
-    ).toEqual(
-      "url(\"data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%2328a745' d='M3'/%3E%3C/svg%3E\")",
-    );
-    expect(
-      absolutifyURLs(
+      );
+      expect(
+        absolutifyURLs(
+          'url(\'data:image/svg+xml;utf8,<svg width="28" height="32" viewBox="0 0 28 32" xmlns="http://www.w3.org/2000/svg"><path d="M27 14C28" fill="white"/></svg>\')',
+          href,
+        ),
+      ).toEqual(
         'url(\'data:image/svg+xml;utf8,<svg width="28" height="32" viewBox="0 0 28 32" xmlns="http://www.w3.org/2000/svg"><path d="M27 14C28" fill="white"/></svg>\')',
-        href,
-      ),
-    ).toEqual(
-      'url(\'data:image/svg+xml;utf8,<svg width="28" height="32" viewBox="0 0 28 32" xmlns="http://www.w3.org/2000/svg"><path d="M27 14C28" fill="white"/></svg>\')',
-    );
-    expect(
-      absolutifyURLs(
+      );
+      expect(
+        absolutifyURLs(
+          'url("data:image/svg+xml;utf8,<svg width="28" height="32" viewBox="0 0 28 32" xmlns="http://www.w3.org/2000/svg"><path d="M27 14C28" fill="white"/></svg>")',
+          href,
+        ),
+      ).toEqual(
         'url("data:image/svg+xml;utf8,<svg width="28" height="32" viewBox="0 0 28 32" xmlns="http://www.w3.org/2000/svg"><path d="M27 14C28" fill="white"/></svg>")',
-        href,
-      ),
-    ).toEqual(
-      'url("data:image/svg+xml;utf8,<svg width="28" height="32" viewBox="0 0 28 32" xmlns="http://www.w3.org/2000/svg"><path d="M27 14C28" fill="white"/></svg>")',
-    );
-  });
-  it('can handle empty path', () => {
-    expect(absolutifyURLs(`url('')`, href)).toEqual(`url('')`);
-  });
+      );
+    });
+    it('can handle empty path', () => {
+      expect(absolutifyURLs(`url('')`, href)).toEqual(`url('')`);
+    });
+  })
 });
 
 describe('isBlockedElement()', () => {

@@ -429,19 +429,7 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
           extractOrigin(href) + filePath
         }${maybeQuote})`;
       }
-      const stack = href.split('/');
-      const parts = filePath.split('/');
-      stack.pop();
-      for (const part of parts) {
-        if (part === '.') {
-          continue;
-        } else if (part === '..') {
-          stack.pop();
-        } else {
-          stack.push(part);
-        }
-      }
-      return `url(${maybeQuote}${stack.join('/')}${maybeQuote})`;
+      return `url(${maybeQuote}${new URL(filePath, href).toString()}${maybeQuote})`;
     },
   );
 }
