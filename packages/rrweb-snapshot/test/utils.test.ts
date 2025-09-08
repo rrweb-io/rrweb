@@ -6,6 +6,7 @@ import {
   escapeImportStatement,
   extractFileExtension,
   fixSafariColons,
+  fixEmptyCssStyles,
   isNodeMetaEqual,
   stringifyStylesheet,
 } from '../src/utils';
@@ -279,6 +280,19 @@ describe('utils', () => {
 
       const out3 = fixSafariColons('[data-aa\\:other] { color: red; }');
       expect(out3).toEqual('[data-aa\\:other] { color: red; }');
+    });
+  });
+
+  describe('fixEmptyCssStyles', () => {
+    it('removes empty css styles', () => {
+      const input =
+        '.cl { font-family: sans-serif; font-size: 13px; color: var(--bug-text); border-top-style: ; border-top-width: ; border-right-style: ; border-right-width: ; border-bottom-style: ; border-bottom-width: ; border-left-style: ; border-left-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; border-color: var(--bug-border); background-color: var(--bug-background-primary); }';
+
+      const out1 = fixEmptyCssStyles(input);
+
+      expect(out1).toEqual(
+        '.cl { font-family: sans-serif; font-size: 13px; color: var(--bug-text); border-color: var(--bug-border); background-color: var(--bug-background-primary); }',
+      );
     });
   });
 
