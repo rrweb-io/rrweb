@@ -354,7 +354,9 @@ function diffProps(
     } else if (newTree.tagName === 'IFRAME' && name === 'srcdoc') continue;
     else {
       try {
-        oldTree.setAttribute(name, newValue);
+        if (oldTree.getAttribute(name) !== newValue) {
+          oldTree.setAttribute(name, newValue);
+        }
       } catch (err) {
         // We want to continue diffing so we quietly catch
         // this exception. Otherwise, this can throw and bubble up to
