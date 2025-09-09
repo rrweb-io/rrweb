@@ -204,6 +204,9 @@ export function styleSheets(n: ShadowRoot): StyleSheetList {
 
 export function shadowRoot(n: Node): ShadowRoot | null {
   if (!n || !('shadowRoot' in n)) return null;
+  if ('__rrClosedShadowRoot' in n) {
+    return n.__rrClosedShadowRoot as ShadowRoot;
+  }
   return getUntaintedAccessor('Element', n as Element, 'shadowRoot');
 }
 
