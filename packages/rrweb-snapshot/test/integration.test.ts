@@ -422,6 +422,28 @@ iframe.contentDocument.querySelector('center').clientHeight
     );
     expect(snapshotResult).toMatchSnapshot();
   });
+
+  it('correctly records CDATA section in SVG', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank', {
+      waitUntil: 'load',
+    });
+    await page.evaluate(`
+const defsSvg = (new window.DOMParser()).parseFromString(
+'<svg xmlns="http://www.w3.org/2000/svg" version="1.1"><style><![CDATA[.Icon > span{ color: red; }]]></style></svg>', 'image/svg+xml');
+      document.body.appendChild(defsSvg.documentElement);
+`);
+    await waitForRAF(page); // a small wait
+    const snapshotResult = JSON.stringify(
+      await page.evaluate(`${code};
+      rrwebSnapshot.snapshot(document);
+    `),
+      null,
+      2,
+    );
+    const fname = `./__snapshots__/cdata.svg.snap.json`;
+    expect(snapshotResult).toMatchFileSnapshot(fname);
+  });
 });
 
 describe('iframe integration tests', function (this: ISuite) {
