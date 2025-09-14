@@ -434,15 +434,39 @@ const defsSvg = (new window.DOMParser()).parseFromString(
       document.body.appendChild(defsSvg.documentElement);
 `);
     await waitForRAF(page); // a small wait
+    const cdataType = await page.evaluate(
+      `document.querySelector('svg style').childNodes[0].nodeType`,
+    );
+    assert(cdataType === 4);
     const snapshotResult = JSON.stringify(
       await page.evaluate(`${code};
-      rrwebSnapshot.snapshot(document);
+        const snapshotResult = rrwebSnapshot.snapshot(document);
+        snapshotResult
     `),
       null,
       2,
     );
     const fname = `./__snapshots__/cdata.svg.snap.json`;
     expect(snapshotResult).toMatchFileSnapshot(fname);
+
+    await waitForRAF(page);
+    const rebuildHtml = (await page.evaluate(`
+        const x = new XMLSerializer();
+        const node = rrwebSnapshot.rebuild(JSON.parse('${snapshotResult.replace(
+          /\n/g,
+          '',
+        )}'), { doc: document })
+
+        let out = x.serializeToString(node);
+        if (document.querySelector('html').getAttribute('xmlns') !== 'http://www.w3.org/1999/xhtml') {
+          // this is just an artefact of serializeToString
+          out = out.replace(' xmlns=\"http://www.w3.org/1999/xhtml\"', '');
+        }
+        out;  // return
+`)) as string;
+
+    const fhname = `./__snapshots__/cdata.svg.snap.html`;
+    expect(rebuildHtml.replace(/></g, '>\n<')).toMatchFileSnapshot(fhname);
   });
 });
 
