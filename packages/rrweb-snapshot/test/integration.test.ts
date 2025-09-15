@@ -429,6 +429,9 @@ iframe.contentDocument.querySelector('center').clientHeight
       waitUntil: 'load',
     });
     await page.evaluate(`
+const regularStyle = document.createElement('style');
+regularStyle.innerText = '.Icon > span{ color: blue; }'
+document.head.append(regularStyle);
 const defsSvg = (new window.DOMParser()).parseFromString(
 '<svg xmlns="http://www.w3.org/2000/svg" version="1.1"><style><![CDATA[.Icon > span{ color: red; }]]></style></svg>', 'image/svg+xml');
       document.body.appendChild(defsSvg.documentElement);

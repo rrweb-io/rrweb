@@ -10,7 +10,23 @@
           "type": 2,
           "tagName": "head",
           "attributes": {},
-          "childNodes": [],
+          "childNodes": [
+            {
+              "type": 2,
+              "tagName": "style",
+              "attributes": {
+                "_cssText": ".Icon > span { color: blue; }"
+              },
+              "childNodes": [
+                {
+                  "type": 3,
+                  "textContent": "",
+                  "id": 5
+                }
+              ],
+              "id": 4
+            }
+          ],
           "id": 3
         },
         {
@@ -36,18 +52,18 @@
                     {
                       "type": 4,
                       "textContent": "",
-                      "id": 7
+                      "id": 9
                     }
                   ],
                   "isSVG": true,
-                  "id": 6
+                  "id": 8
                 }
               ],
               "isSVG": true,
-              "id": 5
+              "id": 7
             }
           ],
-          "id": 4
+          "id": 6
         }
       ],
       "id": 2
