@@ -25,6 +25,8 @@ jobs:
 
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
+        env:
+          PUPPETEER_DOWNLOAD_BASE_URL: 'https://storage.googleapis.com/chrome-for-testing-public'
 
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
@@ -39,10 +41,12 @@ jobs:
       - name: Check bundle sizes
         uses: preactjs/compressed-size-action@v2
         with:
-          install-script: "yarn install --frozen-lockfile"
-          build-script: "build:all"
-          compression: "none"
-          pattern: "**/dist/*.{js,cjs,mjs,css}"
+          install-script: 'yarn install --frozen-lockfile'
+          build-script: 'build:all'
+          compression: 'none'
+          pattern: '**/dist/*.{js,cjs,mjs,css}'
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
 
       - name: Upload diff images to GitHub
         uses: actions/upload-artifact@v4
