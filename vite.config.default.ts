@@ -5,6 +5,8 @@ import { defineConfig, LibraryOptions, LibraryFormats, Plugin } from 'vite';
 import { build, Format } from 'esbuild';
 import { resolve } from 'path';
 import { umdWrapper } from 'esbuild-plugin-umd-wrapper';
+import * as fs from 'node:fs';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // don't empty out dir if --watch flag is passed
 const emptyOutDir = !process.argv.includes('--watch');
@@ -161,6 +163,10 @@ export default function (
         },
       }),
       minifyAndUMDPlugin({ name, outDir }),
+      visualizer({
+        filename: resolve(__dirname, name + '-bundle-analysis.html'), // Path for the HTML report
+        open: false, // don't Automatically open the report in the browser
+      }),
       {
         name: 'remove-worker-inline',
         enforce: 'pre',
