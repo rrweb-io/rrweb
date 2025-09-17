@@ -31,7 +31,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/newrelic-forks/rrweb.git"
   },
   "keywords": [
     "rrweb"
@@ -39,9 +39,9 @@
   "author": "justin@recordonce.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/newrelic-forks/rrweb/issues"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "homepage": "https://github.com/newrelic-forks/rrweb#readme",
   "devDependencies": {
     "rrweb": "^2.0.0-alpha.18",
     "typescript": "^5.4.5",
