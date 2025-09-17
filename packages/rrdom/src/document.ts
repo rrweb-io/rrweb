@@ -1,5 +1,7 @@
 import { NodeType as RRNodeType } from '@rrweb/types';
 import { parseCSSText, camelize, toCSSText } from './style';
+import { escapeHtmlText, escapeHtmlAttr } from './helpers';
+
 export interface IRRNode {
   parentElement: IRRNode | null;
   parentNode: IRRNode | null;
@@ -373,6 +375,26 @@ export class BaseRRDocument extends BaseRRNode implements IRRDocument {
     return CDATASection;
   }
 
+  // not something that is on the browser document object, but a convenient way to export
+  public get outerHTML() {
+    return this.childNodes
+      .map((cn) => {
+        if (cn instanceof BaseRRDocumentType) {
+          return `<!DOCTYPE ${cn.name}${
+            cn.publicId ? ` PUBLIC "${cn.publicId}"` : ''
+          }${cn.systemId ? ` "${cn.systemId}"` : ''}>\n`;
+        } else if (cn instanceof BaseRRElement) {
+          return cn.outerHTML;
+        } else if (cn.textContent !== null) {
+          // presumably newlines or other spacing characters
+          return escapeHtmlText(cn.textContent);
+        } else {
+          return cn.toString(); // for debugging
+        }
+      })
+      .join('');
+  }
+
   toString() {
     return 'RRDocument';
   }
@@ -518,6 +540,62 @@ export class BaseRRElement extends BaseRRNode implements IRRElement {
     return true;
   }
 
+  public get outerHTML(): string {
+    const voidElements = new Set([
+      'area',
+      'base',
+      'br',
+      'col',
+      'embed',
+      'hr',
+      'img',
+      'input',
+      'link',
+      'meta',
+      'param',
+      'source',
+      'track',
+      'wbr',
+    ]);
+
+    const tagLower = this.tagName.toLowerCase();
+    const tagAttrs = [tagLower];
+    for (const attribute in this.attributes) {
+      if (attribute === '"' && this.attributes[attribute] === '') {
+        // Badly authored html, e.g. `<a href="#""><span>`
+        continue;
+      }
+      // attribute names are case insensitive in HTML5; chrome normalizes them to lowercase
+      tagAttrs.push(
+        `${attribute.toLowerCase()}="${escapeHtmlAttr(
+          this.attributes[attribute],
+        )}"`,
+      );
+    }
+    if (voidElements.has(tagLower)) {
+      return `<${tagAttrs.join(' ')}>`;
+    }
+
+    const children = this.childNodes
+      .map((cn) => {
+        if (cn instanceof BaseRRElement) {
+          return cn.outerHTML;
+        } else if (cn.textContent !== null) {
+          if (tagLower === 'style') {
+            // don't escape to &gt; in `select > option.selected`
+            return cn.textContent;
+          } else {
+            return escapeHtmlText(cn.textContent);
+          }
+        } else {
+          return cn.toString(); // for debugging
+        }
+      })
+      .join('');
+
+    return `<${tagAttrs.join(' ')}>${children}</${tagLower}>`;
+  }
+
   toString() {
     let attributeString = '';
     for (const attribute in this.attributes) {
@@ -591,6 +669,10 @@ export class BaseRRText extends BaseRRNode implements IRRText {
     this.data = textContent;
   }
 
+  public get outerHTML(): string {
+    return escapeHtmlText(this.textContent || '');
+  }
+
   toString() {
     return `RRText text=${JSON.stringify(this.data)}`;
   }
@@ -613,6 +695,10 @@ export class BaseRRComment extends BaseRRNode implements IRRComment {
 
   public set textContent(textContent: string) {
     this.data = textContent;
+  }
+
+  public get outerHTML() {
+    return `<!--${this.textContent || ''}-->`;
   }
 
   toString() {
