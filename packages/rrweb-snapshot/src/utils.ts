@@ -429,10 +429,19 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
           extractOrigin(href) + filePath
         }${maybeQuote})`;
       }
-      return `url(${maybeQuote}${new URL(
-        filePath,
-        href,
-      ).toString()}${maybeQuote})`;
+      const stack = href.split('#')[0].split('/');
+      const parts = filePath.split('/');
+      stack.pop();
+      for (const part of parts) {
+        if (part === '.') {
+          continue;
+        } else if (part === '..') {
+          stack.pop();
+        } else {
+          stack.push(part);
+        }
+      }
+      return `url(${maybeQuote}${stack.join('/')}${maybeQuote})`;
     },
   );
 }
