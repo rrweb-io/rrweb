@@ -334,7 +334,7 @@ rrweb-player 同样可以使用 CDN 方式安装：
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/rrweb-player.umd.cjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/umd/rrweb-player.js"></script>
 ```
 
 或者通过 npm 安装：

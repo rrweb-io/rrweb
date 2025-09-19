@@ -340,7 +340,7 @@ rrweb-player can also be included with `<script>`：
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/rrweb-player.umd.cjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/umd/rrweb-player.js"></script>
 ```
 
 Or installed by using NPM：
