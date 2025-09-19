@@ -34,7 +34,6 @@
   "main": "./dist/rrweb.umd.cjs",
   "module": "./dist/rrweb.js",
   "unpkg": "./dist/rrweb.umd.cjs",
-  "typings": "dist/rrweb.d.ts",
   "exports": {
     ".": {
       "import": {
@@ -46,8 +45,21 @@
         "default": "./dist/rrweb.cjs"
       }
     },
-    "./dist/style.css": "./dist/style.css"
+    "./dist/style.css": "./dist/style.css",
+    "./record":  {
+      "import": "./dist/rrweb-record.js"
+    },
+    "./replay":  {
+      "import": "./dist/rrweb-replay.js"
+    }
   },
+"typesVersions": {
+  "*": {
+    "record": ["dist/rrweb-record.d.ts"],
+    "replay": ["dist/rrweb-replay.d.ts"],
+    "*": ["dist/rrweb.d.ts"]
+  }
+},
   "files": [
     "dist",
     "package.json"
