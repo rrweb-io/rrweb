@@ -68,7 +68,3 @@ replayer.startLive(); // start the replayer in live mode
 
 replayer.addEvent(event); // call this whenever an event is received from the record script
 ```
-
-## More info
-
-https://github.com/rrweb-io/rrweb/pull/976
