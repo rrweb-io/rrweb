@@ -54,7 +54,14 @@ export class MediaManager {
     this.mediaMap.forEach((_mediaState, target) => {
       this.syncTargetWithState(target);
       if (options.pause) {
-        target.pause();
+        try {
+          target.pause();
+        } catch (error) {
+          this.warn(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
+            `Failed to sync media element: ${error.message || error}`,
+          );
+        }
       }
     });
   }
@@ -104,7 +111,14 @@ export class MediaManager {
 
       target.currentTime = seekToTime;
     } else {
-      target.pause();
+      try {
+        target.pause();
+      } catch (error) {
+        this.warn(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
+          `Failed to pause during seek: ${error.message || error}`,
+        );
+      }
       target.currentTime = mediaState.currentTimeAtLastInteraction;
     }
   }
