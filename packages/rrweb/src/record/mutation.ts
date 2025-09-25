@@ -33,6 +33,7 @@ import {
   closestElementOfNode,
 } from '../utils';
 import dom from '@rrweb/utils';
+import { AutoProcessMutationQueue } from './auto-process-mutation-queue';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -193,6 +194,13 @@ export default class MutationBuffer {
   private canvasManager: observerParam['canvasManager'];
   private processedNodeManager: observerParam['processedNodeManager'];
   private unattachedDoc: HTMLDocument;
+  private mutationQueue: AutoProcessMutationQueue;
+
+  constructor() {
+    this.mutationQueue = new AutoProcessMutationQueue({
+      processFunction: this.processMutation,
+    });
+  }
 
   public init(options: MutationBufferParam) {
     (
@@ -223,6 +231,8 @@ export default class MutationBuffer {
       // just a type trick, the runtime result is correct
       this[key] = options[key] as never;
     });
+
+    this.mutationQueue.start();
   }
 
   public freeze() {
@@ -257,8 +267,7 @@ export default class MutationBuffer {
   }
 
   public processMutations = (mutations: mutationRecord[]) => {
-    mutations.forEach(this.processMutation); // adds mutations to the buffer
-    this.emit(); // clears buffer if not locked/frozen
+    this.mutationQueue.enqueue([...mutations, this.emit]);
   };
 
   public emit = () => {
