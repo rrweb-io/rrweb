@@ -29,6 +29,7 @@ export class AutoProcessMutationQueue {
     mutations.forEach((m) =>
       this.store.push(typeof m === 'function' ? m : [m, nowTimestamp()]),
     );
+    this.start();
     this.process();
   }
 
@@ -44,6 +45,9 @@ export class AutoProcessMutationQueue {
     records.forEach((record: ProcessItem) =>
       typeof record === 'function' ? record() : this.processFunction(record),
     );
+    if (!this.store.length) {
+      this.stop();
+    }
   }
 
   getFirstMutation() {
