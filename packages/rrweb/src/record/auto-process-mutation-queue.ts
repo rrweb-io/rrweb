@@ -1,7 +1,8 @@
 import type { mutationRecord } from '@rrweb/types';
+import { nowTimestamp } from '../utils';
 
-type ProcessFunction = (mutation: mutationRecord) => void;
-type ProcessItem = mutationRecord | (() => void);
+type ProcessFunction = (mutation: ProcessItem) => void;
+type ProcessItem = [mutationRecord, timestamp: number] | (() => void);
 
 export class AutoProcessMutationQueue {
   private store: ProcessItem[] = [];
@@ -24,8 +25,10 @@ export class AutoProcessMutationQueue {
     return this.store.length;
   }
 
-  enqueue(mutations: ProcessItem[]): void {
-    this.store.push(...mutations);
+  enqueue(mutations: (mutationRecord | (() => void))[]): void {
+    mutations.forEach((m) =>
+      this.store.push(typeof m === 'function' ? m : [m, nowTimestamp()]),
+    );
     this.process();
   }
 
@@ -41,6 +44,10 @@ export class AutoProcessMutationQueue {
     records.forEach((record: ProcessItem) =>
       typeof record === 'function' ? record() : this.processFunction(record),
     );
+  }
+
+  getFirstMutation() {
+    return this.store.find((i) => typeof i !== 'function');
   }
 
   start(t = 100): void {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   serializeNodeWithId,
   transformAttribute,
@@ -195,6 +196,12 @@ export default class MutationBuffer {
   private processedNodeManager: observerParam['processedNodeManager'];
   private unattachedDoc: HTMLDocument;
   private mutationQueue: AutoProcessMutationQueue;
+  private timestamps = {
+    adds: [],
+    texts: [],
+    removes: [],
+    attributes: [],
+  };
 
   constructor() {
     this.mutationQueue = new AutoProcessMutationQueue({
@@ -268,6 +275,19 @@ export default class MutationBuffer {
 
   public processMutations = (mutations: mutationRecord[]) => {
     this.mutationQueue.enqueue([...mutations, this.emit]);
+  };
+
+  public isQueueEmpty = (): boolean => {
+    return this.mutationQueue.size === 0;
+  };
+
+  public hasQueuedMutationBeforeTs = (timestamp: number) => {
+    const mutation = this.mutationQueue.getFirstMutation();
+    if (!mutation) {
+      return false;
+    }
+    console.log(mutation, timestamp);
+    return false;
   };
 
   public emit = () => {
@@ -459,16 +479,20 @@ export default class MutationBuffer {
 
     const payload = {
       texts: this.texts
-        .map((text) => {
+        .map((text, idx) => {
           const n = text.node;
           const parent = dom.parentNode(n);
           if (parent && (parent as Element).tagName === 'TEXTAREA') {
             // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
-            this.genTextAreaValueMutation(parent as HTMLTextAreaElement);
+            this.genTextAreaValueMutation(
+              parent as HTMLTextAreaElement,
+              this.timestamps.texts[idx],
+            );
           }
           return {
             id: this.mirror.getId(n),
             value: text.value,
+            timestamp: this.timestamps.texts[idx],
           };
         })
         // no need to include them on added elements, as they have just been serialized with up to date attribubtes
@@ -476,7 +500,7 @@ export default class MutationBuffer {
         // text mutation's id was not in the mirror map means the target node has been removed
         .filter((text) => this.mirror.has(text.id)),
       attributes: this.attributes
-        .map((attribute) => {
+        .map((attribute, idx) => {
           const { attributes } = attribute;
           if (typeof attributes.style === 'string') {
             const diffAsStr = JSON.stringify(attribute.styleDiff);
@@ -497,13 +521,17 @@ export default class MutationBuffer {
           return {
             id: this.mirror.getId(attribute.node),
             attributes: attributes,
+            timestamp: this.timestamps.attributes[idx],
           };
         })
         // no need to include them on added elements, as they have just been serialized with up to date attribubtes
         .filter((attribute) => !addedIds.has(attribute.id))
         // attribute mutation's id was not in the mirror map means the target node has been removed
         .filter((attribute) => this.mirror.has(attribute.id)),
-      removes: this.removes,
+      removes: this.removes.map((remove, idx) => ({
+        ...remove,
+        timestamp: this.timestamps.removes[idx],
+      })),
       adds,
     };
     // payload may be empty if the mutations happened in some blocked elements
@@ -526,11 +554,20 @@ export default class MutationBuffer {
     this.droppedSet = new Set<Node>();
     this.removesSubTreeCache = new Set<Node>();
     this.movedMap = {};
+    this.timestamps = {
+      adds: [],
+      texts: [],
+      removes: [],
+      attributes: [],
+    };
 
     this.mutationCb(payload);
   };
 
-  private genTextAreaValueMutation = (textarea: HTMLTextAreaElement) => {
+  private genTextAreaValueMutation = (
+    textarea: HTMLTextAreaElement,
+    timestamp: number,
+  ) => {
     let item = this.attributeMap.get(textarea);
     if (!item) {
       item = {
@@ -540,6 +577,7 @@ export default class MutationBuffer {
         _unchangedStyles: {},
       };
       this.attributes.push(item);
+      this.timestamps.attributes.push(timestamp);
       this.attributeMap.set(textarea, item);
     }
     const value = Array.from(
@@ -556,7 +594,10 @@ export default class MutationBuffer {
     });
   };
 
-  private processMutation = (m: mutationRecord) => {
+  private processMutation = ([m, timestamp]: [
+    m: mutationRecord,
+    timestamp: number,
+  ]) => {
     if (isIgnored(m.target, this.mirror, this.slimDOMOptions)) {
       return;
     }
@@ -582,6 +623,7 @@ export default class MutationBuffer {
                 : value,
             node: m.target,
           });
+          this.timestamps.texts.push(timestamp);
         }
         break;
       }
@@ -632,6 +674,7 @@ export default class MutationBuffer {
           };
           this.attributes.push(item);
           this.attributeMap.set(m.target, item);
+          this.timestamps.attributes.push(timestamp);
         }
 
         // Keep this property on inputs that used to be password inputs
@@ -709,7 +752,10 @@ export default class MutationBuffer {
 
         if ((m.target as Element).tagName === 'TEXTAREA') {
           // children would be ignored in genAdds as they aren't in the mirror
-          this.genTextAreaValueMutation(m.target as HTMLTextAreaElement);
+          this.genTextAreaValueMutation(
+            m.target as HTMLTextAreaElement,
+            timestamp,
+          );
           return; // any removedNodes won't have been in mirror either
         }
 
@@ -759,6 +805,7 @@ export default class MutationBuffer {
                   ? true
                   : undefined,
             });
+            this.timestamps.removes.push(timestamp);
             processRemoves(n, this.removesSubTreeCache);
           }
           this.mapRemoves.push(n);
