@@ -7,7 +7,7 @@ export class AutoProcessMutationQueue {
   private store: ProcessItem[] = [];
   private processBatch: number;
   private processFunction: ProcessFunction;
-  private interval?: number;
+  private interval?: ReturnType<typeof setInterval>;
 
   constructor({
     processFunction,
@@ -29,7 +29,7 @@ export class AutoProcessMutationQueue {
     this.process();
   }
 
-  dequeue(n?: number = this.processBatch): ProcessItem[] {
+  dequeue(n: number = this.processBatch): ProcessItem[] {
     if (this.store.length) {
       return this.store.splice(0, n);
     }
@@ -52,6 +52,7 @@ export class AutoProcessMutationQueue {
   stop(): void {
     if (this.interval) {
       clearInterval(this.interval);
+      this.interval = undefined;
     }
   }
 }
