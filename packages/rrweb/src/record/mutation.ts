@@ -284,7 +284,7 @@ export default class MutationBuffer {
     if (!mutation) {
       return false;
     }
-    console.log(mutation, timestamp);
+    // console.log(mutation, timestamp);
     return false;
   };
 

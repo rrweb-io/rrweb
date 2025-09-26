@@ -44,15 +44,22 @@ export class AutoProcessMutationQueue {
     records.forEach((record: ProcessItem) =>
       typeof record === 'function' ? record() : this.processFunction(record),
     );
-    if (!this.store.length) {
+    // console.log('processing', records.length, 'of', this.store.length);
+    if (!this.store.length && this.interval) {
+      // console.log('stopping poll');
       this.stop();
     } else if (!this.interval) {
+      // console.log('starting poll');
       this.start();
     }
   }
 
   getFirstMutation() {
     return this.store.find((i) => typeof i !== 'function');
+  }
+
+  shouldPoll() {
+    return this.store.length && !this.interval;
   }
 
   start(t = 100): void {
