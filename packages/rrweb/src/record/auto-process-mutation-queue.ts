@@ -12,7 +12,7 @@ export class AutoProcessMutationQueue {
 
   constructor({
     processFunction,
-    processBatch = 10_000,
+    processBatch = 5_000,
   }: {
     processBatch?: number;
     processFunction: ProcessFunction;
@@ -29,7 +29,6 @@ export class AutoProcessMutationQueue {
     mutations.forEach((m) =>
       this.store.push(typeof m === 'function' ? m : [m, nowTimestamp()]),
     );
-    this.start();
     this.process();
   }
 
@@ -47,6 +46,8 @@ export class AutoProcessMutationQueue {
     );
     if (!this.store.length) {
       this.stop();
+    } else if (!this.interval) {
+      this.start();
     }
   }
 

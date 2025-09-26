@@ -238,8 +238,6 @@ export default class MutationBuffer {
       // just a type trick, the runtime result is correct
       this[key] = options[key] as never;
     });
-
-    this.mutationQueue.start();
   }
 
   public freeze() {
