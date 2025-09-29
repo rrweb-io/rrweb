@@ -1,6 +1,6 @@
 {
   "name": "@mixpanel/rrweb-replay",
-  "version": "2.0.0-alpha.18.1",
+  "version": "2.0.0-alpha.18.2",
   "publishConfig": {
     "access": "public"
   },

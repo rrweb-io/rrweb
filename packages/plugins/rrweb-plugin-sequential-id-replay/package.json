@@ -1,6 +1,6 @@
 {
   "name": "@mixpanel/rrweb-plugin-sequential-id-replay",
-  "version": "2.0.0-alpha.18.1",
+  "version": "2.0.0-alpha.18.2",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-sequential-id-replay.umd.cjs",
