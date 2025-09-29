@@ -85,7 +85,6 @@ export function initMutationObserver(
   const mutationBuffer = new MutationBuffer();
   mutationBuffers.push(mutationBuffer);
   // see mutation.ts for details
-  console.log(options);
   mutationBuffer.init(options);
   const observer = new (mutationObserverCtor() as new (
     callback: MutationCallback,

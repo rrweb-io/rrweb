@@ -284,8 +284,7 @@ export default class MutationBuffer {
     if (!mutation) {
       return false;
     }
-    // console.log(mutation, timestamp);
-    return false;
+    return mutation[1] < timestamp;
   };
 
   public emit = () => {
