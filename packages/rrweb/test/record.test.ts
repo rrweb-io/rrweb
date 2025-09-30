@@ -110,11 +110,11 @@ describe('record', function (this: ISuite) {
       await ctx.page.type('input', 'a');
     }
     await ctx.page.waitForTimeout(10);
-  // The exact number of emitted incremental input events can vary slightly across
-  // environments (e.g., differing key event sequences). We assert a stable range
-  // instead of an exact value to avoid flaky failures (historically 33–35).
-  expect(ctx.events.length).toBeGreaterThanOrEqual(33);
-  expect(ctx.events.length).toBeLessThan(40);
+    // The exact number of emitted incremental input events can vary slightly across
+    // environments (e.g., differing key event sequences). We assert a stable range
+    // instead of an exact value to avoid flaky failures (historically 33–35).
+    expect(ctx.events.length).toBeGreaterThanOrEqual(33);
+    expect(ctx.events.length).toBeLessThan(40);
     expect(
       ctx.events.filter((event: eventWithTime) => event.type === EventType.Meta)
         .length,

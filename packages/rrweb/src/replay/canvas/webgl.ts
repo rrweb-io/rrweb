@@ -1,5 +1,8 @@
 import type { Replayer } from '../';
-import { CanvasContext, type canvasMutationCommand } from '@newrelic/rrweb-types';
+import {
+  CanvasContext,
+  type canvasMutationCommand,
+} from '@newrelic/rrweb-types';
 import { deserializeArg, variableListFor } from './deserialize-args';
 
 function getContext(

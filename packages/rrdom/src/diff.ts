@@ -338,8 +338,8 @@ function diffProps(
 
   for (const name in newAttributes) {
     const newValue = newAttributes[name];
-  const sn: any = rrnodeMirror.getMeta(newTree);
-  if (sn?.isSVG && NAMESPACES[name])
+    const sn: any = rrnodeMirror.getMeta(newTree);
+    if (sn?.isSVG && NAMESPACES[name])
       oldTree.setAttributeNS(NAMESPACES[name], name, newValue);
     else if (newTree.tagName === 'CANVAS' && name === 'rr_dataURL') {
       const image = document.createElement('img');

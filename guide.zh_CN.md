@@ -45,7 +45,7 @@ rrweb 代码分为录制和回放两部分，大多数时候用户在被录制�
 - [@rrweb/types](packages/types)：包含 rrweb 包中共享的类型定义。
 - [@rrweb/utils](packages/utils)：包含 rrweb 包中共享的工具函数。
 - [rrvideo](packages/rrvideo)：一个用于处理 rrweb 中视频操作的包。
-> 说明：上游文档中提到的插件包（console、sequential-id、canvas-webrtc）在本 fork 中已移除。历史 CHANGELOG 仍可能保留其引用以供溯源。
+  > 说明：上游文档中提到的插件包（console、sequential-id、canvas-webrtc）在本 fork 中已移除。历史 CHANGELOG 仍可能保留其引用以供溯源。
 
 ### 通过 npm 引入
 

@@ -211,7 +211,7 @@ export class MediaManager {
     const serializedNode = mirror.getMeta(target);
     if (!serializedNode || !('attributes' in serializedNode)) return;
     const playerIsPaused = this.service.state.matches('paused');
-    const mediaAttributes = serializedNode.attributes ;
+    const mediaAttributes = serializedNode.attributes;
 
     let isPlaying = false;
     if (mediaAttributes.rr_mediaState) {

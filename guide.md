@@ -48,7 +48,7 @@ Besides the `rrweb` and `@rrweb/record` packages, rrweb also provides other pack
 - [@rrweb/types](packages/types): Contains types shared across rrweb packages.
 - [@rrweb/utils](packages/utils): Contains utility functions shared across rrweb packages.
 - [rrvideo](packages/rrvideo): A package for handling video operations in rrweb.
-> Note: Plugin packages referenced in upstream rrweb documentation (console, sequential-id, canvas-webrtc) were removed in this fork. Historical CHANGELOG lines are retained elsewhere for provenance.
+  > Note: Plugin packages referenced in upstream rrweb documentation (console, sequential-id, canvas-webrtc) were removed in this fork. Historical CHANGELOG lines are retained elsewhere for provenance.
 
 ### NPM
 
