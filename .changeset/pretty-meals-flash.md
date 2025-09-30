@@ -10,7 +10,6 @@
 "@rrweb/record": major
 "@rrweb/replay": major
 "rrdom": major
-"rrdom-nodejs": major
 "rrweb": major
 "rrweb-player": major
 "rrweb-snapshot": major

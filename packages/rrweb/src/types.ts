@@ -4,11 +4,11 @@ import type {
   SlimDOMOptions,
   MaskInputFn,
   MaskTextFn,
-} from 'rrweb-snapshot';
+} from '@newrelic/rrweb-snapshot';
 import type { IframeManager } from './record/iframe-manager';
 import type { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
-import type { RRNode } from 'rrdom';
+import type { RRNode } from '@newrelic/rrdom';
 import type { CanvasManager } from './record/observers/canvas/canvas-manager';
 import type { StylesheetManager } from './record/stylesheet-manager';
 import type {
@@ -38,7 +38,7 @@ import type {
   viewportResizeCallback,
   PackFn,
   UnpackFn,
-} from '@rrweb/types';
+} from '@newrelic/rrweb-types';
 import type ProcessedNodeManager from './record/processed-node-manager';
 
 export type recordOptions<T> = {

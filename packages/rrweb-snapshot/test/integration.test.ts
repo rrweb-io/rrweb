@@ -92,7 +92,8 @@ interface ISuite {
 }
 
 describe('integration tests', function (this: ISuite) {
-  vi.setConfig({ testTimeout: 30_000 });
+  // Increase hook timeout because launching puppeteer & spinning the test HTTP server can exceed default (10s)
+  vi.setConfig({ testTimeout: 30_000, hookTimeout: 60_000 });
   let server: ISuite['server'];
   let serverURL: ISuite['serverURL'];
   let browser: ISuite['browser'];
@@ -113,8 +114,12 @@ describe('integration tests', function (this: ISuite) {
   });
 
   afterAll(async () => {
-    await browser.close();
-    await server.close();
+    if (browser) {
+      try { await browser.close(); } catch {}
+    }
+    if (server) {
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
   });
 
   for (const html of htmls) {
@@ -425,7 +430,7 @@ iframe.contentDocument.querySelector('center').clientHeight
 });
 
 describe('iframe integration tests', function (this: ISuite) {
-  vi.setConfig({ testTimeout: 30_000 });
+  vi.setConfig({ testTimeout: 30_000, hookTimeout: 60_000 });
   let server: ISuite['server'];
   let serverURL: ISuite['serverURL'];
   let browser: ISuite['browser'];
@@ -469,7 +474,7 @@ describe('iframe integration tests', function (this: ISuite) {
 });
 
 describe('dialog integration tests', function (this: ISuite) {
-  vi.setConfig({ testTimeout: 30_000 });
+  vi.setConfig({ testTimeout: 30_000, hookTimeout: 60_000 });
   let server: ISuite['server'];
   let serverURL: ISuite['serverURL'];
   let browser: ISuite['browser'];
@@ -517,7 +522,7 @@ describe('dialog integration tests', function (this: ISuite) {
 });
 
 describe('shadow DOM integration tests', function (this: ISuite) {
-  vi.setConfig({ testTimeout: 30_000 });
+  vi.setConfig({ testTimeout: 30_000, hookTimeout: 60_000 });
   let server: ISuite['server'];
   let serverURL: ISuite['serverURL'];
   let browser: ISuite['browser'];

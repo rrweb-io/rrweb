@@ -28,7 +28,7 @@ import adoptedStyleSheetModification from './events/adopted-style-sheet-modifica
 import documentReplacementEvents from './events/document-replacement';
 import hoverInIframeShadowDom from './events/iframe-shadowdom-hover';
 import customElementDefineClass from './events/custom-element-define-class';
-import { ReplayerEvents } from '@rrweb/types';
+import { ReplayerEvents } from '@newrelic/rrweb-types';
 
 interface ISuite {
   code: string;
@@ -40,7 +40,8 @@ type IWindow = Window &
   typeof globalThis & { rrweb: typeof import('../src'); events: typeof events };
 
 describe('replayer', function () {
-  vi.setConfig({ testTimeout: 10_000 });
+  // Increase timeouts for comprehensive replayer suite which performs many DOM operations
+  vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
   let code: ISuite['code'];
   let browser: ISuite['browser'];

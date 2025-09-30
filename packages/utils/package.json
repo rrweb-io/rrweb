@@ -1,5 +1,5 @@
 {
-  "name": "@rrweb/utils",
+  "name": "@newrelic/rrweb-utils",
   "version": "2.0.0-alpha.18",
   "publishConfig": {
     "access": "public"
@@ -25,19 +25,19 @@
   },
   "license": "MIT",
   "type": "module",
-  "main": "./dist/utils.umd.cjs",
-  "module": "./dist/utils.js",
-  "unpkg": "./dist/utils.umd.cjs",
+  "main": "./dist/rrweb-utils.umd.cjs",
+  "module": "./dist/rrweb-utils.js",
+  "unpkg": "./dist/rrweb-utils.umd.cjs",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": {
         "types": "./dist/index.d.ts",
-        "default": "./dist/utils.js"
+        "default": "./dist/rrweb-utils.js"
       },
       "require": {
         "types": "./dist/index.d.cts",
-        "default": "./dist/utils.umd.cjs"
+        "default": "./dist/rrweb-utils.umd.cjs"
       }
     }
   },

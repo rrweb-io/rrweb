@@ -1,40 +1,26 @@
 {
   "references": [
-    {
-      "path": "packages/rrdom"
-    },
-    {
-      "path": "packages/rrdom-nodejs"
-    },
-    {
-      "path": "packages/rrweb"
-    },
-    {
-      "path": "packages/rrweb-player"
-    },
-    {
-      "path": "packages/rrweb-snapshot"
-    },
-    {
-      "path": "packages/types"
-    },
-    {
-      "path": "packages/plugins/rrweb-plugin-console-replay"
-    },
-    {
-      "path": "packages/plugins/rrweb-plugin-console-record"
-    },
-    {
-      "path": "packages/rrvideo"
-    },
-    {
-      "path": "packages/web-extension"
-    }
+    { "path": "packages/types" },
+    { "path": "packages/utils" },
+    { "path": "packages/rrweb-snapshot" },
+    { "path": "packages/rrdom" },
+    { "path": "packages/rrweb" },
+    { "path": "packages/record" },
+    { "path": "packages/replay" },
+    { "path": "packages/packer" },
+    { "path": "packages/rrweb-player" },
+    { "path": "packages/rrvideo" },
+    { "path": "packages/all" }
   ],
   "files": [],
   "include": [],
-  "exclude": [],
+  "exclude": [
+    "**/dist/**",
+    "**/node_modules/**"
+  ],
   "compilerOptions": {
-    "rootDir": "."
+    "rootDir": ".",
+    "composite": false,
+    "noEmit": true
   }
 }

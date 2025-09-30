@@ -31,7 +31,7 @@ import {
   absolutifyURLs,
   markCssSplits,
 } from './utils';
-import dom from '@rrweb/utils';
+import dom from '@newrelic/rrweb-utils';
 
 let _id = 1;
 const tagNameRegex = new RegExp('[^a-z0-9-_:]');

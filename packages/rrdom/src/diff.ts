@@ -1,14 +1,13 @@
-import { type Mirror as NodeMirror } from 'rrweb-snapshot';
-import { NodeType as RRNodeType } from '@rrweb/types';
+import { type Mirror as NodeMirror } from '@newrelic/rrweb-snapshot';
+import { NodeType as RRNodeType } from '@newrelic/rrweb-types';
 import type {
   canvasMutationData,
   canvasEventWithTime,
-  elementNode,
   inputData,
   scrollData,
   styleDeclarationData,
   styleSheetRuleData,
-} from '@rrweb/types';
+} from '@newrelic/rrweb-types';
 import type {
   IRRCDATASection,
   IRRComment,
@@ -339,8 +338,8 @@ function diffProps(
 
   for (const name in newAttributes) {
     const newValue = newAttributes[name];
-    const sn = rrnodeMirror.getMeta(newTree) as elementNode | null;
-    if (sn?.isSVG && NAMESPACES[name])
+  const sn: any = rrnodeMirror.getMeta(newTree);
+  if (sn?.isSVG && NAMESPACES[name])
       oldTree.setAttributeNS(NAMESPACES[name], name, newValue);
     else if (newTree.tagName === 'CANVAS' && name === 'rr_dataURL') {
       const image = document.createElement('img');

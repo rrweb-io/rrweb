@@ -1,5 +1,5 @@
 import { strFromU8, strToU8, zlibSync } from 'fflate';
-import type { PackFn } from '@rrweb/types';
+import type { PackFn } from '@newrelic/rrweb-types';
 import { type eventWithTimeAndPacker, MARK } from './base';
 
 export const pack: PackFn = (event) => {

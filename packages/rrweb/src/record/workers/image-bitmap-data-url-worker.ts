@@ -3,7 +3,7 @@ import type {
   DataURLOptions,
   ImageBitmapDataURLWorkerParams,
   ImageBitmapDataURLWorkerResponse,
-} from '@rrweb/types';
+} from '@newrelic/rrweb-types';
 
 const lastBlobMap: Map<number, string> = new Map();
 const transparentBlobMap: Map<string, string> = new Map();

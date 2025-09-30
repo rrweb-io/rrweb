@@ -3,7 +3,7 @@ import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
 import { vi } from 'vitest';
 import type { recordOptions } from '../../src/types';
-import { listenerHandler, eventWithTime, EventType } from '@rrweb/types';
+import { listenerHandler, eventWithTime, EventType } from '@newrelic/rrweb-types';
 import { launchPuppeteer } from '../utils';
 import {
   callbackWrapper,
@@ -70,7 +70,8 @@ const setup = function (
 };
 
 describe('error-handler', function (this: ISuite) {
-  vi.setConfig({ testTimeout: 100_000 });
+  // Extend hook timeout to accommodate slower CI environments when patching prototypes
+  vi.setConfig({ testTimeout: 100_000, hookTimeout: 100_000 });
 
   const ctx: ISuite = setup.call(
     this,

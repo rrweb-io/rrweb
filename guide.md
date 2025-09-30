@@ -41,21 +41,14 @@ Besides the `rrweb` and `@rrweb/record` packages, rrweb also provides other pack
 - [rrweb-player](packages/rrweb-player): A GUI for rrweb, providing a timeline and buttons for things like pause, fast-forward, and speedup.
 - [rrweb-snapshot](packages/rrweb-snapshot): Handles snapshot and rebuilding features, converting the DOM and its state into a serializable data structure.
 - [rrdom](packages/rrdom): A virtual dom package rrweb.
-- [rrdom-nodejs](packages/rrdom-nodejs): The Node.js version of rrdom for server-side DOM operations.
 - [@rrweb/all](packages/all): A package that includes `rrweb` and `@rrweb/packer` for easy install.
 - [@rrweb/record](packages/record): A package for recording rrweb sessions.
 - [@rrweb/replay](packages/replay): A package for replaying rrweb sessions.
 - [@rrweb/packer](packages/packer): A package for packing and unpacking rrweb data.
 - [@rrweb/types](packages/types): Contains types shared across rrweb packages.
 - [@rrweb/utils](packages/utils): Contains utility functions shared across rrweb packages.
-- [web-extension](packages/web-extension): A web extension for rrweb.
 - [rrvideo](packages/rrvideo): A package for handling video operations in rrweb.
-- [@rrweb/rrweb-plugin-console-record](packages/plugins/rrweb-plugin-console-record): A plugin for recording console logs.
-- [@rrweb/rrweb-plugin-console-replay](packages/plugins/rrweb-plugin-console-replay): A plugin for replaying console logs.
-- [@rrweb/rrweb-plugin-sequential-id-record](packages/plugins/rrweb-plugin-sequential-id-record): A plugin for recording sequential IDs.
-- [@rrweb/rrweb-plugin-sequential-id-replay](packages/plugins/rrweb-plugin-sequential-id-replay): A plugin for replaying sequential IDs.
-- [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record): A plugin for stream `<canvas>` via WebRTC.
-- [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay): A plugin for playing streamed `<canvas>` via WebRTC.
+> Note: Plugin packages referenced in upstream rrweb documentation (console, sequential-id, canvas-webrtc) were removed in this fork. Historical CHANGELOG lines are retained elsewhere for provenance.
 
 ### NPM
 

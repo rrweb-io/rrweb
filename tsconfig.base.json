@@ -8,8 +8,7 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Node",
-    "rootDir": "src",
-    "outDir": "dist",
+    /* rootDir & outDir are defined per-package to avoid emitting to repo root */
     "lib": ["es6", "dom"],
     "sourceMap": true,
     "skipLibCheck": true,
@@ -45,7 +44,9 @@
       "vite/client",
       "@types/dom-mediacapture-transform",
       "@types/offscreencanvas"
-    ]
+    ],
+    "baseUrl": "./",
+    "paths": {}
   },
   "exclude": ["**/vite.config.ts", "**/vitest.config.ts", "**/test"],
   "compileOnSave": true

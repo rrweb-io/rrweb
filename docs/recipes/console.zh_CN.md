@@ -8,7 +8,7 @@
 
 ```js
 import rrweb from 'rrweb';
-import { getRecordConsolePlugin } from '@rrweb/rrweb-plugin-console-record';
+// 控制台录制插件已移除
 
 rweb.record({
   emit: function emit(event) {
@@ -70,7 +70,7 @@ rrweb.record({
 
 ```js
 import rrweb from 'rrweb';
-import { getReplayConsolePlugin } from '@rrweb/rrweb-plugin-console-replay';
+// 控制台回放插件已移除
 
 const replayer = new rrweb.Replayer(events, {
   plugins: [

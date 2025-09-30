@@ -1,7 +1,7 @@
-import type { ICanvas } from 'rrweb-snapshot';
-import type { blockClass, IWindow, listenerHandler } from '@rrweb/types';
+import type { ICanvas } from '@newrelic/rrweb-snapshot';
+import type { blockClass, IWindow, listenerHandler } from '@newrelic/rrweb-types';
 import { isBlocked } from '../../../utils';
-import { patch } from '@rrweb/utils';
+import { patch } from '@newrelic/rrweb-utils';
 
 function getNormalizedContextName(contextType: string) {
   return contextType === 'experimental-webgl' ? 'webgl' : contextType;

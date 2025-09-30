@@ -1,11 +1,11 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { chromium } from 'playwright';
-import { EventType, eventWithTime } from '@rrweb/types';
-import type Player from 'rrweb-player';
+import { EventType, eventWithTime } from '@newrelic/rrweb-types';
+import type Player from '@newrelic/rrweb-player';
 
 const rrwebScriptPath = path.resolve(
-  require.resolve('rrweb-player'),
+  require.resolve('@newrelic/rrweb-player'),
   '../../dist/rrweb-player.umd.cjs',
 );
 const rrwebStylePath = path.resolve(rrwebScriptPath, '../style.css');

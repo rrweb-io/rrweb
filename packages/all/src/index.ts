@@ -1,4 +1,3 @@
-export * from 'rrweb';
-export * from '@rrweb/packer';
-// export * from '@rrweb/rrweb-plugin-console-record';
-// export * from '@rrweb/rrweb-plugin-console-replay';
+export * from '@newrelic/rrweb';
+export * from '@newrelic/rrweb-packer';
+// (Removed plugin re-exports: console, sequential-id, canvas-webrtc.)

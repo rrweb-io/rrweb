@@ -9,7 +9,7 @@ You can enable the logger using default option like this:
 
 ```js
 import rrweb from 'rrweb';
-import { getRecordConsolePlugin } from '@rrweb/rrweb-plugin-console-record';
+// Console record plugin removed in this fork.
 
 rrweb.record({
   emit: function emit(event) {
@@ -71,7 +71,7 @@ If recorded events include data of console log type, we will automatically play 
 
 ```js
 import rrweb from 'rrweb';
-import { getReplayConsolePlugin } from '@rrweb/rrweb-plugin-console-replay';
+// Console replay plugin removed in this fork.
 
 const replayer = new rrweb.Replayer(events, {
   plugins: [
