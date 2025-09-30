@@ -1,7 +1,7 @@
 {
   "name": "@newrelic/rrdom",
   "version": "2.0.0-alpha.18",
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrdom#readme",
+  "homepage": "https://github.com/newrelic-forks/rrweb/tree/main/packages/rrdom#readme",
   "license": "MIT",
   "type": "module",
   "main": "./dist/rrdom.cjs",
@@ -26,7 +26,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/newrelic-forks/rrweb.git"
   },
   "scripts": {
     "dev": "vite build --watch",
@@ -38,7 +38,7 @@
     "lint": "yarn eslint src/**/*.ts"
   },
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/newrelic-forks/rrweb/issues"
   },
   "devDependencies": {
     "@rrweb/types": "^2.0.0-alpha.18",

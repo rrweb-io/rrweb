@@ -1,7 +1,7 @@
 {
   "folders": [
     {
-      "name": " rrweb monorepo", // added a space to bump it to the top
+      "name": "rrweb monorepo",
       "path": ".."
     },
     {
@@ -51,7 +51,7 @@
     "vitest.workspaceConfig": "../vitest.workspace.ts",
     "vitest.commandLine": "yarn vitest",
     "jest.disabledWorkspaceFolders": [
-      " rrweb monorepo",
+      "rrweb monorepo",
       "rrweb (package)",
       "rrweb-player (package)",
       "rrweb-snapshot (package)",
@@ -61,8 +61,16 @@
       "@rrweb/replay",
       "@rrweb/types",
       "@rrweb/utils",
-      "@rrweb/packer",
+      "@rrweb/packer"
     ],
-    "typescript.tsdk": " rrweb monorepo/node_modules/typescript/lib"
+    // Use the workspace TypeScript version
+    "typescript.tsdk": "../node_modules/typescript/lib",
+    // Hide build outputs in explorer & search noise
+    "files.exclude": {
+      "**/dist": true
+    },
+    "search.exclude": {
+      "**/dist": true
+    }
   }
 }

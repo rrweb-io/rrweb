@@ -15,13 +15,13 @@
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/types#readme",
+  "homepage": "https://github.com/newrelic-forks/rrweb/tree/main/packages/@rrweb/types#readme",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/newrelic-forks/rrweb/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/newrelic-forks/rrweb.git"
   },
   "license": "MIT",
   "type": "module",

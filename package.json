@@ -11,10 +11,10 @@
   "author": "yanzhen@smartx.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/newrelic-forks/rrweb/issues"
   },
   "private": true,
-  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "homepage": "https://github.com/newrelic-forks/rrweb#readme",
   "workspaces": [
     "packages/*"
   ],

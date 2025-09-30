@@ -20,7 +20,7 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/newrelic-forks/rrweb.git"
   },
   "keywords": [
     "rrweb",
@@ -50,9 +50,9 @@
   "author": "yanzhen@smartx.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/newrelic-forks/rrweb/issues"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot#readme",
+  "homepage": "https://github.com/newrelic-forks/rrweb/tree/master/packages/rrweb-snapshot#readme",
   "devDependencies": {
     "@newrelic/rrweb-types": "^2.0.0-alpha.18",
     "@newrelic/rrweb-utils": "^2.0.0-alpha.18",
