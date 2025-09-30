@@ -126,6 +126,8 @@ export type observerParam = {
     callback: (...arg: Array<unknown>) => void;
     options: unknown;
   }>;
+  mutationQueueBatchSize?: number;
+  mutationQueueBatchInterval?: number;
 };
 
 export type MutationBufferParam = Pick<
@@ -151,6 +153,8 @@ export type MutationBufferParam = Pick<
   | 'shadowDomManager'
   | 'canvasManager'
   | 'processedNodeManager'
+  | 'mutationQueueBatchSize'
+  | 'mutationQueueBatchInterval'
 >;
 
 export type ReplayPlugin = {

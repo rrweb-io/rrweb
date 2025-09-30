@@ -233,6 +233,8 @@ export default class MutationBuffer {
         'shadowDomManager',
         'canvasManager',
         'processedNodeManager',
+        'mutationQueueBatchSize',
+        'mutationQueueBatchInterval',
       ] as const
     ).forEach((key) => {
       // just a type trick, the runtime result is correct

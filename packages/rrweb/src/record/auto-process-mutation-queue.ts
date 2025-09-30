@@ -7,18 +7,22 @@ type ProcessItem = [mutationRecord, timestamp: number] | (() => void);
 export class AutoProcessMutationQueue {
   private store: ProcessItem[] = [];
   private processBatch: number;
+  private batchInterval: number;
   private processFunction: ProcessFunction;
   private interval?: ReturnType<typeof setInterval>;
 
   constructor({
     processFunction,
     processBatch = 5_000,
+    batchInterval = 100,
   }: {
     processBatch?: number;
     processFunction: ProcessFunction;
+    batchInterval?: number;
   }) {
     this.processBatch = processBatch;
     this.processFunction = processFunction;
+    this.batchInterval = batchInterval;
   }
 
   get size() {
@@ -59,10 +63,10 @@ export class AutoProcessMutationQueue {
     return this.store.length && !this.interval;
   }
 
-  start(t = 100): void {
+  start(): void {
     this.interval = setInterval(() => {
       this.process();
-    }, t);
+    }, this.batchInterval);
   }
 
   stop(): void {
