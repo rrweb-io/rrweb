@@ -115,7 +115,9 @@ describe('integration tests', function (this: ISuite) {
 
   afterAll(async () => {
     if (browser) {
-      try { await browser.close(); } catch {}
+      try {
+        await browser.close();
+      } catch {}
     }
     if (server) {
       await new Promise<void>((resolve) => server.close(() => resolve()));

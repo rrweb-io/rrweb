@@ -10,7 +10,10 @@ import {
   stringifyStylesheet,
 } from '../src/utils';
 import { NodeType } from '@newrelic/rrweb-types';
-import type { serializedNode, serializedNodeWithId } from '@newrelic/rrweb-types';
+import type {
+  serializedNode,
+  serializedNodeWithId,
+} from '@newrelic/rrweb-types';
 
 describe('utils', () => {
   describe('isNodeMetaEqual()', () => {

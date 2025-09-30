@@ -11,7 +11,11 @@ import type {
   IMirror,
 } from '@newrelic/rrweb-types';
 import type { Mirror, SlimDOMOptions } from '@newrelic/rrweb-snapshot';
-import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from '@newrelic/rrweb-snapshot';
+import {
+  isShadowRoot,
+  IGNORED_NODE,
+  classMatchesRegex,
+} from '@newrelic/rrweb-snapshot';
 import { RRNode, RRIFrameElement, BaseRRNode } from '@newrelic/rrdom';
 import dom from '@newrelic/rrweb-utils';
 

@@ -17,11 +17,13 @@ Monorepo scope migration and package removals.
 Breaking changes / Migration notes:
 
 1. Package scope rename: All previously consumed packages (e.g. `rrweb`, `@rrweb/replay`, `@rrweb/types`, `rrdom`, etc.) are now published under the `@newrelic` scope. Update imports:
+
    - `import { record } from 'rrweb'` -> `import { record } from '@newrelic/rrweb'`
    - `import { Replayer } from '@rrweb/replay'` -> `import { Replayer } from '@newrelic/rrweb-replay'`
    - `import type { eventWithTime } from '@rrweb/types'` -> `import type { eventWithTime } from '@newrelic/rrweb-types'`
 
 2. Removed packages:
+
    - `rrdom-nodejs` has been removed. (If you relied on server-side DOM utilities, migrate to a custom integration invoking the core serialization or a maintained fork.)
    - Legacy plugin packages (console, canvas-webrtc, sequential-id) & the web-extension have been removed from this distribution. Their functionality should be reimplemented via direct observer extensions or kept in external forks.
 
@@ -34,6 +36,7 @@ Breaking changes / Migration notes:
 6. Observer callback typing was loosened intentionally (non‑strict monorepo) to reduce friction. If you require stronger typing, wrap the exposed API in your application with stricter function signatures.
 
 Action checklist for upgraders:
+
 - Replace every unscoped or `@rrweb/*` import with the new `@newrelic/` scoped name.
 - Remove any direct references to deleted plugin or extension packages.
 - Stop deep-linking into internal build folders; use root module specifiers.
