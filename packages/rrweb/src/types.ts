@@ -74,6 +74,8 @@ export type recordOptions<T> = {
   mousemoveWait?: number;
   keepIframeSrcFn?: KeepIframeSrcFn;
   errorHandler?: ErrorHandler;
+  mutationQueueBatchSize?: number;
+  mutationQueueBatchInterval?: number;
 };
 
 export type observerParam = {

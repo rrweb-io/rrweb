@@ -99,6 +99,8 @@ function record<T = eventWithTime>(
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
     errorHandler,
+    mutationQueueBatchSize,
+    mutationQueueBatchInterval,
   } = options;
 
   registerErrorHandler(errorHandler);
@@ -556,6 +558,8 @@ function record<T = eventWithTime>(
           processedNodeManager,
           canvasManager,
           ignoreCSSAttributes,
+          mutationQueueBatchSize,
+          mutationQueueBatchInterval,
           plugins:
             plugins
               ?.filter((p) => p.observer)
