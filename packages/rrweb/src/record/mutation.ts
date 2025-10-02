@@ -271,7 +271,7 @@ export default class MutationBuffer {
   }
 
   public processMutations = (mutations: mutationRecord[]) => {
-    if (mutationQueueEnabled) {
+    if (this.mutationQueueEnabled) {
       this.mutationQueue.enqueue([...mutations, this.emit]);
     } else {
       mutations.forEach(this.processMutation);
