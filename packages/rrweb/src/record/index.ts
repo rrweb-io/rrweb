@@ -101,6 +101,7 @@ function record<T = eventWithTime>(
     errorHandler,
     mutationQueueBatchSize,
     mutationQueueBatchInterval,
+    mutationQueueEnabled,
   } = options;
 
   registerErrorHandler(errorHandler);
@@ -560,6 +561,7 @@ function record<T = eventWithTime>(
           ignoreCSSAttributes,
           mutationQueueBatchSize,
           mutationQueueBatchInterval,
+          mutationQueueEnabled,
           plugins:
             plugins
               ?.filter((p) => p.observer)

@@ -197,6 +197,7 @@ export default class MutationBuffer {
   private mutationQueue: AutoProcessMutationQueue;
   private mutationQueueBatchSize?: number;
   private mutationQueueBatchInterval?: number;
+  private mutationQueueEnabled: boolean;
 
   public init(options: MutationBufferParam) {
     (
@@ -224,6 +225,7 @@ export default class MutationBuffer {
         'processedNodeManager',
         'mutationQueueBatchSize',
         'mutationQueueBatchInterval',
+        'mutationQueueEnabled',
       ] as const
     ).forEach((key) => {
       // just a type trick, the runtime result is correct
@@ -269,7 +271,11 @@ export default class MutationBuffer {
   }
 
   public processMutations = (mutations: mutationRecord[]) => {
-    this.mutationQueue.enqueue([...mutations, this.emit]);
+    if (mutationQueueEnabled) {
+      this.mutationQueue.enqueue([...mutations, this.emit]);
+    } else {
+      mutations.forEach(this.processMutation);
+    }
   };
 
   public isQueueEmpty = (): boolean => {

@@ -76,6 +76,7 @@ export type recordOptions<T> = {
   errorHandler?: ErrorHandler;
   mutationQueueBatchSize?: number;
   mutationQueueBatchInterval?: number;
+  mutationQueueEnabled?: boolean;
 };
 
 export type observerParam = {
@@ -130,6 +131,7 @@ export type observerParam = {
   }>;
   mutationQueueBatchSize?: number;
   mutationQueueBatchInterval?: number;
+  mutationQueueEnabled?: boolean;
 };
 
 export type MutationBufferParam = Pick<
@@ -157,6 +159,7 @@ export type MutationBufferParam = Pick<
   | 'processedNodeManager'
   | 'mutationQueueBatchSize'
   | 'mutationQueueBatchInterval'
+  | 'mutationQueueEnabled'
 >;
 
 export type ReplayPlugin = {
