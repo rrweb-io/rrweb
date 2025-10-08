@@ -1,0 +1,55 @@
+name: Nightly Release Watcher
+
+on:
+  schedule:
+    - cron: "5 0 * * *" # Runs once a day at 12:05 am UTC
+
+jobs:
+  check-releases:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js lts/*
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - name: Fetch latest releases
+        id: fetch_releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Define the repository to monitor
+          TARGET_REPO="rrweb-io/rrweb"
+
+          # Fetch the latest releases from the target repository
+          releases=$(gh api repos/$TARGET_REPO/releases --jq '.[] | select(.tag_name | startswith("rrweb@")) | {tag_name, html_url}')
+
+          # Output releases for next step
+          echo "releases=$releases" >> $GITHUB_OUTPUT
+
+      - name: Check and create issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Input releases from previous step
+          releases=${{ steps.fetch_releases.outputs.releases }}
+
+          # Iterate over each release
+          echo "$releases" | jq -c '.' | while read -r release; do
+            tag_name=$(echo "$release" | jq -r '.tag_name')
+            html_url=$(echo "$release" | jq -r '.html_url')
+
+            # Check if an issue already exists for this release
+            existing_issue=$(gh api repos/${{ github.repository }}/issues --jq '.[] | select(.title == "Release: " + env.tag_name)')
+
+            if [ -z "$existing_issue" ]; then
+              # Create a new issue if it doesn't exist
+              gh api repos/${{ github.repository }}/issues \
+                -f title="Release: $tag_name" \
+                -f body="A new release has been created: [$tag_name]($html_url)"
+            fi
+          done
