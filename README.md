@@ -15,7 +15,7 @@
 ![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.cjs?compression=gzip&label=recorder%20gzip%20size)
 [![](https://data.jsdelivr.com/v1/package/npm/rrweb/badge)](https://www.jsdelivr.com/package/npm/rrweb)
 
-[中文文档](./README.zh_CN.md)
+[中文文档](https://github.com/rrweb-io/rrweb/blob/master/README.zh_CN.md)
 
 > I have joined Github Sponsors and highly appreciate your sponsorship.
 
@@ -23,9 +23,9 @@ rrweb refers to 'record and replay the web', which is a tool for recording and r
 
 ## Guide
 
-[**📚 Read the rrweb guide here. 📚**](./guide.md)
+[**📚 Read the rrweb guide here. 📚**](https://github.com/rrweb-io/rrweb/blob/master/guide.md)
 
-[**🍳 Recipes 🍳**](./docs/recipes/index.md)
+[**🍳 Recipes 🍳**](https://github.com/rrweb-io/rrweb/blob/master/docs/recipes/index.md)
 
 [**📺 Presentation:** Hacking the browser to digital twin your users 📺](https://youtu.be/cWxpp9HwLYw)
 
@@ -49,10 +49,10 @@ rrweb is mainly composed of 3 parts:
 
 ## Internal Design
 
-- [serialization](./docs/serialization.md)
-- [incremental snapshot](./docs/observer.md)
-- [replay](./docs/replay.md)
-- [sandbox](./docs/sandbox.md)
+- [serialization](https://github.com/rrweb-io/rrweb/blob/master/docs/serialization.md)
+- [incremental snapshot](https://github.com/rrweb-io/rrweb/blob/master/docs/observer.md)
+- [replay](https://github.com/rrweb-io/rrweb/blob/master/docs/replay.md)
+- [sandbox](https://github.com/rrweb-io/rrweb/blob/master/docs/sandbox.md)
 
 ## Contribute Guide
 
@@ -72,7 +72,7 @@ Protip: You can run `yarn test` in the root folder to run all the tests.
 
 In addition to adding integration tests and unit tests, rrweb also provides a REPL testing tool.
 
-[Using the REPL tool](./guide.md#REPL-tool)
+[Using the REPL tool](https://github.com/rrweb-io/rrweb/blob/master/guide.md#REPL-tool)
 
 ## Sponsors
 
