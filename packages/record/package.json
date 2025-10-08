@@ -14,7 +14,7 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "check-types": "tsc -noEmit",
-    "prepublish": "tsc -noEmit && vite build",
+    "prepublish": "tsc -noEmit && vite build && terser ./dist/record.js --compress -o ./dist/record.min.js",
     "lint": "yarn eslint src/**/*.ts"
   },
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/record#readme",
@@ -48,16 +48,18 @@
     "package.json"
   ],
   "devDependencies": {
+    "@rollup/plugin-terser": "0.4.4",
     "puppeteer": "^20.9.0",
+    "terser": "^5.44.0",
+    "typescript": "^5.4.5",
     "vite": "^5.3.1",
     "vite-plugin-dts": "^3.9.1",
-    "vitest": "^1.4.0",
-    "typescript": "^5.4.5"
+    "vitest": "^1.4.0"
   },
   "dependencies": {
     "@rrweb/types": "^2.0.0-alpha.18",
-    "rrweb": "^2.0.0-alpha.18",
-    "@rrweb/utils": "^2.0.0-alpha.18"
+    "@rrweb/utils": "^2.0.0-alpha.18",
+    "rrweb": "^2.0.0-alpha.18"
   },
   "browserslist": [
     "supports es6-class"
