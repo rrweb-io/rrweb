@@ -1,6 +1,7 @@
 name: Nightly Release Watcher
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: "5 0 * * *" # Runs once a day at 12:05 am UTC
 
@@ -28,15 +29,20 @@ jobs:
           # Fetch the latest releases from the target repository
           releases=$(gh api repos/$TARGET_REPO/releases --jq '.[] | select(.tag_name | startswith("rrweb@")) | {tag_name, html_url}')
 
+          # Define a unique delimiter
+          EOF_DELIMITER=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+
           # Output releases for next step
-          echo "releases=$releases" >> $GITHUB_OUTPUT
+          echo "releases<<$EOF_DELIMITER" >> $GITHUB_OUTPUT
+          echo "$releases" >> $GITHUB_OUTPUT
+          echo "$EOF_DELIMITER" >> $GITHUB_OUTPUT
 
       - name: Check and create issues
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Input releases from previous step
-          releases=${{ steps.fetch_releases.outputs.releases }}
+          releases='${{ fromJSON(steps.fetch_releases.outputs.releases) }}'
 
           # Iterate over each release
           echo "$releases" | jq -c '.' | while read -r release; do
