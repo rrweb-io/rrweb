@@ -15,6 +15,7 @@
   },
   "private": true,
   "homepage": "https://github.com/newrelic-forks/rrweb#readme",
+  "version": "1.0.0",
   "workspaces": [
     "packages/*"
   ],

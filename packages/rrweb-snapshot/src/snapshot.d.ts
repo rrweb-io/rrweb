@@ -9,7 +9,7 @@ import type {
   serializedNodeWithId,
   serializedElementNodeWithId,
   DataURLOptions,
-} from '@rrweb/types';
+} from '@newrelic/rrweb-types';
 import { Mirror } from './utils';
 export declare const IGNORED_NODE = -2;
 export declare function genId(): number;

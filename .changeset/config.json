@@ -1,20 +1,20 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@2.3.0/schema.json",
-  "changelog": ["@changesets/changelog-github", { "repo": "rrweb-io/rrweb" }],
+  "changelog": ["@changesets/changelog-github", { "repo": "newrelic-forks/rrweb" }],
   "commit": false,
   "fixed": [
     [
-      "rrweb",
-      "rrweb-snapshot",
-      "rrdom",
-      "rrweb-player",
-      "@rrweb/all",
-      "@rrweb/replay",
-      "@rrweb/record",
-      "@rrweb/types",
-      "@rrweb/packer",
-      "@rrweb/utils",
-      "rrvideo"
+      "@newrelic/rrweb",
+      "@newrelic/rrweb-snapshot",
+      "@newrelic/rrdom",
+      "@newrelic/rrweb-player",
+      "@newrelic/rrweb-all",
+      "@newrelic/rrweb-replay",
+      "@newrelic/rrweb-record",
+      "@newrelic/rrweb-types",
+      "@newrelic/rrweb-packer",
+      "@newrelic/rrweb-utils",
+      "@newrelic/rrvideo"
     ]
   ],
   "linked": [],

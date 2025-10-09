@@ -1,7 +1,7 @@
 import {
   type serializedNodeWithId,
   type serializedElementNodeWithId,
-} from '@rrweb/types';
+} from '@newrelic/rrweb-types';
 import { type BuildCache } from './types';
 import { Mirror } from './utils';
 export declare function adaptCssForReplay(

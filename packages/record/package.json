@@ -1,6 +1,6 @@
 {
   "name": "@newrelic/rrweb-record",
-  "version": "2.0.0-alpha.18",
+  "version": "1.0.0",
   "publishConfig": {
     "access": "public"
   },
@@ -55,9 +55,9 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@newrelic/rrweb-types": "^2.0.0-alpha.18",
-    "@newrelic/rrweb": "^2.0.0-alpha.18",
-    "@newrelic/rrweb-utils": "^2.0.0-alpha.18"
+  "@newrelic/rrweb-types": "^1.0.0",
+  "@newrelic/rrweb": "^1.0.0",
+  "@newrelic/rrweb-utils": "^1.0.0"
   },
   "browserslist": [
     "supports es6-class"

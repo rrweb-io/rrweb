@@ -1,4 +1,4 @@
-import { NodeType } from '@rrweb/types';
+import { NodeType } from '@newrelic/rrweb-types';
 import dom from '@newrelic/rrweb-utils';
 export function isElement(n) {
     return n.nodeType === n.ELEMENT_NODE;
