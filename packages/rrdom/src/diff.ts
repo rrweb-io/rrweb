@@ -9,11 +9,7 @@ import type {
   styleDeclarationData,
   styleSheetRuleData,
 } from '@rrweb/types';
-import {
-  IncrementalSource,
-  EventType,
-  CanvasContext,
-} from '@rrweb/types';
+import { IncrementalSource, EventType, CanvasContext } from '@rrweb/types';
 import type {
   IRRCDATASection,
   IRRComment,
@@ -260,7 +256,7 @@ function diffAfterUpdatingChildren(
         }
         case 'CANVAS': {
           const rrCanvasElement = newTree as RRCanvasElement;
-          
+
           // Treat rr_dataURL as the first mutation to avoid race conditions
           if (rrCanvasElement.rr_dataURL !== null) {
             // Create a synthetic canvas mutation for the initial dataURL
@@ -268,25 +264,32 @@ function diffAfterUpdatingChildren(
               source: IncrementalSource.CanvasMutation,
               id: replayer.mirror.getId(oldTree),
               type: CanvasContext['2D'],
-              commands: [{
-                property: 'drawImage',
-                args: [rrCanvasElement.rr_dataURL, 0, 0, (oldTree as HTMLCanvasElement).width, (oldTree as HTMLCanvasElement).height],
-                setter: false
-              } as any]
+              commands: [
+                {
+                  property: 'drawImage',
+                  args: [
+                    rrCanvasElement.rr_dataURL,
+                    0,
+                    0,
+                    (oldTree as HTMLCanvasElement).width,
+                    (oldTree as HTMLCanvasElement).height,
+                  ],
+                },
+              ],
             };
-            
+
             // Apply the synthetic mutation synchronously
             replayer.applyCanvas(
               {
                 timestamp: 0,
                 type: EventType.IncrementalSnapshot,
-                data: syntheticMutation
+                data: syntheticMutation,
               } as canvasEventWithTime,
               syntheticMutation,
               oldTree as HTMLCanvasElement,
             );
           }
-          
+
           // Apply all regular mutations
           rrCanvasElement.canvasMutations.forEach((canvasMutation) =>
             replayer.applyCanvas(
