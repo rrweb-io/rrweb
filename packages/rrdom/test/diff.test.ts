@@ -248,6 +248,164 @@ describe('diff algorithm for rrdom', () => {
       expect(replayer.applyCanvas).toHaveBeenCalledTimes(MutationNumber);
     });
 
+    it('should handle canvas with rr_dataURL and mutations without race condition', async () => {
+      const element = document.createElement('canvas');
+      element.width = 200;
+      element.height = 100;
+      
+      const rrDocument = new RRDocument();
+      const rrCanvas = rrDocument.createElement('canvas');
+      const sn = Object.assign({}, elementSn, { tagName: 'canvas' });
+      rrDocument.mirror.add(rrCanvas, sn);
+      
+      // Set up initial canvas state with rr_dataURL
+      const testDataURL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+      rrCanvas.rr_dataURL = testDataURL;
+      
+      // Add subsequent canvas mutations
+      const clearRectMutation = {
+        source: IncrementalSource.CanvasMutation,
+        id: 0,
+        type: 0,
+        commands: [{ 
+          property: 'clearRect', 
+          args: [0, 0, 200, 100]
+        }],
+      } as canvasMutationData;
+      
+      const drawImageMutation = {
+        source: IncrementalSource.CanvasMutation,
+        id: 0,
+        type: 0,
+        commands: [{ 
+          property: 'drawImage', 
+          args: [testDataURL, 10, 10, 50, 50]
+        }],
+      } as canvasMutationData;
+      
+      rrCanvas.canvasMutations.push({
+        event: {
+          timestamp: 1000,
+          type: EventType.IncrementalSnapshot,
+          data: clearRectMutation,
+        },
+        mutation: clearRectMutation,
+      });
+      
+      rrCanvas.canvasMutations.push({
+        event: {
+          timestamp: 2000,
+          type: EventType.IncrementalSnapshot,
+          data: drawImageMutation,
+        },
+        mutation: drawImageMutation,
+      });
+      
+      // Mock the canvas context and applyCanvas method
+      const mockContext = {
+        drawImage: vi.fn(),
+        clearRect: vi.fn(),
+      };
+      vi.spyOn(element, 'getContext').mockReturnValue(mockContext as any);
+      
+      const applyCanvasCalls: Array<{ event: any; mutation: any; target: any }> = [];
+      replayer.applyCanvas = vi.fn((event, mutation, target) => {
+        applyCanvasCalls.push({ event, mutation, target });
+      });
+      
+      // Execute the diff
+      diff(element, rrCanvas, replayer);
+      
+      // Verify that applyCanvas was called 3 times:
+      // 1. Synthetic mutation for rr_dataURL
+      // 2. clearRect mutation
+      // 3. drawImage mutation
+      expect(replayer.applyCanvas).toHaveBeenCalledTimes(3);
+      
+      // Verify the synthetic mutation for rr_dataURL was called first
+      const firstCall = applyCanvasCalls[0];
+      expect(firstCall.event.timestamp).toBe(0);
+      expect(firstCall.event.type).toBe(EventType.IncrementalSnapshot);
+      expect(firstCall.mutation.source).toBe(IncrementalSource.CanvasMutation);
+      expect(firstCall.mutation.commands[0].property).toBe('drawImage');
+      expect(firstCall.mutation.commands[0].args).toEqual([testDataURL, 0, 0, 300, 150]);
+      
+      // Verify subsequent mutations were called in order
+      const secondCall = applyCanvasCalls[1];
+      expect(secondCall.event.timestamp).toBe(1000);
+      expect(secondCall.mutation.commands[0].property).toBe('clearRect');
+      
+      const thirdCall = applyCanvasCalls[2];
+      expect(thirdCall.event.timestamp).toBe(2000);
+      expect(thirdCall.mutation.commands[0].property).toBe('drawImage');
+    });
+
+    it('should prevent race condition by applying rr_dataURL synchronously before mutations', () => {
+      const element = document.createElement('canvas');
+      element.width = 100;
+      element.height = 100;
+      
+      const rrDocument = new RRDocument();
+      const rrCanvas = rrDocument.createElement('canvas');
+      const sn = Object.assign({}, elementSn, { tagName: 'canvas' });
+      rrDocument.mirror.add(rrCanvas, sn);
+      
+      // Set up canvas with rr_dataURL and mutations
+      const testDataURL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+      rrCanvas.rr_dataURL = testDataURL;
+      
+      // Add a mutation that would conflict with async rr_dataURL loading
+      const conflictingMutation = {
+        source: IncrementalSource.CanvasMutation,
+        id: 0,
+        type: 0,
+        commands: [{ 
+          property: 'clearRect', 
+          args: [0, 0, 100, 100]
+        }],
+      } as canvasMutationData;
+      
+      rrCanvas.canvasMutations.push({
+        event: {
+          timestamp: 100,
+          type: EventType.IncrementalSnapshot,
+          data: conflictingMutation,
+        },
+        mutation: conflictingMutation,
+      });
+      
+      // Track the order of operations
+      const operationOrder: string[] = [];
+      
+      // Mock applyCanvas to track when it's called
+      replayer.applyCanvas = vi.fn((event, mutation, target) => {
+        if (event.timestamp === 0) {
+          operationOrder.push('rr_dataURL_synthetic_mutation');
+        } else if (('commands' in mutation ? mutation.commands[0] : mutation).property === 'clearRect') {
+          operationOrder.push('clearRect_mutation');
+        }
+      });
+      
+      // Execute the diff
+      diff(element, rrCanvas, replayer);
+      
+      // Verify that rr_dataURL synthetic mutation is applied FIRST
+      // This prevents the race condition where async image loading could overwrite mutations
+      expect(operationOrder).toEqual(['rr_dataURL_synthetic_mutation', 'clearRect_mutation']);
+      
+      // Verify both operations were called
+      expect(replayer.applyCanvas).toHaveBeenCalledTimes(2);
+      
+      // Verify the synthetic mutation has the correct structure
+      const firstCall = (replayer.applyCanvas as any).mock.calls[0];
+      const [event, mutation] = firstCall;
+      
+      expect(event.timestamp).toBe(0);
+      expect(mutation.source).toBe(IncrementalSource.CanvasMutation);
+      expect(mutation.commands[0].property).toBe('drawImage');
+      expect(mutation.commands[0].args).toEqual([testDataURL, 0, 0, 300, 150]);
+    });
+
     it('should diff a media element', async () => {
       // mock the HTMLMediaElement of jsdom
       let paused = true;
