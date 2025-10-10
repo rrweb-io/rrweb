@@ -279,7 +279,7 @@ describe('diff algorithm for rrdom', () => {
         type: 0,
         commands: [{ 
           property: 'drawImage', 
-          args: [testDataURL, 10, 10, 50, 50]
+          args: [testDataURL, 0, 0]
         }],
       } as canvasMutationData;
       
@@ -342,8 +342,8 @@ describe('diff algorithm for rrdom', () => {
 
     it('should prevent race condition by applying rr_dataURL synchronously before mutations', () => {
       const element = document.createElement('canvas');
-      element.width = 100;
-      element.height = 100;
+      element.width = 300;
+      element.height = 150;
       
       const rrDocument = new RRDocument();
       const rrCanvas = rrDocument.createElement('canvas');
@@ -361,7 +361,7 @@ describe('diff algorithm for rrdom', () => {
         type: 0,
         commands: [{ 
           property: 'clearRect', 
-          args: [0, 0, 100, 100]
+          args: [0, 0, 300, 150]
         }],
       } as canvasMutationData;
       
