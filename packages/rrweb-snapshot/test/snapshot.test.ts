@@ -16,6 +16,7 @@ const serializeNode = (node: Node): serializedNodeWithId | null => {
     doc: document,
     mirror: new Mirror(),
     blockClass: 'blockblock',
+    blockElementFn: null,
     blockSelector: null,
     maskTextClass: 'maskmask',
     maskTextSelector: null,
@@ -129,7 +130,12 @@ describe('absolute url to stylesheet', () => {
 
 describe('isBlockedElement()', () => {
   const subject = (html: string, opt: any = {}) =>
-    _isBlockedElement(render(html), 'rr-block', opt.blockSelector);
+    _isBlockedElement(
+      render(html),
+      'rr-block',
+      opt.blockSelector,
+      opt.blockElementFn,
+    );
 
   const render = (html: string): HTMLElement =>
     JSDOM.fragment(html).querySelector('div')!;
@@ -149,6 +155,14 @@ describe('isBlockedElement()', () => {
   it('blocks blocked selector', () => {
     expect(
       subject('<div data-rr-block />', { blockSelector: '[data-rr-block]' }),
+    ).toEqual(true);
+  });
+
+  it('blocks with blockElementFn', () => {
+    expect(
+      subject('<div class="special" />', {
+        blockElementFn: (e: HTMLElement) => e.matches('div.special'),
+      }),
     ).toEqual(true);
   });
 });

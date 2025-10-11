@@ -3,6 +3,7 @@ import type {
   listenerHandler,
   hookResetter,
   blockClass,
+  BlockElementFn,
   addedNodeMutation,
   DocumentDimension,
   IWindow,
@@ -196,6 +197,7 @@ export function closestElementOfNode(node: Node | null): HTMLElement | null {
  * @param node - node to check
  * @param blockClass - class name to check
  * @param blockSelector - css selectors to check
+ * @param blockElementFn - callback function to manually check node
  * @param checkAncestors - whether to search through parent nodes for the block class
  * @returns true/false if the node was blocked or not
  */
@@ -203,6 +205,7 @@ export function isBlocked(
   node: Node | null,
   blockClass: blockClass,
   blockSelector: string | null,
+  blockElementFn: BlockElementFn | null,
   checkAncestors: boolean,
 ): boolean {
   if (!node) {
@@ -212,6 +215,10 @@ export function isBlocked(
 
   if (!el) {
     return false;
+  }
+
+  if (blockElementFn) {
+    return blockElementFn(el);
   }
 
   try {
