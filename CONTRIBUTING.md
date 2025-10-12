@@ -13,6 +13,31 @@ This repository maintains a lockstep versioning scheme across all published `@ne
 5. Open PR. CI will check build, type, and test status. `changeset status` must show at least one planned release (unless intentionally using an `--empty` changeset for non-publishing meta changes).
 6. Upon merge to `master`, a release PR (or automated action) can run `yarn changeset version` then `yarn changeset publish` (or equivalent release pipeline).
 
+### Changeset Guard (CI Enforcement)
+
+The CI workflow enforces that any PR modifying published package source or `package.json` files includes a changeset markdown entry under `.changeset/`. If such changes are detected **and** no changeset exists, the PR fails early with guidance.
+
+Exemptions (no changeset required):
+- Test-only changes (paths containing `/test/`, `__tests__`, `__image_snapshots__`).
+- Pure documentation or CI configuration changes.
+- Explicitly labeled PR with `skip-changeset` (use sparingly: docs/test-only only).
+
+To bypass for allowed cases, add the `skip-changeset` label to the PR. Avoid using this label for source or API-affecting changes.
+
+Add a changeset via:
+```
+npx changeset
+```
+Pick the appropriate bump. For a meta-only change that you still want tracked but not released, create an empty changeset:
+```
+yarn changeset add --empty
+```
+
+You can preview pending publishes with:
+```
+npx changeset status --verbose
+```
+
 ## Choosing Bump Types
 
 Use semantic versioning:
