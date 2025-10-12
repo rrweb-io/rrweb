@@ -19,6 +19,7 @@
     "prepublish": "yarn build"
   },
   "author": "yanzhen@smartx.com",
+  "publishConfig": { "access": "public" },
   "license": "MIT",
   "devDependencies": {
     "@types/fs-extra": "11.0.1",

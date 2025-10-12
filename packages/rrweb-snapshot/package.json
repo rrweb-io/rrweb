@@ -47,6 +47,7 @@
     "dist",
     "package.json"
   ],
+  "publishConfig": { "access": "public" },
   "author": "yanzhen@smartx.com",
   "license": "MIT",
   "bugs": {

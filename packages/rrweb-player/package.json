@@ -63,6 +63,7 @@
     "rrweb"
   ],
   "author": "yanzhen@smartx.com",
+  "publishConfig": { "access": "public" },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/newrelic-forks/rrweb/issues"

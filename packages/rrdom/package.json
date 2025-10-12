@@ -2,6 +2,7 @@
   "name": "@newrelic/rrdom",
   "version": "1.0.0",
   "homepage": "https://github.com/newrelic-forks/rrweb/tree/main/packages/rrdom#readme",
+  "publishConfig": { "access": "public" },
   "license": "MIT",
   "type": "module",
   "main": "./dist/rrdom.cjs",

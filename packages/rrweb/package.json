@@ -25,8 +25,9 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/newrelic-forks/rrweb.git"
   },
+  "publishConfig": { "access": "public" },
   "keywords": [
     "rrweb"
   ],
