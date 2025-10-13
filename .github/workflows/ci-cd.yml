@@ -1,6 +1,11 @@
 name: CI/CD Checks
 
-on: [push, pull_request]
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - master
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -50,8 +55,9 @@ jobs:
           else
             echo "Changeset file detected; proceeding.";
           fi
-  release:
+  pr-tests:
     name: Tests
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master'
     permissions:
       contents: read
     runs-on: ubuntu-latest
