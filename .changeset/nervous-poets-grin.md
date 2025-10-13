@@ -1,6 +1,5 @@
 ---
 'rrdom': patch
-'rrdom-nodejs': patch
 'rrweb': patch
 'rrweb-player': patch
 'rrweb-snapshot': patch

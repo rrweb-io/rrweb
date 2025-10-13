@@ -1,6 +1,5 @@
 ---
 "@rrweb/all": patch
-"rrdom-nodejs": patch
 "rrdom": patch
 "rrweb-snapshot": major
 "rrweb": patch

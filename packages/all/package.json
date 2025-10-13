@@ -1,5 +1,5 @@
 {
-  "name": "@rrweb/all",
+  "name": "@newrelic/rrweb-all",
   "version": "2.0.0-alpha.18",
   "publishConfig": {
     "access": "public"
@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "yarn turbo run prepublish",
-    "test": "vitest run",
+  "test": "yarn build && vitest run",
     "test:watch": "vitest watch",
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build",
@@ -56,9 +56,9 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
-    "@rrweb/packer": "^2.0.0-alpha.18",
-    "rrweb": "^2.0.0-alpha.18"
+    "@newrelic/rrweb-types": "^2.0.0-alpha.18",
+    "@newrelic/rrweb-packer": "^2.0.0-alpha.18",
+    "@newrelic/rrweb": "^2.0.0-alpha.18"
   },
   "browserslist": [
     "supports es6-class"

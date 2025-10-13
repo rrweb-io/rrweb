@@ -1,0 +1,76 @@
+{
+  "folders": [
+    {
+      "name": "rrweb monorepo",
+      "path": ".."
+    },
+    {
+      "name": "rrdom (package)",
+      "path": "../packages/rrdom"
+    },
+    {
+      "name": "rrweb (package)",
+      "path": "../packages/rrweb"
+    },
+    {
+      "name": "rrweb-player (package)",
+      "path": "../packages/rrweb-player"
+    },
+    {
+      "name": "rrweb-snapshot (package)",
+      "path": "../packages/rrweb-snapshot"
+    },
+    {
+      "name": "@rrweb/all",
+      "path": "../packages/all"
+    },
+    {
+      "name": "@rrweb/record",
+      "path": "../packages/record"
+    },
+    {
+      "name": "@rrweb/replay",
+      "path": "../packages/replay"
+    },
+    {
+      "name": "@rrweb/types",
+      "path": "../packages/types"
+    },
+    {
+      "name": "@rrweb/utils",
+      "path": "../packages/utils"
+    },
+    {
+      "name": "@rrweb/packer",
+      "path": "../packages/packer"
+    },
+    { "name": "rrvideo (package)", "path": "../packages/rrvideo" },
+    
+  ],
+  "settings": {
+    "vitest.workspaceConfig": "../vitest.workspace.ts",
+    "vitest.commandLine": "yarn vitest",
+    "jest.disabledWorkspaceFolders": [
+      "rrweb monorepo",
+      "rrweb (package)",
+      "rrweb-player (package)",
+      "rrweb-snapshot (package)",
+      "rrdom (package)",
+      "@rrweb/all",
+      "@rrweb/record",
+      "@rrweb/replay",
+      "@rrweb/types",
+      "@rrweb/utils",
+      "@rrweb/packer"
+    ],
+    // Use the workspace TypeScript version
+    "typescript.tsdk": "../node_modules/typescript/lib",
+    // Hide build outputs in explorer & search noise
+    "files.exclude": {
+      "**/dist": true
+    },
+    "search.exclude": {
+      "**/dist": true
+    }
+  }
+}

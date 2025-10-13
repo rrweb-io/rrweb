@@ -1,6 +1,5 @@
 ---
 'rrdom': major
-'rrdom-nodejs': major
 'rrweb': patch
 ---
 

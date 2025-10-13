@@ -35,7 +35,8 @@ async function waitForVideoTo(triggerEventType: string, page: puppeteer.Page) {
 }
 
 describe('video', () => {
-  vi.setConfig({ testTimeout: 100_000 });
+  // Increase hookTimeout for environments where starting server + launching browser exceeds default 10s
+  vi.setConfig({ testTimeout: 100_000, hookTimeout: 100_000 });
   let code: ISuite['code'];
   let page: ISuite['page'];
   let browser: ISuite['browser'];

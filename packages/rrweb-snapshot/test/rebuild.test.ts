@@ -9,7 +9,7 @@ import {
   buildNodeWithSN,
   createCache,
 } from '../src/rebuild';
-import { NodeType } from '@rrweb/types';
+import { NodeType } from '@newrelic/rrweb-types';
 import { createMirror, Mirror, normalizeCssString } from '../src/utils';
 
 const expect = _expect as unknown as {

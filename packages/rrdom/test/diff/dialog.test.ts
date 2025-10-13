@@ -6,8 +6,8 @@ import {
   createMirror,
   Mirror as NodeMirror,
   serializedNodeWithId,
-} from 'rrweb-snapshot';
-import { NodeType as RRNodeType } from '@rrweb/types';
+} from '@newrelic/rrweb-snapshot';
+import { NodeType as RRNodeType } from '@newrelic/rrweb-types';
 import { RRDocument } from '../../src';
 import { diff, ReplayerHandler } from '../../src/diff';
 

@@ -15,7 +15,7 @@ import type {
   textNode,
   elementNode,
 } from '@rrweb/types';
-import dom from '@rrweb/utils';
+import dom from '@newrelic/rrweb-utils';
 
 export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;

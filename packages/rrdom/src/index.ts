@@ -1,6 +1,6 @@
-import { createMirror as createNodeMirror } from 'rrweb-snapshot';
-import type { Mirror as NodeMirror } from 'rrweb-snapshot';
-import { NodeType as RRNodeType } from '@rrweb/types';
+import { createMirror as createNodeMirror } from '@newrelic/rrweb-snapshot';
+import type { Mirror as NodeMirror } from '@newrelic/rrweb-snapshot';
+import { NodeType as RRNodeType } from '@newrelic/rrweb-types';
 import type {
   IMirror,
   serializedNodeWithId,
@@ -10,7 +10,7 @@ import type {
   scrollData,
   styleSheetRuleData,
   styleDeclarationData,
-} from '@rrweb/types';
+} from '@newrelic/rrweb-types';
 import {
   BaseRRNode as RRNode,
   BaseRRCDATASection,
