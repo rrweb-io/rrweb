@@ -1,8 +1,8 @@
 {
   "name": "@newrelic/rrweb-player",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "devDependencies": {
-  "@newrelic/rrweb-types": "^1.0.0",
+    "@newrelic/rrweb-types": "^1.0.1",
     "@sveltejs/adapter-auto": "^3.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/package": "^2.0.0",
@@ -20,8 +20,8 @@
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
-  "@newrelic/rrweb-replay": "^1.0.0",
-  "@newrelic/rrweb-packer": "^1.0.0"
+    "@newrelic/rrweb-replay": "^1.0.1",
+    "@newrelic/rrweb-packer": "^1.0.1"
   },
   "scripts": {
     "dev": "vite build --watch",
@@ -63,7 +63,9 @@
     "rrweb"
   ],
   "author": "yanzhen@smartx.com",
-  "publishConfig": { "access": "public" },
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/newrelic-forks/rrweb/issues"

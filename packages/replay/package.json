@@ -1,6 +1,6 @@
 {
   "name": "@newrelic/rrweb-replay",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publishConfig": {
     "access": "public"
   },
@@ -56,8 +56,8 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-  "@newrelic/rrweb-types": "^1.0.0",
-  "@newrelic/rrweb": "^1.0.0"
+    "@newrelic/rrweb-types": "^1.0.1",
+    "@newrelic/rrweb": "^1.0.1"
   },
   "browserslist": [
     "supports es6-class"
