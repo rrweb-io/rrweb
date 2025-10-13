@@ -24,6 +24,9 @@
   "references": [
     {
       "path": "../rrweb-player"
+    },
+    {
+      "path": "../types"
     }
   ]
 }

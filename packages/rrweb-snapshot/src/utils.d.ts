@@ -3,7 +3,7 @@ import type {
   IMirror,
   serializedNodeWithId,
   serializedNode,
-} from '@rrweb/types';
+} from '@newrelic/rrweb-types';
 export declare function isElement(n: Node): n is Element;
 export declare function isShadowRoot(n: Node): n is ShadowRoot;
 export declare function isNativeShadowDom(shadowRoot: ShadowRoot): boolean;

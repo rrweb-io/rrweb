@@ -1,4 +1,4 @@
-import { NodeType } from '@rrweb/types';
+import { NodeType } from '@newrelic/rrweb-types';
 import { Mirror, is2DCanvasBlank, isElement, isShadowRoot, maskInputValue, isNativeShadowDom, stringifyStylesheet, getInputType, toLowerCase, extractFileExtension, absolutifyURLs, markCssSplits, } from './utils';
 import dom from '@newrelic/rrweb-utils';
 let _id = 1;

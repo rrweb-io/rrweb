@@ -1,6 +1,6 @@
 {
   "name": "@newrelic/rrweb-snapshot",
-  "version": "2.0.0-alpha.18",
+  "version": "1.0.0",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",
@@ -47,6 +47,7 @@
     "dist",
     "package.json"
   ],
+  "publishConfig": { "access": "public" },
   "author": "yanzhen@smartx.com",
   "license": "MIT",
   "bugs": {
@@ -54,8 +55,8 @@
   },
   "homepage": "https://github.com/newrelic-forks/rrweb/tree/master/packages/rrweb-snapshot#readme",
   "devDependencies": {
-    "@newrelic/rrweb-types": "^2.0.0-alpha.18",
-    "@newrelic/rrweb-utils": "^2.0.0-alpha.18",
+  "@newrelic/rrweb-types": "^1.0.0",
+  "@newrelic/rrweb-utils": "^1.0.0",
     "@types/jsdom": "^20.0.0",
     "@types/node": "^18.15.11",
     "@types/puppeteer": "^5.4.4",

@@ -7,7 +7,7 @@ import type {
   ICanvas,
   DialogAttributes,
 } from './types';
-import { NodeType } from '@rrweb/types';
+import { NodeType } from '@newrelic/rrweb-types';
 import type {
   serializedNode,
   serializedNodeWithId,
@@ -16,7 +16,7 @@ import type {
   attributes,
   mediaAttributes,
   DataURLOptions,
-} from '@rrweb/types';
+} from '@newrelic/rrweb-types';
 import {
   Mirror,
   is2DCanvasBlank,

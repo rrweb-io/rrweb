@@ -1,5 +1,5 @@
 import { mediaSelectorPlugin, pseudoClassPlugin } from './css';
-import { NodeType, } from '@rrweb/types';
+import { NodeType, } from '@newrelic/rrweb-types';
 import {} from './types';
 import { isElement, Mirror, isNodeMetaEqual, extractFileExtension, } from './utils';
 import postcss from 'postcss';

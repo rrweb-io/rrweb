@@ -1,7 +1,8 @@
 {
   "name": "@newrelic/rrdom",
-  "version": "2.0.0-alpha.18",
+  "version": "1.0.0",
   "homepage": "https://github.com/newrelic-forks/rrweb/tree/main/packages/rrdom#readme",
+  "publishConfig": { "access": "public" },
   "license": "MIT",
   "type": "module",
   "main": "./dist/rrdom.cjs",
@@ -41,7 +42,7 @@
     "url": "https://github.com/newrelic-forks/rrweb/issues"
   },
   "devDependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
+    "@newrelic/rrweb-types": "^1.0.0",
     "@types/puppeteer": "^5.4.4",
     "@typescript-eslint/eslint-plugin": "^5.23.0",
     "@typescript-eslint/parser": "^5.23.0",
@@ -52,6 +53,6 @@
     "vite-plugin-dts": "^3.9.1"
   },
   "dependencies": {
-    "@newrelic/rrweb-snapshot": "^2.0.0-alpha.18"
+  "@newrelic/rrweb-snapshot": "^1.0.0"
   }
 }

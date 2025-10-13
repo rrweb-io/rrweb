@@ -1,6 +1,6 @@
 {
   "name": "@newrelic/rrweb",
-  "version": "2.0.0-alpha.18",
+  "version": "1.0.0",
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",
@@ -25,8 +25,9 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/newrelic-forks/rrweb.git"
   },
+  "publishConfig": { "access": "public" },
   "keywords": [
     "rrweb"
   ],
@@ -79,13 +80,13 @@
     "vite-plugin-dts": "^3.9.1"
   },
   "dependencies": {
-    "@newrelic/rrweb-types": "^2.0.0-alpha.18",
-    "@newrelic/rrweb-utils": "^2.0.0-alpha.18",
+    "@newrelic/rrweb-types": "^1.0.0",
+    "@newrelic/rrweb-utils": "^1.0.0",
     "@types/css-font-loading-module": "0.0.7",
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",
     "mitt": "^3.0.0",
-    "@newrelic/rrdom": "^2.0.0-alpha.18",
-    "@newrelic/rrweb-snapshot": "^2.0.0-alpha.18"
+    "@newrelic/rrdom": "^1.0.0",
+    "@newrelic/rrweb-snapshot": "^1.0.0"
   }
 }
