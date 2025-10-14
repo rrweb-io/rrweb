@@ -10,6 +10,44 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
+  determine-test-need:
+    name: Determine Test Necessity
+    # Only relevant for push events to master (release PR merges)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    outputs:
+      run-tests: ${{ steps.evaluate.outputs.run-tests }}
+    steps:
+      - name: Checkout Repo (shallow for diff)
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - name: Evaluate commit for skipping tests
+        id: evaluate
+        run: |
+          MESSAGE=$(git log -1 --pretty=%B)
+          echo "Commit message: $MESSAGE"
+          # Default to run tests
+          RUN_TESTS=true
+          # Heuristic 1: Changesets release PR merge commit has conventional message "Version Packages"
+          if echo "$MESSAGE" | grep -qi '^Version Packages'; then
+            echo "Detected release version commit message; skipping heavy tests.";
+            RUN_TESTS=false
+          else
+            # Heuristic 2: Only version/meta files changed (package.json, CHANGELOG.md, .changeset/*.md)
+            CHANGED=$(git diff --name-only HEAD^ HEAD || true)
+            echo "Changed files:\n$CHANGED"
+            # Filter out allowed meta changes
+            NON_META=$(echo "$CHANGED" | grep -Ev '(^|/)package.json$|(^|/)CHANGELOG.md$|^\.changeset/.*\.md$' || true)
+            if [ -z "$NON_META" ]; then
+              echo "Only meta/version files changed; skipping heavy tests.";
+              RUN_TESTS=false
+            fi
+          fi
+          echo "run-tests=$RUN_TESTS" >> $GITHUB_OUTPUT
+      - name: Summary
+        run: 'echo "Run tests decision: ${{ steps.evaluate.outputs.run-tests }}"'
+
   changeset-guard:
     name: Changeset Guard
     runs-on: ubuntu-latest
@@ -57,7 +95,8 @@ jobs:
           fi
   pr-tests:
     name: Tests
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master'
+    needs: [determine-test-need]
+    if: github.event_name == 'pull_request' || (github.ref == 'refs/heads/master' && needs.determine-test-need.outputs.run-tests == 'true')
     permissions:
       contents: read
     runs-on: ubuntu-latest
