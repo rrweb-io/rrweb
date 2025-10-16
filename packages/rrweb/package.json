@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/rrweb",
-  "version": "2.0.21",
+  "version": "2.0.22",
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",
@@ -46,6 +46,7 @@
         "default": "./dist/rrweb.cjs"
       }
     },
+    "./dist/rrweb.css": "./dist/rrweb.css",
     "./dist/style.css": "./dist/style.css"
   },
   "files": [
@@ -79,17 +80,17 @@
     "ts-node": "^10.9.1",
     "tslib": "^2.3.1",
     "typescript": "^5.4.5",
-    "vite": "^5.3.1",
+    "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1"
   },
   "dependencies": {
-    "@saola.ai/rrweb-types": "^2.0.21",
-    "@saola.ai/rrweb-utils": "^2.0.21",
+    "@saola.ai/rrweb-types": "^2.0.22",
+    "@saola.ai/rrweb-utils": "^2.0.22",
     "@types/css-font-loading-module": "0.0.7",
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",
     "mitt": "^3.0.0",
-    "@saola.ai/rrdom": "^2.0.21",
-    "@saola.ai/rrweb-snapshot": "^2.0.21"
+    "@saola.ai/rrdom": "^2.0.22",
+    "@saola.ai/rrweb-snapshot": "^2.0.22"
   }
 }

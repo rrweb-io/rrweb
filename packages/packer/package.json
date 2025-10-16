@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/rrweb-packer",
-  "version": "2.0.21",
+  "version": "2.0.22",
   "publishConfig": {
     "access": "public"
   },
@@ -70,14 +70,14 @@
     "package.json"
   ],
   "devDependencies": {
-    "vite": "^5.3.1",
+    "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1",
     "vitest": "^1.4.0",
     "typescript": "^5.4.5"
   },
   "dependencies": {
     "fflate": "^0.4.4",
-    "@saola.ai/rrweb-types": "^2.0.21"
+    "@saola.ai/rrweb-types": "^2.0.22"
   },
   "browserslist": [
     "supports es6-class"

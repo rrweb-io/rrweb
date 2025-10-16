@@ -1,5 +1,14 @@
 # @rrweb/packer
 
+## 2.0.22
+
+### Patch Changes
+
+- Upgrade to vite v6.0.1
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-types@2.0.22
+
 ## 2.0.21
 
 ### Patch Changes

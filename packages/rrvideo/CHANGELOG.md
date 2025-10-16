@@ -1,5 +1,12 @@
 # rrvideo
 
+## 2.0.22
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-player@2.0.22
+
 ## 2.0.21
 
 ### Patch Changes

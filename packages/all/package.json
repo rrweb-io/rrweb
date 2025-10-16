@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/rrweb-all",
-  "version": "2.0.21",
+  "version": "2.0.22",
   "publishConfig": {
     "access": "public"
   },
@@ -50,15 +50,15 @@
   ],
   "devDependencies": {
     "puppeteer": "^20.9.0",
-    "vite": "^5.3.1",
+    "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1",
     "vitest": "^1.4.0",
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@saola.ai/rrweb-types": "^2.0.21",
-    "@saola.ai/rrweb-packer": "^2.0.21",
-    "@saola.ai/rrweb": "^2.0.21"
+    "@saola.ai/rrweb-types": "^2.0.22",
+    "@saola.ai/rrweb-packer": "^2.0.22",
+    "@saola.ai/rrweb": "^2.0.22"
   },
   "browserslist": [
     "supports es6-class"

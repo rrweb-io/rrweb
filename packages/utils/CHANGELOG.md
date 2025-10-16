@@ -1,5 +1,11 @@
 # @rrweb/utils
 
+## 2.0.22
+
+### Patch Changes
+
+- Upgrade to vite v6.0.1
+
 ## 2.0.21
 
 ### Patch Changes
