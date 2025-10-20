@@ -1,6 +1,6 @@
 {
-  "name": "@rrweb/all",
-  "version": "2.0.0-alpha.18",
+  "name": "@newrelic/rrweb-all",
+  "version": "1.0.1",
   "publishConfig": {
     "access": "public"
   },
@@ -11,19 +11,19 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "yarn turbo run prepublish",
-    "test": "vitest run",
+    "test": "yarn build && vitest run",
     "test:watch": "vitest watch",
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/all#readme",
+  "homepage": "https://github.com/newrelic-forks/rrweb/tree/main/packages/@rrweb/all#readme",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/newrelic-forks/rrweb/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/newrelic-forks/rrweb.git"
   },
   "license": "MIT",
   "type": "module",
@@ -56,9 +56,9 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
-    "@rrweb/packer": "^2.0.0-alpha.18",
-    "rrweb": "^2.0.0-alpha.18"
+    "@newrelic/rrweb-types": "^1.0.1",
+    "@newrelic/rrweb-packer": "^1.0.1",
+    "@newrelic/rrweb": "^1.0.1"
   },
   "browserslist": [
     "supports es6-class"

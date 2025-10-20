@@ -9,14 +9,14 @@ import {
   EventType,
   IncrementalSource,
   CanvasContext,
-} from '@rrweb/types';
+} from '@newrelic/rrweb-types';
 import {
   assertSnapshot,
   launchPuppeteer,
   stripBase64,
   waitForRAF,
 } from '../utils';
-import type { ICanvas } from 'rrweb-snapshot';
+import type { ICanvas } from '@newrelic/rrweb-snapshot';
 
 interface ISuite {
   code: string;

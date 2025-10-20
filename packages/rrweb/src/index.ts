@@ -15,7 +15,7 @@ export {
   MouseInteractions,
   ReplayerEvents,
   type eventWithTime,
-} from '@rrweb/types';
+} from '@newrelic/rrweb-types';
 
 // exports style.css from replay
 import './replay/styles/style.css';

@@ -1,7 +1,10 @@
 {
-  "name": "rrdom",
-  "version": "2.0.0-alpha.18",
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrdom#readme",
+  "name": "@newrelic/rrdom",
+  "version": "1.0.1",
+  "homepage": "https://github.com/newrelic-forks/rrweb/tree/main/packages/rrdom#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "type": "module",
   "main": "./dist/rrdom.cjs",
@@ -26,7 +29,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/newrelic-forks/rrweb.git"
   },
   "scripts": {
     "dev": "vite build --watch",
@@ -38,10 +41,10 @@
     "lint": "yarn eslint src/**/*.ts"
   },
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/newrelic-forks/rrweb/issues"
   },
   "devDependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
+    "@newrelic/rrweb-types": "^1.0.1",
     "@types/puppeteer": "^5.4.4",
     "@typescript-eslint/eslint-plugin": "^5.23.0",
     "@typescript-eslint/parser": "^5.23.0",
@@ -52,6 +55,6 @@
     "vite-plugin-dts": "^3.9.1"
   },
   "dependencies": {
-    "rrweb-snapshot": "^2.0.0-alpha.18"
+    "@newrelic/rrweb-snapshot": "^1.0.1"
   }
 }

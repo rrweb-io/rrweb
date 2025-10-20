@@ -3,6 +3,7 @@
   "include": ["src"],
   "compilerOptions": {
     "rootDir": "src",
+    "paths": {},
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
     "types": [
       // from tsconfig.base.json

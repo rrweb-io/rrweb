@@ -59,22 +59,21 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
     key in testableAccessors ? testableAccessors[key] : undefined;
   const isUntaintedAccessors = Boolean(
     accessorNames &&
-      // @ts-expect-error 2345
-      accessorNames.every((accessor: keyof typeof defaultPrototype) =>
-        Boolean(
-          Object.getOwnPropertyDescriptor(defaultPrototype, accessor)
-            ?.get?.toString()
-            .includes('[native code]'),
-        ),
+      (accessorNames as readonly (keyof typeof defaultPrototype)[]).every(
+        (accessor) =>
+          Boolean(
+            Object.getOwnPropertyDescriptor(defaultPrototype, accessor)
+              ?.get?.toString()
+              .includes('[native code]'),
+          ),
       ),
   );
 
   const methodNames = key in testableMethods ? testableMethods[key] : undefined;
   const isUntaintedMethods = Boolean(
     methodNames &&
-      methodNames.every(
-        // @ts-expect-error 2345
-        (method: keyof typeof defaultPrototype) =>
+      (methodNames as readonly (keyof typeof defaultPrototype)[]).every(
+        (method) =>
           typeof defaultPrototype[method] === 'function' &&
           defaultPrototype[method]?.toString().includes('[native code]'),
       ),
@@ -224,7 +223,9 @@ export function mutationObserverCtor(): (typeof MutationObserver)['prototype']['
 
 // copy from https://github.com/getsentry/sentry-javascript/blob/b2109071975af8bf0316d3b5b38f519bdaf5dc15/packages/utils/src/object.ts
 export function patch(
-  source: { [key: string]: any },
+  // using any here because we patch arbitrary prototypes & registries without index signatures
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  source: any,
   name: string,
   replacement: (...args: unknown[]) => unknown,
 ): () => void {

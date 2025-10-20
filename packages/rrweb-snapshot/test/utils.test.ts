@@ -9,8 +9,11 @@ import {
   isNodeMetaEqual,
   stringifyStylesheet,
 } from '../src/utils';
-import { NodeType } from '@rrweb/types';
-import type { serializedNode, serializedNodeWithId } from '@rrweb/types';
+import { NodeType } from '@newrelic/rrweb-types';
+import type {
+  serializedNode,
+  serializedNodeWithId,
+} from '@newrelic/rrweb-types';
 
 describe('utils', () => {
   describe('isNodeMetaEqual()', () => {

@@ -1,6 +1,6 @@
 {
-  "name": "@rrweb/utils",
-  "version": "2.0.0-alpha.18",
+  "name": "@newrelic/rrweb-utils",
+  "version": "1.0.1",
   "publishConfig": {
     "access": "public"
   },
@@ -15,29 +15,29 @@
     "prepublish": "npm run build",
     "lint": "yarn eslint src/**/*.ts"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/utils#readme",
+  "homepage": "https://github.com/newrelic-forks/rrweb/tree/main/packages/@rrweb/utils#readme",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/newrelic-forks/rrweb/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/newrelic-forks/rrweb.git"
   },
   "license": "MIT",
   "type": "module",
-  "main": "./dist/utils.umd.cjs",
-  "module": "./dist/utils.js",
-  "unpkg": "./dist/utils.umd.cjs",
+  "main": "./dist/rrweb-utils.umd.cjs",
+  "module": "./dist/rrweb-utils.js",
+  "unpkg": "./dist/rrweb-utils.umd.cjs",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": {
         "types": "./dist/index.d.ts",
-        "default": "./dist/utils.js"
+        "default": "./dist/rrweb-utils.js"
       },
       "require": {
         "types": "./dist/index.d.cts",
-        "default": "./dist/utils.umd.cjs"
+        "default": "./dist/rrweb-utils.umd.cjs"
       }
     }
   },

@@ -14,7 +14,7 @@ import type {
   BuildCache,
   textNode,
 } from '../src/types';
-import { NodeType } from '@rrweb/types';
+import { NodeType } from '@newrelic/rrweb-types';
 import { Window } from 'happy-dom';
 
 describe('css parser', () => {

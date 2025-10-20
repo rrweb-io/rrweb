@@ -1,12 +1,102 @@
-name: Tests
+name: CI/CD Checks
 
-on: [push, pull_request]
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - master
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  release:
+  determine-test-need:
+    name: Determine Test Necessity
+    # Only relevant for push events to master (release PR merges)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    outputs:
+      run-tests: ${{ steps.evaluate.outputs.run-tests }}
+    steps:
+      - name: Checkout Repo (shallow for diff)
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - name: Evaluate commit for skipping tests
+        id: evaluate
+        run: |
+          MESSAGE=$(git log -1 --pretty=%B)
+          echo "Commit message: $MESSAGE"
+          # Default to run tests
+          RUN_TESTS=true
+          # Heuristic 1: Changesets release PR merge commit has conventional message "Version Packages"
+          if echo "$MESSAGE" | grep -qi '^Version Packages'; then
+            echo "Detected release version commit message; skipping heavy tests.";
+            RUN_TESTS=false
+          else
+            # Heuristic 2: Only version/meta files changed (package.json, CHANGELOG.md, .changeset/*.md)
+            CHANGED=$(git diff --name-only HEAD^ HEAD || true)
+            echo "Changed files:\n$CHANGED"
+            # Filter out allowed meta changes
+            NON_META=$(echo "$CHANGED" | grep -Ev '(^|/)package.json$|(^|/)CHANGELOG.md$|^\.changeset/.*\.md$' || true)
+            if [ -z "$NON_META" ]; then
+              echo "Only meta/version files changed; skipping heavy tests.";
+              RUN_TESTS=false
+            fi
+          fi
+          echo "run-tests=$RUN_TESTS" >> $GITHUB_OUTPUT
+      - name: Summary
+        run: 'echo "Run tests decision: ${{ steps.evaluate.outputs.run-tests }}"'
+
+  changeset-guard:
+    name: Changeset Guard
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Detect changed files
+        id: diff
+        run: |
+          git fetch origin master --depth=1 || true
+          CHANGED=$(git diff --name-only origin/master...HEAD)
+          echo "changed<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Check for changeset file
+        id: has_changeset
+        run: |
+          if git diff --name-only origin/master...HEAD | grep -q '^\.changeset/.*\.md$'; then
+            echo "present=true" >> $GITHUB_OUTPUT
+          else
+            echo "present=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Enforce changeset
+        run: |
+          # Fail if no changeset AND workspace code or package.json changed AND no skip label present
+          SKIP_LABEL=$(jq -r '.pull_request.labels[].name? // empty' "$GITHUB_EVENT_PATH" | grep -E '^skip-changeset$' || true)
+          if [ "${{ steps.has_changeset.outputs.present }}" = "false" ]; then
+            # Filter out test-only changes (paths containing /test/ or __tests__ or __image_snapshots__) before deciding
+            NON_TEST_CHANGES=$(echo "${{ steps.diff.outputs.changed }}" | grep -E '(^|/)packages/|package.json' | grep -Ev '/test/|__tests__|__image_snapshots__' || true)
+            if [ -n "$NON_TEST_CHANGES" ]; then
+              if [ -z "$SKIP_LABEL" ]; then
+                echo "::error::Workspace/source changes detected but no changeset file was added. Run 'npx changeset' and commit the generated file, or label the PR with 'skip-changeset' for docs/test-only changes.";
+                exit 1;
+              else
+                echo "Skip label present; bypassing changeset requirement.";
+              fi
+            else
+              echo "Only test/docs or excluded paths changed; no changeset required.";
+            fi
+          else
+            echo "Changeset file detected; proceeding.";
+          fi
+  pr-tests:
     name: Tests
+    needs: [determine-test-need]
+    if: github.event_name == 'pull_request' || (github.ref == 'refs/heads/master' && needs.determine-test-need.outputs.run-tests == 'true')
     permissions:
       contents: read
     runs-on: ubuntu-latest

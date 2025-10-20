@@ -1,16 +1,12 @@
 {
   "folders": [
     {
-      "name": " rrweb monorepo", // added a space to bump it to the top
+      "name": "rrweb monorepo",
       "path": ".."
     },
     {
       "name": "rrdom (package)",
       "path": "../packages/rrdom"
-    },
-    {
-      "name": "rrdom-nodejs (package)",
-      "path": "../packages/rrdom-nodejs"
     },
     {
       "name": "rrweb (package)",
@@ -48,58 +44,33 @@
       "name": "@rrweb/packer",
       "path": "../packages/packer"
     },
-    {
-      "name": "web-extension (package)",
-      "path": "../packages/web-extension"
-    },
     { "name": "rrvideo (package)", "path": "../packages/rrvideo" },
-    {
-      "name": "@rrweb/rrweb-plugin-console-record",
-      "path": "../packages/plugins/rrweb-plugin-console-record"
-    },
-    {
-      "name": "@rrweb/rrweb-plugin-console-replay",
-      "path": "../packages/plugins/rrweb-plugin-console-replay"
-    },
-    {
-      "name": "@rrweb/rrweb-plugin-sequential-id-record",
-      "path": "../packages/plugins/rrweb-plugin-sequential-id-record"
-    },
-    {
-      "name": "@rrweb/rrweb-plugin-sequential-id-replay",
-      "path": "../packages/plugins/rrweb-plugin-sequential-id-replay"
-    },
-    {
-      "name": "@rrweb/rrweb-plugin-canvas-webrtc-record",
-      "path": "../packages/plugins/rrweb-plugin-canvas-webrtc-record"
-    },
-    {
-      "name": "@rrweb/rrweb-plugin-canvas-webrtc-replay",
-      "path": "../packages/plugins/rrweb-plugin-canvas-webrtc-replay"
-    }
+    
   ],
   "settings": {
     "vitest.workspaceConfig": "../vitest.workspace.ts",
     "vitest.commandLine": "yarn vitest",
     "jest.disabledWorkspaceFolders": [
-      " rrweb monorepo",
+      "rrweb monorepo",
       "rrweb (package)",
       "rrweb-player (package)",
       "rrweb-snapshot (package)",
       "rrdom (package)",
-      "rrdom-nodejs (package)",
       "@rrweb/all",
       "@rrweb/record",
       "@rrweb/replay",
       "@rrweb/types",
       "@rrweb/utils",
-      "@rrweb/packer",
-      "@rrweb/rrweb-plugin-console-record",
-      "@rrweb/rrweb-plugin-console-replay",
-      "@rrweb/rrweb-plugin-sequential-id",
-      "@rrweb/rrweb-plugin-canvas-webrtc-record",
-      "@rrweb/rrweb-plugin-canvas-webrtc-replay"
+      "@rrweb/packer"
     ],
-    "typescript.tsdk": " rrweb monorepo/node_modules/typescript/lib"
+    // Use the workspace TypeScript version
+    "typescript.tsdk": "../node_modules/typescript/lib",
+    // Hide build outputs in explorer & search noise
+    "files.exclude": {
+      "**/dist": true
+    },
+    "search.exclude": {
+      "**/dist": true
+    }
   }
 }

@@ -5,9 +5,9 @@ import {
   type canvasMutationWithType,
   type IWindow,
   type listenerHandler,
-} from '@rrweb/types';
+} from '@newrelic/rrweb-types';
 import { hookSetter, isBlocked } from '../../../utils';
-import { patch } from '@rrweb/utils';
+import { patch } from '@newrelic/rrweb-utils';
 import { saveWebGLVar, serializeArgs } from './serialize-args';
 
 function patchGLPrototype(

@@ -1,6 +1,6 @@
 import { strFromU8, strToU8, unzlibSync } from 'fflate';
 import { type eventWithTimeAndPacker, MARK } from './base';
-import type { UnpackFn, eventWithTime } from '@rrweb/types';
+import type { UnpackFn, eventWithTime } from '@newrelic/rrweb-types';
 
 export const unpack: UnpackFn = (raw: string) => {
   if (typeof raw !== 'string') {
@@ -17,7 +17,7 @@ export const unpack: UnpackFn = (raw: string) => {
   try {
     const e: eventWithTimeAndPacker = JSON.parse(
       strFromU8(unzlibSync(strToU8(raw, true))),
-    ) as eventWithTimeAndPacker;
+    );
     if (e.v === MARK) {
       return e;
     }

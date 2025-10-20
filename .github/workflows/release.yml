@@ -1,16 +1,22 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - master
+  workflow_run:
+    workflows: ["CI/CD Checks"]
+    types: [completed]
+  workflow_dispatch: {}
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   release:
     name: Release
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'master'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -32,20 +38,6 @@ jobs:
           publish: yarn run release
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Build Chrome Extension
-        if: steps.changesets.outputs.published == 'true'
-        run: NODE_OPTIONS='--max-old-space-size=4096' DISABLE_WORKER_INLINING=true yarn turbo run prepublish --filter=@rrweb/web-extension
-
-      - name: Publish Chrome Extension
-        uses: mnao305/chrome-extension-upload@v5.0.0
-        if: steps.changesets.outputs.published == 'true'
-        with:
-          extension-id: 'pdaldeopoccdhlkabbkcjmecmmoninhe'
-          file-path: ./packages/web-extension/dist/chrome.zip
-          client-id: ${{ secrets.CWS_CLIENT_ID }}
-          client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
-          refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
-          publish: true

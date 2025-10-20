@@ -1,5 +1,15 @@
 # @rrweb/replay
 
+## 1.0.1
+
+### Patch Changes
+
+- [#19](https://github.com/newrelic-forks/rrweb/pull/19) [`0834a85`](https://github.com/newrelic-forks/rrweb/commit/0834a85a181ed7003fd2303e9a9582764d266c0e) Thanks [@cwli24](https://github.com/cwli24)! - Version alignment: bump lockstep group to 1.0.1 (no functional code changes).
+
+- Updated dependencies [[`eaee227`](https://github.com/newrelic-forks/rrweb/commit/eaee2279f13007ed4114a57607886e8ae3a2f8f2), [`0834a85`](https://github.com/newrelic-forks/rrweb/commit/0834a85a181ed7003fd2303e9a9582764d266c0e)]:
+  - @newrelic/rrweb@1.0.1
+  - @newrelic/rrweb-types@1.0.1
+
 ## 2.0.0-alpha.18
 
 ### Patch Changes

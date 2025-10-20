@@ -1,6 +1,6 @@
 {
-  "name": "@rrweb/types",
-  "version": "2.0.0-alpha.18",
+  "name": "@newrelic/rrweb-types",
+  "version": "1.0.1",
   "publishConfig": {
     "access": "public"
   },
@@ -15,29 +15,29 @@
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/types#readme",
+  "homepage": "https://github.com/newrelic-forks/rrweb/tree/main/packages/@rrweb/types#readme",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/newrelic-forks/rrweb/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/newrelic-forks/rrweb.git"
   },
   "license": "MIT",
   "type": "module",
-  "main": "./dist/types.umd.cjs",
-  "module": "./dist/types.js",
-  "unpkg": "./dist/types.umd.cjs",
+  "main": "./dist/rrweb-types.umd.cjs",
+  "module": "./dist/rrweb-types.js",
+  "unpkg": "./dist/rrweb-types.umd.cjs",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": {
         "types": "./dist/index.d.ts",
-        "default": "./dist/types.js"
+        "default": "./dist/rrweb-types.js"
       },
       "require": {
         "types": "./dist/index.d.cts",
-        "default": "./dist/types.umd.cjs"
+        "default": "./dist/rrweb-types.umd.cjs"
       }
     }
   },

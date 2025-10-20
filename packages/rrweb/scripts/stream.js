@@ -1,4 +1,14 @@
 /* eslint:disable: no-console */
+/**
+ * DEPRECATED: This developer utility previously demonstrated low‑latency live streaming
+ * using the (now removed) canvas WebRTC record/replay plugins. The plugin packages were
+ * purged in this fork, so the original behavior no longer works. The script is retained
+ * only for historical reference. Running it will exit immediately.
+ *
+ * If you need a live two‑window demo again, either:
+ *  - enable native rrweb canvas recording (recordCanvas: true) and remove WebRTC logic, or
+ *  - reintroduce a custom internal observer for WebRTC streaming.
+ */
 
 import * as path from 'path';
 import * as fs from 'fs';
@@ -18,96 +28,12 @@ const __dirname = path.dirname(__filename);
 
 const emitter = new EventEmitter();
 
-async function injectRecording(frame, serverURL) {
-  try {
-    await frame.addScriptTag({ url: `${serverURL}/rrweb.umd.cjs` });
-    await frame.addScriptTag({
-      url: `${serverURL}/plugins/rrweb-plugin-canvas-webrtc-record.js`,
-    });
-    await frame.evaluate(() => {
-      const win = window;
-      if (win.__IS_RECORDING__) return;
-      win.__IS_RECORDING__ = true;
-
-      (async () => {
-        win.events = [];
-        window.record = win.rrweb.record;
-        window.plugin =
-          new rrwebPluginCanvasWebRTCRecord.RRWebPluginCanvasWebRTCRecord({
-            signalSendCallback: (msg) => {
-              // [record#callback] provides canvas id, stream, and webrtc sdpOffer signal & connect message
-              _signal(msg);
-            },
-          });
-
-        window.record({
-          emit: (event) => {
-            win.events.push(event);
-            win._captureEvent(event);
-          },
-          plugins: [window.plugin.initPlugin()],
-          recordCanvas: false,
-          recordCrossOriginIframes: true,
-          collectFonts: true,
-          inlineImages: true,
-        });
-      })();
-    });
-  } catch (e) {
-    console.error('failed to inject script, error:', e);
-  }
+async function injectRecording() {
+  throw new Error('Deprecated stream script: plugin-based canvas WebRTC recording removed.');
 }
 
-async function startReplay(page, serverURL, recordedPage) {
-  page.on('console', (msg) => console.log('REPLAY PAGE LOG:', msg.text()));
-  await recordedPage.exposeFunction('_signal', async (signal) => {
-    await page.evaluate((signal) => {
-      // [replay#signalReceive] setups up peer and starts creating counter offer
-      window.plugin.signalReceive(signal);
-    }, signal);
-  });
-  await page.exposeFunction('_signal', async (signal) => {
-    await recordedPage.evaluate((signal) => {
-      // [record#signalReceive]  setups up webrtc connection
-      window.plugin.signalReceive(signal);
-    }, signal);
-  });
-  await page.exposeFunction('_canvas', async (id) => {
-    await recordedPage.evaluate((id) => {
-      // [record#setupStream] sets up the canvas stream for a given id.
-      const stream = window.plugin.setupStream(id);
-      console.log('stream for', id, '=>', stream);
-    }, id);
-  });
-
-  await page.addScriptTag({ url: `${serverURL}/rrweb.umd.cjs` });
-  await page.addScriptTag({
-    url: `${serverURL}/plugins/rrweb-plugin-canvas-webrtc-replay.js`,
-  });
-
-  return page.evaluate(() => {
-    window.plugin =
-      new rrwebPluginCanvasWebRTCReplay.RRWebPluginCanvasWebRTCReplay({
-        canvasFoundCallback(canvas, context) {
-          console.log('canvas', canvas, context);
-          // [replay#onBuild] gets id of canvas element and sends to recorded page
-          _canvas(context.id);
-        },
-        signalSendCallback(data) {
-          _signal(JSON.stringify(data));
-        },
-      });
-
-    window.replayer = new rrweb.Replayer([], {
-      UNSAFE_replayCanvas: true,
-      liveMode: true,
-      plugins: [window.plugin.initPlugin()],
-    });
-    window.replayer.startLive();
-    const style = new CSSStyleSheet();
-    style.replaceSync('body {margin: 0;} iframe {border: none;}');
-    document.adoptedStyleSheets = [style];
-  });
+async function startReplay() {
+  throw new Error('Deprecated stream script: plugin-based canvas WebRTC replay removed.');
 }
 
 async function resizeWindow(page, top, left, width, height) {
@@ -124,7 +50,8 @@ void (async () => {
   let server;
   let serverURL;
 
-  await start();
+  console.error('[DEPRECATED] stream.js is no longer functional (plugins removed). Exiting.');
+  process.exit(1);
 
   async function start() {
     server = await startServer();

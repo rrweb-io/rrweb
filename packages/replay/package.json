@@ -1,6 +1,6 @@
 {
-  "name": "@rrweb/replay",
-  "version": "2.0.0-alpha.18",
+  "name": "@newrelic/rrweb-replay",
+  "version": "1.0.1",
   "publishConfig": {
     "access": "public"
   },
@@ -17,29 +17,29 @@
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/replay#readme",
+  "homepage": "https://github.com/newrelic-forks/rrweb/tree/main/packages/@rrweb/replay#readme",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/newrelic-forks/rrweb/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/newrelic-forks/rrweb.git"
   },
   "license": "MIT",
   "type": "module",
-  "main": "./dist/replay.cjs",
-  "module": "./dist/replay.js",
-  "unpkg": "./dist/replay.umd.cjs",
+  "main": "./dist/rrweb-replay.cjs",
+  "module": "./dist/rrweb-replay.js",
+  "unpkg": "./dist/rrweb-replay.umd.cjs",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": {
         "types": "./dist/index.d.ts",
-        "default": "./dist/replay.js"
+        "default": "./dist/rrweb-replay.js"
       },
       "require": {
         "types": "./dist/index.d.cts",
-        "default": "./dist/replay.cjs"
+        "default": "./dist/rrweb-replay.cjs"
       }
     },
     "./dist/style.css": "./dist/style.css"
@@ -56,8 +56,8 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
-    "rrweb": "^2.0.0-alpha.18"
+    "@newrelic/rrweb-types": "^1.0.1",
+    "@newrelic/rrweb": "^1.0.1"
   },
   "browserslist": [
     "supports es6-class"

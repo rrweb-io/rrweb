@@ -1,9 +1,9 @@
-import type { Emitter } from '@rrweb/types';
-import { MediaInteractions, ReplayerEvents } from '@rrweb/types';
-import type { RRMediaElement } from 'rrdom';
+import type { Emitter } from '@newrelic/rrweb-types';
+import { MediaInteractions, ReplayerEvents } from '@newrelic/rrweb-types';
+import type { RRMediaElement } from '@newrelic/rrdom';
 import type { createPlayerService, createSpeedService } from '../machine';
-import type { Mirror } from 'rrweb-snapshot';
-import type { mediaInteractionData, mediaAttributes } from '@rrweb/types';
+import type { Mirror } from '@newrelic/rrweb-snapshot';
+import type { mediaInteractionData } from '@newrelic/rrweb-types';
 
 type MediaState = {
   isPlaying: boolean;
@@ -211,9 +211,7 @@ export class MediaManager {
     const serializedNode = mirror.getMeta(target);
     if (!serializedNode || !('attributes' in serializedNode)) return;
     const playerIsPaused = this.service.state.matches('paused');
-    const mediaAttributes = serializedNode.attributes as
-      | mediaAttributes
-      | Record<string, never>;
+    const mediaAttributes = serializedNode.attributes;
 
     let isPlaying = false;
     if (mediaAttributes.rr_mediaState) {

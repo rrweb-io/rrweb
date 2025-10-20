@@ -16,7 +16,11 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "exclude": ["build", "node_modules", "test"],
+  "exclude": [
+    "build",
+    "node_modules",
+    "test"
+  ],
   "references": [
     {
       "path": "../rrweb-player"

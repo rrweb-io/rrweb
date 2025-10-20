@@ -1,6 +1,11 @@
 import type { ErrorHandler } from '../types';
 
-type Callback = (...args: unknown[]) => unknown;
+// Loosen the callback parameter typing to avoid assignability friction when
+// wrapping strongly typed functions (e.g. MutationObserver callbacks) while
+// keeping the generic so original parameter/return types are preserved.
+// Using `any` here is intentional; the wrapper does not alter parameters.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Callback = (...args: any[]) => any;
 
 let errorHandler: ErrorHandler | undefined;
 
