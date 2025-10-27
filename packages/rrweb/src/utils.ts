@@ -9,11 +9,11 @@ import type {
   DeprecatedMirror,
   textMutation,
   IMirror,
-} from '@rrweb/types';
-import type { Mirror, SlimDOMOptions } from 'rrweb-snapshot';
-import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
-import { RRNode, RRIFrameElement, BaseRRNode } from 'rrdom';
-import dom from '@rrweb/utils';
+} from '@junify-app/types';
+import type { Mirror, SlimDOMOptions } from '@junify-app/rrweb-snapshot';
+import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from '@junify-app/rrweb-snapshot';
+import { RRNode, RRIFrameElement, BaseRRNode } from '@junify-app/rrdom';
+import dom from '@junify-app/utils';
 
 export function on(
   type: string,

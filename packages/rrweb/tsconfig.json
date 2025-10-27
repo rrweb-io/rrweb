@@ -1,6 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["src"],
+  "include": [
+    "src"
+  ],
   "compilerOptions": {
     "rootDir": "src",
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
@@ -23,16 +25,16 @@
   },
   "references": [
     {
-      "path": "../types"
-    },
-    {
-      "path": "../utils"
-    },
-    {
       "path": "../rrdom"
     },
     {
       "path": "../rrweb-snapshot"
+    },
+    {
+      "path": "../types"
+    },
+    {
+      "path": "../utils"
     }
   ]
 }

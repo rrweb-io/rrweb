@@ -1,4 +1,4 @@
-# @rrweb/replay
+# @junify-app/replay
 
 This package contains all the necessary code to replay recorded events.
 See the [guide](../../guide.md) for more info on rrweb.
@@ -6,13 +6,13 @@ See the [guide](../../guide.md) for more info on rrweb.
 ## Installation
 
 ```bash
-npm install @rrweb/replay
+npm install @junify-app/replay
 ```
 
 ## Usage
 
 ```js
-import { Replayer } from '@rrweb/replay';
+import { Replayer } from '@junify-app/replay';
 
 const replayer = new Replayer(events, {
   // options

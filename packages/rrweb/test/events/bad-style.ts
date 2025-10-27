@@ -1,5 +1,5 @@
-import { EventType, IncrementalSource } from '@rrweb/types';
-import type { eventWithTime } from '@rrweb/types';
+import { EventType, IncrementalSource } from '@junify-app/types';
+import type { eventWithTime } from '@junify-app/types';
 
 /**
  * https://github.com/rrweb-io/rrweb/pull/1417

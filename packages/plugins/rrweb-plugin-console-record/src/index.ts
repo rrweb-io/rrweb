@@ -1,5 +1,5 @@
-import type { listenerHandler, RecordPlugin, IWindow } from '@rrweb/types';
-import { patch } from '@rrweb/utils';
+import type { listenerHandler, RecordPlugin, IWindow } from '@junify-app/types';
+import { patch } from '@junify-app/utils';
 import { ErrorStackParser, StackFrame } from './error-stack-parser';
 import { stringify } from './stringify';
 
@@ -230,7 +230,7 @@ function initLogObserver(
               });
             }
           } catch (error) {
-            original('rrweb logger error:', error, ...args);
+            original('@junify-app/rrweb logger error:', error, ...args);
           } finally {
             inStack = false;
           }
@@ -240,7 +240,7 @@ function initLogObserver(
   }
 }
 
-export const PLUGIN_NAME = 'rrweb/console@1';
+export const PLUGIN_NAME = '@junify-app/rrweb/console@1';
 
 export const getRecordConsolePlugin: (
   options?: LogRecordOptions,

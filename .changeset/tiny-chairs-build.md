@@ -1,5 +1,5 @@
 ---
-'rrweb': patch
+'@junify-app/rrweb': patch
 ---
 
 Canvas FPS recording: override `preserveDrawingBuffer: true` on canvas creation.

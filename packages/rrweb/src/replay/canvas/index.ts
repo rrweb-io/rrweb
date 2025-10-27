@@ -4,7 +4,7 @@ import {
   type canvasMutationCommand,
   type canvasMutationData,
   type canvasMutationParam,
-} from '@rrweb/types';
+} from '@junify-app/types';
 import webglMutation from './webgl';
 import canvas2DMutation from './2d';
 

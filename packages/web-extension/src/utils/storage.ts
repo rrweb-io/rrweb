@@ -1,5 +1,5 @@
 import { openDB } from 'idb';
-import type { eventWithTime } from '@rrweb/types';
+import type { eventWithTime } from '@junify-app/types';
 import type { Session } from '~/types';
 
 /**

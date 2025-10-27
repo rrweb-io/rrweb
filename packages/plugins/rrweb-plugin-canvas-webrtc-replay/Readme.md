@@ -13,8 +13,8 @@ https://user-images.githubusercontent.com/4106/186701616-fd71a107-5d53-423c-ba09
 ```js
 // Record side
 
-import rrweb from 'rrweb';
-import { RRWebPluginCanvasWebRTCRecord } from '@rrweb/rrweb-plugin-canvas-webrtc-record';
+import rrweb from '@junify-app/rrweb';
+import { RRWebPluginCanvasWebRTCRecord } from '@junify-app/rrweb-plugin-canvas-webrtc-record';
 
 const webRTCRecordPlugin = new RRWebPluginCanvasWebRTCRecord({
   signalSendCallback: (msg) => {
@@ -42,8 +42,8 @@ rrweb.record({
 
 ```js
 // Replay side
-import rrweb from 'rrweb';
-import { RRWebPluginCanvasWebRTCReplay } from '@rrweb/rrweb-plugin-canvas-webrtc-replay';
+import rrweb from '@junify-app/rrweb';
+import { RRWebPluginCanvasWebRTCReplay } from '@junify-app/rrweb-plugin-canvas-webrtc-replay';
 
 const webRTCReplayPlugin = new RRWebPluginCanvasWebRTCReplay({
   canvasFoundCallback(canvas, context) {

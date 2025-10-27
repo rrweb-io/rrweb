@@ -1,5 +1,5 @@
 ---
-"rrweb-snapshot": patch
+"@junify-app/rrweb-snapshot": patch
 ---
 
 fix dimensions for blocked element not being applied

@@ -1,5 +1,5 @@
 ---
-"@rrweb/record": patch
+"@junify-app/record": patch
 ---
 
 Correctly detect when angular has wrapped mutation observer

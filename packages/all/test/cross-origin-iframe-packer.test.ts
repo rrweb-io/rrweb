@@ -11,14 +11,14 @@ import type {
   eventWithTime,
   listenerHandler,
   mutationData,
-} from '@rrweb/types';
-import { unpack } from '@rrweb/packer';
+} from '@junify-app/types';
+import { unpack } from '@junify-app/packer';
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
-import type { recordOptions } from 'rrweb';
-import type {} from '@rrweb/types';
-import { EventType } from '@rrweb/types';
+import type { recordOptions } from '@junify-app/rrweb';
+import type {} from '@junify-app/types';
+import { EventType } from '@junify-app/types';
 import {
   assertSnapshot,
   getServerURL,

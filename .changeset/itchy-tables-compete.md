@@ -1,8 +1,8 @@
 ---
-"@rrweb/rrweb-plugin-console-record": patch
-"@rrweb/record": patch
-"rrweb": patch
-"@rrweb/utils": patch
+"@junify-app/rrweb-plugin-console-record": patch
+"@junify-app/record": patch
+"@junify-app/rrweb": patch
+"@junify-app/utils": patch
 ---
 
-Move patch function into @rrweb/utils to improve bundling
+Move patch function into @junify-app/utils to improve bundling

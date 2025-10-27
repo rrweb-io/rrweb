@@ -1,5 +1,5 @@
 ---
-'rrweb': patch
+'@junify-app/rrweb': patch
 ---
 
 feat: Add `ignoreSelector` option

@@ -1,11 +1,11 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { chromium } from 'playwright';
-import { EventType, eventWithTime } from '@rrweb/types';
-import type Player from 'rrweb-player';
+import { EventType, eventWithTime } from '@junify-app/types';
+import type Player from '@junify-app/rrweb-player';
 
 const rrwebScriptPath = path.resolve(
-  require.resolve('rrweb-player'),
+  require.resolve('@junify-app/rrweb-player'),
   '../../dist/rrweb-player.umd.cjs',
 );
 const rrwebStylePath = path.resolve(rrwebScriptPath, '../style.css');
@@ -30,7 +30,7 @@ type RRvideoConfig = {
 
 const defaultConfig: Required<RRvideoConfig> = {
   input: '',
-  output: 'rrvideo-output.webm',
+  output: '/rrvideo-output.webm',
   headless: true,
   // A good trade-off value between quality and file size.
   resolutionRatio: 0.8,

@@ -1,9 +1,9 @@
-import type { Emitter } from '@rrweb/types';
-import { MediaInteractions, ReplayerEvents } from '@rrweb/types';
-import type { RRMediaElement } from 'rrdom';
+import type { Emitter } from '@junify-app/types';
+import { MediaInteractions, ReplayerEvents } from '@junify-app/types';
+import type { RRMediaElement } from '@junify-app/rrdom';
 import type { createPlayerService, createSpeedService } from '../machine';
-import type { Mirror } from 'rrweb-snapshot';
-import type { mediaInteractionData, mediaAttributes } from '@rrweb/types';
+import type { Mirror } from '@junify-app/rrweb-snapshot';
+import type { mediaInteractionData, mediaAttributes } from '@junify-app/types';
 
 type MediaState = {
   isPlaying: boolean;

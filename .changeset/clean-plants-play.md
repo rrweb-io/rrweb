@@ -1,6 +1,6 @@
 ---
-'rrweb': patch
-'@rrweb/types': patch
+'@junify-app/rrweb': patch
+'@junify-app/types': patch
 ---
 
 Compact style mutation fixes and improvements

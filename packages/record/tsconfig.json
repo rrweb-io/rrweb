@@ -1,16 +1,18 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["src"],
+  "include": [
+    "src"
+  ],
   "compilerOptions": {
     "rootDir": "src",
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
   },
   "references": [
     {
-      "path": "../types"
+      "path": "../rrweb"
     },
     {
-      "path": "../rrweb"
+      "path": "../types"
     },
     {
       "path": "../utils"

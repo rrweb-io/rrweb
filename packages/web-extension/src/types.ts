@@ -1,4 +1,4 @@
-import type { eventWithTime } from '@rrweb/types';
+import type { eventWithTime } from '@junify-app/types';
 
 export enum SyncDataKey {
   settings = 'settings',
@@ -62,12 +62,12 @@ export enum EventName {
 
 // all message names for postMessage API
 export enum MessageName {
-  RecordScriptReady = 'rrweb-extension-record-script-ready',
-  StartRecord = 'rrweb-extension-start-record',
-  RecordStarted = 'rrweb-extension-record-started',
-  StopRecord = 'rrweb-extension-stop-record',
-  RecordStopped = 'rrweb-extension-record-stopped',
-  EmitEvent = 'rrweb-extension-emit-event',
+  RecordScriptReady = '@junify-app/rrweb-extension-record-script-ready',
+  StartRecord = '@junify-app/rrweb-extension-start-record',
+  RecordStarted = '@junify-app/rrweb-extension-record-started',
+  StopRecord = '@junify-app/rrweb-extension-stop-record',
+  RecordStopped = '@junify-app/rrweb-extension-record-stopped',
+  EmitEvent = '@junify-app/rrweb-extension-emit-event',
 }
 
 export type RecordStartedMessage = {

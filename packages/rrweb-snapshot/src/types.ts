@@ -1,4 +1,4 @@
-import type { serializedNodeWithId } from '@rrweb/types';
+import type { serializedNodeWithId } from '@junify-app/types';
 
 export type tagMap = {
   [key: string]: string;

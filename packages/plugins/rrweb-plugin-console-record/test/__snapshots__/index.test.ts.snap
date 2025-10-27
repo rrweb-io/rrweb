@@ -168,7 +168,7 @@ exports[`rrweb-plugin-console-record > should handle recursive console messages 
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"log\\",
         \\"trace\\": [
@@ -352,7 +352,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"assert\\",
         \\"trace\\": [
@@ -367,7 +367,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"count\\",
         \\"trace\\": [
@@ -382,7 +382,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"countReset\\",
         \\"trace\\": [
@@ -397,7 +397,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"debug\\",
         \\"trace\\": [
@@ -412,7 +412,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"dir\\",
         \\"trace\\": [
@@ -427,7 +427,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"dirxml\\",
         \\"trace\\": [
@@ -442,7 +442,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"group\\",
         \\"trace\\": [
@@ -455,7 +455,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"groupCollapsed\\",
         \\"trace\\": [
@@ -468,7 +468,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"info\\",
         \\"trace\\": [
@@ -483,7 +483,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"log\\",
         \\"trace\\": [
@@ -498,7 +498,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"table\\",
         \\"trace\\": [
@@ -513,7 +513,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"time\\",
         \\"trace\\": [
@@ -526,7 +526,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"timeEnd\\",
         \\"trace\\": [
@@ -539,7 +539,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"timeLog\\",
         \\"trace\\": [
@@ -552,7 +552,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"trace\\",
         \\"trace\\": [
@@ -567,7 +567,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"warn\\",
         \\"trace\\": [
@@ -582,7 +582,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"clear\\",
         \\"trace\\": [
@@ -595,7 +595,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"log\\",
         \\"trace\\": [
@@ -680,7 +680,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
   {
     \\"type\\": 6,
     \\"data\\": {
-      \\"plugin\\": \\"rrweb/console@1\\",
+      \\"plugin\\": \\"@junify-app/rrweb/console@1\\",
       \\"payload\\": {
         \\"level\\": \\"log\\",
         \\"trace\\": [

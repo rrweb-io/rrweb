@@ -69,10 +69,10 @@ rrweb.record({
 
 ### 基于 packFn 的单数据压缩
 
-rrweb 提供了一个基于 fflate 的简单压缩函数，在 [@rrweb/packer](../../packages/packer/) 中可以作为 `packFn` 传入使用。
+rrweb 提供了一个基于 fflate 的简单压缩函数，在 [@junify-app/packer](../../packages/packer/) 中可以作为 `packFn` 传入使用。
 
 ```js
-import { pack } from '@rrweb/packer';
+import { pack } from '@junify-app/packer';
 
 rrweb.record({
   emit(event) {},
@@ -83,7 +83,7 @@ rrweb.record({
 回放时通用需要传入 packer.unpack 作为 `unpackFn` 传入。
 
 ```js
-import { unpack } from '@rrweb/packer';
+import { unpack } from '@junify-app/packer';
 
 const replayer = new rrweb.Replayer(events, {
   unpackFn: rrweb.unpack,

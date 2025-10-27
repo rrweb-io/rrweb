@@ -1,5 +1,5 @@
 ---
-'rrweb': patch
+'@junify-app/rrweb': patch
 ---
 
 Add missing change logs manually. In the next version, all change logs will be generated automatically.

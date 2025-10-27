@@ -8,7 +8,7 @@ import {
   mouseInteractionData,
   event,
   pluginEvent,
-} from '@rrweb/types';
+} from '@junify-app/types';
 import * as puppeteer from 'puppeteer';
 import * as path from 'path';
 import * as http from 'http';
@@ -187,7 +187,7 @@ function stringifySnapshots(snapshots: eventWithTime[]): string {
           }
         } else if (
           s.type === EventType.Plugin &&
-          s.data.plugin === 'rrweb/console@1'
+          s.data.plugin === '@junify-app/rrweb/console@1'
         ) {
           const pluginPayload = (
             s as pluginEvent<{

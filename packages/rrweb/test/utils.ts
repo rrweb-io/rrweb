@@ -8,7 +8,7 @@ import {
   Optional,
   mouseInteractionData,
   pluginEvent,
-} from '@rrweb/types';
+} from '@junify-app/types';
 import type { recordOptions } from '../src/types';
 import * as puppeteer from 'puppeteer';
 import { format } from 'prettier';
@@ -117,7 +117,7 @@ export function stringifySnapshots(snapshots: eventWithTime[]): string {
               s.data.source === IncrementalSource.ViewportResize)) ||
           // ignore '[vite] connected' messages from vite
           (s.type === EventType.Plugin &&
-            s.data.plugin === 'rrweb/console@1' &&
+            s.data.plugin === '@junify-app/rrweb/console@1' &&
             (s.data.payload as { payload: string[] })?.payload?.find((msg) =>
               msg.includes('[vite] connected'),
             ))
@@ -209,7 +209,7 @@ export function stringifySnapshots(snapshots: eventWithTime[]): string {
           }
         } else if (
           s.type === EventType.Plugin &&
-          s.data.plugin === 'rrweb/console@1'
+          s.data.plugin === '@junify-app/rrweb/console@1'
         ) {
           const pluginPayload = (
             s as pluginEvent<{

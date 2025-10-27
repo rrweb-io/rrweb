@@ -1,6 +1,6 @@
 {
   "common": {
-    "name": "rrweb",
+    "name": "junify-app-rrweb",
     "content_scripts": [
       {
         "matches": ["<all_urls>"],
@@ -24,7 +24,7 @@
         "scripts": ["background/index.ts"]
       },
       "browser_action": {
-        "default_title": "rrweb extension",
+        "default_title": "junify-app rrweb extension",
         "default_popup": "popup/popup.html",
         "browser_style": false
       },
@@ -39,7 +39,7 @@
     "firefox": {
       "browser_specific_settings": {
         "gecko": {
-          "id": "rrweb@rrweb.io",
+          "id": "junify-app-rrweb@junify.io",
           "strict_min_version": "42.0"
         }
       }
@@ -53,7 +53,7 @@
         "type": "module"
       },
       "action": {
-        "default_title": "rrweb extension",
+        "default_title": "junify-app rrweb extension",
         "default_popup": "popup/popup.html",
         "browser_style": false
       },

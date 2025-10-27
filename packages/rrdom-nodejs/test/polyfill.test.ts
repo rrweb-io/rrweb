@@ -9,7 +9,7 @@ import {
   polyfillDocument,
 } from '../src/polyfill';
 import { performance as nativePerformance } from 'perf_hooks';
-import { BaseRRNode } from 'rrdom';
+import { BaseRRNode } from '@junify-app/rrdom';
 
 describe('polyfill for nodejs', () => {
   it('should polyfill performance api', () => {

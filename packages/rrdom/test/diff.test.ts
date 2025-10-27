@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import { vi, MockInstance } from 'vitest';
-import { createMirror, Mirror as NodeMirror } from 'rrweb-snapshot';
+import { createMirror, Mirror as NodeMirror } from '@junify-app/rrweb-snapshot';
 import {
   buildFromDom,
   getDefaultSN,
@@ -26,12 +26,12 @@ import type {
   serializedNodeWithId,
   canvasMutationData,
   styleSheetRuleData,
-} from '@rrweb/types';
+} from '@junify-app/types';
 import {
   NodeType as RRNodeType,
   EventType,
   IncrementalSource,
-} from '@rrweb/types';
+} from '@junify-app/types';
 
 const elementSn = {
   type: RRNodeType.Element,

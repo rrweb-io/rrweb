@@ -5,9 +5,9 @@ import {
   type canvasMutationWithType,
   type IWindow,
   type listenerHandler,
-} from '@rrweb/types';
+} from '@junify-app/types';
 import { hookSetter, isBlocked } from '../../../utils';
-import { patch } from '@rrweb/utils';
+import { patch } from '@junify-app/utils';
 import { saveWebGLVar, serializeArgs } from './serialize-args';
 
 function patchGLPrototype(

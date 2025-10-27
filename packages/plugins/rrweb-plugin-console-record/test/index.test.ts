@@ -3,7 +3,7 @@ import { stringifySnapshots } from '../../../rrweb/test/utils';
 import { createServer, ViteDevServer } from 'vite';
 import * as puppeteer from 'puppeteer';
 import type { Browser, Page } from 'puppeteer';
-import type { eventWithTime } from '@rrweb/types';
+import type { eventWithTime } from '@junify-app/types';
 
 export async function launchPuppeteer(
   options?: Parameters<(typeof puppeteer)['launch']>[0],
@@ -24,7 +24,7 @@ export function assertSnapshot(snapshots: eventWithTime[]) {
   expect(stringifySnapshots(snapshots)).toMatchSnapshot();
 }
 
-describe('rrweb-plugin-console-record', () => {
+describe('@junify-app/rrweb-plugin-console-record', () => {
   // vi.setConfig({ testTimeout: 120_000 });
   let server: ViteDevServer;
   let serverUrl: string;
