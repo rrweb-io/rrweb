@@ -100,7 +100,9 @@ export default defineConfig({
           packageJson.dependencies?.['@junify-app/rrweb'] ??
           packageJson.dependencies?.rrweb;
         if (!rrwebDependency) {
-          throw new Error('Missing @junify-app/rrweb dependency in package.json');
+          throw new Error(
+            'Missing @junify-app/rrweb dependency in package.json',
+          );
         }
         const rrwebVersion = rrwebDependency.replace('^', '');
         const manifest = {

@@ -3,7 +3,10 @@
  */
 import { EventType, IncrementalSource, Replayer, eventWithTime } from '../src';
 import { vi, type MockInstance } from 'vitest';
-import type { styleDeclarationData, styleSheetRuleData } from '@junify-app/types';
+import type {
+  styleDeclarationData,
+  styleSheetRuleData,
+} from '@junify-app/types';
 import { createMirror, Mirror as NodeMirror } from '@junify-app/rrweb-snapshot';
 import type { ReplayerHandler } from '@junify-app/rrdom';
 
