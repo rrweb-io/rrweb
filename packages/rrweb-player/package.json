@@ -1,8 +1,8 @@
 {
   "name": "@junify-app/rrweb-player",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.0-alpha.19",
   "devDependencies": {
-    "@junify-app/types": "^2.0.0-alpha.18",
+    "@junify-app/types": "^2.0.0-alpha.19",
     "@sveltejs/adapter-auto": "^3.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/package": "^2.0.0",
@@ -19,8 +19,8 @@
     "vite": "^5.3.1"
   },
   "dependencies": {
-    "@junify-app/packer": "^2.0.0-alpha.18",
-    "@junify-app/replay": "^2.0.0-alpha.18",
+    "@junify-app/packer": "^2.0.0-alpha.19",
+    "@junify-app/replay": "^2.0.0-alpha.19",
     "@tsconfig/svelte": "^1.0.0"
   },
   "scripts": {

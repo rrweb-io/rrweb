@@ -1,6 +1,6 @@
 {
   "name": "@junify-app/rrweb-snapshot",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.0-alpha.19",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",
@@ -54,8 +54,8 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot#readme",
   "devDependencies": {
-    "@junify-app/types": "^2.0.0-alpha.18",
-    "@junify-app/utils": "^2.0.0-alpha.18",
+    "@junify-app/types": "^2.0.0-alpha.19",
+    "@junify-app/utils": "^2.0.0-alpha.19",
     "@types/jsdom": "^20.0.0",
     "@types/node": "^18.15.11",
     "@types/puppeteer": "^5.4.4",

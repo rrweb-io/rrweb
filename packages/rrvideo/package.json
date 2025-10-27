@@ -1,6 +1,6 @@
 {
   "name": "@junify-app/rrvideo",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.0-alpha.19",
   "description": "transform rrweb session into video",
   "main": "build/index.js",
   "bin": {
@@ -21,7 +21,7 @@
   "author": "yanzhen@smartx.com",
   "license": "MIT",
   "devDependencies": {
-    "@junify-app/types": "^2.0.0-alpha.18",
+    "@junify-app/types": "^2.0.0-alpha.19",
     "@types/fs-extra": "11.0.1",
     "@types/jest": "^27.4.1",
     "@types/minimist": "^1.2.1",
@@ -30,7 +30,7 @@
     "ts-jest": "^27.1.3"
   },
   "dependencies": {
-    "@junify-app/rrweb-player": "^2.0.0-alpha.18",
+    "@junify-app/rrweb-player": "^2.0.0-alpha.19",
     "@open-tech-world/cli-progress-bar": "^2.0.2",
     "fs-extra": "^11.1.1",
     "minimist": "^1.2.5",
