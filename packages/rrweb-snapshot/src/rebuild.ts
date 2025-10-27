@@ -5,7 +5,7 @@ import {
   NodeType,
   type elementNode,
   type legacyAttributes,
-} from '@rrweb/types';
+} from '@junify-app/types';
 import { type tagMap, type BuildCache } from './types';
 import {
   isElement,
@@ -322,7 +322,7 @@ function buildNode(
           ) {
             // backup original img srcset
             node.setAttribute(
-              'rrweb-original-srcset',
+              '@junify-app/rrweb-original-srcset',
               n.attributes.srcset as string,
             );
           } else {
@@ -357,7 +357,7 @@ function buildNode(
           if (!image.currentSrc.startsWith('data:')) {
             // Backup original img src. It may not have been set yet.
             image.setAttribute(
-              'rrweb-original-src',
+              '@junify-app/rrweb-original-src',
               n.attributes.src as string,
             );
             image.src = value.toString();

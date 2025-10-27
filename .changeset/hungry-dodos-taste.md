@@ -1,5 +1,5 @@
 ---
-'rrweb-snapshot': patch
+'@junify-app/rrweb-snapshot': patch
 ---
 
 Avoid recreating the same element every time, instead, we cache and we just update the element.

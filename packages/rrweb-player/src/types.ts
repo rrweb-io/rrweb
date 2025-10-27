@@ -1,6 +1,6 @@
-import type { eventWithTime } from '@rrweb/types';
-import type { Replayer, playerConfig } from '@rrweb/replay';
-import type { Mirror } from 'rrweb-snapshot';
+import type { eventWithTime } from '@junify-app/types';
+import type { Replayer, playerConfig } from '@junify-app/replay';
+import type { Mirror } from '@junify-app/rrweb-snapshot';
 
 export type RRwebPlayerOptions = {
   target: HTMLElement;

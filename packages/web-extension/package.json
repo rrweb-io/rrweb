@@ -1,5 +1,5 @@
 {
-  "name": "@rrweb/web-extension",
+  "name": "@junify-app/web-extension",
   "private": true,
   "version": "2.0.0-alpha.18",
   "description": "The web extension of rrweb which helps to run rrweb on any website out of box",
@@ -18,7 +18,7 @@
     "prepublish": "yarn build"
   },
   "devDependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
+    "@junify-app/types": "^2.0.0-alpha.18",
     "@types/chrome": "^0.0.287",
     "@types/react-dom": "^18.0.6",
     "@types/semver": "^7.5.8",
@@ -35,6 +35,8 @@
     "@chakra-ui/react": "^2.3.4",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
+    "@junify-app/rrweb": "^2.0.0-alpha.18",
+    "@junify-app/rrweb-player": "^2.0.0-alpha.18",
     "@tanstack/react-table": "^8.5.22",
     "framer-motion": "^7.3.6",
     "idb": "^7.1.1",
@@ -43,8 +45,6 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
-    "react-router-dom": "^6.4.1",
-    "rrweb": "^2.0.0-alpha.18",
-    "rrweb-player": "^2.0.0-alpha.18"
+    "react-router-dom": "^6.4.1"
   }
 }

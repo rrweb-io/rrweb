@@ -1,4 +1,4 @@
-import { stringifyRule } from 'rrweb-snapshot';
+import { stringifyRule } from '@junify-app/rrweb-snapshot';
 import type {
   elementNode,
   serializedNodeWithId,
@@ -6,7 +6,7 @@ import type {
   adoptedStyleSheetParam,
   attributeMutation,
   mutationCallBack,
-} from '@rrweb/types';
+} from '@junify-app/types';
 import { StyleSheetMirror } from '../utils';
 
 export class StylesheetManager {

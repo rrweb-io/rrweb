@@ -1,6 +1,6 @@
 ---
-'rrweb-snapshot': patch
-'rrweb': patch
+'@junify-app/rrweb-snapshot': patch
+'@junify-app/rrweb': patch
 ---
 
 Fix: Make relative path detection in stylesheet URLs to detect more types of URL protocols when inlining stylesheets.

@@ -1,4 +1,4 @@
-# @rrweb/utils
+# @junify-app/utils
 
 ## 2.0.0-alpha.18
 

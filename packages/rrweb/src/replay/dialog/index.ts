@@ -1,5 +1,5 @@
-import type { attributeMutation } from '@rrweb/types';
-import { RRNode } from 'rrdom';
+import type { attributeMutation } from '@junify-app/types';
+import { RRNode } from '@junify-app/rrdom';
 
 /**
  * Checks if the dialog is a top level dialog and applies the dialog to the top level

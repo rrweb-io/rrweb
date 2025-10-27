@@ -15,8 +15,8 @@ declare global {
   }
 }
 
-import { EventType, IncrementalSource } from '@rrweb/types';
-import type { eventWithTime } from '@rrweb/types';
+import { EventType, IncrementalSource } from '@junify-app/types';
+import type { eventWithTime } from '@junify-app/types';
 
 export function inlineCss(cssObj: Record<string, string>): string {
   let style = '';
@@ -150,7 +150,7 @@ export function typeOf(
 }
 
 /**
- * Forked from 'rrweb' replay/index.ts. The original function is not exported.
+ * Forked from '@junify-app/rrweb' replay/index.ts. The original function is not exported.
  * Determine whether the event is a user interaction event
  * @param event - event to be determined
  * @returns true if the event is a user interaction event

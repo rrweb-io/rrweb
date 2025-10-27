@@ -14,8 +14,8 @@ import {
   ISuite,
 } from './utils';
 import type { recordOptions } from '../src/types';
-import { eventWithTime, NodeType, EventType } from '@rrweb/types';
-import { visitSnapshot } from 'rrweb-snapshot';
+import { eventWithTime, NodeType, EventType } from '@junify-app/types';
+import { visitSnapshot } from '@junify-app/rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
   vi.setConfig({ testTimeout: 10_000 });

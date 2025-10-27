@@ -3,9 +3,12 @@
  */
 import { EventType, IncrementalSource, Replayer, eventWithTime } from '../src';
 import { vi, type MockInstance } from 'vitest';
-import type { styleDeclarationData, styleSheetRuleData } from '@rrweb/types';
-import { createMirror, Mirror as NodeMirror } from 'rrweb-snapshot';
-import type { ReplayerHandler } from 'rrdom';
+import type {
+  styleDeclarationData,
+  styleSheetRuleData,
+} from '@junify-app/types';
+import { createMirror, Mirror as NodeMirror } from '@junify-app/rrweb-snapshot';
+import type { ReplayerHandler } from '@junify-app/rrdom';
 
 describe('diff algorithm for rrdom', () => {
   let mirror: NodeMirror;

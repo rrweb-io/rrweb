@@ -1,5 +1,5 @@
 ---
-'rrweb': patch
+'@junify-app/rrweb': patch
 ---
 
 Fix: some websites rebuild imcomplete

@@ -1,5 +1,5 @@
 ---
-'@rrweb/types': patch
+'@junify-app/types': patch
 ---
 
 Fix type error when using `"moduleResolution": "NodeNext"`.

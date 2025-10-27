@@ -1,6 +1,6 @@
-import { record } from 'rrweb';
-import type { recordOptions } from 'rrweb';
-import type { eventWithTime } from '@rrweb/types';
+import { record } from '@junify-app/rrweb';
+import type { recordOptions } from '@junify-app/rrweb';
+import type { eventWithTime } from '@junify-app/types';
 import { MessageName, type RecordStartedMessage } from '~/types';
 import { isInCrossOriginIFrame } from '~/utils';
 

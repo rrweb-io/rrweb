@@ -1,7 +1,7 @@
 /// <reference types="chrome"/>
 import { useRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import Replayer from 'rrweb-player';
+import Replayer from '@junify-app/rrweb-player';
 import {
   Box,
   Breadcrumb,
@@ -34,7 +34,7 @@ export default function Player() {
         const manifest = chrome.runtime.getManifest();
         const rrwebPlayerVersion = manifest.version_name || manifest.version;
         const linkEl = document.createElement('link');
-        linkEl.href = `https://cdn.jsdelivr.net/npm/rrweb-player@${rrwebPlayerVersion}/dist/style.min.css`;
+        linkEl.href = `https://cdn.jsdelivr.net/npm/@junify-app/rrweb-player@${rrwebPlayerVersion}/dist/style.min.css`;
         linkEl.rel = 'stylesheet';
         document.head.appendChild(linkEl);
         playerRef.current = new Replayer({

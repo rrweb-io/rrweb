@@ -1,6 +1,6 @@
-import type { SequentialIdOptions } from '@rrweb/rrweb-plugin-sequential-id-record';
-import type { ReplayPlugin } from 'rrweb';
-import type { eventWithTime } from '@rrweb/types';
+import type { SequentialIdOptions } from '@junify-app/rrweb-plugin-sequential-id-record';
+import type { ReplayPlugin } from '@junify-app/rrweb';
+import type { eventWithTime } from '@junify-app/types';
 
 type Options = SequentialIdOptions & {
   warnOnMissingId: boolean;

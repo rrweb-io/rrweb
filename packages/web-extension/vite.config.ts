@@ -96,7 +96,15 @@ export default defineConfig({
         const BrowserName =
           process.env.TARGET_BROWSER === 'chrome' ? 'chrome' : 'firefox';
         const commonManifest = originalManifest.common;
-        const rrwebVersion = packageJson.dependencies!.rrweb!.replace('^', '');
+        const rrwebDependency =
+          packageJson.dependencies?.['@junify-app/rrweb'] ??
+          packageJson.dependencies?.rrweb;
+        if (!rrwebDependency) {
+          throw new Error(
+            'Missing @junify-app/rrweb dependency in package.json',
+          );
+        }
+        const rrwebVersion = rrwebDependency.replace('^', '');
         const manifest = {
           version: getExtensionVersion(rrwebVersion),
           author: packageJson.author,

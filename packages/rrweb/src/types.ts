@@ -4,11 +4,11 @@ import type {
   SlimDOMOptions,
   MaskInputFn,
   MaskTextFn,
-} from 'rrweb-snapshot';
+} from '@junify-app/rrweb-snapshot';
 import type { IframeManager } from './record/iframe-manager';
 import type { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
-import type { RRNode } from 'rrdom';
+import type { RRNode } from '@junify-app/rrdom';
 import type { CanvasManager } from './record/observers/canvas/canvas-manager';
 import type { StylesheetManager } from './record/stylesheet-manager';
 import type {
@@ -38,7 +38,7 @@ import type {
   viewportResizeCallback,
   PackFn,
   UnpackFn,
-} from '@rrweb/types';
+} from '@junify-app/types';
 import type ProcessedNodeManager from './record/processed-node-manager';
 
 export type recordOptions<T> = {
@@ -214,7 +214,7 @@ declare global {
 }
 
 export type CrossOriginIframeMessageEventContent<T = eventWithTime> = {
-  type: 'rrweb';
+  type: '@junify-app/rrweb';
   event: T;
   // The origin of the iframe which originally emits this message. It is used to check the integrity of message and to filter out the rrweb messages which are forwarded by some sites.
   origin: string;

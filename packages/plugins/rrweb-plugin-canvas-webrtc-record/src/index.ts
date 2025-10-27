@@ -3,13 +3,13 @@ import type {
   RecordPlugin,
   ICrossOriginIframeMirror,
   IMirror,
-} from '@rrweb/types';
+} from '@junify-app/types';
 import type { WebRTCDataChannel } from './types';
 
-export const PLUGIN_NAME = 'rrweb/canvas-webrtc@1';
+export const PLUGIN_NAME = '@junify-app/rrweb/canvas-webrtc@1';
 
 export type CrossOriginIframeMessageEventContent = {
-  type: 'rrweb-canvas-webrtc';
+  type: '@junify-app/rrweb-canvas-webrtc';
   data:
     | {
         type: 'signal';
@@ -137,7 +137,7 @@ export class RRWebPluginCanvasWebRTCRecord {
           // connected to cross-origin iframe
           this.peerWindowMap.get(peer)?.postMessage(
             {
-              type: 'rrweb-canvas-webrtc',
+              type: '@junify-app/rrweb-canvas-webrtc',
               data: {
                 type: 'signal',
                 signal: data,
@@ -150,7 +150,7 @@ export class RRWebPluginCanvasWebRTCRecord {
         // connected to root frame
         window.top?.postMessage(
           {
-            type: 'rrweb-canvas-webrtc',
+            type: '@junify-app/rrweb-canvas-webrtc',
             data: {
               type: 'signal',
               signal: data,
@@ -207,7 +207,7 @@ export class RRWebPluginCanvasWebRTCRecord {
     if (!this.inRootFrame()) {
       window.top?.postMessage(
         {
-          type: 'rrweb-canvas-webrtc',
+          type: '@junify-app/rrweb-canvas-webrtc',
           data: {
             type: 'i-have-canvas',
             rootId: rootId || id,
@@ -250,7 +250,7 @@ export class RRWebPluginCanvasWebRTCRecord {
       found = true;
       iframe.contentWindow?.postMessage(
         {
-          type: 'rrweb-canvas-webrtc',
+          type: '@junify-app/rrweb-canvas-webrtc',
           data: {
             type: 'who-has-canvas',
             id: remoteId,
@@ -272,7 +272,7 @@ export class RRWebPluginCanvasWebRTCRecord {
         'type' in event.data &&
         'data' in event.data &&
         (event.data as CrossOriginIframeMessageEventContent).type ===
-          'rrweb-canvas-webrtc' &&
+          '@junify-app/rrweb-canvas-webrtc' &&
         (event.data as CrossOriginIframeMessageEventContent).data,
     );
   }

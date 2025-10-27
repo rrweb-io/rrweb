@@ -8,8 +8,8 @@ This feature aims to provide developers with more information about the bug scen
 You can enable the logger using default option like this:
 
 ```js
-import rrweb from 'rrweb';
-import { getRecordConsolePlugin } from '@rrweb/rrweb-plugin-console-record';
+import rrweb from '@junify-app/rrweb';
+import { getRecordConsolePlugin } from '@junify-app/rrweb-plugin-console-record';
 
 rrweb.record({
   emit: function emit(event) {
@@ -30,8 +30,8 @@ You should call console.log.\_\_rrweb_original\_\_() instead.
 You can also customize the behavior of logger like this:
 
 ```js
-import rrweb from 'rrweb';
-import { getRecordConsolePlugin } from '@rrweb/rrweb-plugin-console-record';
+import rrweb from '@junify-app/rrweb';
+import { getRecordConsolePlugin } from '@junify-app/rrweb-plugin-console-record';
 
 rrweb.record({
   emit: function emit(event) {
@@ -70,8 +70,8 @@ All options are described below:
 If recorded events include data of console log type, we will automatically play them.
 
 ```js
-import rrweb from 'rrweb';
-import { getReplayConsolePlugin } from '@rrweb/rrweb-plugin-console-replay';
+import rrweb from '@junify-app/rrweb';
+import { getReplayConsolePlugin } from '@junify-app/rrweb-plugin-console-replay';
 
 const replayer = new rrweb.Replayer(events, {
   plugins: [

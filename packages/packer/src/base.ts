@@ -1,4 +1,4 @@
-import type { eventWithTime } from '@rrweb/types';
+import type { eventWithTime } from '@junify-app/types';
 
 export type eventWithTimeAndPacker = eventWithTime & {
   v: string;

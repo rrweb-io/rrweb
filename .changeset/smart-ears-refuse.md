@@ -1,5 +1,5 @@
 ---
-'rrweb-snapshot': patch
+'@junify-app/rrweb-snapshot': patch
 ---
 
 Feat: Add 'isCustom' flag to serialized elements.

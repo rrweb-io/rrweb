@@ -1,7 +1,7 @@
 ---
-'rrdom': major
-'rrdom-nodejs': major
-'rrweb': patch
+'@junify-app/rrdom': major
+'@junify-app/rrdom-nodejs': major
+'@junify-app/rrweb': patch
 ---
 
 Refactor: Improve performance by 80% in a super large benchmark case.

@@ -3,16 +3,16 @@ import type {
   mutationCallBack,
   scrollCallback,
   SamplingStrategy,
-} from '@rrweb/types';
+} from '@junify-app/types';
 import {
   initMutationObserver,
   initScrollObserver,
   initAdoptedStyleSheetObserver,
 } from './observer';
 import { inDom } from '../utils';
-import type { Mirror } from 'rrweb-snapshot';
-import { isNativeShadowDom } from 'rrweb-snapshot';
-import dom, { patch } from '@rrweb/utils';
+import type { Mirror } from '@junify-app/rrweb-snapshot';
+import { isNativeShadowDom } from '@junify-app/rrweb-snapshot';
+import dom, { patch } from '@junify-app/utils';
 
 type BypassOptions = Omit<
   MutationBufferParam,

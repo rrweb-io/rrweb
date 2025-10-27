@@ -2,10 +2,10 @@ import {
   type LogLevel,
   type LogData,
   PLUGIN_NAME,
-} from '@rrweb/rrweb-plugin-console-record';
-import type { eventWithTime } from '@rrweb/types';
-import { EventType, IncrementalSource } from '@rrweb/types';
-import type { ReplayPlugin, Replayer } from 'rrweb';
+} from '@junify-app/rrweb-plugin-console-record';
+import type { eventWithTime } from '@junify-app/types';
+import { EventType, IncrementalSource } from '@junify-app/types';
+import type { ReplayPlugin, Replayer } from '@junify-app/rrweb';
 
 /**
  * define an interface to replay log records

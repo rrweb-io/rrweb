@@ -1,6 +1,6 @@
 ---
-'rrweb-snapshot': patch
-'rrweb': patch
+'@junify-app/rrweb-snapshot': patch
+'@junify-app/rrweb': patch
 ---
 
 Ensure :hover works on replayer, even if a rule is behind a media query

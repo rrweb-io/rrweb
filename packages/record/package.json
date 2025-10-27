@@ -1,12 +1,12 @@
 {
-  "name": "@rrweb/record",
+  "name": "@junify-app/record",
   "version": "2.0.0-alpha.18",
   "publishConfig": {
     "access": "public"
   },
   "keywords": [
     "rrweb",
-    "@rrweb/record"
+    "@junify-app/record"
   ],
   "scripts": {
     "dev": "vite build --watch",
@@ -17,7 +17,7 @@
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/record#readme",
+  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/record#readme",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
@@ -55,9 +55,9 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
-    "rrweb": "^2.0.0-alpha.18",
-    "@rrweb/utils": "^2.0.0-alpha.18"
+    "@junify-app/rrweb": "^2.0.0-alpha.18",
+    "@junify-app/types": "^2.0.0-alpha.18",
+    "@junify-app/utils": "^2.0.0-alpha.18"
   },
   "browserslist": [
     "supports es6-class"

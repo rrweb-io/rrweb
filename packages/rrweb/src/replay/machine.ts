@@ -11,7 +11,7 @@ import {
   EventType,
   type Emitter,
   IncrementalSource,
-} from '@rrweb/types';
+} from '@junify-app/types';
 import { Timer, addDelay } from './timer';
 
 export type PlayerContext = {

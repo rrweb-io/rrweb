@@ -37,7 +37,7 @@ import {
 import { VscTriangleDown, VscTriangleUp } from 'react-icons/vsc';
 import { FiEdit3 as EditIcon } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-import type { eventWithTime } from 'rrweb';
+import type { eventWithTime } from '@junify-app/rrweb';
 import { type Session, EventName } from '~/types';
 import Channel from '~/utils/channel';
 import {

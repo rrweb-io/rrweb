@@ -1,19 +1,19 @@
-# @rrweb/rrweb-plugin-sequential-id-record
+# @junify-app/rrweb-plugin-sequential-id-record
 
-Use this plugin in combination with the [@rrweb/rrweb-plugin-sequential-id-replay](../rrweb-plugin-sequential-id-replay) plugin to record and replay events with a sequential id.
+Use this plugin in combination with the [@junify-app/rrweb-plugin-sequential-id-replay](../rrweb-plugin-sequential-id-replay) plugin to record and replay events with a sequential id.
 See the [guide](../../../guide.md) for more info on rrweb.
 
 ## Installation
 
 ```bash
-npm install @rrweb/rrweb-plugin-sequential-id-record
+npm install @junify-app/rrweb-plugin-sequential-id-record
 ```
 
 ## Usage
 
 ```js
-import rrweb from 'rrweb';
-import { getRecordSequentialIdPlugin } from '@rrweb/rrweb-plugin-sequential-id-record';
+import rrweb from '@junify-app/rrweb';
+import { getRecordSequentialIdPlugin } from '@junify-app/rrweb-plugin-sequential-id-record';
 
 rrweb.record({
   emit: function emit(event) {

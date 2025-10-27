@@ -1,5 +1,5 @@
 ---
-'rrweb-snapshot': patch
+'@junify-app/rrweb-snapshot': patch
 ---
 
 Fix css parsing errors

@@ -37,7 +37,7 @@ jobs:
 
       - name: Build Chrome Extension
         if: steps.changesets.outputs.published == 'true'
-        run: NODE_OPTIONS='--max-old-space-size=4096' DISABLE_WORKER_INLINING=true yarn turbo run prepublish --filter=@rrweb/web-extension
+        run: NODE_OPTIONS='--max-old-space-size=4096' DISABLE_WORKER_INLINING=true yarn turbo run prepublish --filter=@junify-app/web-extension
 
       - name: Publish Chrome Extension
         uses: mnao305/chrome-extension-upload@v5.0.0

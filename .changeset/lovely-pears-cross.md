@@ -1,5 +1,5 @@
 ---
-'@rrweb/web-extension': patch
+'@junify-app/web-extension': patch
 ---
 
 Add rrweb browser extension

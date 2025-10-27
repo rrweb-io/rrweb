@@ -1,5 +1,5 @@
 ---
-'rrweb': patch
+'@junify-app/rrweb': patch
 ---
 
 Fix: Switch from virtual dom to real dom before rebuilding fullsnapshot

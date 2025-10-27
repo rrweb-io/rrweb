@@ -3,7 +3,7 @@ import {
   type MaskInputOptions,
   type SlimDOMOptions,
   createMirror,
-} from 'rrweb-snapshot';
+} from '@junify-app/rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
 import {
   on,
@@ -27,7 +27,7 @@ import {
   type scrollCallback,
   type canvasMutationParam,
   type adoptedStyleSheetParam,
-} from '@rrweb/types';
+} from '@junify-app/types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
@@ -39,7 +39,7 @@ import {
   registerErrorHandler,
   unregisterErrorHandler,
 } from './error-handler';
-import dom from '@rrweb/utils';
+import dom from '@junify-app/utils';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
 
@@ -221,7 +221,7 @@ function record<T = eventWithTime>(
       emit?.(eventProcessor(e), isCheckout);
     } else if (passEmitsToParent) {
       const message: CrossOriginIframeMessageEventContent<T> = {
-        type: 'rrweb',
+        type: '@junify-app/rrweb',
         event: eventProcessor(e),
         origin: window.location.origin,
         isCheckout,

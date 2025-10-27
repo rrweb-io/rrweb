@@ -1,12 +1,12 @@
 {
-  "name": "@rrweb/utils",
+  "name": "@junify-app/utils",
   "version": "2.0.0-alpha.18",
   "publishConfig": {
     "access": "public"
   },
   "keywords": [
     "rrweb",
-    "@rrweb/utils"
+    "@junify-app/utils"
   ],
   "scripts": {
     "dev": "vite build --watch",
@@ -15,7 +15,7 @@
     "prepublish": "npm run build",
     "lint": "yarn eslint src/**/*.ts"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/utils#readme",
+  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/utils#readme",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },

@@ -11,7 +11,7 @@ import {
   IncrementalSource,
   styleSheetRuleData,
   selectionData,
-} from '@rrweb/types';
+} from '@junify-app/types';
 import {
   assertSnapshot,
   getServerURL,

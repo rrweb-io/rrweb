@@ -1,7 +1,13 @@
 {
   "extends": "../../tsconfig.base.json",
-  "exclude": ["package.json", "vite.config.ts"],
-  "include": ["src/**/*", "vite-env.d.ts"],
+  "exclude": [
+    "package.json",
+    "vite.config.ts"
+  ],
+  "include": [
+    "src/**/*",
+    "vite-env.d.ts"
+  ],
   "compilerOptions": {
     "composite": true,
     "rootDir": "./src",
@@ -19,10 +25,10 @@
   },
   "references": [
     {
-      "path": "../replay"
+      "path": "../packer"
     },
     {
-      "path": "../packer"
+      "path": "../replay"
     },
     {
       "path": "../types"

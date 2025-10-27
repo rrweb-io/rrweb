@@ -7,8 +7,8 @@
 可以通过如下代码使用默认的配置选项
 
 ```js
-import rrweb from 'rrweb';
-import { getRecordConsolePlugin } from '@rrweb/rrweb-plugin-console-record';
+import rrweb from '@junify-app/rrweb';
+import { getRecordConsolePlugin } from '@junify-app/rrweb-plugin-console-record';
 
 rweb.record({
   emit: function emit(event) {
@@ -29,8 +29,8 @@ rweb.record({
 你也可以定制录制 console 的选项
 
 ```js
-import rrweb from 'rrweb';
-import { getRecordConsolePlugin } from '@rrweb/rrweb-plugin-console-record';
+import rrweb from '@junify-app/rrweb';
+import { getRecordConsolePlugin } from '@junify-app/rrweb-plugin-console-record';
 
 rrweb.record({
   emit: function emit(event) {
@@ -69,8 +69,8 @@ rrweb.record({
 如果 replayer 传入的 events 中包含了 console 类型的数据，我们将自动播放这些数据。
 
 ```js
-import rrweb from 'rrweb';
-import { getReplayConsolePlugin } from '@rrweb/rrweb-plugin-console-replay';
+import rrweb from '@junify-app/rrweb';
+import { getReplayConsolePlugin } from '@junify-app/rrweb-plugin-console-replay';
 
 const replayer = new rrweb.Replayer(events, {
   plugins: [

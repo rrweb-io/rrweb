@@ -1,5 +1,5 @@
 ---
-'rrdom': patch
+'@junify-app/rrdom': patch
 ---
 
 Fix: rrdom bugs

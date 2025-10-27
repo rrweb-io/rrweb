@@ -1,4 +1,4 @@
-import { NodeType as RRNodeType } from '@rrweb/types';
+import { NodeType as RRNodeType } from '@junify-app/types';
 import { parseCSSText, camelize, toCSSText } from './style';
 export interface IRRNode {
   parentElement: IRRNode | null;

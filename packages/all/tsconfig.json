@@ -1,19 +1,21 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["src"],
+  "include": [
+    "src"
+  ],
   "compilerOptions": {
     "rootDir": "src",
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
   },
   "references": [
     {
-      "path": "../types"
-    },
-    {
       "path": "../packer"
     },
     {
       "path": "../rrweb"
+    },
+    {
+      "path": "../types"
     }
   ]
 }
