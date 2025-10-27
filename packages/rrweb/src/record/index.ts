@@ -4,7 +4,11 @@ import {
   type SlimDOMOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import { initObservers, mutationBuffers, findAndRemoveIframeBuffer } from './observer';
+import {
+  initObservers,
+  mutationBuffers,
+  findAndRemoveIframeBuffer,
+} from './observer';
 import {
   on,
   getWindowWidth,
@@ -437,10 +441,7 @@ function record<T = eventWithTime>(
 
   try {
     const handlers: listenerHandler[] = [];
-    const iframeHandlersMap = new Map<
-      HTMLIFrameElement,
-      listenerHandler
-    >();
+    const iframeHandlersMap = new Map<HTMLIFrameElement, listenerHandler>();
 
     const observe = (doc: Document) => {
       return callbackWrapper(initObservers)(
