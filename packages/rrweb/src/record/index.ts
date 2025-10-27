@@ -631,8 +631,26 @@ function record<T = eventWithTime>(
       );
     }
     return () => {
-      handlers.forEach((h) => h());
       iframeHandlersMap.forEach((h) => h());
+      handlers.forEach((handler) => {
+        try {
+          handler();
+        } catch (error) {
+          const msg = String(error).toLowerCase();
+          /**
+           * https://github.com/rrweb-io/rrweb/pull/1695
+           * This error can occur in a known scenario:
+           * If an iframe is initially same-origin and observed, but later its 
+           location is changed in an opaque way to a cross-origin URL (perhaps within the iframe via its `document.location` or a redirect) 
+           * attempting to execute the handler in the stop record function will 
+           throw a "cannot access cross-origin frame" error.
+           * This error is expected and can be safely ignored.
+           */
+          if (!msg.includes('cross-origin')) {
+            console.warn(error);
+          }
+        }
+      });
       processedNodeManager.destroy();
       recording = false;
       unregisterErrorHandler();
