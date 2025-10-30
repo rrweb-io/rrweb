@@ -38,6 +38,7 @@ import type {
   viewportResizeCallback,
   PackFn,
   UnpackFn,
+  ImageBitmapDataURLProcessor,
 } from '@junify-app/types';
 import type ProcessedNodeManager from './record/processed-node-manager';
 
@@ -74,6 +75,7 @@ export type recordOptions<T> = {
   mousemoveWait?: number;
   keepIframeSrcFn?: KeepIframeSrcFn;
   errorHandler?: ErrorHandler;
+  imageBitmapProcessor?: ImageBitmapDataURLProcessor;
 };
 
 export type observerParam = {

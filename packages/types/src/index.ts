@@ -228,13 +228,17 @@ export interface ICrossOriginIframeMirror {
     parentToRemoteMap?: Map<number, number>,
     remoteToParentMap?: Map<number, number>,
   ): number;
+
   getIds(iframe: HTMLIFrameElement, remoteId: number[]): number[];
+
   getRemoteId(
     iframe: HTMLIFrameElement,
     parentId: number,
     map?: Map<number, number>,
   ): number;
+
   getRemoteIds(iframe: HTMLIFrameElement, parentId: number[]): number[];
+
   reset(iframe?: HTMLIFrameElement): void;
 }
 
@@ -520,6 +524,7 @@ export type ImageBitmapDataURLWorkerParams = {
 export type ImageBitmapDataURLWorkerResponse =
   | {
       id: number;
+      reason?: string;
     }
   | {
       id: number;
@@ -528,6 +533,10 @@ export type ImageBitmapDataURLWorkerResponse =
       width: number;
       height: number;
     };
+
+export type ImageBitmapDataURLProcessor = (
+  params: ImageBitmapDataURLWorkerParams,
+) => Promise<ImageBitmapDataURLWorkerResponse>;
 
 export type fontParam = {
   family: string;

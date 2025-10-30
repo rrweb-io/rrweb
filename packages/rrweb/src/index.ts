@@ -39,3 +39,8 @@ export {
   _mirror as mirror,
   utils,
 };
+export {
+  createInlineImageBitmapProcessor,
+  createWorkerImageBitmapProcessor,
+  createWorkerMessageHandler,
+} from './record/workers/image-bitmap-data-url-processor';
