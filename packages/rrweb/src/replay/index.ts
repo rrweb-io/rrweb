@@ -521,10 +521,7 @@ export class Replayer {
     // Seeking to a new time can require many synchronous mutations; disable the
     // next virtual-dom fast-forward so we rebuild from the real DOM for consistency.
     const currentTime = this.getCurrentTime();
-    if (
-      this.config.useVirtualDom &&
-      Math.abs(timeOffset - currentTime) > 0
-    ) {
+    if (this.config.useVirtualDom && Math.abs(timeOffset - currentTime) > 0) {
       this.disableVirtualDomForNextSync = true;
     }
     if (this.service.state.matches('paused')) {

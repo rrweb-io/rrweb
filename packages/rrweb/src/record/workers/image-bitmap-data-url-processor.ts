@@ -109,8 +109,7 @@ async function convertBitmapToDataURL(
 }
 
 export const createInlineImageBitmapProcessor =
-  (): ImageBitmapDataURLProcessor =>
-  (params) =>
+  (): ImageBitmapDataURLProcessor => (params) =>
     convertBitmapToDataURL(params);
 
 type PendingWorkerRequest = {
@@ -235,9 +234,7 @@ export const createWorkerImageBitmapProcessor = (
 
 export const createWorkerMessageHandler = (
   postMessage: (message: ImageBitmapDataURLWorkerResponse) => void,
-): ((
-  event: MessageEvent<ImageBitmapDataURLWorkerParams>,
-) => Promise<void>) => {
+): ((event: MessageEvent<ImageBitmapDataURLWorkerParams>) => Promise<void>) => {
   return async (event) => {
     try {
       const response = await convertBitmapToDataURL(event.data);

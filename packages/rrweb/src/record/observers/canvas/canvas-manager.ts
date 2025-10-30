@@ -24,15 +24,7 @@ const warmUpWebGLContext = (
 ): void => {
   try {
     const buffer = new Uint8Array(4);
-    context.readPixels(
-      0,
-      0,
-      1,
-      1,
-      context.RGBA,
-      context.UNSIGNED_BYTE,
-      buffer,
-    );
+    context.readPixels(0, 0, 1, 1, context.RGBA, context.UNSIGNED_BYTE, buffer);
     if ('finish' in context && typeof context.finish === 'function') {
       context.finish();
     } else if ('flush' in context && typeof context.flush === 'function') {
@@ -244,10 +236,7 @@ export class CanvasManager {
                 dataURLOptions: options.dataURLOptions,
               });
 
-            if (
-              !('base64' in response) &&
-              contextType === 'webgpu'
-            ) {
+            if (!('base64' in response) && contextType === 'webgpu') {
               let fallbackBase64: string | null = null;
               let fallbackType: string | null = null;
               try {
