@@ -49,5 +49,4 @@ jobs:
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
           GITHUB_TOKEN: ${{ github.token }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
