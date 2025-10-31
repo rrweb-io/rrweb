@@ -3,7 +3,7 @@
   "description": "record and replay the web",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
+    "url": "https://github.com/newrelic-forks/rrweb"
   },
   "keywords": [
     "rrweb"

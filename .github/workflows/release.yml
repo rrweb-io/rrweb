@@ -17,14 +17,24 @@ jobs:
       contents: write
       packages: write
       pull-requests: write
+      # This is important. Trusted Publishing requires this for the OIDC exchange.
+      id-token: write
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Setup Node.js lts/*
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v5
         with:
-          node-version: lts/*
+          # Trusted Publishing requires `npm@11.5.1` or later. Compatible
+          # versions of `npm` started shipping with Node.js v24.5.0.
+          # If, for some odd reason, you need to use an earlier Node.js release,
+          # you _must_ add another step subsequent to this one that performs:
+          # `npm install -g npm@latest`.
+          node-version: 24.x
+          # This is important. The OIDC exchange requires that the registry
+          # URL matches on both ends.
+          registry-url: https://registry.npmjs.org
 
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
