@@ -1,7 +1,7 @@
 import { record } from '@rrweb/record';
 
 import { EventType } from '@rrweb/types';
-import type { eventWithTime, listenerHandler } from '@rrweb/types';
+import type { customEvent, eventWithTime, listenerHandler } from '@rrweb/types';
 import type { recordOptions } from 'rrweb';
 
 import {
@@ -116,11 +116,22 @@ function start(
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
       ws = connect(serverUrl);
-      event.domain = document.location.hostname || document.location.href; // latter is for debugging (e.g. a file:// url)
-      event.visitor = getSetVisitorId();
-      event.tab = getSetTabId();
-    }
 
+      const metaEvent: customEvent = {
+        type: EventType.Custom,
+        data: {
+          tag: 'metadata',
+          payload: {
+            domain: document.location.hostname || document.location.href, // latter is for debugging (e.g. a file:// url)
+            visitor: getSetVisitorId(),
+            tab: getSetTabId(),
+            timezone,
+          },
+        },
+      };
+      // establish the connection with metadata to set up the session server side
+      ws.send(JSON.stringify(metaEvent));
+    }
     if (clientEmit !== undefined) {
       clientEmit(event);
     }
