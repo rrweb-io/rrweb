@@ -20,12 +20,12 @@ function getSetVisitorId() {
   const nameEQ = 'rrweb-cloud-visitor-id=';
   let value: string | null = null;
   if (document.cookie) {
-    document.cookie.split(';').forEach(cp => {
+    document.cookie.split(';').forEach((cp) => {
       if (cp.trim().startsWith(nameEQ)) {
         value = cp.trim();
         // we could `break` (if not in a forEach) as we're not setting multiple cookies against different subdomains/paths
       }
-    }
+    });
   }
   if (!value) {
     value = self.crypto.randomUUID() + ':1';
@@ -43,7 +43,7 @@ function getSetVisitorId() {
 
 function getSetTabId() {
   const name = 'rrweb-cloud-tab-id';
-  let value = false;
+  let value: string | null = null;
   try {
     value = sessionStorage.getItem(name);
     if (!value) {
@@ -51,11 +51,11 @@ function getSetTabId() {
       try {
         sessionStorage.setItem(name, value);
       } catch (e) {
-        value = false;
+        value = null;
       }
     }
   } catch (e) {
-    value = false;
+    value = null;
   }
   return value;
 }
@@ -163,7 +163,7 @@ function start(
             record.freezePage();
           }
         } catch (e) {
-          // recording may not be active
+          // recording may not be active yet
         }
       },
       false,
