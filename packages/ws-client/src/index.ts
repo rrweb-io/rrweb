@@ -84,9 +84,10 @@ function connect(serverUrl: string): Websocket {
 function start(
   options: recordOptions<eventWithTime> & serverConfig = {
     serverUrl: 'ws://localhost:40000',
+    omitPii: false,
   },
 ) {
-  const { serverUrl, ...recordOptions } = options;
+  const { serverUrl, omitPii, ...recordOptions } = options;
 
   if (recordOptions.slimDOMOptions === undefined) {
     recordOptions.slimDOMOptions = 'all';
@@ -117,16 +118,32 @@ function start(
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
       ws = connect(serverUrl);
 
+      const payload = {
+        domain: document.location.hostname || document.location.href, // latter is for debugging (e.g. a file:// url)
+        visitor: getSetVisitorId(),
+        tab: getSetTabId(),
+        omitPii, // tell server not to store IP addresses or user agents
+      };
+      if (!omitPii) {
+        try {
+          payload.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        } catch (e) {
+          payload.timezone = 'unknown';
+        }
+        // payload.userAgent = navigator.userAgent;  // we should be able to get this server side
+        payload.title = document.title.substring(0, 500);
+        payload.referrer = document.referrer; // could potentially contain PII
+        payload.screen = {
+          width: screen.width,
+          height: screen.height,
+          dpi: screen.dpi
+        }
+      }
       const metaEvent: customEvent = {
         type: EventType.Custom,
         data: {
           tag: 'metadata',
-          payload: {
-            domain: document.location.hostname || document.location.href, // latter is for debugging (e.g. a file:// url)
-            visitor: getSetVisitorId(),
-            tab: getSetTabId(),
-            timezone,
-          },
+          payload
         },
       };
       // establish the connection with metadata to set up the session server side
@@ -194,6 +211,7 @@ function start(
 
 if (document && document.currentScript) {
   let config = {};
+  const truthyAttr = ['', 'yes', 'on', 'true', '1'];  // empty string allows setting plain html5 attributes without values
   if (document.currentScript.innerText.trim()) {
     config = JSON.parse(
       document.currentScript.innerText
@@ -202,11 +220,12 @@ if (document && document.currentScript) {
     );
     // Throw any JSON errors rather than ignoring config
   }
+  if (truthyAttr.includes(document.currentScript.getAttribute('omitpii')) {
+    config.omitPii = true;
+  }
   if (
     config.autostart ||
-    ['', 'yes', 'on', 'true', '1'].includes(
-      document.currentScript.getAttribute('autostart'),
-    )
+    truthyAttr.includes(document.currentScript.getAttribute('autostart'))
   ) {
     start(config);
   }
