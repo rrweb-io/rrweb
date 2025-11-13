@@ -192,4 +192,23 @@ function start(
   });
 }
 
-start();
+if (document && document.currentScript) {
+  let config = {};
+  if (document.currentScript.innerText.trim()) {
+    config = JSON.parse(
+      document.currentScript.innerText
+        .replace(/^\s*\/\/.*/gm, '') // remove comment lines
+        .replace(/,(\s*[\]}])/g, '$1'), // allow trailing commas
+    );
+    // Throw any JSON errors rather than ignoring config
+  }
+  if (
+    config.autostart ||
+    ['', 'yes', 'on', 'true', '1'].includes(
+      document.currentScript.getAttribute('autostart'),
+    )
+  ) {
+    start(config);
+  }
+}
+export { start };
