@@ -213,12 +213,20 @@ if (document && document.currentScript) {
   let config = {};
   const truthyAttr = ['', 'yes', 'on', 'true', '1'];  // empty string allows setting plain html5 attributes without values
   if (document.currentScript.innerText.trim()) {
-    config = JSON.parse(
-      document.currentScript.innerText
-        .replace(/^\s*\/\/.*/gm, '') // remove comment lines
-        .replace(/,(\s*[\]}])/g, '$1'), // allow trailing commas
-    );
-    // Throw any JSON errors rather than ignoring config
+    try {
+      config = JSON.parse(
+        document.currentScript.innerText
+          .replace(/^\s*\/\/.*/gm, '') // remove comment lines
+          .replace(/,(\s*[\]}])/g, '$1'), // allow trailing commas
+      );
+    } catch (e) {
+      /* this allows bare prop names and single quoted values:
+         {
+           blockSelector: '.my-block-selector',
+         }
+      */
+      config = looseJsonParse(document.currentScript.innerText);
+    }
   }
   if (truthyAttr.includes(document.currentScript.getAttribute('omitpii'))) {
     config.omitPii = true;
@@ -230,4 +238,9 @@ if (document && document.currentScript) {
     start(config);
   }
 }
+function looseJsonParse(obj) {
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#never_use_direct_eval!
+  return eval?.(`"use strict";(${obj})`);
+}
+
 export { start };
