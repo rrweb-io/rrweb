@@ -220,7 +220,7 @@ if (document && document.currentScript) {
     );
     // Throw any JSON errors rather than ignoring config
   }
-  if (truthyAttr.includes(document.currentScript.getAttribute('omitpii')) {
+  if (truthyAttr.includes(document.currentScript.getAttribute('omitpii'))) {
     config.omitPii = true;
   }
   if (
