@@ -14,6 +14,7 @@ import {
 
 type serverConfig = {
   serverUrl: string;
+  includePii: boolean;
 };
 
 export type customEventWithTime = customEvent & {
@@ -94,10 +95,10 @@ function connect(
 function start(
   options: recordOptions<eventWithTime> & serverConfig = {
     serverUrl: 'ws://localhost:40000',
-    omitPii: false,
+    includePii: false,
   },
 ) {
-  let { serverUrl, omitPii, ...recordOptions } = options;
+  let { serverUrl, includePii, ...recordOptions } = options;
 
   if (recordOptions.slimDOMOptions === undefined) {
     recordOptions.slimDOMOptions = 'all';
@@ -145,7 +146,7 @@ function start(
 
       const payload = {
         domain: document.location.hostname || document.location.href, // latter is for debugging (e.g. a file:// url)
-        omitPii, // tell server not to store IP addresses or user agents
+        includePii, // tell server not to store IP addresses or user agents
       };
 
       if (serverUrl.includes('{recordingId}')) {
@@ -155,7 +156,7 @@ function start(
       }
       ws = connect(serverUrl, handleMessage);
 
-      if (!omitPii) {
+      if (includePii) {
         payload.visitor = getSetVisitorId();
         try {
           payload.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -186,7 +187,7 @@ function start(
     if (clientEmit !== undefined) {
       clientEmit(event);
     }
-    if (event.type === EventType.Meta && !omitPii) {
+    if (event.type === EventType.Meta && includePii) {
       event.data.title = document.title.substring(0, 500);
       event.data.referrer = document.referrer; // could potentially contain PII
     } else if (event.type === EventType.FullSnapshot) {
@@ -296,8 +297,8 @@ if (document && document.currentScript) {
       config = looseJsonParse(document.currentScript.innerText);
     }
   }
-  if (truthyAttr.includes(document.currentScript.getAttribute('omitpii'))) {
-    config.omitPii = true;
+  if (truthyAttr.includes(document.currentScript.getAttribute('includepii'))) {
+    config.includePii = true;
   }
   if (
     config.autostart ||
