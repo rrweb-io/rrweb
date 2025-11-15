@@ -68,24 +68,26 @@ function getSetRecordingId(): string | null {
 // set it immediately so that it will be the eventual id used
 const getRecordingId = getSetRecordingId;
 
-function connect(serverUrl: string): Websocket {
+const buffer: ArrayQueue<string> = new ArrayQueue();
+let rrwebStopFn: listenerHandler | undefined;
+
+type websocketListenerHandler = (i: Websocket, ev: MessageEvent) => void;
+
+function connect(
+  serverUrl: string,
+  messageHandler: websocketListenerHandler,
+): Websocket {
   const ws = new WebsocketBuilder(serverUrl)
-    .withBuffer(new ArrayQueue()) // when disconnected
+    .withBuffer(buffer) // when disconnected
     .withBackoff(
       new ExponentialBackoff(500 + Math.round(1000 * Math.random()), 6),
     ) // retry around every 1s, 2s, 4s, 8s, maxing out with a retry every ~1minute
     .build();
 
-  // Function to output & echo received messages
-  const echoOnMessage = (i: Websocket, ev: MessageEvent) => {
-    console.log(`received message: ${ev.data}`);
-    i.send(`echo: ${ev.data}`);
-  };
-
   // Add event listeners
-  ws.addEventListener(WebsocketEvent.open, () => console.log('opened!'));
-  ws.addEventListener(WebsocketEvent.close, () => console.log('closed!'));
-  ws.addEventListener(WebsocketEvent.message, echoOnMessage);
+  ws.addEventListener(WebsocketEvent.open, () => console.debug('opened!'));
+  ws.addEventListener(WebsocketEvent.close, () => console.debug('closed!'));
+  ws.addEventListener(WebsocketEvent.message, messageHandler);
   return ws;
 }
 
@@ -121,6 +123,20 @@ function start(
     clientEmit = recordOptions.emit;
   }
   let ws: Websocket;
+  let connectionPaused = false;
+
+  const handleMessage = (i: Websocket, ev: MessageEvent) => {
+    if (ev.data.type === 'error') {
+      console.warn(
+        `received error, pausing websockets: ${JSON.stringify(ev.data)}`,
+      );
+      connectionPaused = true;
+      //i.close();
+    } else {
+      console.log(`received message: ${ev.data}`);
+    }
+  };
+
   recordOptions.emit = (event) => {
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
@@ -137,7 +153,7 @@ function start(
       } else {
         payload.recordingId = recordingId;
       }
-      ws = connect(serverUrl);
+      ws = connect(serverUrl, handleMessage);
 
       if (!omitPii) {
         payload.visitor = getSetVisitorId();
@@ -177,11 +193,14 @@ function start(
       console.log('got fullsnapshot');
     }
 
-    const event_str = JSON.stringify(event);
-    ws.send(event_str);
+    const eventStr = JSON.stringify(event);
+    if (!connectionPaused) {
+      ws.send(eventStr);
+    } else {
+      buffer.add(eventStr);
+    }
   };
 
-  let rrwebStopFn: listenerHandler | undefined;
   let startWhenVisible = false;
   if (!document.hidden) {
     rrwebStopFn = record(recordOptions);
