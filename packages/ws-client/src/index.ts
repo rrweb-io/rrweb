@@ -41,13 +41,13 @@ function getSetVisitorId() {
   return value;
 }
 
-function getSetTabId() {
-  const name = 'rrweb-cloud-tab-id';
+function getSetRecordingId(): string | null {
+  const name = 'rrweb-cloud-recording-id';
   let value: string | null = null;
   try {
     value = sessionStorage.getItem(name);
     if (!value) {
-      value = self.crypto.randomUUID().split('-')[0];
+      value = self.crypto.randomUUID();
       try {
         sessionStorage.setItem(name, value);
       } catch (e) {
@@ -59,6 +59,10 @@ function getSetTabId() {
   }
   return value;
 }
+
+// if API client requests the recording ID prior to start,
+// set it immediately so that it will be the eventual id used
+const getRecordingId = getSetRecordingId;
 
 function connect(serverUrl: string): Websocket {
   const ws = new WebsocketBuilder(serverUrl)
@@ -87,7 +91,7 @@ function start(
     omitPii: false,
   },
 ) {
-  const { serverUrl, omitPii, ...recordOptions } = options;
+  let { serverUrl, omitPii, ...recordOptions } = options;
 
   if (recordOptions.slimDOMOptions === undefined) {
     recordOptions.slimDOMOptions = 'all';
@@ -116,15 +120,23 @@ function start(
   recordOptions.emit = (event) => {
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
-      ws = connect(serverUrl);
+
+      const recordingId = getSetRecordingId();
 
       const payload = {
         domain: document.location.hostname || document.location.href, // latter is for debugging (e.g. a file:// url)
-        visitor: getSetVisitorId(),
-        tab: getSetTabId(),
         omitPii, // tell server not to store IP addresses or user agents
       };
+
+      if (serverUrl.includes('{recordingId}')) {
+        serverUrl = serverUrl.replace('{recordingId}', recordingId);
+      } else {
+        payload.recordingId = recordingId;
+      }
+      ws = connect(serverUrl);
+
       if (!omitPii) {
+        payload.visitor = getSetVisitorId();
         try {
           payload.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         } catch (e) {
@@ -243,4 +255,4 @@ function looseJsonParse(obj) {
   return eval?.(`"use strict";(${obj})`);
 }
 
-export { start };
+export { start, getRecordingId };
