@@ -16,6 +16,10 @@ type serverConfig = {
   serverUrl: string;
 };
 
+export type customEventWithTime = customEvent & {
+  timestamp: number;
+};
+
 function getSetVisitorId() {
   const nameEQ = 'rrweb-cloud-visitor-id=';
   let value: string | null = null;
@@ -143,19 +147,21 @@ function start(
           payload.timezone = 'unknown';
         }
         // payload.userAgent = navigator.userAgent;  // we should be able to get this server side
-        payload.title = document.title.substring(0, 500);
-        payload.referrer = document.referrer; // could potentially contain PII
+        // the following is different to EventType.Meta width/height
+        // which is used in replay; it's more about what size screen
+        // the visitor has for analytics
         payload.screen = {
           width: screen.width,
           height: screen.height,
-          dpi: screen.dpi
-        }
+          dpi: screen.dpi,
+        };
       }
-      const metaEvent: customEvent = {
+      const metaEvent: customEventWithTime = {
+        timestamp: record.nowTimestamp(),
         type: EventType.Custom,
         data: {
-          tag: 'metadata',
-          payload
+          tag: 'recording-meta',
+          payload,
         },
       };
       // establish the connection with metadata to set up the session server side
@@ -164,7 +170,10 @@ function start(
     if (clientEmit !== undefined) {
       clientEmit(event);
     }
-    if (event.type === EventType.FullSnapshot) {
+    if (event.type === EventType.Meta && !omitPii) {
+      event.data.title = document.title.substring(0, 500);
+      event.data.referrer = document.referrer; // could potentially contain PII
+    } else if (event.type === EventType.FullSnapshot) {
       console.log('got fullsnapshot');
     }
 
@@ -221,6 +230,34 @@ function start(
   });
 }
 
+const addCustomEvent = <T>(tag: string, payload: T) => {
+  if (rrwebStopFn !== undefined) {
+    record.addCustomEvent(tag, payload);
+  } else {
+    const customEvent: customEventWithTime = {
+      timestamp: record.nowTimestamp(),
+      type: EventType.Custom,
+      data: {
+        tag,
+        payload,
+      },
+    };
+    // let websocket buffer handle it
+    buffer.add(JSON.stringify(customEvent));
+  }
+};
+
+type nameValues = Record<string,string>;
+
+function addMeta(payload: nameValues) {
+  addCustomEvent('recording-meta', payload);
+}
+
+function addPageviewMeta(payload: nameValues) {
+  // could alter timestamp to match Meta/FullSnapshot event
+  addCustomEvent('pageview-meta', payload);
+}
+
 if (document && document.currentScript) {
   let config = {};
   const truthyAttr = ['', 'yes', 'on', 'true', '1'];  // empty string allows setting plain html5 attributes without values
@@ -255,4 +292,4 @@ function looseJsonParse(obj) {
   return eval?.(`"use strict";(${obj})`);
 }
 
-export { start, getRecordingId };
+export { start, addMeta, addPageviewMeta, addCustomEvent, getRecordingId };

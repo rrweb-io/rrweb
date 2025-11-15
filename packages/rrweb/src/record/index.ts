@@ -734,5 +734,6 @@ record.takeFullSnapshot = (isCheckout?: boolean) => {
 };
 
 record.mirror = mirror;
+record.nowTimestamp = nowTimestamp;
 
 export default record;
