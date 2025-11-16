@@ -175,6 +175,15 @@ function start(
         } catch (e) {
           payload.timezone = 'unknown';
         }
+        try {
+          if (navigator.languages !== undefined) {
+            payload.language = navigator.languages[0];
+          } else {
+            payload.language = navigator.language;
+          }
+        } catch (e) {
+          payload.language = 'unknown';
+        }
         // payload.userAgent = navigator.userAgent;  // we should be able to get this server side
         // the following is different to EventType.Meta width/height
         // which is used in replay; it's more about what size screen
