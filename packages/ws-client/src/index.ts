@@ -18,7 +18,7 @@ type clientConfig = {
   includePii: boolean;
 };
 
-const defaultClientConfig = {
+let defaultClientConfig = {
     serverUrl: 'ws://localhost:40000',
     autostart: false,
     includePii: false,
@@ -343,6 +343,9 @@ if (document && document.currentScript) {
     truthyAttr.includes(self.getAttribute('autostart'))
   ) {
     start(config);
+  } else {
+    // if they manually start later
+    defaultClientConfig = config;
   }
 }
 function looseJsonParse(obj) {
