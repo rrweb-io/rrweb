@@ -331,9 +331,6 @@ if (document && document.currentScript) {
         if (!config.serverUrl) {
           config.serverUrl = `https://${apiHost}/recordings/{recordingId}/ingest/ws`;
         }
-        if (!config.postUrl) {
-          config.postUrl = `https://${apiHost}/recordings/{recordingId}/ingest`;
-        }
       }
     } catch (e) {
     }
