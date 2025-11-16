@@ -286,7 +286,7 @@ function addPageviewMeta(payload: nameValues) {
 
 if (document && document.currentScript) {
   let config = {};
-  const truthyAttr = ['', 'yes', 'on', 'true', '1'];  // empty string allows setting plain html5 attributes without values
+  const truthyAttr: readonly (string | null)[] = ['', 'yes', 'on', 'true', '1'];  // empty string allows setting plain html5 attributes without values
   const self = document.currentScript as HTMLScriptElement;
   if (self.innerText && self.innerText.trim()) {
     try {
