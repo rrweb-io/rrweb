@@ -320,6 +320,24 @@ if (document && document.currentScript) {
   if (truthyAttr.includes(self.getAttribute('includepii'))) {
     config.includePii = true;
   }
+  if (self.src) {
+    try {
+      const srcUrl = new URL(self.src);
+      if (srcUrl.hostname) {
+        let apiHost = srcUrl.hostname;
+        if (!apiHost.startsWith('api.')) {
+          apiHost = 'api.' + apiHost;
+        }
+        if (!config.serverUrl) {
+          config.serverUrl = `https://${apiHost}/recordings/{recordingId}/ingest/ws`;
+        }
+        if (!config.postUrl) {
+          config.postUrl = `https://${apiHost}/recordings/{recordingId}/ingest`;
+        }
+      }
+    } catch (e) {
+    }
+  }
   if (
     config.autostart ||
     truthyAttr.includes(self.getAttribute('autostart'))
