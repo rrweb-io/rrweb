@@ -131,10 +131,10 @@ function start(
   let connectionPaused = false;
 
   const handleMessage = (i: Websocket, ev: MessageEvent) => {
-    if (ev.data.type === 'error') {
-      console.warn(
-        `received error, pausing websockets: ${JSON.stringify(ev.data)}`,
-      );
+    const event = JSON.parse(ev.data);
+    if (event.type === 'error'
+      || (event.type === "upstream-result" && !event.ok)) {
+      console.warn('received error, pausing websockets:', event);
       connectionPaused = true;
       //i.close();
     } else {
