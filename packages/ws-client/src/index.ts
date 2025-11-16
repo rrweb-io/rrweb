@@ -19,9 +19,9 @@ type clientConfig = {
 };
 
 let defaultClientConfig = {
-    serverUrl: 'ws://localhost:40000',
-    autostart: false,
-    includePii: false,
+  serverUrl: 'ws://localhost:40000',
+  autostart: false,
+  includePii: false,
 };
 
 export type customEventWithTime = customEvent & {
@@ -135,8 +135,10 @@ function start(
 
   const handleMessage = (i: Websocket, ev: MessageEvent) => {
     const event = JSON.parse(ev.data);
-    if (event.type === 'error'
-      || (event.type === "upstream-result" && !event.ok)) {
+    if (
+      event.type === 'error' ||
+      (event.type === 'upstream-result' && !event.ok)
+    ) {
       console.warn('received error, pausing websockets:', event);
       connectionPaused = true;
     } else {
@@ -291,7 +293,7 @@ const addCustomEvent = <T>(tag: string, payload: T) => {
   }
 };
 
-type nameValues = Record<string,string | boolean | number>;
+type nameValues = Record<string, string | boolean | number>;
 
 function addMeta(payload: nameValues) {
   addCustomEvent('recording-meta', payload);
@@ -304,7 +306,7 @@ function addPageviewMeta(payload: nameValues) {
 
 if (document && document.currentScript) {
   let config = defaultClientConfig;
-  const truthyAttr: readonly (string | null)[] = ['', 'yes', 'on', 'true', '1'];  // empty string allows setting plain html5 attributes without values
+  const truthyAttr: readonly (string | null)[] = ['', 'yes', 'on', 'true', '1']; // empty string allows setting plain html5 attributes without values
   const self = document.currentScript as HTMLScriptElement;
   if (self.innerText && self.innerText.trim()) {
     try {
@@ -337,13 +339,9 @@ if (document && document.currentScript) {
           config.serverUrl = `https://${apiHost}/recordings/{recordingId}/ingest/ws`;
         }
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   }
-  if (
-    config.autostart ||
-    truthyAttr.includes(self.getAttribute('autostart'))
-  ) {
+  if (config.autostart || truthyAttr.includes(self.getAttribute('autostart'))) {
     start(config);
   } else {
     // if they manually start later
