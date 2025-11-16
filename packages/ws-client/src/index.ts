@@ -138,11 +138,19 @@ function start(
     }
   };
 
+  const recordingId = getSetRecordingId();
+  if (!recordingId) {
+    // TODO: we could allow client to supply their own recordingId
+    // however that would have implications on how we can handle
+    // recordings server side (that a recording could mix events from
+    // multiple browsing contexts)
+    console.error('rrweb-cloud: Unable to start(); sessionStorage unavailable');
+    return;
+  }
+
   recordOptions.emit = (event) => {
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
-
-      const recordingId = getSetRecordingId();
 
       const payload = {
         domain: document.location.hostname || document.location.href, // latter is for debugging (e.g. a file:// url)
