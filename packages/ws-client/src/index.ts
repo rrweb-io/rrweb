@@ -12,9 +12,16 @@ import {
   WebsocketEvent,
 } from 'websocket-ts';
 
-type serverConfig = {
+type clientConfig = {
   serverUrl: string;
+  autostart: boolean;
   includePii: boolean;
+};
+
+const defaultClientConfig = {
+    serverUrl: 'ws://localhost:40000',
+    autostart: false,
+    includePii: false,
 };
 
 export type customEventWithTime = customEvent & {
@@ -93,10 +100,7 @@ function connect(
 }
 
 function start(
-  options: recordOptions<eventWithTime> & serverConfig = {
-    serverUrl: 'ws://localhost:40000',
-    includePii: false,
-  },
+  options: recordOptions<eventWithTime> & clientConfig = defaultClientConfig,
 ) {
   let { serverUrl, includePii, ...recordOptions } = options;
 
@@ -285,7 +289,7 @@ function addPageviewMeta(payload: nameValues) {
 }
 
 if (document && document.currentScript) {
-  let config = {};
+  let config = defaultClientConfig;
   const truthyAttr: readonly (string | null)[] = ['', 'yes', 'on', 'true', '1'];  // empty string allows setting plain html5 attributes without values
   const self = document.currentScript as HTMLScriptElement;
   if (self.innerText && self.innerText.trim()) {
