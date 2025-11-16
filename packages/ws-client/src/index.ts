@@ -281,10 +281,11 @@ function addPageviewMeta(payload: nameValues) {
 if (document && document.currentScript) {
   let config = {};
   const truthyAttr = ['', 'yes', 'on', 'true', '1'];  // empty string allows setting plain html5 attributes without values
-  if (document.currentScript.innerText.trim()) {
+  const self = document.currentScript as HTMLScriptElement;
+  if (self.innerText && self.innerText.trim()) {
     try {
       config = JSON.parse(
-        document.currentScript.innerText
+        self.innerText
           .replace(/^\s*\/\/.*/gm, '') // remove comment lines
           .replace(/,(\s*[\]}])/g, '$1'), // allow trailing commas
       );
@@ -294,15 +295,15 @@ if (document && document.currentScript) {
            blockSelector: '.my-block-selector',
          }
       */
-      config = looseJsonParse(document.currentScript.innerText);
+      config = looseJsonParse(self.innerText);
     }
   }
-  if (truthyAttr.includes(document.currentScript.getAttribute('includepii'))) {
+  if (truthyAttr.includes(self.getAttribute('includepii'))) {
     config.includePii = true;
   }
   if (
     config.autostart ||
-    truthyAttr.includes(document.currentScript.getAttribute('autostart'))
+    truthyAttr.includes(self.getAttribute('autostart'))
   ) {
     start(config);
   }
