@@ -40,7 +40,7 @@ function getSetVisitorId() {
     });
   }
   if (!value) {
-    value = self.crypto.randomUUID() + ':1';
+    value = self.crypto.randomUUID();
     const date = new Date();
     date.setTime(date.getTime() + 366 * 86400000); // 1 year
     const expires = 'expires=' + date.toUTCString();
