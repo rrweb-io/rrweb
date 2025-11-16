@@ -94,8 +94,11 @@ function connect(
 
   // Add event listeners
   ws.addEventListener(WebsocketEvent.open, () => console.debug('opened!'));
-  ws.addEventListener(WebsocketEvent.close, () => console.debug('closed!'));
   ws.addEventListener(WebsocketEvent.message, messageHandler);
+  ws.addEventListener(WebsocketEvent.close, () => {
+    connectionPaused = false;
+    ws = undefined; // so `emit` can retry again
+  });
   return ws;
 }
 
@@ -136,7 +139,6 @@ function start(
       || (event.type === "upstream-result" && !event.ok)) {
       console.warn('received error, pausing websockets:', event);
       connectionPaused = true;
-      //i.close();
     } else {
       console.log(`received message: ${ev.data}`);
     }
@@ -262,9 +264,12 @@ function start(
     // "In particular, it's important that you ... close any open Web Socket connections
     if (ws) {
       ws.close();
+      connectionPaused = false;
+      ws = undefined; // so `emit` can restart it again if page is unfrozen
     }
     if (rrwebStopFn !== undefined) {
       rrwebStopFn();
+      startWhenVisible = true;
     }
   });
 }
