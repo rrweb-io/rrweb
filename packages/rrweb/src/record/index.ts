@@ -1,7 +1,7 @@
 import {
   snapshot,
+  slimDOMDefaults,
   type MaskInputOptions,
-  type SlimDOMOptions,
   createMirror,
 } from 'rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
@@ -186,25 +186,7 @@ function record<T = eventWithTime>(
       ? _maskInputOptions
       : { password: true };
 
-  const slimDOMOptions: SlimDOMOptions = [true, 'all'].includes(_slimDOMOptions)
-    ? {
-        script: true,
-        comment: true,
-        headFavicon: true,
-        headWhitespace: true,
-        headMetaSocial: true,
-        headMetaRobots: true,
-        headMetaHttpEquiv: true,
-        headMetaVerification: true,
-        // the following are off for slimDOMOptions === true,
-        // as they destroy some (hidden) info:
-        headMetaAuthorship: _slimDOMOptions === 'all',
-        headMetaDescKeywords: _slimDOMOptions === 'all',
-        headTitleMutations: _slimDOMOptions === 'all',
-      }
-    : _slimDOMOptions
-    ? _slimDOMOptions
-    : {};
+  const slimDOMOptions = slimDOMDefaults(_slimDOMOptions);
 
   polyfill();
 

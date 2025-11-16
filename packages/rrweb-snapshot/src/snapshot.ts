@@ -902,6 +902,32 @@ function serializeElementNode(
   };
 }
 
+export function slimDOMDefaults(
+  _slimDOMOptions: SlimDOMOptions | 'all' | true | false | undefined,
+) {
+  if (_slimDOMOptions === true || _slimDOMOptions === 'all') {
+    // if true: set of sensible options that should not throw away any information
+    return {
+      script: true,
+      comment: true,
+      headFavicon: true,
+      headWhitespace: true,
+      headMetaSocial: true,
+      headMetaRobots: true,
+      headMetaHttpEquiv: true,
+      headMetaVerification: true,
+      // the following are off for slimDOMOptions === true,
+      // as they destroy some (hidden) info:
+      headMetaAuthorship: _slimDOMOptions === 'all',
+      headMetaDescKeywords: _slimDOMOptions === 'all',
+      headTitleMutations: _slimDOMOptions === 'all',
+    };
+  } else if (_slimDOMOptions) {
+    return _slimDOMOptions;
+  }
+  return {};
+}
+
 function slimDOMExcluded(
   sn: serializedNode,
   slimDOMOptions: SlimDOMOptions,
@@ -1452,23 +1478,8 @@ function snapshot(
           password: true,
         }
       : maskAllInputs;
-  const slimDOMOptions: SlimDOMOptions = [true, 'all'].includes(slimDOM)
-    ? // if true: set of sensible options that should not throw away any information
-      {
-        script: true,
-        comment: true,
-        headFavicon: true,
-        headWhitespace: true,
-        headMetaDescKeywords: slimDOM === 'all', // destructive
-        headMetaSocial: true,
-        headMetaRobots: true,
-        headMetaHttpEquiv: true,
-        headMetaAuthorship: true,
-        headMetaVerification: true,
-      }
-    : slimDOM === false
-    ? {}
-    : slimDOM;
+  const slimDOMOptions = slimDOMDefaults(slimDOM);
+
   return serializeNodeWithId(n, {
     doc: n,
     mirror,
