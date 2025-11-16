@@ -207,7 +207,7 @@ function start(
       clientEmit(event);
     }
     if (event.type === EventType.Meta && includePii) {
-      event.data.title = document.title.substring(0, 500);
+      event.data.title = document.title.substring(0, 500); // already recorded in rrweb as part of the <title> element
       event.data.referrer = document.referrer; // could potentially contain PII
     } else if (event.type === EventType.FullSnapshot) {
       console.log('got fullsnapshot');
