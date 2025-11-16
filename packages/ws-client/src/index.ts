@@ -156,52 +156,53 @@ function start(
     return;
   }
 
+  const initialPayload: nameValues = {
+    domain: document.location.hostname || document.location.href, // latter is for debugging (e.g. a file:// url)
+    includePii, // tell server not to store IP addresses or user agents
+  };
+
+  if (serverUrl.includes('{recordingId}')) {
+    serverUrl = serverUrl.replace('{recordingId}', recordingId);
+  } else {
+    initialPayload.recordingId = recordingId;
+  }
+  if (includePii) {
+    initialPayload.visitor = getSetVisitorId();
+    try {
+      initialPayload.timezone =
+        Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch (e) {
+      initialPayload.timezone = 'unknown';
+    }
+    try {
+      if (navigator.languages !== undefined) {
+        initialPayload.language = navigator.languages[0];
+      } else {
+        initialPayload.language = navigator.language;
+      }
+    } catch (e) {
+      initialPayload.language = 'unknown';
+    }
+    // initialPayload.userAgent = navigator.userAgent;  // we should be able to get this server side
+    // the following is different to EventType.Meta width/height
+    // which is used in replay; it's more about what size screen
+    // the visitor has for analytics
+    initialPayload.screenWidth = screen.width;
+    initialPayload.screenHeight = screen.height;
+    initialPayload.devicePixelRatio = window.devicePixelRatio;
+  }
+
   recordOptions.emit = (event) => {
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
-
-      const payload: nameValues = {
-        domain: document.location.hostname || document.location.href, // latter is for debugging (e.g. a file:// url)
-        includePii, // tell server not to store IP addresses or user agents
-      };
-
-      if (serverUrl.includes('{recordingId}')) {
-        serverUrl = serverUrl.replace('{recordingId}', recordingId);
-      } else {
-        payload.recordingId = recordingId;
-      }
       ws = connect(serverUrl, handleMessage);
 
-      if (includePii) {
-        payload.visitor = getSetVisitorId();
-        try {
-          payload.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        } catch (e) {
-          payload.timezone = 'unknown';
-        }
-        try {
-          if (navigator.languages !== undefined) {
-            payload.language = navigator.languages[0];
-          } else {
-            payload.language = navigator.language;
-          }
-        } catch (e) {
-          payload.language = 'unknown';
-        }
-        // payload.userAgent = navigator.userAgent;  // we should be able to get this server side
-        // the following is different to EventType.Meta width/height
-        // which is used in replay; it's more about what size screen
-        // the visitor has for analytics
-        payload.screenWidth = screen.width;
-        payload.screenHeight = screen.height;
-        payload.devicePixelRatio = window.devicePixelRatio;
-      }
       const metaEvent: customEventWithTime = {
         timestamp: record.nowTimestamp(),
         type: EventType.Custom,
         data: {
           tag: 'recording-meta',
-          payload,
+          initialPayload,
         },
       };
       // establish the connection with metadata to set up the session server side
