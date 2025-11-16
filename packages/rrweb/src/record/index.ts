@@ -160,26 +160,25 @@ function record<T = eventWithTime>(
       ? _maskInputOptions
       : { password: true };
 
-  const slimDOMOptions: SlimDOMOptions =
-    _slimDOMOptions === true || _slimDOMOptions === 'all'
-      ? {
-          script: true,
-          comment: true,
-          headFavicon: true,
-          headWhitespace: true,
-          headMetaSocial: true,
-          headMetaRobots: true,
-          headMetaHttpEquiv: true,
-          headMetaVerification: true,
-          // the following are off for slimDOMOptions === true,
-          // as they destroy some (hidden) info:
-          headMetaAuthorship: _slimDOMOptions === 'all',
-          headMetaDescKeywords: _slimDOMOptions === 'all',
-          headTitleMutations: _slimDOMOptions === 'all',
-        }
-      : _slimDOMOptions
-      ? _slimDOMOptions
-      : {};
+  const slimDOMOptions: SlimDOMOptions = [true, 'all'].includes(_slimDOMOptions)
+    ? {
+        script: true,
+        comment: true,
+        headFavicon: true,
+        headWhitespace: true,
+        headMetaSocial: true,
+        headMetaRobots: true,
+        headMetaHttpEquiv: true,
+        headMetaVerification: true,
+        // the following are off for slimDOMOptions === true,
+        // as they destroy some (hidden) info:
+        headMetaAuthorship: _slimDOMOptions === 'all',
+        headMetaDescKeywords: _slimDOMOptions === 'all',
+        headTitleMutations: _slimDOMOptions === 'all',
+      }
+    : _slimDOMOptions
+    ? _slimDOMOptions
+    : {};
 
   polyfill();
 
@@ -587,10 +586,7 @@ function record<T = eventWithTime>(
       handlers.push(observe(document));
       recording = true;
     };
-    if (
-      document.readyState === 'interactive' ||
-      document.readyState === 'complete'
-    ) {
+    if (['interactive', 'complete'].includes(document.readyState)) {
       init();
     } else {
       handlers.push(

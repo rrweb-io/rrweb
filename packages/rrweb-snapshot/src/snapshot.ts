@@ -190,10 +190,7 @@ export function transformAttribute(
   } else if (name === 'xlink:href' && value[0] !== '#') {
     // xlink:href starts with # is an id pointer
     return absoluteToDoc(doc, value);
-  } else if (
-    name === 'background' &&
-    (tagName === 'table' || tagName === 'td' || tagName === 'th')
-  ) {
+  } else if (name === 'background' && ['table', 'td', 'th'].includes(tagName)) {
     return absoluteToDoc(doc, value);
   } else if (name === 'srcset') {
     return getAbsoluteSrcsetString(doc, value);
@@ -212,7 +209,7 @@ export function ignoreAttribute(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _value: unknown,
 ): boolean {
-  return (tagName === 'video' || tagName === 'audio') && name === 'autoplay';
+  return ['video', 'audio'].includes(tagName) && name === 'autoplay';
 }
 
 export function _isBlockedElement(
@@ -616,7 +613,7 @@ function serializeElementNode(
     }
   }
   // form fields
-  if (tagName === 'input' || tagName === 'textarea' || tagName === 'select') {
+  if (['input', 'textarea', 'select'].includes(tagName)) {
     const value = (n as HTMLInputElement | HTMLTextAreaElement).value;
     const checked = (n as HTMLInputElement).checked;
     if (
@@ -733,7 +730,7 @@ function serializeElementNode(
     else image.addEventListener('load', recordInlineImage);
   }
   // media elements
-  if (tagName === 'audio' || tagName === 'video') {
+  if (['audio', 'video'].includes(tagName)) {
     const mediaAttributes = attributes as mediaAttributes;
     mediaAttributes.rr_mediaState = (n as HTMLMediaElement).paused
       ? 'paused'
@@ -1289,24 +1286,23 @@ function snapshot(
           password: true,
         }
       : maskAllInputs;
-  const slimDOMOptions: SlimDOMOptions =
-    slimDOM === true || slimDOM === 'all'
-      ? // if true: set of sensible options that should not throw away any information
-        {
-          script: true,
-          comment: true,
-          headFavicon: true,
-          headWhitespace: true,
-          headMetaDescKeywords: slimDOM === 'all', // destructive
-          headMetaSocial: true,
-          headMetaRobots: true,
-          headMetaHttpEquiv: true,
-          headMetaAuthorship: true,
-          headMetaVerification: true,
-        }
-      : slimDOM === false
-      ? {}
-      : slimDOM;
+  const slimDOMOptions: SlimDOMOptions = [true, 'all'].includes(slimDOM)
+    ? // if true: set of sensible options that should not throw away any information
+      {
+        script: true,
+        comment: true,
+        headFavicon: true,
+        headWhitespace: true,
+        headMetaDescKeywords: slimDOM === 'all', // destructive
+        headMetaSocial: true,
+        headMetaRobots: true,
+        headMetaHttpEquiv: true,
+        headMetaAuthorship: true,
+        headMetaVerification: true,
+      }
+    : slimDOM === false
+    ? {}
+    : slimDOM;
   return serializeNodeWithId(n, {
     doc: n,
     mirror,
