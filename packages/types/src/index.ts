@@ -59,6 +59,8 @@ export type metaEvent = {
     href: string;
     width: number;
     height: number;
+    title?: string;
+    referrer?: string;
   };
 };
 

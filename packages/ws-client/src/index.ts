@@ -152,7 +152,7 @@ function start(
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
 
-      const payload = {
+      const payload: nameValues = {
         domain: document.location.hostname || document.location.href, // latter is for debugging (e.g. a file:// url)
         includePii, // tell server not to store IP addresses or user agents
       };
@@ -175,11 +175,9 @@ function start(
         // the following is different to EventType.Meta width/height
         // which is used in replay; it's more about what size screen
         // the visitor has for analytics
-        payload.screen = {
-          width: screen.width,
-          height: screen.height,
-          dpi: screen.dpi,
-        };
+        payload.screenWidth = screen.width;
+        payload.screenHeight = screen.height;
+        payload.devicePixelRatio = window.devicePixelRatio;
       }
       const metaEvent: customEventWithTime = {
         timestamp: record.nowTimestamp(),
@@ -275,7 +273,7 @@ const addCustomEvent = <T>(tag: string, payload: T) => {
   }
 };
 
-type nameValues = Record<string,string>;
+type nameValues = Record<string,string | boolean | number>;
 
 function addMeta(payload: nameValues) {
   addCustomEvent('recording-meta', payload);
