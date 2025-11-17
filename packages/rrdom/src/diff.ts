@@ -267,13 +267,7 @@ function diffAfterUpdatingChildren(
               commands: [
                 {
                   property: 'drawImage',
-                  args: [
-                    rrCanvasElement.rr_dataURL,
-                    0,
-                    0,
-                    (oldTree as HTMLCanvasElement).width,
-                    (oldTree as HTMLCanvasElement).height,
-                  ],
+                  args: [rrCanvasElement.rr_dataURL, 0, 0],
                 },
               ],
             };

@@ -341,8 +341,6 @@ describe('diff algorithm for rrdom', () => {
         testDataURL,
         0,
         0,
-        300,
-        150,
       ]);
 
       // Verify subsequent mutations were called in order
@@ -427,7 +425,7 @@ describe('diff algorithm for rrdom', () => {
       expect(event.timestamp).toBe(0);
       expect(mutation.source).toBe(IncrementalSource.CanvasMutation);
       expect(mutation.commands[0].property).toBe('drawImage');
-      expect(mutation.commands[0].args).toEqual([testDataURL, 0, 0, 300, 150]);
+      expect(mutation.commands[0].args).toEqual([testDataURL, 0, 0]);
     });
 
     it('should diff a media element', async () => {
