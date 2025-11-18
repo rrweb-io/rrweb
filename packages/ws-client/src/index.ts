@@ -275,6 +275,7 @@ function start(
     }
 
     const eventStr = JSON.stringify(event);
+    // TODO: add browser native compression
     if (eventStr.length > ws_limit) {
       postData(postUrl, eventStr);
     } else if (ws && !wsConnectionPaused) {
