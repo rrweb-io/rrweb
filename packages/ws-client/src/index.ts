@@ -95,10 +95,6 @@ function connect(
   // Add event listeners
   ws.addEventListener(WebsocketEvent.open, () => console.debug('opened!'));
   ws.addEventListener(WebsocketEvent.message, messageHandler);
-  ws.addEventListener(WebsocketEvent.close, () => {
-    connectionPaused = false;
-    ws = undefined; // so `emit` can retry again
-  });
   return ws;
 }
 
@@ -196,6 +192,11 @@ function start(
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
       ws = connect(serverUrl, handleMessage);
+
+      ws.addEventListener(WebsocketEvent.close, () => {
+        connectionPaused = false;
+        ws = undefined; // so we can retry again
+      });
 
       const metaEvent: customEventWithTime = {
         timestamp: record.nowTimestamp(),
