@@ -108,31 +108,45 @@ function connect(
 }
 
 async function postData(postUrl: string, buffer: ArrayQueue<string> | string) {
-  let body;
-  if (buffer instanceof ArrayQueue) {
-    // this clears the buffer so no need to call buffer.clear()
-    const to_send = [];
-    for (let ele = buffer.read(); ele !== undefined; ele = buffer.read()) {
-      to_send.push(ele);
+  const keepalive_limit = 65000;
+  let done = false;
+  const responses = [];
+  while (true) {
+    let body;
+    if (buffer instanceof ArrayQueue) {
+      // this clears the buffer so no need to call buffer.clear()
+      const to_send = [];
+      const send_size = 0;
+      done = true;
+      for (let ele = buffer.read(); ele !== undefined; ele = buffer.read()) {
+        to_send.push(ele);
+        send_size += ele.length;
+        if (send_size > keepalive_limit) {
+          done = false;
+          break;
+        }
+      }
+      body = to_send.join('\n');
+    } else {
+      body = buffer;
+      done = true;
     }
-    body = to_send.join('\n');
-  } else {
-    body = buffer;
+    try {
+      const response = await fetch(postUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-ndjson',
+        },
+        body,
+        keepalive: body.length < keepalive_limit, // don't abort POST after end of session (must be under the limit)
+      });
+      responses.push(response);
+    } catch (error) {
+      console.error('Error POSTing events:', error);
+      return false;
+    }
   }
-  try {
-    const response = await fetch(postUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-ndjson',
-      },
-      body,
-      keepalive: body.length < 65000, // don't abort POST after end of session (must be under the limit)
-    });
-    return response;
-  } catch (error) {
-    console.error('Error POSTing events:', error);
-    return false;
-  }
+  return responses;
 }
 
 function start(
