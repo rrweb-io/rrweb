@@ -116,7 +116,7 @@ async function postData(postUrl: string, buffer: ArrayQueue<string> | string) {
     if (buffer instanceof ArrayQueue) {
       // this clears the buffer so no need to call buffer.clear()
       const to_send = [];
-      const send_size = 0;
+      let send_size = 0;
       done = true;
       for (let ele = buffer.read(); ele !== undefined; ele = buffer.read()) {
         to_send.push(ele);
