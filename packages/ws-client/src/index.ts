@@ -76,6 +76,7 @@ function getSetRecordingId(): string | null {
 // set it immediately so that it will be the eventual id used
 const getRecordingId = getSetRecordingId;
 
+const ws_limit = 10e5; // this is approximate and depends on the browser, also on how unicode is encoded (we are comparing against the length of a javascript string)
 const buffer: ArrayQueue<string> = new ArrayQueue();
 let rrwebStopFn: listenerHandler | undefined;
 
@@ -92,10 +93,46 @@ function connect(
     ) // retry around every 1s, 2s, 4s, 8s, maxing out with a retry every ~1minute
     .build();
 
+  let fallbackPosting = setInterval(() => {
+    if (buffer.length()) {
+      postData(postUrl, buffer);
+    }
+  }, 5 * 1000);
+
   // Add event listeners
-  ws.addEventListener(WebsocketEvent.open, () => console.debug('opened!'));
+  ws.addEventListener(WebsocketEvent.open, () => {
+    clearInterval(fallbackPosting);
+  });
   ws.addEventListener(WebsocketEvent.message, messageHandler);
   return ws;
+}
+
+async function postData(postUrl: string, buffer: ArrayQueue<string> | string) {
+  let body;
+  if (buffer instanceof ArrayQueue) {
+    // this clears the buffer so no need to call buffer.clear()
+    const to_send = [];
+    for (let ele = buffer.read(); ele !== undefined; ele = buffer.read()) {
+      to_send.push(ele);
+    }
+    body = to_send.join('\n');
+  } else {
+    body = buffer;
+  }
+  try {
+    const response = await fetch(postUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-ndjson',
+      },
+      body,
+      keepalive: body.length < 65000, // don't abort POST after end of session (must be under the limit)
+    });
+    return response;
+  } catch (error) {
+    console.error('Error POSTing events:', error);
+    return false;
+  }
 }
 
 function start(
@@ -127,7 +164,7 @@ function start(
     clientEmit = recordOptions.emit;
   }
   let ws: Websocket;
-  let connectionPaused = false;
+  let wsConnectionPaused = false;
 
   const handleMessage = (i: Websocket, ev: MessageEvent) => {
     const event = JSON.parse(ev.data);
@@ -136,7 +173,7 @@ function start(
       (event.type === 'upstream-result' && !event.ok)
     ) {
       console.warn('received error, pausing websockets:', event);
-      connectionPaused = true;
+      wsConnectionPaused = true;
     } else {
       console.log(`received message: ${ev.data}`);
     }
@@ -161,6 +198,10 @@ function start(
     serverUrl = serverUrl.replace('{recordingId}', recordingId);
   } else {
     initialPayload.recordingId = recordingId;
+  }
+  let postUrl = serverUrl;
+  if (postUrl.endsWith('/ws')) {
+    postUrl = postUrl.substring(0, postUrl.length - 3);
   }
   if (includePii) {
     initialPayload.visitor = getSetVisitorId();
@@ -194,8 +235,8 @@ function start(
       ws = connect(serverUrl, handleMessage);
 
       ws.addEventListener(WebsocketEvent.close, () => {
-        connectionPaused = false;
-        ws = undefined; // so we can retry again
+        wsConnectionPaused = false;
+        ws = undefined; // so we can retry again if connection restarts
       });
 
       const metaEvent: customEventWithTime = {
@@ -220,7 +261,9 @@ function start(
     }
 
     const eventStr = JSON.stringify(event);
-    if (!connectionPaused) {
+    if (eventStr.length > ws_limit) {
+      postData(postUrl, eventStr);
+    } else if (ws && !wsConnectionPaused) {
       ws.send(eventStr);
     } else {
       buffer.add(eventStr);
@@ -255,6 +298,12 @@ function start(
           */
             // don't record background animations etc. while page isn't visible
             record.freezePage();
+
+            // document.hidden is better than beforeunload, see:
+            // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
+            if ((!ws || wsConnectionPaused) && buffer.length()) {
+              postData(postUrl, buffer);
+            }
           }
         } catch (e) {
           // recording may not be active yet
@@ -268,7 +317,7 @@ function start(
     // "In particular, it's important that you ... close any open Web Socket connections
     if (ws) {
       ws.close();
-      connectionPaused = false;
+      wsConnectionPaused = false;
       ws = undefined; // so `emit` can restart it again if page is unfrozen
     }
     if (rrwebStopFn !== undefined) {
