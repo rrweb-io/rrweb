@@ -337,11 +337,7 @@ describe('diff algorithm for rrdom', () => {
       expect(firstCall.event.type).toBe(EventType.IncrementalSnapshot);
       expect(firstCall.mutation.source).toBe(IncrementalSource.CanvasMutation);
       expect(firstCall.mutation.commands[0].property).toBe('drawImage');
-      expect(firstCall.mutation.commands[0].args).toEqual([
-        testDataURL,
-        0,
-        0,
-      ]);
+      expect(firstCall.mutation.commands[0].args).toEqual([testDataURL, 0, 0]);
 
       // Verify subsequent mutations were called in order
       const secondCall = applyCanvasCalls[1];
