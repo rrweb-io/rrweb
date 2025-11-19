@@ -1,6 +1,6 @@
 {
   "name": "rrdom",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.0-alpha.19",
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrdom#readme",
   "license": "MIT",
   "type": "module",
@@ -42,7 +42,7 @@
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
   "devDependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
+    "@rrweb/types": "^2.0.0-alpha.19",
     "@types/puppeteer": "^5.4.4",
     "@typescript-eslint/eslint-plugin": "^5.23.0",
     "@typescript-eslint/parser": "^5.23.0",
@@ -56,6 +56,6 @@
     "vitest": "^1.6.0"
   },
   "dependencies": {
-    "rrweb-snapshot": "^2.0.0-alpha.18"
+    "rrweb-snapshot": "^2.0.0-alpha.19"
   }
 }
