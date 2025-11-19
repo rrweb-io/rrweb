@@ -84,6 +84,7 @@ type websocketListenerHandler = (i: Websocket, ev: MessageEvent) => void;
 
 function connect(
   serverUrl: string,
+  postUrl: string,
   messageHandler: websocketListenerHandler,
 ): Websocket {
   const ws = new WebsocketBuilder(serverUrl)
@@ -246,7 +247,7 @@ function start(
   recordOptions.emit = (event) => {
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
-      ws = connect(serverUrl, handleMessage);
+      ws = connect(serverUrl, postUrl, handleMessage);
 
       ws.addEventListener(WebsocketEvent.close, () => {
         wsConnectionPaused = false;
