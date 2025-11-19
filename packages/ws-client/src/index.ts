@@ -181,7 +181,7 @@ function start(
   if (recordOptions.emit) {
     clientEmit = recordOptions.emit;
   }
-  let ws: Websocket;
+  let ws: Websocket | undefined;
   let wsConnectionPaused = false;
 
   const handleMessage = (i: Websocket, ev: MessageEvent) => {
