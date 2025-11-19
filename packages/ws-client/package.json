@@ -1,6 +1,6 @@
 {
   "name": "@rrwebcloud/js-client",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.0-alpha.19",
   "publishConfig": {
     "access": "public"
   },
@@ -56,10 +56,10 @@
     "vitest": "^1.4.0"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
-    "@rrweb/utils": "^2.0.0-alpha.18",
-    "rrweb": "^2.0.0-alpha.18",
-    "@rrweb/record": "^2.0.0-alpha.18",
+    "@rrweb/types": "^2.0.0-alpha.19",
+    "@rrweb/utils": "^2.0.0-alpha.19",
+    "rrweb": "^2.0.0-alpha.19",
+    "@rrweb/record": "^2.0.0-alpha.19",
     "websocket-ts": "^2.2.1"
   },
   "browserslist": [
