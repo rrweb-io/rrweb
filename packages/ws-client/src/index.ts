@@ -166,7 +166,8 @@ async function postData(postUrl: string, buffer: ArrayQueue<string> | string) {
 function start(
   options: recordOptions<eventWithTime> & clientConfig = defaultClientConfig,
 ) {
-  const { serverUrl, includePii, ...recordOptions } = options;
+  const { includePii, ...recordOptions } = options;
+  let { serverUrl } = options;
 
   if (recordOptions.slimDOMOptions === undefined) {
     recordOptions.slimDOMOptions = 'all';
@@ -293,7 +294,7 @@ function start(
     // TODO: add browser native compression
     if (eventStr.length > wsLimit) {
       // Assuming wsLimit is a defined constant, and eventStr.length is intended.
-      postData(postUrl, eventStr);
+      void postData(postUrl, eventStr);
     } else if (ws && !wsConnectionPaused) {
       ws.send(eventStr);
     } else {
@@ -419,7 +420,11 @@ if (document && document.currentScript) {
           config.serverUrl = `https://${apiHost}/recordings/{recordingId}/ingest/ws`;
         }
       }
-    } catch (e) {}
+    } catch {
+      console.error(
+        'rrweb-cloud: Unable to start(); sessionStorage unavailable',
+      );
+    }
   }
   if (config.autostart || truthyAttr.includes(self.getAttribute('autostart'))) {
     start(config);
