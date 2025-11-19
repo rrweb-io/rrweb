@@ -1,14 +1,5 @@
 # rrdom
 
-## 2.0.0-alpha.19
-
-### Patch Changes
-
-- [`85281ca`](https://github.com/rrweb-cloud/rrweb/commit/85281ca7a1e65113586e66e781afcdaaffb1ff41) Thanks [@Juice10](https://github.com/Juice10)! - Added support for Asset Event and capturing many different types of assets (not just img#src)
-
-- Updated dependencies [[`47a7c3f`](https://github.com/rrweb-cloud/rrweb/commit/47a7c3faa6fdbd3a515f473dc3a979acd2c8276e), [`dc20cd4`](https://github.com/rrweb-cloud/rrweb/commit/dc20cd45cc63058325784444af6bd32ed2cace48), [`3e9e42f`](https://github.com/rrweb-cloud/rrweb/commit/3e9e42fdfd6349087d7a0345af1b39dd56528502), [`a6893f7`](https://github.com/rrweb-cloud/rrweb/commit/a6893f73abe217a95d28996e01b7ec8261e42de3), [`f2419f2`](https://github.com/rrweb-cloud/rrweb/commit/f2419f2513e9ad3ea597e2b5a4463a4fbf74868f), [`85281ca`](https://github.com/rrweb-cloud/rrweb/commit/85281ca7a1e65113586e66e781afcdaaffb1ff41), [`6f4e691`](https://github.com/rrweb-cloud/rrweb/commit/6f4e691f39cc59b655d1be4f951128beecb88acb), [`76df979`](https://github.com/rrweb-cloud/rrweb/commit/76df9799ecc14930fa914e5623a73ea7726e3747), [`9914f87`](https://github.com/rrweb-cloud/rrweb/commit/9914f87dd5810a9cafa75cc7b6045dd30fe566e9)]:
-  - rrweb-snapshot@2.0.0-alpha.19
-
 ## 2.0.0-alpha.18
 
 ### Patch Changes

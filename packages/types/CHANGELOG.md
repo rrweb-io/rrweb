@@ -1,15 +1,5 @@
 # @rrweb/types
 
-## 2.0.0-alpha.19
-
-### Patch Changes
-
-- [`85281ca`](https://github.com/rrweb-cloud/rrweb/commit/85281ca7a1e65113586e66e781afcdaaffb1ff41) Thanks [@Juice10](https://github.com/Juice10)! - Added support for Asset Event and capturing many different types of assets (not just img#src)
-
-- [`9914f87`](https://github.com/rrweb-cloud/rrweb/commit/9914f87dd5810a9cafa75cc7b6045dd30fe566e9) Thanks [@Juice10](https://github.com/Juice10)! - `NodeType` enum was moved from rrweb-snapshot to @rrweb/types
-  The following types where moved from rrweb-snapshot to @rrweb/types: `documentNode`, `documentTypeNode`, `attributes`, `legacyAttributes`, `elementNode`, `textNode`, `cdataNode`, `commentNode`, `serializedNode`, `serializedNodeWithId` and `DataURLOptions`
-  `inlineImage` config option is deprecated and in `rrweb` is an alias for `captureAssets` config option
-
 ## 2.0.0-alpha.18
 
 ## 2.0.0-alpha.17

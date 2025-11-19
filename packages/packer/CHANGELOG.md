@@ -1,12 +1,5 @@
 # @rrweb/packer
 
-## 2.0.0-alpha.19
-
-### Patch Changes
-
-- Updated dependencies [[`85281ca`](https://github.com/rrweb-cloud/rrweb/commit/85281ca7a1e65113586e66e781afcdaaffb1ff41), [`9914f87`](https://github.com/rrweb-cloud/rrweb/commit/9914f87dd5810a9cafa75cc7b6045dd30fe566e9)]:
-  - @rrweb/types@2.0.0-alpha.19
-
 ## 2.0.0-alpha.18
 
 ### Patch Changes
