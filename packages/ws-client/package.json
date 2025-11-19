@@ -1,12 +1,12 @@
 {
-  "name": "@rrweb/ws-client",
+  "name": "@rrwebcloud/js-client",
   "version": "2.0.0-alpha.18",
   "publishConfig": {
     "access": "public"
   },
   "keywords": [
     "rrweb",
-    "@rrweb/ws-client"
+    "@rrwebcloud/js-client"
   ],
   "scripts": {
     "dev": "vite build --watch",
@@ -18,13 +18,13 @@
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/ws-client#readme",
+  "homepage": "https://rrwebcloud.com",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/rrwebcloud/rrweb/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/rrwebcloud/rrweb.git"
   },
   "license": "MIT",
   "type": "module",
