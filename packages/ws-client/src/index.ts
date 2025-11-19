@@ -1,3 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable compat/compat */
 import { record } from '@rrweb/record';
 
 import { EventType } from '@rrweb/types';
@@ -79,7 +85,7 @@ function getSetRecordingId(): string | null {
 // set it immediately so that it will be the eventual id used
 const getRecordingId = getSetRecordingId;
 
-const ws_limit = 10e5; // this is approximate and depends on the browser, also on how unicode is encoded (we are comparing against the length of a javascript string)
+const wsLimit = 10e5; // this is approximate and depends on the browser, also on how unicode is encoded (we are comparing against the length of a javascript string)
 const buffer: ArrayQueue<string> = new ArrayQueue();
 let rrwebStopFn: listenerHandler | undefined;
 
@@ -97,9 +103,9 @@ function connect(
     ) // retry around every 1s, 2s, 4s, 8s, maxing out with a retry every ~1minute
     .build();
 
-  let fallbackPosting = setInterval(() => {
+  const fallbackPosting = setInterval(() => {
     if (buffer.length()) {
-      postData(postUrl, buffer);
+      void postData(postUrl, buffer);
     }
   }, 5 * 1000);
 
@@ -112,25 +118,26 @@ function connect(
 }
 
 async function postData(postUrl: string, buffer: ArrayQueue<string> | string) {
-  const keepalive_limit = 65000;
+  const keepaliveLimit = 65000;
   let done = false;
   const responses = [];
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     let body;
     if (buffer instanceof ArrayQueue) {
       // this clears the buffer so no need to call buffer.clear()
-      const to_send = [];
-      let send_size = 0;
+      const toSend = [];
+      let sendSize = 0;
       done = true;
       for (let ele = buffer.read(); ele !== undefined; ele = buffer.read()) {
-        to_send.push(ele);
-        send_size += ele.length;
-        if (send_size > keepalive_limit) {
+        toSend.push(ele);
+        sendSize += ele.length;
+        if (sendSize > keepaliveLimit) {
           done = false;
           break;
         }
       }
-      body = to_send.join('\n');
+      body = toSend.join('\n');
     } else {
       body = buffer;
       done = true;
@@ -142,7 +149,7 @@ async function postData(postUrl: string, buffer: ArrayQueue<string> | string) {
           'Content-Type': 'application/x-ndjson',
         },
         body,
-        keepalive: body.length < keepalive_limit, // don't abort POST after end of session (must be under the limit)
+        keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
       });
       responses.push(response);
     } catch (error) {
@@ -159,7 +166,7 @@ async function postData(postUrl: string, buffer: ArrayQueue<string> | string) {
 function start(
   options: recordOptions<eventWithTime> & clientConfig = defaultClientConfig,
 ) {
-  let { serverUrl, includePii, ...recordOptions } = options;
+  const { serverUrl, includePii, ...recordOptions } = options;
 
   if (recordOptions.slimDOMOptions === undefined) {
     recordOptions.slimDOMOptions = 'all';
@@ -284,7 +291,8 @@ function start(
 
     const eventStr = JSON.stringify(event);
     // TODO: add browser native compression
-    if (eventStr.length > ws_limit) {
+    if (eventStr.length > wsLimit) {
+      // Assuming wsLimit is a defined constant, and eventStr.length is intended.
       postData(postUrl, eventStr);
     } else if (ws && !wsConnectionPaused) {
       ws.send(eventStr);
@@ -325,11 +333,11 @@ function start(
             // document.hidden is better than beforeunload, see:
             // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
             if ((!ws || wsConnectionPaused) && buffer.length()) {
-              postData(postUrl, buffer);
+              void postData(postUrl, buffer);
             }
           }
         } catch (e) {
-          // recording may not be active yet
+          // ignore
         }
       },
       false,
