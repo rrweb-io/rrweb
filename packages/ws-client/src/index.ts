@@ -146,6 +146,9 @@ async function postData(postUrl: string, buffer: ArrayQueue<string> | string) {
       console.error('Error POSTing events:', error);
       return false;
     }
+    if (done) {
+      break;
+    }
   }
   return responses;
 }
