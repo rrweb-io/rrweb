@@ -59,6 +59,7 @@
     "@rrweb/types": "^2.0.0-alpha.18",
     "@rrweb/utils": "^2.0.0-alpha.18",
     "rrweb": "^2.0.0-alpha.18",
+    "@rrweb/record": "^2.0.0-alpha.18",
     "websocket-ts": "^2.2.1"
   },
   "browserslist": [

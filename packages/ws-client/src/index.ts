@@ -187,7 +187,7 @@ function start(
   let ws: Websocket | undefined;
   let wsConnectionPaused = false;
 
-  const handleMessage = (i: Websocket, ev: MessageEvent) => {
+  const handleMessage = (_: Websocket, ev: MessageEvent) => {
     const event = JSON.parse(ev.data);
     if (
       event.type === 'error' ||
@@ -420,7 +420,7 @@ if (document && document.currentScript) {
     defaultClientConfig = config;
   }
 }
-function looseJsonParse(obj) {
+function looseJsonParse(obj: string) {
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#never_use_direct_eval!
   return eval?.(`"use strict";(${obj})`);
 }
