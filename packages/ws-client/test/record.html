@@ -8,12 +8,15 @@
     <script src="../dist/ws-client.umd.cjs">
       // provide some config
       {
-          "serverUrl": "http://localhost:8787/sessions/{recordingId}/ingest/ws",
+          "serverUrl": "http://localhost:8787/recordings/{recordingId}/ingest/ws",
           "autostart": true,
           "blockSelector": '.my-block',
           "captureAssets": {
               "video": false,
               "audio": false,
+          },
+          "meta": {
+              "visitor": 'x1234',
           }
       }
     </script>
