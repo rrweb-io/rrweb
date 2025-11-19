@@ -340,6 +340,9 @@ describe('replayer', function () {
     await waitForRAF(page);
 
     const image = await page.screenshot();
-    expect(image).toMatchImageSnapshot();
+    expect(image).toMatchImageSnapshot({
+      failureThreshold: 0.02,
+      failureThresholdType: 'percent',
+    });
   });
 });

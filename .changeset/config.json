@@ -33,26 +33,5 @@
   "linked": [],
   "access": "public",
   "baseBranch": "master",
-  "updateInternalDependencies": "patch",
-  "ignore": [
-    "@rrweb/all",
-    "@rrweb/packer",
-    "@rrweb/rrweb-plugin-canvas-webrtc-record",
-    "@rrweb/rrweb-plugin-canvas-webrtc-replay",
-    "@rrweb/rrweb-plugin-console-record",
-    "@rrweb/rrweb-plugin-console-replay",
-    "@rrweb/rrweb-plugin-sequential-id-record",
-    "@rrweb/rrweb-plugin-sequential-id-replay",
-    "@rrweb/record",
-    "@rrweb/replay",
-    "rrdom",
-    "rrdom-nodejs",
-    "rrvideo",
-    "rrweb",
-    "rrweb-player",
-    "rrweb-snapshot",
-    "@rrweb/types",
-    "@rrweb/utils",
-    "@rrweb/web-extension"
-  ]
+  "updateInternalDependencies": "patch"
 }

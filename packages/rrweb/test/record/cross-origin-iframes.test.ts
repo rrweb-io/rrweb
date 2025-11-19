@@ -214,7 +214,7 @@ describe('cross origin iframes', function (this: ISuite) {
         const iframe = document.querySelector('iframe') as HTMLIFrameElement;
         iframe.src = `${url}/html/empty.html`;
       }, ctx.serverURL);
-      await ctx.page.waitForResponse(`${ctx.serverURL}/html/form.html?2`);
+      await ctx.page.waitForResponse(`${ctx.serverURL}/html/empty.html`);
       await waitForRAF(ctx.page); // should load iframe (but sometimes doesn't)
       const frame = ctx.page.mainFrame().childFrames()[0];
       await frame.waitForSelector('#one'); // ensure frame has changed
