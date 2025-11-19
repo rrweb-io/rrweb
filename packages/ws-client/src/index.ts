@@ -268,7 +268,7 @@ function start(
         type: EventType.Custom,
         data: {
           tag: 'recording-meta',
-          initialPayload,
+          payload: initialPayload,
         },
       };
       // establish the connection with metadata to set up the session server side
