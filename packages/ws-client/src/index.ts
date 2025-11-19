@@ -16,7 +16,10 @@ type clientConfig = {
   serverUrl: string;
   autostart: boolean;
   includePii: boolean;
+  meta?: nameValues;
 };
+
+type nameValues = Record<string, string | boolean | number>;
 
 let defaultClientConfig = {
   serverUrl: 'ws://localhost:40000',
@@ -246,6 +249,9 @@ function start(
     initialPayload.screenHeight = screen.height;
     initialPayload.devicePixelRatio = window.devicePixelRatio;
   }
+  if (options.meta) {
+    Object.assign(initialPayload, options.meta);
+  }
 
   recordOptions.emit = (event) => {
     if (!ws) {
@@ -360,8 +366,6 @@ const addCustomEvent = <T>(tag: string, payload: T) => {
     buffer.add(JSON.stringify(customEvent));
   }
 };
-
-type nameValues = Record<string, string | boolean | number>;
 
 function addMeta(payload: nameValues) {
   addCustomEvent('recording-meta', payload);
