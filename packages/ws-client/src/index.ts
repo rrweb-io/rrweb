@@ -212,7 +212,7 @@ function start(
 
   const initialPayload: nameValues = {
     domain: document.location.hostname || document.location.href, // latter is for debugging (e.g. a file:// url)
-    includePii, // tell server not to store IP addresses or user agents
+    includePii: Boolean(includePii), // tell server not to store IP addresses or user agents
   };
 
   if (serverUrl.includes('{recordingId}')) {
