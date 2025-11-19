@@ -35,5 +35,6 @@
     "minimist": "^1.2.5",
     "playwright": "^1.32.1",
     "rrweb-player": "^2.0.0-alpha.18"
-  }
+  },
+  "private": true
 }

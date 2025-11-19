@@ -89,5 +89,6 @@
     "mitt": "^3.0.0",
     "rrdom": "^2.0.0-alpha.18",
     "rrweb-snapshot": "^2.0.0-alpha.18"
-  }
+  },
+  "private": true
 }

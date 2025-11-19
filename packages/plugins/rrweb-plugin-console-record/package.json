@@ -56,5 +56,6 @@
   "peerDependencies": {
     "rrweb": "^2.0.0-alpha.18",
     "@rrweb/utils": "^2.0.0-alpha.18"
-  }
+  },
+  "private": true
 }

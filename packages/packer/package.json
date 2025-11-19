@@ -83,5 +83,6 @@
   },
   "browserslist": [
     "supports es6-class"
-  ]
+  ],
+  "private": true
 }
