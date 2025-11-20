@@ -1,5 +1,19 @@
 # @rrwebcloud/js-client
 
+## 2.0.0-alpha.20
+
+### Minor Changes
+
+- [#6](https://github.com/rrweb-cloud/rrweb/pull/6) [`0317a0f`](https://github.com/rrweb-cloud/rrweb/commit/0317a0f2e8d331a5f945d48a3f2dbeb474e127f9) Thanks [@Juice10](https://github.com/Juice10)! - Export functions and types to allow named imports. The package now supports both default and named imports:
+
+  - `import { start, addMeta, addPageviewMeta, addCustomEvent, getRecordingId } from '@rrwebcloud/js-client'`
+  - `import { clientConfig, nameValues } from '@rrwebcloud/js-client'` (types)
+  - `import client from '@rrwebcloud/js-client'` (then use `client.start()`, `client.addMeta()`, etc.)
+
+### Patch Changes
+
+- [#6](https://github.com/rrweb-cloud/rrweb/pull/6) [`266fbf4`](https://github.com/rrweb-cloud/rrweb/commit/266fbf4adf852d415739dfd0319c53f32b9ee2e4) Thanks [@Juice10](https://github.com/Juice10)! - Use correct path for bundled file names
+
 ## 2.0.0-alpha.19
 
 ### Patch Changes
