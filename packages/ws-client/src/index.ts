@@ -18,14 +18,14 @@ import {
   WebsocketEvent,
 } from 'websocket-ts';
 
-type clientConfig = {
+export type clientConfig = {
   serverUrl: string;
   autostart: boolean;
   includePii: boolean;
   meta?: nameValues;
 };
 
-type nameValues = Record<string, string | boolean | number>;
+export type nameValues = Record<string, string | boolean | number>;
 
 let defaultClientConfig = {
   serverUrl: 'ws://localhost:40000',
@@ -83,7 +83,7 @@ function getSetRecordingId(): string | null {
 
 // if API client requests the recording ID prior to start,
 // set it immediately so that it will be the eventual id used
-const getRecordingId = getSetRecordingId;
+export const getRecordingId = getSetRecordingId;
 
 const wsLimit = 10e5; // this is approximate and depends on the browser, also on how unicode is encoded (we are comparing against the length of a javascript string)
 const buffer: ArrayQueue<string> = new ArrayQueue();
@@ -163,7 +163,7 @@ async function postData(postUrl: string, buffer: ArrayQueue<string> | string) {
   return responses;
 }
 
-function start(
+export function start(
   options: recordOptions<eventWithTime> & clientConfig = defaultClientConfig,
 ) {
   const { includePii, ...recordOptions } = options;
@@ -359,7 +359,7 @@ function start(
   });
 }
 
-const addCustomEvent = <T>(tag: string, payload: T) => {
+export const addCustomEvent = <T>(tag: string, payload: T) => {
   if (rrwebStopFn !== undefined) {
     record.addCustomEvent(tag, payload);
   } else {
@@ -376,11 +376,11 @@ const addCustomEvent = <T>(tag: string, payload: T) => {
   }
 };
 
-function addMeta(payload: nameValues) {
+export function addMeta(payload: nameValues) {
   addCustomEvent('recording-meta', payload);
 }
 
-function addPageviewMeta(payload: nameValues) {
+export function addPageviewMeta(payload: nameValues) {
   // could alter timestamp to match Meta/FullSnapshot event
   addCustomEvent('pageview-meta', payload);
 }
@@ -438,4 +438,10 @@ function looseJsonParse(obj: string) {
   return eval?.(`"use strict";(${obj})`);
 }
 
-export { start, addMeta, addPageviewMeta, addCustomEvent, getRecordingId };
+export default {
+  start,
+  addMeta,
+  addPageviewMeta,
+  addCustomEvent,
+  getRecordingId,
+};
