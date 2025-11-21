@@ -15,7 +15,7 @@
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/types#readme",
+  "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/types#readme",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
