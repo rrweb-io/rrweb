@@ -1,5 +1,11 @@
 # @rrwebcloud/js-client
 
+## 2.0.0-alpha.22
+
+### Major Changes
+
+- [#10](https://github.com/rrweb-cloud/rrweb/pull/10) [`79bd4a5`](https://github.com/rrweb-cloud/rrweb/commit/79bd4a504e28afb6e90b4352d08c82dada4a8783) Thanks [@Juice10](https://github.com/Juice10)! - refactor: rename `publicAPIkey` to `publicApiKey` in `.start()`
+
 ## 2.0.0-alpha.21
 
 ### Minor Changes
