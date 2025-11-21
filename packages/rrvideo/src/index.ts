@@ -57,22 +57,29 @@ function getHtml(events: Array<eventWithTime>, config?: RRvideoConfig): string {
       )};
       /*-->*/
       const userConfig = ${JSON.stringify(config?.rrwebPlayer || {})};
-      window.replayer = new rrwebPlayer.Player({
-        target: document.body,
-        width: userConfig.width,
-        height: userConfig.height,
-        props: {
-          ...userConfig,
-          events,
-          showController: false,          
-        },
-      });
-      window.replayer.addEventListener('finish', () => window.onReplayFinish());
-      window.replayer.addEventListener('ui-update-progress', (payload)=> window.onReplayProgressUpdate
-      (payload));
-      window.replayer.addEventListener('resize',()=>document.querySelector('.replayer-wrapper').style.transform = 'scale(${
-        (config?.resolutionRatio ?? 1) * MaxScaleValue
-      }) translate(-50%, -50%)');
+      try {
+        window.replayer = new rrwebPlayer({
+          target: document.body,
+          props: {
+            width: userConfig.width,
+            height: userConfig.height,
+            ...userConfig,
+            events,
+            showController: false,
+            autoPlay: false,
+          },
+        });
+        window.replayer.addEventListener('finish', () => window.onReplayFinish());
+        window.replayer.addEventListener('ui-update-progress', (payload)=> window.onReplayProgressUpdate(payload));
+        window.replayer.addEventListener('resize',()=>document.querySelector('.replayer-wrapper').style.transform = 'scale(${
+          (config?.resolutionRatio ?? 1) * MaxScaleValue
+        }) translate(-50%, -50%)');
+        // Start playback after event listeners are attached
+        window.replayer.play();
+      } catch (error) {
+        console.error('Error initializing replayer:', error);
+        window.onReplayFinish();
+      }
     </script>
   </body>
 </html>
@@ -105,18 +112,21 @@ export async function transformToVideo(options: RRvideoConfig) {
   Object.assign(config, options);
   if (config.resolutionRatio > 1) config.resolutionRatio = 1; // The max value is 1.
 
+  console.log('[DEBUG] Starting transformToVideo');
   const eventsPath = path.isAbsolute(config.input)
     ? config.input
     : path.resolve(process.cwd(), config.input);
   const outputPath = path.isAbsolute(config.output)
     ? config.output
     : path.resolve(process.cwd(), config.output);
+  console.log('[DEBUG] Reading events from:', eventsPath);
   const events = JSON.parse(
     fs.readFileSync(eventsPath, 'utf-8'),
   ) as eventWithTime[];
 
   // Make the browser viewport fit the player size.
   const maxViewport = getMaxViewport(events);
+  console.log('[DEBUG] Max viewport:', maxViewport);
   // Use the scaling method to improve the video quality.
   const scaledViewport = {
     width: Math.round(
@@ -127,9 +137,15 @@ export async function transformToVideo(options: RRvideoConfig) {
     ),
   };
   Object.assign(config.rrwebPlayer, scaledViewport);
+  console.log('[DEBUG] Launching browser with headless:', config.headless);
   const browser = await chromium.launch({
     headless: config.headless,
   });
+  console.log('[DEBUG] Browser launched successfully');
+  console.log(
+    '[DEBUG] Creating browser context with viewport:',
+    scaledViewport,
+  );
   const context = await browser.newContext({
     viewport: scaledViewport,
     recordVideo: {
@@ -137,8 +153,23 @@ export async function transformToVideo(options: RRvideoConfig) {
       size: scaledViewport,
     },
   });
+  console.log('[DEBUG] Browser context created');
   const page = await context.newPage();
+  console.log('[DEBUG] New page created');
   await page.goto('about:blank');
+  console.log('[DEBUG] Navigated to about:blank');
+  console.log('[DEBUG] Exposing functions to page');
+
+  // Listen to console messages from the page
+  page.on('console', (msg) => {
+    console.log('[PAGE CONSOLE]', msg.type(), msg.text());
+  });
+
+  // Listen to page errors
+  page.on('pageerror', (error) => {
+    console.error('[PAGE ERROR]', error.message);
+  });
+
   await page.exposeFunction(
     'onReplayProgressUpdate',
     (data: { payload: number }) => {
@@ -147,20 +178,44 @@ export async function transformToVideo(options: RRvideoConfig) {
   );
 
   // Wait for the replay to finish
-  await new Promise<void>(
-    (resolve) =>
-      void page
-        .exposeFunction('onReplayFinish', () => resolve())
-        .then(() => page.setContent(getHtml(events, config))),
-  );
+  console.log('[DEBUG] Starting replay');
+  await new Promise<void>((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      console.error('[DEBUG] Replay timeout - finish event never fired');
+      reject(new Error('Replay timeout'));
+    }, 120000); // 2 minute timeout
+
+    void page
+      .exposeFunction('onReplayFinish', () => {
+        console.log('[DEBUG] Replay finished');
+        clearTimeout(timeout);
+        resolve();
+      })
+      .then(() => {
+        console.log('[DEBUG] Setting page content');
+        return page.setContent(getHtml(events, config));
+      })
+      .then(() => {
+        console.log('[DEBUG] Page content set successfully');
+      })
+      .catch((err) => {
+        console.error('[DEBUG] Error setting page content:', err);
+        clearTimeout(timeout);
+        reject(err);
+      });
+  });
+  console.log('[DEBUG] Getting video path');
   const videoPath = (await page.video()?.path()) || '';
+  console.log('[DEBUG] Video path:', videoPath);
   const cleanFiles = async (videoPath: string) => {
     await fs.remove(videoPath);
     if ((await fs.readdir(defaultVideoDir)).length === 0) {
       await fs.remove(defaultVideoDir);
     }
   };
+  console.log('[DEBUG] Closing context');
   await context.close();
+  console.log('[DEBUG] Moving video file to output path:', outputPath);
   await Promise.all([
     fs
       .move(videoPath, outputPath, { overwrite: true })
@@ -173,5 +228,6 @@ export async function transformToVideo(options: RRvideoConfig) {
       .finally(() => void cleanFiles(videoPath)),
     browser.close(),
   ]);
+  console.log('[DEBUG] Video transformation complete');
   return outputPath;
 }
