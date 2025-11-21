@@ -532,14 +532,14 @@ export function getRootShadowHost(n: Node): Node {
 }
 
 export function shadowHostInDom(n: Node): boolean {
-  const doc = n.ownerDocument;
+  const doc = dom.ownerDocument(n);
   if (!doc) return false;
   const shadowHost = getRootShadowHost(n);
   return dom.contains(doc, shadowHost);
 }
 
 export function inDom(n: Node): boolean {
-  const doc = n.ownerDocument;
+  const doc = dom.ownerDocument(n);
   if (!doc) return false;
   return dom.contains(doc, n) || shadowHostInDom(n);
 }
