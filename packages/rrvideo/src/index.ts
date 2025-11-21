@@ -64,7 +64,8 @@ function getHtml(events: Array<eventWithTime>, config?: RRvideoConfig): string {
         props: {
           ...userConfig,
           events,
-          showController: false,          
+          showController: false,
+          autoPlay: false,
         },
       });
       window.replayer.addEventListener('finish', () => window.onReplayFinish());
@@ -73,6 +74,8 @@ function getHtml(events: Array<eventWithTime>, config?: RRvideoConfig): string {
       window.replayer.addEventListener('resize',()=>document.querySelector('.replayer-wrapper').style.transform = 'scale(${
         (config?.resolutionRatio ?? 1) * MaxScaleValue
       }) translate(-50%, -50%)');
+      // Start playback after event listeners are attached
+      window.replayer.play();
     </script>
   </body>
 </html>
