@@ -66,5 +66,5 @@
     "defaults",
     "not op_mini all"
   ],
-  "packageManager": "bun@1.1.34"
+  "packageManager": "bun@1.3.2"
 }
