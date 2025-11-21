@@ -541,5 +541,6 @@ export function shadowHostInDom(n: Node): boolean {
 export function inDom(n: Node): boolean {
   const doc = n.ownerDocument;
   if (!doc) return false;
-  return dom.contains(doc, n) || shadowHostInDom(n);
+  // fix: https://github.com/rrweb-io/rrweb/issues/1682
+  return doc.contains(n) || shadowHostInDom(n);
 }
