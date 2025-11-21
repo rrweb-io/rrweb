@@ -178,8 +178,8 @@ async function postData(
 export function start(
   options: recordOptions<eventWithTime> & clientConfig = defaultClientConfig,
 ) {
-  const { includePii, ...recordOptions } = options;
-  let { serverUrl, publicAPIkey } = options;
+  const { includePii, publicAPIkey, ...recordOptions } = options;
+  let { serverUrl } = options;
 
   if (recordOptions.slimDOMOptions === undefined) {
     recordOptions.slimDOMOptions = 'all';
