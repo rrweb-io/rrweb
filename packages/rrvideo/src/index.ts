@@ -135,7 +135,10 @@ export async function transformToVideo(options: RRvideoConfig) {
     headless: config.headless,
   });
   console.log('[DEBUG] Browser launched successfully');
-  console.log('[DEBUG] Creating browser context with viewport:', scaledViewport);
+  console.log(
+    '[DEBUG] Creating browser context with viewport:',
+    scaledViewport,
+  );
   const context = await browser.newContext({
     viewport: scaledViewport,
     recordVideo: {
