@@ -20,6 +20,7 @@ import {
 
 export type clientConfig = {
   serverUrl: string;
+  publicAPIkey: string;
   autostart: boolean;
   includePii: boolean;
   meta?: nameValues;
@@ -29,6 +30,7 @@ export type nameValues = Record<string, string | boolean | number>;
 
 let defaultClientConfig = {
   serverUrl: 'ws://localhost:40000',
+  publicAPIkey: '',
   autostart: false,
   includePii: false,
 };
@@ -94,9 +96,14 @@ type websocketListenerHandler = (i: Websocket, ev: MessageEvent) => void;
 function connect(
   serverUrl: string,
   postUrl: string,
+  publicAPIkey: string,
   messageHandler: websocketListenerHandler,
 ): Websocket {
-  const ws = new WebsocketBuilder(serverUrl)
+  const wsUrl = new URL(serverUrl);
+  if (publicAPIkey) {
+    wsUrl.searchParams.set('token', publicAPIkey);
+  }
+  const ws = new WebsocketBuilder(wsUrl.toString())
     .withBuffer(buffer) // when disconnected
     .withBackoff(
       new ExponentialBackoff(500 + Math.round(1000 * Math.random()), 6),
@@ -105,7 +112,7 @@ function connect(
 
   const fallbackPosting = setInterval(() => {
     if (buffer.length()) {
-      void postData(postUrl, buffer);
+      void postData(postUrl, publicAPIkey, buffer);
     }
   }, 5 * 1000);
 
@@ -117,7 +124,11 @@ function connect(
   return ws;
 }
 
-async function postData(postUrl: string, buffer: ArrayQueue<string> | string) {
+async function postData(
+  postUrl: string,
+  publicAPIkey: string,
+  buffer: ArrayQueue<string> | string,
+) {
   const keepaliveLimit = 65000;
   let done = false;
   const responses = [];
@@ -147,6 +158,7 @@ async function postData(postUrl: string, buffer: ArrayQueue<string> | string) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-ndjson',
+          Authorization: `Bearer ${publicAPIkey}`,
         },
         body,
         keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
@@ -166,7 +178,7 @@ async function postData(postUrl: string, buffer: ArrayQueue<string> | string) {
 export function start(
   options: recordOptions<eventWithTime> & clientConfig = defaultClientConfig,
 ) {
-  const { includePii, ...recordOptions } = options;
+  const { includePii, publicAPIkey, ...recordOptions } = options;
   let { serverUrl } = options;
 
   if (recordOptions.slimDOMOptions === undefined) {
@@ -264,7 +276,7 @@ export function start(
   recordOptions.emit = (event) => {
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
-      ws = connect(serverUrl, postUrl, handleMessage);
+      ws = connect(serverUrl, postUrl, publicAPIkey, handleMessage);
 
       ws.addEventListener(WebsocketEvent.close, () => {
         wsConnectionPaused = false;
@@ -294,7 +306,7 @@ export function start(
     // TODO: add browser native compression
     if (eventStr.length > wsLimit) {
       // Assuming wsLimit is a defined constant, and eventStr.length is intended.
-      void postData(postUrl, eventStr);
+      void postData(postUrl, publicAPIkey, eventStr);
     } else if (ws && !wsConnectionPaused) {
       ws.send(eventStr);
     } else {
@@ -334,7 +346,7 @@ export function start(
             // document.hidden is better than beforeunload, see:
             // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
             if ((!ws || wsConnectionPaused) && buffer.length()) {
-              void postData(postUrl, buffer);
+              void postData(postUrl, publicAPIkey, buffer);
             }
           }
         } catch (e) {
