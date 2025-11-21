@@ -57,25 +57,29 @@ function getHtml(events: Array<eventWithTime>, config?: RRvideoConfig): string {
       )};
       /*-->*/
       const userConfig = ${JSON.stringify(config?.rrwebPlayer || {})};
-      window.replayer = new rrwebPlayer.Player({
-        target: document.body,
-        width: userConfig.width,
-        height: userConfig.height,
-        props: {
-          ...userConfig,
-          events,
-          showController: false,
-          autoPlay: false,
-        },
-      });
-      window.replayer.addEventListener('finish', () => window.onReplayFinish());
-      window.replayer.addEventListener('ui-update-progress', (payload)=> window.onReplayProgressUpdate
-      (payload));
-      window.replayer.addEventListener('resize',()=>document.querySelector('.replayer-wrapper').style.transform = 'scale(${
-        (config?.resolutionRatio ?? 1) * MaxScaleValue
-      }) translate(-50%, -50%)');
-      // Start playback after event listeners are attached
-      window.replayer.play();
+      try {
+        window.replayer = new rrwebPlayer({
+          target: document.body,
+          props: {
+            width: userConfig.width,
+            height: userConfig.height,
+            ...userConfig,
+            events,
+            showController: false,
+            autoPlay: false,
+          },
+        });
+        window.replayer.addEventListener('finish', () => window.onReplayFinish());
+        window.replayer.addEventListener('ui-update-progress', (payload)=> window.onReplayProgressUpdate(payload));
+        window.replayer.addEventListener('resize',()=>document.querySelector('.replayer-wrapper').style.transform = 'scale(${
+          (config?.resolutionRatio ?? 1) * MaxScaleValue
+        }) translate(-50%, -50%)');
+        // Start playback after event listeners are attached
+        window.replayer.play();
+      } catch (error) {
+        console.error('Error initializing replayer:', error);
+        window.onReplayFinish();
+      }
     </script>
   </body>
 </html>
