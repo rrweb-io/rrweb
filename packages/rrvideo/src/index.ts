@@ -155,6 +155,17 @@ export async function transformToVideo(options: RRvideoConfig) {
   await page.goto('about:blank');
   console.log('[DEBUG] Navigated to about:blank');
   console.log('[DEBUG] Exposing functions to page');
+  
+  // Listen to console messages from the page
+  page.on('console', (msg) => {
+    console.log('[PAGE CONSOLE]', msg.type(), msg.text());
+  });
+  
+  // Listen to page errors
+  page.on('pageerror', (error) => {
+    console.error('[PAGE ERROR]', error.message);
+  });
+  
   await page.exposeFunction(
     'onReplayProgressUpdate',
     (data: { payload: number }) => {
@@ -164,18 +175,31 @@ export async function transformToVideo(options: RRvideoConfig) {
 
   // Wait for the replay to finish
   console.log('[DEBUG] Starting replay');
-  await new Promise<void>(
-    (resolve) =>
-      void page
-        .exposeFunction('onReplayFinish', () => {
-          console.log('[DEBUG] Replay finished');
-          resolve();
-        })
-        .then(() => {
-          console.log('[DEBUG] Setting page content');
-          return page.setContent(getHtml(events, config));
-        }),
-  );
+  await new Promise<void>((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      console.error('[DEBUG] Replay timeout - finish event never fired');
+      reject(new Error('Replay timeout'));
+    }, 120000); // 2 minute timeout
+    
+    void page
+      .exposeFunction('onReplayFinish', () => {
+        console.log('[DEBUG] Replay finished');
+        clearTimeout(timeout);
+        resolve();
+      })
+      .then(() => {
+        console.log('[DEBUG] Setting page content');
+        return page.setContent(getHtml(events, config));
+      })
+      .then(() => {
+        console.log('[DEBUG] Page content set successfully');
+      })
+      .catch((err) => {
+        console.error('[DEBUG] Error setting page content:', err);
+        clearTimeout(timeout);
+        reject(err);
+      });
+  });
   console.log('[DEBUG] Getting video path');
   const videoPath = (await page.video()?.path()) || '';
   console.log('[DEBUG] Video path:', videoPath);
