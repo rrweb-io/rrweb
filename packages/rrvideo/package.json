@@ -16,7 +16,7 @@
     "build": "tsc",
     "test": "jest",
     "check-types": "tsc -noEmit",
-    "prepublish": "yarn build"
+    "prepublish": "bun run build"
   },
   "author": "yanzhen@smartx.com",
   "license": "MIT",

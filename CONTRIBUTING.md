@@ -26,14 +26,14 @@ clear and has sufficient instructions to be able to reproduce the issue.
 
 ## Run locally
 
-- Install dependencies: `yarn`
-- Build all packages: (in `/`) `yarn build:all` or `yarn dev`
-- Run recorder on a website: (in `/packages/rrweb`) `yarn repl`
-- Run a cobrowsing/mirroring session locally: (in `/packages/rrweb`) `yarn live-stream`
-- Build individual packages: `yarn build` or `yarn dev`
-- Test: `yarn test` or `yarn test:watch`
-- Lint: `yarn lint`
-- Rewrite files with prettier: `yarn format` or `yarn format:head`
+- Install dependencies: `bun install`
+- Build all packages: (in `/`) `bun run build:all` or `bun run dev`
+- Run recorder on a website: (in `/packages/rrweb`) `bun run repl`
+- Run a cobrowsing/mirroring session locally: (in `/packages/rrweb`) `bun run live-stream`
+- Build individual packages: `bun run build` or `bun run dev`
+- Test: `bun run test` or `bun run test:watch`
+- Lint: `bun run lint`
+- Rewrite files with prettier: `bun run format` or `bun run format:head`
 
 ## Coding style
 

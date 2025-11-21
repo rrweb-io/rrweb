@@ -3,12 +3,12 @@
   "version": "2.0.0-alpha.19",
   "scripts": {
     "dev": "vite build --watch",
-    "build": "yarn turbo run prepublish",
+    "build": "bun turbo run prepublish",
     "check-types": "tsc -noEmit",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "prepublish": "tsc -noEmit && vite build",
-    "lint": "yarn eslint src/**/*.ts"
+    "lint": "bun eslint src/**/*.ts"
   },
   "keywords": [
     "rrweb",

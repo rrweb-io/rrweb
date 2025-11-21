@@ -13,7 +13,7 @@
     "build": "tsc -noEmit && vite build",
     "check-types": "tsc -noEmit",
     "prepublish": "npm run build",
-    "lint": "yarn eslint src/**/*.ts"
+    "lint": "bun eslint src/**/*.ts"
   },
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/utils#readme",
   "bugs": {

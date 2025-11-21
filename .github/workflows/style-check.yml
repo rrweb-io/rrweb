@@ -18,17 +18,20 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
-          cache: 'yarn'
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
       - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: bun install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Build Packages
-        run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
+        run: NODE_OPTIONS='--max-old-space-size=4096' bun run build:all
       - name: Eslint Check
-        run: yarn turbo run lint
+        run: bun turbo run lint
       - name: Save Code Linting Report JSON
-        run: yarn lint:report
+        run: bun run lint:report
         # Continue to the next step even if this fails
         continue-on-error: true
       - name: Upload ESLint Report
@@ -71,13 +74,16 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
-          cache: 'yarn'
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
       - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: bun install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Prettier Check
-        run: yarn prettier --check '**/*.{ts,md}'
+        run: bun prettier --check '**/*.{ts,md}'
 
   prettier:
     # Skip the format code action in forked PRs
@@ -95,13 +101,16 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
-          cache: 'yarn'
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
       - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: bun install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Prettify Code
-        run: yarn prettier --write '**/*.{ts,md}'
+        run: bun prettier --write '**/*.{ts,md}'
       - name: Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:

@@ -2,15 +2,15 @@
 
 These have been adapted from the style guidelines for coding in Electron.
 
-You can run `yarn lint` to show any style issues detected by `eslint`.
+You can run `bun run lint` to show any style issues detected by `eslint`.
 
 ## General Code
 
 - End files with a newline.
 - Using a plain `return` when returning explicitly at the end of a function.
   - Not `return null`, `return undefined`, `null` or `undefined`
-- run `yarn format` to rewrite all files in the standard format
-- run `yarn format:head` to rewrite files from your last commit
+- run `bun run format` to rewrite all files in the standard format
+- run `bun run format:head` to rewrite files from your last commit
 
 ## Documentation
 

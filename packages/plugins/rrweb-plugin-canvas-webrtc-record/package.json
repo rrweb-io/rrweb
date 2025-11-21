@@ -25,7 +25,7 @@
   ],
   "scripts": {
     "dev": "vite build --watch",
-    "build": "yarn turbo run prepublish",
+    "build": "bun turbo run prepublish",
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build"
   },

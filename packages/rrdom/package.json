@@ -30,12 +30,12 @@
   },
   "scripts": {
     "dev": "vite build --watch",
-    "build": "yarn turbo run prepublish",
+    "build": "bun turbo run prepublish",
     "check-types": "tsc -noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepublish": "tsc -noEmit && vite build",
-    "lint": "yarn eslint src/**/*.ts"
+    "lint": "bun eslint src/**/*.ts"
   },
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"

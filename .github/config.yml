@@ -5,7 +5,7 @@ newPRWelcomeComment: |
   Things that will help get your PR across the finish line:
 
   - Follow the TypeScript [coding style](https://github.com/rrweb-io/rrweb/blob/master/docs/development/coding-style.md).
-  - Run `yarn lint` locally to catch formatting errors earlier.
+  - Run `bun run lint` locally to catch formatting errors earlier.
   - Document any user-facing changes you've made following the [documentation styleguide](https://github.com/rrweb-io/rrweb/blob/master/blob/main/docs/styleguide.md).
   - Include tests when adding/changing behavior.
   - Include screenshots and animated GIFs whenever possible.

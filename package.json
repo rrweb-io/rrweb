@@ -43,28 +43,28 @@
     "typescript": "^5.4.5"
   },
   "scripts": {
-    "build:all": "NODE_OPTIONS='--max-old-space-size=4096' yarn turbo run prepublish",
-    "references:update": "yarn workspaces-to-typescript-project-references",
-    "test": "yarn turbo run test --concurrency=1 --continue",
-    "test:watch": "yarn turbo run test:watch",
-    "test:update": "yarn turbo run test:update",
-    "check-types": "yarn turbo run check-types --continue",
-    "format": "yarn prettier --write '**/*.{ts,md}'",
-    "format:head": "git diff --name-only HEAD^ |grep '\\.ts$\\|\\.md$' |xargs yarn prettier --write",
-    "dev": "yarn turbo run dev --concurrency=18",
-    "repl": "cd packages/rrweb && npm run repl",
-    "live-stream": "cd packages/rrweb && yarn live-stream",
-    "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'ESLINT_USE_FLAT_CONFIG=false yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'",
-    "lint:report": "ESLINT_USE_FLAT_CONFIG=false yarn eslint --output-file eslint_report.json --format json packages/*/src --ext .ts,.tsx,.js,.jsx",
-    "release": "yarn build:all && changeset publish"
+    "build:all": "NODE_OPTIONS='--max-old-space-size=4096' bun turbo run prepublish",
+    "references:update": "bun workspaces-to-typescript-project-references",
+    "test": "bun turbo run test --concurrency=1 --continue",
+    "test:watch": "bun turbo run test:watch",
+    "test:update": "bun turbo run test:update",
+    "check-types": "bun turbo run check-types --continue",
+    "format": "bun prettier --write '**/*.{ts,md}'",
+    "format:head": "git diff --name-only HEAD^ |grep '\\.ts$\\|\\.md$' |xargs bun prettier --write",
+    "dev": "bun turbo run dev --concurrency=18",
+    "repl": "cd packages/rrweb && bun run repl",
+    "live-stream": "cd packages/rrweb && bun live-stream",
+    "lint": "bun run concurrently --success=all -r -m=1 'bun run markdownlint docs' 'ESLINT_USE_FLAT_CONFIG=false bun eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'",
+    "lint:report": "ESLINT_USE_FLAT_CONFIG=false bun eslint --output-file eslint_report.json --format json packages/*/src --ext .ts,.tsx,.js,.jsx",
+    "release": "bun run build:all && changeset publish"
   },
-  "resolutions": {
-    "**/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz",
-    "**/@types/dom-webcodecs": "0.1.5"
+  "overrides": {
+    "cssom": "npm:rrweb-cssom@0.7.1",
+    "@types/dom-webcodecs": "0.1.5"
   },
   "browserslist": [
     "defaults",
     "not op_mini all"
   ],
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "bun@1.1.34"
 }

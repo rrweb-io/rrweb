@@ -26,11 +26,11 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build",
-    "prepublishOnly": "yarn build",
+    "prepublishOnly": "bun run build",
     "start": "vite",
     "check-types": "svelte-check --tsconfig ./tsconfig.json",
-    "prepublish": "yarn build",
-    "lint": "yarn eslint src/**/*.ts"
+    "prepublish": "bun run build",
+    "lint": "bun eslint src/**/*.ts"
   },
   "description": "rrweb's replayer UI",
   "main": "./dist/rrweb-player.umd.cjs",
