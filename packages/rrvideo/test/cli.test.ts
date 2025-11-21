@@ -18,7 +18,7 @@ describe('should be able to run cli', () => {
     await fs.remove(path.resolve(__dirname, './generated'));
   });
 
-  const execOptions = { stdio: 'pipe', timeout: 60_000 } as const;
+  const execOptions = { stdio: 'inherit', timeout: 60_000 } as const;
 
   it('should throw error without input path', () => {
     expect(() => {
