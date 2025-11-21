@@ -35,6 +35,11 @@ let defaultClientConfig = {
   includePii: false,
 };
 
+// Temporarily store the active post URL and API key
+// until we have sending meta data handled neatly via the websockets connection
+let activePostUrl = defaultClientConfig.serverUrl;
+let activeApiKey = defaultClientConfig.publicApiKey;
+
 export type customEventWithTime = customEvent & {
   timestamp: number;
 };
@@ -178,7 +183,7 @@ async function postData(
 export function start(
   options: recordOptions<eventWithTime> & clientConfig = defaultClientConfig,
 ) {
-  const { includePii, publicApiKey, ...recordOptions } = options;
+  const { includePii, publicApiKey, meta, ...recordOptions } = options;
   let { serverUrl } = options;
 
   if (recordOptions.slimDOMOptions === undefined) {
@@ -244,6 +249,15 @@ export function start(
   if (postUrl.endsWith('/ws')) {
     postUrl = postUrl.substring(0, postUrl.length - 3);
   }
+
+  // Temporarily always send meta data until we have it handled neatly via the websockets connection
+  activePostUrl = postUrl;
+  activeApiKey = publicApiKey;
+
+  if (meta && Object.keys(meta).length > 0) {
+    addCustomEvent('recording-meta', meta);
+  }
+
   if (includePii) {
     initialPayload.visitor = getSetVisitorId();
     try {
@@ -372,6 +386,18 @@ export function start(
 }
 
 export const addCustomEvent = <T>(tag: string, payload: T) => {
+  if (tag === 'recording-meta') {
+    const metaUrl = activePostUrl.replace(/\/ingest$/, '') + '/meta';
+    void fetch(metaUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${activeApiKey}`,
+      },
+      body: JSON.stringify(payload),
+    }).catch((e) => console.error('Failed to send meta:', e));
+  }
+
   if (rrwebStopFn !== undefined) {
     record.addCustomEvent(tag, payload);
   } else {
