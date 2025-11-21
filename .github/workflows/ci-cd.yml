@@ -28,7 +28,7 @@ jobs:
           bun-version: latest
 
       - name: Install Dependencies
-        run: bun install --frozen-lockfile
+        run: bun install
         env:
           PUPPETEER_DOWNLOAD_BASE_URL: 'https://storage.googleapis.com/chrome-for-testing-public'
 
@@ -45,7 +45,7 @@ jobs:
       - name: Check bundle sizes
         uses: preactjs/compressed-size-action@v2
         with:
-          install-script: 'bun install --frozen-lockfile'
+          install-script: 'bun install'
           build-script: 'build:all'
           compression: 'none'
           pattern: '**/dist/*.{js,cjs,mjs,css}'

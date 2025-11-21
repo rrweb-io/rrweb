@@ -23,7 +23,7 @@ jobs:
         with:
           bun-version: latest
       - name: Install Dependencies
-        run: bun install --frozen-lockfile
+        run: bun install
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Build Packages
@@ -79,7 +79,7 @@ jobs:
         with:
           bun-version: latest
       - name: Install Dependencies
-        run: bun install --frozen-lockfile
+        run: bun install
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Prettier Check
@@ -106,7 +106,7 @@ jobs:
         with:
           bun-version: latest
       - name: Install Dependencies
-        run: bun install --frozen-lockfile
+        run: bun install
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Prettify Code
