@@ -1,5 +1,11 @@
 # @rrwebcloud/js-client
 
+## 2.0.0-alpha.23
+
+### Minor Changes
+
+- [#12](https://github.com/rrweb-cloud/rrweb/pull/12) [`c793019`](https://github.com/rrweb-cloud/rrweb/commit/c7930199ecb8f359d1bc3dfd96985adc4c8ff48c) Thanks [@Juice10](https://github.com/Juice10)! - Allow recording of meta data
+
 ## 2.0.0-alpha.22
 
 ### Major Changes
