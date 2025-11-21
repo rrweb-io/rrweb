@@ -1,5 +1,11 @@
 # @rrwebcloud/js-client
 
+## 2.0.0-alpha.21
+
+### Minor Changes
+
+- [#8](https://github.com/rrweb-cloud/rrweb/pull/8) [`20f7a0b`](https://github.com/rrweb-cloud/rrweb/commit/20f7a0b9fb6285a846239de204336eb21c008aca) Thanks [@Juice10](https://github.com/Juice10)! - Implement public API key support for authenticating WebSocket connections and POST data requests.
+
 ## 2.0.0-alpha.20
 
 ### Minor Changes
