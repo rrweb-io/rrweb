@@ -240,15 +240,22 @@ export function start(
     includePii: Boolean(includePii), // tell server not to store IP addresses or user agents
   };
 
-  if (serverUrl.includes('{recordingId}')) {
-    serverUrl = serverUrl.replace('{recordingId}', recordingId);
-  } else {
+  // the expected replacement of recording id
+  serverUrl = serverUrl.replace('{recordingId}', recordingId);
+
+  const sURL = new URL(serverUrl);
+  if (!serverUrl.includes(recordingId)) {
+    // '{recordingId}' wasn't in the url;
+    // pass as a query string param instead
+    sURL.searchParams.set('recordingId', recordingId);
+    serverUrl = sURL.href;
+    // also include in initialPayload in case query string gets lost during upgrade or proxying
     initialPayload.recordingId = recordingId;
   }
-  let postUrl = serverUrl;
-  if (postUrl.endsWith('/ws')) {
-    postUrl = postUrl.substring(0, postUrl.length - 3);
+  if (sURL.pathname.endsWith('/ws')) {
+    sURL.pathname = sURL.pathname.slice(0, -3);
   }
+  const postUrl = sURL.href;
 
   // Temporarily always send meta data until we have it handled neatly via the websockets connection
   activePostUrl = postUrl;
