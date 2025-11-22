@@ -458,7 +458,7 @@ if (document && document.currentScript) {
       const srcUrl = new URL(self.src);
       if (srcUrl.hostname) {
         let apiHost = srcUrl.hostname;
-        if (!apiHost.startsWith('api.')) {
+        if (apiHost.startsWith('rrweb')) {
           apiHost = 'api.' + apiHost;
         }
         if (!config.serverUrl) {
