@@ -35,11 +35,6 @@ let defaultClientConfig = {
   includePii: false,
 };
 
-// Temporarily store the active post URL and API key
-// until we have sending meta data handled neatly via the websockets connection
-let activePostUrl = defaultClientConfig.serverUrl;
-let activeApiKey = defaultClientConfig.publicApiKey;
-
 export type customEventWithTime = customEvent & {
   timestamp: number;
 };
@@ -101,6 +96,7 @@ type websocketListenerHandler = (i: Websocket, ev: MessageEvent) => void;
 function connect(
   serverUrl: string,
   postUrl: string,
+  metaUrl: string,
   publicApiKey: string,
   messageHandler: websocketListenerHandler,
 ): Websocket {
@@ -117,7 +113,7 @@ function connect(
 
   const fallbackPosting = setInterval(() => {
     if (buffer.length()) {
-      void postData(postUrl, publicApiKey, buffer);
+      void postData(postUrl, metaUrl, publicApiKey, buffer);
     }
   }, 5 * 1000);
 
@@ -131,6 +127,7 @@ function connect(
 
 async function postData(
   postUrl: string,
+  metaUrl: string,
   publicApiKey: string,
   buffer: ArrayQueue<string> | string,
 ) {
@@ -145,9 +142,32 @@ async function postData(
       const toSend = [];
       let sendSize = 0;
       done = true;
-      for (let ele = buffer.read(); ele !== undefined; ele = buffer.read()) {
-        toSend.push(ele);
-        sendSize += ele.length;
+      for (
+        let eventStr = buffer.read();
+        eventStr !== undefined;
+        eventStr = buffer.read()
+      ) {
+        if (eventStr.substring(0, 200).includes('"recording-meta"')) {
+          // avoid reparsing each eventStr
+          const metaEvent = JSON.parse(eventStr);
+          if (
+            metaEvent.type === EventType.Custom &&
+            metaEvent.data.tag === 'recording-meta'
+          ) {
+            void fetch(metaUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${publicApiKey}`,
+              },
+              body: eventStr,
+              keepalive: eventStr.length < keepaliveLimit,
+            }).catch((e) => console.error('Failed to send meta:', e));
+            continue;
+          }
+        }
+        toSend.push(eventStr);
+        sendSize += eventStr.length;
         if (sendSize > keepaliveLimit) {
           done = false;
           break;
@@ -256,14 +276,10 @@ export function start(
     sURL.pathname = sURL.pathname.slice(0, -3);
   }
   const postUrl = sURL.href;
-
-  // Temporarily always send meta data until we have it handled neatly via the websockets connection
-  activePostUrl = postUrl;
-  activeApiKey = publicApiKey;
-
-  if (meta && Object.keys(meta).length > 0) {
-    addCustomEvent('recording-meta', meta);
+  if (sURL.pathname.endsWith('/ingest')) {
+    sURL.pathname = sURL.pathname.slice(0, -6) + '/meta';
   }
+  const metaUrl = sURL.href;
 
   if (includePii) {
     initialPayload.visitor = getSetVisitorId();
@@ -297,7 +313,7 @@ export function start(
   recordOptions.emit = (event) => {
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
-      ws = connect(serverUrl, postUrl, publicApiKey, handleMessage);
+      ws = connect(serverUrl, postUrl, metaUrl, publicApiKey, handleMessage);
 
       ws.addEventListener(WebsocketEvent.close, () => {
         wsConnectionPaused = false;
@@ -327,7 +343,7 @@ export function start(
     // TODO: add browser native compression
     if (eventStr.length > wsLimit) {
       // Assuming wsLimit is a defined constant, and eventStr.length is intended.
-      void postData(postUrl, publicApiKey, eventStr);
+      void postData(postUrl, metaUrl, publicApiKey, eventStr);
     } else if (ws && !wsConnectionPaused) {
       ws.send(eventStr);
     } else {
@@ -367,7 +383,7 @@ export function start(
             // document.hidden is better than beforeunload, see:
             // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
             if ((!ws || wsConnectionPaused) && buffer.length()) {
-              void postData(postUrl, publicApiKey, buffer);
+              void postData(postUrl, metaUrl, publicApiKey, buffer);
             }
           }
         } catch (e) {
@@ -393,18 +409,6 @@ export function start(
 }
 
 export const addCustomEvent = <T>(tag: string, payload: T) => {
-  if (tag === 'recording-meta') {
-    const metaUrl = activePostUrl.replace(/\/ingest$/, '') + '/meta';
-    void fetch(metaUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${activeApiKey}`,
-      },
-      body: JSON.stringify(payload),
-    }).catch((e) => console.error('Failed to send meta:', e));
-  }
-
   if (rrwebStopFn !== undefined) {
     record.addCustomEvent(tag, payload);
   } else {
