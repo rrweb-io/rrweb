@@ -1,0 +1,1 @@
+../dist/js-client.umd.cjs

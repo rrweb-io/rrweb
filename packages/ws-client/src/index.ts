@@ -104,7 +104,9 @@ function connect(
   if (publicApiKey) {
     wsUrl.searchParams.set('token', publicApiKey);
   }
-  const ws = new WebsocketBuilder(wsUrl.toString())
+  wsUrl.protocol = wsUrl.protocol.replace('http', 'ws');  // testing/puppeteer: SyntaxError: Failed to construct 'WebSocket': The URL's scheme must be either 'ws' or 'wss'. 'https' is not allowed.
+  
+  const ws = new WebsocketBuilder(wsUrl.href)
     .withBuffer(buffer) // when disconnected
     .withBackoff(
       new ExponentialBackoff(500 + Math.round(1000 * Math.random()), 6),

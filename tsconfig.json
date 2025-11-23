@@ -28,6 +28,9 @@
       "path": "packages/rrvideo"
     },
     {
+      "path": "packages/ws-client"
+    },
+    {
       "path": "packages/web-extension"
     }
   ],

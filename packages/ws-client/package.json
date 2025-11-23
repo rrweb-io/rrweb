@@ -11,9 +11,15 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "yarn turbo run prepublish",
-    "test": "vitest run",
-    "test:watch": "vitest watch",
-    "test:update": "vitest run --update",
+    "retest": "cross-env PUPPETEER_HEADLESS=true yarn retest:headful",
+    "retest:headful": "vitest run --exclude test/benchmark",
+    "build-and-test": "yarn build && yarn retest",
+    "test:headless": "cross-env PUPPETEER_HEADLESS=true yarn build-and-test",
+    "test:headful": "cross-env PUPPETEER_HEADLESS=false yarn build-and-test",
+    "test": "yarn test:headless",
+    "test:watch": "yarn build && cross-env PUPPETEER_HEADLESS=true yarn vitest --exclude test/benchmark",
+    "test:update": "yarn test:headless --update",
+    "retest:update": "cross-env PUPPETEER_HEADLESS=true yarn retest --update",    
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts"
