@@ -225,10 +225,8 @@ export function start(
     recordOptions.captureAssets.stylesheets = true; // inlineStylesheet as Asset
   }
 
-  let clientEmit = undefined;
-  if (recordOptions.emit) {
-    clientEmit = recordOptions.emit;
-  }
+  let configEmit = recordOptions.emit;
+
   let ws: Websocket | undefined;
   let wsConnectionPaused = false;
 
@@ -331,8 +329,14 @@ export function start(
       // establish the connection with metadata to set up the session server side
       ws.send(JSON.stringify(metaEvent));
     }
-    if (clientEmit !== undefined) {
-      clientEmit(event);
+    if (configEmit !== undefined) {
+      if (typeof configEmit === 'function') {
+        configEmit(event);
+      } else if (typeof window[configEmit] === 'function') {
+        (window[configEmit] as any)(event);
+      } else {
+        console.error('Could not understand emit config option:', configEmit);
+      }
     }
     if (event.type === EventType.Meta && includePii) {
       event.data.title = document.title.substring(0, 500); // already recorded in rrweb as part of the <title> element
