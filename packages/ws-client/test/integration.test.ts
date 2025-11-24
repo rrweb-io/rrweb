@@ -38,6 +38,10 @@ describe('ws-client integration tests', function (this: ISuite) {
       'http://localhost:8787/recordings/{recordingId}/ingest/ws';
     options.publicApiKey = TEST_API_KEY;
 
+    options.meta = {
+      custom: 'yes',
+    };
+
     const filePath = path.resolve(__dirname, `./html/${fileName}`);
     const html = fs.readFileSync(filePath, 'utf8');
     return replaceLast(
@@ -114,6 +118,8 @@ ${JSON.stringify(options)}
 
     console.log(recordingId);
 
+    await page.evaluate('rrwebCloud.addMeta({reality: "updated"})');
+
     console.log('waiting for backend...');
     await page.waitForTimeout(3000); // let the data make it to the backend
     console.log('waiting done.');
@@ -155,12 +161,20 @@ ${JSON.stringify(options)}
     expect(metaRes.ok).toEqual(true);
     expect(await metaRes.json()).toMatchObject([
       {
+        key: 'custom',
+        value: 'yes',
+      },
+      {
         key: 'domain',
         value: 'localhost',
       },
       {
         key: 'includePii',
         value: 'false', // TODO: could this be a real boolean?
+      },
+      {
+        key: 'reality',
+        value: 'updated',
       },
     ]);
 
