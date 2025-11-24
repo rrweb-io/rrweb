@@ -17,6 +17,9 @@ import type { recordOptions } from '../src/types';
 import { eventWithTime, NodeType, EventType } from '@rrweb/types';
 import { visitSnapshot } from 'rrweb-snapshot';
 
+// defined in packages/ws-client/.env
+const TEST_API_KEY = import.meta.env.VITE_TEST_API_KEY
+
 describe('ws-client integration tests', function (this: ISuite) {
   vi.setConfig({ testTimeout: 10_000 });
 
@@ -27,12 +30,14 @@ describe('ws-client integration tests', function (this: ISuite) {
     if (!options.captureAssets) {
       // for consistency in the tests, don't create small stylesheet assets
       options.captureAssets = {
-        stylesheetsRuleThreshold: 10
+        stylesheetsRuleThreshold: 10,
       };
     }
-    options.emit = "emitFnName";
-    options.serverUrl = 'https://localhost:8787/recordings/{recordingId}/ingest/ws';
-    
+    options.emit = 'emitFnName';
+    options.serverUrl =
+      'http://localhost:8787/recordings/{recordingId}/ingest/ws';
+    options.publicApiKey = TEST_API_KEY;
+
     const filePath = path.resolve(__dirname, `./html/${fileName}`);
     const html = fs.readFileSync(filePath, 'utf8');
     return replaceLast(
@@ -75,17 +80,92 @@ ${JSON.stringify(options)}
 
   it('can record events', async () => {
     const page: puppeteer.Page = await browser.newPage();
-    
-    page.on('console', (msg) => console.log(msg.text()));
-    await page.goto(testServerURL);  // need a real domain for sessionStorage
+
+    const fetchSpy = vi.spyOn(global, 'fetch');
+
+    let logs = '';
+
+    page.on('console', (msg) => {
+      console.log(msg.text());
+      logs += msg.text();
+    });
+
+    await page.goto(testServerURL); // need a real domain for sessionStorage
     await page.setContent(getHtml.call(this, 'link.html'));
 
-    await page.waitForTimeout(50);
+    expect(logs).not.toMatch(/WebSocket connection to .* failed/);
+    expect(logs).not.toMatch(/Failed to load resource/);
+
+    expect(fetchSpy).not.toHaveBeenCalled();
 
     const snapshots = (await page.evaluate(
       'window.snapshots',
     )) as eventWithTime[];
-    await assertSnapshot(snapshots, true);
-  });
 
+    expect(snapshots.length).toBeGreaterThan(1); // meta and fullsnapshot
+
+    const recordingId = (await page.evaluate(
+      'rrwebCloud.getRecordingId()',
+    )) as string;
+
+    expect(recordingId).toMatch(
+      /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
+    );
+
+    console.log(recordingId);
+
+    console.log('waiting for backend...');
+    await page.waitForTimeout(3000); // let the data make it to the backend
+    console.log('waiting done.');
+
+    const res = await fetch(
+      `https://api.rrwebcloud.com/recordings/${recordingId}/events`,
+      {
+        headers: {
+          Authorization: 'Bearer ' + TEST_API_KEY,
+        },
+      },
+    );
+    expect(res.ok).toEqual(true);
+
+    const serverEvents = await res.json();
+    expect(serverEvents.length).toBeGreaterThan(1);
+
+    serverEvents.forEach((e) => {
+      // TODO: these should probably not be returned in the first place
+      if ('recordingId' in e && e.recordingId === recordingId) {
+        delete e.recordingId;
+      }
+      if ('sequenceId' in e) {
+        delete e.sequenceId;
+      }
+    });
+
+    expect(snapshots).toMatchObject(serverEvents);
+
+    const metaRes = await fetch(
+      `https://api.rrwebcloud.com/recordings/${recordingId}`,
+      {
+        // thought this ended with /meta
+        headers: {
+          Authorization: 'Bearer ' + TEST_API_KEY,
+        },
+      },
+    );
+    expect(metaRes.ok).toEqual(true);
+    expect(await metaRes.json()).toMatchObject([
+      {
+        key: 'domain',
+        value: 'localhost',
+      },
+      {
+        key: 'includePii',
+        value: 'false', // TODO: could this be a real boolean?
+      },
+    ]);
+
+    // no need to write to disk (we can e.g. allow rrweb output to change between versions)
+    // WARNING: this would mutate scrub timestamps and change Meta urls!
+    //await assertSnapshot(snapshots, true);
+  });
 });
