@@ -115,7 +115,12 @@ function connect(
 
   const fallbackPosting = setInterval(() => {
     if (buffer.length()) {
-      void postData(postUrl, metaUrl, publicApiKey, buffer);
+      void postData(postUrl, metaUrl, publicApiKey, buffer).then(
+        // could reschedule the interval (timeout) here instead
+      ).catch(error => {
+        clearInterval(fallbackPosting);
+        console.error('Error periodically POSTing events:', error);
+      });
     }
   }, 5 * 1000);
 
@@ -180,24 +185,30 @@ async function postData(
       body = buffer;
       done = true;
     }
-    try {
-      const response = await fetch(postUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-ndjson',
-          Authorization: `Bearer ${publicApiKey}`,
-        },
-        body,
-        keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
-      });
-      responses.push(response);
-    } catch (error) {
-      console.error('Error POSTing events:', error);
-      return false;
-    }
-    if (done) {
+    const response = await fetch(postUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-ndjson',
+        Authorization: `Bearer ${publicApiKey}`,
+      },
+      body,
+      keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
+    });
+    responses.push(response);
+    if (response.status >= 300 || done) {
       break;
     }
+  }
+  const badResponse = responses.find((r) => r.status >= 300);
+  if (badResponse) {
+    let badResponseInfo = `${badResponse.status} ${badResponse.statusText}`;
+    if (!badResponse.bodyUsed) {
+      try {
+        badResponseInfo += "\nresponse body:" + JSON.stringify(await badResponse.json());
+      } catch (e) {       
+      }
+    }
+    throw new Error(`Bad response from POST: ${badResponseInfo}`);
   }
   return responses;
 }
