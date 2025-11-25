@@ -1,9 +1,9 @@
 /// <reference types="vite/client" />
 import dts from 'vite-plugin-dts';
-import { copyFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, existsSync } from 'node:fs';
 import { defineConfig, LibraryOptions, LibraryFormats, Plugin } from 'vite';
 import { build, Format } from 'esbuild';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
 import { umdWrapper } from 'esbuild-plugin-umd-wrapper';
 import * as fs from 'node:fs';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -51,22 +51,38 @@ function minifyAndUMDPlugin({
               outDir,
             });
           } else {
+            const umdDir = dirname(outputFilePath).replace('/dist', '/umd');
+            if (!existsSync(umdDir)) {
+              mkdirSync(umdDir);
+            }
+            const outUmd = `${outputFilePath}.umd.cjs`;
             await buildFile({
               name,
               input: inputFilePath,
-              output: `${outputFilePath}.umd.cjs`,
+              output: outUmd,
               minify: false,
               isCss: false,
               outDir,
             });
+            // Workaround because jsdelivr does use correct mime types for .umd.cjs
+            // More info: https://github.com/jsdelivr/jsdelivr/issues/18584 https://github.com/rrweb-io/rrweb/pull/1704
+            copyFileSync(
+              outUmd,
+              `${outputFilePath.replace('/dist/', '/umd/')}.js`,
+            );
+            const outUmdMin = `${outputFilePath}.umd.min.cjs`;
             await buildFile({
               name,
               input: inputFilePath,
-              output: `${outputFilePath}.umd.min.cjs`,
+              output: outUmdMin,
               minify: true,
               isCss: false,
               outDir,
             });
+            copyFileSync(
+              outUmdMin,
+              `${outputFilePath.replace('/dist/', '/umd/')}.min.js`,
+            );
           }
         }
       }
