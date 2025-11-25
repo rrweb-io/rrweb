@@ -18,7 +18,7 @@ import { eventWithTime, NodeType, EventType } from '@rrweb/types';
 import { visitSnapshot } from 'rrweb-snapshot';
 
 // defined in packages/ws-client/.env
-const TEST_API_KEY = import.meta.env.VITE_TEST_API_KEY
+const TEST_API_KEY = import.meta.env.VITE_TEST_API_KEY;
 
 describe('ws-client integration tests', function (this: ISuite) {
   vi.setConfig({ testTimeout: 10_000 });

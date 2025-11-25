@@ -115,12 +115,14 @@ function connect(
 
   const fallbackPosting = setInterval(() => {
     if (buffer.length()) {
-      void postData(postUrl, metaUrl, publicApiKey, buffer).then(
+      void postData(postUrl, metaUrl, publicApiKey, buffer)
+        .then
         // could reschedule the interval (timeout) here instead
-      ).catch(error => {
-        clearInterval(fallbackPosting);
-        console.error('Error periodically POSTing events:', error);
-      });
+        ()
+        .catch((error) => {
+          clearInterval(fallbackPosting);
+          console.error('Error periodically POSTing events:', error);
+        });
     }
   }, 5 * 1000);
 
@@ -204,9 +206,9 @@ async function postData(
     let badResponseInfo = `${badResponse.status} ${badResponse.statusText}`;
     if (!badResponse.bodyUsed) {
       try {
-        badResponseInfo += "\nresponse body:" + JSON.stringify(await badResponse.json());
-      } catch (e) {       
-      }
+        badResponseInfo +=
+          '\nresponse body:' + JSON.stringify(await badResponse.json());
+      } catch (e) {}
     }
     throw new Error(`Bad response from POST: ${badResponseInfo}`);
   }
