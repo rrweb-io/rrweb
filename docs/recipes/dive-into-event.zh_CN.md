@@ -28,7 +28,7 @@ type -> EventType.Custom
 event -> customEvent
 ```
 
-其中 EventType 是 Typescipt 的 numeric enum，在运行时是从 0 开始的数字，其类型定义详见[列表](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L10)。
+其中 EventType 是 Typescipt 的 numeric enum，在运行时是从 0 开始的数字，其类型定义详见[列表](../../packages/types/src/index.ts#L1)。
 
 其中 incrementalSnapshotEvent 代表增量数据，其具体增量类型可以通过 `event.data.source` 字段进行判断：
 
@@ -67,4 +67,4 @@ source -> IncrementalSource.Font
 data -> fontData
 ```
 
-enum IncrementalSource 的定义详见[列表](https://github.com/rrweb-io/rrweb/blob/master/src/types.ts#L64)。
+enum IncrementalSource 的定义详见[列表](../../packages/types/src/index.ts#L62)。
