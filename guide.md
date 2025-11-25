@@ -56,6 +56,8 @@ Besides the `rrweb` and `@rrweb/record` packages, rrweb also provides other pack
 - [@rrweb/rrweb-plugin-sequential-id-replay](packages/plugins/rrweb-plugin-sequential-id-replay): A plugin for replaying sequential IDs.
 - [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record): A plugin for stream `<canvas>` via WebRTC.
 - [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay): A plugin for playing streamed `<canvas>` via WebRTC.
+- [@rrweb/rrweb-plugin-network-record](packages/plugins/rrweb-plugin-network-record): A plugin for recording network requests (xhr/fetch).
+- [@rrweb/rrweb-plugin-network-replay](packages/plugins/rrweb-plugin-network-replay): A plugin for replaying network requests (xhr/fetch).
 
 ### NPM
 
