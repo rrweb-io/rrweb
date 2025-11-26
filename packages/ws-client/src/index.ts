@@ -290,7 +290,7 @@ export function start(
   }
   const postUrl = sURL.href;
   if (sURL.pathname.endsWith('/ingest')) {
-    sURL.pathname = sURL.pathname.slice(0, -6) + '/meta';
+    sURL.pathname = sURL.pathname.slice(0, -6) + 'meta';
   }
   const metaUrl = sURL.href;
 
