@@ -8,9 +8,7 @@ import {
   getServerURL,
   launchPuppeteer,
   waitForRAF,
-  waitForIFrameLoad,
   replaceLast,
-  generateRecordSnippet,
   ISuite,
 } from './utils';
 import type { recordOptions } from '../src/types';
@@ -76,7 +74,6 @@ ${JSON.stringify(options)}
 
     // this is linked on file system with `ln -s dist/js-client.umd.cjs test/record.js`
     const bundlePath = path.resolve(__dirname, '../dist/js-client.umd.cjs');
-    //code = fs.readFileSync(bundlePath, 'utf8');
   });
 
   afterAll(async () => {
