@@ -406,7 +406,7 @@ export function start(
             }
           }
         } catch (e) {
-          // ignore
+          // ignore, recording may not be active yet
         }
       },
       false,
