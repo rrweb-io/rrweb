@@ -28,16 +28,49 @@ export type clientConfig = {
 
 export type nameValues = Record<string, string | boolean | number>;
 
+type websocketListenerHandler = (i: Websocket, ev: MessageEvent) => void;
+
+export type customEventWithTime = customEvent & {
+  timestamp: number;
+};
+
 let defaultClientConfig = {
   serverUrl: 'ws://localhost:40000',
   publicApiKey: '',
   autostart: false,
   includePii: false,
 };
+const sessionStorageName = 'rrweb-cloud-recording-id';
+const wsLimit = 10e5; // this is approximate and depends on the browser, also on how unicode is encoded (we are comparing against the length of a javascript string)
 
-export type customEventWithTime = customEvent & {
-  timestamp: number;
-};
+let ws: Websocket | undefined;
+let wsConnectionPaused = false;
+
+const buffer: ArrayQueue<string> = new ArrayQueue();
+let rrwebStopFn: listenerHandler | undefined;
+
+export function stop(resetRecordingId: boolean) {
+  // reset all state so that start() c
+  if (rrwebStopFn !== undefined) {
+    rrwebStopFn();
+    rrwebStopFn = undefined;
+  }
+  if (ws) {
+    ws.close();
+    wsConnectionPaused = false;
+    ws = undefined; // so `emit` can restart it again if page is unfrozen
+  }
+  buffer.clear();
+  if (resetRecordingId) {
+    removeRecordingId();
+  }
+}
+
+function removeRecordingId(): void {
+  try {
+    sessionStorage.removeItem(sessionStorageName);
+  } catch (e) {}
+}
 
 function getSetVisitorId() {
   const nameEQ = 'rrweb-cloud-visitor-id=';
@@ -65,14 +98,13 @@ function getSetVisitorId() {
 }
 
 function getSetRecordingId(): string | null {
-  const name = 'rrweb-cloud-recording-id';
   let value: string | null = null;
   try {
-    value = sessionStorage.getItem(name);
+    value = sessionStorage.getItem(sessionStorageName);
     if (!value) {
       value = self.crypto.randomUUID();
       try {
-        sessionStorage.setItem(name, value);
+        sessionStorage.setItem(sessionStorageName, value);
       } catch (e) {
         value = null;
       }
@@ -86,12 +118,6 @@ function getSetRecordingId(): string | null {
 // if API client requests the recording ID prior to start,
 // set it immediately so that it will be the eventual id used
 export const getRecordingId = getSetRecordingId;
-
-const wsLimit = 10e5; // this is approximate and depends on the browser, also on how unicode is encoded (we are comparing against the length of a javascript string)
-const buffer: ArrayQueue<string> = new ArrayQueue();
-let rrwebStopFn: listenerHandler | undefined;
-
-type websocketListenerHandler = (i: Websocket, ev: MessageEvent) => void;
 
 function connect(
   serverUrl: string,
@@ -226,9 +252,6 @@ export function start(
   }
 
   let configEmit = recordOptions.emit;
-
-  let ws: Websocket | undefined;
-  let wsConnectionPaused = false;
 
   const handleMessage = (_: Websocket, ev: MessageEvent) => {
     const event = JSON.parse(ev.data);
@@ -489,6 +512,7 @@ function looseJsonParse(obj: string) {
 
 export default {
   start,
+  stop,
   addMeta,
   addPageviewMeta,
   addCustomEvent,
