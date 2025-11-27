@@ -275,7 +275,7 @@ export function start(
   }
 
   const initialPayload: nameValues = {
-    domain: document.location.hostname || document.location.href, // latter is for debugging (e.g. a file:// url)
+    domain: document.location.hostname || document.location.href.split('?')[0], // latter is for debugging (e.g. a file:// url)
     includePii: Boolean(includePii), // tell server not to store IP addresses or user agents
   };
 

@@ -12,7 +12,8 @@
       // provide some config
       {
         "emit": "mitFn",
-          "serverUrl": "http://localhost:8787/recordings/{recordingId}/ingest/ws",
+        "serverUrl": "http://localhost:8787/recordings/{recordingId}/ingest/ws",
+        "publicApiKey": document.location.search.split('publicApiKey=')[1],
           "autostart": true,
           "blockSelector": '.my-block',
           "captureAssets": {
