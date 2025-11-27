@@ -166,7 +166,7 @@ async function postData(
             void fetch(metaUrl, {
               method: 'POST',
               headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/x-ndjson',
                 Authorization: `Bearer ${publicApiKey}`,
               },
               body: eventStr,
