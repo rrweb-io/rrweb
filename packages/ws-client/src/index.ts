@@ -340,8 +340,8 @@ export function start(
       ws = connect(serverUrl, postUrl, metaUrl, publicApiKey, handleMessage);
 
       ws.addEventListener(WebsocketEvent.close, () => {
-        wsConnectionPaused = false;
-        ws = undefined; // so we can retry again if connection restarts
+        // fallback to postData while backoff algorithm is in effect
+        wsConnectionPaused = true;
       });
     }
     if (configEmit !== undefined) {
