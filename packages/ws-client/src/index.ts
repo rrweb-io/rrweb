@@ -169,7 +169,7 @@ async function postData(
                 'Content-Type': 'application/x-ndjson',
                 Authorization: `Bearer ${publicApiKey}`,
               },
-              body: eventStr,
+              body: JSON.stringify(metaEvent.data.payload),
               keepalive: eventStr.length < keepaliveLimit,
             }).catch((e) => console.error('Failed to send meta:', e));
             continue;
