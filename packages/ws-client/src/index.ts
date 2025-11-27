@@ -96,7 +96,6 @@ type websocketListenerHandler = (i: Websocket, ev: MessageEvent) => void;
 function connect(
   serverUrl: string,
   postUrl: string,
-  metaUrl: string,
   publicApiKey: string,
   messageHandler: websocketListenerHandler,
 ): Websocket {
@@ -115,7 +114,7 @@ function connect(
 
   const fallbackPosting = setInterval(() => {
     if (buffer.length()) {
-      void postData(postUrl, metaUrl, publicApiKey, buffer)
+      void postData(postUrl, publicApiKey, buffer)
         .then
         // could reschedule the interval (timeout) here instead
         ()
@@ -136,7 +135,6 @@ function connect(
 
 async function postData(
   postUrl: string,
-  metaUrl: string,
   publicApiKey: string,
   buffer: ArrayQueue<string> | string,
 ) {
@@ -156,25 +154,6 @@ async function postData(
         eventStr !== undefined;
         eventStr = buffer.read()
       ) {
-        if (eventStr.substring(0, 200).includes('"recording-meta"')) {
-          // avoid reparsing each eventStr
-          const metaEvent = JSON.parse(eventStr);
-          if (
-            metaEvent.type === EventType.Custom &&
-            metaEvent.data.tag === 'recording-meta'
-          ) {
-            void fetch(metaUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/x-ndjson',
-                Authorization: `Bearer ${publicApiKey}`,
-              },
-              body: JSON.stringify(metaEvent.data.payload),
-              keepalive: eventStr.length < keepaliveLimit,
-            }).catch((e) => console.error('Failed to send meta:', e));
-            continue;
-          }
-        }
         toSend.push(eventStr);
         sendSize += eventStr.length;
         if (sendSize > keepaliveLimit) {
@@ -295,10 +274,6 @@ export function start(
     sURL.pathname = sURL.pathname.slice(0, -3);
   }
   const postUrl = sURL.href;
-  if (sURL.pathname.endsWith('/ingest')) {
-    sURL.pathname = sURL.pathname.slice(0, -6) + 'meta';
-  }
-  const metaUrl = sURL.href;
 
   if (includePii) {
     initialPayload.visitor = getSetVisitorId();
@@ -343,7 +318,7 @@ export function start(
   recordOptions.emit = (event) => {
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
-      ws = connect(serverUrl, postUrl, metaUrl, publicApiKey, handleMessage);
+      ws = connect(serverUrl, postUrl, publicApiKey, handleMessage);
 
       ws.addEventListener(WebsocketEvent.close, () => {
         // fallback to postData while backoff algorithm is in effect
@@ -368,7 +343,7 @@ export function start(
     // TODO: add browser native compression
     if (eventStr.length > wsLimit) {
       // Assuming wsLimit is a defined constant, and eventStr.length is intended.
-      void postData(postUrl, metaUrl, publicApiKey, eventStr);
+      void postData(postUrl, publicApiKey, eventStr);
     } else if (ws && !wsConnectionPaused) {
       ws.send(eventStr);
     } else {
@@ -408,7 +383,7 @@ export function start(
             // document.hidden is better than beforeunload, see:
             // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
             if ((!ws || wsConnectionPaused) && buffer.length()) {
-              void postData(postUrl, metaUrl, publicApiKey, buffer);
+              void postData(postUrl, publicApiKey, buffer);
             }
           }
         } catch (e) {
