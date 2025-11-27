@@ -323,6 +323,17 @@ export function start(
     Object.assign(initialPayload, options.meta);
   }
 
+  const metaEvent: customEventWithTime = {
+    timestamp: record.nowTimestamp(),
+    type: EventType.Custom,
+    data: {
+      tag: 'recording-meta',
+      payload: initialPayload,
+    },
+  };
+  // metadata event should be the first seen server side
+  buffer.add(JSON.stringify(metaEvent));
+
   recordOptions.emit = (event) => {
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
@@ -332,17 +343,6 @@ export function start(
         wsConnectionPaused = false;
         ws = undefined; // so we can retry again if connection restarts
       });
-
-      const metaEvent: customEventWithTime = {
-        timestamp: record.nowTimestamp(),
-        type: EventType.Custom,
-        data: {
-          tag: 'recording-meta',
-          payload: initialPayload,
-        },
-      };
-      // establish the connection with metadata to set up the session server side
-      ws.send(JSON.stringify(metaEvent));
     }
     if (configEmit !== undefined) {
       if (typeof configEmit === 'function') {
