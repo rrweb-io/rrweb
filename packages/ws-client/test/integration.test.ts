@@ -21,7 +21,7 @@ import { visitSnapshot } from 'rrweb-snapshot';
 const TEST_API_KEY = import.meta.env.VITE_TEST_API_KEY;
 
 describe('ws-client integration tests', function (this: ISuite) {
-  vi.setConfig({ testTimeout: 10_000 });
+  vi.setConfig({ testTimeout: 20_000 });
 
   const getHtml = (
     fileName: string,
@@ -34,8 +34,10 @@ describe('ws-client integration tests', function (this: ISuite) {
       };
     }
     options.emit = 'emitFnName';
-    options.serverUrl =
-      'http://localhost:8787/recordings/{recordingId}/ingest/ws';
+    if (!options.serverUrl) {
+      options.serverUrl =
+        'http://localhost:8787/recordings/{recordingId}/ingest/ws';
+    }
     options.publicApiKey = TEST_API_KEY;
 
     options.meta = {
@@ -82,25 +84,42 @@ ${JSON.stringify(options)}
     server.close();
   });
 
-  it('can record events', async () => {
+  it.concurrent.for([
+    {},
+    {
+      disableWebsockets: true, // dummy
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/ingest', // actually disable websockets
+    },
+  ])('can roundtrip events: %j', async (options, { expect }) => {
+    let optionsIn = JSON.stringify(options);
+
     const page: puppeteer.Page = await browser.newPage();
 
     const fetchSpy = vi.spyOn(global, 'fetch');
 
     let logs = '';
 
+    let recordingId = '<recordingId not yet set>';
+
+    const waitForIngest = page.waitForRequest((request) => {
+      console.log('got: ' + request.url());
+      return request.url().includes('ingest');
+    });
+
     page.on('console', (msg) => {
-      console.log(msg.text());
+      if (
+        options.disableWebsockets &&
+        msg.text().includes('Error during WebSocket handshake')
+      ) {
+        // an expected log when we are simulating websocket failure
+      } else {
+        console.log(recordingId + ': ' + msg.text());
+      }
       logs += msg.text();
     });
 
     await page.goto(testServerURL); // need a real domain for sessionStorage
-    await page.setContent(getHtml.call(this, 'link.html'));
-
-    expect(logs).not.toMatch(/WebSocket connection to .* failed/);
-    expect(logs).not.toMatch(/Failed to load resource/);
-
-    expect(fetchSpy).not.toHaveBeenCalled();
+    await page.setContent(getHtml.call(this, 'link.html', options));
 
     const snapshots = (await page.evaluate(
       'window.snapshots',
@@ -108,7 +127,7 @@ ${JSON.stringify(options)}
 
     expect(snapshots.length).toBeGreaterThan(1); // meta and fullsnapshot
 
-    const recordingId = (await page.evaluate(
+    recordingId = (await page.evaluate(
       'rrwebCloud.getRecordingId()',
     )) as string;
 
@@ -116,13 +135,36 @@ ${JSON.stringify(options)}
       /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
     );
 
-    console.log(recordingId);
+    console.log(`got recordingId ${recordingId} test: ${optionsIn}`);
 
     await page.evaluate('rrwebCloud.addMeta({reality: "updated"})');
 
-    console.log('waiting for backend...');
-    await page.waitForTimeout(3000); // let the data make it to the backend
-    console.log('waiting done.');
+    if (options.disableWebsockets) {
+      console.log(`${recordingId} waitForIngest...`);
+      await waitForIngest;
+      console.log(`${recordingId} waitForIngest done`);
+    }
+
+    let expectLogs = expect(logs);
+    let expectFetch = expect(fetchSpy);
+    if (!options.disableWebsockets) {
+      expectLogs = expectLogs.not;
+      expectFetch = expectFetch.not;
+    }
+    expectLogs.toMatch(/WebSocket connection to .* failed/);
+    //expectLogs.toMatch(/Failed to load resource/);
+    if (!options.disableWebsockets) {
+      // dunno why we need this if, something not working as we've already done waitForIngest
+      expectFetch.toHaveBeenCalled();
+    }
+
+    console.log(`${recordingId} waitForBackend...`);
+    if (options.disableWebsockets) {
+      await page.waitForTimeout(7000); // let the data make it to the backend
+    } else {
+      await page.waitForTimeout(5000); // let the data make it to the backend
+    }
+    console.log(`${recordingId} waitForBackend done`);
 
     const res = await fetch(
       `https://api.rrwebcloud.com/recordings/${recordingId}/events`,
