@@ -144,11 +144,11 @@ async function postData(
   let done = false;
   const responses = [];
   // eslint-disable-next-line no-constant-condition
+  const toSend = [];
   while (true) {
     let body;
     if (buffer instanceof ArrayQueue) {
       // this clears the buffer so no need to call buffer.clear()
-      const toSend = [];
       let sendSize = 0;
       done = true;
       for (
@@ -197,7 +197,13 @@ async function postData(
       keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
     });
     responses.push(response);
-    if (response.status >= 300 || done) {
+    if (response.status >= 300) {
+      if (buffer instanceof ArrayQueue) {
+        // re-queue events in case we can reconnect next time or with ws
+        toSend.forEach((eventStr) => buffer.add(eventStr));
+      }
+      break;
+    } else if (done) {
       break;
     }
   }
