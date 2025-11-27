@@ -197,7 +197,7 @@ async function postData(
       keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
     });
     responses.push(response);
-    if (response.status >= 300) {
+    if (!response.ok) {
       if (buffer instanceof ArrayQueue) {
         // re-queue events in case we can reconnect next time or with ws
         toSend.forEach((eventStr) => buffer.add(eventStr));
