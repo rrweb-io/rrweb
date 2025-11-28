@@ -1,5 +1,11 @@
 # @rrwebcloud/js-client
 
+## 2.0.0-alpha.24
+
+### Patch Changes
+
+- [`a66e961`](https://github.com/rrweb-cloud/rrweb/commit/a66e961f142de5436431932f668e93dfc9c392fc) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - 🔧 improve how fallback from websockets to POST works. Add a public stop function
+
 ## 2.0.0-alpha.23
 
 ### Minor Changes
