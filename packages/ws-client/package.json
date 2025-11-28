@@ -1,6 +1,6 @@
 {
   "name": "@rrwebcloud/js-client",
-  "version": "2.0.0-alpha.23",
+  "version": "2.0.0-alpha.24",
   "publishConfig": {
     "access": "public"
   },
@@ -19,7 +19,7 @@
     "test": "yarn test:headless",
     "test:watch": "yarn build && cross-env PUPPETEER_HEADLESS=true yarn vitest --exclude test/benchmark",
     "test:update": "yarn test:headless --update",
-    "retest:update": "cross-env PUPPETEER_HEADLESS=true yarn retest --update",    
+    "retest:update": "cross-env PUPPETEER_HEADLESS=true yarn retest --update",
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src/**/*.ts"
