@@ -482,20 +482,20 @@ if (document && document.currentScript) {
   }
   if (self.src) {
     try {
-      const srcUrl = new URL(self.src);
-      if (srcUrl.hostname) {
+      if (config.serverUrl) {
+        // transform provided relative URLs into absolute based on where we are served from
+        config.serverUrl = new URL(config.serverUrl, self.src).href;
+      } else if (srcUrl.hostname) {
+        // generate a default server url
+        const srcUrl = new URL(self.src);
         let apiHost = srcUrl.hostname;
         if (apiHost.startsWith('rrweb')) {
           apiHost = 'api.' + apiHost;
         }
-        if (!config.serverUrl) {
-          config.serverUrl = `https://${apiHost}/recordings/{recordingId}/ingest/ws`;
-        }
+        config.serverUrl = `https://${apiHost}/recordings/{recordingId}/ingest/ws`;
       }
     } catch {
-      console.error(
-        'rrweb-cloud: Unable to start(); sessionStorage unavailable',
-      );
+      // maybe we are in a weird environment, we're likely gonna fail when we next call new URL on serverurl
     }
   }
   if (config.autostart || truthyAttr.includes(self.getAttribute('autostart'))) {
