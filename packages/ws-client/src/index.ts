@@ -348,7 +348,7 @@ export function start(
       if (typeof configEmit === 'function') {
         configEmit(event);
       } else if (typeof window[configEmit] === 'function') {
-        (window[configEmit] as typeof recordOptions.emit)(event);
+        (window[configEmit] as any)(event);
       } else {
         console.error('Could not understand emit config option:', configEmit);
       }
