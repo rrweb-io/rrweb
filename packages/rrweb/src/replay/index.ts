@@ -618,6 +618,12 @@ export class Replayer {
     // hide iframe before first meta event
     this.iframe.style.display = 'none';
     this.iframe.setAttribute('sandbox', attributes.join(' '));
+    
+    // Apply CSP if configured
+    if (this.config.csp) {
+      this.iframe.setAttribute('csp', this.config.csp);
+    }
+    
     this.disableInteract();
     this.wrapper.appendChild(this.iframe);
     if (this.iframe.contentWindow && this.iframe.contentDocument) {
