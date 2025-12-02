@@ -98,10 +98,13 @@ ${JSON.stringify(options)}
 
     let recordingId = '<recordingId not yet set>';
 
-    const waitForIngest = page.waitForRequest((request) => {
-      console.log('got: ' + request.url());
-      return request.url().includes('ingest');
-    });
+    let waitForIngest;
+    if (options.disableWebsockets) {
+      waitForIngest = page.waitForRequest((request) => {
+        console.log('got: ' + request.url());
+        return request.url().includes('ingest');
+      });
+    }
 
     page.on('console', (msg) => {
       if (
