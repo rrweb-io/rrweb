@@ -618,12 +618,12 @@ export class Replayer {
     // hide iframe before first meta event
     this.iframe.style.display = 'none';
     this.iframe.setAttribute('sandbox', attributes.join(' '));
-    
+
     // Apply CSP if configured
     if (this.config.csp) {
       this.iframe.setAttribute('csp', this.config.csp);
     }
-    
+
     this.disableInteract();
     this.wrapper.appendChild(this.iframe);
     if (this.iframe.contentWindow && this.iframe.contentDocument) {
@@ -1542,8 +1542,8 @@ export class Replayer {
       const targetDoc = mutation.node.rootId
         ? mirror.getNode(mutation.node.rootId)
         : this.usingVirtualDom
-        ? this.virtualDom
-        : this.iframe.contentDocument;
+          ? this.virtualDom
+          : this.iframe.contentDocument;
       if (isSerializedIframe<typeof parent>(parent, mirror)) {
         this.attachDocumentToIframe(
           mutation,
