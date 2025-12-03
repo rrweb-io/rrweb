@@ -159,19 +159,28 @@ ${JSON.stringify(options)}
       expectFetch.toHaveBeenCalled();
     }
 
-    await page.waitForTimeout(1500);
-
-    const res = await fetch(
-      `http://localhost:8787/recordings/${recordingId}/events?tblocal`,
-      {
-        headers: {
-          Authorization: 'Bearer ' + TEST_API_KEY,
+    let serverEvents = null;
+    await expect
+      .poll(
+        async () => {
+          const res = await fetch(
+            `http://localhost:8787/recordings/${recordingId}/events?tblocal`,
+            {
+              headers: {
+                Authorization: 'Bearer ' + TEST_API_KEY,
+              },
+            },
+          );
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          serverEvents = await res.json();
+          return serverEvents.length;
         },
-      },
-    );
-    expect(res.ok).toEqual(true);
+        { timeout: 5000, interval: 200 },
+      )
+      .toBeGreaterThan(0);
 
-    const serverEvents = await res.json();
     expect(serverEvents.length).toBeGreaterThan(1);
 
     serverEvents.forEach((e) => {
@@ -186,17 +195,29 @@ ${JSON.stringify(options)}
 
     expect(snapshots).toMatchObject(serverEvents);
 
-    const metaRes = await fetch(
-      `http://localhost:8787/recordings/${recordingId}?tblocal`,
-      {
-        // thought this ended with /meta
-        headers: {
-          Authorization: 'Bearer ' + TEST_API_KEY,
+    let metaJson = null;
+    await expect
+      .poll(
+        async () => {
+          const res = await fetch(
+            `http://localhost:8787/recordings/${recordingId}?tblocal`,
+            {
+              headers: {
+                Authorization: 'Bearer ' + TEST_API_KEY,
+              },
+            },
+          );
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          metaJson = await res.json();
+          return metaJson.length;
         },
-      },
-    );
-    expect(metaRes.ok).toEqual(true);
-    expect(await metaRes.json()).toMatchObject([
+        { timeout: 5000, interval: 200 },
+      )
+      .toBeGreaterThan(0);
+
+    expect(metaJson).toMatchObject([
       {
         key: 'custom',
         value: 'yes',
