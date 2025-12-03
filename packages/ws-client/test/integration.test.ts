@@ -36,6 +36,7 @@ describe('ws-client integration tests', function (this: ISuite) {
       options.serverUrl =
         'http://localhost:8787/recordings/{recordingId}/ingest/ws';
     }
+    options.serverUrl += '?tblocal';
     options.publicApiKey = TEST_API_KEY;
 
     options.meta = {
@@ -158,16 +159,10 @@ ${JSON.stringify(options)}
       expectFetch.toHaveBeenCalled();
     }
 
-    console.log(`${recordingId} waitForBackend...`);
-    if (options.disableWebsockets) {
-      await page.waitForTimeout(7000); // let the data make it to the backend
-    } else {
-      await page.waitForTimeout(5000); // let the data make it to the backend
-    }
-    console.log(`${recordingId} waitForBackend done`);
+    await page.waitForTimeout(1500);
 
     const res = await fetch(
-      `https://api.rrwebcloud.com/recordings/${recordingId}/events`,
+      `http://localhost:8787/recordings/${recordingId}/events?tblocal`,
       {
         headers: {
           Authorization: 'Bearer ' + TEST_API_KEY,
@@ -192,7 +187,7 @@ ${JSON.stringify(options)}
     expect(snapshots).toMatchObject(serverEvents);
 
     const metaRes = await fetch(
-      `https://api.rrwebcloud.com/recordings/${recordingId}`,
+      `http://localhost:8787/recordings/${recordingId}?tblocal`,
       {
         // thought this ended with /meta
         headers: {
