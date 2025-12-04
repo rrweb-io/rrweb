@@ -349,7 +349,7 @@ export function start(
       if (typeof configEmit === 'function') {
         configEmit(event);
       } else if (typeof window[configEmit] === 'function') {
-        // eslint-disable-next-line no-unsafe-call
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call
         (window[configEmit] as any)(event);
       } else {
         console.error('Could not understand emit config option:', configEmit);
