@@ -481,14 +481,16 @@ if (document && document.currentScript) {
       if (config.serverUrl) {
         // transform provided relative URLs into absolute based on where we are served from
         config.serverUrl = new URL(config.serverUrl, self.src).href;
-      } else if (srcUrl.hostname) {
+      } else {
         // generate a default server url
         const srcUrl = new URL(self.src);
-        let apiHost = srcUrl.hostname;
-        if (apiHost.startsWith('rrweb')) {
-          apiHost = 'api.' + apiHost;
+        if (srcUrl.hostname) {
+          let apiHost = srcUrl.hostname;
+          if (apiHost.startsWith('rrweb')) {
+            apiHost = 'api.' + apiHost;
+          }
+          config.serverUrl = `https://${apiHost}/recordings/{recordingId}/ingest/ws`;
         }
-        config.serverUrl = `https://${apiHost}/recordings/{recordingId}/ingest/ws`;
       }
     } catch {
       // eslint-ignore-next-line
