@@ -279,6 +279,7 @@ export function start(
 
   // the expected replacement of recording id
   serverUrl = serverUrl.replace('{recordingId}', recordingId);
+  serverUrl = serverUrl.replace('%7BrecordingId%7D', recordingId); // as mangled by `new URL`
 
   const sURL = new URL(serverUrl);
   if (!serverUrl.includes(recordingId)) {
