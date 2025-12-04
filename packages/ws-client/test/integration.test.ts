@@ -91,7 +91,8 @@ ${JSON.stringify(options)}
   ])('can roundtrip events: %j', async (options, { expect }) => {
     let optionsIn = JSON.stringify(options);
 
-    const page: puppeteer.Page = await browser.newPage();
+    const context = await browser.createIncognitoBrowserContext(); // no interference during concurrency
+    let page = await context.newPage();
 
     const fetchSpy = vi.spyOn(global, 'fetch');
 
