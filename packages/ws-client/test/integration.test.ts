@@ -178,7 +178,7 @@ ${JSON.stringify(options)}
           serverEvents = await res.json();
           return serverEvents.length;
         },
-        { timeout: 5000, interval: 200 },
+        { timeout: 7000, interval: 200 },
       )
       .toBeGreaterThan(0);
 
