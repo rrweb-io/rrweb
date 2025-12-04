@@ -67,9 +67,7 @@ export function stop(resetRecordingId: boolean) {
 }
 
 function removeRecordingId(): void {
-  try {
-    sessionStorage.removeItem(sessionStorageName);
-  } catch (e) {}
+  sessionStorage.removeItem(sessionStorageName);
 }
 
 function getSetVisitorId() {
@@ -167,8 +165,8 @@ async function postData(
   const keepaliveLimit = 65000;
   let done = false;
   const responses = [];
-  // eslint-disable-next-line no-constant-condition
   const toSend = [];
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     let body;
     if (buffer instanceof ArrayQueue) {
@@ -216,10 +214,8 @@ async function postData(
   if (badResponse) {
     let badResponseInfo = `${badResponse.status} ${badResponse.statusText}`;
     if (!badResponse.bodyUsed) {
-      try {
-        badResponseInfo +=
-          '\nresponse body:' + JSON.stringify(await badResponse.json());
-      } catch (e) {}
+      badResponseInfo +=
+        '\nresponse body:' + JSON.stringify(await badResponse.json());
     }
     throw new Error(`Bad response from POST: ${badResponseInfo}`);
   }
@@ -251,7 +247,7 @@ export function start(
     recordOptions.captureAssets.stylesheets = true; // inlineStylesheet as Asset
   }
 
-  let configEmit = recordOptions.emit;
+  const configEmit = recordOptions.emit;
 
   const handleMessage = (_: Websocket, ev: MessageEvent) => {
     const event = JSON.parse(ev.data);
@@ -283,6 +279,7 @@ export function start(
 
   // the expected replacement of recording id
   serverUrl = serverUrl.replace('{recordingId}', recordingId);
+  serverUrl = serverUrl.replace('%7BrecordingId%7D', recordingId); // as mangled by `new URL`
 
   const sURL = new URL(serverUrl);
   if (!serverUrl.includes(recordingId)) {
@@ -352,6 +349,7 @@ export function start(
       if (typeof configEmit === 'function') {
         configEmit(event);
       } else if (typeof window[configEmit] === 'function') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call
         (window[configEmit] as any)(event);
       } else {
         console.error('Could not understand emit config option:', configEmit);
@@ -482,20 +480,23 @@ if (document && document.currentScript) {
   }
   if (self.src) {
     try {
-      const srcUrl = new URL(self.src);
-      if (srcUrl.hostname) {
-        let apiHost = srcUrl.hostname;
-        if (apiHost.startsWith('rrweb')) {
-          apiHost = 'api.' + apiHost;
-        }
-        if (!config.serverUrl) {
+      if (config.serverUrl) {
+        // transform provided relative URLs into absolute based on where we are served from
+        config.serverUrl = new URL(config.serverUrl, self.src).href;
+      } else {
+        // generate a default server url
+        const srcUrl = new URL(self.src);
+        if (srcUrl.hostname) {
+          let apiHost = srcUrl.hostname;
+          if (apiHost.startsWith('rrweb')) {
+            apiHost = 'api.' + apiHost;
+          }
           config.serverUrl = `https://${apiHost}/recordings/{recordingId}/ingest/ws`;
         }
       }
     } catch {
-      console.error(
-        'rrweb-cloud: Unable to start(); sessionStorage unavailable',
-      );
+      // eslint-ignore-next-line
+      // maybe we are in a weird environment, we're likely gonna fail when we next call new URL on serverurl
     }
   }
   if (config.autostart || truthyAttr.includes(self.getAttribute('autostart'))) {
