@@ -36,6 +36,7 @@ describe('ws-client integration tests', function (this: ISuite) {
       options.serverUrl =
         'http://localhost:8787/recordings/{recordingId}/ingest/ws';
     }
+    options.serverUrl += '?tblocal';
     options.publicApiKey = TEST_API_KEY;
 
     options.meta = {
@@ -90,7 +91,8 @@ ${JSON.stringify(options)}
   ])('can roundtrip events: %j', async (options, { expect }) => {
     let optionsIn = JSON.stringify(options);
 
-    const page: puppeteer.Page = await browser.newPage();
+    const context = await browser.createIncognitoBrowserContext(); // no interference during concurrency
+    let page = await context.newPage();
 
     const fetchSpy = vi.spyOn(global, 'fetch');
 
@@ -98,10 +100,13 @@ ${JSON.stringify(options)}
 
     let recordingId = '<recordingId not yet set>';
 
-    const waitForIngest = page.waitForRequest((request) => {
-      console.log('got: ' + request.url());
-      return request.url().includes('ingest');
-    });
+    let waitForIngest;
+    if (options.disableWebsockets) {
+      waitForIngest = page.waitForRequest((request) => {
+        console.log('got: ' + request.url());
+        return request.url().includes('ingest');
+      });
+    }
 
     page.on('console', (msg) => {
       if (
@@ -155,25 +160,28 @@ ${JSON.stringify(options)}
       expectFetch.toHaveBeenCalled();
     }
 
-    console.log(`${recordingId} waitForBackend...`);
-    if (options.disableWebsockets) {
-      await page.waitForTimeout(7000); // let the data make it to the backend
-    } else {
-      await page.waitForTimeout(5000); // let the data make it to the backend
-    }
-    console.log(`${recordingId} waitForBackend done`);
-
-    const res = await fetch(
-      `https://api.rrwebcloud.com/recordings/${recordingId}/events`,
-      {
-        headers: {
-          Authorization: 'Bearer ' + TEST_API_KEY,
+    let serverEvents = null;
+    await expect
+      .poll(
+        async () => {
+          const res = await fetch(
+            `http://localhost:8787/recordings/${recordingId}/events?tblocal`,
+            {
+              headers: {
+                Authorization: 'Bearer ' + TEST_API_KEY,
+              },
+            },
+          );
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          serverEvents = await res.json();
+          return serverEvents.length;
         },
-      },
-    );
-    expect(res.ok).toEqual(true);
+        { timeout: 7000, interval: 200 },
+      )
+      .toBeGreaterThan(0);
 
-    const serverEvents = await res.json();
     expect(serverEvents.length).toBeGreaterThan(1);
 
     serverEvents.forEach((e) => {
@@ -188,17 +196,29 @@ ${JSON.stringify(options)}
 
     expect(snapshots).toMatchObject(serverEvents);
 
-    const metaRes = await fetch(
-      `https://api.rrwebcloud.com/recordings/${recordingId}`,
-      {
-        // thought this ended with /meta
-        headers: {
-          Authorization: 'Bearer ' + TEST_API_KEY,
+    let metaJson = null;
+    await expect
+      .poll(
+        async () => {
+          const res = await fetch(
+            `http://localhost:8787/recordings/${recordingId}?tblocal`,
+            {
+              headers: {
+                Authorization: 'Bearer ' + TEST_API_KEY,
+              },
+            },
+          );
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          metaJson = await res.json();
+          return metaJson.length;
         },
-      },
-    );
-    expect(metaRes.ok).toEqual(true);
-    expect(await metaRes.json()).toMatchObject([
+        { timeout: 5000, interval: 200 },
+      )
+      .toBeGreaterThan(0);
+
+    expect(metaJson).toMatchObject([
       {
         key: 'custom',
         value: 'yes',
