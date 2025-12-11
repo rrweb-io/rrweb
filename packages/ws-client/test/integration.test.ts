@@ -220,21 +220,13 @@ ${JSON.stringify(options)}
 
     expect(metaJson).toMatchObject([
       {
-        key: 'custom',
-        value: 'yes',
-      },
-      {
-        key: 'domain',
-        value: 'localhost',
-      },
-      {
-        key: 'includePii',
-        value: 'false', // TODO: could this be a real boolean?
-      },
-      {
-        key: 'reality',
-        value: 'updated',
-      },
+        metadata: {
+          custom: 'yes',
+          domain: 'localhost',
+          includePii: 'false', // TODO: could this be a real boolean?
+          reality: 'updated',
+        },
+      }
     ]);
 
     // no need to write to disk (we can e.g. allow rrweb output to change between versions)
