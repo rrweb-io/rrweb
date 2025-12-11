@@ -226,7 +226,7 @@ ${JSON.stringify(options)}
           includePii: 'false', // TODO: could this be a real boolean?
           reality: 'updated',
         },
-      }
+      },
     ]);
 
     // no need to write to disk (we can e.g. allow rrweb output to change between versions)
