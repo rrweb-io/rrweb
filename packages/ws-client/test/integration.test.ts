@@ -41,6 +41,7 @@ describe('ws-client integration tests', function (this: ISuite) {
 
     options.meta = {
       custom: 'yes',
+      sessionId: 'session-123',
     };
 
     const filePath = path.resolve(__dirname, `./html/${fileName}`);
@@ -222,6 +223,7 @@ ${JSON.stringify(options)}
       {
         metadata: {
           custom: 'yes',
+          sessionId: 'session-123',
           domain: 'localhost',
           includePii: 'false', // TODO: could this be a real boolean?
           reality: 'updated',
