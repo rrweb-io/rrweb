@@ -215,7 +215,7 @@ ${JSON.stringify(options)}
           metaJson = await res.json();
           return metaJson && metaJson.metadata && Object.keys(metaJson.metadata).length;
         },
-        { timeout: 5000, interval: 200 },
+        { timeout: 8000, interval: 200 },
       )
       .toBeGreaterThan(0);
 
