@@ -213,23 +213,21 @@ ${JSON.stringify(options)}
             throw new Error(`HTTP error! status: ${res.status}`);
           }
           metaJson = await res.json();
-          return metaJson.length;
+          return metaJson && metaJson.metadata && Object.keys(metaJson.metadata).length;
         },
         { timeout: 5000, interval: 200 },
       )
       .toBeGreaterThan(0);
 
-    expect(metaJson).toMatchObject([
-      {
-        metadata: {
-          custom: 'yes',
-          sessionId: 'session-123',
-          domain: 'localhost',
-          includePii: 'false', // TODO: could this be a real boolean?
-          reality: 'updated',
-        },
+    expect(metaJson).toMatchObject({
+      metadata: {
+        custom: 'yes',
+        sessionId: 'session-123',
+        domain: 'localhost',
+        includePii: 'false', // TODO: could this be a real boolean?
+        reality: 'updated',
       },
-    ]);
+    });
 
     // no need to write to disk (we can e.g. allow rrweb output to change between versions)
     // WARNING: this would mutate scrub timestamps and change Meta urls!
