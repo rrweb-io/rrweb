@@ -36,7 +36,6 @@ describe('ws-client integration tests', function (this: ISuite) {
       options.serverUrl =
         'http://localhost:8787/recordings/{recordingId}/ingest/ws';
     }
-    options.serverUrl += '?tblocal';
     options.publicApiKey = TEST_API_KEY;
 
     options.meta = {
@@ -166,7 +165,7 @@ ${JSON.stringify(options)}
       .poll(
         async () => {
           const res = await fetch(
-            `http://localhost:8787/recordings/${recordingId}/events?tblocal`,
+            `http://localhost:8787/recordings/${recordingId}/events`,
             {
               headers: {
                 Authorization: 'Bearer ' + TEST_API_KEY,
@@ -202,7 +201,7 @@ ${JSON.stringify(options)}
       .poll(
         async () => {
           const res = await fetch(
-            `http://localhost:8787/recordings/${recordingId}?tblocal`,
+            `http://localhost:8787/recordings/${recordingId}`,
             {
               headers: {
                 Authorization: 'Bearer ' + TEST_API_KEY,
