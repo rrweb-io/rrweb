@@ -213,7 +213,11 @@ ${JSON.stringify(options)}
             throw new Error(`HTTP error! status: ${res.status}`);
           }
           metaJson = await res.json();
-          return metaJson && metaJson.metadata && Object.keys(metaJson.metadata).length;
+          return (
+            metaJson &&
+            metaJson.metadata &&
+            Object.keys(metaJson.metadata).length
+          );
         },
         { timeout: 8000, interval: 200 },
       )
