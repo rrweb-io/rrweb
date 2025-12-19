@@ -15,7 +15,7 @@ import type { recordOptions } from '../src/types';
 import { eventWithTime, NodeType, EventType } from '@rrweb/types';
 import { visitSnapshot } from 'rrweb-snapshot';
 
-// defined in packages/ws-client/.env
+// defined in packages/ws-client/.env, a Private API Key from https://app.rrwebcloud.com/api-keys
 const TEST_API_KEY = import.meta.env.VITE_TEST_API_KEY;
 
 describe('ws-client integration tests', function (this: ISuite) {
