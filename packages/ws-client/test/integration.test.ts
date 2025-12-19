@@ -14,9 +14,35 @@ import {
 import type { recordOptions } from '../src/types';
 import { eventWithTime, NodeType, EventType } from '@rrweb/types';
 import { visitSnapshot } from 'rrweb-snapshot';
+import { randomUUID } from 'crypto';
 
 // defined in packages/ws-client/.env, a Private API Key from https://app.rrwebcloud.com/api-keys
 const TEST_API_KEY = import.meta.env.VITE_TEST_API_KEY;
+
+function defaultOptions(
+  options: recordOptions<eventWithTime> = {},
+): recordOptions<eventWithTime> {
+  if (!options.captureAssets) {
+    // for consistency in the tests, don't create small stylesheet assets
+    options.captureAssets = {
+      stylesheetsRuleThreshold: 10,
+    };
+  }
+  options.emit = 'emitFnName';
+  if (!options.serverUrl) {
+    options.serverUrl =
+      'http://localhost:8787/recordings/{recordingId}/ingest/ws';
+  }
+  options.publicApiKey = TEST_API_KEY;
+
+  if (!options.meta) {
+    options.meta = {
+      custom: 'yes',
+      sessionId: 'session-123',
+    };
+  }
+  return options;
+}
 
 describe('ws-client integration tests', function (this: ISuite) {
   vi.setConfig({ testTimeout: 20_000 });
@@ -25,24 +51,6 @@ describe('ws-client integration tests', function (this: ISuite) {
     fileName: string,
     options: recordOptions<eventWithTime> = {},
   ): string => {
-    if (!options.captureAssets) {
-      // for consistency in the tests, don't create small stylesheet assets
-      options.captureAssets = {
-        stylesheetsRuleThreshold: 10,
-      };
-    }
-    options.emit = 'emitFnName';
-    if (!options.serverUrl) {
-      options.serverUrl =
-        'http://localhost:8787/recordings/{recordingId}/ingest/ws';
-    }
-    options.publicApiKey = TEST_API_KEY;
-
-    options.meta = {
-      custom: 'yes',
-      sessionId: 'session-123',
-    };
-
     const filePath = path.resolve(__dirname, `./html/${fileName}`);
     const html = fs.readFileSync(filePath, 'utf8');
     return replaceLast(
@@ -56,7 +64,7 @@ function emitFnName(event) {
 }
 </script>
 <script src="${testServerURL}/record.js" autostart async>
-${JSON.stringify(options)}
+${JSON.stringify(defaultOptions(options))}
 </script>
 </head>
     `,
@@ -235,5 +243,119 @@ ${JSON.stringify(options)}
     // no need to write to disk (we can e.g. allow rrweb output to change between versions)
     // WARNING: this would mutate scrub timestamps and change Meta urls!
     //await assertSnapshot(snapshots, true);
+  });
+
+  it('can clear recordingId using stop()', async () => {
+    const options = {
+      meta: {
+        sessionId: randomUUID(),
+      },
+    };
+    let optionsIn = JSON.stringify(options);
+
+    let page = await browser.newPage();
+
+    const client = await page.createCDPSession();
+    await client.send('Network.enable');
+
+    const messages = [];
+    const messagesPromise = new Promise((resolve) => {
+      client.on('Network.webSocketFrameSent', ({ response }) => {
+        messages.push(response.payloadData);
+        if (messages.length >= 3) {
+          resolve(messages);
+        }
+      });
+    });
+
+    let logs = '';
+
+    let recordingId = '<recordingId not yet set>';
+
+    page.on('console', (msg) => {
+      console.log(recordingId + ': ' + msg.text());
+      logs += msg.text();
+    });
+
+    await page.goto(testServerURL); // need a real domain for sessionStorage
+    await page.setContent(getHtml.call(this, 'link.html', options));
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+
+    expect(snapshots.length).toBeGreaterThan(1); // meta and fullsnapshot
+
+    recordingId = (await page.evaluate(
+      'rrwebCloud.getRecordingId()',
+    )) as string;
+
+    expect(recordingId).toMatch(
+      /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
+    );
+
+    await messagesPromise;
+
+    let eventsFromFirst = snapshots.length + 1; // .stop() also generates a custom event
+
+    await page.evaluate('rrwebCloud.stop(true)');
+    await page.evaluate(
+      `rrwebCloud.start(${JSON.stringify(defaultOptions(options))})`,
+    );
+
+    const recordingId2 = (await page.evaluate(
+      'rrwebCloud.getRecordingId()',
+    )) as string;
+
+    expect(recordingId2).toMatch(
+      /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
+    );
+
+    expect(recordingId).not.toMatch(recordingId2);
+
+    console.log(
+      `http://localhost:8787/replay?meta[sessionId]=${options.meta.sessionId}`,
+    );
+    let serverEvents = null;
+    await expect
+      .poll(
+        async () => {
+          const res = await fetch(
+            `http://localhost:8787/replay?meta[sessionId]=${options.meta.sessionId}`,
+            {
+              headers: {
+                Authorization: 'Bearer ' + TEST_API_KEY,
+              },
+            },
+          );
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          serverEvents = await res.json();
+          return serverEvents.length > eventsFromFirst && serverEvents.length;
+        },
+        { timeout: 7000, interval: 200 },
+      )
+      .toBeGreaterThan(eventsFromFirst);
+
+    const customEvents = [];
+    const recordingIds = new Set();
+    serverEvents.forEach((e) => {
+      if ('recordingId' in e) {
+        recordingIds.add(e.recordingId);
+      }
+      if (e.type === EventType.Custom) {
+        customEvents.push(e);
+      }
+    });
+    expect(recordingIds.size).toEqual(2);
+    expect(customEvents).toMatchObject([
+      {
+        type: EventType.Custom,
+        data: {
+          tag: 'close-permanent',
+        },
+      },
+    ]);
   });
 });

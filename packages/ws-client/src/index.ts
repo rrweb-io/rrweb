@@ -50,12 +50,21 @@ const buffer: ArrayQueue<string> = new ArrayQueue();
 let rrwebStopFn: listenerHandler | undefined;
 
 export function stop(resetRecordingId: boolean) {
-  // reset all state so that start() c
+  // reset all state so that start() can start afresh
   if (rrwebStopFn !== undefined) {
     rrwebStopFn();
     rrwebStopFn = undefined;
   }
   if (ws) {
+    const closeEvent: customEventWithTime = {
+      timestamp: record.nowTimestamp(),
+      type: EventType.Custom,
+      data: {
+        tag: 'close-' + (resetRecordingId ? 'permanent' : 'temporary'),
+        payload: {},
+      },
+    };
+    ws.send(JSON.stringify(closeEvent));
     ws.close();
     wsConnectionPaused = false;
     ws = undefined; // so `emit` can restart it again if page is unfrozen
