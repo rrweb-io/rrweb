@@ -299,9 +299,7 @@ ${JSON.stringify(defaultOptions(options))}
     let eventsFromFirst = snapshots.length + 1; // .stop() also generates a custom event
 
     await page.evaluate('rrwebCloud.stop(true)');
-    await page.evaluate(
-      `rrwebCloud.start()`,
-    );
+    await page.evaluate(`rrwebCloud.start()`);
 
     const recordingId2 = (await page.evaluate(
       'rrwebCloud.getRecordingId()',
