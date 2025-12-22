@@ -300,7 +300,7 @@ ${JSON.stringify(defaultOptions(options))}
 
     await page.evaluate('rrwebCloud.stop(true)');
     await page.evaluate(
-      `rrwebCloud.start(${JSON.stringify(defaultOptions(options))})`,
+      `rrwebCloud.start()`,
     );
 
     const recordingId2 = (await page.evaluate(

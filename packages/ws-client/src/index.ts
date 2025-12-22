@@ -508,11 +508,10 @@ if (document && document.currentScript) {
       // maybe we are in a weird environment, we're likely gonna fail when we next call new URL on serverurl
     }
   }
+  // if start later (no autostart), or manually stop and (re)start() later
+  defaultClientConfig = config;
   if (config.autostart || truthyAttr.includes(self.getAttribute('autostart'))) {
     start(config);
-  } else {
-    // if they manually start later
-    defaultClientConfig = config;
   }
 }
 function looseJsonParse(obj: string) {
