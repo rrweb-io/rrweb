@@ -99,7 +99,7 @@ ${JSON.stringify(defaultOptions(options))}
   ])('can roundtrip events: %j', async (options, { expect }) => {
     let optionsIn = JSON.stringify(options);
 
-    const context = await browser.createIncognitoBrowserContext(); // no interference during concurrency
+    const context = await browser.createBrowserContext(); // no interference during concurrency
     let page = await context.newPage();
 
     const fetchSpy = vi.spyOn(global, 'fetch');
