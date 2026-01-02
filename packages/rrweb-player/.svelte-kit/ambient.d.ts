@@ -29,6 +29,7 @@ declare module '$env/static/private' {
 	export const SUDO_GID: string;
 	export const GITHUB_STATE: string;
 	export const COPILOT_AGENT_ACTION: string;
+	export const SECRET_SCANNING_URL: string;
 	export const npm_package_scripts_test_cross_platform_build: string;
 	export const npm_package_devDependencies_rollup: string;
 	export const npm_package_devDependencies__types_node: string;
@@ -194,6 +195,7 @@ declare module '$env/static/private' {
 	export const CONDA: string;
 	export const RUNNER_NAME: string;
 	export const XDG_CONFIG_HOME: string;
+	export const COPILOT_USE_ASYNC_SESSIONS: string;
 	export const GITHUB_REF_NAME: string;
 	export const GITHUB_REPOSITORY: string;
 	export const npm_lifecycle_script: string;
@@ -266,7 +268,6 @@ declare module '$env/static/private' {
 	export const ANDROID_NDK: string;
 	export const SGX_AESM_ADDR: string;
 	export const CHROME_BIN: string;
-	export const PUPPETEER_SKIP_DOWNLOAD: string;
 	export const SELENIUM_JAR_PATH: string;
 	export const MEMORY_PRESSURE_WRITE: string;
 	export const COPILOT_AGENT_COMMIT_EMAIL: string;
@@ -315,6 +316,7 @@ declare module '$env/dynamic/private' {
 		SUDO_GID: string;
 		GITHUB_STATE: string;
 		COPILOT_AGENT_ACTION: string;
+		SECRET_SCANNING_URL: string;
 		npm_package_scripts_test_cross_platform_build: string;
 		npm_package_devDependencies_rollup: string;
 		npm_package_devDependencies__types_node: string;
@@ -480,6 +482,7 @@ declare module '$env/dynamic/private' {
 		CONDA: string;
 		RUNNER_NAME: string;
 		XDG_CONFIG_HOME: string;
+		COPILOT_USE_ASYNC_SESSIONS: string;
 		GITHUB_REF_NAME: string;
 		GITHUB_REPOSITORY: string;
 		npm_lifecycle_script: string;
@@ -552,7 +555,6 @@ declare module '$env/dynamic/private' {
 		ANDROID_NDK: string;
 		SGX_AESM_ADDR: string;
 		CHROME_BIN: string;
-		PUPPETEER_SKIP_DOWNLOAD: string;
 		SELENIUM_JAR_PATH: string;
 		MEMORY_PRESSURE_WRITE: string;
 		COPILOT_AGENT_COMMIT_EMAIL: string;
