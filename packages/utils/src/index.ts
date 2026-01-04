@@ -13,7 +13,13 @@ type BasePrototypeCache = {
 };
 
 const testableAccessors = {
-  Node: ['childNodes', 'parentNode', 'parentElement', 'textContent', 'ownerDocument'] as const,
+  Node: [
+    'childNodes',
+    'parentNode',
+    'parentElement',
+    'textContent',
+    'ownerDocument',
+  ] as const,
   ShadowRoot: ['host', 'styleSheets'] as const,
   Element: ['shadowRoot', 'querySelector', 'querySelectorAll'] as const,
   MutationObserver: [] as const,
