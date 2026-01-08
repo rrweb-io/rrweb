@@ -9,11 +9,20 @@ import type {
   DeprecatedMirror,
   textMutation,
   IMirror,
+  serializedNodeWithId,
+  eventWithTime,
 } from '@rrweb/types';
-import type { Mirror, SlimDOMOptions } from 'rrweb-snapshot';
-import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
+import { EventType } from '@rrweb/types';
+import { Mirror, type SlimDOMOptions } from 'rrweb-snapshot';
+import {
+  isShadowRoot,
+  IGNORED_NODE,
+  classMatchesRegex,
+  snapshot,
+} from 'rrweb-snapshot';
 import { RRNode, RRIFrameElement, BaseRRNode } from 'rrdom';
 import dom from '@rrweb/utils';
+import type { MergeOptions } from './types';
 
 export function on(
   type: string,
@@ -542,4 +551,95 @@ export function inDom(n: Node): boolean {
   const doc = dom.ownerDocument(n);
   if (!doc) return false;
   return dom.contains(doc, n) || shadowHostInDom(n);
+}
+
+/**
+ * You can choose any time range in Replay and generate a new clip of the rrweb events
+ * which can be played independently EVEN IF there are no fullsnapshots in this time range.
+ * @param options - merge options
+ * @returns merged events which can be played independently
+ */
+export function mergeEvents(options: MergeOptions) {
+  const { events, startTimeStamp, endTimeStamp, snapshotOptions } = options;
+
+  // check events
+  if (!events || !Array.isArray(events) || !events.length) {
+    console.warn('row events is required and not empty.');
+    return;
+  }
+
+  // check mirror
+  if (!snapshotOptions?.mirror) {
+    console.warn('mirror in snapshotOptions is required.');
+    return;
+  }
+
+  // check iframe
+  let iframe = options.iframe;
+  if (!iframe) {
+    const wrapper = document.querySelector('.replayer-wrapper');
+    if (wrapper) {
+      iframe = wrapper.querySelector('iframe');
+    }
+  }
+  if (!iframe) {
+    console.warn('iframe created by Replayer not found.');
+    return;
+  }
+  const doc = iframe.contentDocument;
+  const win = iframe.contentWindow;
+  if (!doc || !win) {
+    console.warn('contentDocument or contentWindow in iframe not found.');
+    return;
+  }
+
+  // take the fullsnapshot with the snapshotOptions
+  let node: serializedNodeWithId | null;
+  try {
+    // TODO iframe onSerialize, onIframeLoad, onStylesheetLoad, keepIframeSrcFn
+    node = snapshot(doc, snapshotOptions);
+  } catch (error) {
+    console.warn(error);
+    return;
+  }
+
+  const result: eventWithTime[] = [];
+  let lastMeta: eventWithTime | undefined;
+
+  for (let i = 0; i < events.length; i++) {
+    const event = events[i];
+    // record the last meta event
+    if (event.type === EventType.Meta) {
+      lastMeta = event;
+    }
+    if (event.timestamp < startTimeStamp) {
+      continue;
+    } else if (endTimeStamp && event.timestamp > endTimeStamp) {
+      break;
+    } else {
+      if (!result.length) {
+        if (!lastMeta) {
+          console.warn('Meta event not found in events');
+          return;
+        }
+        // append meta event
+        result.push({
+          ...lastMeta,
+          timestamp: event.timestamp - 2,
+        });
+        // append fullsnapshot event
+        result.push({
+          type: EventType.FullSnapshot,
+          data: {
+            node,
+            initialOffset: getWindowScroll(win),
+          },
+          timestamp: event.timestamp - 1,
+        } as eventWithTime);
+      }
+      // append remains event
+      result.push(event);
+    }
+  }
+  return result;
 }
