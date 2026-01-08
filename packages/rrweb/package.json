@@ -49,6 +49,7 @@
     "./dist/style.css": "./dist/style.css"
   },
   "files": [
+    "umd",
     "dist",
     "package.json"
   ],
