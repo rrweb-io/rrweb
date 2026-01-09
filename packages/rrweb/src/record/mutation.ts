@@ -173,6 +173,7 @@ export default class MutationBuffer {
 
   private mutationCb: observerParam['mutationCb'];
   private blockClass: observerParam['blockClass'];
+  private blockElementFn: observerParam['blockElementFn'];
   private blockSelector: observerParam['blockSelector'];
   private maskTextClass: observerParam['maskTextClass'];
   private maskTextSelector: observerParam['maskTextSelector'];
@@ -199,6 +200,7 @@ export default class MutationBuffer {
       [
         'mutationCb',
         'blockClass',
+        'blockElementFn',
         'blockSelector',
         'maskTextClass',
         'maskTextSelector',
@@ -316,6 +318,7 @@ export default class MutationBuffer {
         doc: this.doc,
         mirror: this.mirror,
         blockClass: this.blockClass,
+        blockElementFn: this.blockElementFn,
         blockSelector: this.blockSelector,
         maskTextClass: this.maskTextClass,
         maskTextSelector: this.maskTextSelector,
@@ -556,7 +559,13 @@ export default class MutationBuffer {
         const value = dom.textContent(m.target);
 
         if (
-          !isBlocked(m.target, this.blockClass, this.blockSelector, false) &&
+          !isBlocked(
+            m.target,
+            this.blockClass,
+            this.blockSelector,
+            this.blockElementFn,
+            false,
+          ) &&
           value !== m.oldValue
         ) {
           this.texts.push({
@@ -594,7 +603,13 @@ export default class MutationBuffer {
           });
         }
         if (
-          isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
+          isBlocked(
+            m.target,
+            this.blockClass,
+            this.blockSelector,
+            this.blockElementFn,
+            false,
+          ) ||
           value === m.oldValue
         ) {
           return;
@@ -695,7 +710,15 @@ export default class MutationBuffer {
         /**
          * Parent is blocked, ignore all child mutations
          */
-        if (isBlocked(m.target, this.blockClass, this.blockSelector, true))
+        if (
+          isBlocked(
+            m.target,
+            this.blockClass,
+            this.blockSelector,
+            this.blockElementFn,
+            true,
+          )
+        )
           return;
 
         if ((m.target as Element).tagName === 'TEXTAREA') {
@@ -711,7 +734,13 @@ export default class MutationBuffer {
             ? this.mirror.getId(dom.host(m.target))
             : this.mirror.getId(m.target);
           if (
-            isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
+            isBlocked(
+              m.target,
+              this.blockClass,
+              this.blockSelector,
+              this.blockElementFn,
+              false,
+            ) ||
             isIgnored(n, this.mirror, this.slimDOMOptions) ||
             !isSerialized(n, this.mirror)
           ) {
@@ -790,7 +819,15 @@ export default class MutationBuffer {
 
     // if this node is blocked `serializeNode` will turn it into a placeholder element
     // but we have to remove it's children otherwise they will be added as placeholders too
-    if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
+    if (
+      !isBlocked(
+        n,
+        this.blockClass,
+        this.blockSelector,
+        this.blockElementFn,
+        false,
+      )
+    ) {
       dom.childNodes(n).forEach((childN) => this.genAdds(childN));
       if (hasShadowRoot(n)) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
