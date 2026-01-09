@@ -28,7 +28,7 @@ type -> EventType.Custom
 event -> customEvent
 ```
 
-The EventType is Typescript's numeric enum, which is a self-increased number from 0 in runtime. You can find its definition in this [list](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L10).
+The EventType is Typescript's numeric enum, which is a self-increased number from 0 in runtime. You can find its definition in this [list](../../packages/types/src/index.ts#L1).
 
 In these kinds of events, the incrementalSnapshotEvent is the event that contains incremental data. You can use `event.data.source` to find which kind of incremental data it belongs to:
 
@@ -67,4 +67,4 @@ source -> IncrementalSource.Font
 data -> fontData
 ```
 
-enum IncrementalSource's definition can be found in this [list](https://github.com/rrweb-io/rrweb/blob/98e71cd0d23628cd1fbdbe47664a65748084c4a4/packages/types/src/index.ts#L69).
+enum IncrementalSource's definition can be found in this [list](../../packages/types/src/index.ts#L62).
