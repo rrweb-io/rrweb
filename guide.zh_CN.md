@@ -4,7 +4,7 @@
 
 ## 安装
 
-### 直接通过 `<script>` 引入
+### 选项一：直接通过 `<script>` 引入
 
 推荐通过 jsdelivr 的 CDN 安装：
 
@@ -20,6 +20,16 @@
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.14/dist/rrweb.umd.min.cjs"></script>
+```
+
+若以上版本不支持，可以尝试之前的版本，例如：
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/rrweb@1.1.3/dist/rrweb.min.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@1.1.3/dist/rrweb.min.js"></script>
 ```
 
 #### 仅引入录制部分
@@ -54,7 +64,7 @@ rrweb 代码分为录制和回放两部分，大多数时候用户在被录制�
 - [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record)：一个用于通过 WebRTC 流式传输 `<canvas>` 的插件。
 - [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay)：一个用于通过 WebRTC 播放流式 `<canvas>` 的插件。
 
-### 通过 npm 引入
+### 选项二：通过 npm 引入
 
 ```shell
 npm install --save rrweb
