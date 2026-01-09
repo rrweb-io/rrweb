@@ -462,18 +462,16 @@ function serializeNode(
         newlyAddedElement,
         rootId,
       });
-    case n.TEXT_NODE:
-      return serializeTextNode(n as Text, {
-        doc,
-        needsMask,
-        maskTextFn,
-        rootId,
-        cssCaptured,
-      });
     case n.CDATA_SECTION_NODE:
+    case n.TEXT_NODE:
       return {
-        type: NodeType.CDATA,
-        textContent: '',
+        type: n.nodeType === n.TEXT_NODE ? NodeType.Text : NodeType.CDATA,
+        textContent: serializeTextContent(n as Text, {
+          doc,
+          needsMask,
+          maskTextFn,
+          cssCaptured,
+        }),
         rootId,
       };
     case n.COMMENT_NODE:
@@ -493,17 +491,16 @@ function getRootId(doc: Document, mirror: Mirror): number | undefined {
   return docId === 1 ? undefined : docId;
 }
 
-function serializeTextNode(
-  n: Text,
+function serializeTextContent(
+  n: Text | CDATASection,
   options: {
     doc: Document;
     needsMask: boolean;
     maskTextFn: MaskTextFn | undefined;
-    rootId: number | undefined;
     cssCaptured?: boolean;
   },
-): serializedNode {
-  const { needsMask, maskTextFn, rootId, cssCaptured } = options;
+): string {
+  const { needsMask, maskTextFn, cssCaptured } = options;
   // The parent node may not be a html element which has a tagName attribute.
   // So just let it be undefined which is ok in this use case.
   const parent = dom.parentNode(n);
@@ -528,12 +525,7 @@ function serializeTextNode(
       ? maskTextFn(textContent, dom.parentElement(n))
       : textContent.replace(/[\S]/g, '*');
   }
-
-  return {
-    type: NodeType.Text,
-    textContent: textContent || '',
-    rootId,
-  };
+  return textContent || '';
 }
 
 function serializeElementNode(
