@@ -25,6 +25,10 @@ import StyleSheetTextMutation from './events/style-sheet-text-mutation';
 import canvasInIframe from './events/canvas-in-iframe';
 import adoptedStyleSheet from './events/adopted-style-sheet';
 import adoptedStyleSheetModification from './events/adopted-style-sheet-modification';
+import {
+  emptyReplaceSyncEvents,
+  emptyReplaceEvents,
+} from './events/adopted-style-sheet-empty-replace';
 import documentReplacementEvents from './events/document-replacement';
 import hoverInIframeShadowDom from './events/iframe-shadowdom-hover';
 import customElementDefineClass from './events/custom-element-define-class';
@@ -1062,6 +1066,70 @@ describe('replayer', function () {
 
     await page.evaluate('replayer.pause(630);');
     await check600ms();
+  });
+
+  it('can clear adopted stylesheets with empty replaceSync', async () => {
+    await page.evaluate(`
+    events = ${JSON.stringify(emptyReplaceSyncEvents)};
+    const { Replayer } = rrweb;
+    var replayer = new Replayer(events, { showDebug: true });
+    replayer.pause(0);
+    `);
+
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
+
+    // At 250ms, stylesheet should have rules
+    await page.evaluate('replayer.pause(250);');
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          document.adoptedStyleSheets.length === 1 &&
+          document.adoptedStyleSheets[0].cssRules.length === 1,
+      ),
+    ).toBeTruthy();
+
+    // At 350ms, stylesheet should be empty after replaceSync('')
+    await page.evaluate('replayer.pause(350);');
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          document.adoptedStyleSheets.length === 1 &&
+          document.adoptedStyleSheets[0].cssRules.length === 0,
+      ),
+    ).toBeTruthy();
+  });
+
+  it('can clear adopted stylesheets with empty replace', async () => {
+    await page.evaluate(`
+    events = ${JSON.stringify(emptyReplaceEvents)};
+    const { Replayer } = rrweb;
+    var replayer = new Replayer(events, { showDebug: true });
+    replayer.pause(0);
+    `);
+
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
+
+    // At 250ms, stylesheet should have rules
+    await page.evaluate('replayer.pause(250);');
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          document.adoptedStyleSheets.length === 1 &&
+          document.adoptedStyleSheets[0].cssRules.length === 1,
+      ),
+    ).toBeTruthy();
+
+    // At 350ms, stylesheet should be empty after replace('')
+    await page.evaluate('replayer.pause(350);');
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          document.adoptedStyleSheets.length === 1 &&
+          document.adoptedStyleSheets[0].cssRules.length === 0,
+      ),
+    ).toBeTruthy();
   });
 
   it('should replay document replacement events without warnings or errors', async () => {

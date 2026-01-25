@@ -2024,14 +2024,14 @@ export class Replayer {
       }
     });
 
-    if (data.replace)
+    if (typeof data.replace === 'string')
       try {
         void styleSheet.replace?.(data.replace);
       } catch (e) {
         // for safety
       }
 
-    if (data.replaceSync)
+    if (typeof data.replaceSync === 'string')
       try {
         styleSheet.replaceSync?.(data.replaceSync);
       } catch (e) {
