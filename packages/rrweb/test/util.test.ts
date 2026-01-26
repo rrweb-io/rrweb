@@ -164,7 +164,10 @@ describe('Utilities for other modules', () => {
       const style = document.createElement('style');
       document.head.appendChild(style);
       const sheet = style.sheet!;
-      sheet.insertRule('@media (min-width: 1px) { .nested { color: blue; } }', 0);
+      sheet.insertRule(
+        '@media (min-width: 1px) { .nested { color: blue; } }',
+        0,
+      );
 
       const mediaRule = sheet.cssRules[0] as CSSMediaRule;
       const nestedRule = getNestedRule(sheet.cssRules, [0, 0]);
@@ -179,7 +182,10 @@ describe('Utilities for other modules', () => {
       const style = document.createElement('style');
       document.head.appendChild(style);
       const sheet = style.sheet!;
-      sheet.insertRule('@media (min-width: 1px) { .first { color: red; } .second { color: blue; } }', 0);
+      sheet.insertRule(
+        '@media (min-width: 1px) { .first { color: red; } .second { color: blue; } }',
+        0,
+      );
 
       const mediaRule = sheet.cssRules[0] as CSSMediaRule;
 
@@ -198,7 +204,10 @@ describe('Utilities for other modules', () => {
       const style = document.createElement('style');
       document.head.appendChild(style);
       const sheet = style.sheet!;
-      sheet.insertRule('@supports (display: flex) { @media (min-width: 1px) { .deep { color: green; } } }', 0);
+      sheet.insertRule(
+        '@supports (display: flex) { @media (min-width: 1px) { .deep { color: green; } } }',
+        0,
+      );
 
       const supportsRule = sheet.cssRules[0] as CSSSupportsRule;
       const mediaRule = supportsRule.cssRules[0] as CSSMediaRule;
@@ -215,16 +224,26 @@ describe('Utilities for other modules', () => {
       const style = document.createElement('style');
       document.head.appendChild(style);
       const sheet = style.sheet!;
-      sheet.insertRule('@media (min-width: 1px) { .media-rule { color: red; } }', 0);
-      sheet.insertRule('@supports (display: grid) { .supports-rule { color: blue; } }', 1);
+      sheet.insertRule(
+        '@media (min-width: 1px) { .media-rule { color: red; } }',
+        0,
+      );
+      sheet.insertRule(
+        '@supports (display: grid) { .supports-rule { color: blue; } }',
+        1,
+      );
 
       // Rule inside first @media
       const mediaNestedRule = getNestedRule(sheet.cssRules, [0, 0]);
-      expect((mediaNestedRule as CSSStyleRule).selectorText).toBe('.media-rule');
+      expect((mediaNestedRule as CSSStyleRule).selectorText).toBe(
+        '.media-rule',
+      );
 
       // Rule inside second @supports
       const supportsNestedRule = getNestedRule(sheet.cssRules, [1, 0]);
-      expect((supportsNestedRule as CSSStyleRule).selectorText).toBe('.supports-rule');
+      expect((supportsNestedRule as CSSStyleRule).selectorText).toBe(
+        '.supports-rule',
+      );
 
       document.head.removeChild(style);
     });
