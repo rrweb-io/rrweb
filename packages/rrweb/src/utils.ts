@@ -429,8 +429,8 @@ export function getNestedRule(
     return rule;
   } else {
     return getNestedRule(
-      (rule.cssRules[position[1]] as CSSGroupingRule).cssRules,
-      position.slice(2),
+      rule.cssRules,
+      position.slice(1),
     );
   }
 }

@@ -7,6 +7,8 @@ import {
   inDom,
   shadowHostInDom,
   getShadowHost,
+  getNestedRule,
+  getPositionsAndIndex,
 } from '../src/utils';
 
 describe('Utilities for other modules', () => {
@@ -141,6 +143,110 @@ describe('Utilities for other modules', () => {
       expect(getRootShadowHost(a.childNodes[0])).toBe(a.childNodes[0]);
       expect(shadowHostInDom(a.childNodes[0])).toBeTruthy();
       expect(inDom(a.childNodes[0])).toBeTruthy();
+    });
+  });
+
+  describe('getNestedRule()', () => {
+    it('should return the rule at position [0] for a top-level rule', () => {
+      const style = document.createElement('style');
+      document.head.appendChild(style);
+      const sheet = style.sheet!;
+      sheet.insertRule('.test { color: red; }', 0);
+
+      const rule = getNestedRule(sheet.cssRules, [0]);
+      expect(rule).toBe(sheet.cssRules[0]);
+      expect((rule as CSSStyleRule).selectorText).toBe('.test');
+
+      document.head.removeChild(style);
+    });
+
+    it('should return nested rule inside @media at position [0, 0]', () => {
+      const style = document.createElement('style');
+      document.head.appendChild(style);
+      const sheet = style.sheet!;
+      sheet.insertRule('@media (min-width: 1px) { .nested { color: blue; } }', 0);
+
+      const mediaRule = sheet.cssRules[0] as CSSMediaRule;
+      const nestedRule = getNestedRule(sheet.cssRules, [0, 0]);
+
+      expect(nestedRule).toBe(mediaRule.cssRules[0]);
+      expect((nestedRule as CSSStyleRule).selectorText).toBe('.nested');
+
+      document.head.removeChild(style);
+    });
+
+    it('should return correct rule for multiple rules inside @media', () => {
+      const style = document.createElement('style');
+      document.head.appendChild(style);
+      const sheet = style.sheet!;
+      sheet.insertRule('@media (min-width: 1px) { .first { color: red; } .second { color: blue; } }', 0);
+
+      const mediaRule = sheet.cssRules[0] as CSSMediaRule;
+
+      const firstRule = getNestedRule(sheet.cssRules, [0, 0]);
+      expect(firstRule).toBe(mediaRule.cssRules[0]);
+      expect((firstRule as CSSStyleRule).selectorText).toBe('.first');
+
+      const secondRule = getNestedRule(sheet.cssRules, [0, 1]);
+      expect(secondRule).toBe(mediaRule.cssRules[1]);
+      expect((secondRule as CSSStyleRule).selectorText).toBe('.second');
+
+      document.head.removeChild(style);
+    });
+
+    it('should handle deeply nested rules (@supports > @media > rule)', () => {
+      const style = document.createElement('style');
+      document.head.appendChild(style);
+      const sheet = style.sheet!;
+      sheet.insertRule('@supports (display: flex) { @media (min-width: 1px) { .deep { color: green; } } }', 0);
+
+      const supportsRule = sheet.cssRules[0] as CSSSupportsRule;
+      const mediaRule = supportsRule.cssRules[0] as CSSMediaRule;
+      const deepRule = mediaRule.cssRules[0] as CSSStyleRule;
+
+      const result = getNestedRule(sheet.cssRules, [0, 0, 0]);
+      expect(result).toBe(deepRule);
+      expect((result as CSSStyleRule).selectorText).toBe('.deep');
+
+      document.head.removeChild(style);
+    });
+
+    it('should handle multiple top-level grouping rules', () => {
+      const style = document.createElement('style');
+      document.head.appendChild(style);
+      const sheet = style.sheet!;
+      sheet.insertRule('@media (min-width: 1px) { .media-rule { color: red; } }', 0);
+      sheet.insertRule('@supports (display: grid) { .supports-rule { color: blue; } }', 1);
+
+      // Rule inside first @media
+      const mediaNestedRule = getNestedRule(sheet.cssRules, [0, 0]);
+      expect((mediaNestedRule as CSSStyleRule).selectorText).toBe('.media-rule');
+
+      // Rule inside second @supports
+      const supportsNestedRule = getNestedRule(sheet.cssRules, [1, 0]);
+      expect((supportsNestedRule as CSSStyleRule).selectorText).toBe('.supports-rule');
+
+      document.head.removeChild(style);
+    });
+  });
+
+  describe('getPositionsAndIndex()', () => {
+    it('should split single element array into empty positions and index', () => {
+      const result = getPositionsAndIndex([5]);
+      expect(result.positions).toEqual([]);
+      expect(result.index).toBe(5);
+    });
+
+    it('should split two element array correctly', () => {
+      const result = getPositionsAndIndex([0, 3]);
+      expect(result.positions).toEqual([0]);
+      expect(result.index).toBe(3);
+    });
+
+    it('should split three element array correctly', () => {
+      const result = getPositionsAndIndex([1, 2, 3]);
+      expect(result.positions).toEqual([1, 2]);
+      expect(result.index).toBe(3);
     });
   });
 });
