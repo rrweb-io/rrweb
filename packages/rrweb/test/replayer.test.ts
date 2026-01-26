@@ -26,6 +26,7 @@ import canvasInIframe from './events/canvas-in-iframe';
 import adoptedStyleSheet from './events/adopted-style-sheet';
 import adoptedStyleSheetModification from './events/adopted-style-sheet-modification';
 import nestedStyleDeclarationEvents from './events/nested-style-declaration';
+import styleDeclarationMissingRuleEvents from './events/style-declaration-missing-rule';
 import documentReplacementEvents from './events/document-replacement';
 import hoverInIframeShadowDom from './events/iframe-shadowdom-hover';
 import customElementDefineClass from './events/custom-element-define-class';
@@ -1140,6 +1141,49 @@ describe('replayer', function () {
       deepRule5?.style?.backgroundColor || '';
     `);
     expect(deepBgColorAfterRemove).toBe('');
+  });
+
+  it('should not crash when StyleDeclaration references non-existent rules', async () => {
+    /**
+     * This test verifies that the replayer gracefully handles StyleDeclaration
+     * events that reference rules which don't exist in the stylesheet.
+     *
+     * This can happen due to:
+     * - Timing issues where StyleDeclaration arrives before StyleSheetRule
+     * - Dynamic stylesheets that aren't fully synchronized
+     * - Event ordering issues during recording
+     *
+     * The replayer should silently skip these instead of crashing.
+     */
+    await page.evaluate(
+      `events = ${JSON.stringify(styleDeclarationMissingRuleEvents)}`,
+    );
+
+    // Should not throw any errors
+    const result = await page.evaluate(`
+      try {
+        const { Replayer } = rrweb;
+        const replayer = new Replayer(events, { showDebug: true });
+        replayer.pause(500); // After all StyleDeclaration events
+        'success';
+      } catch (e) {
+        'error: ' + e.message;
+      }
+    `);
+    expect(result).toBe('success');
+
+    // Verify the existing rule still works (wasn't corrupted)
+    const existingRuleColor = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(500);
+      const doc = replayer.iframe.contentDocument;
+      const style = doc.querySelector('head style');
+      const sheet = style?.sheet;
+      const rule = sheet?.cssRules?.[0];
+      rule?.style?.color || 'no color';
+    `);
+    expect(existingRuleColor).toBe('blue');
   });
 
   it('should replay document replacement events without warnings or errors', async () => {

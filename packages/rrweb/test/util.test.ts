@@ -268,4 +268,73 @@ describe('Utilities for other modules', () => {
       expect(result.index).toBe(3);
     });
   });
+
+  describe('getNestedRule() null safety', () => {
+    /**
+     * These tests verify that getNestedRule returns null instead of crashing
+     * when the requested rule doesn't exist. This is important because:
+     * 1. StyleDeclaration events may reference rules that were added dynamically
+     *    but don't exist yet during replay due to timing issues
+     * 2. Event ordering may cause StyleDeclaration events to arrive before
+     *    the corresponding StyleSheetRule events that create the rules
+     * 3. Constructed/adopted stylesheets may not be fully synchronized
+     */
+
+    it('should return null for invalid top-level index', () => {
+      const style = document.createElement('style');
+      document.head.appendChild(style);
+      const sheet = style.sheet!;
+      sheet.insertRule('.test { color: red; }', 0);
+
+      // Index 5 doesn't exist (only index 0 exists)
+      const result = getNestedRule(sheet.cssRules, [5]);
+      expect(result).toBeNull();
+
+      document.head.removeChild(style);
+    });
+
+    it('should return null for invalid nested index', () => {
+      const style = document.createElement('style');
+      document.head.appendChild(style);
+      const sheet = style.sheet!;
+      sheet.insertRule(
+        '@media (min-width: 1px) { .nested { color: blue; } }',
+        0,
+      );
+
+      // [0, 5] - media rule exists at 0, but no rule at index 5 inside it
+      const result = getNestedRule(sheet.cssRules, [0, 5]);
+      expect(result).toBeNull();
+
+      document.head.removeChild(style);
+    });
+
+    it('should return null for deeply nested invalid index', () => {
+      const style = document.createElement('style');
+      document.head.appendChild(style);
+      const sheet = style.sheet!;
+      sheet.insertRule(
+        '@supports (display: flex) { @media (min-width: 1px) { .deep { color: green; } } }',
+        0,
+      );
+
+      // [0, 0, 99] - supports and media exist, but no rule at index 99
+      const result = getNestedRule(sheet.cssRules, [0, 0, 99]);
+      expect(result).toBeNull();
+
+      document.head.removeChild(style);
+    });
+
+    it('should return null when rules list is empty', () => {
+      const style = document.createElement('style');
+      document.head.appendChild(style);
+      const sheet = style.sheet!;
+      // Don't add any rules - empty stylesheet
+
+      const result = getNestedRule(sheet.cssRules, [0]);
+      expect(result).toBeNull();
+
+      document.head.removeChild(style);
+    });
+  });
 });

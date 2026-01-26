@@ -420,11 +420,28 @@ export function hasShadowRoot<T extends Node | RRNode>(
   return Boolean(dom.shadowRoot(n as unknown as Element));
 }
 
+/**
+ * Traverses a CSSRuleList to find a nested rule at the given position.
+ *
+ * Returns null instead of throwing if the rule doesn't exist. This is important
+ * because during replay:
+ * - StyleDeclaration events may reference rules added dynamically that don't
+ *   exist yet due to timing/ordering issues
+ * - StyleSheetRule events that create rules may not have been processed yet
+ * - Constructed/adopted stylesheets may not be fully synchronized
+ *
+ * @param rules - The CSSRuleList to traverse
+ * @param position - Array of indices, e.g., [0, 1, 0] for rules[0].cssRules[1].cssRules[0]
+ * @returns The nested rule, or null if not found
+ */
 export function getNestedRule(
   rules: CSSRuleList,
   position: number[],
-): CSSGroupingRule {
-  const rule = rules[position[0]] as CSSGroupingRule;
+): CSSGroupingRule | null {
+  const rule = rules?.[position[0]] as CSSGroupingRule;
+  if (!rule) {
+    return null;
+  }
   if (position.length === 1) {
     return rule;
   } else {
