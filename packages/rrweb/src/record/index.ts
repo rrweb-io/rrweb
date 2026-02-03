@@ -4,7 +4,7 @@ import {
   type SlimDOMOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import { initObservers, mutationBuffers } from './observer';
+import { initObservers, mutationBuffers, removeMutationBufferForDoc } from './observer';
 import {
   on,
   getWindowWidth,
@@ -575,7 +575,28 @@ function record<T = eventWithTime>(
 
     iframeManager.addLoadListener((iframeEl) => {
       try {
-        handlers.push(observe(iframeEl.contentDocument!));
+        const iframeDoc = iframeEl.contentDocument!;
+        const iframeHandler = observe(iframeDoc);
+        handlers.push(iframeHandler);
+
+        const existingCleanup = iframeManager.getObserverCleanup(iframeEl);
+        iframeManager.setObserverCleanup(iframeEl, () => {
+          if (existingCleanup) {
+            try {
+              existingCleanup();
+            } catch (e) {
+              // Ignore errors during cleanup
+            }
+          }
+          try {
+            iframeHandler();
+            const idx = handlers.indexOf(iframeHandler);
+            if (idx !== -1) handlers.splice(idx, 1);
+            removeMutationBufferForDoc(iframeDoc);
+          } catch (e) {
+            // Ignore errors during cleanup
+          }
+        });
       } catch (error) {
         // TODO: handle internal error
         console.warn(error);
@@ -625,9 +646,9 @@ function record<T = eventWithTime>(
           /**
            * https://github.com/rrweb-io/rrweb/pull/1695
            * This error can occur in a known scenario:
-           * If an iframe is initially same-origin and observed, but later its 
-           location is changed in an opaque way to a cross-origin URL (perhaps within the iframe via its `document.location` or a redirect) 
-           * attempting to execute the handler in the stop record function will 
+           * If an iframe is initially same-origin and observed, but later its
+           location is changed in an opaque way to a cross-origin URL (perhaps within the iframe via its `document.location` or a redirect)
+           * attempting to execute the handler in the stop record function will
            throw a "cannot access cross-origin frame" error.
            * This error is expected and can be safely ignored.
            */

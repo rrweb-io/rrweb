@@ -501,6 +501,16 @@ export class StyleSheetMirror {
   generateId(): number {
     return this.id++;
   }
+
+  remove(stylesheet: CSSStyleSheet): boolean {
+    const id = this.styleIDMap.get(stylesheet);
+    if (id !== undefined) {
+      this.styleIDMap.delete(stylesheet);
+      this.idStyleMap.delete(id);
+      return true;
+    }
+    return false;
+  }
 }
 
 /**

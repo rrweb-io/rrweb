@@ -214,6 +214,18 @@ export class Mirror implements IMirror<Node> {
       );
     }
   }
+
+  removeNodeFromMapPermanently(n: Node) {
+    const id = this.getId(n);
+    this.idNodeMap.delete(id);
+    this.nodeMetaMap.delete(n);
+
+    if (n.childNodes) {
+      n.childNodes.forEach((childNode) =>
+        this.removeNodeFromMapPermanently(childNode as unknown as Node),
+      );
+    }
+  }
   has(id: number): boolean {
     return this.idNodeMap.has(id);
   }

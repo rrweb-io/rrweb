@@ -830,6 +830,8 @@ export interface IMirror<TNode> {
 
   removeNodeFromMap(n: TNode): void;
 
+  removeNodeFromMapPermanently?(n: TNode): void;
+
   has(id: number): boolean;
 
   hasNode(node: TNode): boolean;

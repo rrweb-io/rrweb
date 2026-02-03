@@ -84,6 +84,65 @@ export class StylesheetManager {
     this.trackedLinkElements = new WeakSet();
   }
 
+  /**
+   * Cleans up stylesheets associated with a removed node.
+   *
+   * @param removedNode - The node that was removed from the DOM.
+   * @param storedDocument - Optional stored document reference for iframes,
+   *                         since contentDocument becomes null after removal.
+   */
+  public cleanupStylesheetsForRemovedNode(
+    removedNode: Node,
+    storedDocument?: Document,
+  ): void {
+    if (removedNode.nodeName === 'IFRAME') {
+      const iframe = removedNode as HTMLIFrameElement;
+      try {
+        const doc = storedDocument || iframe.contentDocument;
+        if (doc) {
+          if (doc.adoptedStyleSheets) {
+            for (const sheet of doc.adoptedStyleSheets) {
+              this.styleMirror.remove(sheet);
+            }
+          }
+
+          const styleElements = doc.querySelectorAll('style, link[rel="stylesheet"]');
+          styleElements.forEach((el) => {
+            const sheet = (el as HTMLStyleElement | HTMLLinkElement).sheet;
+            if (sheet) {
+              this.styleMirror.remove(sheet);
+            }
+          });
+        }
+      } catch (e) {
+        // Ignore errors
+      }
+    }
+
+    if (removedNode.nodeName === 'STYLE') {
+      const styleEl = removedNode as HTMLStyleElement;
+      if (styleEl.sheet) {
+        this.styleMirror.remove(styleEl.sheet);
+      }
+    }
+
+    if (
+      removedNode.nodeName === 'LINK' &&
+      (removedNode as HTMLLinkElement).rel === 'stylesheet'
+    ) {
+      const linkEl = removedNode as HTMLLinkElement;
+      if (linkEl.sheet) {
+        this.styleMirror.remove(linkEl.sheet);
+      }
+    }
+
+    if (removedNode.childNodes) {
+      removedNode.childNodes.forEach((child) => {
+        this.cleanupStylesheetsForRemovedNode(child);
+      });
+    }
+  }
+
   // TODO: take snapshot on stylesheet reload by applying event listener
   private trackStylesheetInLinkElement(_linkEl: HTMLLinkElement) {
     // linkEl.addEventListener('load', () => {

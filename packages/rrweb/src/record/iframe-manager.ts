@@ -19,6 +19,10 @@ export class IframeManager {
   public crossOriginIframeStyleMirror: CrossOriginIframeMirror;
   public crossOriginIframeRootIdMap: WeakMap<HTMLIFrameElement, number> =
     new WeakMap();
+  private iframeContentDocumentMap: WeakMap<HTMLIFrameElement, Document> =
+    new WeakMap();
+  private iframeObserverCleanupMap: WeakMap<HTMLIFrameElement, () => void> =
+    new WeakMap();
   private mirror: Mirror;
   private mutationCb: mutationCallBack;
   private wrappedEmit: (e: eventWithoutTime, isCheckout?: boolean) => void;
@@ -54,6 +58,40 @@ export class IframeManager {
       this.crossOriginIframeMap.set(iframeEl.contentWindow, iframeEl);
   }
 
+  public getIframeContentDocument(
+    iframeEl: HTMLIFrameElement,
+  ): Document | undefined {
+    return this.iframeContentDocumentMap.get(iframeEl);
+  }
+
+  public setObserverCleanup(
+    iframeEl: HTMLIFrameElement,
+    cleanup: () => void,
+  ): void {
+    this.iframeObserverCleanupMap.set(iframeEl, cleanup);
+  }
+
+  public getObserverCleanup(
+    iframeEl: HTMLIFrameElement,
+  ): (() => void) | undefined {
+    return this.iframeObserverCleanupMap.get(iframeEl);
+  }
+
+  public removeIframe(iframeEl: HTMLIFrameElement): void {
+    this.iframes.delete(iframeEl);
+    this.iframeContentDocumentMap.delete(iframeEl);
+
+    const observerCleanup = this.iframeObserverCleanupMap.get(iframeEl);
+    if (observerCleanup) {
+      try {
+        observerCleanup();
+      } catch (e) {
+        // Ignore errors during cleanup
+      }
+      this.iframeObserverCleanupMap.delete(iframeEl);
+    }
+  }
+
   public addLoadListener(cb: (iframeEl: HTMLIFrameElement) => unknown) {
     this.loadListener = cb;
   }
@@ -75,6 +113,10 @@ export class IframeManager {
       attributes: [],
       isAttachIframe: true,
     });
+
+    if (iframeEl.contentDocument) {
+      this.iframeContentDocumentMap.set(iframeEl, iframeEl.contentDocument);
+    }
 
     // Receive messages (events) coming from cross-origin iframes that are nested in this same-origin iframe.
     if (this.recordCrossOriginIframes)

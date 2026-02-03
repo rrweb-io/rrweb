@@ -102,6 +102,15 @@ export function initMutationObserver(
   return observer;
 }
 
+export function removeMutationBufferForDoc(doc: Document): void {
+  for (let i = mutationBuffers.length - 1; i >= 0; i--) {
+    const buffer = mutationBuffers[i];
+    if (buffer.getDoc() === doc) {
+      mutationBuffers.splice(i, 1);
+    }
+  }
+}
+
 function initMoveObserver({
   mousemoveCb,
   sampling,
