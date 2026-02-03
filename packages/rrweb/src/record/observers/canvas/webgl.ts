@@ -98,6 +98,16 @@ export default function initCanvasWebGLMutationObserver(
   if (typeof win.WebGL2RenderingContext !== 'undefined') {
     handlers.push(
       ...patchGLPrototype(
+        win.WebGLRenderingContext.prototype,
+        CanvasContext.WebGL,
+        cb,
+        blockClass,
+        blockSelector,
+        win,
+      ),
+    );
+    handlers.push(
+      ...patchGLPrototype(
         win.WebGL2RenderingContext.prototype,
         CanvasContext.WebGL2,
         cb,
