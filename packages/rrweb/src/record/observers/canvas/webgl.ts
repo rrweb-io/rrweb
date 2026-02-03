@@ -95,7 +95,7 @@ export default function initCanvasWebGLMutationObserver(
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
 
-  if (typeof win.WebGL2RenderingContext !== 'undefined') {
+if (typeof win.WebGLRenderingContext !== 'undefined') {
     handlers.push(
       ...patchGLPrototype(
         win.WebGLRenderingContext.prototype,
@@ -106,6 +106,9 @@ export default function initCanvasWebGLMutationObserver(
         win,
       ),
     );
+ }
+ 
+ if (typeof win.WebGL2RenderingContext !== 'undefined') {
     handlers.push(
       ...patchGLPrototype(
         win.WebGL2RenderingContext.prototype,
