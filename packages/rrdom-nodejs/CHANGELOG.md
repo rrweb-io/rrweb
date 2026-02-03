@@ -1,5 +1,13 @@
 # rrdom-nodejs
 
+## 2.0.0-alpha.20
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrdom@2.0.0-alpha.20
+  - @rrweb/types@2.0.0-alpha.20
+
 ## 2.0.0-alpha.19
 
 ### Patch Changes
