@@ -107,8 +107,8 @@ export default function initCanvasWebGLMutationObserver(
       ),
     );
   }
- 
-   if (typeof win.WebGL2RenderingContext !== 'undefined') {
+
+  if (typeof win.WebGL2RenderingContext !== 'undefined') {
     handlers.push(
       ...patchGLPrototype(
         win.WebGL2RenderingContext.prototype,
