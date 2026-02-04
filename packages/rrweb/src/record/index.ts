@@ -4,7 +4,11 @@ import {
   type SlimDOMOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import { initObservers, mutationBuffers, removeMutationBufferForDoc } from './observer';
+import {
+  initObservers,
+  mutationBuffers,
+  removeMutationBufferForDoc,
+} from './observer';
 import {
   on,
   getWindowWidth,

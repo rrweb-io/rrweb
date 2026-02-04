@@ -106,7 +106,9 @@ export class StylesheetManager {
             }
           }
 
-          const styleElements = doc.querySelectorAll('style, link[rel="stylesheet"]');
+          const styleElements = doc.querySelectorAll(
+            'style, link[rel="stylesheet"]',
+          );
           styleElements.forEach((el) => {
             const sheet = (el as HTMLStyleElement | HTMLLinkElement).sheet;
             if (sheet) {
