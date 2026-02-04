@@ -7,6 +7,7 @@ import {
   extractFileExtension,
   fixSafariColons,
   isNodeMetaEqual,
+  Mirror,
 } from '../src/utils';
 import { NodeType } from '@rrweb/types';
 import type { serializedNode, serializedNodeWithId } from '@rrweb/types';
@@ -278,6 +279,132 @@ describe('utils', () => {
 
       const out3 = fixSafariColons('[data-aa\\:other] { color: red; }');
       expect(out3).toEqual('[data-aa\\:other] { color: red; }');
+    });
+  });
+
+  describe('Mirror', () => {
+    describe('removeNodeFromMapPermanently', () => {
+      it('should remove node from both idNodeMap and nodeMetaMap', () => {
+        const mirror = new Mirror();
+        const div = document.createElement('div');
+        const meta = {
+          type: NodeType.Element,
+          tagName: 'div',
+          attributes: {},
+          childNodes: [],
+          id: 1,
+        } as serializedNodeWithId;
+
+        mirror.add(div, meta);
+        expect(mirror.getId(div)).toBe(1);
+        expect(mirror.hasNode(div)).toBe(true);
+        expect(mirror.getNode(1)).toBe(div);
+
+        mirror.removeNodeFromMapPermanently(div);
+
+        expect(mirror.getId(div)).toBe(-1);
+        expect(mirror.hasNode(div)).toBe(false);
+        expect(mirror.getNode(1)).toBeNull();
+      });
+
+      it('should recursively remove child nodes', () => {
+        const mirror = new Mirror();
+
+        const parent = document.createElement('div');
+        const child1 = document.createElement('span');
+        const child2 = document.createElement('p');
+        const grandchild = document.createElement('a');
+
+        parent.appendChild(child1);
+        parent.appendChild(child2);
+        child1.appendChild(grandchild);
+
+        const parentMeta = {
+          type: NodeType.Element,
+          tagName: 'div',
+          attributes: {},
+          childNodes: [],
+          id: 1,
+        } as serializedNodeWithId;
+        const child1Meta = {
+          type: NodeType.Element,
+          tagName: 'span',
+          attributes: {},
+          childNodes: [],
+          id: 2,
+        } as serializedNodeWithId;
+        const child2Meta = {
+          type: NodeType.Element,
+          tagName: 'p',
+          attributes: {},
+          childNodes: [],
+          id: 3,
+        } as serializedNodeWithId;
+        const grandchildMeta = {
+          type: NodeType.Element,
+          tagName: 'a',
+          attributes: {},
+          childNodes: [],
+          id: 4,
+        } as serializedNodeWithId;
+
+        mirror.add(parent, parentMeta);
+        mirror.add(child1, child1Meta);
+        mirror.add(child2, child2Meta);
+        mirror.add(grandchild, grandchildMeta);
+
+        expect(mirror.hasNode(parent)).toBe(true);
+        expect(mirror.hasNode(child1)).toBe(true);
+        expect(mirror.hasNode(child2)).toBe(true);
+        expect(mirror.hasNode(grandchild)).toBe(true);
+
+        mirror.removeNodeFromMapPermanently(parent);
+
+        expect(mirror.hasNode(parent)).toBe(false);
+        expect(mirror.hasNode(child1)).toBe(false);
+        expect(mirror.hasNode(child2)).toBe(false);
+        expect(mirror.hasNode(grandchild)).toBe(false);
+        expect(mirror.getId(parent)).toBe(-1);
+        expect(mirror.getId(child1)).toBe(-1);
+        expect(mirror.getId(child2)).toBe(-1);
+        expect(mirror.getId(grandchild)).toBe(-1);
+      });
+
+      it('should differ from removeNodeFromMap by also clearing nodeMetaMap', () => {
+        const mirror1 = new Mirror();
+        const div1 = document.createElement('div');
+        const meta1 = {
+          type: NodeType.Element,
+          tagName: 'div',
+          attributes: {},
+          childNodes: [],
+          id: 1,
+        } as serializedNodeWithId;
+
+        mirror1.add(div1, meta1);
+        mirror1.removeNodeFromMap(div1);
+
+        // removeNodeFromMap only clears idNodeMap, not nodeMetaMap
+        expect(mirror1.getNode(1)).toBeNull();
+        expect(mirror1.hasNode(div1)).toBe(true); // Still in nodeMetaMap
+
+        const mirror2 = new Mirror();
+        const div2 = document.createElement('div');
+        const meta2 = {
+          type: NodeType.Element,
+          tagName: 'div',
+          attributes: {},
+          childNodes: [],
+          id: 1,
+        } as serializedNodeWithId;
+
+        mirror2.add(div2, meta2);
+        mirror2.removeNodeFromMapPermanently(div2);
+
+        // removeNodeFromMapPermanently clears both maps
+        expect(mirror2.getNode(1)).toBeNull();
+        expect(mirror2.hasNode(div2)).toBe(false); // Also removed from nodeMetaMap
+      });
     });
   });
 });

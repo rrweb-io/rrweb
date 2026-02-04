@@ -80,6 +80,36 @@ describe('Utilities for other modules', () => {
       for (let i = 0; i < 10; i++) expect(mirror.getStyle(i + 1)).toBeNull();
       expect(mirror.add(new CSSStyleSheet())).toBe(1);
     });
+
+    it('can remove CSSStyleSheet from the mirror', () => {
+      const mirror = new StyleSheetMirror();
+      const styleSheet = new CSSStyleSheet();
+      mirror.add(styleSheet);
+      expect(mirror.has(styleSheet)).toBeTruthy();
+      expect(mirror.remove(styleSheet)).toBe(true);
+      expect(mirror.has(styleSheet)).toBeFalsy();
+      expect(mirror.getId(styleSheet)).toBe(-1);
+    });
+
+    it('returns false when removing a non-existent stylesheet', () => {
+      const mirror = new StyleSheetMirror();
+      const styleSheet = new CSSStyleSheet();
+      expect(mirror.remove(styleSheet)).toBe(false);
+    });
+
+    it('does not affect other stylesheets when removing one', () => {
+      const mirror = new StyleSheetMirror();
+      const styleSheet1 = new CSSStyleSheet();
+      const styleSheet2 = new CSSStyleSheet();
+      mirror.add(styleSheet1);
+      mirror.add(styleSheet2);
+      const id2 = mirror.getId(styleSheet2);
+      mirror.remove(styleSheet1);
+      expect(mirror.has(styleSheet1)).toBeFalsy();
+      expect(mirror.has(styleSheet2)).toBeTruthy();
+      expect(mirror.getId(styleSheet2)).toBe(id2);
+      expect(mirror.getStyle(id2)).toBe(styleSheet2);
+    });
   });
 
   describe('inDom()', () => {
