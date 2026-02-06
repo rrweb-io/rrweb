@@ -13,7 +13,7 @@
 [![Twitter Follow](https://img.shields.io/badge/twitter-@rrweb__io-teal.svg?logo=twitter)](https://twitter.com/rrweb_io)
 [![Reddit](https://img.shields.io/badge/reddit-r/rrweb-teal.svg?logo=reddit)](https://www.reddit.com/r/rrweb)
 ![total gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.cjs?compression=gzip&label=total%20gzip%20size)
-![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.cjs?compression=gzip&label=recorder%20gzip%20size)
+![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@rrweb/record@latest/umd/record.min.js?compression=gzip&label=recorder%20gzip%20size)
 [![](https://data.jsdelivr.com/v1/package/npm/rrweb/badge)](https://www.jsdelivr.com/package/npm/rrweb)
 
 [中文文档](./README.zh_CN.md)
