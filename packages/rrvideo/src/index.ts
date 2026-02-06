@@ -165,10 +165,20 @@ export async function transformToVideo(options: RRvideoConfig) {
 
   // Wait for the replay to finish
   await new Promise<void>((resolve, reject) => {
+    const timeoutBuffer = 120000; // 2 minute timeout buffer
+    const videoStartTime = events[0]?.timestamp;
+    const videoEndTime = events[events.length - 1]?.timestamp;
+    const videoDuration = videoEndTime - videoStartTime;
+    const videoPlaybackSpeed = options.rrwebPlayer?.speed || 1;
+    const expectedPlaybackTime = videoDuration / videoPlaybackSpeed;
+    console.log(
+      `[DEBUG] Expected playback time: ${expectedPlaybackTime}ms (video duration: ${videoDuration}ms, playback speed: ${videoPlaybackSpeed}x)`,
+    );
+    const totalTimeout = expectedPlaybackTime + timeoutBuffer;
     const timeout = setTimeout(() => {
       console.error('[DEBUG] Replay timeout - finish event never fired');
       reject(new Error('Replay timeout'));
-    }, 120000); // 2 minute timeout
+    }, totalTimeout); // playback + 2 minute timeout
 
     void page
       .exposeFunction('onReplayFinish', () => {
