@@ -146,9 +146,6 @@ export async function transformToVideo(options: RRvideoConfig) {
   });
   const page = await context.newPage();
   await page.goto('about:blank');
-  console.log('[DEBUG] Navigated to about:blank');
-  console.log('[DEBUG] Exposing functions to page');
-
   // Listen to console messages from the page
   page.on('console', (msg) => {
     console.log('[PAGE CONSOLE]', msg.type(), msg.text());
