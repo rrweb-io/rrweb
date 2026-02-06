@@ -209,6 +209,5 @@ export async function transformToVideo(options: RRvideoConfig) {
       .finally(() => void cleanFiles(videoPath)),
     browser.close(),
   ]);
-  console.log('[DEBUG] Video transformation complete');
   return outputPath;
 }
