@@ -197,7 +197,6 @@ export async function transformToVideo(options: RRvideoConfig) {
     }
   };
   await context.close();
-  console.log('[DEBUG] Moving video file to output path:', outputPath);
   await Promise.all([
     fs
       .move(videoPath, outputPath, { overwrite: true })
