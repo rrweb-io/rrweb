@@ -196,7 +196,6 @@ export async function transformToVideo(options: RRvideoConfig) {
       await fs.remove(defaultVideoDir);
     }
   };
-  console.log('[DEBUG] Closing context');
   await context.close();
   console.log('[DEBUG] Moving video file to output path:', outputPath);
   await Promise.all([
