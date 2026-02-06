@@ -1,0 +1,62 @@
+name: ESLint Check
+
+on:
+  push:
+    paths-ignore:
+      - '**/*.md'
+  pull_request_target:
+    paths-ignore:
+      - '**/*.md'
+
+jobs:
+  eslint_check_upload:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    name: ESLint Check and Report Upload
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          cache: 'yarn'
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
+      - name: Build Packages
+        run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
+      - name: Eslint Check
+        run: yarn turbo run lint
+      - name: Save Code Linting Report JSON
+        run: yarn lint:report
+        # Continue to the next step even if this fails
+        continue-on-error: true
+      - name: Upload ESLint Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint_report.json
+          path: eslint_report.json
+
+  annotation:
+    # Skip the annotation action in push events
+    if: github.event_name == 'pull_request_target'
+    permissions:
+      checks: write
+    needs: eslint_check_upload
+    runs-on: ubuntu-latest
+    name: ESLint Annotation
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: eslint_report.json
+      - name: Annotate Code Linting Results
+        uses: ataylorme/eslint-annotate-action@v2
+        with:
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
+          report-json: 'eslint_report.json'
