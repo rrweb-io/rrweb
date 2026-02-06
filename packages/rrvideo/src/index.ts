@@ -112,7 +112,6 @@ export async function transformToVideo(options: RRvideoConfig) {
   Object.assign(config, options);
   if (config.resolutionRatio > 1) config.resolutionRatio = 1; // The max value is 1.
 
-  console.log('[DEBUG] Starting transformToVideo');
   const eventsPath = path.isAbsolute(config.input)
     ? config.input
     : path.resolve(process.cwd(), config.input);
