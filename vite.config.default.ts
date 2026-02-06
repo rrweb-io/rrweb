@@ -121,7 +121,7 @@ export default function (
     build: {
       // See https://vitejs.dev/guide/build.html#library-mode
       lib: {
-        cssFileName: 'style',
+        cssFileName: 'style', // maintain same file output name as Vite 5 after upgrade to 6
         entry,
         name,
         fileName,
