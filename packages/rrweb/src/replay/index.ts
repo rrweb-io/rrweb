@@ -263,7 +263,7 @@ export class Replayer {
               this.virtualDom.mirror,
             );
           } catch (e) {
-            console.warn(e);
+            this.warn(e);
           }
 
         this.virtualDom.destroyTree();
