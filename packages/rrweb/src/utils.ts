@@ -438,7 +438,7 @@ export function getNestedRule(
   rules: CSSRuleList,
   position: number[],
 ): CSSGroupingRule | null {
-  const rule = rules?.[position[0]] as CSSGroupingRule;
+  const rule = rules?.[position[0]] as CSSGroupingRule | null;
   if (!rule) {
     return null;
   }
