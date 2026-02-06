@@ -61,8 +61,6 @@ function getHtml(events: Array<eventWithTime>, config?: RRvideoConfig): string {
         window.replayer = new rrwebPlayer({
           target: document.body,
           props: {
-            width: userConfig.width,
-            height: userConfig.height,
             ...userConfig,
             events,
             showController: false,
