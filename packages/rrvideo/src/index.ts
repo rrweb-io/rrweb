@@ -167,7 +167,6 @@ export async function transformToVideo(options: RRvideoConfig) {
   );
 
   // Wait for the replay to finish
-  console.log('[DEBUG] Starting replay');
   await new Promise<void>((resolve, reject) => {
     const timeout = setTimeout(() => {
       console.error('[DEBUG] Replay timeout - finish event never fired');
