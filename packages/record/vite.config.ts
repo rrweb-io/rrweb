@@ -11,7 +11,7 @@ import createConfig from '../../vite.config.default';
  * — it continues to resolve against the published package types.
  */
 function recordOnlyResolvePlugin(): Plugin {
-  const aliases: Record<string, string> = {
+  const aliases: Record<string, string> = {    
     rrweb: path.resolve(__dirname, '../rrweb/src/entries/record.ts'),
     'rrweb-snapshot': path.resolve(__dirname, '../rrweb-snapshot/src/index.ts'),
   };
@@ -38,7 +38,7 @@ function recordOnlyResolvePlugin(): Plugin {
 
 const baseConfigFn = createConfig(
   path.resolve(__dirname, 'src/index.ts'),
-  'rrweb',
+  'rrwebRecord',
 );
 
 export default defineConfig((env) => {
