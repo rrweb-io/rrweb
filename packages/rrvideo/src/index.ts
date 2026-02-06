@@ -145,7 +145,6 @@ export async function transformToVideo(options: RRvideoConfig) {
     },
   });
   const page = await context.newPage();
-  console.log('[DEBUG] New page created');
   await page.goto('about:blank');
   console.log('[DEBUG] Navigated to about:blank');
   console.log('[DEBUG] Exposing functions to page');
