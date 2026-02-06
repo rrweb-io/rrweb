@@ -15,11 +15,8 @@ describe('bundle', () => {
     (f) => f.endsWith('.js') || f.endsWith('.cjs'),
   );
 
-  it.each(bundleFiles)(
-    '%s should not contain postcss',
-    (file) => {
-      const content = readFileSync(resolve(distDir, file), 'utf-8').toLowerCase();
-      expect(content).not.toContain('postcss');
-    },
-  );
+  it.each(bundleFiles)('%s should not contain postcss', (file) => {
+    const content = readFileSync(resolve(distDir, file), 'utf-8').toLowerCase();
+    expect(content).not.toContain('postcss');
+  });
 });
