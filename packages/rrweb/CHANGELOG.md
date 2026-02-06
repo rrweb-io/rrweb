@@ -1,5 +1,17 @@
 # rrweb
 
+## 2.0.0-alpha.20
+
+### Patch Changes
+
+- [#1763](https://github.com/rrweb-io/rrweb/pull/1763) [`6388fb5`](https://github.com/rrweb-io/rrweb/commit/6388fb5a468e1a860ab8bb5c6826c811dcc3100c) Thanks [@wfk007](https://github.com/wfk007)! - fix: wujie monkeypatches ownerDocument
+
+- Updated dependencies [[`6388fb5`](https://github.com/rrweb-io/rrweb/commit/6388fb5a468e1a860ab8bb5c6826c811dcc3100c)]:
+  - @rrweb/utils@2.0.0-alpha.20
+  - rrweb-snapshot@2.0.0-alpha.20
+  - rrdom@2.0.0-alpha.20
+  - @rrweb/types@2.0.0-alpha.20
+
 ## 2.0.0-alpha.19
 
 ### Patch Changes
