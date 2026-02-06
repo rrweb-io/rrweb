@@ -17,7 +17,6 @@ function recordOnlyResolvePlugin(): Plugin {
       __dirname,
       '../rrweb-snapshot/src/index.ts',
     ),
-    rrdom: path.resolve(__dirname, '../rrdom/src/index.ts'),
   };
 
   return {
@@ -26,6 +25,15 @@ function recordOnlyResolvePlugin(): Plugin {
     resolveId(source) {
       if (source in aliases) {
         return aliases[source];
+      }
+      // rrdom is replay-only; stub it out so none of its code is bundled.
+      if (source === 'rrdom') {
+        return '\0rrdom-stub';
+      }
+    },
+    load(id) {
+      if (id === '\0rrdom-stub') {
+        return 'export class BaseRRNode {}; export class RRNode {}; export class RRIFrameElement {};';
       }
     },
   };
