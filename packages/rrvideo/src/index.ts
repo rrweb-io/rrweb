@@ -189,7 +189,6 @@ export async function transformToVideo(options: RRvideoConfig) {
         reject(err);
       });
   });
-  console.log('[DEBUG] Getting video path');
   const videoPath = (await page.video()?.path()) || '';
   console.log('[DEBUG] Video path:', videoPath);
   const cleanFiles = async (videoPath: string) => {
