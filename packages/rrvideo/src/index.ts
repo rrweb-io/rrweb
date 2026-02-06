@@ -134,7 +134,6 @@ export async function transformToVideo(options: RRvideoConfig) {
     ),
   };
   Object.assign(config.rrwebPlayer, scaledViewport);
-  console.log('[DEBUG] Launching browser with headless:', config.headless);
   const browser = await chromium.launch({
     headless: config.headless,
   });
