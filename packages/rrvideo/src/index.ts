@@ -190,7 +190,6 @@ export async function transformToVideo(options: RRvideoConfig) {
       });
   });
   const videoPath = (await page.video()?.path()) || '';
-  console.log('[DEBUG] Video path:', videoPath);
   const cleanFiles = async (videoPath: string) => {
     await fs.remove(videoPath);
     if ((await fs.readdir(defaultVideoDir)).length === 0) {
