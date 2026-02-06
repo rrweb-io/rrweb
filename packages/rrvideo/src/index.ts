@@ -125,7 +125,6 @@ export async function transformToVideo(options: RRvideoConfig) {
 
   // Make the browser viewport fit the player size.
   const maxViewport = getMaxViewport(events);
-  console.log('[DEBUG] Max viewport:', maxViewport);
   // Use the scaling method to improve the video quality.
   const scaledViewport = {
     width: Math.round(
