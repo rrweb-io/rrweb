@@ -30,6 +30,20 @@ rrweb 代码分为录制和回放两部分，大多数时候用户在被录制�
 <script src="https://cdn.jsdelivr.net/npm/@rrweb/record@latest/dist/record.umd.min.cjs"></script>
 ```
 
+录制端的 UMD build 会暴露全局变量 `rrwebRecord`。
+
+#### 仅引入回放部分
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/replay.umd.min.cjs"></script>
+```
+
+回放端的 UMD build 会暴露全局变量 `rrwebReplay`。
+
 #### 其他包
 
 除了 `rrweb` 和 `@rrweb/record` 包之外，rrweb 还提供了其他不同用途的包。

@@ -33,6 +33,20 @@ This also can be done by using the `@rrweb/record` package and the CDN service:
 <script src="https://cdn.jsdelivr.net/npm/@rrweb/record@latest/dist/record.umd.min.cjs"></script>
 ```
 
+The recorder UMD build exposes a global named `rrwebRecord`.
+
+#### Only include the replayer code
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/replay.umd.min.cjs"></script>
+```
+
+The replayer UMD build exposes a global named `rrwebReplay`.
+
 #### Other packages
 
 Besides the `rrweb` and `@rrweb/record` packages, rrweb also provides other packages for different usage.
