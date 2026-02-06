@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.21
+
+### Patch Changes
+
+- [#1762](https://github.com/rrweb-io/rrweb/pull/1762) [`22bc4c3`](https://github.com/rrweb-io/rrweb/commit/22bc4c334e88f0b8ee5488d9e1e95cd8093a15c8) Thanks [@Juice10](https://github.com/Juice10)! - Drop base64 inlined worker source from all bundles
+
 ## 2.0.0-alpha.20
 
 ## 2.0.0-alpha.19
