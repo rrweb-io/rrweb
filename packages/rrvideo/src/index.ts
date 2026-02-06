@@ -144,7 +144,6 @@ export async function transformToVideo(options: RRvideoConfig) {
       size: scaledViewport,
     },
   });
-  console.log('[DEBUG] Browser context created');
   const page = await context.newPage();
   console.log('[DEBUG] New page created');
   await page.goto('about:blank');
