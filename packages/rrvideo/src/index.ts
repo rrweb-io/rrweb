@@ -118,7 +118,6 @@ export async function transformToVideo(options: RRvideoConfig) {
   const outputPath = path.isAbsolute(config.output)
     ? config.output
     : path.resolve(process.cwd(), config.output);
-  console.log('[DEBUG] Reading events from:', eventsPath);
   const events = JSON.parse(
     fs.readFileSync(eventsPath, 'utf-8'),
   ) as eventWithTime[];
