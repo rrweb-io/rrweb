@@ -71,7 +71,7 @@ function getHtml(events: Array<eventWithTime>, config?: RRvideoConfig): string {
         });
         window.replayer.addEventListener('finish', () => window.onReplayFinish());
         window.replayer.addEventListener('ui-update-progress', (payload)=> window.onReplayProgressUpdate(payload));
-        window.replayer.addEventListener('resize',()=>document.querySelector('.replayer-wrapper').style.transform = 'scale(${
+        window.replayer.addEventListener('resize', () => document.querySelector('.replayer-wrapper').style.transform = 'scale(${
           (config?.resolutionRatio ?? 1) * MaxScaleValue
         }) translate(-50%, -50%)');
         // Start playback after event listeners are attached
