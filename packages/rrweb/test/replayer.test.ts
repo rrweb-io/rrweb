@@ -25,6 +25,8 @@ import StyleSheetTextMutation from './events/style-sheet-text-mutation';
 import canvasInIframe from './events/canvas-in-iframe';
 import adoptedStyleSheet from './events/adopted-style-sheet';
 import adoptedStyleSheetModification from './events/adopted-style-sheet-modification';
+import nestedStyleDeclarationEvents from './events/nested-style-declaration';
+import styleDeclarationMissingRuleEvents from './events/style-declaration-missing-rule';
 import documentReplacementEvents from './events/document-replacement';
 import hoverInIframeShadowDom from './events/iframe-shadowdom-hover';
 import customElementDefineClass from './events/custom-element-define-class';
@@ -1062,6 +1064,126 @@ describe('replayer', function () {
 
     await page.evaluate('replayer.pause(630);');
     await check600ms();
+  });
+
+  it('can replay StyleDeclaration events on nested CSS rules inside @media', async () => {
+    await page.evaluate(`
+    events = ${JSON.stringify(nestedStyleDeclarationEvents)};
+    const { Replayer } = rrweb;
+    var replayer = new Replayer(events, { showDebug: true });
+    replayer.pause(0);
+    `);
+
+    // At 250ms, setProperty on [0, 0] should change background-color to red
+    const bgColorAfterSet = await page.evaluate(`
+      replayer.pause(250);
+      const doc1 = replayer.iframe.contentDocument;
+      const styleElement1 = doc1.querySelector('head style');
+      const sheet1 = styleElement1?.sheet;
+      if (!sheet1 || sheet1.cssRules.length === 0) 'no sheet';
+      const mediaRule1 = sheet1.cssRules[0];
+      if (!mediaRule1 || !mediaRule1.cssRules) 'no media rule';
+      const nestedRule1 = mediaRule1.cssRules[0];
+      nestedRule1?.style?.backgroundColor || 'no bg color';
+    `);
+    expect(bgColorAfterSet).toBe('red');
+
+    // At 350ms, setProperty on [0, 1] should add font-weight: bold
+    const fontWeightAfterSet = await page.evaluate(`
+      replayer.pause(350);
+      const doc2 = replayer.iframe.contentDocument;
+      const styleElement2 = doc2.querySelector('head style');
+      const sheet2 = styleElement2?.sheet;
+      if (!sheet2) 'no sheet';
+      const mediaRule2 = sheet2.cssRules[0];
+      const secondRule2 = mediaRule2?.cssRules?.[1];
+      secondRule2?.style?.fontWeight || 'no font weight';
+    `);
+    expect(fontWeightAfterSet).toBe('bold');
+
+    // At 450ms, removeProperty on [0, 0] should remove width
+    const widthAfterRemove = await page.evaluate(`
+      replayer.pause(450);
+      const doc3 = replayer.iframe.contentDocument;
+      const styleElement3 = doc3.querySelector('head style');
+      const sheet3 = styleElement3?.sheet;
+      if (!sheet3) 'has width';
+      const mediaRule3 = sheet3.cssRules[0];
+      const nestedRule3 = mediaRule3?.cssRules?.[0];
+      nestedRule3?.style?.width || '';
+    `);
+    expect(widthAfterRemove).toBe('');
+
+    // At 550ms, setProperty on deeply nested [1, 0, 0] should change background-color to purple
+    const deepBgColorAfterSet = await page.evaluate(`
+      replayer.pause(550);
+      const doc4 = replayer.iframe.contentDocument;
+      const styleElement4 = doc4.querySelector('head style');
+      const sheet4 = styleElement4?.sheet;
+      if (!sheet4 || sheet4.cssRules.length < 2) 'no sheet';
+      const supportsRule4 = sheet4.cssRules[1];
+      const mediaRule4 = supportsRule4?.cssRules?.[0];
+      const deepRule4 = mediaRule4?.cssRules?.[0];
+      deepRule4?.style?.backgroundColor || 'no bg color';
+    `);
+    expect(deepBgColorAfterSet).toBe('purple');
+
+    // At 650ms, removeProperty on [1, 0, 0] should remove background-color
+    const deepBgColorAfterRemove = await page.evaluate(`
+      replayer.pause(650);
+      const doc5 = replayer.iframe.contentDocument;
+      const styleElement5 = doc5.querySelector('head style');
+      const sheet5 = styleElement5?.sheet;
+      if (!sheet5 || sheet5.cssRules.length < 2) 'has bg';
+      const supportsRule5 = sheet5.cssRules[1];
+      const mediaRule5 = supportsRule5?.cssRules?.[0];
+      const deepRule5 = mediaRule5?.cssRules?.[0];
+      deepRule5?.style?.backgroundColor || '';
+    `);
+    expect(deepBgColorAfterRemove).toBe('');
+  });
+
+  it('should not crash when StyleDeclaration references non-existent rules', async () => {
+    /**
+     * This test verifies that the replayer gracefully handles StyleDeclaration
+     * events that reference rules which don't exist in the stylesheet.
+     *
+     * This can happen due to:
+     * - Timing issues where StyleDeclaration arrives before StyleSheetRule
+     * - Dynamic stylesheets that aren't fully synchronized
+     * - Event ordering issues during recording
+     *
+     * The replayer should silently skip these instead of crashing.
+     */
+    await page.evaluate(
+      `events = ${JSON.stringify(styleDeclarationMissingRuleEvents)}`,
+    );
+
+    // Should not throw any errors
+    const result = await page.evaluate(`
+      try {
+        const { Replayer } = rrweb;
+        const replayer = new Replayer(events, { showDebug: true });
+        replayer.pause(500); // After all StyleDeclaration events
+        'success';
+      } catch (e) {
+        'error: ' + e.message;
+      }
+    `);
+    expect(result).toBe('success');
+
+    // Verify the existing rule still works (wasn't corrupted)
+    const existingRuleColor = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(500);
+      const doc = replayer.iframe.contentDocument;
+      const style = doc.querySelector('head style');
+      const sheet = style?.sheet;
+      const rule = sheet?.cssRules?.[0];
+      rule?.style?.color || 'no color';
+    `);
+    expect(existingRuleColor).toBe('blue');
   });
 
   it('should replay document replacement events without warnings or errors', async () => {
