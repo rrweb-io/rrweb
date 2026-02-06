@@ -1,5 +1,14 @@
 # @rrweb/record
 
+## 2.0.0-alpha.20
+
+### Patch Changes
+
+- Updated dependencies [[`6388fb5`](https://github.com/rrweb-io/rrweb/commit/6388fb5a468e1a860ab8bb5c6826c811dcc3100c)]:
+  - rrweb@2.0.0-alpha.20
+  - @rrweb/utils@2.0.0-alpha.20
+  - @rrweb/types@2.0.0-alpha.20
+
 ## 2.0.0-alpha.19
 
 ### Patch Changes
