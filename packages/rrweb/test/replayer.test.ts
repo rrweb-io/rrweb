@@ -1132,7 +1132,7 @@ describe('replayer', function () {
         document.adoptedStyleSheets[0].cssRules.length === 0,
     );
   });
- 
+
   it('can replay StyleDeclaration events on nested CSS rules inside @media', async () => {
     await page.evaluate(`
       events = ${JSON.stringify(nestedStyleDeclarationEvents)};
