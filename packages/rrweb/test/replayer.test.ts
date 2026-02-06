@@ -1123,13 +1123,11 @@ describe('replayer', function () {
 
     // At 350ms, stylesheet should be empty after replace('')
     await page.evaluate('replayer.pause(350);');
-    expect(
-      await contentDocument!.evaluate(
-        () =>
-          document.adoptedStyleSheets.length === 1 &&
-          document.adoptedStyleSheets[0].cssRules.length === 0,
-      ),
-    ).toBeTruthy();
+    await contentDocument!.waitForFunction(
+      () =>
+        document.adoptedStyleSheets.length === 1 &&
+        document.adoptedStyleSheets[0].cssRules.length === 0,
+    );
   });
 
   it('should replay document replacement events without warnings or errors', async () => {
