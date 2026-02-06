@@ -62,7 +62,6 @@ Rollup a clearer view of what is actually used.
 A test in `packages/record/test/record.test.ts` asserts that no output bundle
 file contains the string "postcss", guarding against future regressions.
 
-
 ## Sponsors
 
 [Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.

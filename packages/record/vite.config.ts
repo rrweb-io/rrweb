@@ -13,10 +13,7 @@ import createConfig from '../../vite.config.default';
 function recordOnlyResolvePlugin(): Plugin {
   const aliases: Record<string, string> = {
     rrweb: path.resolve(__dirname, '../rrweb/src/entries/record.ts'),
-    'rrweb-snapshot': path.resolve(
-      __dirname,
-      '../rrweb-snapshot/src/index.ts',
-    ),
+    'rrweb-snapshot': path.resolve(__dirname, '../rrweb-snapshot/src/index.ts'),
   };
 
   return {
