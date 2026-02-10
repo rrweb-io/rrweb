@@ -203,26 +203,15 @@ export class Mirror implements IMirror<Node> {
   }
 
   // removes the node from idNodeMap
-  // doesn't remove the node from nodeMetaMap
-  removeNodeFromMap(n: Node) {
+  // if permanent is true, also removes from nodeMetaMap
+  removeNodeFromMap(n: Node, permanent = false) {
     const id = this.getId(n);
     this.idNodeMap.delete(id);
+    if (permanent) this.nodeMetaMap.delete(n);
 
     if (n.childNodes) {
       n.childNodes.forEach((childNode) =>
-        this.removeNodeFromMap(childNode as unknown as Node),
-      );
-    }
-  }
-
-  removeNodeFromMapPermanently(n: Node) {
-    const id = this.getId(n);
-    this.idNodeMap.delete(id);
-    this.nodeMetaMap.delete(n);
-
-    if (n.childNodes) {
-      n.childNodes.forEach((childNode) =>
-        this.removeNodeFromMapPermanently(childNode as unknown as Node),
+        this.removeNodeFromMap(childNode as unknown as Node, permanent),
       );
     }
   }

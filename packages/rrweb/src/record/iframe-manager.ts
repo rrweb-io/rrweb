@@ -78,6 +78,16 @@ export class IframeManager {
   }
 
   public removeIframe(iframeEl: HTMLIFrameElement): void {
+    const storedDoc = this.iframeContentDocumentMap.get(iframeEl);
+
+    this.stylesheetManager.cleanupStylesheetsForRemovedNode(
+      iframeEl,
+      storedDoc,
+    );
+    if (storedDoc) {
+      this.mirror.removeNodeFromMap(storedDoc, true);
+    }
+
     this.iframes.delete(iframeEl);
     this.iframeContentDocumentMap.delete(iframeEl);
 

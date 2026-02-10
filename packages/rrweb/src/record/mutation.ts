@@ -370,18 +370,8 @@ export default class MutationBuffer {
       const removedNode = this.mapRemoves.shift()!;
 
       if (removedNode.nodeName === 'IFRAME') {
-        const iframeEl = removedNode as HTMLIFrameElement;
         try {
-          const storedDoc =
-            this.iframeManager.getIframeContentDocument(iframeEl);
-          this.stylesheetManager.cleanupStylesheetsForRemovedNode(
-            removedNode,
-            storedDoc,
-          );
-          if (storedDoc) {
-            this.mirror.removeNodeFromMapPermanently(storedDoc);
-          }
-          this.iframeManager.removeIframe(iframeEl);
+          this.iframeManager.removeIframe(removedNode as HTMLIFrameElement);
         } catch (e) {
           // Ignore errors during iframe cleanup
         }

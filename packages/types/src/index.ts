@@ -828,9 +828,7 @@ export interface IMirror<TNode> {
 
   getMeta(n: TNode): serializedNodeWithId | null;
 
-  removeNodeFromMap(n: TNode): void;
-
-  removeNodeFromMapPermanently?(n: TNode): void;
+  removeNodeFromMap(n: TNode, permanent?: boolean): void;
 
   has(id: number): boolean;
 

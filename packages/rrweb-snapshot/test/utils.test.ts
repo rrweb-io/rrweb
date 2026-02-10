@@ -283,7 +283,7 @@ describe('utils', () => {
   });
 
   describe('Mirror', () => {
-    describe('removeNodeFromMapPermanently', () => {
+    describe('removeNodeFromMap with permanent flag', () => {
       it('should remove node from both idNodeMap and nodeMetaMap', () => {
         const mirror = new Mirror();
         const div = document.createElement('div');
@@ -300,7 +300,7 @@ describe('utils', () => {
         expect(mirror.hasNode(div)).toBe(true);
         expect(mirror.getNode(1)).toBe(div);
 
-        mirror.removeNodeFromMapPermanently(div);
+        mirror.removeNodeFromMap(div, true);
 
         expect(mirror.getId(div)).toBe(-1);
         expect(mirror.hasNode(div)).toBe(false);
@@ -358,7 +358,7 @@ describe('utils', () => {
         expect(mirror.hasNode(child2)).toBe(true);
         expect(mirror.hasNode(grandchild)).toBe(true);
 
-        mirror.removeNodeFromMapPermanently(parent);
+        mirror.removeNodeFromMap(parent, true);
 
         expect(mirror.hasNode(parent)).toBe(false);
         expect(mirror.hasNode(child1)).toBe(false);
@@ -370,7 +370,7 @@ describe('utils', () => {
         expect(mirror.getId(grandchild)).toBe(-1);
       });
 
-      it('should differ from removeNodeFromMap by also clearing nodeMetaMap', () => {
+      it('should differ from non-permanent removeNodeFromMap by also clearing nodeMetaMap', () => {
         const mirror1 = new Mirror();
         const div1 = document.createElement('div');
         const meta1 = {
@@ -399,9 +399,9 @@ describe('utils', () => {
         } as serializedNodeWithId;
 
         mirror2.add(div2, meta2);
-        mirror2.removeNodeFromMapPermanently(div2);
+        mirror2.removeNodeFromMap(div2, true);
 
-        // removeNodeFromMapPermanently clears both maps
+        // removeNodeFromMap with permanent=true clears both maps
         expect(mirror2.getNode(1)).toBeNull();
         expect(mirror2.hasNode(div2)).toBe(false); // Also removed from nodeMetaMap
       });
