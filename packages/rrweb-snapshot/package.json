@@ -43,6 +43,8 @@
       }
     }
   },
+  "//": "sideEffects: false - allow packages/record/ to drop rebuild.ts and css.ts during tree shaking",
+  "sideEffects": false,
   "files": [
     "dist",
     "package.json"

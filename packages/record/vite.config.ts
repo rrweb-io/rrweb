@@ -46,6 +46,12 @@ export default defineConfig((env) => {
     typeof baseConfigFn === 'function' ? baseConfigFn(env) : baseConfigFn;
   return mergeConfig(baseConfig, {
     plugins: [recordOnlyResolvePlugin()],
+    /*
+     * this moduleSideEffects: false has been moved to packages/rrweb-snapshot/package.json (as `"sideEffects": false,` there)
+     * in case there might be other unintended consequences in future. However it might still be desirable to turn on the aggressive
+     * tree-shaking here to ensure nothing extra gets included in build outputs.  Moving this to the top level (vite.config.default.ts)
+     * would negatively impact import of Sveldt from rrweb-player, which _does_ need to use the side effect of Sveldt window registration
+     * for the player to work
     build: {
       rollupOptions: {
         treeshake: {
@@ -55,5 +61,6 @@ export default defineConfig((env) => {
         },
       },
     },
+    */
   });
 });
