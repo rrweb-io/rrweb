@@ -12,6 +12,7 @@ import {
   ISuite,
 } from './utils';
 import type { recordOptions } from '../src/types';
+import { normalizeKeys } from '../src/normalizeKeys';
 import { eventWithTime, NodeType, EventType } from '@rrweb/types';
 import { visitSnapshot } from 'rrweb-snapshot';
 import { randomUUID } from 'crypto';
@@ -43,6 +44,57 @@ function defaultOptions(
   }
   return options;
 }
+
+describe('normalizeKeys', () => {
+  const canonical = {
+    serverUrl: '',
+    publicApiKey: '',
+    autostart: false,
+    includePii: false,
+  };
+
+  it('passes through correct keys unchanged', () => {
+    const input = { serverUrl: 'ws://localhost', publicApiKey: 'abc' };
+    expect(normalizeKeys(input, canonical)).toEqual(input);
+  });
+
+  it('fixes publicAPIkey → publicApiKey', () => {
+    const input = { publicAPIkey: 'abc', serverUrl: 'ws://localhost' };
+    expect(normalizeKeys(input, canonical)).toEqual({
+      publicApiKey: 'abc',
+      serverUrl: 'ws://localhost',
+    });
+  });
+
+  it('fixes PublicApiKey → publicApiKey', () => {
+    expect(normalizeKeys({ PublicApiKey: 'x' }, canonical)).toEqual({
+      publicApiKey: 'x',
+    });
+  });
+
+  it('fixes public_api_key → publicApiKey', () => {
+    expect(normalizeKeys({ public_api_key: 'x' }, canonical)).toEqual({
+      publicApiKey: 'x',
+    });
+  });
+
+  it('fixes server-url → serverUrl', () => {
+    expect(normalizeKeys({ 'server-url': 'ws://x' }, canonical)).toEqual({
+      serverUrl: 'ws://x',
+    });
+  });
+
+  it('fixes include_pii → includePii', () => {
+    expect(normalizeKeys({ include_pii: true }, canonical)).toEqual({
+      includePii: true,
+    });
+  });
+
+  it('preserves unknown keys as-is', () => {
+    const input = { publicApiKey: 'abc', customThing: 42 };
+    expect(normalizeKeys(input, canonical)).toEqual(input);
+  });
+});
 
 describe('ws-client integration tests', function (this: ISuite) {
   vi.setConfig({ testTimeout: 20_000 });

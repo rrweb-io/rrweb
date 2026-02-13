@@ -10,6 +10,8 @@ import { EventType } from '@rrweb/types';
 import type { customEvent, eventWithTime, listenerHandler } from '@rrweb/types';
 import type { recordOptions } from 'rrweb';
 
+import { normalizeKeys } from './normalizeKeys';
+
 import {
   ArrayQueue,
   ExponentialBackoff,
@@ -483,6 +485,7 @@ if (document && document.currentScript) {
       */
       config = looseJsonParse(self.innerText);
     }
+    config = normalizeKeys(config, defaultClientConfig);
   }
   if (truthyAttr.includes(self.getAttribute('includepii'))) {
     config.includePii = true;
