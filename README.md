@@ -12,8 +12,8 @@
 [![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-siwoc6hx-uWay3s2wyG8t5GpZVb8rWg)
 [![Twitter Follow](https://img.shields.io/badge/twitter-@rrweb__io-teal.svg?logo=twitter)](https://twitter.com/rrweb_io)
 [![Reddit](https://img.shields.io/badge/reddit-r/rrweb-teal.svg?logo=reddit)](https://www.reddit.com/r/rrweb)
-![total gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.cjs?compression=gzip&label=total%20gzip%20size)
-![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.cjs?compression=gzip&label=recorder%20gzip%20size)
+![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@rrweb/record@latest/dist/record.min.js?compression=gzip&label=recorder%20gzip%20size&max=200000&softmax=100000)
+![replayer gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/replay.min.js?compression=gzip&label=replayer%20gzip%20size&max=200000&softmax=100000)
 [![](https://data.jsdelivr.com/v1/package/npm/rrweb/badge)](https://www.jsdelivr.com/package/npm/rrweb)
 
 [中文文档](./README.zh_CN.md)
