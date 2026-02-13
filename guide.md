@@ -21,7 +21,7 @@ You are recommended to install rrweb via jsdelivr's CDN service:
 Also, you can link to a specific version number that you can update manually:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.19/umd/rrweb.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.21/umd/rrweb.min.js"></script>
 ```
 
 #### Only include the recorder code
@@ -42,7 +42,7 @@ The recorder UMD build exposes a global named `rrwebRecord`.
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/replay.umd.min.cjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/umd/replay.min.js"></script>
 ```
 
 The replayer UMD build exposes a global named `rrwebReplay`.
