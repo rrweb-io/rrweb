@@ -11,9 +11,40 @@ Includes the following packages:
 
 ## Installation
 
+### 1) Bundler / npm (Recommended)
+
 ```bash
 npm install @rrweb/all
 ```
+
+```js
+import { record, replay, pack, unpack } from '@rrweb/all';
+```
+
+### 2) Browser Without Bundler (ESM + import maps)
+
+```html
+<script type="importmap">
+  {
+    "imports": {
+      "@rrweb/all": "https://cdn.jsdelivr.net/npm/@rrweb/all@latest/+esm"
+    }
+  }
+</script>
+<script type="module">
+  import { record, replay, pack, unpack } from '@rrweb/all';
+</script>
+```
+
+### 3) Legacy Direct `<script>` Include (UMD fallback)
+
+Use this only for compatibility with non-module environments.
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@rrweb/all@latest/umd/all.min.js"></script>
+```
+
+The legacy UMD global is `rrweb`.
 
 ## Usage
 

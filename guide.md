@@ -6,46 +6,101 @@
 
 ## Installation
 
-### Direct `<script>` include
+### 1) Bundler / npm (Recommended)
 
-You are recommended to install rrweb via jsdelivr's CDN service:
+```shell
+npm install rrweb
+```
+
+```js
+import rrweb from 'rrweb';
+import 'rrweb/dist/style.css';
+```
+
+Use package-specific entrypoints when you only need one side:
+
+```shell
+npm install @rrweb/record @rrweb/replay
+```
+
+```js
+import { record } from '@rrweb/record';
+import { Replayer } from '@rrweb/replay';
+import '@rrweb/replay/dist/style.css';
+```
+
+`require(...)` / CommonJS remains available for compatibility via each package's `exports`/`main`, but ESM imports are the primary path for 2.x.
+
+### 2) Browser Without Bundler (Recommended No-Build Path)
+
+Use ES modules and import maps with jsDelivr `+esm`:
 
 ```html
 <link
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/umd/rrweb.min.js"></script>
+<script type="importmap">
+  {
+    "imports": {
+      "rrweb": "https://cdn.jsdelivr.net/npm/rrweb@latest/+esm"
+    }
+  }
+</script>
+<script type="module">
+  import rrweb from 'rrweb';
+
+  rrweb.record({
+    emit(event) {
+      console.log(event);
+    },
+  });
+</script>
 ```
 
-Also, you can link to a specific version number that you can update manually:
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.21/umd/rrweb.min.js"></script>
-```
-
-#### Only include the recorder code
-
-rrweb's code includes both the record and the replay parts. Most of the time you only need to include the record part into your targeted web Apps.
-This also can be done by using the `@rrweb/record` package and the CDN service:
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/@rrweb/record@latest/umd/record.min.js"></script>
-```
-
-The recorder UMD build exposes a global named `rrwebRecord`.
-
-#### Only include the replayer code
+Package-specific browser ESM imports:
 
 ```html
 <link
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/umd/replay.min.js"></script>
+<script type="importmap">
+  {
+    "imports": {
+      "@rrweb/record": "https://cdn.jsdelivr.net/npm/@rrweb/record@latest/+esm",
+      "@rrweb/replay": "https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/+esm"
+    }
+  }
+</script>
+<script type="module">
+  import { record } from '@rrweb/record';
+  import { Replayer } from '@rrweb/replay';
+</script>
 ```
 
-The replayer UMD build exposes a global named `rrwebReplay`.
+### 3) Legacy Direct `<script>` Include (UMD Fallback)
+
+Use this only for compatibility with non-module environments.
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.20/dist/style.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.20/umd/rrweb.min.js"></script>
+```
+
+The UMD build exposes global `rrweb`.
+
+Legacy single-purpose UMD bundles:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@rrweb/record@2.0.0-alpha.20/umd/record.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@rrweb/replay@2.0.0-alpha.20/umd/replay.min.js"></script>
+```
+
+The UMD globals are `rrwebRecord` and `rrwebReplay`.
 
 #### Other packages
 
@@ -71,14 +126,6 @@ Besides the `rrweb` and `@rrweb/record` packages, rrweb also provides other pack
 - [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record): A plugin for stream `<canvas>` via WebRTC.
 - [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay): A plugin for playing streamed `<canvas>` via WebRTC.
 
-### NPM
-
-```shell
-npm install --save rrweb
-```
-
-rrweb provides both commonJS and ES modules bundles, which are easy to use with the popular bundlers.
-
 ### Compatibility Note
 
 rrweb does **not** support IE11 and below because it uses the `MutationObserver` API which was supported by [these browsers](https://caniuse.com/#feat=mutationobserver).
@@ -87,7 +134,7 @@ rrweb does **not** support IE11 and below because it uses the `MutationObserver`
 
 ### Record
 
-The following sample code will use the variable `rrweb` which is the default exporter of this library.
+The following sample code assumes `rrweb` is imported via ESM (`import rrweb from 'rrweb'`), or available as a global in the legacy UMD mode.
 
 ```js
 rrweb.record({
@@ -262,7 +309,13 @@ With the sample code above, you will finally get the last 5 to 10 minutes of eve
 
 ### Replay
 
-You need to include the style sheet before replay:
+For bundler usage, include the style sheet in your app entry:
+
+```js
+import 'rrweb/dist/style.css';
+```
+
+For browser/no-build usage, include the style sheet in HTML:
 
 ```html
 <link
@@ -271,7 +324,7 @@ You need to include the style sheet before replay:
 />
 ```
 
-And then initialize the replayer with the following code:
+And then initialize the replayer:
 
 ```js
 const events = YOUR_EVENTS;
@@ -333,25 +386,44 @@ Since rrweb's replayer ([@rrweb/replay](packages/replay/)) only provides a basic
 
 ##### Installation
 
-rrweb-player can also be included with `<script>`：
+Bundler / npm (recommended):
+
+```shell
+npm install rrweb-player
+```
+
+```js
+import rrwebPlayer from 'rrweb-player';
+import 'rrweb-player/dist/style.css';
+```
+
+Browser without bundler (ESM + import maps):
 
 ```html
 <link
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/umd/rrweb-player.js"></script>
+<script type="importmap">
+  {
+    "imports": {
+      "rrweb-player": "https://cdn.jsdelivr.net/npm/rrweb-player@latest/+esm"
+    }
+  }
+</script>
+<script type="module">
+  import rrwebPlayer from 'rrweb-player';
+</script>
 ```
 
-Or installed by using NPM：
+Legacy direct `<script>` include (UMD fallback):
 
-```shell
-npm install --save rrweb-player
-```
-
-```js
-import rrwebPlayer from 'rrweb-player';
-import 'rrweb-player/dist/style.css';
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/rrweb-player@2.0.0-alpha.20/dist/style.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/rrweb-player@2.0.0-alpha.20/umd/rrweb-player.js"></script>
 ```
 
 ##### Usage

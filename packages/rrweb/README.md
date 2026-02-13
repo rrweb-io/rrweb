@@ -19,6 +19,48 @@ rrweb refers to 'record and replay the web', which is a tool for recording and r
 
 [**🍳 Recipes 🍳**](../../docs/recipes/index.md)
 
+## Installation
+
+### 1) Bundler / npm (Recommended)
+
+```shell
+npm install rrweb
+```
+
+```js
+import rrweb from 'rrweb';
+import 'rrweb/dist/style.css';
+```
+
+### 2) Browser Without Bundler (ESM + import maps)
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
+/>
+<script type="importmap">
+  {
+    "imports": {
+      "rrweb": "https://cdn.jsdelivr.net/npm/rrweb@latest/+esm"
+    }
+  }
+</script>
+<script type="module">
+  import rrweb from 'rrweb';
+</script>
+```
+
+### 3) Legacy Direct `<script>` Include (UMD fallback)
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/umd/rrweb.min.js"></script>
+```
+
 ## Project Structure
 
 **[rrweb](https://github.com/rrweb-io/rrweb)** mainly includes two funtions:
