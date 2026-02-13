@@ -418,7 +418,7 @@ Legacy 直接 `<script>` 引入（UMD 兼容）：
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/rrweb-player@2.0.0-alpha.20/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb-player@2.0.0-alpha.20/umd/rrweb-player.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb-player@2.0.0-alpha.20/umd/rrweb-player.min.js"></script>
 ```
 
 ##### 使用

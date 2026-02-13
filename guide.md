@@ -31,7 +31,7 @@ import '@rrweb/replay/dist/style.css';
 
 `require(...)` / CommonJS remains available for compatibility via each package's `exports`/`main`, but ESM imports are the primary path for 2.x.
 
-### 2) Browser Without Bundler (Recommended No-Build Path)
+### 2) Browser Without Bundler (No-Build)
 
 Use ES modules and import maps with jsDelivr `+esm`:
 
@@ -423,7 +423,7 @@ Legacy direct `<script>` include (UMD fallback):
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/rrweb-player@2.0.0-alpha.20/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb-player@2.0.0-alpha.20/umd/rrweb-player.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb-player@2.0.0-alpha.20/umd/rrweb-player.min.js"></script>
 ```
 
 ##### Usage

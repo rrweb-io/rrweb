@@ -18,7 +18,7 @@ npm install @rrweb/all
 ```
 
 ```js
-import { record, replay, pack, unpack } from '@rrweb/all';
+import { record, Replayer, pack, unpack } from '@rrweb/all';
 ```
 
 ### 2) Browser Without Bundler (ESM + import maps)
@@ -32,7 +32,7 @@ import { record, replay, pack, unpack } from '@rrweb/all';
   }
 </script>
 <script type="module">
-  import { record, replay, pack, unpack } from '@rrweb/all';
+  import { record, Replayer, pack, unpack } from '@rrweb/all';
 </script>
 ```
 

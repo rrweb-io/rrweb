@@ -51,7 +51,7 @@ Use this only for compatibility with non-module environments.
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/umd/rrweb-player.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/umd/rrweb-player.min.js"></script>
 ```
 
 ## Usage

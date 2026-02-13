@@ -53,6 +53,7 @@ import 'rrweb/dist/style.css';
 
 ### 3) Legacy Direct `<script>` Include (UMD fallback)
 
+Use this only for compatibility with non-module environments.
 ```html
 <link
   rel="stylesheet"
