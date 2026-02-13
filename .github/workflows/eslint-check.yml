@@ -2,11 +2,7 @@ name: ESLint Check
 
 on:
   push:
-    paths-ignore:
-      - '**/*.md'
   pull_request_target:
-    paths-ignore:
-      - '**/*.md'
 
 jobs:
   eslint_check_upload:
