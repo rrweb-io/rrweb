@@ -231,11 +231,7 @@ record({
   emit(event) {
     /* ... */
   },
-  ignoreCSSAttributes: new Set([
-    'background-color',
-    'color',
-    'border-color',
-  ]),
+  ignoreCSSAttributes: new Set(['background-color', 'color', 'border-color']),
 });
 ```
 
