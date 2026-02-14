@@ -1,5 +1,15 @@
 # @rrweb/web-extension
 
+## 2.0.0-alpha.21
+
+### Patch Changes
+
+- [#1762](https://github.com/rrweb-io/rrweb/pull/1762) [`22bc4c3`](https://github.com/rrweb-io/rrweb/commit/22bc4c334e88f0b8ee5488d9e1e95cd8093a15c8) Thanks [@Juice10](https://github.com/Juice10)! - Drop base64 inlined worker source from all bundles
+
+- Updated dependencies [[`22bc4c3`](https://github.com/rrweb-io/rrweb/commit/22bc4c334e88f0b8ee5488d9e1e95cd8093a15c8), [`b149cf3`](https://github.com/rrweb-io/rrweb/commit/b149cf31ed28cac7b6627972b423d29723524d87)]:
+  - rrweb@2.0.0-alpha.21
+  - rrweb-player@2.0.0-alpha.21
+
 ## 2.0.0-alpha.20
 
 ### Patch Changes
