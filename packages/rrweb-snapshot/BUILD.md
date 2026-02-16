@@ -33,3 +33,13 @@ Rollup a clearer view of what is actually used.
 
 A test in `packages/record/test/record.test.ts` asserts that no output bundle
 file contains the string "postcss", guarding against future regressions.
+
+## Follow-up refactor (snapshot/rebuild split)
+
+As a low-risk preparation step, `snapshot.ts` and `rebuild.ts` now import
+utilities from domain-specific entrypoints (`snapshot-utils.ts` and
+`rebuild-utils.ts`) instead of both importing directly from `utils.ts`.
+
+This keeps current public API compatibility while making a future deeper split
+of `utils.ts` into snapshot-only, rebuild-only, and truly shared modules more
+incremental.

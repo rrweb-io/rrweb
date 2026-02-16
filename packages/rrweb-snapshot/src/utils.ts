@@ -1,3 +1,15 @@
+/**
+ * Legacy shared utility module.
+ *
+ * This file currently contains helpers used by both snapshot and rebuild paths
+ * and is also part of the public API surface (re-exported from index.ts).
+ *
+ * Migration intent:
+ * - snapshot.ts should consume snapshot-domain helpers via snapshot-utils.ts
+ * - rebuild.ts should consume rebuild-domain helpers via rebuild-utils.ts
+ * - when safe, split internals into snapshot-only / rebuild-only / shared
+ *   modules while keeping this module as a compatibility shim for external users
+ */
 import type {
   idNodeMap,
   MaskInputFn,
