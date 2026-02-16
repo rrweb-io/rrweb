@@ -462,7 +462,7 @@ new rrwebPlayer({
 | speedOption    | [1, 2, 4, 8] | speed options in UI                                                  |
 | showController | true         | whether to show the controller UI                                    |
 | tags           | {}           | customize the custom events style with a key-value map               |
-| ...            | -            | all other Replayer options are forwarded                              |
+| ...            | -            | all other Replayer options are forwarded                             |
 
 #### Events
 
