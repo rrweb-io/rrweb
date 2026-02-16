@@ -21,6 +21,8 @@ npm install @rrweb/all
 import { record, Replayer, pack, unpack } from '@rrweb/all';
 ```
 
+For API details and examples, see the [guide](../../guide.md).
+
 ### 2) Browser Without Bundler (ESM + import maps)
 
 ```html
@@ -45,16 +47,6 @@ Use this only for compatibility with non-module environments.
 ```
 
 The legacy UMD global is `rrweb`, so you will need to prefix the example function calls, e.g.  `rrweb.record`, `rrweb.replay`, `rrweb.pack` and `rrweb.unpack`, rather than using these functions directly.
-
-## Usage
-
-```js
-import { record, replay, pack, unpack } from '@rrweb/all';
-
-// use record, replay, pack, unpack as you would with the individual packages.
-```
-
-See the [guide](../../guide.md) for more info on rrweb.
 
 ## Sponsors
 
