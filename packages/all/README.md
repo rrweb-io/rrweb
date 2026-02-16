@@ -44,7 +44,7 @@ Use this only for compatibility with non-module environments.
 <script src="https://cdn.jsdelivr.net/npm/@rrweb/all@latest/umd/all.min.js"></script>
 ```
 
-The legacy UMD global is `rrweb`, so you will need to prefix the example function calls, e.g.  `rrweb.record`, `rrweb.replay`, `rrweb.pack` and `rrweb.unpack`, rather than using these functions directly.
+The legacy UMD global is `rrweb`, so you will need to prefix the example function calls, e.g. `rrweb.record`, `rrweb.replay`, `rrweb.pack` and `rrweb.unpack`, rather than using these functions directly.
 
 ## Usage
 
