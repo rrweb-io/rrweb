@@ -82,7 +82,7 @@ import 'rrweb/dist/style.css';
 
 ### 3) Legacy Direct `<script>` Include (UMD fallback)
 
-Use this only for compatibility with non-module environments.
+Use this only for compatibility with non-module environments; modern browsers support the importmap method [since 2023](https://caniuse.com/?search=import+map)
 
 ```html
 <link
