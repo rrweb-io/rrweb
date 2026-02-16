@@ -26,7 +26,9 @@ Use the sampling config in the recording can reduce the storage size by dropping
 **Scenario 1**
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+
+record({
   emit(event) {},
   sampling: {
     // do not record mouse movement
@@ -46,7 +48,9 @@ rrweb.record({
 **Scenario 2**
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+
+record({
   emit(event) {},
   sampling: {
     // Configure which kinds of mouse interaction should be recorded
@@ -76,7 +80,7 @@ You can use it by passing it as the `packFn` in the recording.
 ```js
 import { pack } from '@rrweb/packer';
 
-rrweb.record({
+record({
   emit(event) {},
   packFn: pack,
 });
@@ -86,8 +90,9 @@ And you need to pass packer.unpack as the `unpackFn` in replaying.
 
 ```js
 import { unpack } from '@rrweb/packer';
+import { Replayer } from '@rrweb/replay';
 
-const replayer = new rrweb.Replayer(events, {
+const replayer = new Replayer(events, {
   unpackFn: unpack,
 });
 ```

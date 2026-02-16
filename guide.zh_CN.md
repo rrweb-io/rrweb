@@ -4,18 +4,15 @@
 
 ## 安装
 
+| 目标 | 推荐包 |
+| ---- | ------ |
+| 大多数项目（录制 + 回放） | `@rrweb/record` + `@rrweb/replay` |
+| 单包便捷接入 | `@rrweb/all` |
+| 仅遗留兼容 | `rrweb` |
+
+在绝大多数生产架构中，录制端和回放端运行在不同的运行时/页面。请在被录制应用中安装 `@rrweb/record`，在回放应用中安装 `@rrweb/replay`（或 `rrweb-player`）。除非有明确的高级场景，一般不要在同一页面同时引入两者。
+
 ### 1) Bundler / npm（推荐）
-
-```shell
-npm install rrweb
-```
-
-```js
-import rrweb from 'rrweb';
-import 'rrweb/dist/style.css';
-```
-
-如果只需要录制或回放功能，可使用对应子包：
 
 ```shell
 npm install @rrweb/record @rrweb/replay
@@ -27,36 +24,22 @@ import { Replayer } from '@rrweb/replay';
 import '@rrweb/replay/dist/style.css';
 ```
 
+如果你希望使用单一入口，也可以使用便捷包 `@rrweb/all`：
+
+```shell
+npm install @rrweb/all
+```
+
+```js
+import { record, Replayer } from '@rrweb/all';
+import '@rrweb/all/dist/style.css';
+```
+
 `require(...)` / CommonJS 仍可作为兼容方案使用（由各包的 `exports`/`main` 提供），但 2.x 的主路径是 ESM。
 
 ### 2) 无 Bundler 的浏览器场景（推荐 no-build）
 
 推荐使用 ES modules + import map + jsDelivr `+esm`：
-
-```html
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
-/>
-<script type="importmap">
-  {
-    "imports": {
-      "rrweb": "https://cdn.jsdelivr.net/npm/rrweb@latest/+esm"
-    }
-  }
-</script>
-<script type="module">
-  import rrweb from 'rrweb';
-
-  rrweb.record({
-    emit(event) {
-      console.log(event);
-    },
-  });
-</script>
-```
-
-子包也可同样通过 import map 引入：
 
 ```html
 <link
@@ -73,7 +56,31 @@ import '@rrweb/replay/dist/style.css';
 </script>
 <script type="module">
   import { record } from '@rrweb/record';
-  import { Replayer } from '@rrweb/replay';
+
+  record({
+    emit(event) {
+      console.log(event);
+    },
+  });
+</script>
+```
+
+也可以通过 `@rrweb/all` 便捷引入：
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@rrweb/all@latest/dist/style.css"
+/>
+<script type="importmap">
+  {
+    "imports": {
+      "@rrweb/all": "https://cdn.jsdelivr.net/npm/@rrweb/all@latest/+esm"
+    }
+  }
+</script>
+<script type="module">
+  import { record, Replayer } from '@rrweb/all';
 </script>
 ```
 
@@ -102,14 +109,14 @@ import '@rrweb/replay/dist/style.css';
 
 #### 其他包
 
-除了 `rrweb` 和 `@rrweb/record` 包之外，rrweb 还提供了其他不同用途的包。
+除了 `@rrweb/record` 和 `@rrweb/replay` 包之外，rrweb 还提供了其他不同用途的包。
 
 - [rrweb](packages/rrweb)：rrweb 的核心包，包括录制和回放功能。
 - [rrweb-player](packages/rrweb-player)：rrweb 的图形用户界面，提供时间线和暂停、快进、加速等按钮。
 - [rrweb-snapshot](packages/rrweb-snapshot)：处理快照和重建功能，将 DOM 及其状态转换为可序列化的数据结构。
 - [rrdom](packages/rrdom)：rrweb 的虚拟 dom 包。
 - [rrdom-nodejs](packages/rrdom-nodejs)：用于服务器端 DOM 操作的 rrdom 的 Node.js 版本。
-- [@rrweb/all](packages/all)：一个包含 `rrweb` 和 `@rrweb/packer`，便于安装的包。
+- [@rrweb/all](packages/all)：一个包含 `rrweb` 和 `@rrweb/packer` 的便捷包。
 - [@rrweb/record](packages/record)：一个用于录制 rrweb 会话的包。
 - [@rrweb/replay](packages/replay)：一个用于回放 rrweb 会话的包。
 - [@rrweb/packer](packages/packer)：一个用于打包和解包 rrweb 数据的包。
@@ -132,10 +139,14 @@ import '@rrweb/replay/dist/style.css';
 
 ### 录制
 
-以下示例默认你通过 ESM 方式引入了 `rrweb`（`import rrweb from 'rrweb'`）；在 legacy UMD 模式下也可以直接使用全局变量 `rrweb`。
+现代用法建议直接使用 `@rrweb/record` 的 `record`：
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+```
+
+```js
+record({
   emit(event) {
     // 用任意方式存储 event
   },
@@ -147,7 +158,7 @@ rrweb 在录制时会不断将各类 event 传递给配置的 emit 方法，你�
 调用 `record` 方法将返回一个函数，调用该函数可以终止录制：
 
 ```js
-let stopFn = rrweb.record({
+let stopFn = record({
   emit(event) {
     if (events.length > 100) {
       // 当事件数量大于 100 时停止录制
@@ -162,7 +173,7 @@ let stopFn = rrweb.record({
 ```js
 let events = [];
 
-rrweb.record({
+record({
   emit(event) {
     // 将 event 存入 events 数组中
     events.push(event);
@@ -188,7 +199,7 @@ setInterval(save, 10 * 1000);
 
 #### 配置参数
 
-`rrweb.record(config)` 的 config 部分接受以下参数
+`record(config)` 的 config 部分接受以下参数
 
 | key                      | 默认值             | 功能                                                                                                                                                                                  |
 | ------------------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -240,7 +251,7 @@ setInterval(save, 10 * 1000);
 // 使用二维数组来存放多个 event 数组
 const eventsMatrix = [[]];
 
-rrweb.record({
+record({
   emit(event, isCheckout) {
     // isCheckout 是一个标识，告诉你重新制作了快照
     if (isCheckout) {
@@ -275,7 +286,7 @@ window.onerror = function () {
 // 使用二维数组来存放多个 event 数组
 const eventsMatrix = [[]];
 
-rrweb.record({
+record({
   emit(event, isCheckout) {
     // isCheckout 是一个标识，告诉你重新制作了快照
     if (isCheckout) {
@@ -309,7 +320,7 @@ window.onerror = function () {
 在 bundler 场景下，可在入口文件中引入 CSS：
 
 ```js
-import 'rrweb/dist/style.css';
+import '@rrweb/replay/dist/style.css';
 ```
 
 在浏览器 no-build 场景下，也可以在 HTML 中引入 CSS：
@@ -317,23 +328,25 @@ import 'rrweb/dist/style.css';
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
+  href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
 />
 ```
 
 然后通过以下 JS 代码初始化 replayer：
 
 ```js
+import { Replayer } from '@rrweb/replay';
+
 const events = YOUR_EVENTS;
 
-const replayer = new rrweb.Replayer(events);
+const replayer = new Replayer(events);
 replayer.play();
 ```
 
 #### 使用 API 控制回放
 
 ```js
-const replayer = new rrweb.Replayer(events);
+const replayer = new Replayer(events);
 
 // 播放
 replayer.play();
@@ -353,7 +366,7 @@ replayer.destroy();
 
 #### 配置参数
 
-可以通过 `new rrweb.Replayer(events, options)` 的方式向 rrweb 传递回放时的配置参数，具体配置如下：
+可以通过 `new Replayer(events, options)` 的方式向 rrweb 传递回放时的配置参数，具体配置如下：
 
 | key                 | 默认值        | 功能                                                                                                                                                                                                 |
 | ------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -446,16 +459,16 @@ new rrwebPlayer({
 | speedOption    | [1, 2, 4, 8] | 倍速播放可选值                                        |
 | showController | true         | 是否显示播放器控制 UI                                 |
 | tags           | {}           | 可以以 key value 的形式展示自定义事件在时间轴上的颜色 |
-| ...            | -            | 其它所有 rrweb Replayer 的配置参数均可透传            |
+| ...            | -            | 其它所有 Replayer 的配置参数均可透传                  |
 
 #### 事件
 
 开发者可能希望监听回放时的各类事件，例如在跳过无用户操作的时间时给用户一些提示。
 
-rrweb 的 Replayer 提供了 `on` API 用于提供该功能
+Replayer 提供了 `on` API 用于实现该功能
 
 ```js
-const replayer = new rrweb.Replayer(events);
+const replayer = new Replayer(events);
 replayer.on(EVENT_NAME, (payload) => {
   ...
 })
