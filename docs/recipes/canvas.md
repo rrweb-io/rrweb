@@ -6,7 +6,9 @@ There are some options for recording and replaying Canvas.
 Enable recording Canvas：
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+
+record({
   emit(event) {},
   recordCanvas: true,
 });
@@ -15,7 +17,9 @@ rrweb.record({
 Alternatively enable image snapshot recording of Canvas at a maximum of 15 frames per second：
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+
+record({
   emit(event) {},
   recordCanvas: true,
   sampling: {
@@ -32,7 +36,9 @@ rrweb.record({
 Enable replaying Canvas：
 
 ```js
-const replayer = new rrweb.Replayer(events, {
+import { Replayer } from '@rrweb/replay';
+
+const replayer = new Replayer(events, {
   UNSAFE_replayCanvas: true,
 });
 replayer.play();

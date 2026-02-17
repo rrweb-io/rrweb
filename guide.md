@@ -6,57 +6,119 @@
 
 ## Installation
 
-### Direct `<script>` include
+| Goal                            | Recommended package(s)            |
+| ------------------------------- | --------------------------------- |
+| Most projects (record + replay) | `@rrweb/record` + `@rrweb/replay` |
+| Single-package convenience      | `@rrweb/all`                      |
+| Legacy compatibility only       | `rrweb`                           |
 
-You are recommended to install rrweb via jsdelivr's CDN service:
+In most production setups, recorder and replayer are deployed to different pages/apps. Use `@rrweb/record` on recorded pages and `@rrweb/replay` (or `rrweb-player`) on replay pages. Use `@rrweb/all` when you intentionally want one package for convenience (for example demos, tooling, or simplified setups).
 
-```html
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
-/>
-<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/umd/rrweb.min.js"></script>
+### 1) Bundler / npm (Recommended)
+
+```shell
+npm install @rrweb/record @rrweb/replay
 ```
 
-Also, you can link to a specific version number that you can update manually:
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.21/umd/rrweb.min.js"></script>
+```js
+import { record } from '@rrweb/record';
+import { Replayer } from '@rrweb/replay';
+import '@rrweb/replay/dist/style.css';
 ```
 
-#### Only include the recorder code
+Use `@rrweb/all` as a convenience package if you want a single import:
 
-rrweb's code includes both the record and the replay parts. Most of the time you only need to include the record part into your targeted web Apps.
-This also can be done by using the `@rrweb/record` package and the CDN service:
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/@rrweb/record@latest/umd/record.min.js"></script>
+```shell
+npm install @rrweb/all
 ```
 
-The recorder UMD build exposes a global named `rrwebRecord`.
+```js
+import { record, Replayer } from '@rrweb/all';
+import '@rrweb/all/dist/style.css';
+```
 
-#### Only include the replayer code
+`require(...)` / CommonJS remains available for compatibility via each package's `exports`/`main`, but ESM imports are the primary path for 2.x.
+
+### 2) Browser Without Bundler (No-Build)
+
+Use ES modules and import maps with jsDelivr `+esm`:
 
 ```html
 <link
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/umd/replay.min.js"></script>
+<script type="importmap">
+  {
+    "imports": {
+      "@rrweb/record": "https://cdn.jsdelivr.net/npm/@rrweb/record@latest/+esm",
+      "@rrweb/replay": "https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/+esm"
+    }
+  }
+</script>
+<script type="module">
+  import { record } from '@rrweb/record';
+
+  record({
+    emit(event) {
+      console.log(event);
+    },
+  });
+</script>
 ```
 
-The replayer UMD build exposes a global named `rrwebReplay`.
+Or use `@rrweb/all` as a convenience browser ESM import:
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@rrweb/all@latest/dist/style.css"
+/>
+<script type="importmap">
+  {
+    "imports": {
+      "@rrweb/all": "https://cdn.jsdelivr.net/npm/@rrweb/all@latest/+esm"
+    }
+  }
+</script>
+<script type="module">
+  import { record, Replayer } from '@rrweb/all';
+</script>
+```
+
+### 3) Legacy Direct `<script>` Include (UMD Fallback)
+
+Use this only for compatibility with non-module environments.
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.20/dist/style.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.20/umd/rrweb.min.js"></script>
+```
+
+The UMD build exposes global `rrweb`.
+
+Legacy single-purpose UMD bundles:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@rrweb/record@2.0.0-alpha.20/umd/record.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@rrweb/replay@2.0.0-alpha.20/umd/replay.min.js"></script>
+```
+
+The UMD globals are `rrwebRecord` and `rrwebReplay`.
 
 #### Other packages
 
-Besides the `rrweb` and `@rrweb/record` packages, rrweb also provides other packages for different usage.
+Besides the `@rrweb/record` and `@rrweb/replay` packages, rrweb also provides other packages for different usage.
 
 - [rrweb](packages/rrweb): The core package of rrweb, including record and replay functions.
 - [rrweb-player](packages/rrweb-player): A GUI for rrweb, providing a timeline and buttons for things like pause, fast-forward, and speedup.
 - [rrweb-snapshot](packages/rrweb-snapshot): Handles snapshot and rebuilding features, converting the DOM and its state into a serializable data structure.
 - [rrdom](packages/rrdom): A virtual dom package rrweb.
 - [rrdom-nodejs](packages/rrdom-nodejs): The Node.js version of rrdom for server-side DOM operations.
-- [@rrweb/all](packages/all): A package that includes `rrweb` and `@rrweb/packer` for easy install.
+- [@rrweb/all](packages/all): A convenience package that includes `rrweb` and `@rrweb/packer`.
 - [@rrweb/record](packages/record): A package for recording rrweb sessions.
 - [@rrweb/replay](packages/replay): A package for replaying rrweb sessions.
 - [@rrweb/packer](packages/packer): A package for packing and unpacking rrweb data.
@@ -71,14 +133,6 @@ Besides the `rrweb` and `@rrweb/record` packages, rrweb also provides other pack
 - [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record): A plugin for stream `<canvas>` via WebRTC.
 - [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay): A plugin for playing streamed `<canvas>` via WebRTC.
 
-### NPM
-
-```shell
-npm install --save rrweb
-```
-
-rrweb provides both commonJS and ES modules bundles, which are easy to use with the popular bundlers.
-
 ### Compatibility Note
 
 rrweb does **not** support IE11 and below because it uses the `MutationObserver` API which was supported by [these browsers](https://caniuse.com/#feat=mutationobserver).
@@ -87,10 +141,14 @@ rrweb does **not** support IE11 and below because it uses the `MutationObserver`
 
 ### Record
 
-The following sample code will use the variable `rrweb` which is the default exporter of this library.
+Use `record` from `@rrweb/record` in modern setups:
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+```
+
+```js
+record({
   emit(event) {
     // store the event in any way you like
   },
@@ -102,7 +160,7 @@ During recording, the recorder will emit when there is some event incurred, all 
 The `record` method returns a function which can be called to stop events from firing:
 
 ```js
-let stopFn = rrweb.record({
+let stopFn = record({
   emit(event) {
     if (events.length > 100) {
       // stop after 100 events
@@ -117,7 +175,7 @@ A more real-world usage may look like this:
 ```js
 let events = [];
 
-rrweb.record({
+record({
   emit(event) {
     // push event into the events array
     events.push(event);
@@ -143,7 +201,7 @@ setInterval(save, 10 * 1000);
 
 #### Options
 
-The parameter of `rrweb.record` accepts the following options.
+The `record` function accepts the following options.
 
 | key                      | default            | description                                                                                                                                                                                   |
 | ------------------------ | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -196,7 +254,7 @@ By default, all the emitted events are required to replay a session and if you d
 // We use a two-dimensional array to store multiple events array
 const eventsMatrix = [[]];
 
-rrweb.record({
+record({
   emit(event, isCheckout) {
     // isCheckout is a flag to tell you the events has been checkout
     if (isCheckout) {
@@ -231,7 +289,7 @@ Similarly, you can also configure `checkoutEveryNms` to capture the last N minut
 // We use a two-dimensional array to store multiple events array
 const eventsMatrix = [[]];
 
-rrweb.record({
+record({
   emit(event, isCheckout) {
     // isCheckout is a flag to tell you the events has been checkout
     if (isCheckout) {
@@ -262,28 +320,36 @@ With the sample code above, you will finally get the last 5 to 10 minutes of eve
 
 ### Replay
 
-You need to include the style sheet before replay:
+For bundler usage, include the style sheet in your app entry:
+
+```js
+import '@rrweb/replay/dist/style.css';
+```
+
+For browser/no-build usage, include the style sheet in HTML:
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
+  href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
 />
 ```
 
-And then initialize the replayer with the following code:
+And then initialize the replayer:
 
 ```js
+import { Replayer } from '@rrweb/replay';
+
 const events = YOUR_EVENTS;
 
-const replayer = new rrweb.Replayer(events);
+const replayer = new Replayer(events);
 replayer.play();
 ```
 
 #### Control the replayer by API
 
 ```js
-const replayer = new rrweb.Replayer(events);
+const replayer = new Replayer(events);
 
 // play
 replayer.play();
@@ -329,29 +395,48 @@ The replayer accepts options as its constructor's second parameter, and it has t
 
 #### Use rrweb-player
 
-Since rrweb's replayer ([@rrweb/replay](packages/replay/)) only provides a basic UI, you can choose [rrweb-player](packages/rrweb-player/) which is based on rrweb's public APIs but has a feature-rich replayer UI.
+Since `Replayer` from [@rrweb/replay](packages/replay/) only provides a basic UI, you can choose [rrweb-player](packages/rrweb-player/), which is based on rrweb's public APIs and provides a feature-rich replayer UI.
 
 ##### Installation
 
-rrweb-player can also be included with `<script>`：
+Bundler / npm (recommended):
+
+```shell
+npm install rrweb-player
+```
+
+```js
+import rrwebPlayer from 'rrweb-player';
+import 'rrweb-player/dist/style.css';
+```
+
+Browser without bundler (ESM + import maps):
 
 ```html
 <link
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/umd/rrweb-player.js"></script>
+<script type="importmap">
+  {
+    "imports": {
+      "rrweb-player": "https://cdn.jsdelivr.net/npm/rrweb-player@latest/+esm"
+    }
+  }
+</script>
+<script type="module">
+  import rrwebPlayer from 'rrweb-player';
+</script>
 ```
 
-Or installed by using NPM：
+Legacy direct `<script>` include (UMD fallback):
 
-```shell
-npm install --save rrweb-player
-```
-
-```js
-import rrwebPlayer from 'rrweb-player';
-import 'rrweb-player/dist/style.css';
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/rrweb-player@2.0.0-alpha.20/dist/style.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/rrweb-player@2.0.0-alpha.20/umd/rrweb-player.min.js"></script>
 ```
 
 ##### Usage
@@ -377,15 +462,15 @@ new rrwebPlayer({
 | speedOption    | [1, 2, 4, 8] | speed options in UI                                                  |
 | showController | true         | whether to show the controller UI                                    |
 | tags           | {}           | customize the custom events style with a key-value map               |
-| ...            | -            | all the rrweb Replayer options will be bypassed                      |
+| ...            | -            | all other Replayer options are forwarded                             |
 
 #### Events
 
-Developers may want to extend the rrweb's replayer or respond to its events. Such as giving notification when the replayer starts to skip inactive time.
-So rrweb expose a public API `on` which allow developers to listen to the events and customize the reactions, and it has the following events:
+Developers may want to extend the replayer or respond to its events, for example to notify users when inactive time starts being skipped.
+`Replayer` exposes a public API `on` that lets developers listen for events and customize behavior:
 
 ```js
-const replayer = new rrweb.Replayer(events);
+const replayer = new Replayer(events);
 replayer.on(EVENT_NAME, (payload) => {
   ...
 })

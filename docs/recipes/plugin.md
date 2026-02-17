@@ -38,6 +38,8 @@ Both record and replay plugins have a type interface.
 #### record plugin
 
 ```ts
+import { record } from '@rrweb/record';
+
 const exampleRecordPlugin: RecordPlugin<{ foo: string }> = {
   name: 'my-scope/example@1',
   observer(cb, options) {
@@ -54,7 +56,7 @@ const exampleRecordPlugin: RecordPlugin<{ foo: string }> = {
   },
 };
 
-rrweb.record({
+record({
   emit: emit(event) {},
   plugins: [exampleRecordPlugin],
 });
@@ -79,6 +81,8 @@ In this example, the record plugin will emit events like this:
 #### replay plugin
 
 ```ts
+import { Replayer } from '@rrweb/replay';
+
 const exampleReplayPlugin: ReplayPlugin = {
   handler(event, isSync, context) {
     if (event.type === EventType.Plugin) {
@@ -90,7 +94,7 @@ const exampleReplayPlugin: ReplayPlugin = {
   },
 };
 
-const replayer = new rrweb.Replayer(events, {
+const replayer = new Replayer(events, {
   plugins: [exampleReplayPlugin],
 });
 ```
