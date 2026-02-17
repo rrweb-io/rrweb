@@ -2,10 +2,12 @@
 
 如果希望持续、实时地看到录制的数据，达到类似直播的效果，则可以使用实时回放 API。这个方式也适用于一些实时协同的场景。
 
-使用 rrweb Replayer 进行实时回放时，需要传入 `liveMode: true` 配置，并通过 `startLive` API 启动直播模式。
+使用 `Replayer` 进行实时回放时，需要传入 `liveMode: true` 配置，并通过 `startLive` API 启动直播模式。
 
 ```js
-const replayer = new rrweb.Replayer([], {
+import { Replayer } from '@rrweb/replay';
+
+const replayer = new Replayer([], {
   liveMode: true,
 });
 

@@ -7,10 +7,10 @@
 可以通过如下代码使用默认的配置选项
 
 ```js
-import rrweb from 'rrweb';
+import { record } from '@rrweb/record';
 import { getRecordConsolePlugin } from '@rrweb/rrweb-plugin-console-record';
 
-rweb.record({
+record({
   emit: function emit(event) {
     // 如果要使用console来输出信息，请使用如下的写法
     const defaultLog = console.log['__rrweb_original__']
@@ -29,10 +29,10 @@ rweb.record({
 你也可以定制录制 console 的选项
 
 ```js
-import rrweb from 'rrweb';
+import { record } from '@rrweb/record';
 import { getRecordConsolePlugin } from '@rrweb/rrweb-plugin-console-record';
 
-rrweb.record({
+record({
   emit: function emit(event) {
     // 如果要使用console来输出信息，请使用如下的写法
     const defaultLog = console.log['__rrweb_original__']
@@ -69,10 +69,10 @@ rrweb.record({
 如果 replayer 传入的 events 中包含了 console 类型的数据，我们将自动播放这些数据。
 
 ```js
-import rrweb from 'rrweb';
+import { Replayer } from '@rrweb/replay';
 import { getReplayConsolePlugin } from '@rrweb/rrweb-plugin-console-replay';
 
-const replayer = new rrweb.Replayer(events, {
+const replayer = new Replayer(events, {
   plugins: [
     getReplayConsolePlugin({
       level: ['info', 'log', 'warn', 'error'],

@@ -19,12 +19,85 @@ rrweb refers to 'record and replay the web', which is a tool for recording and r
 
 [**🍳 Recipes 🍳**](../../docs/recipes/index.md)
 
+## Installation
+
+`rrweb` is kept mainly for backward compatibility. For new integrations, prefer package-specific entrypoints (`@rrweb/record` and `@rrweb/replay`) first, or use `@rrweb/all` as a convenience package.
+
+### 1) Bundler / npm (Recommended)
+
+For new projects:
+
+```shell
+npm install @rrweb/record @rrweb/replay
+```
+
+```js
+import { record } from '@rrweb/record';
+import { Replayer } from '@rrweb/replay';
+import '@rrweb/replay/dist/style.css';
+```
+
+Convenience single-package option:
+
+```shell
+npm install @rrweb/all
+```
+
+```js
+import { record, Replayer, pack, unpack } from '@rrweb/all';
+import '@rrweb/all/dist/style.css';
+```
+
+Legacy compatibility package:
+
+```shell
+npm install rrweb
+```
+
+```js
+import { record, Replayer } from 'rrweb';
+import 'rrweb/dist/style.css';
+```
+
+### 2) Browser Without Bundler (ESM + import maps)
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
+/>
+<script type="importmap">
+  {
+    "imports": {
+      "@rrweb/record": "https://cdn.jsdelivr.net/npm/@rrweb/record@latest/+esm",
+      "@rrweb/replay": "https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/+esm"
+    }
+  }
+</script>
+<script type="module">
+  import { record } from '@rrweb/record';
+  import { Replayer } from '@rrweb/replay';
+</script>
+```
+
+### 3) Legacy Direct `<script>` Include (UMD fallback)
+
+Use this only for compatibility with non-module environments; modern browsers support the importmap method [since 2023](https://caniuse.com/?search=import+map)
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/umd/rrweb.min.js"></script>
+```
+
 ## Project Structure
 
 **[rrweb](https://github.com/rrweb-io/rrweb)** mainly includes two funtions:
 
 - **Record**: The record function is used to record all the mutations in the DOM
-- **Replay**: The replay function is to replay the recorded mutations one by one according to the corresponding timestamp.
+- **Replayer**: The replay function is to replay the recorded mutations one by one according to the corresponding timestamp.
 
 ## Roadmap
 

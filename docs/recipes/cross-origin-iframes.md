@@ -8,7 +8,9 @@ Since if you allow recording cross origin iframes, any malicious website can emb
 Enable recording cross-origin iframes in your parent page:
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+
+record({
   emit(event) {}, // all events will be emitted here, including events from cross origin iframes
   recordCrossOriginIframes: true,
 });
@@ -17,7 +19,9 @@ rrweb.record({
 Enable replaying cross-origin iframes in your child page:
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+
+record({
   emit(event) {}, // this is required for rrweb, but the child page will not emit any events
   recordCrossOriginIframes: true,
 });
