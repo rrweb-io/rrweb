@@ -256,6 +256,10 @@ export default class MutationBuffer {
     this.canvasManager.reset();
   }
 
+  public getDoc(): Document | undefined {
+    return this.doc;
+  }
+
   public processMutations = (mutations: mutationRecord[]) => {
     mutations.forEach(this.processMutation); // adds mutations to the buffer
     this.emit(); // clears buffer if not locked/frozen
@@ -363,7 +367,19 @@ export default class MutationBuffer {
     };
 
     while (this.mapRemoves.length) {
-      this.mirror.removeNodeFromMap(this.mapRemoves.shift()!);
+      const removedNode = this.mapRemoves.shift()!;
+
+      if (removedNode.nodeName === 'IFRAME') {
+        try {
+          this.iframeManager.removeIframe(removedNode as HTMLIFrameElement);
+        } catch (e) {
+          // Ignore errors during iframe cleanup
+        }
+      } else {
+        this.stylesheetManager.cleanupStylesheetsForRemovedNode(removedNode);
+      }
+
+      this.mirror.removeNodeFromMap(removedNode);
     }
 
     for (const n of this.movedSet) {
