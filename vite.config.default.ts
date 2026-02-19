@@ -150,24 +150,42 @@ export default function (
     resolve: {
       alias: {
         // Map @rrweb scoped packages to the one in this repo so we don't have to update source imports to reference @mixpanel
-        "@rrweb/types": resolve(__dirname, "./packages/types"),
-        "@rrweb/utils": resolve(__dirname, "./packages/utils"),
-        "@rrweb/packer": resolve(__dirname, "./packages/packer"),
-        "@rrweb/record": resolve(__dirname, "./packages/record"),
-        "@rrweb/replay": resolve(__dirname, "./packages/replay"),
-        "@rrweb/all": resolve(__dirname, "./packages/all"),
-        "@rrweb/rrweb-plugin-console-record": resolve(__dirname, "./packages/plugins/rrweb-plugin-console-record"),
-        "@rrweb/rrweb-plugin-console-replay": resolve(__dirname, "./packages/plugins/rrweb-plugin-console-replay"),
-        "@rrweb/rrweb-plugin-sequential-id-record": resolve(__dirname, "./packages/plugins/rrweb-plugin-sequential-id-record"),
-        "@rrweb/rrweb-plugin-sequential-id-replay": resolve(__dirname, "./packages/plugins/rrweb-plugin-sequential-id-replay"),
-        "@rrweb/rrweb-plugin-canvas-webrtc-record": resolve(__dirname, "./packages/plugins/rrweb-plugin-canvas-webrtc-record"),
-        "@rrweb/rrweb-plugin-canvas-webrtc-replay": resolve(__dirname, "./packages/plugins/rrweb-plugin-canvas-webrtc-replay"),
-        "rrweb": resolve(__dirname, "./packages/rrweb"),
-        "rrweb-snapshot": resolve(__dirname, "./packages/rrweb-snapshot"),
-        "rrdom": resolve(__dirname, "./packages/rrdom"),
-        "rrdom-nodejs": resolve(__dirname, "./packages/rrdom-nodejs"),
-        "rrweb-player": resolve(__dirname, "./packages/rrweb-player"),
-        "rrvideo": resolve(__dirname, "./packages/rrvideo")
+        '@rrweb/types': resolve(__dirname, './packages/types'),
+        '@rrweb/utils': resolve(__dirname, './packages/utils'),
+        '@rrweb/packer': resolve(__dirname, './packages/packer'),
+        '@rrweb/record': resolve(__dirname, './packages/record'),
+        '@rrweb/replay': resolve(__dirname, './packages/replay'),
+        '@rrweb/all': resolve(__dirname, './packages/all'),
+        '@rrweb/rrweb-plugin-console-record': resolve(
+          __dirname,
+          './packages/plugins/rrweb-plugin-console-record',
+        ),
+        '@rrweb/rrweb-plugin-console-replay': resolve(
+          __dirname,
+          './packages/plugins/rrweb-plugin-console-replay',
+        ),
+        '@rrweb/rrweb-plugin-sequential-id-record': resolve(
+          __dirname,
+          './packages/plugins/rrweb-plugin-sequential-id-record',
+        ),
+        '@rrweb/rrweb-plugin-sequential-id-replay': resolve(
+          __dirname,
+          './packages/plugins/rrweb-plugin-sequential-id-replay',
+        ),
+        '@rrweb/rrweb-plugin-canvas-webrtc-record': resolve(
+          __dirname,
+          './packages/plugins/rrweb-plugin-canvas-webrtc-record',
+        ),
+        '@rrweb/rrweb-plugin-canvas-webrtc-replay': resolve(
+          __dirname,
+          './packages/plugins/rrweb-plugin-canvas-webrtc-replay',
+        ),
+        rrweb: resolve(__dirname, './packages/rrweb'),
+        'rrweb-snapshot': resolve(__dirname, './packages/rrweb-snapshot'),
+        rrdom: resolve(__dirname, './packages/rrdom'),
+        'rrdom-nodejs': resolve(__dirname, './packages/rrdom-nodejs'),
+        'rrweb-player': resolve(__dirname, './packages/rrweb-player'),
+        rrvideo: resolve(__dirname, './packages/rrvideo'),
       },
     },
 
