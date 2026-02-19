@@ -1,6 +1,6 @@
 {
   "name": "@mixpanel/rrweb",
-  "version": "2.0.0-alpha.18.2",
+  "version": "2.0.0-alpha.18.3",
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",

@@ -1,6 +1,6 @@
 {
   "name": "@mixpanel/rrdom-nodejs",
-  "version": "2.0.0-alpha.18.2",
+  "version": "2.0.0-alpha.18.3",
   "scripts": {
     "dev": "vite build --watch",
     "build": "yarn turbo run prepublish",
