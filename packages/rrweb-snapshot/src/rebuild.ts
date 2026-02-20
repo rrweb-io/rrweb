@@ -423,6 +423,11 @@ function buildNode(
           }
         }
       }
+      // Disable autocomplete on input fields to prevent the viewer's
+      // personal data from appearing during replay
+      if (tagName === 'input' || tagName === 'textarea') {
+        node.setAttribute('autocomplete', 'off');
+      }
       return node;
     }
     case NodeType.Text:
