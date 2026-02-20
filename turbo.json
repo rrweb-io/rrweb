@@ -12,10 +12,9 @@
     "prepublish": {
       "dependsOn": ["^prepublish", "//#references:update"],
       "outputs": [
-        "lib/**",
-        "es/**",
+        "build/**",
+        "umd/**",
         "dist/**",
-        "typings/**",
         ".svelte-kit/**",
         "types/**"
       ]
