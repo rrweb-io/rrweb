@@ -325,7 +325,14 @@ function buildNode(
               'rrweb-original-srcset',
               n.attributes.srcset as string,
             );
-          } else {
+          }
+          // Set the sandbox attribute on the iframe element will make it lose its contentDocument access and therefore cause additional playback errors.
+          else if (
+            (tagName === 'iframe' || tagName === 'frame') &&
+            name === 'sandbox'
+          )
+            continue;
+          else {
             node.setAttribute(name, value.toString());
           }
         } catch (error) {

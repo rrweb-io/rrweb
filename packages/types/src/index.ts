@@ -651,6 +651,7 @@ export type Emitter = {
   on(type: string, handler: Handler): void;
   emit(type: string, event?: unknown): void;
   off(type: string, handler: Handler): void;
+  all: Map<string | symbol, Handler[]>;
 };
 
 export type Arguments<T> = T extends (...payload: infer U) => unknown
@@ -675,6 +676,7 @@ export enum ReplayerEvents {
   EventCast = 'event-cast',
   CustomEvent = 'custom-event',
   Flush = 'flush',
+  FlushEnd = 'flush-end',
   StateChange = 'state-change',
   PlayBack = 'play-back',
   Destroy = 'destroy',
