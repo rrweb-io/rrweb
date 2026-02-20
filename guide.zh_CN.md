@@ -130,6 +130,8 @@ import '@rrweb/all/dist/style.css';
 - [@rrweb/rrweb-plugin-sequential-id-replay](packages/plugins/rrweb-plugin-sequential-id-replay)：一个用于回放顺序 ID 的插件。
 - [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record)：一个用于通过 WebRTC 流式传输 `<canvas>` 的插件。
 - [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay)：一个用于通过 WebRTC 播放流式 `<canvas>` 的插件。
+- [@rrweb/rrweb-plugin-network-record](packages/plugins/rrweb-plugin-network-record): 一个用于记录网络请求的插件 (xhr/fetch)。
+- [@rrweb/rrweb-plugin-network-replay](packages/plugins/rrweb-plugin-network-replay): 一个用于回放网络请求的插件 (xhr/fetch)。
 
 ### 兼容性
 
