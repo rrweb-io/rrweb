@@ -791,7 +791,7 @@ export type textNode = {
 
 export type cdataNode = {
   type: NodeType.CDATA;
-  textContent: '';
+  textContent: string;
 };
 
 export type commentNode = {
