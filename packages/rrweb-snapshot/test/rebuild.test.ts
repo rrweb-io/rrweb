@@ -283,4 +283,98 @@ ul li.specified c.\\:hover img {
       expect.any(Error),
     );
   });
+
+  describe('doctype insertion', function () {
+    it('should insert doctype before HTML element when both are children of document', function () {
+      // Create a document with both HTML and doctype as child nodes
+      // This simulates the scenario where HTML is processed first, then doctype
+      const doc = buildNodeWithSN(
+        {
+          id: 1,
+          type: NodeType.Document,
+          childNodes: [
+            {
+              id: 2,
+              tagName: 'html',
+              type: NodeType.Element,
+              attributes: {},
+              childNodes: [
+                {
+                  id: 3,
+                  tagName: 'head',
+                  type: NodeType.Element,
+                  attributes: {},
+                  childNodes: [
+                    {
+                      id: 4,
+                      tagName: 'title',
+                      type: NodeType.Element,
+                      attributes: {},
+                      childNodes: [
+                        {
+                          id: 5,
+                          type: NodeType.Text,
+                          textContent: 'Test Page',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  id: 6,
+                  tagName: 'body',
+                  type: NodeType.Element,
+                  attributes: {},
+                  childNodes: [
+                    {
+                      id: 7,
+                      tagName: 'h1',
+                      type: NodeType.Element,
+                      attributes: {},
+                      childNodes: [
+                        {
+                          id: 8,
+                          type: NodeType.Text,
+                          textContent: 'Welcome',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              id: 9,
+              type: NodeType.DocumentType,
+              name: 'html',
+              publicId: '-//W3C//DTD HTML 4.01//EN',
+              systemId: 'http://www.w3.org/TR/html4/strict.dtd',
+            },
+          ],
+        },
+        {
+          doc: document,
+          mirror,
+          hackCss: false,
+          cache,
+        },
+      ) as Document;
+
+      // Verify that the doctype was inserted before the HTML element
+      expect(doc.firstChild?.nodeType).toBe(Node.DOCUMENT_TYPE_NODE);
+      expect(doc.firstChild?.nodeName).toBe('html');
+      expect((doc.firstChild as DocumentType).name).toBe('html');
+      expect((doc.firstChild as DocumentType).publicId).toBe(
+        '-//W3C//DTD HTML 4.01//EN',
+      );
+      expect((doc.firstChild as DocumentType).systemId).toBe(
+        'http://www.w3.org/TR/html4/strict.dtd',
+      );
+
+      // Verify that HTML is the second child
+      expect(doc.childNodes[1]?.nodeName).toBe('HTML');
+      expect(doc.childNodes[1]?.childNodes[0]?.nodeName).toBe('HEAD');
+      expect(doc.childNodes[1]?.childNodes[1]?.nodeName).toBe('BODY');
+    });
+  });
 });
