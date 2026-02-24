@@ -1,4 +1,8 @@
-import { EventType, IncrementalSource, MouseInteractions } from '@amplitude/rrweb-types';
+import {
+  EventType,
+  IncrementalSource,
+  MouseInteractions,
+} from '@amplitude/rrweb-types';
 import type { eventWithTime } from '@amplitude/rrweb-types';
 import {
   buildCheckpointIndex,
@@ -188,9 +192,7 @@ describe('checkpoint index maintenance via addEvent', () => {
     service: ReturnType<typeof createPlayerService>;
     getContext: () => PlayerContext;
   } {
-    const sorted = [...initialEvents].sort(
-      (a, b) => a.timestamp - b.timestamp,
-    );
+    const sorted = [...initialEvents].sort((a, b) => a.timestamp - b.timestamp);
     const checkpointIndex = buildCheckpointIndex(sorted);
     const timer = new Timer([], { speed: 1 });
     const context: PlayerContext = {

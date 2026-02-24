@@ -353,7 +353,6 @@ export function createPlayerService(
                   }
                 }
 
-
                 // NOTE: splice() shifts array elements, but checkpointIndex only
                 // contains Meta events (a handful per session), so this is far
                 // cheaper than splicing into the full events array.
@@ -363,7 +362,8 @@ export function createPlayerService(
 
             // Non-Meta event inserted in the middle of the array
             else if (
-              insertionIndex < events.length - 1 // not appended at end
+              insertionIndex <
+              events.length - 1 // not appended at end
             ) {
               // Increment checkpoint indices at or after the insertion point so
               // they continue pointing at the correct Meta events.
