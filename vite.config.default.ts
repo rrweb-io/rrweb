@@ -51,9 +51,9 @@ function minifyAndUMDPlugin({
               outDir,
             });
           } else {
-            const umdDir = dirname(outputFilePath).replace('/dist', '/umd');
+            const umdDir = dirname(outputFilePath).replace(/[\/\\]dist[\/\\]?/, `${path.sep}umd${path.sep}`);
             if (!existsSync(umdDir)) {
-              mkdirSync(umdDir);
+              mkdirSync(umdDir, { recursive: true });
             }
             const outUmd = `${outputFilePath}.umd.cjs`;
             await buildFile({
@@ -68,7 +68,7 @@ function minifyAndUMDPlugin({
             // More info: https://github.com/jsdelivr/jsdelivr/issues/18584 https://github.com/rrweb-io/rrweb/pull/1704
             copyFileSync(
               outUmd,
-              `${outputFilePath.replace('/dist/', '/umd/')}.js`,
+              `${outputFilePath.replace(new RegExp(`[\/\\\\]dist[\/\\\\]`), `${path.sep}umd${path.sep}`)}.js`,
             );
             const outUmdMin = `${outputFilePath}.umd.min.cjs`;
             await buildFile({
@@ -81,7 +81,7 @@ function minifyAndUMDPlugin({
             });
             copyFileSync(
               outUmdMin,
-              `${outputFilePath.replace('/dist/', '/umd/')}.min.js`,
+              `${outputFilePath.replace(new RegExp(`[\/\\\\]dist[\/\\\\]`), `${path.sep}umd${path.sep}`)}.min.js`,
             );
           }
         }
