@@ -44,25 +44,22 @@ describe('buildAllowedOriginSet', () => {
   });
 
   it('should throw for non-array', () => {
-    expect(() =>
-      buildAllowedOriginSet(null as unknown as string[]),
-    ).toThrow('allowedOrigins must be a non-empty array');
+    expect(() => buildAllowedOriginSet(null as unknown as string[])).toThrow(
+      'allowedOrigins must be a non-empty array',
+    );
     expect(() =>
       buildAllowedOriginSet(undefined as unknown as string[]),
     ).toThrow('allowedOrigins must be a non-empty array');
   });
 
   it('should throw for non-string entries', () => {
-    expect(() =>
-      buildAllowedOriginSet([123 as unknown as string]),
-    ).toThrow('must be a string');
+    expect(() => buildAllowedOriginSet([123 as unknown as string])).toThrow(
+      'must be a string',
+    );
   });
 
   it('should skip unparseable strings', () => {
-    const result = buildAllowedOriginSet([
-      'https://example.com',
-      'not-a-url',
-    ]);
+    const result = buildAllowedOriginSet(['https://example.com', 'not-a-url']);
     expect(result.size).toBe(1);
     expect(result.has('https://example.com')).toBe(true);
   });

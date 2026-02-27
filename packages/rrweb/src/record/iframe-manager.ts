@@ -105,7 +105,8 @@ export class IframeManager {
       // To filter out the rrweb messages which are forwarded by some sites.
       crossOriginMessageEvent.origin !== crossOriginMessageEvent.data.origin ||
       // Drop messages from origins not in the allowlist.
-      (this.allowedOrigins && !this.allowedOrigins.has(crossOriginMessageEvent.origin))
+      (this.allowedOrigins &&
+        !this.allowedOrigins.has(crossOriginMessageEvent.origin))
     )
       return;
 
