@@ -25,6 +25,7 @@ export class IframeManager {
   private loadListener?: (iframeEl: HTMLIFrameElement) => unknown;
   private stylesheetManager: StylesheetManager;
   private recordCrossOriginIframes: boolean;
+  private allowedOrigins?: ReadonlySet<string>;
 
   constructor(options: {
     mirror: Mirror;
@@ -32,11 +33,13 @@ export class IframeManager {
     stylesheetManager: StylesheetManager;
     recordCrossOriginIframes: boolean;
     wrappedEmit: (e: eventWithoutTime, isCheckout?: boolean) => void;
+    allowedOrigins?: ReadonlySet<string>;
   }) {
     this.mutationCb = options.mutationCb;
     this.wrappedEmit = options.wrappedEmit;
     this.stylesheetManager = options.stylesheetManager;
     this.recordCrossOriginIframes = options.recordCrossOriginIframes;
+    this.allowedOrigins = options.allowedOrigins;
     this.crossOriginIframeStyleMirror = new CrossOriginIframeMirror(
       this.stylesheetManager.styleMirror.generateId.bind(
         this.stylesheetManager.styleMirror,
@@ -100,7 +103,9 @@ export class IframeManager {
     if (
       crossOriginMessageEvent.data.type !== 'rrweb' ||
       // To filter out the rrweb messages which are forwarded by some sites.
-      crossOriginMessageEvent.origin !== crossOriginMessageEvent.data.origin
+      crossOriginMessageEvent.origin !== crossOriginMessageEvent.data.origin ||
+      // Drop messages from origins not in the allowlist.
+      (this.allowedOrigins && !this.allowedOrigins.has(crossOriginMessageEvent.origin))
     )
       return;
 

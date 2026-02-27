@@ -39,6 +39,7 @@ import {
   registerErrorHandler,
   unregisterErrorHandler,
 } from './error-handler';
+import { buildAllowedOriginSet } from './cross-origin-utils';
 import dom from '@rrweb/utils';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
@@ -88,7 +89,8 @@ function record<T = eventWithTime>(
     mousemoveWait,
     recordDOM = true,
     recordCanvas = false,
-    recordCrossOriginIframes = false,
+    recordCrossOriginIframes: _recordCrossOriginIframes = false,
+    allowedOrigins,
     recordAfter = options.recordAfter === 'DOMContentLoaded'
       ? options.recordAfter
       : 'load',
@@ -102,6 +104,19 @@ function record<T = eventWithTime>(
   } = options;
 
   registerErrorHandler(errorHandler);
+
+  let recordCrossOriginIframes = _recordCrossOriginIframes;
+  let validatedOrigins: ReadonlySet<string> | undefined;
+  if (recordCrossOriginIframes) {
+    if (!allowedOrigins || allowedOrigins.length === 0) {
+      recordCrossOriginIframes = false;
+    } else {
+      validatedOrigins = buildAllowedOriginSet(allowedOrigins);
+      if (validatedOrigins.size === 0) {
+        recordCrossOriginIframes = false;
+      }
+    }
+  }
 
   const inEmittingFrame = recordCrossOriginIframes
     ? window.parent === window
@@ -207,7 +222,11 @@ function record<T = eventWithTime>(
         origin: window.location.origin,
         isCheckout,
       };
-      window.parent.postMessage(message, '*');
+      if (validatedOrigins) {
+        for (const targetOrigin of validatedOrigins) {
+          window.parent.postMessage(message, targetOrigin);
+        }
+      }
     }
 
     if (e.type === EventType.FullSnapshot) {
@@ -280,6 +299,7 @@ function record<T = eventWithTime>(
     stylesheetManager: stylesheetManager,
     recordCrossOriginIframes,
     wrappedEmit,
+    allowedOrigins: validatedOrigins,
   });
 
   /**
