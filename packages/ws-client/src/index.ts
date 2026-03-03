@@ -12,6 +12,8 @@ import type { recordOptions } from 'rrweb';
 
 import { normalizeKeys } from './normalizeKeys';
 
+declare const __PKG_VERSION__: string;
+
 import {
   ArrayQueue,
   ExponentialBackoff,
@@ -286,6 +288,7 @@ export function start(
   const initialPayload: nameValues = {
     domain: document.location.hostname || document.location.href.split('?')[0], // latter is for debugging (e.g. a file:// url)
     includePii: Boolean(includePii), // tell server not to store IP addresses or user agents
+    version: __PKG_VERSION__,
   };
 
   // the expected replacement of recording id
