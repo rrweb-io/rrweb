@@ -2237,16 +2237,28 @@ export class Replayer {
   }
 
   private hoverElements(el: Element) {
+    // Use getAttribute/setAttribute instead of classList to preserve the
+    // original class attribute text. classList operations normalize the
+    // attribute by deduplicating tokens (e.g. "a b a" becomes "a b"),
+    // which breaks CSS attribute selectors like [class*="b a"].
     (this.lastHoveredRootNode || this.iframe.contentDocument)
       ?.querySelectorAll('.\\:hover')
       .forEach((hoveredEl) => {
-        hoveredEl.classList.remove(':hover');
+        const cls = hoveredEl.getAttribute('class') || '';
+        // Remove only the appended ' :hover' token, leaving the rest intact.
+        hoveredEl.setAttribute('class', cls.replace(/ ?:hover/g, ''));
       });
     this.lastHoveredRootNode = el.getRootNode() as Document | ShadowRoot;
     let currentEl: Element | null = el;
     while (currentEl) {
       if (currentEl.classList) {
-        currentEl.classList.add(':hover');
+        const cls = currentEl.getAttribute('class');
+        if (cls === null || !cls.split(/\s+/).includes(':hover')) {
+          currentEl.setAttribute(
+            'class',
+            cls ? cls + ' :hover' : ':hover',
+          );
+        }
       }
       currentEl = currentEl.parentElement;
     }
