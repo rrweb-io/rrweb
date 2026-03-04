@@ -285,7 +285,9 @@ export class MediaManager {
     this.syncTargetWithState(target);
   }
 
-  public isSupportedMediaElement(node: Node): node is HTMLMediaElement {
+  public isSupportedMediaElement(
+    node: Node | { nodeName: string },
+  ): boolean {
     return ['AUDIO', 'VIDEO'].includes(node.nodeName);
   }
 
