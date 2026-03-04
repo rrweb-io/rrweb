@@ -2254,10 +2254,7 @@ export class Replayer {
       if (currentEl.classList) {
         const cls = currentEl.getAttribute('class');
         if (cls === null || !cls.split(/\s+/).includes(':hover')) {
-          currentEl.setAttribute(
-            'class',
-            cls ? cls + ' :hover' : ':hover',
-          );
+          currentEl.setAttribute('class', cls ? cls + ' :hover' : ':hover');
         }
       }
       currentEl = currentEl.parentElement;
