@@ -117,7 +117,7 @@ export default function (
 
   let formats: LibraryFormats[] = ['es', 'cjs'];
 
-  return defineConfig(() => ({
+  return defineConfig({
     build: {
       // See https://vitejs.dev/guide/build.html#library-mode
       lib: {
