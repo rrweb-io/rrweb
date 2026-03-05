@@ -13,6 +13,7 @@ import type { recordOptions } from 'rrweb';
 import { normalizeKeys } from './normalizeKeys';
 
 declare const __PKG_VERSION__: string;
+declare const __COMMIT_HASH__: string;
 
 import {
   ArrayQueue,
@@ -288,7 +289,8 @@ export function start(
   const initialPayload: nameValues = {
     domain: document.location.hostname || document.location.href.split('?')[0], // latter is for debugging (e.g. a file:// url)
     includePii: Boolean(includePii), // tell server not to store IP addresses or user agents
-    version: __PKG_VERSION__,
+    recordVersion: __PKG_VERSION__,
+    recordCommitHash: __COMMIT_HASH__,
   };
 
   // the expected replacement of recording id
