@@ -3,6 +3,7 @@ import type {
   SlimDOMOptions,
   MaskTextFn,
   MaskInputFn,
+  MaskAttributeFn,
   KeepIframeSrcFn,
   ICanvas,
   DialogAttributes,
@@ -400,6 +401,7 @@ function serializeNode(
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
+    maskAttributeFn: MaskAttributeFn | undefined;
     dataURLOptions?: DataURLOptions;
     inlineImages: boolean;
     recordCanvas: boolean;
@@ -422,6 +424,7 @@ function serializeNode(
     maskInputOptions = {},
     maskTextFn,
     maskInputFn,
+    maskAttributeFn,
     dataURLOptions = {},
     inlineImages,
     recordCanvas,
@@ -462,6 +465,7 @@ function serializeNode(
         inlineStylesheet,
         maskInputOptions,
         maskInputFn,
+        maskAttributeFn,
         dataURLOptions,
         inlineImages,
         recordCanvas,
@@ -553,6 +557,7 @@ function serializeElementNode(
     inlineStylesheet: boolean;
     maskInputOptions: MaskInputOptions;
     maskInputFn: MaskInputFn | undefined;
+    maskAttributeFn: MaskAttributeFn | undefined;
     dataURLOptions?: DataURLOptions;
     inlineImages: boolean;
     recordCanvas: boolean;
@@ -572,6 +577,7 @@ function serializeElementNode(
     inlineStylesheet,
     maskInputOptions = {},
     maskInputFn,
+    maskAttributeFn,
     dataURLOptions = {},
     inlineImages,
     recordCanvas,
@@ -587,12 +593,20 @@ function serializeElementNode(
   for (let i = 0; i < len; i++) {
     const attr = n.attributes[i];
     if (!ignoreAttribute(tagName, attr.name, attr.value)) {
-      attributes[attr.name] = transformAttribute(
+      const transformedValue = transformAttribute(
         doc,
         tagName,
         toLowerCase(attr.name),
         attr.value,
       );
+      if (maskAttributeFn && transformedValue !== null) {
+        const maskedValue = maskAttributeFn(attr.name, transformedValue, n);
+        if (maskedValue !== null) {
+          attributes[attr.name] = maskedValue;
+        }
+      } else {
+        attributes[attr.name] = transformedValue;
+      }
     }
   }
   // remote css
@@ -923,6 +937,7 @@ export function serializeNodeWithId(
     needsMask?: boolean;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
+    maskAttributeFn?: MaskAttributeFn;
     slimDOMOptions: SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     keepIframeSrcFn?: KeepIframeSrcFn;
@@ -956,6 +971,7 @@ export function serializeNodeWithId(
     maskInputOptions = {},
     maskTextFn,
     maskInputFn,
+    maskAttributeFn,
     slimDOMOptions,
     dataURLOptions = {},
     inlineImages = false,
@@ -994,6 +1010,7 @@ export function serializeNodeWithId(
     maskInputOptions,
     maskTextFn,
     maskInputFn,
+    maskAttributeFn,
     dataURLOptions,
     inlineImages,
     recordCanvas,
@@ -1069,6 +1086,7 @@ export function serializeNodeWithId(
       maskInputOptions,
       maskTextFn,
       maskInputFn,
+      maskAttributeFn,
       slimDOMOptions,
       dataURLOptions,
       inlineImages,
@@ -1146,6 +1164,7 @@ export function serializeNodeWithId(
             maskInputOptions,
             maskTextFn,
             maskInputFn,
+            maskAttributeFn,
             slimDOMOptions,
             dataURLOptions,
             inlineImages,
@@ -1198,6 +1217,7 @@ export function serializeNodeWithId(
             maskInputOptions,
             maskTextFn,
             maskInputFn,
+            maskAttributeFn,
             slimDOMOptions,
             dataURLOptions,
             inlineImages,
@@ -1238,6 +1258,7 @@ function snapshot(
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
     maskInputFn?: MaskInputFn;
+    maskAttributeFn?: MaskAttributeFn;
     slimDOM?: 'all' | boolean | SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     inlineImages?: boolean;
@@ -1270,6 +1291,7 @@ function snapshot(
     maskAllInputs = false,
     maskTextFn,
     maskInputFn,
+    maskAttributeFn,
     slimDOM = false,
     dataURLOptions,
     preserveWhiteSpace,
@@ -1336,6 +1358,7 @@ function snapshot(
     maskInputOptions,
     maskTextFn,
     maskInputFn,
+    maskAttributeFn,
     slimDOMOptions,
     dataURLOptions,
     inlineImages,
