@@ -1,0 +1,48 @@
+name: Prerelease
+
+on:
+  workflow_dispatch:
+    inputs:
+      dist-tag:
+        description: 'npm dist-tag to publish under'
+        required: true
+        default: 'alpha'
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  prerelease:
+    name: Prerelease
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Required for OIDC
+      contents: read
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js lts/*
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
+
+      - name: Generate snapshot versions
+        run: yarn changeset version --snapshot ${{ inputs.dist-tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build packages
+        run: yarn build:all
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
+
+      - name: Publish snapshot to npm
+        run: yarn changeset publish --tag ${{ inputs.dist-tag }} --no-git-tags
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
