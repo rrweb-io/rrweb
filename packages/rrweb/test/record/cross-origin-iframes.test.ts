@@ -211,14 +211,18 @@ describe('cross origin iframes', function (this: ISuite) {
     });
 
     it('should replace the existing DOM nodes on iframe navigation with `isAttachIframe`', async () => {
+      // Register the load listener before changing src to avoid a race condition,
+      // then wait for it to resolve so rrweb's own load listener (which emits
+      // isAttachIframe) has already fired synchronously before we read snapshots.
       await ctx.page.evaluate((url) => {
         const iframe = document.querySelector('iframe') as HTMLIFrameElement;
-        iframe.src = `${url}/html/form.html?2`;
+        return new Promise<void>((resolve) => {
+          iframe.addEventListener('load', () => resolve(), { once: true });
+          iframe.src = `${url}/html/form.html?2`;
+        });
       }, ctx.serverURL);
-      await waitForRAF(ctx.page); // loads iframe
 
       await injectRecordScript(ctx.page.mainFrame().childFrames()[0]); // injects script into new iframe
-      await waitForRAF(ctx.page); // wait for iframe events to propagate to parent window
 
       const events: eventWithTime[] = await ctx.page.evaluate(
         () => (window as unknown as IWindow).snapshots,
