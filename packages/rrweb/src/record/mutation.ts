@@ -368,17 +368,7 @@ export default class MutationBuffer {
 
     while (this.mapRemoves.length) {
       const removedNode = this.mapRemoves.shift()!;
-
-      if (removedNode.nodeName === 'IFRAME') {
-        try {
-          this.iframeManager.removeIframe(removedNode as HTMLIFrameElement);
-        } catch (e) {
-          // Ignore errors during iframe cleanup
-        }
-      } else {
-        this.stylesheetManager.cleanupStylesheetsForRemovedNode(removedNode);
-      }
-
+      this.cleanupRemovedNode(removedNode);
       this.mirror.removeNodeFromMap(removedNode);
     }
 
@@ -816,6 +806,26 @@ export default class MutationBuffer {
         });
       }
     }
+  };
+
+  private cleanupRemovedNode = (node: Node) => {
+    if (node.nodeName === 'IFRAME') {
+      try {
+        this.iframeManager.removeIframe(node as HTMLIFrameElement);
+      } catch (e) {
+        // Ignore errors during iframe cleanup
+      }
+    } else {
+      try {
+        this.stylesheetManager.cleanupStylesheetsForRemovedNode(node);
+      } catch (e) {
+        // Ignore errors during stylesheet cleanup
+      }
+    }
+
+    node.childNodes.forEach((child) => {
+      this.cleanupRemovedNode(child);
+    });
   };
 }
 
