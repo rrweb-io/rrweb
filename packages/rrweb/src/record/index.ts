@@ -90,7 +90,7 @@ function record<T = eventWithTime>(
     recordDOM = true,
     recordCanvas = false,
     recordCrossOriginIframes: _recordCrossOriginIframes = false,
-    allowedOrigins,
+    allowedIframeOrigins,
     recordAfter = options.recordAfter === 'DOMContentLoaded'
       ? options.recordAfter
       : 'load',
@@ -105,16 +105,12 @@ function record<T = eventWithTime>(
 
   registerErrorHandler(errorHandler);
 
-  let recordCrossOriginIframes = _recordCrossOriginIframes;
+  const recordCrossOriginIframes = _recordCrossOriginIframes;
   let validatedOrigins: ReadonlySet<string> | undefined;
-  if (recordCrossOriginIframes) {
-    if (!allowedOrigins || allowedOrigins.length === 0) {
-      recordCrossOriginIframes = false;
-    } else {
-      validatedOrigins = buildAllowedOriginSet(allowedOrigins);
-      if (validatedOrigins.size === 0) {
-        recordCrossOriginIframes = false;
-      }
+  if (recordCrossOriginIframes && allowedIframeOrigins && allowedIframeOrigins.length > 0) {
+    validatedOrigins = buildAllowedOriginSet(allowedIframeOrigins);
+    if (validatedOrigins.size === 0) {
+      validatedOrigins = undefined;
     }
   }
 
@@ -226,6 +222,8 @@ function record<T = eventWithTime>(
         for (const targetOrigin of validatedOrigins) {
           window.parent.postMessage(message, targetOrigin);
         }
+      } else {
+        window.parent.postMessage(message, '*');
       }
     }
 
@@ -299,7 +297,7 @@ function record<T = eventWithTime>(
     stylesheetManager: stylesheetManager,
     recordCrossOriginIframes,
     wrappedEmit,
-    allowedOrigins: validatedOrigins,
+    allowedIframeOrigins: validatedOrigins,
   });
 
   /**

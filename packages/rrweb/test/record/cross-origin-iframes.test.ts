@@ -71,7 +71,7 @@ async function injectRecordScript(
       const config: recordOptions<eventWithTime> = {
         recordCrossOriginIframes: !!allowedOrigins,
         recordCanvas: true,
-        allowedOrigins: allowedOrigins,
+        allowedIframeOrigins: allowedOrigins,
         emit(event) {
           (window as unknown as IWindow).snapshots.push(event);
           (window as unknown as IWindow).emit(event);

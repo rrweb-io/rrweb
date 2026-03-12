@@ -39,17 +39,17 @@ describe('buildAllowedOriginSet', () => {
 
   it('should throw for empty array', () => {
     expect(() => buildAllowedOriginSet([])).toThrow(
-      'allowedOrigins must be a non-empty array',
+      'allowedIframeOrigins must be a non-empty array',
     );
   });
 
   it('should throw for non-array', () => {
     expect(() => buildAllowedOriginSet(null as unknown as string[])).toThrow(
-      'allowedOrigins must be a non-empty array',
+      'allowedIframeOrigins must be a non-empty array',
     );
     expect(() =>
       buildAllowedOriginSet(undefined as unknown as string[]),
-    ).toThrow('allowedOrigins must be a non-empty array');
+    ).toThrow('allowedIframeOrigins must be a non-empty array');
   });
 
   it('should throw for non-string entries', () => {
