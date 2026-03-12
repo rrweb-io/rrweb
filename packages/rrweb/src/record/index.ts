@@ -107,7 +107,11 @@ function record<T = eventWithTime>(
 
   const recordCrossOriginIframes = _recordCrossOriginIframes;
   let validatedOrigins: ReadonlySet<string> | undefined;
-  if (recordCrossOriginIframes && allowedIframeOrigins && allowedIframeOrigins.length > 0) {
+  if (
+    recordCrossOriginIframes &&
+    allowedIframeOrigins &&
+    allowedIframeOrigins.length > 0
+  ) {
     validatedOrigins = buildAllowedOriginSet(allowedIframeOrigins);
     if (validatedOrigins.size === 0) {
       validatedOrigins = undefined;
