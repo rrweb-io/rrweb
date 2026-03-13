@@ -25,11 +25,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
+
+      - name: Exit pre mode (required for snapshot releases)
+        run: yarn changeset pre exit || true
 
       - name: Generate snapshot versions
         run: yarn changeset version --snapshot ${{ inputs.dist-tag }}
@@ -42,7 +46,6 @@ jobs:
           NODE_OPTIONS: '--max-old-space-size=4096'
 
       - name: Publish snapshot to npm
-        run: yarn changeset publish --tag ${{ inputs.dist-tag }} --no-git-tags
+        run: node_modules/.bin/changeset publish --tag ${{ inputs.dist-tag }} --no-git-tags
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
