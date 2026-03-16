@@ -1,6 +1,6 @@
 {
   "name": "@mixpanel/rrweb-plugin-console-record",
-  "version": "2.0.0-alpha.18.3",
+  "version": "2.0.0-alpha.18.4",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-console-record.umd.cjs",

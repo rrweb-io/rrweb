@@ -1,6 +1,6 @@
 {
   "name": "@mixpanel/rrdom",
-  "version": "2.0.0-alpha.18.3",
+  "version": "2.0.0-alpha.18.4",
   "homepage": "https://github.com/mixpanel/rrweb/tree/main/packages/rrdom#readme",
   "license": "MIT",
   "type": "module",
