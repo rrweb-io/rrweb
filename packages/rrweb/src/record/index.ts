@@ -93,7 +93,7 @@ function record<T = eventWithTime>(
     mousemoveWait,
     recordDOM = true,
     recordCanvas = false,
-    recordCrossOriginIframes: _recordCrossOriginIframes = false,
+    recordCrossOriginIframes = false,
     allowedIframeOrigins,
     recordAfter = options.recordAfter === 'DOMContentLoaded'
       ? options.recordAfter
@@ -109,7 +109,6 @@ function record<T = eventWithTime>(
 
   registerErrorHandler(errorHandler);
 
-  const recordCrossOriginIframes = _recordCrossOriginIframes;
   let validatedOrigins: ReadonlySet<string> | undefined;
   if (
     recordCrossOriginIframes &&
@@ -325,7 +324,6 @@ function record<T = eventWithTime>(
     stylesheetManager: stylesheetManager,
     recordCrossOriginIframes,
     wrappedEmit,
-    allowedIframeOrigins: validatedOrigins,
   });
 
   /**
