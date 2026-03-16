@@ -1,0 +1,117 @@
+name: Bundle Size Comment
+
+# Runs in the base-repo context (privileged) after eslint-check.yml completes.
+# Downloads the pre-built size artifacts and posts a PR comment.
+# Never checks out or executes fork code.
+on:
+  workflow_run:
+    workflows: ['ESLint Check']
+    types: [completed]
+
+jobs:
+  comment:
+    if: >
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: bundle-size-data
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Post bundle size comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const pr   = JSON.parse(fs.readFileSync('pr-sizes.json',   'utf8'));
+            const base = JSON.parse(fs.readFileSync('base-sizes.json', 'utf8'));
+            const prNumber = parseInt(fs.readFileSync('pr_number.txt', 'utf8').trim(), 10);
+
+            const allFiles = new Set([...Object.keys(pr), ...Object.keys(base)]);
+            const changedFiles = [...allFiles].sort().filter(f => pr[f] !== base[f]);
+
+            // Top-level totals (across all tracked files, not just changed)
+            const totalPR   = [...allFiles].reduce((s, f) => s + (pr[f]   ?? 0), 0);
+            const totalBase = [...allFiles].reduce((s, f) => s + (base[f] ?? 0), 0);
+            const totalDiff = totalPR - totalBase;
+
+            // Group changed files by package
+            const byPackage = {};
+            for (const f of changedFiles) {
+              const m = f.match(/^packages\/([^/]+)\//);
+              const pkg = m ? m[1] : '(root)';
+              (byPackage[pkg] = byPackage[pkg] || []).push(f);
+            }
+
+            const fmt    = n => n != null ? `${(n / 1024).toFixed(2)} kB` : '—';
+            const fmtDiff = (d, b) => {
+              if (d === 0) return '—';
+              const pct = b > 0 ? ` (${d > 0 ? '+' : ''}${(d / b * 100).toFixed(2)}%)` : '';
+              return `${d > 0 ? '+' : ''}${(d / 1024).toFixed(2)} kB${pct}`;
+            };
+            const badge = (prSize, baseSize) => {
+              if (prSize  == null) return ' 🗑️';
+              if (baseSize == null) return ' 🆕';
+              const pct = (prSize - baseSize) / baseSize * 100;
+              if (pct <= -10) return ' 🎉';
+              if (pct >=   5) return ' 🔍';
+              return '';
+            };
+
+            let body;
+            if (Object.keys(byPackage).length === 0) {
+              body = '## Bundle Sizes\n\nNo bundle size changes.';
+            } else {
+              const totalLine = `**Size change:** ${fmtDiff(totalDiff, totalBase)} &nbsp;|&nbsp; **Total size:** ${fmt(totalPR)}`;
+
+              const sections = Object.entries(byPackage)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([pkg, files]) => {
+                  const prTotal   = files.reduce((s, f) => s + (pr[f]   ?? 0), 0);
+                  const baseTotal = files.reduce((s, f) => s + (base[f] ?? 0), 0);
+                  const d = prTotal - baseTotal;
+                  const pkgBadge = baseTotal === 0 ? ' 🆕' : (d / baseTotal * 100 <= -10 ? ' 🎉' : d / baseTotal * 100 >= 5 ? ' 🔍' : '');
+                  const summary = `\`${pkg}\`${pkgBadge} — ${fmt(baseTotal)} → ${fmt(prTotal)} (${fmtDiff(d, baseTotal)})`;
+                  const rows = files
+                    .map(f => {
+                      const label = f.replace(`packages/${pkg}/dist/`, '');
+                      const d = (pr[f] ?? 0) - (base[f] ?? 0);
+                      return `| \`${label}\` | ${fmt(base[f])} | ${fmt(pr[f])} | ${fmtDiff(d, base[f] ?? 0)}${badge(pr[f], base[f])} |`;
+                    })
+                    .join('\n');
+                  return `<details>\n<summary>${summary}</summary>\n\n| File | Base | PR | Diff |\n|------|------|----|------|\n${rows}\n\n</details>`;
+                });
+
+              body = `## Bundle Size Changes\n\n${totalLine}\n\n` + sections.join('\n\n');
+            }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const existing = comments.find(
+              c => c.user.login === 'github-actions[bot]' && c.body.startsWith('## Bundle Size')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner:      context.repo.owner,
+                repo:       context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner:        context.repo.owner,
+                repo:         context.repo.repo,
+                issue_number: prNumber,
+                body,
+              });
+            }
