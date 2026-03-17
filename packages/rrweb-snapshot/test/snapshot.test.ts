@@ -8,7 +8,11 @@ import snapshot, {
   _isBlockedElement,
   serializeNodeWithId,
 } from '../src/snapshot';
-import { elementNode, serializedNodeWithId } from '../src/types';
+import {
+  elementNode,
+  MaskAttributeFn,
+  serializedNodeWithId,
+} from '../src/types';
 import { Mirror, absolutifyURLs } from '../src/utils';
 
 const serializeNode = (
@@ -307,6 +311,70 @@ describe('form', () => {
       },
     });
     expect(sel?.childNodes).toEqual([]); // shouldn't be stored in childNodes while in transit
+  });
+});
+
+describe('maskAttributeFn', () => {
+  const serializeWithMaskAttr = (
+    node: Node,
+    maskAttributeFn: MaskAttributeFn,
+  ): serializedNodeWithId | null => {
+    return serializeNodeWithId(node, {
+      doc: document,
+      mirror: new Mirror(),
+      blockClass: 'blockblock',
+      blockSelector: null,
+      maskTextClass: 'maskmask',
+      maskTextSelector: null,
+      skipChild: false,
+      inlineStylesheet: true,
+      maskTextFn: undefined,
+      maskInputFn: undefined,
+      maskAttributeFn,
+      slimDOMOptions: {},
+    });
+  };
+
+  const render = (html: string): HTMLElement =>
+    JSDOM.fragment(html).querySelector('div')!;
+
+  it('should mask attribute values', () => {
+    const el = render('<div data-secret="sensitive" class="visible"></div>');
+    const serialized = serializeWithMaskAttr(
+      el,
+      (key, _value, _element) => {
+        if (key === 'data-secret') return '***';
+        return _value;
+      },
+    ) as elementNode;
+    expect(serialized.attributes['data-secret']).toEqual('***');
+    expect(serialized.attributes['class']).toEqual('visible');
+  });
+
+  it('should omit attributes when returning null', () => {
+    const el = render(
+      '<div data-secret="sensitive" class="visible"></div>',
+    );
+    const serialized = serializeWithMaskAttr(
+      el,
+      (key, value, _element) => {
+        if (key === 'data-secret') return null;
+        return value;
+      },
+    ) as elementNode;
+    expect(serialized.attributes).not.toHaveProperty('data-secret');
+    expect(serialized.attributes['class']).toEqual('visible');
+  });
+
+  it('should receive the element reference', () => {
+    const el = render('<div id="myel" data-x="val"></div>');
+    const elements: HTMLElement[] = [];
+    serializeWithMaskAttr(el, (key, value, element) => {
+      elements.push(element);
+      return value;
+    });
+    expect(elements.length).toBeGreaterThan(0);
+    expect(elements[0].id).toEqual('myel');
   });
 });
 

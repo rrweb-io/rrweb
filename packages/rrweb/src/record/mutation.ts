@@ -649,11 +649,16 @@ export default class MutationBuffer {
             this.maskAttributeFn &&
             typeof item.attributes[attributeName] === 'string'
           ) {
-            item.attributes[attributeName] = this.maskAttributeFn(
+            const maskedValue = this.maskAttributeFn(
               attributeName,
               item.attributes[attributeName] as string,
               target,
             );
+            if (maskedValue !== null) {
+              item.attributes[attributeName] = maskedValue;
+            } else {
+              delete item.attributes[attributeName];
+            }
           }
           if (attributeName === 'style') {
             if (!this.unattachedDoc) {
