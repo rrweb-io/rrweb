@@ -15,6 +15,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       pull-requests: write
     steps:
       - uses: actions/download-artifact@v4
@@ -122,6 +123,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       checks: write
     steps:
       - uses: actions/download-artifact@v4
