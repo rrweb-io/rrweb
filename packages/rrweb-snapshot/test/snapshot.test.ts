@@ -340,28 +340,20 @@ describe('maskAttributeFn', () => {
 
   it('should mask attribute values', () => {
     const el = render('<div data-secret="sensitive" class="visible"></div>');
-    const serialized = serializeWithMaskAttr(
-      el,
-      (key, _value, _element) => {
-        if (key === 'data-secret') return '***';
-        return _value;
-      },
-    ) as elementNode;
+    const serialized = serializeWithMaskAttr(el, (key, _value, _element) => {
+      if (key === 'data-secret') return '***';
+      return _value;
+    }) as elementNode;
     expect(serialized.attributes['data-secret']).toEqual('***');
     expect(serialized.attributes['class']).toEqual('visible');
   });
 
   it('should omit attributes when returning null', () => {
-    const el = render(
-      '<div data-secret="sensitive" class="visible"></div>',
-    );
-    const serialized = serializeWithMaskAttr(
-      el,
-      (key, value, _element) => {
-        if (key === 'data-secret') return null;
-        return value;
-      },
-    ) as elementNode;
+    const el = render('<div data-secret="sensitive" class="visible"></div>');
+    const serialized = serializeWithMaskAttr(el, (key, value, _element) => {
+      if (key === 'data-secret') return null;
+      return value;
+    }) as elementNode;
     expect(serialized.attributes).not.toHaveProperty('data-secret');
     expect(serialized.attributes['class']).toEqual('visible');
   });
