@@ -12,10 +12,15 @@ jobs:
     name: ESLint Check and Report Upload
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout pull request head
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.head_ref }}
+      - name: Checkout current branch
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v4
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
@@ -40,21 +45,7 @@ jobs:
           path: eslint_report.json
       - name: Measure PR bundle sizes
         if: github.event_name == 'pull_request'
-        run: |
-          node -e "
-          const fs = require('fs'), path = require('path');
-          function walk(dir, out = {}) {
-            if (/node_modules/.test(dir)) return out;
-            for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-              const p = path.join(dir, e.name);
-              if (e.isDirectory()) walk(p, out);
-              else if (/\/dist\/[^/]+\.(js|cjs|mjs|css)$/.test(p) && !p.includes('packages/packer/dist/'))
-                out[p.replace(/^\.\//, '')] = fs.statSync(p).size;
-            }
-            return out;
-          }
-          fs.writeFileSync('pr-sizes.json', JSON.stringify(walk('.'), null, 2));
-          "
+        run: node .github/scripts/measure-bundle-sizes.js pr-sizes.json
       - name: Upload PR bundle sizes
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
@@ -71,35 +62,23 @@ jobs:
     needs: eslint_check_upload
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
     name: Build Base for Bundle Size Comparison
     steps:
-      - name: Write size measurement script
+      - name: Checkout workflow ref
+        uses: actions/checkout@v4
+      - name: Prepare bundle size helper
         run: |
-          cat > /tmp/measure-sizes.js << 'EOF'
-          const fs = require('fs'), path = require('path');
-          function walk(dir, out = {}) {
-            if (/node_modules/.test(dir)) return out;
-            for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
-              const p = path.join(dir, e.name);
-              if (e.isDirectory()) walk(p, out);
-              else if (/\/dist\/[^/]+\.(js|cjs|mjs|css)$/.test(p) && !p.includes('packages/packer/dist/'))
-                out[p.replace(/^\.\//, '')] = fs.statSync(p).size;
-            }
-            return out;
-          }
-          fs.writeFileSync(process.argv[2], JSON.stringify(walk('.'), null, 2));
-          EOF
-
-      - name: Download PR bundle sizes
-        uses: actions/download-artifact@v4
-        with:
-          name: pr-sizes
-
+          cp .github/scripts/measure-bundle-sizes.js /tmp/measure-bundle-sizes.js
       # --- Base branch ---
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.base_ref }}
+      - name: Download PR bundle sizes
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-sizes
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
@@ -113,10 +92,7 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Measure base bundle sizes
-        run: node /tmp/measure-sizes.js base-sizes.json
-
-      - name: Save PR number
-        run: echo "${{ github.event.pull_request.number }}" > pr_number.txt
+        run: node /tmp/measure-bundle-sizes.js base-sizes.json
 
       - uses: actions/upload-artifact@v4
         with:
@@ -124,4 +100,3 @@ jobs:
           path: |
             pr-sizes.json
             base-sizes.json
-            pr_number.txt
