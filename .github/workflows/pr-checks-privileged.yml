@@ -1,7 +1,7 @@
-name: Bundle Size Comment
+name: PR Checks (privileged)
 
 # Runs in the base-repo context (privileged) after eslint-check.yml completes.
-# Downloads the pre-built size artifacts and posts a PR comment.
+# Downloads pre-built artifacts and posts PR comments/annotations.
 # Never checks out or executes fork code.
 on:
   workflow_run:
@@ -115,3 +115,22 @@ jobs:
                 body,
               });
             }
+
+  annotate:
+    if: >
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: eslint_report.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+      - name: Annotate Code Linting Results
+        uses: ataylorme/eslint-annotate-action@v2
+        with:
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
+          report-json: 'eslint_report.json'

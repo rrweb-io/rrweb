@@ -62,24 +62,6 @@ jobs:
           name: pr-sizes
           path: pr-sizes.json
 
-  annotation:
-    # Skip the annotation action in push events
-    if: github.event_name == 'pull_request'
-    permissions:
-      checks: write
-    needs: eslint_check_upload
-    runs-on: ubuntu-latest
-    name: ESLint Annotation
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: eslint_report.json
-      - name: Annotate Code Linting Results
-        uses: ataylorme/eslint-annotate-action@v2
-        with:
-          repo-token: '${{ secrets.GITHUB_TOKEN }}'
-          report-json: 'eslint_report.json'
-
   bundle_size_build:
     # Only runs on PRs. Reuses the PR build from eslint_check_upload (via the
     # pr-sizes artifact) and only builds the base branch itself. The privileged
