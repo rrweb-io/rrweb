@@ -91,15 +91,17 @@ jobs:
           fs.writeFileSync(process.argv[2], JSON.stringify(walk('.'), null, 2));
           EOF
 
-      - name: Download PR bundle sizes
-        uses: actions/download-artifact@v4
-        with:
-          name: pr-sizes
 
       # --- Base branch ---
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.base_ref }}
+
+      - name: Download PR bundle sizes
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-sizes
+
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
