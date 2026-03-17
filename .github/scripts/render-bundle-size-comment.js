@@ -30,10 +30,10 @@ function formatSignedSize(bytes) {
   const absoluteBytes = Math.abs(bytes);
 
   if (absoluteBytes < 1024) {
-    return `${bytes > 0 ? '+' : '-'}${absoluteBytes} B`;
+    return `${bytes >= 0 ? '+' : '-'}${absoluteBytes} B`;
   }
 
-  return `${bytes > 0 ? '+' : '-'}${(absoluteBytes / 1024).toFixed(2)} kB`;
+  return `${bytes >= 0 ? '+' : '-'}${(absoluteBytes / 1024).toFixed(2)} kB`;
 }
 
 function formatDiff(diff, baseValue) {
