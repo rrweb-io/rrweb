@@ -1,5 +1,12 @@
 # @amplitude/rrweb-plugin-sequential-id-replay
 
+## 2.0.0-alpha.36
+
+### Patch Changes
+
+- Updated dependencies [[`eb5ca1c`](https://github.com/amplitude/rrweb/commit/eb5ca1c7e77825b43a19cc485d78149054c51453)]:
+  - @amplitude/rrweb@2.0.0-alpha.36
+
 ## 2.0.0-alpha.35
 
 ### Patch Changes
