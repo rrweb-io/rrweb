@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.36
+
+### Minor Changes
+
+- [#81](https://github.com/amplitude/rrweb/pull/81) [`eb5ca1c`](https://github.com/amplitude/rrweb/commit/eb5ca1c7e77825b43a19cc485d78149054c51453) Thanks [@lewgordon-amplitude](https://github.com/lewgordon-amplitude)! - SR-2795 Add maskAttributeFn for attribute masking during recording
+
 ## 2.0.0-alpha.35
 
 ### Patch Changes
