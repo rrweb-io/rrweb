@@ -15,6 +15,10 @@ import rebuild, {
   adaptCssForReplay,
   createCache,
 } from './rebuild';
+export {
+  snapshotBundleSizeFixtures,
+  getSnapshotBundleSizeSignature,
+} from './bundle-size-artifacts';
 export * from './types';
 export * from './utils';
 

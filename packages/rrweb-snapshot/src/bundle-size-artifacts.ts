@@ -1,0 +1,141 @@
+export const snapshotBundleSizeFixtures = [
+  'snapshot-anchor-001-cobalt-parser-lantern-array',
+  'snapshot-anchor-002-mapped-horizon-deck-signal',
+  'snapshot-anchor-003-faceted-archive-fluent-vine',
+  'snapshot-anchor-004-porcelain-css-needle-buoy',
+  'snapshot-anchor-005-sturdy-shadow-capsule-ridge',
+  'snapshot-anchor-006-ripple-oxygen-branch-ledger',
+  'snapshot-anchor-007-timber-scanline-prairie-knot',
+  'snapshot-anchor-008-iterable-slate-rebuild-cairn',
+  'snapshot-anchor-009-ashen-marker-protocol-drift',
+  'snapshot-anchor-010-velour-outline-raster-gate',
+  'snapshot-anchor-011-signal-vaulting-manifest-pod',
+  'snapshot-anchor-012-linear-stencil-stream-glyph',
+  'snapshot-anchor-013-embered-recording-valley-tip',
+  'snapshot-anchor-014-clustered-fiber-memory-raft',
+  'snapshot-anchor-015-etched-cursor-archive-spring',
+  'snapshot-anchor-016-rational-bundle-compass-note',
+  'snapshot-anchor-017-lagoon-fragment-anchor-trace',
+  'snapshot-anchor-018-surfaced-buffer-summit-queue',
+  'snapshot-anchor-019-balanced-rivet-pointer-crest',
+  'snapshot-anchor-020-kinetic-border-payload-rope',
+  'snapshot-anchor-021-softened-lattice-harbor-veil',
+  'snapshot-anchor-022-deliberate-capture-window-rim',
+  'snapshot-anchor-023-granite-transform-docket-flux',
+  'snapshot-anchor-024-muted-syntax-balancer-haven',
+] as const;
+
+const snapshotBundleSizeBlob = `snapshot-blob-001-q8m2x6c1-vr95dk4p-sj07wa3n-fh18ty6l-bu29gz5e-co40hp7r-ln51iq8v
+snapshot-blob-002-r9n3y7d2-ws06el5q-tk18xb4o-gi29uz7m-cv30ha6f-dp51iq8s-mo62jr9w
+snapshot-blob-003-s0p4z8e3-xt17fm6r-ul29yc5p-hj30va8n-dw41ib7g-eq62jr9t-np73ks0x
+snapshot-blob-004-t1q5a9f4-yu28gn7s-vm30zd6q-ik41wb9o-ex52jc8h-fr73ks0u-oq84lt1y
+snapshot-blob-005-u2r6b0g5-zv39ho8t-wn41ae7r-jl52xc0p-fy63kd9i-gs84lt1v-pr95mu2z
+snapshot-blob-006-v3s7c1h6-aw40ip9u-xo52bf8s-km63yd1q-gz74le0j-ht95mu2w-qs06nv3a
+snapshot-blob-007-w4t8d2i7-bx51jq0v-yp63cg9t-ln74ze2r-ha85mf1k-iu06nv3x-rt17ow4b
+snapshot-blob-008-x5u9e3j8-cy62kr1w-zq74dh0u-mo85af3s-ib96ng2l-jv17ow4y-su28px5c
+snapshot-blob-009-y6v0f4k9-dz73ls2x-ar85ei1v-np96bg4t-jc07oh3m-kw28px5z-tv39qy6d
+snapshot-blob-010-z7w1g5l0-ea84mt3y-bs96fj2w-oq07ch5u-kd18pi4n-lx39qy6a-uw40rz7e
+snapshot-blob-011-a8x2h6m1-fb95nu4z-ct07gk3x-pr18di6v-le29qj5o-my40rz7b-vx51sa8f
+snapshot-blob-012-b9y3i7n2-gc06ov5a-du18hl4y-qs29ej7w-mf30rk6p-nz51sa8c-wy62tb9g
+snapshot-blob-013-c0z4j8o3-hd17pw6b-ev29im5z-rt30fk8x-ng41sl7q-oa62tb9d-xz73uc0h
+snapshot-blob-014-d1a5k9p4-ie28qx7c-fw30jn6a-su41gl9y-oh52tm8r-pb73uc0e-ya84vd1i
+snapshot-blob-015-e2b6l0q5-jf39ry8d-gx41ko7b-tv52hm0z-pi63un9s-qc84vd1f-zb95we2j
+snapshot-blob-016-f3c7m1r6-kg40sz9e-hy52lp8c-uw63in1a-qj74vo0t-rd95we2g-ac06xf3k
+snapshot-blob-017-g4d8n2s7-lh51ta0f-iz63mq9d-vx74jo2b-rk85wp1u-se06xf3h-bd17yg4l
+snapshot-blob-018-h5e9o3t8-mi62ub1g-ja74nr0e-wy85kp3c-sl96xq2v-tf17yg4i-ce28zh5m
+snapshot-blob-019-i6f0p4u9-nj73vc2h-kb85os1f-xz96lq4d-tm07yr3w-ug28zh5j-df39ai6n
+snapshot-blob-020-j7g1q5v0-ok84wd3i-lc96pt2g-ya07mr5e-un18zs4x-vh39ai6k-eg40bj7o
+snapshot-blob-021-k8h2r6w1-pl95xe4j-md07qu3h-zb18ns6f-vo29at5y-wi40bj7l-fh51ck8p
+snapshot-blob-022-l9i3s7x2-qm06yf5k-ne18rv4i-ac29ot7g-wp30bu6z-xj51ck8m-gi62dl9q
+snapshot-blob-023-m0j4t8y3-rn17zg6l-of29sw5j-bd30pu8h-xq41cv7a-yk62dl9n-hj73em0r
+snapshot-blob-024-n1k5u9z4-so28ah7m-pg30tx6k-ce41qv9i-yr52dw8b-zl73em0o-ik84fn1s
+snapshot-blob-025-o2l6v0a5-tp39bi8n-qh41uy7l-df52rw0j-zs63ex9c-am84fn1p-jl95go2t
+snapshot-blob-026-p3m7w1b6-uq40cj9o-ri52vz8m-eg63sx1k-at74fy0d-bn95go2q-km06hp3u
+snapshot-blob-027-q4n8x2c7-vr51dk0p-sj63wa9n-fh74ty2l-bu85gz1e-co06hp3r-ln17iq4v
+snapshot-blob-028-r5o9y3d8-ws62el1q-tk74xb0o-gi85uz3m-cv96ha2f-dp17iq4s-mo28jr5w
+snapshot-blob-029-s6p0z4e9-xt73fm2r-ul85yc1p-hj96va4n-dw07ib3g-eq28jr5t-np39ks6x
+snapshot-blob-030-t7q1a5f0-yu84gn3s-vm96zd2q-ik07wb5o-ex18jc4h-fr39ks6u-oq40lt7y
+snapshot-blob-031-u8r2b6g1-zv95ho4t-wn07ae3r-jl18xc6p-fy29kd5i-gs40lt7v-pr51mu8z
+snapshot-blob-032-v9s3c7h2-aw06ip5u-xo18bf4s-km29yd7q-gz30le6j-ht51mu8w-qs62nv9a
+snapshot-blob-033-w0t4d8i3-bx17jq6v-yp29cg5t-ln30ze8r-ha41mf7k-iu62nv9x-rt73ow0b
+snapshot-blob-034-x1u5e9j4-cy28kr7w-zq30dh6u-mo41af9s-ib52ng8l-jv73ow0y-su84px1c
+snapshot-blob-035-y2v6f0k5-dz39ls8x-ar41ei7v-np52bg0t-jc63oh9m-kw84px1z-tv95qy2d
+snapshot-blob-036-z3w7g1l6-ea40mt9y-bs52fj8w-oq63ch1u-kd74pi0n-lx95qy2a-uw06rz3e
+snapshot-blob-037-a4x8h2m7-fb51nu0z-ct63gk9x-pr74di2v-le85qj1o-my06rz3b-vx17sa4f
+snapshot-blob-038-b5y9i3n8-gc62ov1a-du74hl0y-qs85ej3w-mf96rk2p-nz17sa4c-wy28tb5g
+snapshot-blob-039-c6z0j4o9-hd73pw2b-ev85im1z-rt96fk4x-ng07sl3q-oa28tb5d-xz39uc6h
+snapshot-blob-040-d7a1k5p0-ie84qx3c-fw96jn2a-su07gl5y-oh18tm4r-pb39uc6e-ya40vd7i
+snapshot-blob-041-e8b2l6q1-jf95ry4d-gx07ko3b-tv18hm6z-pi29un5s-qc40vd7f-zb51we8j
+snapshot-blob-042-f9c3m7r2-kg06sz5e-hy18lp4c-uw29in7a-qj30vo6t-rd51we8g-ac62xf9k
+snapshot-blob-043-g0d4n8s3-lh17ta6f-iz29mq5d-vx30jo8b-rk41wp7u-se62xf9h-bd73yg0l
+snapshot-blob-044-h1e5o9t4-mi28ub7g-ja30nr6e-wy41kp9c-sl52xq8v-tf73yg0i-ce84zh1m
+snapshot-blob-045-i2f6p0u5-nj39vc8h-kb41os7f-xz52lq0d-tm63yr9w-ug84zh1j-df95ai2n
+snapshot-blob-046-j3g7q1v6-ok40wd9i-lc52pt8g-ya63mr1e-un74zs0x-vh95ai2k-eg06bj3o
+snapshot-blob-047-k4h8r2w7-pl51xe0j-md63qu9h-zb74ns2f-vo85at1y-wi06bj3l-fh17ck4p
+snapshot-blob-048-l5i9s3x8-qm62yf1k-ne74rv0i-ac85ot3g-wp96bu2z-xj17ck4m-gi28dl5q
+snapshot-blob-049-m6j0t4y9-rn73zg2l-of85sw1j-bd96pu4h-xq07cv3a-yk28dl5n-hj39em6r
+snapshot-blob-050-n7k1u5z0-so84ah3m-pg96tx2k-ce07qv5i-yr18dw4b-zl39em6o-ik40fn7s
+snapshot-blob-051-o8l2v6a1-tp95bi4n-qh07uy3l-df18rw6j-zs29ex5c-am40fn7p-jl51go8t
+snapshot-blob-052-p9m3w7b2-uq06cj5o-ri18vz4m-eg29sx7k-at30fy6d-bn51go8q-km62hp9u
+snapshot-blob-053-q0n4x8c3-vr17dk6p-sj29wa5n-fh30ty8l-bu41gz7e-co62hp9r-ln73iq0v
+snapshot-blob-054-r1o5y9d4-ws28el7q-tk30xb6o-gi41uz9m-cv52ha8f-dp73iq0s-mo84jr1w
+snapshot-blob-055-s2p6z0e5-xt39fm8r-ul41yc7p-hj52va0n-dw63ib9g-eq84jr1t-np95ks2x
+snapshot-blob-056-t3q7a1f6-yu40gn9s-vm52zd8q-ik63wb1o-ex74jc0h-fr95ks2u-oq06lt3y
+snapshot-blob-057-u4r8b2g7-zv51ho0t-wn63ae9r-jl74xc2p-fy85kd1i-gs06lt3v-pr17mu4z
+snapshot-blob-058-v5s9c3h8-aw62ip1u-xo74bf0s-km85yd3q-gz96le2j-ht17mu4w-qs28nv5a
+snapshot-blob-059-w6t0d4i9-bx73jq2v-yp85cg1t-ln96ze4r-ha07mf3k-iu28nv5x-rt39ow6b
+snapshot-blob-060-x7u1e5j0-cy84kr3w-zq96dh2u-mo07af5s-ib18ng4l-jv39ow6y-su40px7c
+snapshot-blob-061-y8v2f6k1-dz95ls4x-ar07ei3v-np18bg6t-jc29oh5m-kw40px7z-tv51qy8d
+snapshot-blob-062-z9w3g7l2-ea06mt5y-bs18fj4w-oq29ch7u-kd30pi6n-lx51qy8a-uw62rz9e
+snapshot-blob-063-a0x4h8m3-fb17nu6z-ct29gk5x-pr30di8v-le41qj7o-my62rz9b-vx73sa0f
+snapshot-blob-064-b1y5i9n4-gc28ov7a-du30hl6y-qs41ej9w-mf52rk8p-nz73sa0c-wy84tb1g
+snapshot-blob-065-c2z6j0o5-hd39pw8b-ev41im7z-rt52fk0x-ng63sl9q-oa84tb1d-xz95uc2h
+snapshot-blob-066-d3a7k1p6-ie40qx9c-fw52jn8a-su63gl1y-oh74tm0r-pb95uc2e-ya06vd3i
+snapshot-blob-067-e4b8l2q7-jf51ry0d-gx63ko9b-tv74hm2z-pi85un1s-qc06vd3f-zb17we4j
+snapshot-blob-068-f5c9m3r8-kg62sz1e-hy74lp0c-uw85in3a-qj96vo2t-rd17we4g-ac28xf5k
+snapshot-blob-069-g6d0n4s9-lh73ta2f-iz85mq1d-vx96jo4b-rk07wp3u-se28xf5h-bd39yg6l
+snapshot-blob-070-h7e1o5t0-mi84ub3g-ja96nr2e-wy07kp5c-sl18xq4v-tf39yg6i-ce40zh7m
+snapshot-blob-071-i8f2p6u1-nj95vc4h-kb07os3f-xz18lq6d-tm29yr5w-ug40zh7j-df51ai8n
+snapshot-blob-072-j9g3q7v2-ok06wd5i-lc18pt4g-ya29mr7e-un30zs6x-vh51ai8k-eg62bj9o
+snapshot-blob-073-k0h4r8w3-pl17xe6j-md29qu5h-zb30ns8f-vo41at7y-wi62bj9l-fh73ck0p
+snapshot-blob-074-l1i5s9x4-qm28yf7k-ne30rv6i-ac41ot9g-wp52bu8z-xj73ck0m-gi84dl1q
+snapshot-blob-075-m2j6t0y5-rn39zg8l-of41sw7j-bd52pu0h-xq63cv9a-yk84dl1n-hj95em2r
+snapshot-blob-076-n3k7u1z6-so40ah9m-pg52tx8k-ce63qv1i-yr74dw0b-zl95em2o-ik06fn3s
+snapshot-blob-077-o4l8v2a7-tp51bi0n-qh63uy9l-df74rw2j-zs85ex1c-am06fn3p-jl17go4t
+snapshot-blob-078-p5m9w3b8-uq62cj1o-ri74vz0m-eg85sx3k-at96fy2d-bn17go4q-km28hp5u
+snapshot-blob-079-q6n0x4c9-vr73dk2p-sj85wa1n-fh96ty4l-bu07gz3e-co28hp5r-ln39iq6v
+snapshot-blob-080-r7o1y5d0-ws84el3q-tk96xb2o-gi07uz5m-cv18ha4f-dp39iq6s-mo40jr7w
+snapshot-blob-081-s8p2z6e1-xt95fm4r-ul07yc3p-hj18va6n-dw29ib5g-eq40jr7t-np51ks8x
+snapshot-blob-082-t9q3a7f2-yu06gn5s-vm18zd4q-ik29wb7o-ex30jc6h-fr51ks8u-oq62lt9y
+snapshot-blob-083-u0r4b8g3-zv17ho6t-wn29ae5r-jl30xc8p-fy41kd7i-gs62lt9v-pr73mu0z
+snapshot-blob-084-v1s5c9h4-aw28ip7u-xo30bf6s-km41yd9q-gz52le8j-ht73mu0w-qs84nv1a
+snapshot-blob-085-w2t6d0i5-bx39jq8v-yp41cg7t-ln52ze0r-ha63mf9k-iu84nv1x-rt95ow2b
+snapshot-blob-086-x3u7e1j6-cy40kr9w-zq52dh8u-mo63af1s-ib74ng0l-jv95ow2y-su06px3c
+snapshot-blob-087-y4v8f2k7-dz51ls0x-ar63ei9v-np74bg2t-jc85oh1m-kw06px3z-tv17qy4d
+snapshot-blob-088-z5w9g3l8-ea62mt1y-bs74fj0w-oq85ch3u-kd96pi2n-lx17qy4a-uw28rz5e
+snapshot-blob-089-a6x0h4m9-fb73nu2z-ct85gk1x-pr96di4v-le07qj3o-my28rz5b-vx39sa6f
+snapshot-blob-090-b7y1i5n0-gc84ov3a-du96hl2y-qs07ej5w-mf18rk4p-nz39sa6c-wy40tb7g
+snapshot-blob-091-c8z2j6o1-hd95pw4b-ev07im3z-rt18fk6x-ng29sl5q-oa40tb7d-xz51uc8h
+snapshot-blob-092-d9a3k7p2-ie06qx5c-fw18jn4a-su29gl7y-oh30tm6r-pb51uc8e-ya62vd9i
+snapshot-blob-093-e0b4l8q3-jf17ry6d-gx29ko5b-tv30hm8z-pi41un7s-qc62vd9f-zb73we0j
+snapshot-blob-094-f1c5m9r4-kg28sz7e-hy30lp6c-uw41in9a-qj52vo8t-rd73we0g-ac84xf1k
+snapshot-blob-095-g2d6n0s5-lh39ta8f-iz41mq7d-vx52jo0b-rk63wp9u-se84xf1h-bd95yg2l
+snapshot-blob-096-h3e7o1t6-mi40ub9g-ja52nr8e-wy63kp1c-sl74xq0v-tf95yg2i-ce06zh3m
+snapshot-blob-097-i4f8p2u7-nj51vc0h-kb63os9f-xz74lq2d-tm85yr1w-ug06zh3j-df17ai4n
+snapshot-blob-098-j5g9q3v8-ok62wd1i-lc74pt0g-ya85mr3e-un96zs2x-vh17ai4k-eg28bj5o
+snapshot-blob-099-k6h0r4w9-pl73xe2j-md85qu1h-zb96ns4f-vo07at3y-wi28bj5l-fh39ck6p
+snapshot-blob-100-l7i1s5x0-qm84yf3k-ne96rv2i-ac07ot5g-wp18bu4z-xj39ck6m-gi40dl7q
+snapshot-blob-101-m8j2t6y1-rn95zg4l-of07sw3j-bd18pu6h-xq29cv5a-yk40dl7n-hj51em8r
+snapshot-blob-102-n9k3u7z2-so06ah5m-pg18tx4k-ce29qv7i-yr30dw6b-zl51em8o-ik62fn9s
+snapshot-blob-103-o0l4v8a3-tp17bi6n-qh29uy5l-df30rw8j-zs41ex7c-am62fn9p-jl73go0t
+snapshot-blob-104-p1m5w9b4-uq28cj7o-ri30vz6m-eg41sx9k-at52fy8d-bn73go0q-km84hp1u
+snapshot-blob-105-q2n6x0c5-vr39dk8p-sj41wa7n-fh52ty0l-bu63gz9e-co84hp1r-ln95iq2v
+snapshot-blob-106-r3o7y1d6-ws40el9q-tk52xb8o-gi63uz1m-cv74ha0f-dp95iq2s-mo06jr3w
+snapshot-blob-107-s4p8z2e7-xt51fm0r-ul63yc9p-hj74va2n-dw85ib1g-eq06jr3t-np17ks4x
+snapshot-blob-108-t5q9a3f8-yu62gn1s-vm74zd0q-ik85wb3o-ex96jc2h-fr17ks4u-oq28lt5y
+snapshot-blob-109-u6r0b4g9-zv73ho2t-wn85ae1r-jl96xc4p-fy07kd3i-gs28lt5v-pr39mu6z
+snapshot-blob-110-v7s1c5h0-aw84ip3u-xo96bf2s-km07yd5q-gz18le4j-ht39mu6w-qs40nv7a`;
+
+export function getSnapshotBundleSizeSignature(): string {
+  return snapshotBundleSizeFixtures.join('|') + snapshotBundleSizeBlob;
+}
