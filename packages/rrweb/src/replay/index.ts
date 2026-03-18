@@ -266,10 +266,8 @@ export class Replayer {
             console.warn(e);
           }
 
-        this.virtualDom.destroyTree();
-        this.usingVirtualDom = false;
-
         // If these legacy missing nodes haven't been resolved, they should be converted to real Nodes.
+        // This must happen before destroyTree() which resets the virtual DOM mirror.
         if (Object.keys(this.legacy_missingNodeRetryMap).length) {
           for (const key in this.legacy_missingNodeRetryMap) {
             try {
@@ -291,6 +289,9 @@ export class Replayer {
             }
           }
         }
+
+        this.virtualDom.destroyTree();
+        this.usingVirtualDom = false;
 
         this.constructedStyleMutations.forEach((data) => {
           this.applyStyleSheetMutation(data);
