@@ -20,7 +20,8 @@
     "@amplitude/rrweb-plugin-sequential-id-replay": "2.0.0-alpha.24",
     "@amplitude/rrweb-record": "2.0.0-alpha.24",
     "@amplitude/rrweb-replay": "2.0.0-alpha.24",
-    "@amplitude/rrweb-utils": "2.0.0-alpha.24"
+    "@amplitude/rrweb-utils": "2.0.0-alpha.24",
+    "@amplitude/rrweb-capture": "2.0.0-alpha.35"
   },
   "changesets": [
     "beige-olives-roll",
@@ -108,6 +109,7 @@
     "smooth-papayas-boil",
     "soft-worms-tan",
     "spotty-bees-destroy",
+    "spotty-lamps-suffer",
     "swift-pots-search",
     "textarea-inner-html",
     "thin-vans-applaud",

@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrweb-capture",
-  "version": "2.0.0-alpha.35",
+  "version": "2.0.0-alpha.36",
   "description": "High-level DOM capture utility built on rrweb-snapshot",
   "publishConfig": {
     "access": "public"
