@@ -1,0 +1,51 @@
+{
+  "name": "@amplitude/rrweb-capture",
+  "version": "2.0.0-alpha.35",
+  "description": "High-level DOM capture utility built on rrweb-snapshot",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "rrweb",
+    "capture",
+    "snapshot"
+  ],
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "tsc -noEmit && vite build",
+    "check-types": "tsc -noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "prepublish": "npm run build",
+    "lint": "yarn eslint src/**/*.ts"
+  },
+  "type": "module",
+  "main": "./dist/rrweb-capture.umd.cjs",
+  "module": "./dist/rrweb-capture.js",
+  "unpkg": "./dist/rrweb-capture.umd.cjs",
+  "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/rrweb-capture.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/rrweb-capture.umd.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "devDependencies": {
+    "vite": "^6",
+    "vite-plugin-dts": "^3.9.1"
+  },
+  "dependencies": {
+    "@amplitude/rrweb-snapshot": "^2.0.0-alpha.35",
+    "@amplitude/rrweb-types": "^2.0.0-alpha.35"
+  }
+}
