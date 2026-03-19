@@ -30,6 +30,8 @@ jobs:
         run: yarn install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
+      - name: Fetch master for changesets
+        run: git fetch origin master:refs/remotes/origin/master --depth=1
       - name: Validate changesets
         run: yarn lint:changesets
       - name: Build Packages
