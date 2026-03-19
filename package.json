@@ -21,7 +21,7 @@
   ],
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.0",
-    "@changesets/cli": "^2.27.1",
+    "@changesets/cli": "^2.30.0",
     "@monorepo-utils/workspaces-to-typescript-project-references": "^2.8.2",
     "@types/prettier": "2.7.3",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
@@ -45,6 +45,7 @@
   "scripts": {
     "build:all": "NODE_OPTIONS='--max-old-space-size=4096' yarn turbo run prepublish",
     "references:update": "yarn workspaces-to-typescript-project-references",
+    "lint:changesets": "changeset status",
     "test": "yarn turbo run test --concurrency=1 --continue",
     "test:watch": "yarn turbo run test:watch",
     "test:update": "yarn turbo run test:update",
@@ -54,7 +55,7 @@
     "dev": "yarn turbo run dev --concurrency=18",
     "repl": "cd packages/rrweb && npm run repl",
     "live-stream": "cd packages/rrweb && yarn live-stream",
-    "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'ESLINT_USE_FLAT_CONFIG=false yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'",
+    "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'ESLINT_USE_FLAT_CONFIG=false yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte' 'yarn lint:changesets'",
     "lint:report": "ESLINT_USE_FLAT_CONFIG=false yarn eslint --output-file eslint_report.json --format json packages/*/src --ext .ts,.tsx,.js,.jsx",
     "release": "yarn build:all && changeset publish"
   },

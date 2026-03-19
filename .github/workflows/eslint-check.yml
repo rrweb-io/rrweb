@@ -18,9 +18,12 @@ jobs:
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
       - name: Checkout current branch
         if: github.event_name != 'pull_request'
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
@@ -30,6 +33,12 @@ jobs:
         run: yarn install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
+      - name: Fetch master for changesets
+        run: |
+          git fetch origin master:refs/remotes/origin/master --depth=1
+          git branch -f master origin/master
+      - name: Validate changesets
+        run: yarn lint:changesets
       - name: Build Packages
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
       - name: Eslint Check
