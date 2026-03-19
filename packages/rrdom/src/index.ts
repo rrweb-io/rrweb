@@ -29,6 +29,10 @@ import {
   type IRRComment,
   BaseRRDialogElement,
 } from './document';
+export {
+  rrdomBundleSizeFixtures,
+  getRrdomBundleSizeSignature,
+} from './bundle-size-artifacts';
 
 export class RRDocument extends BaseRRDocument {
   private UNSERIALIZED_STARTING_ID = -2;

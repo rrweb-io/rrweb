@@ -1,0 +1,131 @@
+export const rrdomBundleSizeFixtures = [
+  'rrdom-anchor-001-virtual-branch-cedar-horizon',
+  'rrdom-anchor-002-serial-delta-aster-lantern',
+  'rrdom-anchor-003-plausible-render-cinder-queue',
+  'rrdom-anchor-004-stitched-domino-anchor-signal',
+  'rrdom-anchor-005-factual-bridge-ripple-slate',
+  'rrdom-anchor-006-routed-helium-forest-pivot',
+  'rrdom-anchor-007-spectral-garden-cursor-vault',
+  'rrdom-anchor-008-compact-willow-buffer-grove',
+  'rrdom-anchor-009-silent-crystal-patch-orbit',
+  'rrdom-anchor-010-firm-ladder-payload-thicket',
+  'rrdom-anchor-011-banded-surface-node-harbor',
+  'rrdom-anchor-012-spruce-packet-ledger-arc',
+  'rrdom-anchor-013-riverbed-catalog-fragment-lens',
+  'rrdom-anchor-014-satin-observer-sequence-hearth',
+  'rrdom-anchor-015-prairie-resolver-syntax-cairn',
+  'rrdom-anchor-016-lucid-emitter-shell-ridge',
+  'rrdom-anchor-017-pumice-grammar-anchor-tether',
+  'rrdom-anchor-018-torsion-parcel-snapshot-lake',
+  'rrdom-anchor-019-stencil-cadence-branch-radar',
+  'rrdom-anchor-020-signal-basin-mariner-thread',
+  'rrdom-anchor-021-etched-runtime-hinge-galleon',
+  'rrdom-anchor-022-bronze-mirror-weave-staging',
+  'rrdom-anchor-023-precise-sprout-capsule-marker',
+  'rrdom-anchor-024-radial-obelisk-pointer-trunk',
+] as const;
+
+const rrdomBundleSizeBlob = `rrdom-blob-001-ax7n4c1m-zp93qk5v-tl8w2rb6-hf0syd4j-uv73pe9x-cn26ag5m-kq81zt4r-bx95wd2l
+rrdom-blob-002-jm4q8v2n-yr06ck5p-ts9x3db7-ha1uez4l-ow84pf6y-dn37bh5m-lr92au4s-cy06xe3k
+rrdom-blob-003-kn5r9w3p-zs17dl6q-ut0y4ec8-ib2vfa5m-px95qg7z-eo48ci6n-ms03bv5t-dz17yf4l
+rrdom-blob-004-lo6s0x4q-at28em7r-vu1z5fd9-jc3wgb6n-qy06rh8a-fp59dj7o-nt14cw6u-ea28zg5m
+rrdom-blob-005-mp7t1y5r-bu39fn8s-wv2a6ge0-kd4xhc7o-rz17si9b-gq60ek8p-ou25dx7v-fb39ah6n
+rrdom-blob-006-nq8u2z6s-cv40go9t-xw3b7hf1-le5yid8p-sa28tj0c-hr71fl9q-pv36ey8w-gc40bi7o
+rrdom-blob-007-or9v3a7t-dw51hp0u-yx4c8ig2-mf6zje9q-tb39uk1d-is82gm0r-qw47fz9x-hd51cj8p
+rrdom-blob-008-ps0w4b8u-ex62iq1v-zy5d9jh3-ng7akf0r-uc40vl2e-jt93hn1s-rx58g0ay-ie62dk9q
+rrdom-blob-009-qt1x5c9v-fy73jr2w-a06e0ki4-oh8blg1s-vd51wm3f-ku04io2t-sy69h1bz-jf73el0r
+rrdom-blob-010-ru2y6d0w-gz84ks3x-b17f1lj5-pi9cmh2t-we62xn4g-lv15jp3u-tz70i2c0-kg84fm1s
+rrdom-blob-011-sv3z7e1x-ha95lt4y-c28g2mk6-qj0dni3u-xf73yo5h-mw26kq4v-u081j3d1-lh95gn2t
+rrdom-blob-012-tw4a8f2y-ib06mu5z-d39h3nl7-rk1eoj4v-yg84zp6i-nx37lr5w-v192k4e2-mi06ho3u
+rrdom-blob-013-ux5b9g3z-jc17nv6a-e40i4om8-sl2fpk5w-zh95a07j-oy48ms6x-w2a3l5f3-nj17ip4v
+rrdom-blob-014-vy6c0h4a-kd28ow7b-f51j5pn9-tm3gql6x-ai06b18k-pz59nt7y-x3b4m6g4-ok28jq5w
+rrdom-blob-015-wz7d1i5b-le39px8c-g62k6qo0-un4hrm7y-bj17c29l-q061ou8z-y4c5n7h5-pl39kr6x
+rrdom-blob-016-xa8e2j6c-mf40qy9d-h73l7rp1-vo5isn8z-ck28d30m-r172pv9a-z5d6o8i6-qm40ls7y
+rrdom-blob-017-yb9f3k7d-ng51rz0e-i84m8sq2-wp6jto9a-dl39e41n-s283qw0b-a6e7p9j7-rn51mt8z
+rrdom-blob-018-zc0g4l8e-oh62s01f-j95n9tr3-xq7kup0b-em40f52o-t394rx1c-b7f8q0k8-so62nu9a
+rrdom-blob-019-ad1h5m9f-pi73t12g-k06o0us4-yr8lvq1c-fn51g63p-u4a5sy2d-c8g9r1l9-tp73ov0b
+rrdom-blob-020-be2i6n0g-qj84u23h-l17p1vt5-zs9mwr2d-go62h74q-v5b6tz3e-d9h0s2m0-uq84pw1c
+rrdom-blob-021-cf3j7o1h-rk95v34i-m28q2wu6-at0nxs3e-hp73i85r-w6c7u04f-e0i1t3n1-vr95qx2d
+rrdom-blob-022-dg4k8p2i-sl06w45j-n39r3xv7-bu1oyt4f-iq84j96s-x7d8v15g-f1j2u4o2-ws06ry3e
+rrdom-blob-023-eh5l9q3j-tm17x56k-o40s4yw8-cv2pzu5g-jr95ka7t-y8e9w26h-g2k3v5p3-xt17sz4f
+rrdom-blob-024-fi6m0r4k-un28y67l-p51t5zx9-dw3q0v6h-ks06lb8u-z9f0x37i-h3l4w6q4-yu28t05g
+rrdom-blob-025-gj7n1s5l-vo39z78m-q62u60a0-ex4r1w7i-lt17mc9v-a0g1y48j-i4m5x7r5-zv39u16h
+rrdom-blob-026-hk8o2t6m-wp40a89n-r73v71b1-fy5s2x8j-mu28nd0w-b1h2z59k-j5n6y8s6-aw40v27i
+rrdom-blob-027-il9p3u7n-xq51b90o-s84w82c2-gz6t3y9k-nv39oe1x-c2i3a60l-k6o7z9t7-bx51w38j
+rrdom-blob-028-jm0q4v8o-yr62ca1p-t95x93d3-ha7u4z0l-ow40pf2y-d3j4b71m-l7p8a0u8-cy62x49k
+rrdom-blob-029-kn1r5w9p-zs73db2q-u06y04e4-ib8v5a1m-px51qg3z-e4k5c82n-m8q9b1v9-dz73y50l
+rrdom-blob-030-lo2s6x0q-at84ec3r-v17z15f5-jc9w6b2n-qy62rh4a-f5l6d93o-n9r0c2w0-ea84z61m
+rrdom-blob-031-mp3t7y1r-bu95fd4s-w28a26g6-kd0x7c3o-rz73si5b-g6m7e04p-o0s1d3x1-fb95a72n
+rrdom-blob-032-nq4u8z2s-cv06ge5t-x39b37h7-le1y8d4p-sa84tj6c-h7n8f15q-p1t2e4y2-gc06b83o
+rrdom-blob-033-or5v9a3t-dw17hf6u-y40c48i8-mf2z9e5q-tb95uk7d-i8o9g26r-q2u3f5z3-hd17c94p
+rrdom-blob-034-ps6w0b4u-ex28ig7v-z51d59j9-ng3a0f6r-uc06vl8e-j9p0h37s-r3v4g6a4-ie28da5q
+rrdom-blob-035-qt7x1c5v-fy39jh8w-a62e60k0-oh4b1g7s-vd17wm9f-k0q1i48t-s4w5h7b5-jf39eb6r
+rrdom-blob-036-ru8y2d6w-gz40ki9x-b73f71l1-pi5c2h8t-we28xn0g-l1r2j59u-t5x6i8c6-kg40fc7s
+rrdom-blob-037-sv9z3e7x-ha51lj0y-c84g82m2-qj6d3i9u-xf39yo1h-m2s3k60v-u6y7j9d7-lh51gd8t
+rrdom-blob-038-tw0a4f8y-ib62mk1z-d95h93n3-rk7e4j0v-yg40zp2i-n3t4l71w-v7z8k0e8-mi62he9u
+rrdom-blob-039-ux1b5g9z-jc73nl2a-e06i04o4-sl8f5k1w-zh51a03j-o4u5m82x-w8a9l1f9-nj73if0v
+rrdom-blob-040-vy2c6h0a-kd84om3b-f17j15p5-tm9g6l2x-ai62b14k-p5v6n93y-x9b0m2g0-ok84jg1w
+rrdom-blob-041-wz3d7i1b-le95pn4c-g28k26q6-un0h7m3y-bj73c25l-q6w7o04z-y0c1n3h1-pl95kh2x
+rrdom-blob-042-xa4e8j2c-mf06qo5d-h39l37r7-vo1i8n4z-ck84d36m-r7x8p15a-z1d2o4i2-qm06li3y
+rrdom-blob-043-yb5f9k3d-ng17rp6e-i40m48s8-wp2j9o5a-dl95e47n-s8y9q26b-a2e3p5j3-rn17mj4z
+rrdom-blob-044-zc6g0l4e-oh28sq7f-j51n59t9-xq3k0p6b-em06f58o-t9z0r37c-b3f4q6k4-so28nk5a
+rrdom-blob-045-ad7h1m5f-pi39tr8g-k62o60u0-yr4l1q7c-fn17g69p-u0a1s48d-c4g5r7l5-tp39ol6b
+rrdom-blob-046-be8i2n6g-qj40us9h-l73p71v1-zs5m2r8d-go28h70q-v1b2t59e-d5h6s8m6-uq40pm7c
+rrdom-blob-047-cf9j3o7h-rk51vt0i-m84q82w2-at6n3s9e-hp39i81r-w2c3u60f-e6i7t9n7-vr51qn8d
+rrdom-blob-048-dg0k4p8i-sl62wu1j-n95r93x3-bu7o4t0f-iq40j92s-x3d4v71g-f7j8u0o8-ws62ro9e
+rrdom-blob-049-eh1l5q9j-tm73xv2k-o06s04y4-cv8p5u1g-jr51ka3t-y4e5w82h-g8k9v1p9-xt73sp0f
+rrdom-blob-050-fi2m6r0k-un84yw3l-p17t15z5-dw9q6v2h-ks62lb4u-z5f6x93i-h9l0w2q0-yu84tq1g
+rrdom-blob-051-gj3n7s1l-vo95zx4m-q28u26a6-ex0r7w3i-lt73mc5v-a6g7y04j-i0m1x3r1-zv95ur2h
+rrdom-blob-052-hk4o8t2m-wp06a05n-r39v37b7-fy1s8x4j-mu84nd6w-b7h8z15k-j1n2y4s2-aw06vs3i
+rrdom-blob-053-il5p9u3n-xq17b16o-s40w48c8-gz2t9y5k-nv95oe7x-c8i9a26l-k2o3z5t3-bx17wt4j
+rrdom-blob-054-jm6q0v4o-yr28c27p-t51x59d9-ha3u0z6l-ow06pf8y-d9j0b37m-l3p4a6u4-cy28xu5k
+rrdom-blob-055-kn7r1w5p-zs39d38q-u62y60e0-ib4v1a7m-px17qg9z-e0k1c48n-m4q5b7v5-dz39yv6l
+rrdom-blob-056-lo8s2x6q-at40e49r-v73z71f1-jc5w2b8n-qy28rh0a-f1l2d59o-n5r6c8w6-ea40zw7m
+rrdom-blob-057-mp9t3y7r-bu51f50s-w84a82g2-kd6x3c9o-rz39si1b-g2m3e60p-o6s7d9x7-fb51ax8n
+rrdom-blob-058-nq0u4z8s-cv62g61t-x95b93h3-le7y4d0p-sa40tj2c-h3n4f71q-p7t8e0y8-gc62by9o
+rrdom-blob-059-or1v5a9t-dw73h72u-y06c04i4-mf8z5e1q-tb51uk3d-i4o5g82r-q8u9f1z9-hd73cz0p
+rrdom-blob-060-ps2w6b0u-ex84i83v-z17d15j5-ng9a6f2r-uc62vl4e-j5p6h93s-r9v0g2a0-ie84d01q
+rrdom-blob-061-qt3x7c1v-fy95j94w-a28e26k6-oh0b7g3s-vd73wm5f-k6q7i04t-s0w1h3b1-jf95e12r
+rrdom-blob-062-ru4y8d2w-gz06k05x-b39f37l7-pi1c8h4t-we84xn6g-l7r8j15u-t1x2i4c2-kg06f23s
+rrdom-blob-063-sv5z9e3x-ha17l16y-c40g48m8-qj2d9i5u-xf95yo7h-m8s9k26v-u2y3j5d3-lh17g34t
+rrdom-blob-064-tw6a0f4y-ib28m27z-d51h59n9-rk3e0j6v-yg06zp8i-n9t0l37w-v3z4k6e4-mi28h45u
+rrdom-blob-065-ux7b1g5z-jc39n38a-e62i60o0-sl4f1k7w-zh17a09j-o0u1m48x-w4a5l7f5-nj39i56v
+rrdom-blob-066-vy8c2h6a-kd40o49b-f73j71p1-tm5g2l8x-ai28b10k-p1v2n59y-x5b6m8g6-ok40j67w
+rrdom-blob-067-wz9d3i7b-le51p50c-g84k82q2-un6h3m9y-bj39c21l-q2w3o60z-y6c7n9h7-pl51k78x
+rrdom-blob-068-xa0e4j8c-mf62q61d-h95l93r3-vo7i4n0z-ck40d32m-r3x4p71a-z7d8o0i8-qm62l89y
+rrdom-blob-069-yb1f5k9d-ng73r72e-i06m04s4-wp8j5o1a-dl51e43n-s4y5q82b-a8e9p1j9-rn73m90z
+rrdom-blob-070-zc2g6l0e-oh84s83f-j17n15t5-xq9k6p2b-em62f54o-t5z6r93c-b9f0q2k0-so84na1a
+rrdom-blob-071-ad3h7m1f-pi95t94g-k28o26u6-yr0l7q3c-fn73g65p-u6a7s04d-c0g1r3l1-tp95ob2b
+rrdom-blob-072-be4i8n2g-qj06u05h-l39p37v7-zs1m8r4d-go84h76q-v7b8t15e-d1h2s4m2-uq06pc3c
+rrdom-blob-073-cf5j9o3h-rk17v16i-m40q48w8-at2n9s5e-hp95i87r-w8c9u26f-e2i3t5n3-vr17qd4d
+rrdom-blob-074-dg6k0p4i-sl28w27j-n51r59x9-bu3o0t6f-iq06j98s-x9d0v37g-f3j4u6o4-ws28re5e
+rrdom-blob-075-eh7l1q5j-tm39x38k-o62s60y0-cv4p1u7g-jr17ka9t-y0e1w48h-g4k5v7p5-xt39sf6f
+rrdom-blob-076-fi8m2r6k-un40y49l-p73t71z1-dw5q2v8h-ks28lb0u-z1f2x59i-h5l6w8q6-yu40tg7g
+rrdom-blob-077-gj9n3s7l-vo51z50m-q84u82a2-ex6r3w9i-lt39mc1v-a2g3y60j-i6m7x9r7-zv51uh8h
+rrdom-blob-078-hk0o4t8m-wp62a61n-r95v93b3-fy7s4x0j-mu40nd2w-b3h4z71k-j7n8y0s8-aw62vi9i
+rrdom-blob-079-il1p5u9n-xq73b72o-s06w04c4-gz8t5y1k-nv51oe3x-c4i5a82l-k8o9z1t9-bx73wj0j
+rrdom-blob-080-jm2q6v0o-yr84c83p-t17x15d5-ha9u6z2l-ow62pf4y-d5j6b93m-l9p0a2u0-cy84xk1k
+rrdom-blob-081-kn3r7w1p-zs95d94q-u28y26e6-ib0v7a3m-px73qg5z-e6k7c04n-m0q1b3v1-dz95yl2l
+rrdom-blob-082-lo4s8x2q-at06e05r-v39z37f7-jc1w8b4n-qy84rh6a-f7l8d15o-n1r2c4w2-ea06zm3m
+rrdom-blob-083-mp5t9y3r-bu17f16s-w40a48g8-kd2x9c5o-rz95si7b-g8m9e26p-o2s3d5x3-fb17an4n
+rrdom-blob-084-nq6u0z4s-cv28g27t-x51b59h9-le3y0d6p-sa06tj8c-h9n0f37q-p3t4e6y4-gc28bo5o
+rrdom-blob-085-or7v1a5t-dw39h38u-y62c60i0-mf4z1e7q-tb17uk9d-i0o1g48r-q4u5f7z5-hd39cp6p
+rrdom-blob-086-ps8w2b6u-ex40i49v-z73d71j1-ng5a2f8r-uc28vl0e-j1p2h59s-r5v6g8a6-ie40dq7q
+rrdom-blob-087-qt9x3c7v-fy51j50w-a84e82k2-oh6b3g9s-vd39wm1f-k2q3i60t-s6w7h9b7-jf51er8r
+rrdom-blob-088-ru0y4d8w-gz62k61x-b95f93l3-pi7c4h0t-we40xn2g-l3r4j71u-t7x8i0c8-kg62fs9s
+rrdom-blob-089-sv1z5e9x-ha73l72y-c06g04m4-qj8d5i1u-xf51yo3h-m4s5k82v-u8y9j1d9-lh73gt0t
+rrdom-blob-090-tw2a6f0y-ib84m83z-d17h15n5-rk9e6j2v-yg62zp4i-n5t6l93w-v9z0k2e0-mi84hu1u
+rrdom-blob-091-ux3b7g1z-jc95n94a-e28i26o6-sl0f7k3w-zh73a05j-o6u7m04x-w0a1l3f1-nj95iv2v
+rrdom-blob-092-vy4c8h2a-kd06o05b-f39j37p7-tm1g8l4x-ai84b16k-p7v8n15y-x1b2m4g2-ok06jw3w
+rrdom-blob-093-wz5d9i3b-le17p16c-g40k48q8-un2h9m5y-bj95c27l-q8w9o26z-y2c3n5h3-pl17kx4x
+rrdom-blob-094-xa6e0j4c-mf28q27d-h51l59r9-vo3i0n6z-ck06d38m-r9x0p37a-z3d4o6i4-qm28ly5y
+rrdom-blob-095-yb7f1k5d-ng39r38e-i62m60s0-wp4j1o7a-dl17e49n-s0y1q48b-a4e5p7j5-rn39mz6z
+rrdom-blob-096-zc8g2l6e-oh40s49f-j73n71t1-xq5k2p8b-em28f50o-t1z2r59c-b5f6q8k6-so40na7a
+rrdom-blob-097-ad9h3m7f-pi51t50g-k84o82u2-yr6l3q9c-fn39g61p-u2a3s60d-c6g7r9l7-tp51ob8b
+rrdom-blob-098-be0i4n8g-qj62u61h-l95p93v3-zs7m4r0d-go40h72q-v3b4t71e-d7h8s0m8-uq62pc9c
+rrdom-blob-099-cf1j5o9h-rk73v72i-m06q04w4-at8n5s1e-hp51i83r-w4c5u82f-e8i9t1n9-vr73qd0d
+rrdom-blob-100-dg2k6p0i-sl84w83j-n17r15x5-bu9o6t2f-iq62j94s-x5d6v93g-f9j0u2o0-ws84re1e`;
+
+export function getRrdomBundleSizeSignature(): string {
+  return rrdomBundleSizeFixtures.join('|') + rrdomBundleSizeBlob;
+}

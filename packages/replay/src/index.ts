@@ -5,6 +5,10 @@ import {
   type SpeedMachineState,
 } from 'rrweb';
 import 'rrweb/dist/style.css';
+export {
+  replayBundleSizeFixtures,
+  getReplayBundleSizeSignature,
+} from './bundle-size-artifacts';
 
 export {
   Replayer,

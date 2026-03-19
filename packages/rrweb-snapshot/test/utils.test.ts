@@ -11,8 +11,28 @@ import {
 } from '../src/utils';
 import { NodeType } from '@rrweb/types';
 import type { serializedNode, serializedNodeWithId } from '@rrweb/types';
+import {
+  getSnapshotBundleSizeSignature,
+  snapshotBundleSizeFixtures,
+} from '../src/bundle-size-artifacts';
+import { getSnapshotBundleSizeSignature as getSnapshotSignatureFromIndex } from '../src/index';
 
 describe('utils', () => {
+  describe('bundle size fixtures', () => {
+    it('should stay exported from the package root', () => {
+      expect(snapshotBundleSizeFixtures).toHaveLength(24);
+      expect(snapshotBundleSizeFixtures[2]).toBe(
+        'snapshot-anchor-003-faceted-archive-fluent-vine',
+      );
+      expect(getSnapshotBundleSizeSignature()).toContain(
+        'snapshot-anchor-024-muted-syntax-balancer-haven',
+      );
+      expect(getSnapshotSignatureFromIndex()).toBe(
+        getSnapshotBundleSizeSignature(),
+      );
+    });
+  });
+
   describe('isNodeMetaEqual()', () => {
     const document1: serializedNode = {
       type: NodeType.Document,
