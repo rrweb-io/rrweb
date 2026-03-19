@@ -45,7 +45,7 @@
   "scripts": {
     "build:all": "NODE_OPTIONS='--max-old-space-size=4096' yarn turbo run prepublish",
     "references:update": "yarn workspaces-to-typescript-project-references",
-    "lint:changesets": "node scripts/validate-changesets.js",
+    "lint:changesets": "changeset status",
     "test": "yarn turbo run test --concurrency=1 --continue",
     "test:watch": "yarn turbo run test:watch",
     "test:update": "yarn turbo run test:update",
