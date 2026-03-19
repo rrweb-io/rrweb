@@ -34,7 +34,9 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Fetch master for changesets
-        run: git fetch origin master:refs/remotes/origin/master --depth=1
+        run: |
+          git fetch origin master:refs/remotes/origin/master --depth=1
+          git branch -f master origin/master
       - name: Validate changesets
         run: yarn lint:changesets
       - name: Build Packages
