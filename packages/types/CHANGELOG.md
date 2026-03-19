@@ -1,5 +1,11 @@
 # @rrweb/types
 
+## 2.0.0-alpha.21
+
+### Patch Changes
+
+- [#1704](https://github.com/rrweb-io/rrweb/pull/1704) [`33e01f5`](https://github.com/rrweb-io/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Provide a /umd/ output folder alongside the /dist/ one so that we can serve UMD (Universal Module Definition) files with a .js extension, without upsetting expectations set by package.json that all .js files in /dist/ are modules
+
 ## 2.0.0-alpha.20
 
 ## 2.0.0-alpha.19

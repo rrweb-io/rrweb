@@ -1,5 +1,16 @@
 # @rrweb/packer
 
+## 2.0.0-alpha.21
+
+### Patch Changes
+
+- [#1762](https://github.com/rrweb-io/rrweb/pull/1762) [`22bc4c3`](https://github.com/rrweb-io/rrweb/commit/22bc4c334e88f0b8ee5488d9e1e95cd8093a15c8) Thanks [@Juice10](https://github.com/Juice10)! - Drop base64 inlined worker source from all bundles
+
+- [#1704](https://github.com/rrweb-io/rrweb/pull/1704) [`33e01f5`](https://github.com/rrweb-io/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Provide a /umd/ output folder alongside the /dist/ one so that we can serve UMD (Universal Module Definition) files with a .js extension, without upsetting expectations set by package.json that all .js files in /dist/ are modules
+
+- Updated dependencies [[`33e01f5`](https://github.com/rrweb-io/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0)]:
+  - @rrweb/types@2.0.0-alpha.21
+
 ## 2.0.0-alpha.20
 
 ### Patch Changes
