@@ -1,4 +1,4 @@
 ---
 ---
 
-Add a repo-level validator for changeset package names and run it in CI.
+Run Changesets' built-in status command in CI to catch invalid changeset metadata before release.
