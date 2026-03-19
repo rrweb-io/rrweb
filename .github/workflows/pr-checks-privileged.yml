@@ -35,20 +35,30 @@ jobs:
           script: |
             const run = context.payload.workflow_run;
             if (run.pull_requests && run.pull_requests.length > 0) {
-              return run.pull_requests[0].number;
+              return String(run.pull_requests[0].number);
             }
+
+            const headOwner = run.head_repository?.owner?.login;
+            if (!headOwner || !run.head_branch) {
+              core.setFailed('Could not determine PR head reference');
+              return;
+            }
+
             // Fallback for fork PRs (pull_requests is empty for forks)
             const { data: prs } = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              head: `${run.head_repository.full_name}:${run.head_branch}`,
+              head: `${headOwner}:${run.head_branch}`,
               state: 'open',
             });
-            if (prs.length === 0) {
+
+            const match = prs.find((pr) => pr.head.sha === run.head_sha) ?? prs[0];
+            if (!match) {
               core.setFailed('Could not determine PR number');
               return;
             }
-            return prs[0].number;
+
+            return String(match.number);
           result-encoding: string
 
       - name: Render bundle size comment
