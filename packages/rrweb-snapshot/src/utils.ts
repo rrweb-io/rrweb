@@ -150,7 +150,9 @@ export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
     }
     return importStringified;
   } else {
-    let ruleStringified = rule.cssText;
+    // Removes incomprehensible empty .cssText rules
+    // see https://github.com/rrweb-io/rrweb/issues/1734
+    let ruleStringified = fixEmptyCssStyles(rule.cssText);
     if (isCSSStyleRule(rule) && rule.selectorText.includes(':')) {
       // Safari does not escape selectors with : properly
       // see https://bugs.webkit.org/show_bug.cgi?id=184604
@@ -167,6 +169,18 @@ export function fixSafariColons(cssStringified: string): string {
   // Replace e.g. [aa:bb] with [aa\\:bb]
   const regex = /(\[(?:[\w-]+)[^\\])(:(?:[\w-]+)\])/gm;
   return cssStringified.replace(regex, '$1\\$2');
+}
+
+export function fixEmptyCssStyles(cssStringified: string) {
+  const quickTestRegExp = /:\s*;/;
+
+  if (quickTestRegExp.test(cssStringified)) {
+    // Remove e.g. "border-top-style: ;"
+    const regex = /(?<=^|\{|;)\s*[_a-zA-Z][_a-zA-Z0-9-]*:\s*;/gm;
+    return cssStringified.replace(regex, '');
+  }
+
+  return cssStringified;
 }
 
 export function isCSSImportRule(rule: CSSRule): rule is CSSImportRule {
