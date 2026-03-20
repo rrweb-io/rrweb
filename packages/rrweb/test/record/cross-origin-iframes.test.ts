@@ -40,11 +40,13 @@ interface IWindow extends Window {
 }
 type ExtraOptions = {
   usePackFn?: boolean;
+  crossOrigin?: boolean;
 };
 
 async function injectRecordScript(
   frame: puppeteer.Frame,
   options?: ExtraOptions,
+  allowedOrigins?: string[],
 ) {
   try {
     await frame.addScriptTag({
@@ -58,26 +60,31 @@ async function injectRecordScript(
       !e.message.includes('DOM.describeNode')
     )
       throw e;
-    await injectRecordScript(frame, options);
+    await injectRecordScript(frame, options, allowedOrigins);
     return;
   }
   options = options || {};
-  await frame.evaluate((options) => {
-    (window as unknown as IWindow).snapshots = [];
-    const { record } = (window as unknown as IWindow).rrweb;
-    const config: recordOptions<eventWithTime> = {
-      recordCrossOriginIframes: true,
-      recordCanvas: true,
-      emit(event) {
-        (window as unknown as IWindow).snapshots.push(event);
-        (window as unknown as IWindow).emit(event);
-      },
-    };
-    record(config);
-  }, options);
+  await frame.evaluate(
+    (options, allowedOrigins) => {
+      (window as unknown as IWindow).snapshots = [];
+      const { record } = (window as unknown as IWindow).rrweb;
+      const config: recordOptions<eventWithTime> = {
+        recordCrossOriginIframes: !!allowedOrigins,
+        recordCanvas: true,
+        allowedIframeOrigins: allowedOrigins,
+        emit(event) {
+          (window as unknown as IWindow).snapshots.push(event);
+          (window as unknown as IWindow).emit(event);
+        },
+      };
+      record(config);
+    },
+    options,
+    allowedOrigins,
+  );
 
   for (const child of frame.childFrames()) {
-    await injectRecordScript(child, options);
+    await injectRecordScript(child, options, allowedOrigins);
   }
 }
 
@@ -104,11 +111,10 @@ const setup = function (
 
   beforeEach(async () => {
     ctx.page = await ctx.browser.newPage();
-    await ctx.page.goto('about:blank');
+    await ctx.page.goto(`${ctx.serverURL}/html/blank.html`);
     await ctx.page.setContent(
-      content.replace(/\{SERVER_URL\}/g, ctx.serverURL),
+      content.replace(/\{SERVER_URL\}/g, ctx.serverBURL),
     );
-    // await ctx.page.evaluate(ctx.code);
     ctx.events = [];
     await ctx.page.exposeFunction('emit', (e: eventWithTime) => {
       if (e.type === EventType.DomContentLoaded || e.type === EventType.Load) {
@@ -118,7 +124,10 @@ const setup = function (
     });
 
     ctx.page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
-    await injectRecordScript(ctx.page.mainFrame(), options);
+    const allowedOrigins = options?.crossOrigin
+      ? [ctx.serverURL, ctx.serverBURL]
+      : undefined;
+    await injectRecordScript(ctx.page.mainFrame(), options, allowedOrigins);
   });
 
   afterEach(async () => {
@@ -138,7 +147,7 @@ describe('cross origin iframes', function (this: ISuite) {
   vi.setConfig({ testTimeout: 100_000 });
 
   describe('form.html', function (this: ISuite) {
-    const ctx: ISuite = setup.call(
+    const ctx = setup.call(
       this,
       `
         <!DOCTYPE html>
@@ -148,7 +157,8 @@ describe('cross origin iframes', function (this: ISuite) {
           </body>
         </html>
       `,
-    );
+      { crossOrigin: true },
+    ) as ISuite & { serverBURL: string };
 
     it("won't emit events if it isn't in the top level iframe", async () => {
       const el = (await ctx.page.$(
@@ -214,12 +224,16 @@ describe('cross origin iframes', function (this: ISuite) {
       await ctx.page.evaluate((url) => {
         const iframe = document.querySelector('iframe') as HTMLIFrameElement;
         iframe.src = `${url}/html/empty.html`;
-      }, ctx.serverURL);
+      }, ctx.serverBURL);
       await waitForRAF(ctx.page); // should load iframe (but sometimes doesn't)
       const frame = ctx.page.mainFrame().childFrames()[0];
       await frame.waitForSelector('#one'); // ensure frame has changed
 
-      await injectRecordScript(ctx.page.mainFrame().childFrames()[0]); // injects script into new iframe
+      await injectRecordScript(
+        ctx.page.mainFrame().childFrames()[0],
+        undefined,
+        [ctx.serverURL, ctx.serverBURL],
+      ); // injects script into new iframe
 
       const events: eventWithTime[] = await ctx.page.evaluate(
         () => (window as unknown as IWindow).snapshots,
@@ -277,7 +291,7 @@ describe('cross origin iframes', function (this: ISuite) {
   });
 
   describe('move-node.html', function (this: ISuite) {
-    const ctx: ISuite = setup.call(
+    const ctx = setup.call(
       this,
       `
         <!DOCTYPE html>
@@ -287,7 +301,8 @@ describe('cross origin iframes', function (this: ISuite) {
           </body>
         </html>
       `,
-    );
+      { crossOrigin: true },
+    ) as ISuite & { serverBURL: string };
 
     it('should record DOM node movement', async () => {
       const frame = ctx.page.mainFrame().childFrames()[0];
@@ -494,7 +509,7 @@ describe('cross origin iframes', function (this: ISuite) {
   describe('audio.html', function (this: ISuite) {
     vi.setConfig({ testTimeout: 100_000 });
 
-    const ctx: ISuite = setup.call(
+    const ctx = setup.call(
       this,
       `
       <!DOCTYPE html>
@@ -504,7 +519,8 @@ describe('cross origin iframes', function (this: ISuite) {
         </body>
       </html>
     `,
-    );
+      { crossOrigin: true },
+    ) as ISuite & { serverBURL: string };
 
     it('should emit contents of iframe once', async () => {
       const frame = ctx.page.mainFrame().childFrames()[0];
@@ -529,7 +545,7 @@ describe('cross origin iframes', function (this: ISuite) {
       </body>
     </html>
   `;
-    const ctx = setup.call(this, content) as ISuite & {
+    const ctx = setup.call(this, content, { crossOrigin: true }) as ISuite & {
       serverBURL: string;
     };
 
@@ -553,7 +569,7 @@ describe('cross origin iframes', function (this: ISuite) {
 
     it('should filter out forwarded cross origin rrweb messages', async () => {
       const frame = ctx.page.mainFrame().childFrames()[0];
-      const iframe2URL = `${ctx.serverBURL}/html/blank.html`;
+      const iframe2URL = `${ctx.serverURL}/html/blank.html?iframe2`;
       await frame.evaluate((iframe2URL) => {
         // Add a message proxy to forward messages from child frames to its parent frame.
         window.addEventListener('message', (event) => {
@@ -569,9 +585,16 @@ describe('cross origin iframes', function (this: ISuite) {
       await ctx.page.waitForFrame(iframe2URL);
       const iframe2 = frame.childFrames()[0];
       // Record iframe2
-      await injectRecordScript(iframe2);
+      await injectRecordScript(iframe2, undefined, [
+        ctx.serverURL,
+        ctx.serverBURL,
+      ]);
 
+      // Wait for the 2-hop postMessage chain (iframe2 → iframe1 → parent).
+      // Each frame has its own event loop, so wait on each in order.
       await waitForRAF(iframe2);
+      await waitForRAF(frame);
+      await waitForRAF(ctx.page);
       const snapshots = (await ctx.page.evaluate(
         'window.snapshots',
       )) as eventWithTime[];
@@ -583,7 +606,7 @@ describe('cross origin iframes', function (this: ISuite) {
 describe('same origin iframes', function (this: ISuite) {
   vi.setConfig({ testTimeout: 100_000 });
 
-  const ctx: ISuite = setup.call(
+  const ctx = setup.call(
     this,
     `
       <!DOCTYPE html>
@@ -593,7 +616,8 @@ describe('same origin iframes', function (this: ISuite) {
         </body>
       </html>
     `,
-  );
+    { crossOrigin: true },
+  ) as ISuite & { serverBURL: string };
 
   it('should emit contents of iframe once', async () => {
     const events = await ctx.page.evaluate(
@@ -618,10 +642,13 @@ describe('same origin iframes', function (this: ISuite) {
       return new Promise((resolve) => {
         crossOriginIframe.onload = resolve;
       });
-    }, ctx.serverURL);
+    }, ctx.serverBURL);
     const crossOriginIframe = sameOriginIframe.childFrames()[0];
     // Inject recording script into this cross-origin iframe
-    await injectRecordScript(crossOriginIframe);
+    await injectRecordScript(crossOriginIframe, undefined, [
+      ctx.serverURL,
+      ctx.serverBURL,
+    ]);
 
     await waitForRAF(ctx.page);
     const snapshots = (await ctx.page.evaluate(
