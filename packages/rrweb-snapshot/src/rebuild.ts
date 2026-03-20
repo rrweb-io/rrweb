@@ -101,7 +101,7 @@ export function applyCssSplits(
 ): void {
   const childTextNodes = [];
   for (const scn of n.childNodes) {
-    if (scn.type === NodeType.Text) {
+    if (scn.type === NodeType.Text || scn.type === NodeType.CDATA) {
       childTextNodes.push(scn);
     }
   }
@@ -432,7 +432,13 @@ function buildNode(
       }
       return doc.createTextNode(n.textContent);
     case NodeType.CDATA:
-      return doc.createCDATASection(n.textContent);
+      /*
+        https://developer.mozilla.org/en-US/docs/Web/API/Document/createCDATASection
+        expected: DOMException: Failed to execute 'createCDATASection' on 'Document': This operation is not supported for HTML documents.
+        "createTextNode() can often be used in its place"
+      */
+      //return doc.createCDATASection(n.textContent);
+      return doc.createTextNode(n.textContent);
     case NodeType.Comment:
       return doc.createComment(n.textContent);
     default:
