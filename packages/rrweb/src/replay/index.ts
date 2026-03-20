@@ -134,7 +134,7 @@ export class Replayer {
   private mouseTail: HTMLCanvasElement | null = null;
   private tailPositions: Array<{ x: number; y: number }> = [];
 
-  private emitter: Emitter = mitt();
+  private emitter: Emitter = mitt() as Emitter;
 
   private nextUserInteractionEvent: eventWithTime | null;
 
@@ -331,6 +331,8 @@ export class Replayer {
         this.applySelection(this.lastSelectionData);
         this.lastSelectionData = null;
       }
+
+      this.emitter.emit(ReplayerEvents.FlushEnd);
     });
     this.emitter.on(ReplayerEvents.PlayBack, () => {
       this.firstFullSnapshot = null;
@@ -525,6 +527,35 @@ export class Replayer {
     this.emitter.emit(ReplayerEvents.Start);
   }
 
+  /**
+   * Applies all events synchronously until the given event index.
+   * @param eventIndex - number
+   */
+  public replayEvent(eventIndex: number) {
+    const handleFinish = () => {
+      this.service.send('END');
+      this.emitter.off(ReplayerEvents.FlushEnd, handleFinish);
+    };
+    this.emitter.on(ReplayerEvents.FlushEnd, handleFinish);
+
+    if (this.service.state.matches('paused')) {
+      this.service.send({
+        type: 'PLAY_SINGLE_EVENT',
+        payload: { singleEvent: eventIndex },
+      });
+    } else {
+      this.service.send({ type: 'PAUSE' });
+      this.service.send({
+        type: 'PLAY_SINGLE_EVENT',
+        payload: { singleEvent: eventIndex },
+      });
+    }
+    this.iframe.contentDocument
+      ?.getElementsByTagName('html')[0]
+      ?.classList.remove('rrweb-paused');
+    this.emitter.emit(ReplayerEvents.Start);
+  }
+
   public pause(timeOffset?: number) {
     if (timeOffset === undefined && this.service.state.matches('playing')) {
       this.service.send({ type: 'PAUSE' });
@@ -558,6 +589,7 @@ export class Replayer {
     this.mediaManager.reset();
     this.config.root.removeChild(this.wrapper);
     this.emitter.emit(ReplayerEvents.Destroy);
+    this.emitter.all.clear();
   }
 
   public startLive(baselineTime?: number) {
@@ -1111,14 +1143,15 @@ export class Replayer {
     e: incrementalSnapshotEvent & { timestamp: number; delay?: number },
     isSync: boolean,
   ) {
-    const { data: d } = e;
+    const { data: d, timestamp } = e;
+
     switch (d.source) {
       case IncrementalSource.Mutation: {
         try {
           this.applyMutation(d, isSync);
         } catch (error) {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
-          this.warn(`Exception in mutation ${error.message || error}`, d);
+          this.warn(`Exception in mutation ${String(error)}`, d, timestamp);
         }
         break;
       }
@@ -1507,6 +1540,19 @@ export class Replayer {
           return this.newDocumentQueue.push(mutation);
         }
         return queue.push(mutation);
+      }
+
+      if (
+        mutation.node.type === NodeType.Document &&
+        parent?.nodeName?.toLowerCase() !== 'iframe' &&
+        parent?.nodeName?.toLowerCase() !== 'frame'
+      ) {
+        console.warn(
+          '[Replayer] Skipping invalid document append to a non-iframe parent. hi2',
+          mutation,
+          parent,
+        );
+        return;
       }
 
       if (mutation.node.isShadow) {
