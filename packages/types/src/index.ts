@@ -201,9 +201,15 @@ export type SamplingStrategy = Partial<{
    */
   mouseInteraction: boolean | Record<string, boolean | undefined>;
   /**
-   * number is the throttle threshold of recording scroll
+   * number is the throttle threshold of recording scroll in ms
+   * default: 100
    */
   scroll: number;
+  /**
+   * number is the throttle threshold of mutation emission in ms
+   * off by default
+   */
+  mutation: number;
   /**
    * number is the throttle threshold of recording media interactions
    */
