@@ -200,7 +200,7 @@ export type playerConfig = {
    * reducing the number of incremental events that must be replayed.
    *
    * Memory usage scales with the number of entries and the size of the
-   * recorded DOM. Default: true.
+   * recorded DOM. Default: false.
    */
   useSeekCache: boolean;
   /**

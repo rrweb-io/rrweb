@@ -83,10 +83,14 @@ describe('SeekCache', () => {
     expect(ts).toEqual([2000, 3000, 4000, 5000, 6000]);
   });
 
-  it('allows duplicate timestamps', () => {
-    cache.add(1000, dummyNode(), offset);
-    cache.add(1000, dummyNode(), offset);
-    expect(cache.size).toBe(2);
+  it('deduplicates entries with the same timestamp (keeps the newer snapshot)', () => {
+    const node1 = dummyNode();
+    const node2 = { ...dummyNode(), id: 99 } as any;
+    cache.add(1000, node1, offset);
+    cache.add(1000, node2, offset);
+    // Second add at same timestamp replaces the first — cache stays size 1.
+    expect(cache.size).toBe(1);
+    expect(cache.getEntries()[0].event.data.node).toBe(node2);
   });
 
   it('synthesizes a proper fullSnapshotEvent', () => {

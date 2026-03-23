@@ -50,7 +50,7 @@ export class SeekCache {
     const entry: CachedCheckpoint = { timestamp, event };
     if (
       !this.entries.length ||
-      this.entries[this.entries.length - 1].timestamp <= timestamp
+      this.entries[this.entries.length - 1].timestamp < timestamp
     ) {
       this.entries.push(entry);
     } else {
@@ -61,7 +61,13 @@ export class SeekCache {
         if (this.entries[mid].timestamp <= timestamp) lo = mid + 1;
         else hi = mid - 1;
       }
-      this.entries.splice(lo, 0, entry);
+      // Deduplicate: if an entry at this exact timestamp already exists,
+      // replace it rather than inserting a second identical-timestamp entry.
+      if (lo > 0 && this.entries[lo - 1].timestamp === timestamp) {
+        this.entries[lo - 1] = entry;
+      } else {
+        this.entries.splice(lo, 0, entry);
+      }
     }
 
     if (this.entries.length > this.maxEntries) {

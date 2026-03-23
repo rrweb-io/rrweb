@@ -164,6 +164,10 @@ export class Replayer {
 
   private mousePos: mouseMovePos | null = null;
   private touchActive: boolean | null = null;
+  /** True while a user-initiated seek (play()/pause(offset)) is in progress. */
+  private seekInProgress = false;
+  /** Handle for the pending captureSeekCacheEntry setTimeout, so we can cancel it on a new seek. */
+  private pendingCaptureTimer: ReturnType<typeof setTimeout> | null = null;
   private lastMouseDownEvent: [Node, Event] | null = null;
 
   // Keep the rootNode of the last hovered element. So  when hovering a new element, we can remove the last hovered element's :hover style.
@@ -352,21 +356,37 @@ export class Replayer {
     });
 
     this.emitter.on(ReplayerEvents.Flush, () => {
-      const seekEndTimeOffset = this.getTimeOffset();
-      this.emitter.emit(ReplayerEvents.SeekEnd, {
-        timeOffset: seekEndTimeOffset,
-      });
+      // Only emit SeekEnd when a user-initiated seek (play()/pause(offset)) is
+      // in progress.  playInternal() calls (skipInactive, stylesheet resume)
+      // also trigger Flush but do not emit SeekStart, so they must not emit
+      // SeekEnd either — a mismatched SeekEnd would confuse consumers that
+      // track seek state with a counter or flag.
+      if (this.seekInProgress) {
+        this.seekInProgress = false;
+        const seekEndTimeOffset = this.getTimeOffset();
+        this.emitter.emit(ReplayerEvents.SeekEnd, {
+          timeOffset: seekEndTimeOffset,
+        });
+      }
 
       // Asynchronously capture a DOM snapshot for the seek cache so that
       // future seeks to nearby timestamps can skip the full rebuild.
       if (this.config.useSeekCache) {
         const captureTimestamp = this.service.state.context.baselineTime;
+        // Cancel any pending capture from a previous seek.  If the user seeks
+        // again before the setTimeout fires, the DOM has already been rebuilt
+        // for the new target — capturing now would store a stale DOM under the
+        // old timestamp, causing silent visual corruption on cache hits.
+        if (this.pendingCaptureTimer !== null) {
+          clearTimeout(this.pendingCaptureTimer);
+        }
         // Use setTimeout(0) rather than requestIdleCallback: for random-access
         // seeking (user clicking around quickly) idle callbacks fire too late —
         // the next seek starts before the snapshot is captured.  setTimeout(0)
         // queues the capture on the next event-loop tick, making cache hits far
         // more likely between rapid seeks.
-        setTimeout(() => {
+        this.pendingCaptureTimer = setTimeout(() => {
+          this.pendingCaptureTimer = null;
           this.captureSeekCacheEntry(captureTimestamp);
         }, 0);
       }
@@ -546,6 +566,7 @@ export class Replayer {
    * @param timeOffset - number
    */
   public play(timeOffset = 0) {
+    this.seekInProgress = true;
     this.emitter.emit(ReplayerEvents.SeekStart, { timeOffset });
     this.playInternal(timeOffset);
   }
@@ -909,8 +930,9 @@ export class Replayer {
     const scratchMirror = createMirror();
     this.mirror.getIds().forEach((id) => {
       const node = this.mirror.getNode(id);
-      const meta = this.mirror.getMeta(node!);
-      if (node && meta) scratchMirror.add(node, meta);
+      if (!node) return;
+      const meta = this.mirror.getMeta(node);
+      if (meta) scratchMirror.add(node, meta);
     });
 
     const snapshotNode = snapshot(this.iframe.contentDocument, {
@@ -1119,7 +1141,8 @@ export class Replayer {
         sn?.type === NodeType.Element &&
         sn?.tagName.toUpperCase() === 'HTML'
       ) {
-        const { documentElement, head } = iframeEl.contentDocument!;
+        if (!iframeEl.contentDocument) return;
+        const { documentElement, head } = iframeEl.contentDocument;
         this.insertStyleRules(
           documentElement as HTMLElement | RRElement,
           head as HTMLElement | RRElement,
@@ -1137,15 +1160,17 @@ export class Replayer {
       }
     };
 
+    const iframeDoc = iframeEl.contentDocument;
+    if (!iframeDoc) return;
     buildNodeWithSN(mutation.node, {
-      doc: iframeEl.contentDocument! as Document,
+      doc: iframeDoc as Document,
       mirror: mirror as Mirror,
       hackCss: true,
       skipChild: false,
       afterAppend,
       cache: this.cache,
     });
-    afterAppend(iframeEl.contentDocument! as Document, mutation.node.id);
+    afterAppend(iframeDoc as Document, mutation.node.id);
 
     for (const { mutationInQueue, builtNode } of collectedIframes) {
       this.attachDocumentToIframe(mutationInQueue, builtNode);
@@ -1262,7 +1287,7 @@ export class Replayer {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const imgd = ctx?.createImageData(canvas.width, canvas.height);
-      ctx?.putImageData(imgd!, 0, 0);
+      if (imgd) ctx?.putImageData(imgd, 0, 0);
     }
   }
   private async deserializeAndPreloadCanvasEvents(
@@ -1583,7 +1608,8 @@ export class Replayer {
     // Only apply virtual dom optimization if the fast-forward process has node mutation. Because the cost of creating a virtual dom tree and executing the diff algorithm is usually higher than directly applying other kind of events.
     if (this.config.useVirtualDom && !this.usingVirtualDom && isSync) {
       this.usingVirtualDom = true;
-      buildFromDom(this.iframe.contentDocument!, this.mirror, this.virtualDom);
+      if (!this.iframe.contentDocument) return;
+      buildFromDom(this.iframe.contentDocument, this.mirror, this.virtualDom);
       // If these legacy missing nodes haven't been resolved, they should be converted to virtual nodes.
       if (Object.keys(this.legacy_missingNodeRetryMap).length) {
         for (const key in this.legacy_missingNodeRetryMap) {
@@ -1700,7 +1726,7 @@ export class Replayer {
         // If the parent is attached a shadow dom after it's created, it won't have a shadow root.
         if (!hasShadowRoot(parent)) {
           (parent as Element | RRElement).attachShadow({ mode: 'open' });
-          parent = (parent as Element | RRElement).shadowRoot! as Node | RRNode;
+          parent = (parent as Element | RRElement).shadowRoot as Node | RRNode;
         } else {
           parent = parent.shadowRoot as Node | RRNode;
         }

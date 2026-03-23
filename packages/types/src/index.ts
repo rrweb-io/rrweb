@@ -609,7 +609,7 @@ export type customElementParam = {
 export type customElementCallback = (c: customElementParam) => void;
 
 /**
- *  @deprecated
+ * @deprecated Use serializedNodeWithId from \`@amplitude/rrweb-snapshot\` instead.
  */
 interface INode extends Node {
   __sn: serializedNodeWithId;

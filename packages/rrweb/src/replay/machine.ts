@@ -286,7 +286,7 @@ export function createPlayerService(
               doAction: () => {
                 castFn();
               },
-              delay: event.delay!,
+              delay: event.delay ?? 0,
             });
           }
 
@@ -375,7 +375,7 @@ export function createPlayerService(
                 doAction: () => {
                   castFn();
                 },
-                delay: event.delay!,
+                delay: event.delay ?? 0,
               });
             }
           }
