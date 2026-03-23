@@ -360,8 +360,7 @@ export class Replayer {
       // Asynchronously capture a DOM snapshot for the seek cache so that
       // future seeks to nearby timestamps can skip the full rebuild.
       if (this.config.useSeekCache) {
-        const captureTimestamp =
-          this.service.state.context.baselineTime;
+        const captureTimestamp = this.service.state.context.baselineTime;
         // Use setTimeout(0) rather than requestIdleCallback: for random-access
         // seeking (user clicking around quickly) idle callbacks fire too late —
         // the next seek starts before the snapshot is captured.  setTimeout(0)
@@ -688,7 +687,7 @@ export class Replayer {
       'top:-99999px',
       `width:${width}px`,
       `height:${height}px`,
-      'overflow:hidden',      // prevent layout bleed from off-screen element
+      'overflow:hidden', // prevent layout bleed from off-screen element
       'visibility:hidden',
       'pointer-events:none',
     ].join(';');

@@ -166,10 +166,10 @@ describe('SeekCache', () => {
   });
 
   it('skips entries ≤ baseline and returns the next valid one', () => {
-    cache.add(500, dummyNode(), offset);   // baseline guard: 500 ≤ 1000, excluded
-    cache.add(1500, dummyNode(), offset);  // > 1000 AND ≤ 3000 → candidate
-    cache.add(2500, dummyNode(), offset);  // > 1000 AND ≤ 3000 → best candidate
-    cache.add(4000, dummyNode(), offset);  // > targetTime=3000, excluded
+    cache.add(500, dummyNode(), offset); // baseline guard: 500 ≤ 1000, excluded
+    cache.add(1500, dummyNode(), offset); // > 1000 AND ≤ 3000 → candidate
+    cache.add(2500, dummyNode(), offset); // > 1000 AND ≤ 3000 → best candidate
+    cache.add(4000, dummyNode(), offset); // > targetTime=3000, excluded
     const hit = cache.findBestFor(3000, 1000);
     expect(hit!.timestamp).toBe(2500);
   });

@@ -123,5 +123,4 @@ export class SeekCache {
   getEntries(): readonly CachedCheckpoint[] {
     return this.entries;
   }
-
 }

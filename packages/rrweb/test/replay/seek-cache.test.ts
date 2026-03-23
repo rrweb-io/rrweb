@@ -12,7 +12,11 @@
  *    internal `playInternal()` calls
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { EventType, IncrementalSource, ReplayerEvents } from '@amplitude/rrweb-types';
+import {
+  EventType,
+  IncrementalSource,
+  ReplayerEvents,
+} from '@amplitude/rrweb-types';
 import type { eventWithTime } from '@amplitude/rrweb-types';
 import { Replayer } from '../../src/replay';
 import * as rrwebSnapshot from '@amplitude/rrweb-snapshot';
@@ -51,8 +55,20 @@ function makeEvents(): eventWithTime[] {
               tagName: 'html',
               attributes: {},
               childNodes: [
-                { type: 2, tagName: 'head', attributes: {}, childNodes: [], id: 3 },
-                { type: 2, tagName: 'body', attributes: {}, childNodes: [], id: 4 },
+                {
+                  type: 2,
+                  tagName: 'head',
+                  attributes: {},
+                  childNodes: [],
+                  id: 3,
+                },
+                {
+                  type: 2,
+                  tagName: 'body',
+                  attributes: {},
+                  childNodes: [],
+                  id: 4,
+                },
               ],
               id: 2,
             },
@@ -64,7 +80,7 @@ function makeEvents(): eventWithTime[] {
       timestamp: T0,
     },
     // Incremental events spread over 10 seconds
-    ...Array.from({ length: 10 }, (_, i) => ({
+    ...(Array.from({ length: 10 }, (_, i) => ({
       type: EventType.IncrementalSnapshot,
       data: {
         source: IncrementalSource.MouseInteraction,
@@ -74,7 +90,7 @@ function makeEvents(): eventWithTime[] {
         y: i * 10,
       },
       timestamp: T0 + (i + 1) * 1_000,
-    })) as eventWithTime[],
+    })) as eventWithTime[]),
   ];
 }
 
@@ -82,7 +98,10 @@ function makeEvents(): eventWithTime[] {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeReplayer(events: eventWithTime[], opts: Record<string, unknown> = {}) {
+function makeReplayer(
+  events: eventWithTime[],
+  opts: Record<string, unknown> = {},
+) {
   const root = document.createElement('div');
   document.body.appendChild(root);
   const replayer = new Replayer(events, {
@@ -239,7 +258,10 @@ describe('Replayer seek cache integration', () => {
       timestamp: T0 + 120_000, // 2 minutes later — long gap
     } as eventWithTime);
 
-    const { replayer } = makeReplayer(events, { skipInactive: true, inactivePeriodThreshold: 5_000 });
+    const { replayer } = makeReplayer(events, {
+      skipInactive: true,
+      inactivePeriodThreshold: 5_000,
+    });
 
     const seekStartHandler = vi.fn();
     replayer.on(ReplayerEvents.SeekStart, seekStartHandler);
