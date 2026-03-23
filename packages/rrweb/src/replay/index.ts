@@ -1,4 +1,5 @@
 import {
+  snapshot,
   rebuild,
   adaptCssForReplay,
   buildNodeWithSN,
@@ -8,6 +9,7 @@ import {
   createMirror,
   toLowerCase,
 } from '@amplitude/rrweb-snapshot';
+import { SeekCache } from './seek-cache';
 import {
   RRDocument,
   createOrGetNode,
@@ -156,6 +158,8 @@ export class Replayer {
 
   private firstFullSnapshot: eventWithTime | true | null = null;
 
+  private seekCache: SeekCache;
+
   private newDocumentQueue: addedNodeMutation[] = [];
 
   private mousePos: mouseMovePos | null = null;
@@ -201,9 +205,12 @@ export class Replayer {
       pauseAnimation: true,
       mouseTail: defaultMouseTailConfig,
       useVirtualDom: true, // Virtual-dom optimization is enabled by default.
+      useSeekCache: false, // Opt-in until production-validated; flip to true once confidence is high.
+      seekCacheMaxEntries: 10,
       logger: console,
     };
     this.config = Object.assign({}, defaultConfig, config);
+    this.seekCache = new SeekCache(this.config.seekCacheMaxEntries);
 
     this.handleResize = this.handleResize.bind(this);
     this.getCastFn = this.getCastFn.bind(this);
@@ -337,6 +344,33 @@ export class Replayer {
       this.mirror.reset();
       this.styleMirror.reset();
       this.mediaManager.reset();
+      // NOTE: we intentionally do NOT clear seekCache here. PlayBack fires on
+      // every backward seek but cache entries are self-contained serialized
+      // snapshots (they don't reference the current mirror state), so entries
+      // at timestamps ≤ the new seek target remain valid and useful.
+      // Call resetSeekCache() explicitly if a new set of events is loaded.
+    });
+
+    this.emitter.on(ReplayerEvents.Flush, () => {
+      const seekEndTimeOffset = this.getTimeOffset();
+      this.emitter.emit(ReplayerEvents.SeekEnd, {
+        timeOffset: seekEndTimeOffset,
+      });
+
+      // Asynchronously capture a DOM snapshot for the seek cache so that
+      // future seeks to nearby timestamps can skip the full rebuild.
+      if (this.config.useSeekCache) {
+        const captureTimestamp =
+          this.service.state.context.baselineTime;
+        // Use setTimeout(0) rather than requestIdleCallback: for random-access
+        // seeking (user clicking around quickly) idle callbacks fire too late —
+        // the next seek starts before the snapshot is captured.  setTimeout(0)
+        // queues the capture on the next event-loop tick, making cache hits far
+        // more likely between rapid seeks.
+        setTimeout(() => {
+          this.captureSeekCacheEntry(captureTimestamp);
+        }, 0);
+      }
     });
 
     const timer = new Timer([], {
@@ -513,6 +547,16 @@ export class Replayer {
    * @param timeOffset - number
    */
   public play(timeOffset = 0) {
+    this.emitter.emit(ReplayerEvents.SeekStart, { timeOffset });
+    this.playInternal(timeOffset);
+  }
+
+  /**
+   * Internal seek/resume that does NOT emit SeekStart/SeekEnd.  Use this for
+   * programmatic jumps that are not initiated by the user (e.g. skipInactive,
+   * stylesheet-load resume) to avoid spurious loading-indicator flicker.
+   */
+  private playInternal(timeOffset = 0) {
     if (this.service.state.matches('paused')) {
       this.service.send({ type: 'PLAY', payload: { timeOffset } });
     } else {
@@ -594,6 +638,146 @@ export class Replayer {
     this.cache = createCache();
   }
 
+  /**
+   * Empties the seek-checkpoint cache.  Call this if you load a new set of
+   * events into an existing Replayer instance to avoid stale snapshots.
+   */
+  public resetSeekCache() {
+    this.seekCache.clear();
+  }
+
+  /**
+   * Pre-warms the seek cache by replaying the recording at evenly-spaced
+   * intervals in a hidden off-screen replayer, then snapshotting the DOM at
+   * each checkpoint into this replayer's seek cache.
+   *
+   * After pre-warming, seeks to any time land within `intervalMs` of a cache
+   * entry, so only a short span of incremental events needs to be replayed.
+   *
+   * Pre-warming runs asynchronously and yields the main thread between each
+   * checkpoint (via `setTimeout(0)`), so user-initiated seeks always take
+   * priority.  It is safe to call while the player is displayed — the visible
+   * player is not affected.
+   *
+   * Only has an effect when `useSeekCache` is `true`.
+   *
+   * @param intervalMs - recording-time gap between checkpoints (default 30 s)
+   */
+  public async prewarm({ intervalMs = 30_000 }: { intervalMs?: number } = {}) {
+    if (!this.config.useSeekCache) return;
+
+    const events = this.service.state.context.events;
+    if (events.length < 2) return;
+
+    const firstTimestamp = events[0].timestamp;
+    const duration = events[events.length - 1].timestamp - firstTimestamp;
+    if (duration <= 0) return;
+
+    // Create an off-screen host element for the pre-warm replayer.
+    // Size it to match the recorded viewport so the sub-replayer's iframe
+    // renders at full size — a 1px box would mis-render content and produce
+    // wrong scroll positions in cached snapshots.
+    const firstMeta = events.find((e) => e.type === EventType.Meta);
+    const { width = 1920, height = 1080 } = firstMeta
+      ? (firstMeta.data as { width: number; height: number })
+      : {};
+    const hiddenRoot = document.createElement('div');
+    hiddenRoot.style.cssText = [
+      'position:fixed',
+      'left:-99999px',
+      'top:-99999px',
+      `width:${width}px`,
+      `height:${height}px`,
+      'overflow:hidden',      // prevent layout bleed from off-screen element
+      'visibility:hidden',
+      'pointer-events:none',
+    ].join(';');
+    document.body.appendChild(hiddenRoot);
+
+    // Shallow-copy events so addDelay mutations in the sub-replayer don't
+    // clobber the `delay` fields on the main replayer's event objects.
+    const eventsCopy = events.map((e) => ({ ...e }));
+
+    // Only pass the minimum config needed for the sub-replayer to function.
+    // Do NOT spread this.config — it would pass plugins (shared by reference,
+    // causing side effects on React state / analytics for every pre-warm node)
+    // and skipInactive (which triggers internal play() calls during seeks).
+    const sub = new Replayer(eventsCopy, {
+      root: hiddenRoot,
+      useSeekCache: false, // prevent recursive pre-warming
+      plugins: [], // no plugins — sub-replayer has no UI to hook into
+      skipInactive: false, // avoid internal play() calls during pre-warm seeks
+      triggerFocus: false,
+      speed: 99, // replay as fast as possible
+      showWarning: false,
+      showDebug: false,
+      logger: { log: () => {}, warn: () => {} },
+    });
+
+    try {
+      for (let offset = intervalMs; offset < duration; offset += intervalMs) {
+        // Yield to the main thread so user seeks are never blocked.
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+        sub.pause(offset);
+
+        // Snapshot the sub-replayer's iframe and inject into OUR cache.
+        // Use a scratch mirror seeded from the sub-replayer's mirror so that
+        // any untracked DOM nodes (browser whitespace, comment nodes, etc.)
+        // receive scratch IDs that are never written into the sub's mirror or
+        // the main mirror.  Without this, those scratch IDs end up in the
+        // serialized snapshot and later get added to this.mirror via rebuild(),
+        // where they could collide with recording-side node IDs.
+        if (sub.iframe.contentDocument) {
+          const subMirror = sub.getMirror();
+          const scratchMirror = createMirror();
+          subMirror.getIds().forEach((id) => {
+            const node = subMirror.getNode(id);
+            const meta = subMirror.getMeta(node!);
+            if (node && meta) scratchMirror.add(node, meta);
+          });
+          const node = snapshot(sub.iframe.contentDocument, {
+            mirror: scratchMirror,
+            blockClass: this.config.blockClass,
+            inlineStylesheet: true,
+          });
+          if (node) {
+            const scrollEl =
+              sub.iframe.contentDocument.scrollingElement ||
+              sub.iframe.contentDocument.documentElement;
+            this.seekCache.add(firstTimestamp + offset, node, {
+              top: scrollEl?.scrollTop ?? 0,
+              left: scrollEl?.scrollLeft ?? 0,
+            });
+          }
+        }
+      }
+    } finally {
+      sub.destroy();
+      document.body.removeChild(hiddenRoot);
+    }
+  }
+
+  /**
+   * Synchronously captures the current DOM state into the seek cache.
+   *
+   * **Warning**: this calls `snapshot()` on the live iframe DOM, which is a
+   * synchronous, potentially expensive operation (proportional to DOM size).
+   * Do NOT call it on `mousedown` or any input handler where blocking the
+   * main thread would interfere with user interaction (e.g. drag gestures).
+   *
+   * Prefer letting the automatic `setTimeout(0)` capture (triggered after each
+   * seek's Flush) warm the cache passively.  Use `captureSeekAnchor()` only
+   * in contexts where a brief block is acceptable — e.g. after a programmatic
+   * pause, or triggered by a UI idle signal.
+   *
+   * Only has an effect when `useSeekCache` is `true`.
+   */
+  public captureSeekAnchor() {
+    if (!this.config.useSeekCache) return;
+    this.captureSeekCacheEntry(this.service.state.context.baselineTime);
+  }
+
   private setupDom() {
     this.wrapper = document.createElement('div');
     this.wrapper.classList.add('replayer-wrapper');
@@ -642,7 +826,57 @@ export class Replayer {
   };
 
   private applyEventsSynchronously = (events: Array<eventWithTime>) => {
-    for (const event of events) {
+    // Seek-cache optimization: if this batch starts from a recording-side
+    // FullSnapshot and we have a cached DOM snapshot that is newer than that
+    // FullSnapshot but still at or before the seek target, restore from the
+    // cache and skip all events up to the cached timestamp.  This avoids
+    // replaying potentially thousands of incremental events.
+    let startIdx = 0;
+    if (this.config.useSeekCache && events.length > 0) {
+      // Identify the recording-side FullSnapshot that anchors this batch.
+      const fullSnapshotEvt = events.find(
+        (e) => e.type === EventType.FullSnapshot,
+      );
+      if (fullSnapshotEvt) {
+        // The seek target is the timestamp of the last event in the batch.
+        const targetTime = events[events.length - 1].timestamp;
+        const checkpoint = this.seekCache.findBestFor(
+          targetTime,
+          fullSnapshotEvt.timestamp,
+        );
+        if (checkpoint) {
+          // Still process the Meta event so iframe dimensions stay correct,
+          // even though it is before startIdx.
+          const metaEvt = events.find((e) => e.type === EventType.Meta);
+          if (metaEvt) {
+            this.getCastFn(metaEvt, true)();
+          }
+
+          // Restore DOM state from the cached snapshot, mirroring the
+          // side-effects that getCastFn's FullSnapshot handler normally does.
+          this.mediaManager.reset();
+          this.styleMirror.reset();
+          this.rebuildFullSnapshot(checkpoint.event, /* isSync */ true);
+          this.firstFullSnapshot = true; // mark that a rebuild has occurred
+          this.iframe.contentWindow?.scrollTo(
+            checkpoint.event.data.initialOffset,
+          );
+          // Skip all events up to (and including) the cache timestamp.
+          // Binary search for the first event strictly after checkpoint.timestamp.
+          let lo = 0;
+          let hi = events.length;
+          while (lo < hi) {
+            const mid = (lo + hi) >>> 1;
+            if (events[mid].timestamp <= checkpoint.timestamp) lo = mid + 1;
+            else hi = mid;
+          }
+          startIdx = lo;
+        }
+      }
+    }
+
+    for (let i = startIdx; i < events.length; i++) {
+      const event = events[i];
       switch (event.type) {
         case EventType.DomContentLoaded:
         case EventType.Load:
@@ -730,7 +964,7 @@ export class Replayer {
               const skipTime =
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.nextUserInteractionEvent.delay! - event.delay!;
-              this.play(this.getCurrentTime() + skipTime);
+              this.playInternal(this.getCurrentTime() + skipTime);
               this.nextUserInteractionEvent = null;
             }
           }
@@ -780,6 +1014,55 @@ export class Replayer {
     };
     return wrappedCastFn;
   };
+
+  /**
+   * Serialize the current iframe DOM into the seek-checkpoint cache so that
+   * future seeks near this timestamp can restore from the cache instead of
+   * replaying all incremental events from the original FullSnapshot.
+   *
+   * This is called asynchronously (via requestIdleCallback / setTimeout) after
+   * each Flush so it does not block the seek operation itself.
+   */
+  private captureSeekCacheEntry(timestamp: number) {
+    if (!this.iframe.contentDocument) return;
+    // Don't cache the very beginning of a recording (t ≈ 0); the original
+    // FullSnapshot event is already the cheapest possible starting point.
+    if (timestamp <= 0) return;
+
+    // Use a scratch mirror so that any DOM nodes not already tracked by
+    // this.mirror (browser-inserted whitespace/comment nodes, slimDOM-excluded
+    // nodes, etc.) receive auto-generated IDs that are written only into the
+    // scratch mirror and never pollute this.mirror.  If genId() numbers from
+    // the scratch mirror were injected into this.mirror, future incremental
+    // events whose recording-side IDs happen to collide would target wrong
+    // nodes — mirror corruption.
+    //
+    // Seed the scratch mirror with all entries from this.mirror so that
+    // serializeNodeWithId reuses existing recording IDs for known nodes.
+    const scratchMirror = createMirror();
+    this.mirror.getIds().forEach((id) => {
+      const node = this.mirror.getNode(id);
+      const meta = this.mirror.getMeta(node!);
+      if (node && meta) scratchMirror.add(node, meta);
+    });
+
+    const snapshotNode = snapshot(this.iframe.contentDocument, {
+      mirror: scratchMirror,
+      blockClass: this.config.blockClass,
+      inlineStylesheet: true,
+    });
+    if (!snapshotNode) return;
+
+    const scrollEl =
+      this.iframe.contentDocument.scrollingElement ||
+      this.iframe.contentDocument.documentElement;
+    const initialOffset = {
+      top: scrollEl?.scrollTop ?? 0,
+      left: scrollEl?.scrollLeft ?? 0,
+    };
+
+    this.seekCache.add(timestamp, snapshotNode, initialOffset);
+  }
 
   private rebuildFullSnapshot(
     event: fullSnapshotEvent & { timestamp: number },
@@ -1052,7 +1335,7 @@ export class Replayer {
               // all loaded and timer not released yet
               if (unloadSheets.size === 0 && timer !== -1) {
                 if (beforeLoadState.matches('playing')) {
-                  this.play(this.getCurrentTime());
+                  this.playInternal(this.getCurrentTime());
                 }
                 this.emitter.emit(ReplayerEvents.LoadStylesheetEnd);
                 if (timer) {
@@ -1070,7 +1353,7 @@ export class Replayer {
         this.emitter.emit(ReplayerEvents.LoadStylesheetStart);
         timer = setTimeout(() => {
           if (beforeLoadState.matches('playing')) {
-            this.play(this.getCurrentTime());
+            this.playInternal(this.getCurrentTime());
           }
           // mark timer was called
           timer = -1;

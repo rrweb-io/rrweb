@@ -97,12 +97,27 @@ export function discardPriorSnapshots(
   events: eventWithTime[],
   baselineTime: number,
 ): eventWithTime[] {
-  for (let idx = events.length - 1; idx >= 0; idx--) {
-    const event = events[idx];
-    if (event.type === EventType.Meta) {
-      if (event.timestamp <= baselineTime) {
-        return events.slice(idx);
-      }
+  // Binary search: find the index of the last event with timestamp <= baselineTime.
+  // Events are sorted by timestamp, so we can skip the irrelevant tail first.
+  let lo = 0;
+  let hi = events.length - 1;
+  let lastBeforeOrAt = -1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >>> 1;
+    if (events[mid].timestamp <= baselineTime) {
+      lastBeforeOrAt = mid;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+  }
+
+  // Scan backward from lastBeforeOrAt to find the nearest Meta event.
+  // Meta events are sparse (only at session starts / checkouts), so this
+  // backward scan is typically very short.
+  for (let idx = lastBeforeOrAt; idx >= 0; idx--) {
+    if (events[idx].type === EventType.Meta) {
+      return events.slice(idx);
     }
   }
   return events;
@@ -202,10 +217,6 @@ export function createPlayerService(
           const { timer, events, baselineTime, lastPlayedEvent } = ctx;
           timer.clear();
 
-          for (const event of events) {
-            // TODO: improve this API
-            addDelay(event, baselineTime);
-          }
           const neededEvents = discardPriorSnapshots(events, baselineTime);
 
           let lastPlayedTimestamp = lastPlayedEvent?.timestamp;
@@ -221,28 +232,64 @@ export function createPlayerService(
             emitter.emit(ReplayerEvents.PlayBack);
           }
 
-          const syncEvents = new Array<eventWithTime>();
-          for (const event of neededEvents) {
-            if (
-              lastPlayedTimestamp &&
-              lastPlayedTimestamp < baselineTime &&
-              (event.timestamp <= lastPlayedTimestamp ||
-                event === lastPlayedEvent)
-            ) {
-              continue;
+          // Binary search: find the boundary between sync events (timestamp <
+          // baselineTime) and async events (timestamp >= baselineTime).
+          let syncEnd = neededEvents.length;
+          {
+            let lo = 0;
+            let hi = neededEvents.length;
+            while (lo < hi) {
+              const mid = (lo + hi) >>> 1;
+              if (neededEvents[mid].timestamp < baselineTime) lo = mid + 1;
+              else hi = mid;
             }
-            if (event.timestamp < baselineTime) {
-              syncEvents.push(event);
-            } else {
-              const castFn = getCastFn(event, false);
-              timer.addAction({
-                doAction: () => {
-                  castFn();
-                },
-                delay: event.delay!,
-              });
+            syncEnd = lo;
+          }
+
+          // Binary search: find the first event we still need to apply
+          // synchronously (skip events already applied in a prior forward seek).
+          let syncStart = 0;
+          if (lastPlayedTimestamp && lastPlayedTimestamp < baselineTime) {
+            let lo = 0;
+            let hi = syncEnd;
+            while (lo < hi) {
+              const mid = (lo + hi) >>> 1;
+              if (neededEvents[mid].timestamp <= lastPlayedTimestamp)
+                lo = mid + 1;
+              else hi = mid;
+            }
+            syncStart = lo;
+            // Edge case: for MouseMove events, lastPlayedTimestamp is adjusted
+            // to be slightly less than lastPlayedEvent.timestamp, so
+            // lastPlayedEvent itself may land just after the binary-search
+            // boundary and must still be skipped.
+            if (
+              syncStart < syncEnd &&
+              neededEvents[syncStart] === lastPlayedEvent
+            ) {
+              syncStart++;
             }
           }
+
+          // Only compute delays for events that will be scheduled in the timer;
+          // sync events never need a delay value.
+          for (let i = syncEnd; i < neededEvents.length; i++) {
+            addDelay(neededEvents[i], baselineTime);
+          }
+
+          const syncEvents = neededEvents.slice(syncStart, syncEnd);
+
+          for (let i = syncEnd; i < neededEvents.length; i++) {
+            const event = neededEvents[i];
+            const castFn = getCastFn(event, false);
+            timer.addAction({
+              doAction: () => {
+                castFn();
+              },
+              delay: event.delay!,
+            });
+          }
+
           applyEventsSynchronously(syncEvents);
           emitter.emit(ReplayerEvents.Flush);
           timer.start();

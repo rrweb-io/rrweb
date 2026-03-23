@@ -192,6 +192,22 @@ export type playerConfig = {
       };
   unpackFn?: UnpackFn;
   useVirtualDom: boolean;
+  /**
+   * When set, the replayer will maintain an in-memory cache of serialized DOM
+   * snapshots taken after each seek operation. Subsequent seeks that land
+   * between a cached snapshot and the next recording checkpoint will restore
+   * from the cache instead of rebuilding from the original FullSnapshot,
+   * reducing the number of incremental events that must be replayed.
+   *
+   * Memory usage scales with the number of entries and the size of the
+   * recorded DOM. Default: true.
+   */
+  useSeekCache: boolean;
+  /**
+   * Maximum number of seek-cache entries to keep in memory. Older entries are
+   * evicted when the limit is reached. Default: 10.
+   */
+  seekCacheMaxEntries: number;
   logger: {
     log: (...args: Parameters<typeof console.log>) => void;
     warn: (...args: Parameters<typeof console.warn>) => void;

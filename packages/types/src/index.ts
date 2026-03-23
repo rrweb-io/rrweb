@@ -678,6 +678,18 @@ export enum ReplayerEvents {
   StateChange = 'state-change',
   PlayBack = 'play-back',
   Destroy = 'destroy',
+  /**
+   * Emitted when the replayer begins synchronous event processing for a seek
+   * operation (i.e. when play(timeOffset) is called). The UI can use this to
+   * show a loading indicator, since the main thread will be busy replaying
+   * events until SeekEnd fires.
+   */
+  SeekStart = 'seek-start',
+  /**
+   * Emitted after a seek operation completes (after the Flush event). Paired
+   * with SeekStart; the UI should hide any seek-related loading indicator.
+   */
+  SeekEnd = 'seek-end',
 }
 
 export type KeepIframeSrcFn = (src: string) => boolean;
