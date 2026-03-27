@@ -1,8 +1,8 @@
 {
   "name": "@amplitude/rrweb-player",
-  "version": "2.0.0-alpha.36",
+  "version": "2.0.0-alpha.37",
   "devDependencies": {
-    "@amplitude/rrweb-types": "^2.0.0-alpha.36",
+    "@amplitude/rrweb-types": "^2.0.0-alpha.37",
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
-    "@amplitude/rrweb-replay": "^2.0.0-alpha.36",
-    "@amplitude/rrweb-packer": "^2.0.0-alpha.36"
+    "@amplitude/rrweb-replay": "^2.0.0-alpha.37",
+    "@amplitude/rrweb-packer": "^2.0.0-alpha.37"
   },
   "scripts": {
     "dev": "vite build --watch",

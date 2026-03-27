@@ -1,5 +1,25 @@
 # rrweb
 
+## 2.0.0-alpha.37
+
+### Minor Changes
+
+- [#87](https://github.com/amplitude/rrweb/pull/87) [`9f39d67`](https://github.com/amplitude/rrweb/commit/9f39d6769164eacb4045fd16732d8db83c41aa21) Thanks [@lewgordon-amplitude](https://github.com/lewgordon-amplitude)! - SR-3016 reduce full-snapshot rebuilds during replay seeking
+
+  - Binary search in `discardPriorSnapshots()` and the `play()` event loop (was O(n) linear scan on every seek)
+  - `SeekCache`: stores serialized DOM snapshots after each seek; subsequent seeks restore from a cached checkpoint instead of replaying from the original `FullSnapshot`
+  - `playInternal()`: `SeekStart`/`SeekEnd` events now only fire on user-initiated seeks, not internal calls
+  - New `ReplayerEvents.SeekStart` and `ReplayerEvents.SeekEnd` for UI loading indicators
+  - New `playerConfig` options: `useSeekCache` (default `false`) and `seekCacheMaxEntries` (default `10`)
+
+### Patch Changes
+
+- Updated dependencies [[`9f39d67`](https://github.com/amplitude/rrweb/commit/9f39d6769164eacb4045fd16732d8db83c41aa21)]:
+  - @amplitude/rrweb-types@2.0.0-alpha.37
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.37
+  - @amplitude/rrdom@2.0.0-alpha.37
+  - @amplitude/rrweb-utils@2.0.0-alpha.37
+
 ## 2.0.0-alpha.36
 
 ### Minor Changes
