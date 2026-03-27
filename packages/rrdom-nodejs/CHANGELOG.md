@@ -1,5 +1,13 @@
 # rrdom-nodejs
 
+## 2.0.0-alpha.37
+
+### Patch Changes
+
+- Updated dependencies [[`9f39d67`](https://github.com/amplitude/rrweb/commit/9f39d6769164eacb4045fd16732d8db83c41aa21)]:
+  - @amplitude/rrweb-types@2.0.0-alpha.37
+  - @amplitude/rrdom@2.0.0-alpha.37
+
 ## 2.0.0-alpha.36
 
 ### Patch Changes

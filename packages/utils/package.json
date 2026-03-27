@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrweb-utils",
-  "version": "2.0.0-alpha.36",
+  "version": "2.0.0-alpha.37",
   "publishConfig": {
     "access": "public"
   },
