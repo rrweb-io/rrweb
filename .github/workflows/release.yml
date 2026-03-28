@@ -23,6 +23,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
@@ -38,6 +39,7 @@ jobs:
           NODE_OPTIONS: '--max-old-space-size=4096'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
 
       # - name: Send a Slack notification if a publish happens
       #   if: steps.changesets.outputs.published == 'true'

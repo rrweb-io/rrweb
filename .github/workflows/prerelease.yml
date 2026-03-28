@@ -49,3 +49,4 @@ jobs:
         run: node_modules/.bin/changeset publish --tag ${{ inputs.dist-tag }} --no-git-tags
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
