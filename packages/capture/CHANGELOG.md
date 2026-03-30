@@ -1,5 +1,15 @@
 # @amplitude/rrweb-capture
 
+## 2.0.0-alpha.37
+
+### Patch Changes
+
+- [#92](https://github.com/amplitude/rrweb/pull/92) [`cf64007`](https://github.com/amplitude/rrweb/commit/cf64007425486148519f667943f5ff1e77274e60) Thanks [@lewgordon-amplitude](https://github.com/lewgordon-amplitude)! - chore: bump package versions to re-sync after rrweb-capture publish
+
+- Updated dependencies [[`cf64007`](https://github.com/amplitude/rrweb/commit/cf64007425486148519f667943f5ff1e77274e60)]:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.38
+  - @amplitude/rrweb-types@2.0.0-alpha.38
+
 ## 2.0.0-alpha.36
 
 ### Patch Changes
