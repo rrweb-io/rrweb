@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrweb-capture",
-  "version": "2.0.0-alpha.36",
+  "version": "2.0.0-alpha.38",
   "description": "High-level DOM capture utility built on rrweb-snapshot",
   "publishConfig": {
     "access": "public"
@@ -49,7 +49,7 @@
     "vite-plugin-dts": "^3.9.1"
   },
   "dependencies": {
-    "@amplitude/rrweb-snapshot": "^2.0.0-alpha.35",
-    "@amplitude/rrweb-types": "^2.0.0-alpha.35"
+    "@amplitude/rrweb-snapshot": "^2.0.0-alpha.38",
+    "@amplitude/rrweb-types": "^2.0.0-alpha.38"
   }
 }
