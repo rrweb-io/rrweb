@@ -17,12 +17,12 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js lts/*
-        uses: actions/setup-node@v3
+      - name: Setup Node.js 24.x
+        uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: 24.x
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install Dependencies
@@ -38,7 +38,6 @@ jobs:
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: 'true'
 
       # - name: Send a Slack notification if a publish happens
