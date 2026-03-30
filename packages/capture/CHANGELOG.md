@@ -1,6 +1,6 @@
 # @amplitude/rrweb-capture
 
-## 2.0.0-alpha.37
+## 2.0.0-alpha.38
 
 ### Patch Changes
 
