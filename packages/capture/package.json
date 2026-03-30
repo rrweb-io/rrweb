@@ -36,6 +36,10 @@
       }
     }
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amplitude/rrweb.git"
+  },
   "files": [
     "dist",
     "package.json"
