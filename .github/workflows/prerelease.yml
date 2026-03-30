@@ -19,12 +19,12 @@ jobs:
       contents: read
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - name: Setup Node.js lts/*
-        uses: actions/setup-node@v3
+      - name: Setup Node.js 24.x
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: lts/*
+          node-version: 24.x
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install Dependencies
@@ -48,4 +48,4 @@ jobs:
       - name: Publish snapshot to npm
         run: node_modules/.bin/changeset publish --tag ${{ inputs.dist-tag }} --no-git-tags
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
