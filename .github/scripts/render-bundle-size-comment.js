@@ -49,9 +49,77 @@ function formatDiff(diff, baseValue) {
   return `${formatSignedSize(diff)}${percentage}`;
 }
 
+const BUNDLE_SIZE_BADGES = {
+  deleted: ' 🗑️',
+  new: ' 🆕',
+  improved: ' 🎉',
+  investigate: ' 🔍',
+};
+
+function getChangeBadge(prValue, baseValue) {
+  if (prValue == null) {
+    return BUNDLE_SIZE_BADGES.deleted;
+  }
+
+  if (baseValue == null) {
+    return BUNDLE_SIZE_BADGES.new;
+  }
+
+  if (baseValue <= 0) {
+    return '';
+  }
+
+  const percentage = ((prValue - baseValue) / baseValue) * 100;
+
+  if (percentage <= -10) {
+    return BUNDLE_SIZE_BADGES.improved;
+  }
+
+  if (percentage >= 5) {
+    return BUNDLE_SIZE_BADGES.investigate;
+  }
+
+  return '';
+}
+
+function getPackageBadge(prTotal, baseTotal) {
+  if (baseTotal === 0 && prTotal > 0) {
+    return BUNDLE_SIZE_BADGES.new;
+  }
+
+  if (baseTotal <= 0) {
+    return '';
+  }
+
+  const percentage = ((prTotal - baseTotal) / baseTotal) * 100;
+
+  if (percentage <= -10) {
+    return BUNDLE_SIZE_BADGES.improved;
+  }
+
+  if (percentage >= 5) {
+    return BUNDLE_SIZE_BADGES.investigate;
+  }
+
+  return '';
+}
+
 function getPackageName(filePath) {
   const match = filePath.match(/^packages\/([^/]+)\//);
   return match ? match[1] : '(root)';
+}
+
+function escapeHtml(value) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\|/g, '&#124;')
+    .replace(/\r?\n/g, ' ');
+}
+
+function formatCode(value) {
+  return `<code>${escapeHtml(String(value))}</code>`;
 }
 
 function getFileLabel(filePath, packageName) {
@@ -110,22 +178,26 @@ const sections = [...filesByPackage.entries()]
       0,
     );
     const packageDiff = packagePrSize - packageBaseSize;
+    const packageBadge = getPackageBadge(packagePrSize, packageBaseSize);
 
     const rows = files
       .map((filePath) => {
+        const prSize = prSizes[filePath];
+        const baseSize = baseSizes[filePath];
         const fileDiff = (prSizes[filePath] ?? 0) - (baseSizes[filePath] ?? 0);
-        return `| \`${getFileLabel(filePath, packageName)}\` | ${formatSize(
-          baseSizes[filePath],
-        )} | ${formatSize(prSizes[filePath])} | ${formatDiff(
+
+        return `| ${formatCode(
+          getFileLabel(filePath, packageName),
+        )} | ${formatSize(baseSize)} | ${formatSize(prSize)} | ${formatDiff(
           fileDiff,
-          baseSizes[filePath] ?? 0,
-        )} |`;
+          baseSize ?? 0,
+        )}${getChangeBadge(prSize, baseSize)} |`;
       })
       .join('\n');
 
     return [
       '<details>',
-      `<summary>\`${packageName}\` - ${formatSize(
+      `<summary>${formatCode(packageName)}${packageBadge} - ${formatSize(
         packageBaseSize,
       )} -> ${formatSize(packagePrSize)} (${formatDiff(
         packageDiff,
