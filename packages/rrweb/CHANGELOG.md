@@ -1,5 +1,24 @@
 # rrweb
 
+## 2.0.0-alpha.39
+
+### Patch Changes
+
+- [#94](https://github.com/amplitude/rrweb/pull/94) [`5e4aed5`](https://github.com/amplitude/rrweb/commit/5e4aed53332a46253087f58b2f0e39924c023c1d) Thanks [@lewgordon-amplitude](https://github.com/lewgordon-amplitude)! - perf(replay): player performance improvements
+
+  - Replace array shift() with index pointer for O(1) per-tick action consumption
+  - Collect scroll nodes during rebuild instead of O(N) post-build mirror scan
+  - Add checkpoint index for O(log C) seeking instead of O(N) backward scan
+  - Skip incremental events before the last FullSnapshot in the sync batch
+  - Restore duplicate event filtering in out-of-order addEvent insertions
+  - Move addDelay to async scheduling branch only (avoid mutating sync events)
+
+- Updated dependencies []:
+  - @amplitude/rrweb-snapshot@2.0.0-alpha.39
+  - @amplitude/rrdom@2.0.0-alpha.39
+  - @amplitude/rrweb-types@2.0.0-alpha.39
+  - @amplitude/rrweb-utils@2.0.0-alpha.39
+
 ## 2.0.0-alpha.38
 
 ### Patch Changes
