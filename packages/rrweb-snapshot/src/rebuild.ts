@@ -431,6 +431,11 @@ export function buildNodeWithSN(
      */
     afterAppend?: (n: Node, id: number) => unknown;
     cache: BuildCache;
+    /**
+     * Collector for nodes that have scroll data (rr_scrollLeft/rr_scrollTop).
+     * Populated during build so we can apply scrolls without iterating all nodes.
+     */
+    scrollNodes?: Node[];
   },
 ): Node | null {
   const {
@@ -440,6 +445,7 @@ export function buildNodeWithSN(
     hackCss = true,
     afterAppend,
     cache,
+    scrollNodes,
   } = options;
   /**
    * Add a check to see if the node is already in the mirror. If it is, we can skip the whole process.
@@ -495,6 +501,15 @@ export function buildNodeWithSN(
   mirror.add(node, n);
 
   if (
+    scrollNodes &&
+    n.type === NodeType.Element &&
+    n.attributes &&
+    ('rr_scrollLeft' in n.attributes || 'rr_scrollTop' in n.attributes)
+  ) {
+    scrollNodes.push(node);
+  }
+
+  if (
     (n.type === NodeType.Document || n.type === NodeType.Element) &&
     !skipChild
   ) {
@@ -506,6 +521,7 @@ export function buildNodeWithSN(
         hackCss,
         afterAppend,
         cache,
+        scrollNodes,
       });
       if (!childNode) {
         console.warn('Failed to rebuild', childN);
@@ -605,6 +621,7 @@ function rebuild(
     cache,
     mirror = new Mirror(),
   } = options;
+  const scrollNodes: Node[] = [];
   const node = buildNodeWithSN(n, {
     doc,
     mirror,
@@ -612,13 +629,16 @@ function rebuild(
     hackCss,
     afterAppend,
     cache,
+    scrollNodes,
   });
-  visit(mirror, (visitedNode) => {
-    if (onVisit) {
-      onVisit(visitedNode);
-    }
-    handleScroll(visitedNode, mirror);
-  });
+  if (onVisit) {
+    visit(mirror, onVisit);
+  }
+  // NOTE: Only iterate the nodes that actually have scroll data (rr_scrollLeft/rr_scrollTop),
+  // collected during buildNodeWithSN, rather than visiting every node in the mirror.
+  for (const scrollNode of scrollNodes) {
+    handleScroll(scrollNode, mirror);
+  }
   return node;
 }
 

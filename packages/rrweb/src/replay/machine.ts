@@ -13,6 +13,10 @@ import {
   IncrementalSource,
 } from '@amplitude/rrweb-types';
 import { Timer, addDelay } from './timer';
+import {
+  type SnapshotCheckpoint,
+  findNearestCheckpoint,
+} from './checkpoint-index';
 
 /**
  * Check whether an existing event in the array is a duplicate of the
@@ -50,6 +54,7 @@ export type PlayerContext = {
   timeOffset: number;
   baselineTime: number;
   lastPlayedEvent: eventWithTime | null;
+  checkpointIndex: SnapshotCheckpoint[];
 };
 export type PlayerEvent =
   | {
@@ -88,40 +93,6 @@ export type PlayerState =
       value: 'live';
       context: PlayerContext;
     };
-
-/**
- * If the array have multiple meta and fullsnapshot events,
- * return the events from last meta to the end.
- */
-export function discardPriorSnapshots(
-  events: eventWithTime[],
-  baselineTime: number,
-): eventWithTime[] {
-  // Binary search: find the index of the last event with timestamp <= baselineTime.
-  // Events are sorted by timestamp, so we can skip the irrelevant tail first.
-  let lo = 0;
-  let hi = events.length - 1;
-  let lastBeforeOrAt = -1;
-  while (lo <= hi) {
-    const mid = (lo + hi) >>> 1;
-    if (events[mid].timestamp <= baselineTime) {
-      lastBeforeOrAt = mid;
-      lo = mid + 1;
-    } else {
-      hi = mid - 1;
-    }
-  }
-
-  // Scan backward from lastBeforeOrAt to find the nearest Meta event.
-  // Meta events are sparse (only at session starts / checkouts), so this
-  // backward scan is typically very short.
-  for (let idx = lastBeforeOrAt; idx >= 0; idx--) {
-    if (events[idx].type === EventType.Meta) {
-      return events.slice(idx);
-    }
-  }
-  return events;
-}
 
 type PlayerAssets = {
   emitter: Emitter;
@@ -214,10 +185,25 @@ export function createPlayerService(
           };
         }),
         play(ctx) {
-          const { timer, events, baselineTime, lastPlayedEvent } = ctx;
+          const {
+            timer,
+            events,
+            baselineTime,
+            lastPlayedEvent,
+            checkpointIndex,
+          } = ctx;
           timer.clear();
 
-          const neededEvents = discardPriorSnapshots(events, baselineTime);
+          // Find the nearest snapshot checkpoint at or before baselineTime using
+          // binary search O(log C) instead of the previous O(N) backward scan
+          // through all events. This determines where we start replaying from,
+          // since events before the last Meta+FullSnapshot pair are not needed because
+          // the FullSnapshot rebuilds the entire DOM from scratch.
+          const checkpoint = findNearestCheckpoint(
+            checkpointIndex,
+            baselineTime,
+          );
+          const startIndex = checkpoint ? checkpoint.metaEventIndex : 0;
 
           let lastPlayedTimestamp = lastPlayedEvent?.timestamp;
           if (
@@ -232,62 +218,36 @@ export function createPlayerService(
             emitter.emit(ReplayerEvents.PlayBack);
           }
 
-          // Binary search: find the boundary between sync events (timestamp <
-          // baselineTime) and async events (timestamp >= baselineTime).
-          let syncEnd = neededEvents.length;
-          {
-            let lo = 0;
-            let hi = neededEvents.length;
-            while (lo < hi) {
-              const mid = (lo + hi) >>> 1;
-              if (neededEvents[mid].timestamp < baselineTime) lo = mid + 1;
-              else hi = mid;
-            }
-            syncEnd = lo;
-          }
-
-          // Binary search: find the first event we still need to apply
-          // synchronously (skip events already applied in a prior forward seek).
-          let syncStart = 0;
-          if (lastPlayedTimestamp && lastPlayedTimestamp < baselineTime) {
-            let lo = 0;
-            let hi = syncEnd;
-            while (lo < hi) {
-              const mid = (lo + hi) >>> 1;
-              if (neededEvents[mid].timestamp <= lastPlayedTimestamp)
-                lo = mid + 1;
-              else hi = mid;
-            }
-            syncStart = lo;
-            // Edge case: for MouseMove events, lastPlayedTimestamp is adjusted
-            // to be slightly less than lastPlayedEvent.timestamp, so
-            // lastPlayedEvent itself may land just after the binary-search
-            // boundary and must still be skipped.
+          // baselineTime is the timestamp the player is seeking to (i.e. the
+          // point in the recording where real-time playback begins).
+          //
+          // Events before baselineTime are "sync". They are applied instantly
+          // in a single batch via applyEventsSynchronously() to rebuild the DOM
+          // state up to that point. Events at or after baselineTime are "async".
+          // They are scheduled on the timer to play back in real time.
+          const syncEvents = new Array<eventWithTime>();
+          for (let i = startIndex; i < events.length; i++) {
+            const event = events[i];
             if (
-              syncStart < syncEnd &&
-              neededEvents[syncStart] === lastPlayedEvent
+              lastPlayedTimestamp &&
+              lastPlayedTimestamp < baselineTime &&
+              (event.timestamp <= lastPlayedTimestamp ||
+                event === lastPlayedEvent)
             ) {
-              syncStart++;
+              continue;
             }
-          }
-
-          // Only compute delays for events that will be scheduled in the timer;
-          // sync events never need a delay value.
-          for (let i = syncEnd; i < neededEvents.length; i++) {
-            addDelay(neededEvents[i], baselineTime);
-          }
-
-          const syncEvents = neededEvents.slice(syncStart, syncEnd);
-
-          for (let i = syncEnd; i < neededEvents.length; i++) {
-            const event = neededEvents[i];
-            const castFn = getCastFn(event, false);
-            timer.addAction({
-              doAction: () => {
-                castFn();
-              },
-              delay: event.delay ?? 0,
-            });
+            if (event.timestamp < baselineTime) {
+              syncEvents.push(event);
+            } else {
+              addDelay(event, baselineTime);
+              const castFn = getCastFn(event, false);
+              timer.addAction({
+                doAction: () => {
+                  castFn();
+                },
+                delay: event.delay ?? 0,
+              });
+            }
           }
 
           applyEventsSynchronously(syncEvents);
@@ -313,12 +273,13 @@ export function createPlayerService(
           },
         }),
         addEvent: assign((ctx, machineEvent) => {
-          const { baselineTime, timer, events } = ctx;
+          const { baselineTime, timer, events, checkpointIndex } = ctx;
           if (machineEvent.type === 'ADD_EVENT') {
             const { event } = machineEvent.payload;
             addDelay(event, baselineTime);
 
             let end = events.length - 1;
+            let insertionIndex: number;
             if (!events[end] || events[end].timestamp <= event.timestamp) {
               // Fast track: append at end.
               // Deduplicate against the last event before appending.
@@ -326,9 +287,10 @@ export function createPlayerService(
                 return { ...ctx, events };
               }
               events.push(event);
+              insertionIndex = events.length - 1;
             } else {
-              let insertionIndex = -1;
               let start = 0;
+              insertionIndex = 0;
               while (start <= end) {
                 const mid = Math.floor((start + end) / 2);
                 if (events[mid].timestamp <= event.timestamp) {
@@ -337,13 +299,11 @@ export function createPlayerService(
                   end = mid - 1;
                 }
               }
-              if (insertionIndex === -1) {
-                insertionIndex = start;
-              }
+              insertionIndex = start;
 
               // Deduplicate: scan neighbors at the same timestamp.
-              // This is O(k) where k is the number of events at this
-              // exact millisecond (usually 1-3).
+              // O(k) where k is the number of events at this exact millisecond
+              // (usually 1–3 in practice).
               for (
                 let i = insertionIndex - 1;
                 i >= 0 && events[i].timestamp === event.timestamp;
@@ -366,6 +326,73 @@ export function createPlayerService(
               events.splice(insertionIndex, 0, event);
             }
 
+            // Checkpoint index maintenance
+            //
+            // Inserting an event in the middle of the array shifts all
+            // subsequent events to higher indices, so we must update
+            // any checkpoint whose metaEventIndex is at or after the insertion
+            // point.
+
+            // NOTE: If the new event is a Meta event, it represents a new
+            // snapshot boundary that the player can seek to, so it also gets
+            // its own checkpoint entry.
+            if (event.type === EventType.Meta) {
+              const newCheckpoint: SnapshotCheckpoint = {
+                metaEventIndex: insertionIndex,
+                timestamp: event.timestamp,
+              };
+
+              // Fast path: new Meta event is the latest meaning just append.
+              // This is the common case during live streaming.
+              const lastCheckpoint =
+                checkpointIndex[checkpointIndex.length - 1];
+              if (
+                !lastCheckpoint ||
+                lastCheckpoint.timestamp <= event.timestamp
+              ) {
+                checkpointIndex.push(newCheckpoint);
+              } else {
+                // Rare out-of-order insertion: increment existing checkpoint
+                // indices at or after the insertion point, then binary-search
+                // for the correct position to insert the new checkpoint.
+                for (const checkpoint of checkpointIndex) {
+                  if (checkpoint.metaEventIndex >= insertionIndex) {
+                    checkpoint.metaEventIndex++;
+                  }
+                }
+                // Binary search for the sorted insertion position
+                let searchLo = 0;
+                let searchHi = checkpointIndex.length - 1;
+                while (searchLo <= searchHi) {
+                  const mid = Math.floor((searchLo + searchHi) / 2);
+                  if (checkpointIndex[mid].timestamp <= event.timestamp) {
+                    searchLo = mid + 1;
+                  } else {
+                    searchHi = mid - 1;
+                  }
+                }
+
+                // NOTE: splice() shifts array elements, but checkpointIndex only
+                // contains Meta events (a handful per session), so this is far
+                // cheaper than splicing into the full events array.
+                checkpointIndex.splice(searchLo, 0, newCheckpoint);
+              }
+            }
+
+            // Non-Meta event inserted in the middle of the array
+            else if (
+              insertionIndex <
+              events.length - 1 // not appended at end
+            ) {
+              // Increment checkpoint indices at or after the insertion point so
+              // they continue pointing at the correct Meta events.
+              for (const checkpoint of checkpointIndex) {
+                if (checkpoint.metaEventIndex >= insertionIndex) {
+                  checkpoint.metaEventIndex++;
+                }
+              }
+            }
+
             const isSync = event.timestamp < baselineTime;
             const castFn = getCastFn(event, isSync);
             if (isSync) {
@@ -379,7 +406,7 @@ export function createPlayerService(
               });
             }
           }
-          return { ...ctx, events };
+          return { ...ctx, events, checkpointIndex };
         }),
       },
     },

@@ -10,6 +10,9 @@ export class Timer {
   public speed: number;
 
   private actions: actionWithDelay[];
+  // NOTE: By using an index pointer instead of Array.shift(),
+  // we avoid O(N) re-indexing on every animation frame and achieve O(1) complexity per action.
+  private actionIndex = 0;
   private raf: number | true | null = null;
   private lastTimestamp: number;
 
@@ -28,7 +31,7 @@ export class Timer {
   public addAction(action: actionWithDelay) {
     const rafWasActive = this.raf === true;
     if (
-      !this.actions.length ||
+      this.actionIndex >= this.actions.length ||
       this.actions[this.actions.length - 1].delay <= action.delay
     ) {
       // 'fast track'
@@ -53,17 +56,18 @@ export class Timer {
     const time = performance.now();
     this.timeOffset += (time - this.lastTimestamp) * this.speed;
     this.lastTimestamp = time;
-    while (this.actions.length) {
-      const action = this.actions[0];
+    // Walk forward through the sorted actions array using actionIndex.
+    while (this.actionIndex < this.actions.length) {
+      const action = this.actions[this.actionIndex];
 
       if (this.timeOffset >= action.delay) {
-        this.actions.shift();
+        this.actionIndex++;
         action.doAction();
       } else {
         break;
       }
     }
-    if (this.actions.length > 0) {
+    if (this.actionIndex < this.actions.length) {
       this.raf = requestAnimationFrame(this.rafCheck.bind(this));
     } else {
       this.raf = true; // was active
@@ -78,6 +82,7 @@ export class Timer {
       this.raf = null;
     }
     this.actions.length = 0;
+    this.actionIndex = 0;
   }
 
   public setSpeed(speed: number) {
@@ -89,7 +94,8 @@ export class Timer {
   }
 
   private findActionIndex(action: actionWithDelay): number {
-    let start = 0;
+    // Start searching from actionIndex since earlier entries are already consumed
+    let start = this.actionIndex;
     let end = this.actions.length - 1;
     while (start <= end) {
       const mid = Math.floor((start + end) / 2);

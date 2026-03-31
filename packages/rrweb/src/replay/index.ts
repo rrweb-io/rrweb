@@ -37,6 +37,7 @@ import {
   type PlayerMachineState,
   type SpeedMachineState,
 } from './machine';
+import { buildCheckpointIndex } from './checkpoint-index';
 import type { playerConfig, missingNodeMap } from '../types';
 import {
   NodeType,
@@ -395,20 +396,23 @@ export class Replayer {
     const timer = new Timer([], {
       speed: this.config.speed,
     });
+    const sortedEvents = events
+      .map((e) => {
+        if (config && config.unpackFn) {
+          return config.unpackFn(e as string);
+        }
+        return e as eventWithTime;
+      })
+      .sort((a1, a2) => a1.timestamp - a2.timestamp);
+    const checkpointIndex = buildCheckpointIndex(sortedEvents);
     this.service = createPlayerService(
       {
-        events: events
-          .map((e) => {
-            if (config && config.unpackFn) {
-              return config.unpackFn(e as string);
-            }
-            return e as eventWithTime;
-          })
-          .sort((a1, a2) => a1.timestamp - a2.timestamp),
+        events: sortedEvents,
         timer,
         timeOffset: 0,
         baselineTime: 0,
         lastPlayedEvent: null,
+        checkpointIndex,
       },
       {
         getCastFn: this.getCastFn,
@@ -713,7 +717,28 @@ export class Replayer {
     }
   };
 
+  // Replays a batch of "sync" events instantly to rebuild the DOM state up
+  // to baselineTime. Each event is cast (executed) in order, except:
+  //
+  //   - DomContentLoaded, Load, Custom: always skipped (no DOM effect)
+  //   - IncrementalSnapshot BEFORE the last FullSnapshot: skipped, because
+  //     FullSnapshot rebuilds the entire DOM from scratch, discarding any
+  //     prior incremental mutations
+  //   - IncrementalSnapshot AFTER the last FullSnapshot: applied, because
+  //     these represent mutations on top of the rebuilt DOM
+  //   - Meta, FullSnapshot, Plugin: always applied
   private applyEventsSynchronously = (events: Array<eventWithTime>) => {
+    // Find the last FullSnapshot in the sync batch. A FullSnapshot rebuilds
+    // the entire DOM from scratch via rebuildFullSnapshot, so any
+    // IncrementalSnapshot events before it are wasted work.
+    let lastFullSnapshotIndex = -1;
+    for (let i = events.length - 1; i >= 0; i--) {
+      if (events[i].type === EventType.FullSnapshot) {
+        lastFullSnapshotIndex = i;
+        break;
+      }
+    }
+
     // Seek-cache optimization: if this batch starts from a recording-side
     // FullSnapshot and we have a cached DOM snapshot that is newer than that
     // FullSnapshot but still at or before the seek target, restore from the
@@ -770,10 +795,16 @@ export class Replayer {
         case EventType.Load:
         case EventType.Custom:
           continue;
+        case EventType.IncrementalSnapshot:
+          // Skip incremental events before the last FullSnapshot because
+          // rebuildFullSnapshot will reset the DOM, discarding their work.
+          if (i < lastFullSnapshotIndex) {
+            continue;
+          }
+          break;
         case EventType.FullSnapshot:
         case EventType.Meta:
         case EventType.Plugin:
-        case EventType.IncrementalSnapshot:
           break;
         default:
           break;
