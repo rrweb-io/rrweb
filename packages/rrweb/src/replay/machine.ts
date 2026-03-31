@@ -205,11 +205,6 @@ export function createPlayerService(
           );
           const startIndex = checkpoint ? checkpoint.metaEventIndex : 0;
 
-          // Only compute delays for events from the checkpoint onward
-          for (let i = startIndex; i < events.length; i++) {
-            addDelay(events[i], baselineTime);
-          }
-
           let lastPlayedTimestamp = lastPlayedEvent?.timestamp;
           if (
             lastPlayedEvent?.type === EventType.IncrementalSnapshot &&
@@ -244,6 +239,7 @@ export function createPlayerService(
             if (event.timestamp < baselineTime) {
               syncEvents.push(event);
             } else {
+              addDelay(event, baselineTime);
               const castFn = getCastFn(event, false);
               timer.addAction({
                 doAction: () => {
@@ -304,6 +300,29 @@ export function createPlayerService(
                 }
               }
               insertionIndex = start;
+
+              // Deduplicate: scan neighbors at the same timestamp.
+              // O(k) where k is the number of events at this exact millisecond
+              // (usually 1–3 in practice).
+              for (
+                let i = insertionIndex - 1;
+                i >= 0 && events[i].timestamp === event.timestamp;
+                i--
+              ) {
+                if (isDuplicateEvent(events[i], event)) {
+                  return { ...ctx, events };
+                }
+              }
+              for (
+                let i = insertionIndex;
+                i < events.length && events[i].timestamp === event.timestamp;
+                i++
+              ) {
+                if (isDuplicateEvent(events[i], event)) {
+                  return { ...ctx, events };
+                }
+              }
+
               events.splice(insertionIndex, 0, event);
             }
 
