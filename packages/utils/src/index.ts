@@ -1,15 +1,17 @@
-type PrototypeOwner = Node | ShadowRoot | MutationObserver | Element;
+type PrototypeOwner = Node | ShadowRoot | MutationObserver | Element | EventTarget;
 type TypeofPrototypeOwner =
   | typeof Node
   | typeof ShadowRoot
   | typeof MutationObserver
-  | typeof Element;
+  | typeof Element
+  | typeof EventTarget;
 
 type BasePrototypeCache = {
   Node: typeof Node.prototype;
   ShadowRoot: typeof ShadowRoot.prototype;
   MutationObserver: typeof MutationObserver.prototype;
   Element: typeof Element.prototype;
+  EventTarget: typeof EventTarget.prototype;
 };
 
 const testableAccessors = {
@@ -27,6 +29,7 @@ const testableAccessors = {
   ShadowRoot: ['host', 'styleSheets'] as const,
   Element: ['shadowRoot', 'querySelector', 'querySelectorAll'] as const,
   MutationObserver: [] as const,
+  EventTarget: [] as const,
 } as const;
 
 const testableMethods = {
@@ -34,6 +37,7 @@ const testableMethods = {
   ShadowRoot: ['getSelection'],
   Element: [],
   MutationObserver: ['constructor'],
+  EventTarget: ['addEventListener', 'removeEventListener'],
 } as const;
 
 const untaintedBasePrototype: Partial<BasePrototypeCache> = {};

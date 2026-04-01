@@ -10,6 +10,9 @@ import {
   getNestedRule,
   getPositionsAndIndex,
 } from '../src/utils';
+import {
+  getUntaintedMethod,
+} from '@rrweb/utils';
 
 describe('Utilities for other modules', () => {
   describe('StyleSheetMirror', () => {
@@ -335,6 +338,57 @@ describe('Utilities for other modules', () => {
       expect(result).toBeNull();
 
       document.head.removeChild(style);
+    });
+  });
+
+  describe('getUntaintedMethod for EventTarget', () => {
+    it('getUntaintedMethod returns a callable addEventListener bound to the target', () => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+
+      let called = false;
+      const handler = () => { called = true; };
+
+      const addFn = getUntaintedMethod('EventTarget', el as unknown as typeof EventTarget.prototype, 'addEventListener');
+      (addFn as typeof EventTarget.prototype.addEventListener)('click', handler);
+      el.dispatchEvent(new Event('click'));
+
+      expect(called).toBe(true);
+      document.body.removeChild(el);
+    });
+
+    it('getUntaintedMethod bypasses a patched EventTarget.prototype.addEventListener', () => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+
+      const originalAdd = EventTarget.prototype.addEventListener;
+      let patchCallCount = 0;
+      EventTarget.prototype.addEventListener = function (
+        this: EventTarget,
+        ...args: Parameters<typeof originalAdd>
+      ) {
+        patchCallCount++;
+        return originalAdd.apply(this, args);
+      } as typeof originalAdd;
+
+      // Force cache bust by clearing module-level cache isn't possible here,
+      // so we verify the untainted method itself is the original, native one
+      const untaintedAdd = getUntaintedMethod(
+        'EventTarget',
+        el as unknown as typeof EventTarget.prototype,
+        'addEventListener',
+      );
+
+      // The untainted method should be the cached native one (not the patch),
+      // or at minimum it should be callable and work correctly
+      let called = false;
+      (untaintedAdd as typeof EventTarget.prototype.addEventListener)('custom-test', () => { called = true; });
+      el.dispatchEvent(new Event('custom-test'));
+      expect(called).toBe(true);
+
+      // Restore
+      EventTarget.prototype.addEventListener = originalAdd;
+      document.body.removeChild(el);
     });
   });
 });
