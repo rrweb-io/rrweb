@@ -1,0 +1,27 @@
+name: ESLint Annotation
+
+on:
+  workflow_run:
+    workflows: ["Code Style Check"]
+    types: [completed]
+
+jobs:
+  annotation:
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion != 'skipped'
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      actions: read
+    name: ESLint Annotation
+    steps:
+      - name: Download ESLint Report
+        uses: actions/download-artifact@v4 # pin to SHA before merging
+        with:
+          name: eslint_report.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+      - name: Annotate Code Linting Results
+        uses: ataylorme/eslint-annotate-action@5f4dc2e3af8d3c21b727edb597e5503510b1dc9c # v2
+        with:
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
+          report-json: 'eslint_report.json'

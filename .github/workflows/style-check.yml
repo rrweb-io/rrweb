@@ -1,9 +1,13 @@
 name: Code Style Check
 
-on: [push, pull_request_target]
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, edited]
 
 jobs:
   eslint_check_upload:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -11,9 +15,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.head_ref }}
       - name: Setup Node
         uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
         with:
@@ -37,36 +38,15 @@ jobs:
           name: eslint_report.json
           path: eslint_report.json
 
-  annotation:
-    # Skip the annotation action in push events
-    if: github.event_name == 'pull_request_target'
-    permissions:
-      checks: write
-    needs: eslint_check_upload
-    runs-on: ubuntu-latest
-    name: ESLint Annotation
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: eslint_report.json
-      - name: Annotate Code Linting Results
-        uses: ataylorme/eslint-annotate-action@5f4dc2e3af8d3c21b727edb597e5503510b1dc9c # v2
-        with:
-          repo-token: '${{ secrets.GITHUB_TOKEN }}'
-          report-json: 'eslint_report.json'
-
   prettier_check:
-    # In the forked PR, it's hard to format code and push to the branch directly, so the action only check the format correctness.
-    if: github.event_name != 'push' && github.event.pull_request.head.repo.full_name != 'rrweb-io/rrweb'
+    # In the forked PR, it's hard to format code and push to the branch directly, so the action only checks the format correctness.
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
     permissions:
       contents: read
     runs-on: ubuntu-latest
     name: Format Check
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.head_ref }}
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Setup Node
         uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
         with:
@@ -81,7 +61,7 @@ jobs:
 
   prettier:
     # Skip the format code action in forked PRs
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == 'rrweb-io/rrweb'
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -89,7 +69,6 @@ jobs:
     steps:
       - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
         with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.head_ref }}
       - name: Setup Node
         uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
