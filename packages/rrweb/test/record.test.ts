@@ -338,6 +338,79 @@ describe('record', function (this: ISuite) {
     await assertSnapshot(ctx.events);
   });
 
+  it('skips vendor-prefixed CSS rules not supported by the current browser', async () => {
+    // ::-moz-focus-inner is valid in Firefox but rejected by other browsers.
+    // The insertRule proxy catches any parse error and swallows it, so recording
+    // continues without throwing. The rule IS still emitted as a StyleSheetRule
+    // event so it can be replayed in a browser that supports it.
+    await ctx.page.evaluate(() => {
+      const { record } = (window as unknown as IWindow).rrweb;
+      record({
+        emit: (window as unknown as IWindow).emit,
+      });
+
+      const styleElement = document.createElement('style');
+      document.head.appendChild(styleElement);
+
+      const styleSheet = <CSSStyleSheet>styleElement.sheet;
+      // insertRule calls must be deferred past initial serialization
+      setTimeout(() => {
+        styleSheet.insertRule('.foo::-moz-focus-inner { border-style: none; }');
+        styleSheet.insertRule('body { color: #fff; }');
+      }, 0);
+    });
+    await ctx.page.waitForTimeout(50);
+
+    const styleSheetRuleEvents = ctx.events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.StyleSheetRule,
+    );
+    const addRules = styleSheetRuleEvents.filter((e) =>
+      Boolean((e.data as styleSheetRuleData).adds),
+    );
+    // Both rules captured as events (for replay in the browser that supports them)
+    expect(addRules.length).toEqual(2);
+    expect((addRules[0].data as styleSheetRuleData).adds).toEqual([
+      { rule: '.foo::-moz-focus-inner { border-style: none; }' },
+    ]);
+    expect((addRules[1].data as styleSheetRuleData).adds).toEqual([
+      { rule: 'body { color: #fff; }' },
+    ]);
+  });
+
+  it('skips vendor-prefixed CSS rules inside nested rules not supported by the current browser', async () => {
+    await ctx.page.evaluate(() => {
+      const { record } = (window as unknown as IWindow).rrweb;
+      record({
+        emit: (window as unknown as IWindow).emit,
+      });
+
+      const styleElement = document.createElement('style');
+      document.head.appendChild(styleElement);
+
+      const styleSheet = <CSSStyleSheet>styleElement.sheet;
+      styleSheet.insertRule('@media {}');
+      const atMediaRule = styleSheet.cssRules[0] as CSSMediaRule;
+
+      setTimeout(() => {
+        atMediaRule.insertRule('.foo::-moz-focus-inner { border-style: none; }', 0);
+        atMediaRule.insertRule('body { color: #fff; }', 0);
+      }, 0);
+    });
+    await ctx.page.waitForTimeout(50);
+
+    const styleSheetRuleEvents = ctx.events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.StyleSheetRule,
+    );
+    const addRuleCount = styleSheetRuleEvents.filter((e) =>
+      Boolean((e.data as styleSheetRuleData).adds),
+    ).length;
+    expect(addRuleCount).toEqual(2);
+  });
+
   it('captures stylesheet rules with deprecated addRule & removeRule properties', async () => {
     await ctx.page.evaluate(() => {
       const { record } = (window as unknown as IWindow).rrweb;

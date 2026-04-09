@@ -623,7 +623,12 @@ function initStyleSheetObserver(
             adds: [{ rule, index }],
           });
         }
-        return target.apply(thisArg, argumentsList);
+        try {
+          return target.apply(thisArg, argumentsList);
+        } catch (e) {
+          // Rules valid in one browser may be rejected by another.
+          // Consume the parse error
+        }
       },
     ),
   });
@@ -809,7 +814,12 @@ function initStyleSheetObserver(
                 ],
               });
             }
-            return target.apply(thisArg, argumentsList);
+            try {
+              return target.apply(thisArg, argumentsList);
+            } catch (e) {
+              // Rules valid in one browser may be rejected by another.
+              // Consume the parse error
+            }
           },
         ),
       },
