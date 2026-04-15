@@ -1,5 +1,7 @@
 # @rrweb/types
 
+## 3.0.0
+
 ## 2.0.22
 
 ### Patch Changes

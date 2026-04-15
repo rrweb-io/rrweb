@@ -1,5 +1,14 @@
 # @rrweb/all
 
+## 3.0.0
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @saola.ai/rrweb@3.0.0
+  - @saola.ai/rrweb-packer@3.0.0
+  - @saola.ai/rrweb-types@3.0.0
+
 ## 2.0.22
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # rrweb-player
 
+## 3.0.0
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @saola.ai/replay@3.0.0
+  - @saola.ai/rrweb-packer@3.0.0
+
 ## 2.0.22
 
 ### Patch Changes

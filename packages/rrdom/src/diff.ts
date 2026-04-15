@@ -168,7 +168,8 @@ function diffBeforeUpdatingChildren(
       const oldElement = oldTree as HTMLElement;
       const newRRElement = newTree as IRRElement;
       switch (newRRElement.tagName) {
-        case 'IFRAME': {
+        case 'IFRAME':
+        case 'FRAME': {
           const oldContentDocument = (oldTree as HTMLIFrameElement)
             .contentDocument;
           // If the iframe is cross-origin, the contentDocument will be null.
@@ -351,7 +352,7 @@ function diffProps(
           ctx.drawImage(image, 0, 0, image.width, image.height);
         }
       };
-    } else if (newTree.tagName === 'IFRAME' && name === 'srcdoc') continue;
+    } else if ((newTree.tagName === 'IFRAME' || newTree.tagName === 'FRAME') && name === 'srcdoc') continue;
     else {
       try {
         oldTree.setAttribute(name, newValue);

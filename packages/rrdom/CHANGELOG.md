@@ -1,5 +1,16 @@
 # rrdom
 
+## 3.0.0
+
+### Minor Changes
+
+- Add frame support
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-snapshot@3.0.0
+
 ## 2.0.22
 
 ### Patch Changes
