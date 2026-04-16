@@ -93,6 +93,7 @@ export class RRDocument extends BaseRRDocument {
         element = new RRMediaElement(upperTagName);
         break;
       case 'IFRAME':
+      case 'FRAME':
         element = new RRIFrameElement(upperTagName, this.mirror);
         break;
       case 'CANVAS':
@@ -224,7 +225,7 @@ export function buildFromNode(
 
   switch (node.nodeType) {
     case NodeType.DOCUMENT_NODE:
-      if (parentRRNode && parentRRNode.nodeName === 'IFRAME')
+      if (parentRRNode && (parentRRNode.nodeName === 'IFRAME' || parentRRNode.nodeName === 'FRAME'))
         rrNode = (parentRRNode as RRIFrameElement).contentDocument;
       else {
         rrNode = rrdom;
@@ -305,7 +306,7 @@ export function buildFromDom(
     if (rrNode === null) return;
     if (
       // if the parentRRNode isn't a RRIFrameElement
-      parentRRNode?.nodeName !== 'IFRAME' &&
+      parentRRNode?.nodeName !== 'IFRAME' && parentRRNode?.nodeName !== 'FRAME' &&
       // if node isn't a shadow root
       node.nodeType !== NodeType.DOCUMENT_FRAGMENT_NODE
     ) {
@@ -314,7 +315,7 @@ export function buildFromDom(
       rrNode.parentElement = parentRRNode as RRElement;
     }
 
-    if (node.nodeName === 'IFRAME') {
+    if (node.nodeName === 'IFRAME' || node.nodeName === 'FRAME') {
       const iframeDoc = (node as HTMLIFrameElement).contentDocument;
       iframeDoc && walk(iframeDoc, rrNode);
     } else if (
@@ -474,7 +475,7 @@ function walk(node: IRRNode, mirror: IMirror<IRRNode>, blankSpace: string) {
   }
   for (const child of node.childNodes)
     printText += walk(child, mirror, blankSpace + '  ');
-  if (node.nodeName === 'IFRAME')
+  if (node.nodeName === 'IFRAME' || node.nodeName === 'FRAME')
     printText += walk(
       (node as RRIFrameElement).contentDocument,
       mirror,

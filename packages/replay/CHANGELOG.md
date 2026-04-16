@@ -1,5 +1,13 @@
 # @rrweb/replay
 
+## 2.0.23
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @saola.ai/rrweb@2.0.23
+  - @saola.ai/rrweb-types@2.0.23
+
 ## 2.0.22
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/rrweb-plugin-console-replay",
-  "version": "2.0.22",
+  "version": "2.0.23",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-console-replay.umd.cjs",
@@ -43,13 +43,13 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
-    "@saola.ai/rrweb-plugin-console-record": "^2.0.22",
-    "@saola.ai/rrweb": "^2.0.22",
+    "@saola.ai/rrweb-plugin-console-record": "^2.0.23",
+    "@saola.ai/rrweb": "^2.0.23",
     "typescript": "^5.4.5",
     "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1"
   },
   "peerDependencies": {
-    "@saola.ai/rrweb": "^2.0.22"
+    "@saola.ai/rrweb": "^2.0.23"
   }
 }

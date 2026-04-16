@@ -151,6 +151,7 @@ export class RRDocument extends BaseRRDocument implements IRRDocument {
         element = new RRMediaElement(upperTagName);
         break;
       case 'IFRAME':
+      case 'FRAME':
         element = new RRIFrameElement(upperTagName);
         break;
       case 'IMG':

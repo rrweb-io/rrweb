@@ -1,5 +1,14 @@
 # @rrweb/rrweb-plugin-canvas-webrtc-record
 
+## 2.0.23
+
+### Patch Changes
+
+- Add frame support
+
+- Updated dependencies []:
+  - @saola.ai/rrweb@2.0.23
+
 ## 2.0.22
 
 ### Patch Changes
