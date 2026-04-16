@@ -1,0 +1,353 @@
+name: Upstream Sync Monitor
+
+on:
+  schedule:
+    # Weekdays at 9am UTC
+    - cron: '0 9 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Skip push and PR creation (validate pipeline only)'
+        type: boolean
+        default: false
+
+jobs:
+  sync:
+    name: Sync upstream rrweb commits
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout amplitude/rrweb
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/rrweb-io/rrweb.git
+          git fetch upstream master --no-tags
+
+      - name: Collect new upstream commits
+        id: collect
+        run: |
+          # Commits in upstream/master that are not in origin/master
+          COMMITS=$(git log origin/master..upstream/master --format='{"hash":"%H","short":"%h","subject":"%s","author":"%an","date":"%ci"}' | jq -s '.')
+
+          COUNT=$(echo "$COMMITS" | jq 'length')
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "commits<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$COMMITS" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          echo "Found $COUNT new upstream commits"
+
+      - name: Exit early if no new commits
+        if: steps.collect.outputs.count == '0'
+        run: |
+          echo "No new upstream commits. Nothing to do."
+          exit 0
+
+      - name: Create sync branch
+        id: branch
+        run: |
+          BRANCH="upstream-sync/$(date +%Y-%m-%d)"
+          git checkout -b "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Analyze commits and cherry-pick with Claude
+        id: claude
+        uses: anthropics/claude-code-action@c7c8889b30499b4e46f4c32b892e43cd364bc2fe
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: '--max-turns 3 --allowedTools Bash,Read,Edit'
+          prompt: |
+            You are helping maintain `amplitude/rrweb`, a fork of `rrweb-io/rrweb`.
+            Amplitude extends rrweb with custom functionality for Session Replay (background
+            capture, privacy masking, performance optimizations).
+
+            Your task is to triage the following upstream commits, cherry-pick the relevant
+            ones onto the current branch, and resolve any conflicts.
+
+            ## Upstream commits to evaluate
+            ```json
+            ${{ steps.collect.outputs.commits }}
+            ```
+
+            ## Instructions
+
+            For each commit, decide if it is RELEVANT or SKIP:
+
+            **Relevant** — cherry-pick it:
+            - Bug fixes in rrweb-snapshot, rrweb, or record packages
+            - Performance improvements
+            - Privacy or masking changes
+            - Browser compatibility fixes
+
+            **Skip** — do not cherry-pick:
+            - CI/CD, tooling, or release process changes
+            - Docs or example-only changes
+            - Features Amplitude has already implemented differently
+            - Changes to packages Amplitude doesn't use
+
+            Also assign a risk level to each relevant commit:
+            - `low` — isolated fix, minimal blast radius
+            - `medium` — touches shared logic, needs testing
+            - `high` — core serialization, replay, or snapshot changes
+
+            ## Cherry-pick process
+
+            For each RELEVANT commit (oldest first):
+            1. Run: `git cherry-pick <hash>`
+            2. If it succeeds, move on.
+            3. If it fails with conflicts:
+               a. Use the Read tool to read each conflicting file (they will have conflict markers).
+               b. Use the Edit tool to resolve the conflicts, preserving Amplitude's custom logic
+                  while incorporating the upstream fix.
+               c. Run: `git add <file>` for each resolved file.
+               d. Run: `git cherry-pick --continue --no-edit`
+               e. If the conflict is too complex to resolve safely, run:
+                  `git cherry-pick --abort`
+                  and mark the commit as `manual-required`.
+
+            ## Output
+
+            After processing all commits, write a JSON summary to `/tmp/sync-summary.json`:
+            ```json
+            {
+              "cherry_picked": [
+                {
+                  "hash": "abc1234",
+                  "subject": "fix: textarea serialization",
+                  "risk": "low",
+                  "summary": "One-line description of what the fix does",
+                  "conflict_resolved": false,
+                  "conflict_resolution_note": null
+                }
+              ],
+              "skipped": [
+                {
+                  "hash": "def5678",
+                  "subject": "chore: update CI config",
+                  "reason": "CI-only change, not relevant to Amplitude fork"
+                }
+              ],
+              "manual_required": [
+                {
+                  "hash": "ghi9012",
+                  "subject": "refactor: reorganize snapshot exports",
+                  "reason": "Structural reorganization conflicts with Amplitude's export overrides"
+                }
+              ]
+            }
+            ```
+
+            For any commit where you resolved a conflict, set `conflict_resolved: true` and
+            populate `conflict_resolution_note` with a brief explanation of what you decided
+            and why.
+
+            If a conflict was resolved but you are uncertain about the decision, prefix the
+            note with `[UNCERTAIN] `.
+
+      - name: Read Claude summary
+        id: summary
+        run: |
+          if [ ! -f /tmp/sync-summary.json ]; then
+            echo "ERROR: Claude did not produce /tmp/sync-summary.json"
+            exit 1
+          fi
+
+          cat /tmp/sync-summary.json
+
+          PICKED=$(jq '.cherry_picked | length' /tmp/sync-summary.json)
+          SKIPPED=$(jq '.skipped | length' /tmp/sync-summary.json)
+          MANUAL=$(jq '.manual_required | length' /tmp/sync-summary.json)
+          HIGH_RISK=$(jq '[.cherry_picked[] | select(.risk == "high")] | length' /tmp/sync-summary.json)
+
+          echo "picked=$PICKED" >> "$GITHUB_OUTPUT"
+          echo "skipped=$SKIPPED" >> "$GITHUB_OUTPUT"
+          echo "manual=$MANUAL" >> "$GITHUB_OUTPUT"
+          echo "high_risk=$HIGH_RISK" >> "$GITHUB_OUTPUT"
+
+      - name: Exit early if nothing was cherry-picked
+        if: steps.summary.outputs.picked == '0'
+        run: |
+          echo "No relevant commits to cherry-pick. Exiting."
+          exit 0
+
+      - name: Build PR body
+        id: pr_body
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          PICKED=${{ steps.summary.outputs.picked }}
+          SUMMARY_JSON=$(cat /tmp/sync-summary.json)
+
+          # Build commit table rows
+          ROWS=$(echo "$SUMMARY_JSON" | jq -r '
+            .cherry_picked[] |
+            "| `\(.hash[0:7])` | \(.subject) | `\(.risk)` | \(if .conflict_resolved then "⚠️ " else "" end)\(.summary) |"
+          ')
+
+          SKIPPED_ROWS=$(echo "$SUMMARY_JSON" | jq -r '
+            .skipped[] |
+            "| `\(.hash[0:7])` | \(.subject) | \(.reason) |"
+          ')
+
+          MANUAL_ROWS=$(echo "$SUMMARY_JSON" | jq -r '
+            .manual_required[] |
+            "| `\(.hash[0:7])` | \(.subject) | \(.reason) |"
+          ')
+
+          CONFLICT_NOTES=$(echo "$SUMMARY_JSON" | jq -r '
+            .cherry_picked[] | select(.conflict_resolved == true) |
+            "- **`\(.hash[0:7])`** \(.subject)\n  \(.conflict_resolution_note)"
+          ')
+
+          {
+            echo "body<<PRBODY"
+            echo "## Upstream rrweb sync — $DATE"
+            echo ""
+            echo "Automatically cherry-picked **$PICKED** upstream commit(s) from [rrweb-io/rrweb](https://github.com/rrweb-io/rrweb)."
+            echo ""
+            echo "### Cherry-picked commits"
+            echo ""
+            echo "| Commit | Subject | Risk | Notes |"
+            echo "|--------|---------|------|-------|"
+            echo "$ROWS"
+            echo ""
+
+            if [ -n "$CONFLICT_NOTES" ]; then
+              echo "### ⚠️ Auto-resolved conflicts"
+              echo ""
+              echo "The following commits had conflicts that were resolved automatically."
+              echo "Give these extra scrutiny before merging."
+              echo ""
+              echo "$CONFLICT_NOTES"
+              echo ""
+            fi
+
+            MANUAL_COUNT=$(echo "$SUMMARY_JSON" | jq '.manual_required | length')
+            if [ "$MANUAL_COUNT" -gt 0 ]; then
+              echo "### 🔴 Manual cherry-pick required"
+              echo ""
+              echo "These commits could not be resolved automatically:"
+              echo ""
+              echo "| Commit | Subject | Reason |"
+              echo "|--------|---------|--------|"
+              echo "$MANUAL_ROWS"
+              echo ""
+              echo "To apply manually:"
+              echo "\`\`\`bash"
+              echo "git fetch upstream"
+              echo "git cherry-pick <commit-hash>"
+              echo "# Resolve conflicts in your editor"
+              echo "git add ."
+              echo "git cherry-pick --continue"
+              echo "\`\`\`"
+              echo ""
+            fi
+
+            SKIPPED_COUNT=$(echo "$SUMMARY_JSON" | jq '.skipped | length')
+            if [ "$SKIPPED_COUNT" -gt 0 ]; then
+              echo "<details>"
+              echo "<summary>Skipped commits ($SKIPPED_COUNT)</summary>"
+              echo ""
+              echo "| Commit | Subject | Reason |"
+              echo "|--------|---------|--------|"
+              echo "$SKIPPED_ROWS"
+              echo ""
+              echo "</details>"
+            fi
+
+            echo ""
+            echo "---"
+            echo "_Generated by [Upstream Sync Monitor](/.github/workflows/upstream-sync.yml)_"
+            echo "PRBODY"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Push branch
+        if: inputs.dry_run != true
+        run: git push origin ${{ steps.branch.outputs.branch }}
+
+      - name: Create draft PR
+        id: pr
+        if: inputs.dry_run != true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PICKED=${{ steps.summary.outputs.picked }}
+          DATE=$(date +%Y-%m-%d)
+          TITLE="chore: upstream rrweb sync $DATE ($PICKED commit(s))"
+
+          PR_URL=$(gh pr create \
+            --title "$TITLE" \
+            --body "${{ steps.pr_body.outputs.body }}" \
+            --base master \
+            --head ${{ steps.branch.outputs.branch }} \
+            --draft \
+            --label upstream-sync)
+
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+          echo "Created PR: $PR_URL"
+
+      - name: Post Slack digest
+        if: inputs.dry_run != true
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          PICKED=${{ steps.summary.outputs.picked }}
+          SKIPPED=${{ steps.summary.outputs.skipped }}
+          MANUAL=${{ steps.summary.outputs.manual }}
+          HIGH_RISK=${{ steps.summary.outputs.high_risk }}
+          PR_URL="${{ steps.pr.outputs.pr_url }}"
+          DATE=$(date +%Y-%m-%d)
+
+          HIGH_RISK_NOTE=""
+          if [ "$HIGH_RISK" -gt 0 ]; then
+            HIGH_RISK_NOTE="\n:warning: *$HIGH_RISK high-risk commit(s) included — review carefully.*"
+          fi
+
+          MANUAL_NOTE=""
+          if [ "$MANUAL" -gt 0 ]; then
+            MANUAL_NOTE="\n:red_circle: *$MANUAL commit(s) need manual cherry-pick.*"
+          fi
+
+          PAYLOAD=$(jq -n \
+            --arg date "$DATE" \
+            --arg picked "$PICKED" \
+            --arg skipped "$SKIPPED" \
+            --arg high_risk_note "$HIGH_RISK_NOTE" \
+            --arg manual_note "$MANUAL_NOTE" \
+            --arg pr_url "$PR_URL" \
+            '{
+              text: ("*Upstream rrweb sync — " + $date + "*\n" +
+                     "• " + $picked + " commit(s) cherry-picked\n" +
+                     "• " + $skipped + " commit(s) skipped\n" +
+                     $high_risk_note +
+                     $manual_note + "\n" +
+                     "<" + $pr_url + "|View draft PR>")
+            }')
+
+          curl -s -X POST -H 'Content-type: application/json' \
+            --data "$PAYLOAD" \
+            "$SLACK_WEBHOOK_URL"
+
+      - name: Dry run summary
+        if: inputs.dry_run == true
+        run: |
+          echo "=== DRY RUN COMPLETE ==="
+          echo "Branch: ${{ steps.branch.outputs.branch }}"
+          echo "Commits cherry-picked: ${{ steps.summary.outputs.picked }}"
+          echo "Commits skipped: ${{ steps.summary.outputs.skipped }}"
+          echo "Manual required: ${{ steps.summary.outputs.manual }}"
+          echo ""
+          echo "--- PR body preview ---"
+          echo "${{ steps.pr_body.outputs.body }}"
