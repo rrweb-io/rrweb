@@ -1,5 +1,14 @@
 # @rrweb/rrweb-plugin-sequential-id-replay
 
+## 2.0.24
+
+### Patch Changes
+
+- support frames
+
+- Updated dependencies []:
+  - @saola.ai/rrweb@2.0.24
+
 ## 2.0.23
 
 ### Patch Changes

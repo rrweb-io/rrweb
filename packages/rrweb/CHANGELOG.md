@@ -1,5 +1,17 @@
 # rrweb
 
+## 2.0.24
+
+### Patch Changes
+
+- support frames
+
+- Updated dependencies []:
+  - @saola.ai/rrdom@2.0.24
+  - @saola.ai/rrweb-snapshot@2.0.24
+  - @saola.ai/rrweb-types@2.0.24
+  - @saola.ai/rrweb-utils@2.0.24
+
 ## 2.0.23
 
 ### Patch Changes

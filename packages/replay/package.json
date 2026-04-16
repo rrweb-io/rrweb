@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/replay",
-  "version": "2.0.23",
+  "version": "2.0.24",
   "publishConfig": {
     "access": "public"
   },
@@ -56,8 +56,8 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@saola.ai/rrweb-types": "^2.0.23",
-    "@saola.ai/rrweb": "^2.0.23"
+    "@saola.ai/rrweb-types": "^2.0.24",
+    "@saola.ai/rrweb": "^2.0.24"
   },
   "browserslist": [
     "supports es6-class"

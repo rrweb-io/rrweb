@@ -1,5 +1,14 @@
 # rrvideo
 
+## 2.0.24
+
+### Patch Changes
+
+- support frames
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-player@2.0.24
+
 ## 2.0.23
 
 ### Patch Changes
