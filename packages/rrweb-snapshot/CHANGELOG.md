@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.0.23
+
+### Patch Changes
+
+- Add frame support
+
 ## 2.0.22
 
 ### Patch Changes

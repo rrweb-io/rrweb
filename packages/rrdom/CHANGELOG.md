@@ -1,5 +1,14 @@
 # rrdom
 
+## 2.0.23
+
+### Patch Changes
+
+- Add frame support
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-snapshot@2.0.23
+
 ## 2.0.22
 
 ### Patch Changes

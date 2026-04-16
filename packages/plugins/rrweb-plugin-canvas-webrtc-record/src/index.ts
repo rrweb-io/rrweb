@@ -240,15 +240,15 @@ export class RRWebPluginCanvasWebRTCRecord {
   public setupStreamInCrossOriginIframe(id: number, rootId: number): boolean {
     let found = false;
 
-    document.querySelectorAll('iframe').forEach((iframe) => {
+    document.querySelectorAll('iframe,frame').forEach((iframe) => {
       if (found) return;
       if (!this.crossOriginIframeMirror) return;
 
-      const remoteId = this.crossOriginIframeMirror.getRemoteId(iframe, id);
+      const remoteId = this.crossOriginIframeMirror.getRemoteId(iframe as HTMLIFrameElement, id);
       if (remoteId === -1) return;
 
       found = true;
-      iframe.contentWindow?.postMessage(
+      (iframe as HTMLIFrameElement).contentWindow?.postMessage(
         {
           type: 'rrweb-canvas-webrtc',
           data: {
