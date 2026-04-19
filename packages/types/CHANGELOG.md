@@ -1,5 +1,11 @@
 # @rrweb/types
 
+## 2.0.25
+
+### Patch Changes
+
+- Support frames build fix
+
 ## 2.0.24
 
 ### Patch Changes

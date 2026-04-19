@@ -1,5 +1,14 @@
 # @rrweb/rrweb-plugin-canvas-webrtc-replay
 
+## 2.0.25
+
+### Patch Changes
+
+- Support frames build fix
+
+- Updated dependencies []:
+  - @saola.ai/rrweb@2.0.25
+
 ## 2.0.24
 
 ### Patch Changes
