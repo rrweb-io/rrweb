@@ -1,112 +1,22 @@
 # @rrweb/all
 
-## 2.0.25
+## 2.0.0-alpha.20
 
 ### Patch Changes
 
-- Support frames build fix
+- Updated dependencies [[`6388fb5`](https://github.com/rrweb-io/rrweb/commit/6388fb5a468e1a860ab8bb5c6826c811dcc3100c)]:
+  - rrweb@2.0.0-alpha.20
+  - @rrweb/types@2.0.0-alpha.20
+  - @rrweb/packer@2.0.0-alpha.20
 
-- Updated dependencies []:
-  - @saola.ai/rrweb-packer@2.0.25
-  - @saola.ai/rrweb@2.0.25
-  - @saola.ai/rrweb-types@2.0.25
-
-## 2.0.24
+## 2.0.0-alpha.19
 
 ### Patch Changes
 
-- support frames
-
-- Updated dependencies []:
-  - @saola.ai/rrweb-packer@2.0.24
-  - @saola.ai/rrweb@2.0.24
-  - @saola.ai/rrweb-types@2.0.24
-
-## 2.0.23
-
-### Patch Changes
-
-- Updated dependencies []:
-  - @saola.ai/rrweb@2.0.23
-  - @saola.ai/rrweb-packer@2.0.23
-  - @saola.ai/rrweb-types@2.0.23
-
-## 2.0.22
-
-### Patch Changes
-
-- Upgrade to vite v6.0.1
-
-- Updated dependencies []:
-  - @saola.ai/rrweb-packer@2.0.22
-  - @saola.ai/rrweb@2.0.22
-  - @saola.ai/rrweb-types@2.0.22
-
-## 2.0.21
-
-### Patch Changes
-
-- pull rrweb - april 8th 2025
-
-- Updated dependencies []:
-  - @saola.ai/rrweb@2.0.21
-  - @saola.ai/rrweb-packer@2.0.21
-  - @saola.ai/rrweb-types@2.0.21
-
-## 2.0.20
-
-### Patch Changes
-
-- Remove console record's dependency on rrweb
-
-- Updated dependencies []:
-  - @saola.ai/rrweb-packer@2.0.20
-  - @saola.ai/rrweb@2.0.20
-  - @saola.ai/rrweb-types@2.0.20
-
-## 2.0.19
-
-### Patch Changes
-
-- rebase rrweb from remote - jan 25
-
-- Updated dependencies []:
-  - @saola.ai/rrweb-packer@2.0.19
-  - @saola.ai/rrweb@2.0.19
-  - @saola.ai/rrweb-types@2.0.19
-
-## 2.0.15
-
-### Patch Changes
-
-- [REVERT] Commit eb1fb6d60f4381ee87272bdceccdf6ad5297284f - new version 2.0.15
-
-- Updated dependencies []:
-  - @saola.ai/rrweb-packer@2.0.15
-  - @saola.ai/rrweb@2.0.15
-  - @saola.ai/rrweb-types@2.0.15
-
-## 2.0.14
-
-### Patch Changes
-
-- [REVERT] Commit eb1fb6d60f4381ee87272bdceccdf6ad5297284f
-
-- Updated dependencies []:
-  - @saola.ai/rrweb-packer@2.0.14
-  - @saola.ai/rrweb@2.0.14
-  - @saola.ai/rrweb-types@2.0.14
-
-## 2.0.13
-
-### Patch Changes
-
-- Merge from rrweb remote upstream
-
-- Updated dependencies []:
-  - @saola.ai/rrweb-packer@2.0.13
-  - @saola.ai/rrweb@2.0.13
-  - @saola.ai/rrweb-types@2.0.13
+- Updated dependencies [[`dc20cd4`](https://github.com/rrweb-io/rrweb/commit/dc20cd45cc63058325784444af6bd32ed2cace48), [`3e9e42f`](https://github.com/rrweb-io/rrweb/commit/3e9e42fdfd6349087d7a0345af1b39dd56528502), [`a6893f7`](https://github.com/rrweb-io/rrweb/commit/a6893f73abe217a95d28996e01b7ec8261e42de3), [`88ea2d0`](https://github.com/rrweb-io/rrweb/commit/88ea2d05c1869026111c91f7aa14ea7a7193fcd8), [`fc390a9`](https://github.com/rrweb-io/rrweb/commit/fc390a954c4fc17fe2ee0e2b6edba634611349e0), [`79837ac`](https://github.com/rrweb-io/rrweb/commit/79837ac8f2f459935f6737210890b5c12033a53b), [`6f4e691`](https://github.com/rrweb-io/rrweb/commit/6f4e691f39cc59b655d1be4f951128beecb88acb), [`9cd28b7`](https://github.com/rrweb-io/rrweb/commit/9cd28b703ec08a77dc6b790dbffb20dfb8e9a513)]:
+  - rrweb@2.0.0-alpha.19
+  - @rrweb/types@2.0.0-alpha.19
+  - @rrweb/packer@2.0.0-alpha.19
 
 ## 2.0.0-alpha.18
 
@@ -129,19 +39,6 @@
   - @rrweb/packer@2.0.0-alpha.17
   - rrweb@2.0.0-alpha.17
   - @rrweb/types@2.0.0-alpha.17
-
-## 2.0.0
-
-### Major Changes
-
-- Saola AI
-
-### Patch Changes
-
-- Updated dependencies []:
-  - @saola.ai/rrweb-packer@2.0.0
-  - @saola.ai/rrweb@2.0.0
-  - @saola.ai/rrweb-types@2.0.0
 
 ## 2.0.0-alpha.15
 

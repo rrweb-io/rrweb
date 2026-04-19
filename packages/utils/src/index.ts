@@ -13,7 +13,13 @@ type BasePrototypeCache = {
 };
 
 const testableAccessors = {
-  Node: ['childNodes', 'parentNode', 'parentElement', 'textContent'] as const,
+  Node: [
+    'childNodes',
+    'parentNode',
+    'parentElement',
+    'textContent',
+    'ownerDocument',
+  ] as const,
   ShadowRoot: ['host', 'styleSheets'] as const,
   Element: ['shadowRoot', 'querySelector', 'querySelectorAll'] as const,
   MutationObserver: [] as const,
@@ -169,6 +175,10 @@ export function getUntaintedMethod<
   return untaintedMethod.bind(instance) as BasePrototypeCache[K][T];
 }
 
+export function ownerDocument(n: Node): Document | null {
+  return getUntaintedAccessor('Node', n, 'ownerDocument');
+}
+
 export function childNodes(n: Node): NodeListOf<Node> {
   return getUntaintedAccessor('Node', n, 'childNodes');
 }
@@ -266,6 +276,7 @@ export function patch(
 }
 
 export default {
+  ownerDocument,
   childNodes,
   parentNode,
   parentElement,

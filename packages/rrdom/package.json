@@ -21,6 +21,7 @@
     }
   },
   "files": [
+    "umd",
     "dist",
     "package.json"
   ],
@@ -41,7 +42,11 @@
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
   "devDependencies": {
+<<<<<<< HEAD
     "@saola.ai/rrweb-types": "^2.0.25",
+=======
+    "@rrweb/types": "^2.0.0-alpha.20",
+>>>>>>> upstream/master
     "@types/puppeteer": "^5.4.4",
     "@typescript-eslint/eslint-plugin": "^5.23.0",
     "@typescript-eslint/parser": "^5.23.0",

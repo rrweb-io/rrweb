@@ -5,7 +5,9 @@
 rrweb 中用于实现异步加载数据的 API 非常简单直观：
 
 ```js
-const replayer = new rrweb.Replayer(events);
+import { Replayer } from '@rrweb/replay';
+
+const replayer = new Replayer(events);
 
 replayer.addEvent(NEW_EVENT);
 ```
@@ -15,7 +17,9 @@ replayer.addEvent(NEW_EVENT);
 如果需要异步加载多个数据，只需这样使用：
 
 ```js
-const replayer = new rrweb.Replayer(events);
+import { Replayer } from '@rrweb/replay';
+
+const replayer = new Replayer(events);
 
 for (const event of NEW_EVENTS) {
   replayer.addEvent(event);

@@ -11,9 +11,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type {
   serializedElementNodeWithId,
+  BuildCache,
   textNode,
 } from '@saola.ai/rrweb-types';
-import type { BuildCache } from '../src/types';
 import { NodeType } from '@saola.ai/rrweb-types';
 import { Window } from 'happy-dom';
 

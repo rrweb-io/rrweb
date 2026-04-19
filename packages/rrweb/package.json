@@ -50,6 +50,7 @@
     "./dist/style.css": "./dist/style.css"
   },
   "files": [
+    "umd",
     "dist",
     "es",
     "lib",

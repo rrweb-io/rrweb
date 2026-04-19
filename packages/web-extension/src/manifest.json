@@ -1,0 +1,74 @@
+{
+  "common": {
+    "name": "rrweb",
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content/index.ts"],
+        "all_frames": true,
+        "run_at": "document_idle"
+      }
+    ],
+    "icons": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    },
+    "permissions": ["activeTab", "storage", "unlimitedStorage"]
+  },
+  "v2": {
+    "common": {
+      "manifest_version": 2,
+      "background": {
+        "persistent": false,
+        "scripts": ["background/index.ts"]
+      },
+      "browser_action": {
+        "default_title": "rrweb extension",
+        "default_popup": "popup/popup.html",
+        "browser_style": false
+      },
+      "options_ui": {
+        "page": "options/index.html",
+        "open_in_tab": true,
+        "chrome_style": false
+      },
+      "web_accessible_resources": ["**/*.js"]
+    },
+    "chrome": {},
+    "firefox": {
+      "browser_specific_settings": {
+        "gecko": {
+          "id": "rrweb@rrweb.io",
+          "strict_min_version": "42.0"
+        }
+      }
+    }
+  },
+  "v3": {
+    "common": {
+      "manifest_version": 3,
+      "background": {
+        "service_worker": "background/index.ts",
+        "type": "module"
+      },
+      "action": {
+        "default_title": "rrweb extension",
+        "default_popup": "popup/popup.html",
+        "browser_style": false
+      },
+      "options_ui": {
+        "page": "options/index.html",
+        "open_in_tab": true
+      },
+      "web_accessible_resources": [
+        {
+          "resources": ["**/*.js"],
+          "matches": ["<all_urls>"]
+        }
+      ]
+    },
+    "chrome": {},
+    "firefox": {}
+  }
+}

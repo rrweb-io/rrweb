@@ -1,0 +1,102 @@
+name: ESLint Check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  eslint_check_upload:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    name: ESLint Check and Report Upload
+
+    steps:
+      - name: Checkout pull request head
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Checkout current branch
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          cache: 'yarn'
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
+      - name: Build Packages
+        run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
+      - name: Eslint Check
+        run: yarn turbo run lint
+      - name: Save Code Linting Report JSON
+        run: yarn lint:report
+        # Continue to the next step even if this fails
+        continue-on-error: true
+      - name: Upload ESLint Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint_report.json
+          path: eslint_report.json
+      - name: Measure PR bundle sizes
+        if: github.event_name == 'pull_request'
+        run: node .github/scripts/measure-bundle-sizes.js pr-sizes.json
+      - name: Upload PR bundle sizes
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-sizes
+          path: pr-sizes.json
+
+  bundle_size_build:
+    # Only runs on PRs. Reuses the PR build from eslint_check_upload (via the
+    # pr-sizes artifact) and only builds the base branch itself. The privileged
+    # bundle-size-comment workflow then posts the PR comment without ever
+    # executing fork code.
+    if: github.event_name == 'pull_request'
+    needs: eslint_check_upload
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    name: Build Base for Bundle Size Comparison
+    steps:
+      - name: Checkout workflow ref
+        uses: actions/checkout@v4
+      - name: Prepare bundle size helper
+        run: |
+          cp .github/scripts/measure-bundle-sizes.js /tmp/measure-bundle-sizes.js
+      # --- Base branch ---
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.base_ref }}
+      - name: Download PR bundle sizes
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-sizes
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          cache: 'yarn'
+      - name: Install base dependencies
+        run: yarn install --frozen-lockfile
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
+      - name: Build base branch
+        run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
+      - name: Measure base bundle sizes
+        run: node /tmp/measure-bundle-sizes.js base-sizes.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-size-data
+          path: |
+            pr-sizes.json
+            base-sizes.json

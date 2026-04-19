@@ -352,7 +352,11 @@ function diffProps(
           ctx.drawImage(image, 0, 0, image.width, image.height);
         }
       };
+<<<<<<< HEAD
     } else if ((newTree.tagName === 'IFRAME' || newTree.tagName === 'FRAME') && name === 'srcdoc') continue;
+=======
+    } else if (newTree.tagName === 'IFRAME' && name === 'srcdoc') continue;
+>>>>>>> upstream/master
     else {
       try {
         oldTree.setAttribute(name, newValue);

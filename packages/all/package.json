@@ -44,6 +44,7 @@
     }
   },
   "files": [
+    "umd",
     "build",
     "dist",
     "package.json"

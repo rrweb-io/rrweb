@@ -4,7 +4,7 @@
   "globalDependencies": [
     ".eslintrc.js",
     ".prettierrc",
-    "vite.config.defaults.ts",
+    "vite.config.default.ts",
     "tsconfig.json"
   ],
   "globalPassThroughEnv": ["PUPPETEER_HEADLESS", "DISABLE_WORKER_INLINING"],

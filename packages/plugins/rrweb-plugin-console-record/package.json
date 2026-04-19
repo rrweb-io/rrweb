@@ -20,6 +20,7 @@
     }
   },
   "files": [
+    "umd",
     "dist",
     "package.json"
   ],
@@ -45,7 +46,11 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
+<<<<<<< HEAD
     "@saola.ai/rrweb": "^2.0.25",
+=======
+    "rrweb": "^2.0.0-alpha.20",
+>>>>>>> upstream/master
     "typescript": "^5.4.5",
     "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1",
@@ -53,7 +58,12 @@
     "puppeteer": "^20.9.0"
   },
   "peerDependencies": {
+<<<<<<< HEAD
     "@saola.ai/rrweb": "^2.0.25",
     "@saola.ai/rrweb-utils": "^2.0.25"
+=======
+    "rrweb": "^2.0.0-alpha.20",
+    "@rrweb/utils": "^2.0.0-alpha.20"
+>>>>>>> upstream/master
   }
 }

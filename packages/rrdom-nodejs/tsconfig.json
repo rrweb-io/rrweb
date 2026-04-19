@@ -12,7 +12,7 @@
       "path": "../rrdom"
     },
     {
-      "path": "../rrweb-snapshot"
+      "path": "../types"
     }
   ]
 }

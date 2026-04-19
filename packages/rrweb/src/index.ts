@@ -20,6 +20,9 @@ export {
 // exports style.css from replay
 import './replay/styles/style.css';
 
+// exports style.css from replay
+import './replay/styles/style.css';
+
 export type { recordOptions, ReplayPlugin } from './types';
 
 const { addCustomEvent } = record;

@@ -5,19 +5,21 @@
 开始录制后，我们就可以通过 `record.addCustomEvent` API 添加自定义事件：
 
 ```js
+import { record } from '@rrweb/record';
+
 // 开始录制
-rrweb.record({
+record({
   emit(event) {
     ...
   }
 })
 
 // 在开始录制后的任意时间点记录自定义事件，例如：
-rrweb.record.addCustomEvent('submit-form', {
+record.addCustomEvent('submit-form', {
   name: '姓名',
   age: 18
 })
-rrweb.record.addCustomEvent('some-error', {
+record.addCustomEvent('some-error', {
   error
 })
 ```
@@ -29,7 +31,9 @@ rrweb.record.addCustomEvent('some-error', {
 **获取对应事件**
 
 ```js
-const replayer = new rrweb.Replayer(events);
+import { Replayer } from '@rrweb/replay';
+
+const replayer = new Replayer(events);
 
 replayer.on('custom-event', (event) => {
   console.log(event.tag, event.payload);
