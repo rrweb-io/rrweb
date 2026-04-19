@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/record",
-  "version": "2.0.26",
+  "version": "2.0.27",
   "publishConfig": {
     "access": "public"
   },
@@ -56,9 +56,9 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@saola.ai/rrweb-types": "^2.0.26",
-    "@saola.ai/rrweb": "^2.0.26",
-    "@saola.ai/rrweb-utils": "^2.0.26"
+    "@saola.ai/rrweb-types": "^2.0.27",
+    "@saola.ai/rrweb": "^2.0.27",
+    "@saola.ai/rrweb-utils": "^2.0.27"
   },
   "browserslist": [
     "supports es6-class"

@@ -1,5 +1,15 @@
 # rrweb-player
 
+## 2.0.27
+
+### Patch Changes
+
+- fix svelete kit
+
+- Updated dependencies []:
+  - @saola.ai/replay@2.0.27
+  - @saola.ai/rrweb-packer@2.0.27
+
 ## 2.0.26
 
 ### Patch Changes

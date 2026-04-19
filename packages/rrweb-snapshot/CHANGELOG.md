@@ -1,5 +1,7 @@
 # rrweb-snapshot
 
+## 2.0.27
+
 ## 2.0.26
 
 ### Patch Changes
