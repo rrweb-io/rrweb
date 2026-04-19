@@ -19,7 +19,6 @@ body:
         - rrweb-snapshot
         - rrdom
         - rrweb-player
-        - web-extension
         - rrvideo
         - Other (specify below)
     validations:

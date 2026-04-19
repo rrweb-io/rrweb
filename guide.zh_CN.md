@@ -122,7 +122,6 @@ import '@rrweb/all/dist/style.css';
 - [@rrweb/packer](packages/packer)：一个用于打包和解包 rrweb 数据的包。
 - [@rrweb/types](packages/types)：包含 rrweb 包中共享的类型定义。
 - [@rrweb/utils](packages/utils)：包含 rrweb 包中共享的工具函数。
-- [web-extension](packages/web-extension)：rrweb 的网页扩展。
 - [rrvideo](packages/rrvideo)：一个用于处理 rrweb 中视频操作的包。
 - [@rrweb/rrweb-plugin-console-record](packages/plugins/rrweb-plugin-console-record)：一个用于记录控制台日志的插件。
 - [@rrweb/rrweb-plugin-console-replay](packages/plugins/rrweb-plugin-console-replay)：一个用于回放控制台日志的插件。
