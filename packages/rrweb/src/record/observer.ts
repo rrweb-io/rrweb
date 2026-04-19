@@ -555,6 +555,7 @@ function getNestedCSSRulePositions(rule: CSSRule): number[] {
       );
       const index = rules.indexOf(childRule);
       pos.unshift(index);
+      return recurse(childRule.parentRule, pos);
     } else if (childRule.parentStyleSheet) {
       const rules = Array.from(childRule.parentStyleSheet.cssRules);
       const index = rules.indexOf(childRule);

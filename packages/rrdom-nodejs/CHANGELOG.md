@@ -1,5 +1,15 @@
 # rrdom-nodejs
 
+## 2.0.26
+
+### Patch Changes
+
+- Bump rrweb 19.04.2026
+
+- Updated dependencies []:
+  - @saola.ai/rrweb-snapshot@2.0.26
+  - @saola.ai/rrdom@2.0.26
+
 ## 2.0.25
 
 ### Patch Changes

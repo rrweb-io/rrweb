@@ -1,8 +1,8 @@
 {
   "name": "@saola.ai/rrweb-player",
-  "version": "2.0.25",
+  "version": "2.0.26",
   "devDependencies": {
-    "@saola.ai/rrweb-types": "^2.0.25",
+    "@saola.ai/rrweb-types": "^2.0.26",
     "@sveltejs/adapter-auto": "^3.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/package": "^2.0.0",
@@ -20,8 +20,8 @@
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
-    "@saola.ai/replay": "^2.0.25",
-    "@saola.ai/rrweb-packer": "^2.0.25"
+    "@saola.ai/replay": "^2.0.26",
+    "@saola.ai/rrweb-packer": "^2.0.26"
   },
   "scripts": {
     "dev": "vite build --watch",
@@ -51,6 +51,7 @@
     "./dist/style.css": "./dist/style.css"
   },
   "files": [
+    "umd",
     "dist",
     "package.json"
   ],

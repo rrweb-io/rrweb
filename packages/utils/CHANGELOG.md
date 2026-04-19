@@ -1,5 +1,11 @@
 # @rrweb/utils
 
+## 2.0.26
+
+### Patch Changes
+
+- Bump rrweb 19.04.2026
+
 ## 2.0.25
 
 ### Patch Changes

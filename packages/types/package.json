@@ -1,6 +1,6 @@
 {
   "name": "@saola.ai/rrweb-types",
-  "version": "2.0.25",
+  "version": "2.0.26",
   "publishConfig": {
     "access": "public"
   },
@@ -42,6 +42,7 @@
     }
   },
   "files": [
+    "umd",
     "dist",
     "package.json"
   ],

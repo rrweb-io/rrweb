@@ -1,5 +1,16 @@
 # @rrweb/record
 
+## 2.0.26
+
+### Patch Changes
+
+- Bump rrweb 19.04.2026
+
+- Updated dependencies []:
+  - @saola.ai/rrweb@2.0.26
+  - @saola.ai/rrweb-types@2.0.26
+  - @saola.ai/rrweb-utils@2.0.26
+
 ## 2.0.25
 
 ### Patch Changes

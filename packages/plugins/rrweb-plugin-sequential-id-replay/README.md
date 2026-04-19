@@ -12,10 +12,10 @@ npm install @rrweb/rrweb-plugin-sequential-id-replay
 ## Usage
 
 ```js
-import rrweb from 'rrweb';
+import { Replayer } from '@rrweb/replay';
 import { getReplaySequentialIdPlugin } from '@rrweb/rrweb-plugin-sequential-id-replay';
 
-const replayer = new rrweb.Replayer(events, {
+const replayer = new Replayer(events, {
   plugins: [
     getReplaySequentialIdPlugin({
       // make sure this is the same as the record side

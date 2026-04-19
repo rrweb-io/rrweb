@@ -2,8 +2,11 @@ name: Tests
 
 on:
   push:
-    branches: 
-      - "**"
+    paths-ignore:
+      - '**/*.md'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -28,9 +31,14 @@ jobs:
 
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
+        env:
+          PUPPETEER_DOWNLOAD_BASE_URL: 'https://storage.googleapis.com/chrome-for-testing-public'
 
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
+
+      - name: Install Playwright browsers
+        run: cd packages/rrvideo && yarn playwright install chromium
 
       - name: Check types
         run: yarn check-types
