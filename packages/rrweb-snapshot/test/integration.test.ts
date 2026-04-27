@@ -47,7 +47,9 @@ const startServer = (defaultPort: number = 3030) =>
         const data = fs.readFileSync(pathname);
         const ext = path.parse(pathname).ext;
         res.setHeader('Content-type', mimeType[ext] || 'text/plain');
-        res.setHeader('Access-Control-Allow-Origin', '*');
+        if (!sanitizePath.includes('no-cors')) {
+          res.setHeader('Access-Control-Allow-Origin', '*');
+        }
         res.setHeader('Access-Control-Allow-Methods', 'GET');
         res.setHeader('Access-Control-Allow-Headers', 'Content-type');
         res.end(data);
@@ -305,6 +307,79 @@ iframe.contentDocument.querySelector('center').clientHeight
       }),
     );
   });
+
+  it('does not break the original image when inlining image fails (CORS is rejected)', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    // null/opaque origins will reject attempts to read the image data, but we should ensure that the original image on the live DOM is unaffected (i.e. doesn't get crossOrigin="anonymous" added, which would break the image loading)
+    await page.goto('about:blank', {
+      waitUntil: 'load',
+    });
+    await page.setContent(
+      `
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <body>
+    <img src="${getServerURL(
+        server,
+      )}/images/no-cors/rrweb-favicon-20x20.png" alt="CORS restricted and server does not support CORS" />
+  </body>
+</html>
+`,
+      {
+        waitUntil: 'load',
+      },
+    );
+
+    const warnings: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'warning') warnings.push(msg.text());
+    });
+
+    await page.waitForSelector('img', { timeout: 1000 });
+    await page.evaluate(`${code}var snapshot = rrwebSnapshot.snapshot(document, {
+        dataURLOptions: { type: "image/webp", quality: 0.8 },
+        inlineImages: true,
+        inlineStylesheet: false
+    })`);
+    await waitForRAF(page); // wait for the async fetch attempt to complete and fail
+
+    const bodyChildren = (await page.evaluate(`
+      snapshot.childNodes[0].childNodes[1].childNodes.filter((cn) => cn.type === 2);
+`)) as any[];
+
+    // inlining should have failed silently — snapshot contains the image but no rr_dataURL
+    expect(bodyChildren[0]).toEqual(
+      expect.objectContaining({
+        tagName: 'img',
+        attributes: expect.objectContaining({
+          src: getServerURL(server) + '/images/no-cors/rrweb-favicon-20x20.png',
+          alt: 'CORS restricted and server does not support CORS',
+        }),
+      }),
+    );
+    expect(bodyChildren[0].attributes.rr_dataURL).toBeUndefined();
+
+    // the live DOM image must not have crossOrigin mutated by rrweb
+    const crossOriginAttr = (await page.evaluate(
+      `document.querySelector('img').getAttribute('crossorigin')`,
+    )) as string | null;
+    expect(crossOriginAttr).toBeNull();
+
+    // the image should still be loaded and visible
+    const naturalWidth = (await page.evaluate(
+      `document.querySelector('img').naturalWidth`,
+    )) as number;
+    expect(naturalWidth).toBeGreaterThan(0);
+
+    // a warning should have been logged indicating the CORS failure
+    expect(
+      warnings.some(
+        (w) =>
+          w.includes('Cannot inline img') &&
+          w.includes('Server does not support CORS'),
+      ),
+    ).toBe(true);
+  });
+
 
   it('correctly saves blob:images offline', async () => {
     const page: puppeteer.Page = await browser.newPage();

@@ -695,7 +695,6 @@ function serializeElementNode(
     const image = n as HTMLImageElement;
     const imageSrc: string =
       image.currentSrc || image.getAttribute('src') || '<unknown-src>';
-    const priorCrossOrigin = image.crossOrigin;
     const recordInlineImage = () => {
       image.removeEventListener('load', recordInlineImage);
       try {
@@ -707,22 +706,40 @@ function serializeElementNode(
           dataURLOptions.quality,
         );
       } catch (err) {
-        if (image.crossOrigin !== 'anonymous') {
-          image.crossOrigin = 'anonymous';
-          if (image.complete && image.naturalWidth !== 0)
-            recordInlineImage(); // too early due to image reload
-          else image.addEventListener('load', recordInlineImage);
-          return;
+        if (
+          err instanceof DOMException &&
+          err.name === 'SecurityError' &&
+          image.crossOrigin !== 'anonymous'
+        ) {
+          // Canvas is tainted by a cross-origin image loaded without CORS.
+          // Fall back to fetch to retrieve the original bytes.
+          const src = image.currentSrc || image.getAttribute('src');
+          if (src) {
+            fetch(src, { mode: 'cors' })
+              .then((response) => response.blob())
+              .then(
+                (blob) =>
+                  new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                  }),
+              )
+              .then((dataURL) => {
+                attributes.rr_dataURL = dataURL;
+              })
+              .catch(() => {
+                console.warn(
+                  `Cannot inline img src=${imageSrc}! Server does not support CORS.`,
+                );
+              });
+          }
         } else {
           console.warn(
             `Cannot inline img src=${imageSrc}! Error: ${err as string}`,
           );
         }
-      }
-      if (image.crossOrigin === 'anonymous') {
-        priorCrossOrigin
-          ? (attributes.crossOrigin = priorCrossOrigin)
-          : image.removeAttribute('crossorigin');
       }
     };
     // The image content may not have finished loading yet.
