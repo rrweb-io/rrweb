@@ -371,13 +371,8 @@ iframe.contentDocument.querySelector('center').clientHeight
     expect(naturalWidth).toBeGreaterThan(0);
 
     // a warning should have been logged indicating the CORS failure
-    expect(
-      warnings.some(
-        (w) =>
-          w.includes('Cannot inline img') &&
-          w.includes('Server does not support CORS'),
-      ),
-    ).toBe(true);
+    expect(warnings.length).toBe(1)
+    expect(warnings[0]).toBe('Cannot inline img src="' + getServerURL(server) + '/images/no-cors/rrweb-favicon-20x20.png"! CORS request failed.');
   });
 
 

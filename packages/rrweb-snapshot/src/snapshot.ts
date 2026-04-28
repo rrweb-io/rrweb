@@ -693,53 +693,63 @@ function serializeElementNode(
       canvasCtx = canvasService.getContext('2d');
     }
     const image = n as HTMLImageElement;
-    const imageSrc: string =
-      image.currentSrc || image.getAttribute('src') || '<unknown-src>';
-    const recordInlineImage = () => {
-      image.removeEventListener('load', recordInlineImage);
+
+    const copyImageToDataURL = (img: HTMLImageElement) : { dataURL?: string; isSecurityError?: boolean; err?: Error; } => {
       try {
-        canvasService!.width = image.naturalWidth;
-        canvasService!.height = image.naturalHeight;
-        canvasCtx!.drawImage(image, 0, 0);
-        attributes.rr_dataURL = canvasService!.toDataURL(
-          dataURLOptions.type,
-          dataURLOptions.quality,
-        );
-      } catch (err) {
-        if (
-          err instanceof DOMException &&
-          err.name === 'SecurityError' &&
-          image.crossOrigin !== 'anonymous'
-        ) {
-          // Canvas is tainted by a cross-origin image loaded without CORS.
-          // Fall back to fetch to retrieve the original bytes.
-          const src = image.currentSrc || image.getAttribute('src');
-          if (src) {
-            fetch(src, { mode: 'cors' })
-              .then((response) => response.blob())
-              .then(
-                (blob) =>
-                  new Promise<string>((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result as string);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(blob);
-                  }),
-              )
-              .then((dataURL) => {
-                attributes.rr_dataURL = dataURL;
-              })
-              .catch(() => {
-                console.warn(
-                  `Cannot inline img src=${imageSrc}! Server does not support CORS.`,
-                );
-              });
-          }
+        canvasService!.width = img.naturalWidth;
+        canvasService!.height = img.naturalHeight;
+        canvasCtx!.drawImage(img, 0, 0);
+        return {
+          dataURL: canvasService!.toDataURL(
+            dataURLOptions.type,
+            dataURLOptions.quality,
+          )
+        };
+      } catch(err) {
+        return {
+          isSecurityError: (err instanceof DOMException && err.name === 'SecurityError'),
+          err: err instanceof Error ? err : new Error(String(err)),
+        }
+      }
+    }
+
+    // Try with a transient CORS-enabled image (doesn't modify live DOM)
+    const tryWithCorsImage = (imgSrc: string | undefined | null) => {
+      if (!imgSrc) {
+        console.warn('Unknown image src, cannot retry with CORS image.');
+        return;
+      }
+      const corsImage = new Image();
+      corsImage.crossOrigin = 'anonymous';
+      corsImage.onload = () => {
+        const result = copyImageToDataURL(corsImage);
+        if (typeof result.dataURL === 'string') {
+          attributes.rr_dataURL = result.dataURL;
         } else {
           console.warn(
-            `Cannot inline img src=${imageSrc}! Error: ${err as string}`,
+            `Cannot inline img src=${imgSrc}! Canvas still tainted after CORS retry.`,
           );
         }
+      };
+      corsImage.onerror = () => {
+        console.warn(`Cannot inline img src="${imgSrc}"! CORS request failed.`);
+      };
+      corsImage.src = imgSrc;
+    };
+
+    const recordInlineImage = () => {
+      image.removeEventListener('load', recordInlineImage);
+      const result = copyImageToDataURL(image);
+      const imageSrc = image.currentSrc || image.getAttribute('src');
+      if (typeof result.dataURL === 'string') {
+        attributes.rr_dataURL = result.dataURL
+      } else if (result.isSecurityError && image.crossOrigin !== 'anonymous') {
+        // Canvas is tainted by a cross-origin image loaded without CORS.
+        // Re-fetch via a detached Image with crossOrigin='anonymous' so the
+        // original DOM element is never mutated.
+        tryWithCorsImage(imageSrc);
+      } else if (result.err) {
+        console.warn(`Cannot inline img src=${imageSrc ?? '<unknown-src>'}! Error:`, result.err);
       }
     };
     // The image content may not have finished loading yet.
