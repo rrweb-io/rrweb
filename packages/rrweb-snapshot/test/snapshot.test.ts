@@ -2,13 +2,13 @@
  * @vitest-environment jsdom
  */
 import { JSDOM } from 'jsdom';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import snapshot, {
   _isBlockedElement,
   serializeNodeWithId,
 } from '../src/snapshot';
-import { elementNode, serializedNodeWithId } from '../src/types';
+import { elementNode, serializedNodeWithId } from '@newrelic/rrweb-types';
 import { Mirror, absolutifyURLs } from '../src/utils';
 
 const serializeNode = (node: Node): serializedNodeWithId | null => {
@@ -227,6 +227,42 @@ describe('form', () => {
       },
     });
     expect(sel?.childNodes).toEqual([]); // shouldn't be stored in childNodes while in transit
+  });
+});
+
+describe('inlineImages', () => {
+  it('uses image src directly when it is already a data URL', () => {
+    const dataURL =
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+    const img = document.createElement('img');
+    img.setAttribute('src', dataURL);
+
+    // Spy after creating the img so only calls made during serialization are
+    // tracked. createElement('canvas') is the entry point for the canvas path.
+    const createElement = vi.spyOn(document, 'createElement');
+
+    const serialized = serializeNodeWithId(img, {
+      doc: document,
+      mirror: new Mirror(),
+      blockClass: 'blockblock',
+      blockSelector: null,
+      maskTextClass: 'maskmask',
+      maskTextSelector: null,
+      skipChild: false,
+      inlineStylesheet: true,
+      maskTextFn: undefined,
+      maskInputFn: undefined,
+      slimDOMOptions: {},
+      inlineImages: true,
+    });
+
+    // jsdom does not decode images (naturalWidth === 0), so the load listener
+    // is registered rather than called synchronously; fire it manually.
+    img.dispatchEvent(new Event('load'));
+
+    expect(createElement).not.toHaveBeenCalledWith('canvas');
+    expect((serialized as elementNode)?.attributes.rr_dataURL).toBe(dataURL);
+    createElement.mockRestore();
   });
 });
 

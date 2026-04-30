@@ -688,19 +688,20 @@ function serializeElementNode(
   }
   // save image offline
   if (tagName === 'img' && inlineImages) {
-    if (!canvasService) {
-      canvasService = doc.createElement('canvas');
-      canvasCtx = canvasService.getContext('2d');
-    }
     const image = n as HTMLImageElement;
 
     const copyImageToDataURL = (img: HTMLImageElement) : { dataURL?: string; isSecurityError?: boolean; err?: Error; } => {
       try {
-        canvasService!.width = img.naturalWidth;
-        canvasService!.height = img.naturalHeight;
+        if (!canvasService) {
+          canvasService = doc.createElement('canvas');
+          canvasCtx = canvasService.getContext('2d');
+        }
+
+        canvasService.width = img.naturalWidth;
+        canvasService.height = img.naturalHeight;
         canvasCtx!.drawImage(img, 0, 0);
         return {
-          dataURL: canvasService!.toDataURL(
+          dataURL: canvasService.toDataURL(
             dataURLOptions.type,
             dataURLOptions.quality,
           )
@@ -739,17 +740,22 @@ function serializeElementNode(
 
     const recordInlineImage = () => {
       image.removeEventListener('load', recordInlineImage);
-      const result = copyImageToDataURL(image);
       const imageSrc = image.currentSrc || image.getAttribute('src');
-      if (typeof result.dataURL === 'string') {
-        attributes.rr_dataURL = result.dataURL
-      } else if (result.isSecurityError && image.crossOrigin !== 'anonymous') {
-        // Canvas is tainted by a cross-origin image loaded without CORS.
-        // Re-fetch via a detached Image with crossOrigin='anonymous' so the
-        // original DOM element is never mutated.
-        tryWithCorsImage(imageSrc);
-      } else if (result.err) {
-        console.warn(`Cannot inline img src=${imageSrc ?? '<unknown-src>'}! Error:`, result.err);
+
+      if (imageSrc?.startsWith('data:')) {
+        attributes.rr_dataURL = imageSrc;
+      } else {
+        const result = copyImageToDataURL(image);
+        if (typeof result.dataURL === 'string') {
+          attributes.rr_dataURL = result.dataURL
+        } else if (result.isSecurityError && image.crossOrigin !== 'anonymous') {
+          // Canvas is tainted by a cross-origin image loaded without CORS.
+          // Re-fetch via a detached Image with crossOrigin='anonymous' so the
+          // original DOM element is never mutated.
+          tryWithCorsImage(imageSrc);
+        } else if (result.err) {
+          console.warn(`Cannot inline img src=${imageSrc ?? '<unknown-src>'}! Error:`, result.err);
+        }
       }
     };
     // The image content may not have finished loading yet.
