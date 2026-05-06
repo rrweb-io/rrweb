@@ -51,6 +51,22 @@ export const isAngularZonePresent = (): boolean => {
   return !!(globalThis as { Zone?: unknown }).Zone;
 };
 
+// When Angular Zone.js is present, it stores the original unpatched globals
+// under a symbol key. Use this to get the native MutationObserver (etc.)
+// without the iframe fallback, which breaks on Safari.
+// See: https://github.com/PostHog/posthog-js/pull/1687
+function angularZoneUnpatchedAlternative<T extends keyof BasePrototypeCache>(
+  key: T,
+): (typeof globalThis)[T] | undefined {
+  const Zone = (globalThis as { Zone?: { __symbol__?: (k: string) => string } })
+    .Zone;
+  const symbol = Zone?.__symbol__?.(key);
+  if (symbol && (globalThis as Record<string, unknown>)[symbol]) {
+    return (globalThis as Record<string, unknown>)[symbol] as (typeof globalThis)[T];
+  }
+  return undefined;
+}
+
 export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
   key: T,
 ): BasePrototypeCache[T] {
@@ -89,6 +105,19 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
   if (isUntaintedAccessors && isUntaintedMethods && !isAngularZonePresent()) {
     untaintedBasePrototype[key] = defaultObj.prototype as BasePrototypeCache[T];
     return defaultObj.prototype as BasePrototypeCache[T];
+  }
+
+  // Try Zone.js's stored original before the iframe fallback.
+  // The iframe approach breaks on Safari where a MutationObserver from an
+  // iframe's contentWindow silently never fires callbacks when observing
+  // the parent document.
+  const zoneAlternative = angularZoneUnpatchedAlternative(key);
+  if (zoneAlternative) {
+    const proto = (zoneAlternative as TypeofPrototypeOwner)
+      .prototype as BasePrototypeCache[T];
+    if (proto) {
+      return (untaintedBasePrototype[key] = proto);
+    }
   }
 
   try {
