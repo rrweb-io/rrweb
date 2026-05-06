@@ -62,7 +62,9 @@ function angularZoneUnpatchedAlternative<T extends keyof BasePrototypeCache>(
     .Zone;
   const symbol = Zone?.__symbol__?.(key);
   if (symbol && (globalThis as Record<string, unknown>)[symbol]) {
-    return (globalThis as Record<string, unknown>)[symbol] as (typeof globalThis)[T];
+    return (globalThis as Record<string, unknown>)[
+      symbol
+    ] as (typeof globalThis)[T];
   }
   return undefined;
 }
