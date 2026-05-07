@@ -3,6 +3,7 @@
  */
 import { describe, it, test, expect } from 'vitest';
 import {
+  Mirror,
   escapeImportStatement,
   extractFileExtension,
   fixSafariColons,
@@ -281,6 +282,71 @@ describe('utils', () => {
 
       const out3 = fixSafariColons('[data-aa\\:other] { color: red; }');
       expect(out3).toEqual('[data-aa\\:other] { color: red; }');
+    });
+  });
+
+  describe('Mirror GC', () => {
+    /**
+     * idNodeMap must not retain strong references to nodes that have been
+     * removed from the mirror.  Verify that add→removeNodeFromMap round-trips
+     * leave the map empty.
+     */
+    it('idNodeMap size does not grow monotonically after nodes are removed', () => {
+      const mirror = new Mirror();
+
+      const makeMeta = (id: number): serializedNodeWithId => ({
+        type: NodeType.Element,
+        tagName: 'div',
+        attributes: {},
+        childNodes: [],
+        id,
+      });
+
+      // Add a parent with two children.
+      const parent = document.createElement('div');
+      const child1 = document.createElement('span');
+      const child2 = document.createElement('span');
+      parent.appendChild(child1);
+      parent.appendChild(child2);
+
+      mirror.add(parent, makeMeta(1));
+      mirror.add(child1, makeMeta(2));
+      mirror.add(child2, makeMeta(3));
+
+      expect(mirror.getIds().length).toBe(3);
+
+      // Removing the parent must recursively clean up children too.
+      mirror.removeNodeFromMap(parent);
+
+      expect(mirror.getIds().length).toBe(0);
+    });
+
+    it('removeNodeFromMap on an unserialized parent still removes serialized children', () => {
+      const mirror = new Mirror();
+
+      const makeMeta = (id: number): serializedNodeWithId => ({
+        type: NodeType.Element,
+        tagName: 'div',
+        attributes: {},
+        childNodes: [],
+        id,
+      });
+
+      // Simulate a container that was never serialized (e.g. a blocked element)
+      // but whose child was serialized.  This mirrors the scenario fixed in
+      // mutation.ts where !isSerialized(n) used to skip mapRemoves.push(n).
+      const container = document.createElement('div');
+      const serializedChild = document.createElement('span');
+      container.appendChild(serializedChild);
+
+      // Only the child is registered in the mirror.
+      mirror.add(serializedChild, makeMeta(10));
+      expect(mirror.getIds().length).toBe(1);
+
+      // removeNodeFromMap on the container must still reach and evict the child.
+      mirror.removeNodeFromMap(container);
+
+      expect(mirror.getIds().length).toBe(0);
     });
   });
 });

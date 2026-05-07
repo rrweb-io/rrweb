@@ -729,9 +729,15 @@ export default class MutationBuffer {
             : this.mirror.getId(m.target);
           if (
             isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
-            isIgnored(n, this.mirror, this.slimDOMOptions) ||
-            !isSerialized(n, this.mirror)
+            isIgnored(n, this.mirror, this.slimDOMOptions)
           ) {
+            return;
+          }
+          if (!isSerialized(n, this.mirror)) {
+            // Even though this node itself was never serialized, its subtree
+            // may contain serialized nodes whose idNodeMap entries must be
+            // freed; schedule a recursive sweep so they don't leak.
+            this.mapRemoves.push(n);
             return;
           }
           // removed node has not been serialized yet, just remove it from the Set
