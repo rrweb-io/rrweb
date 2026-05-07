@@ -1,5 +1,35 @@
 # @rrweb/types
 
+## 2.0.0
+
+### Major Changes
+
+- [#43](https://github.com/amplitude/rrweb/pull/43) [`0749d4c`](https://github.com/amplitude/rrweb/commit/0749d4c0d5ec0fb75b82db935d9cc8466645b307) Thanks [@jxiwang](https://github.com/jxiwang)! - Important: If you don't reference distributed files directly, for example you run `import rrweb from 'rrweb'` you won't notice a difference. If you include rrweb in a script tag and referred to a `.js` file, you'll now have to update that path to include a `.umd.cjs` file. Distributed files have new paths, filenames and extensions. All packages now no longer include a `.js` files, instead they include `.cjs`, `.umd.cjs` and `.mjs` files. The `.umd.cjs` files are CommonJS modules that bundle all files together to make it easy to ship one file to browser environments. The `.mjs` files are ES modules that can be used in modern browsers, node.js and bundlers that support ES modules. The `.cjs` files are CommonJS modules that can be used in older Node.js environments.
+
+### Minor Changes
+
+- [#43](https://github.com/amplitude/rrweb/pull/43) [`3ae57a6`](https://github.com/amplitude/rrweb/commit/3ae57a6d8803f4e076a448fa7e3967fa3c125487) Thanks [@jxiwang](https://github.com/jxiwang)! - Support top-layer <dialog> components. Fixes #1381.
+
+### Patch Changes
+
+- [#73](https://github.com/amplitude/rrweb/pull/73) [`b2a7533`](https://github.com/amplitude/rrweb/commit/b2a75335eabe17a6e08aae68307fcd29e356e717) Thanks [@lewgordon-amplitude](https://github.com/lewgordon-amplitude)! - Upgrade vite from ^6.0.1 to ^6 across all packages. Vite 6.0.1 had a bug causing parser errors with CSS imports in TypeScript files, which is fixed in Vite 6.3.0+. Also fixed Svelte component issues (self-closing tags, ARIA attributes) and moved CSS import to main.ts to preserve runtime-generated classes.
+
+- [#101](https://github.com/amplitude/rrweb/pull/101) [`f66e0ab`](https://github.com/amplitude/rrweb/commit/f66e0ab409a391112e9204f32bd1977db72207da) Thanks [@lewgordon-amplitude](https://github.com/lewgordon-amplitude)! - Fix adoptedStyleSheets CSS not applied on replay when incremental AdoptedStyleSheet events are dropped in transit. CSS rules are now serialized inline in the full snapshot so replay is self-contained. Adds a `captureAdoptedStyleSheets` record option (default `true`) to opt out if snapshot size is a concern.
+
+- [#92](https://github.com/amplitude/rrweb/pull/92) [`cf64007`](https://github.com/amplitude/rrweb/commit/cf64007425486148519f667943f5ff1e77274e60) Thanks [@lewgordon-amplitude](https://github.com/lewgordon-amplitude)! - chore: bump package versions to re-sync after rrweb-capture publish
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`87cba12`](https://github.com/amplitude/rrweb/commit/87cba12ebbc2da78671c16be6932c10b4c1cbb6d) Thanks [@jxiwang](https://github.com/jxiwang)! - Add `loop` to `mediaInteractionParam`
+
+- [#87](https://github.com/amplitude/rrweb/pull/87) [`9f39d67`](https://github.com/amplitude/rrweb/commit/9f39d6769164eacb4045fd16732d8db83c41aa21) Thanks [@lewgordon-amplitude](https://github.com/lewgordon-amplitude)! - SR-3016 reduce full-snapshot rebuilds during replay seeking
+
+  - Binary search in `discardPriorSnapshots()` and the `play()` event loop (was O(n) linear scan on every seek)
+  - `SeekCache`: stores serialized DOM snapshots after each seek; subsequent seeks restore from a cached checkpoint instead of replaying from the original `FullSnapshot`
+  - `playInternal()`: `SeekStart`/`SeekEnd` events now only fire on user-initiated seeks, not internal calls
+  - New `ReplayerEvents.SeekStart` and `ReplayerEvents.SeekEnd` for UI loading indicators
+  - New `playerConfig` options: `useSeekCache` (default `false`) and `seekCacheMaxEntries` (default `10`)
+
+- [#22](https://github.com/amplitude/rrweb/pull/22) [`21278b5`](https://github.com/amplitude/rrweb/commit/21278b54b57f16e98b05923103e82b77b2eda19f) Thanks [@jxiwang](https://github.com/jxiwang)! - Fix type error when using `"moduleResolution": "NodeNext"`.
+
 ## 2.0.0-alpha.40
 
 ### Patch Changes
