@@ -285,7 +285,7 @@ describe('utils', () => {
     });
   });
 
-  describe('Mirror GC (SR-4161)', () => {
+  describe('Mirror GC', () => {
     /**
      * idNodeMap must not retain strong references to nodes that have been
      * removed from the mirror.  Verify that add→removeNodeFromMap round-trips
