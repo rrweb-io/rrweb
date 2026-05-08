@@ -1,16 +1,5 @@
 # rrvideo
 
-## 2.1.0
-
-### Patch Changes
-
-- [#73](https://github.com/amplitude/rrweb/pull/73) [`b2a7533`](https://github.com/amplitude/rrweb/commit/b2a75335eabe17a6e08aae68307fcd29e356e717) Thanks [@lewgordon-amplitude](https://github.com/lewgordon-amplitude)! - Upgrade vite from ^6.0.1 to ^6 across all packages. Vite 6.0.1 had a bug causing parser errors with CSS imports in TypeScript files, which is fixed in Vite 6.3.0+. Also fixed Svelte component issues (self-closing tags, ARIA attributes) and moved CSS import to main.ts to preserve runtime-generated classes.
-
-- [#92](https://github.com/amplitude/rrweb/pull/92) [`cf64007`](https://github.com/amplitude/rrweb/commit/cf64007425486148519f667943f5ff1e77274e60) Thanks [@lewgordon-amplitude](https://github.com/lewgordon-amplitude)! - chore: bump package versions to re-sync after rrweb-capture publish
-
-- Updated dependencies [[`b2a7533`](https://github.com/amplitude/rrweb/commit/b2a75335eabe17a6e08aae68307fcd29e356e717), [`0749d4c`](https://github.com/amplitude/rrweb/commit/0749d4c0d5ec0fb75b82db935d9cc8466645b307), [`cf64007`](https://github.com/amplitude/rrweb/commit/cf64007425486148519f667943f5ff1e77274e60)]:
-  - @amplitude/rrweb-player@2.0.0
-
 ## 2.0.0-alpha.40
 
 ### Patch Changes
