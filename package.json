@@ -58,8 +58,8 @@
     "release:version": "lerna version --conventional-commits --yes",
     "release:version:prerelease": "lerna version --conventional-commits --conventional-prerelease --preid alpha --yes",
     "release:version:dry-run": "lerna version --conventional-commits --no-git-tag-version --no-push --yes",
-    "release:publish": "lerna publish from-git --yes",
-    "release:publish:prerelease": "lerna publish from-git --dist-tag alpha --yes"
+    "release:publish": "lerna publish from-package --yes",
+    "release:publish:prerelease": "lerna publish from-package --dist-tag alpha --yes"
   },
   "resolutions": {
     "**/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz",

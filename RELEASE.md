@@ -117,7 +117,7 @@ Lerna reads `version` from `lerna.json`. Confirm it matches the latest published
 
 ### Tag pushed but no GitHub Release / npm publish
 
-Check the workflow logs for failures after the `Version` step. The tag and commit on the branch are the source of truth for what was attempted; partial failures can be recovered by re-running the workflow with the same `releaseType` and `skipVersion: true` — this calls `lerna publish from-git` against the existing tag without re-bumping.
+Check the workflow logs for failures after the `Version` step. The package.json versions on master and the npm registry are the source of truth for what was attempted vs. what landed; partial failures can be recovered by re-running the workflow with the same `releaseType` and `skipVersion: true` — this calls `lerna publish from-package` which compares package.json versions against npm and publishes the diff (idempotent, safe to re-run).
 
 ### `lerna publish` fails with `EUNCOMMIT Working tree has uncommitted changes`
 
