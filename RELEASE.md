@@ -14,6 +14,10 @@ Open the [`Release` workflow](https://github.com/amplitude/rrweb/actions/workflo
 
 The `authorize` job enforces branch + actor (write permission required).
 
+### `skipVersion` (recovery)
+
+Set `skipVersion: true` to skip the `lerna version` step and only run `lerna publish from-git`. Use this when a previous run pushed the version-bump commit + tag but the publish step failed — re-running with `skipVersion: true` republishes from the existing tag without bumping again.
+
 ## Prerelease lifecycle
 
 Prereleases ride a short-lived `alpha` branch:
@@ -113,4 +117,8 @@ Lerna reads `version` from `lerna.json`. Confirm it matches the latest published
 
 ### Tag pushed but no GitHub Release / npm publish
 
-Check the workflow logs for failures after the `Version` step. The tag and commit on the branch are the source of truth for what was attempted; partial failures can be recovered by re-running `Publish` with the same git state via `lerna publish from-git`.
+Check the workflow logs for failures after the `Version` step. The tag and commit on the branch are the source of truth for what was attempted; partial failures can be recovered by re-running the workflow with the same `releaseType` and `skipVersion: true` — this calls `lerna publish from-git` against the existing tag without re-bumping.
+
+### `npm publish` fails with `E404 Not found`
+
+Auth isn't reaching the npm registry. The `actions/setup-node` step writes an `.npmrc` with `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}` — if `NODE_AUTH_TOKEN` isn't set on the publish step's env, npm authenticates with a literal placeholder and the registry returns 404 (treating the request as anonymous). Confirm the Publish steps in `release.yml` set `NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}`.

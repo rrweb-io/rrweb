@@ -12,6 +12,11 @@ on:
           - release
           - prerelease
           - dry-run
+      skipVersion:
+        type: boolean
+        description: 'Skip the lerna version step and only publish (recovery for a partial publish where the tag/commit already landed)'
+        required: false
+        default: false
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -87,13 +92,13 @@ jobs:
           NODE_OPTIONS: '--max-old-space-size=4096'
 
       - name: Version (release)
-        if: ${{ github.event.inputs.releaseType == 'release' }}
+        if: ${{ github.event.inputs.releaseType == 'release' && github.event.inputs.skipVersion != 'true' }}
         run: yarn release:version
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Version (prerelease)
-        if: ${{ github.event.inputs.releaseType == 'prerelease' }}
+        if: ${{ github.event.inputs.releaseType == 'prerelease' && github.event.inputs.skipVersion != 'true' }}
         run: yarn release:version:prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -107,9 +112,11 @@ jobs:
         run: yarn release:publish
         env:
           NPM_CONFIG_PROVENANCE: 'true'
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish (prerelease)
         if: ${{ github.event.inputs.releaseType == 'prerelease' }}
         run: yarn release:publish:prerelease
         env:
           NPM_CONFIG_PROVENANCE: 'true'
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
