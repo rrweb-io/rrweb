@@ -76,7 +76,11 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24.x
-          registry-url: 'https://registry.npmjs.org'
+          # Intentionally no registry-url: setup-node writes an .npmrc with
+          # `_authToken=${NODE_AUTH_TOKEN}` when that's set, which causes npm
+          # to use that token instead of attempting OIDC trusted publishing.
+          # OIDC trusted publishing is configured npm-side for this workflow
+          # (SR-3110, PR #89) and is the only auth path we want.
 
       - name: Upgrade npm for OIDC support
         run: npm install -g npm@latest
@@ -114,24 +118,14 @@ jobs:
         if: ${{ github.event.inputs.releaseType == 'dry-run' }}
         run: yarn release:version:dry-run
 
-      - name: Verify npm auth
-        if: ${{ github.event.inputs.releaseType != 'dry-run' }}
-        run: |
-          echo "npm whoami:"
-          npm whoami || echo "(npm whoami failed)"
-          echo "access ls-packages:"
-          npm access ls-packages 2>&1 | head -30 || echo "(ls-packages failed)"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Publish (release)
         if: ${{ github.event.inputs.releaseType == 'release' }}
         run: yarn release:publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
 
       - name: Publish (prerelease)
         if: ${{ github.event.inputs.releaseType == 'prerelease' }}
         run: yarn release:publish:prerelease
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
