@@ -37,10 +37,7 @@
     "markdownlint-cli": "^0.31.1",
     "prettier": "2.8.4",
     "conventional-changelog-conventionalcommits": "^8.0.0",
-    "semantic-release": "^24.2.0",
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/exec": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
+    "lerna": "^8.1.9",
     "turbo": "^2.0.4",
     "typescript": "^5.4.5"
   },
@@ -58,7 +55,11 @@
     "live-stream": "cd packages/rrweb && yarn live-stream",
     "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'yarn eslint packages/*/src --ext .ts,.tsx,.js,.jsx,.svelte'",
     "lint:report": "yarn eslint --output-file eslint_report.json --format json packages/*/src --ext .ts,.tsx,.js,.jsx",
-    "release": "semantic-release"
+    "release:version": "lerna version --conventional-commits --yes",
+    "release:version:prerelease": "lerna version --conventional-commits --conventional-prerelease --preid alpha --yes",
+    "release:version:dry-run": "lerna version --conventional-commits --no-git-tag-version --no-push --yes",
+    "release:publish": "lerna publish from-git --yes",
+    "release:publish:prerelease": "lerna publish from-git --dist-tag alpha --yes"
   },
   "resolutions": {
     "**/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz",

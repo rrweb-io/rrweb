@@ -1,13 +1,17 @@
 {
-  "packages": [
-    "packages/*"
-  ],
-  "version": "independent",
+  "$schema": "node_modules/lerna/schemas/lerna-schema.json",
+  "version": "2.1.0",
   "npmClient": "yarn",
-  "useWorkspaces": true,
   "command": {
+    "version": {
+      "conventionalCommits": true,
+      "changelogPreset": "conventionalcommits",
+      "createRelease": "github",
+      "message": "chore(release): %s"
+    },
     "publish": {
-      "message": "chore(release): publish new version"
+      "registry": "https://registry.npmjs.org/",
+      "verifyAccess": false
     }
   }
 }
