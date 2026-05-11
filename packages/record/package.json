@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrweb-record",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "publishConfig": {
     "access": "public"
   },
@@ -49,14 +49,14 @@
   ],
   "devDependencies": {
     "puppeteer": "^20.9.0",
+    "typescript": "^5.4.5",
     "vite": "^6",
     "vite-plugin-dts": "^3.9.1",
-    "vitest": "^1.4.0",
-    "typescript": "^5.4.5"
+    "vitest": "^1.4.0"
   },
   "dependencies": {
-    "@amplitude/rrweb-types": "^2.1.0",
-    "@amplitude/rrweb": "^2.1.0"
+    "@amplitude/rrweb": "^2.1.1",
+    "@amplitude/rrweb-types": "^2.1.0"
   },
   "browserslist": [
     "supports es6-class"

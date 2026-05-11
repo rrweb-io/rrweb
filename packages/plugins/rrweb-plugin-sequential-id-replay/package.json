@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrweb-plugin-sequential-id-replay",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-sequential-id-replay.umd.cjs",
@@ -43,8 +43,8 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
-    "@amplitude/rrweb-plugin-sequential-id-record": "^2.1.0",
-    "@amplitude/rrweb": "^2.1.0",
+    "@amplitude/rrweb": "^2.1.1",
+    "@amplitude/rrweb-plugin-sequential-id-record": "^2.1.1",
     "typescript": "^5.4.5",
     "vite": "^6",
     "vite-plugin-dts": "^3.9.1"

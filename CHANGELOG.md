@@ -1,3 +1,14 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## <small>2.1.1 (2026-05-11)</small>
+
+- feat(release): migrate from semantic-release to Lerna (workflow_dispatch) (#114) ([68250f9](https://github.com/amplitude/rrweb/commit/68250f9)), closes [#114](https://github.com/amplitude/rrweb/issues/114) [#109](https://github.com/amplitude/rrweb/issues/109)
+- feat(release): replace changesets with semantic-release (SR-4223) (#110) ([998e389](https://github.com/amplitude/rrweb/commit/998e389)), closes [#110](https://github.com/amplitude/rrweb/issues/110)
+- fix(replay): preserve shadow-DOM adoptedStyleSheets across seek-cache restores (SR-4260) (#111) ([b4382c4](https://github.com/amplitude/rrweb/commit/b4382c4)), closes [#111](https://github.com/amplitude/rrweb/issues/111)
+
 # Changelog
 
 ## v1.0.0

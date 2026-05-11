@@ -1,3 +1,12 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## <small>2.1.1 (2026-05-11)</small>
+
+- fix(replay): preserve shadow-DOM adoptedStyleSheets across seek-cache restores (SR-4260) (#111) ([b4382c4](https://github.com/amplitude/rrweb/commit/b4382c4)), closes [#111](https://github.com/amplitude/rrweb/issues/111)
+
 # rrweb
 
 ## 2.0.0-alpha.40

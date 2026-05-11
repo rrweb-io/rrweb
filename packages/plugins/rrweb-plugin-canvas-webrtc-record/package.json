@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrweb-plugin-canvas-webrtc-record",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-canvas-webrtc-record.umd.cjs",
@@ -43,7 +43,7 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
-    "@amplitude/rrweb": "^2.1.0",
+    "@amplitude/rrweb": "^2.1.1",
     "typescript": "^5.4.5",
     "vite": "^6",
     "vite-plugin-dts": "^3.9.1"
