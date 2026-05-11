@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - alpha
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -18,6 +19,8 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js 24.x
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -25,23 +28,21 @@ jobs:
           node-version: 24.x
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Upgrade npm for OIDC support
+        run: npm install -g npm@latest
+
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
 
-      - name: Create Release Pull Request or Publish to npm
-        id: changesets
-        uses: changesets/action@6a0a831ff30acef54f2c6aa1cbbc1096b066edaf # v1
-        with:
-          publish: yarn run release
-          createGithubReleases: false
+      - name: Build packages
+        run: yarn build:all
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
+
+      - name: Release
+        run: npx semantic-release
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: 'true'
-
-      # - name: Send a Slack notification if a publish happens
-      #   if: steps.changesets.outputs.published == 'true'
-      #   # You can do something when a publish happens.
-      #   run: my-slack-bot send-notification --message "A new version of ${GITHUB_REPOSITORY} was published!"
