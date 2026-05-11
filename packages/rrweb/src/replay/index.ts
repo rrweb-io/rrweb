@@ -983,13 +983,21 @@ export class Replayer {
       if (meta) scratchMirror.add(node, meta);
     });
 
-    // onAdoptedStyleSheet is intentionally omitted: seek-cache snapshots capture
-    // static DOM structure only. AdoptedStyleSheets are re-applied when the
-    // replayer replays incremental events from the seek checkpoint to the target time.
+    // Capture adoptedStyleSheets state so the cache restore reproduces shadow-DOM
+    // styling. Without this, hosts that adopted sheets before the cache anchor
+    // (the common Web Component pattern: adopt once at construction) lose their
+    // sheets on cache-hit seek — the replayer skips events ≤ the checkpoint, so
+    // the original adoption events are never replayed.
+    //
+    // The callback returns the player-side styleId already tracked by styleMirror
+    // (which uses recording-side ids), so a cache restore creates new CSSStyleSheet
+    // instances under the same ids and any post-checkpoint incremental events
+    // referencing them resolve correctly.
     const snapshotNode = snapshot(this.iframe.contentDocument, {
       mirror: scratchMirror,
       blockClass: this.config.blockClass,
       inlineStylesheet: true,
+      onAdoptedStyleSheet: (sheet) => this.styleMirror.add(sheet),
     });
     if (!snapshotNode) return;
 

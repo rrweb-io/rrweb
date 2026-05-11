@@ -7,6 +7,7 @@ import { vi } from 'vitest';
 import adoptedStyleSheet from './events/adopted-style-sheet';
 import adoptedStyleSheetInSnapshot from './events/adopted-style-sheet-in-snapshot';
 import adoptedStyleSheetSharedInSnapshot from './events/adopted-style-sheet-shared-in-snapshot';
+import adoptedStyleSheetSharedWithIncrementals from './events/adopted-style-sheet-shared-with-incrementals';
 import adoptedStyleSheetNestedSharedInSnapshot from './events/adopted-style-sheet-nested-shared-in-snapshot';
 import adoptedStyleSheetModification from './events/adopted-style-sheet-modification';
 import canvasInIframe from './events/canvas-in-iframe';
@@ -1183,6 +1184,88 @@ describe('replayer', function () {
           innerHost.shadowRoot!.adoptedStyleSheets[0]
         );
       }),
+    ).toBe(true);
+  });
+
+  it('preserves shadow-DOM adoptedStyleSheets across a seek-cache restore', async () => {
+    // Regression: the seek cache used to omit onAdoptedStyleSheet when
+    // serializing the cached snapshot, so restoring from a checkpoint dropped
+    // every shadow host's adoptedStyleSheets and styling vanished after a
+    // scrub. The cache-hit path is reached on a backward seek to a time at or
+    // after a previously captured checkpoint, so we warm the cache at 2000ms,
+    // jump forward to 3500ms, then seek back to 2500ms — that final seek
+    // restores from the 2000ms cache entry rather than replaying from the
+    // original FullSnapshot, exercising exactly the path the bug lived on.
+    await page.evaluate(`
+      events = ${JSON.stringify(adoptedStyleSheetSharedWithIncrementals)};
+      const { Replayer } = rrweb;
+      var replayer = new Replayer(events, {
+        showDebug: true,
+        useSeekCache: true,
+      });
+      replayer.pause(2000);
+    `);
+    // Wait for captureSeekCacheEntry's 0-delay timer to fire and serialize.
+    await page.waitForTimeout(300);
+
+    await page.evaluate('replayer.pause(3500);');
+    await page.waitForTimeout(300);
+
+    // Backward seek — applyEventsSynchronously consults seekCache and the
+    // 2000ms entry wins (latest entry ≤ 2500ms target).
+    await page.evaluate('replayer.pause(2500);');
+    await page.waitForTimeout(300);
+
+    const iframe = await page.$('iframe');
+    const contentDocument = await iframe!.contentFrame()!;
+
+    // Both shadow hosts must have non-empty adoptedStyleSheets after restore.
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          document.querySelector('#shadow-host-1')!.shadowRoot!
+            .adoptedStyleSheets.length,
+      ),
+    ).toBe(1);
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          document.querySelector('#shadow-host-2')!.shadowRoot!
+            .adoptedStyleSheets.length,
+      ),
+    ).toBe(1);
+
+    // Computed styling must come through on both spans.
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          window.getComputedStyle(
+            document
+              .querySelector('#shadow-host-1')!
+              .shadowRoot!.querySelector('span')!,
+          ).color,
+      ),
+    ).toEqual('rgb(255, 0, 0)');
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          window.getComputedStyle(
+            document
+              .querySelector('#shadow-host-2')!
+              .shadowRoot!.querySelector('span')!,
+          ).color,
+      ),
+    ).toEqual('rgb(255, 0, 0)');
+
+    // Sheet must still be shared between hosts after restore.
+    expect(
+      await contentDocument!.evaluate(
+        () =>
+          document.querySelector('#shadow-host-1')!.shadowRoot!
+            .adoptedStyleSheets[0] ===
+          document.querySelector('#shadow-host-2')!.shadowRoot!
+            .adoptedStyleSheets[0],
+      ),
     ).toBe(true);
   });
 
