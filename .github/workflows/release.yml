@@ -114,16 +114,24 @@ jobs:
         if: ${{ github.event.inputs.releaseType == 'dry-run' }}
         run: yarn release:version:dry-run
 
+      - name: Verify npm auth
+        if: ${{ github.event.inputs.releaseType != 'dry-run' }}
+        run: |
+          echo "npm whoami:"
+          npm whoami || echo "(npm whoami failed)"
+          echo "access ls-packages:"
+          npm access ls-packages 2>&1 | head -30 || echo "(ls-packages failed)"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish (release)
         if: ${{ github.event.inputs.releaseType == 'release' }}
         run: yarn release:publish
         env:
-          NPM_CONFIG_PROVENANCE: 'true'
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish (prerelease)
         if: ${{ github.event.inputs.releaseType == 'prerelease' }}
         run: yarn release:publish:prerelease
         env:
-          NPM_CONFIG_PROVENANCE: 'true'
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
