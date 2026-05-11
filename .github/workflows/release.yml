@@ -35,6 +35,7 @@ jobs:
         uses: changesets/action@6a0a831ff30acef54f2c6aa1cbbc1096b066edaf # v1
         with:
           publish: yarn run release
+          createGithubReleases: false
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
