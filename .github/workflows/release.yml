@@ -91,6 +91,13 @@ jobs:
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
 
+      - name: Reset working tree
+        # Build prepublish hooks mutate tracked files (tsconfig project references).
+        # Reset so `lerna version` doesn't fold them into the release commit and
+        # so `lerna publish from-git` (used by skipVersion recovery) sees a clean tree.
+        # dist/ outputs are gitignored and survive the reset.
+        run: git checkout HEAD -- .
+
       - name: Version (release)
         if: ${{ github.event.inputs.releaseType == 'release' && github.event.inputs.skipVersion != 'true' }}
         run: yarn release:version
