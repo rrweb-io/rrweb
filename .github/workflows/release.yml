@@ -95,6 +95,12 @@ jobs:
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
 
+      - name: Run tests
+        # Gate publish on tests passing. Skipped for dry-run since dry-run
+        # is just a version-bump preview, not an actual release.
+        if: ${{ github.event.inputs.releaseType != 'dry-run' }}
+        run: yarn test
+
       - name: Reset working tree
         # Build prepublish hooks mutate tracked files (tsconfig project references).
         # Reset so `lerna version` doesn't fold them into the release commit and
