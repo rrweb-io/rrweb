@@ -120,12 +120,14 @@ jobs:
 
       - name: Publish (release)
         if: ${{ github.event.inputs.releaseType == 'release' }}
-        run: yarn release:publish
+        run: yarn release:publish -- --concurrency 1
         env:
           NPM_CONFIG_PROVENANCE: 'true'
+          NPM_CONFIG_LOGLEVEL: verbose
 
       - name: Publish (prerelease)
         if: ${{ github.event.inputs.releaseType == 'prerelease' }}
-        run: yarn release:publish:prerelease
+        run: yarn release:publish:prerelease -- --concurrency 1
         env:
           NPM_CONFIG_PROVENANCE: 'true'
+          NPM_CONFIG_LOGLEVEL: verbose
