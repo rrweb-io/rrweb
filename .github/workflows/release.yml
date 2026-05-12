@@ -72,10 +72,14 @@ jobs:
           fetch-depth: 0
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
       - name: Setup Node.js 24.x
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24.x
+          cache: 'pnpm'
           # Intentionally no registry-url: setup-node writes an .npmrc with
           # `_authToken=${NODE_AUTH_TOKEN}` when that's set, which causes npm
           # to use that token instead of attempting OIDC trusted publishing.
@@ -86,12 +90,12 @@ jobs:
         run: npm install -g npm@latest
 
       - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
 
       - name: Build packages
-        run: yarn build:all
+        run: pnpm build:all
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
 
@@ -99,7 +103,7 @@ jobs:
         # Gate publish on tests passing. Skipped for dry-run since dry-run
         # is just a version-bump preview, not an actual release.
         if: ${{ github.event.inputs.releaseType != 'dry-run' }}
-        run: yarn test
+        run: pnpm test
 
       - name: Reset working tree
         # Build prepublish hooks mutate tracked files (tsconfig project references).
@@ -110,19 +114,19 @@ jobs:
 
       - name: Version (release)
         if: ${{ github.event.inputs.releaseType == 'release' && github.event.inputs.skipVersion != 'true' }}
-        run: yarn release:version
+        run: pnpm release:version
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Version (prerelease)
         if: ${{ github.event.inputs.releaseType == 'prerelease' && github.event.inputs.skipVersion != 'true' }}
-        run: yarn release:version:prerelease
+        run: pnpm release:version:prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Version (dry-run)
         if: ${{ github.event.inputs.releaseType == 'dry-run' }}
-        run: yarn release:version:dry-run
+        run: pnpm release:version:dry-run
 
       # Publish via the npm CLI directly rather than `lerna publish`, because
       # lerna 8.2.4 bundles libnpmpublish 9.x which only supports OIDC for

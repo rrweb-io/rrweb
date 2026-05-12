@@ -3,19 +3,17 @@
   "version": "2.1.0",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
-    "prepare": "npm run prepack",
-    "prepack": "npm run build",
     "retest": "vitest run",
-    "test": "yarn build && vitest run",
+    "test": "pnpm build && vitest run",
     "test:watch": "vitest watch",
     "retest:update": "vitest run --update",
-    "test:update": "yarn build && vitest run --update",
+    "test:update": "pnpm build && vitest run --update",
     "bench": "vite build && vitest bench",
     "dev": "vite build --watch",
-    "build": "yarn turbo prepublish -F @amplitude/rrweb-snapshot",
+    "build": "turbo prepublish -F @amplitude/rrweb-snapshot",
     "check-types": "tsc --noEmit",
-    "prepublish": "yarn check-types && vite build",
-    "lint": "yarn eslint src"
+    "prepublish": "pnpm check-types && vite build",
+    "lint": "eslint src"
   },
   "type": "module",
   "repository": {
@@ -54,9 +52,10 @@
   },
   "homepage": "https://github.com/amplitude/rrweb/tree/master/packages/rrweb-snapshot#readme",
   "devDependencies": {
-    "@amplitude/rrweb-types": "^2.1.0",
-    "@amplitude/rrweb-utils": "^2.1.0",
+    "@amplitude/rrweb-types": "workspace:^",
+    "@amplitude/rrweb-utils": "workspace:^",
     "@types/jsdom": "^20.0.0",
+    "jsdom": "^16.7.0",
     "@types/node": "^18.15.11",
     "@types/puppeteer": "^5.4.4",
     "puppeteer": "^17.1.3",

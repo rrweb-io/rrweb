@@ -16,7 +16,7 @@
     "build": "tsc",
     "test": "jest",
     "check-types": "tsc -noEmit",
-    "prepublish": "yarn build"
+    "prepublish": "pnpm build"
   },
   "author": "Amplitude Inc",
   "license": "MIT",
@@ -25,7 +25,8 @@
     "url": "git+https://github.com/amplitude/rrweb.git"
   },
   "devDependencies": {
-    "@amplitude/rrweb": "^2.1.1",
+    "@amplitude/rrweb": "workspace:^",
+    "@amplitude/rrweb-types": "workspace:^",
     "@types/fs-extra": "11.0.1",
     "@types/jest": "^27.4.1",
     "@types/minimist": "^1.2.1",
@@ -34,7 +35,7 @@
     "ts-jest": "^27.1.3"
   },
   "dependencies": {
-    "@amplitude/rrweb-player": "^2.1.1",
+    "@amplitude/rrweb-player": "workspace:^",
     "@open-tech-world/cli-progress-bar": "^2.0.2",
     "fs-extra": "^11.1.1",
     "minimist": "^1.2.5",

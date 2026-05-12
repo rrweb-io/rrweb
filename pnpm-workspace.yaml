@@ -1,0 +1,21 @@
+packages:
+  - 'packages/*'
+  - 'packages/plugins/*'
+
+# Defense against npm supply-chain attacks (e.g. Shai-Hulud 2.0): refuse to
+# install any version of a package that was published less than this many
+# minutes ago. 4320 = 3 days, matching the rest of the Amplitude SDK monorepos.
+minimumReleaseAge: 4320
+
+# Internal first-party packages bypass the cool-off so cross-repo releases
+# aren't blocked on themselves.
+minimumReleaseAgeExclude:
+  - '@amplitude/*'
+
+# Allowlist of dependencies permitted to run install scripts. Adding to this
+# list grants arbitrary-code-execution rights to the package during install,
+# so each entry must be vetted. pnpm 10 ignores install/postinstall for all
+# packages not on this list.
+onlyBuiltDependencies:
+  - esbuild
+  - puppeteer

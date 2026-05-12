@@ -26,14 +26,16 @@ clear and has sufficient instructions to be able to reproduce the issue.
 
 ## Run locally
 
-- Install dependencies: `yarn`
-- Build all packages: (in `/`) `yarn build:all` or `yarn dev`
-- Run recorder on a website: (in `/packages/rrweb`) `yarn repl`
-- Run a cobrowsing/mirroring session locally: (in `/packages/rrweb`) `yarn live-stream`
-- Build individual packages: `yarn build` or `yarn dev`
-- Test: `yarn test` or `yarn test:watch`
-- Lint: `yarn lint`
-- Rewrite files with prettier: `yarn format` or `yarn format:head`
+This repo uses [pnpm](https://pnpm.io/) (managed via [Corepack](https://nodejs.org/api/corepack.html); no manual install needed — the `packageManager` field pins the version).
+
+- Install dependencies: `pnpm install`
+- Build all packages: (in `/`) `pnpm build:all` or `pnpm dev`
+- Run recorder on a website: (in `/packages/rrweb`) `pnpm repl`
+- Run a cobrowsing/mirroring session locally: (in `/packages/rrweb`) `pnpm live-stream`
+- Build individual packages: `pnpm build` or `pnpm dev`
+- Test: `pnpm test` or `pnpm test:watch`
+- Lint: `pnpm lint`
+- Rewrite files with prettier: `pnpm format` or `pnpm format:head`
 
 ## Coding style
 

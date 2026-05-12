@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
   "version": "2.1.1",
-  "npmClient": "yarn",
+  "npmClient": "pnpm",
   "command": {
     "version": {
       "conventionalCommits": true,

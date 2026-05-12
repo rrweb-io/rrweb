@@ -17,7 +17,7 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "prepublish": "npm run build",
-    "lint": "yarn eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts"
   },
   "type": "module",
   "main": "./dist/rrweb-capture.umd.cjs",
@@ -45,11 +45,13 @@
     "package.json"
   ],
   "devDependencies": {
+    "jsdom": "^16.7.0",
     "vite": "^6",
-    "vite-plugin-dts": "^3.9.1"
+    "vite-plugin-dts": "^3.9.1",
+    "vitest": "^1.4.0"
   },
   "dependencies": {
-    "@amplitude/rrweb-snapshot": "^2.1.0",
-    "@amplitude/rrweb-types": "^2.1.0"
+    "@amplitude/rrweb-snapshot": "workspace:^",
+    "@amplitude/rrweb-types": "workspace:^"
   }
 }

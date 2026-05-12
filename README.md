@@ -61,14 +61,14 @@ Since we want the record and replay sides to share a strongly typed data structu
 [Typescript handbook](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
 
 1. Fork this repository.
-2. Run `yarn install` in the root to install required dependencies for all sub-packages (note: `npm install` is _not_ recommended).
-3. Run `yarn build:all` to build all packages and get a stable base, then `yarn dev` in the root to get auto-building for all the sub-packages whenever you modify anything.
+2. Run `pnpm install` in the root to install required dependencies for all sub-packages. The repo pins pnpm via the `packageManager` field and [Corepack](https://nodejs.org/api/corepack.html), so you should not need to install pnpm globally.
+3. Run `pnpm build:all` to build all packages and get a stable base, then `pnpm dev` in the root to get auto-building for all the sub-packages whenever you modify anything.
 4. Navigate to one of the sub-packages (in the `packages` folder) where you'd like to make a change.
-5. Patch the code and run `yarn test` to run the tests, make sure they pass before you commit anything. Add test cases in order to avoid future regression.
-6. If tests are failing, but the change in output is desirable, run `yarn test:update` and carefully commit the changes in test output.
+5. Patch the code and run `pnpm test` to run the tests, make sure they pass before you commit anything. Add test cases in order to avoid future regression.
+6. If tests are failing, but the change in output is desirable, run `pnpm test:update` and carefully commit the changes in test output.
 7. Open a pull request with a [conventional-commit-style](https://www.conventionalcommits.org/) title (`feat:`, `fix:`, `perf:`, `chore:`, etc.). The PR title is what semantic versioning uses to compute the next version on release, and is enforced by a `Validate PR title` CI check.
 
-Protip: You can run `yarn test` in the root folder to run all the tests.
+Protip: You can run `pnpm test` in the root folder to run all the tests.
 
 In addition to adding integration tests and unit tests, rrweb also provides a REPL testing tool.
 
