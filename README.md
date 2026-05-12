@@ -66,10 +66,22 @@ Since we want the record and replay sides to share a strongly typed data structu
 4. Navigate to one of the sub-packages (in the `packages` folder) where you'd like to make a change.
 5. Patch the code and run `yarn test` to run the tests, make sure they pass before you commit anything. Add test cases in order to avoid future regression.
 6. If tests are failing, but the change in output is desirable, run `yarn test:update` and carefully commit the changes in test output.
-7. Push the code and create a pull request.
+7. Open a pull request with a [conventional-commit-style](https://www.conventionalcommits.org/) title (`feat:`, `fix:`, `perf:`, `chore:`, etc.). The PR title is what semantic versioning uses to compute the next version on release, and is enforced by a `Validate PR title` CI check.
 
 Protip: You can run `yarn test` in the root folder to run all the tests.
 
 In addition to adding integration tests and unit tests, rrweb also provides a REPL testing tool.
 
 [Using the REPL tool](./guide.md#REPL-tool)
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for more on the development workflow.
+
+## Releases
+
+Releases of `@amplitude/rrweb*` packages are driven by [Lerna](https://lerna.js.org) in fixed-versioning mode, triggered manually via the [`Release` GitHub Actions workflow](https://github.com/amplitude/rrweb/actions/workflows/release.yml). Trigger options:
+
+- **`release`** (from `master`): bump versions via conventional commits, push commit + tag, publish to npm under `latest`, create a GitHub Release.
+- **`prerelease`** (from a short-lived `alpha` branch): publish `X.Y.Z-alpha.N` under the `alpha` dist-tag. Consumers install via `npm install @amplitude/rrweb@alpha`.
+- **`dry-run`** (any branch): preview the next version without pushing or publishing.
+
+See [RELEASE.md](./RELEASE.md) for the full release procedure, the OIDC trusted-publishing setup, the deploy-key infrastructure that lets the workflow push back to a protected branch, rotation steps, and troubleshooting.
