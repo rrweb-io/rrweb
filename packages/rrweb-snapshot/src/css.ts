@@ -16,26 +16,31 @@ const mediaSelectorPlugin: AcceptedPlugin = {
     };
   },
 };
-
-// Simplified from https://github.com/giuseppeg/postcss-pseudo-classes/blob/master/index.js
 const pseudoClassPlugin: AcceptedPlugin = {
   postcssPlugin: 'postcss-hover-classes',
   prepare: function () {
-    const fixed: Rule[] = [];
+    const fixed = new WeakSet<Rule>();
     return {
       Rule: function (rule) {
-        if (fixed.indexOf(rule) !== -1) {
+        if (fixed.has(rule)) {
           return;
         }
-        fixed.push(rule);
-        rule.selectors.forEach(function (selector) {
-          if (selector.includes(':hover')) {
-            rule.selector += ',\n' + selector.replace(/:hover/g, '.\\:hover');
-          }
+        fixed.add(rule);
+
+        const hoverSelectors = rule.selectors.filter((selector) =>
+          selector.includes(':hover'),
+        );
+
+        if (!hoverSelectors.length) {
+          return;
+        }
+
+        hoverSelectors.forEach((selector) => {
+          const escapedSelector = selector.replace(/:hover/g, '.\\:hover');
+          rule.selector += `,\n${escapedSelector}`;
         });
       },
     };
   },
 };
-
 export { mediaSelectorPlugin, pseudoClassPlugin };
