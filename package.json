@@ -57,9 +57,7 @@
     "lint:report": "yarn eslint --output-file eslint_report.json --format json packages/*/src --ext .ts,.tsx,.js,.jsx",
     "release:version": "lerna version --conventional-commits --yes",
     "release:version:prerelease": "lerna version --conventional-commits --conventional-prerelease --preid alpha --yes",
-    "release:version:dry-run": "lerna version --conventional-commits --no-git-tag-version --no-push --yes",
-    "release:publish": "lerna publish from-package --yes",
-    "release:publish:prerelease": "lerna publish from-package --dist-tag alpha --yes"
+    "release:version:dry-run": "lerna version --conventional-commits --no-git-tag-version --no-push --yes"
   },
   "resolutions": {
     "**/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz",

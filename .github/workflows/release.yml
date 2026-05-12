@@ -118,16 +118,20 @@ jobs:
         if: ${{ github.event.inputs.releaseType == 'dry-run' }}
         run: yarn release:version:dry-run
 
+      # Publish via the npm CLI directly rather than `lerna publish`, because
+      # lerna 8.2.4 bundles libnpmpublish 9.x which only supports OIDC for
+      # provenance generation, not for trusted-publisher auth (added in
+      # libnpmpublish 11.x and shipped with npm 11.5.1+). The npm CLI installed
+      # by "Upgrade npm for OIDC support" above has the full OIDC auth flow.
+      # We still use `lerna list` for topological ordering across the workspace.
       - name: Publish (release)
         if: ${{ github.event.inputs.releaseType == 'release' }}
-        run: yarn release:publish -- --concurrency 1
+        run: bash scripts/publish-packages.sh
         env:
           NPM_CONFIG_PROVENANCE: 'true'
-          NPM_CONFIG_LOGLEVEL: verbose
 
       - name: Publish (prerelease)
         if: ${{ github.event.inputs.releaseType == 'prerelease' }}
-        run: yarn release:publish:prerelease -- --concurrency 1
+        run: bash scripts/publish-packages.sh alpha
         env:
           NPM_CONFIG_PROVENANCE: 'true'
-          NPM_CONFIG_LOGLEVEL: verbose

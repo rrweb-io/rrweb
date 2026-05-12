@@ -125,11 +125,16 @@ Build prepublish hooks mutate tracked files (notably the `tsconfig.json` project
 
 ### `npm publish` fails with `E404 Not found`
 
-OIDC trusted publishing isn't being used. npm publishing for this repo is configured to use [OIDC trusted publishing](https://docs.npmjs.com/trusted-publishers) (SR-3110, PR #89) — no static NPM_TOKEN should be in the publish flow. If `actions/setup-node` is configured with `registry-url:`, it writes an `.npmrc` containing `_authToken=${NODE_AUTH_TOKEN}`; whenever an authToken is present, npm uses it (or its placeholder) instead of attempting OIDC, and the registry returns 404 for the publish.
+OIDC trusted publishing isn't reaching the registry. npm publishing for this repo is configured to use [OIDC trusted publishing](https://docs.npmjs.com/trusted-publishers) (SR-3110, PR #89) — no static NPM_TOKEN should be in the publish flow. Common causes:
+
+1. **`actions/setup-node` writes a poisoned `.npmrc`.** When configured with `registry-url:`, setup-node writes `_authToken=${NODE_AUTH_TOKEN}`. If an authToken is present (even a placeholder or stale value), npm uses it instead of attempting OIDC, and the registry returns 404. Confirm `actions/setup-node` does **not** set `registry-url:` and Publish steps do **not** set `NODE_AUTH_TOKEN`.
+
+2. **The publish tool bundles an old `libnpmpublish`.** `libnpmpublish` 9.x and earlier only support OIDC for _provenance generation_, not for _auth_. OIDC trusted-publisher token exchange was added in libnpmpublish 11.x (shipped with npm 11.5.1+). Lerna 8.2.4 bundles libnpmpublish 9.x — that's why this repo publishes via `scripts/publish-packages.sh` (shells out to the npm CLI, which has the full OIDC auth flow) rather than `lerna publish`.
 
 Confirm in `release.yml`:
 
 - `actions/setup-node` does NOT set `registry-url:`
 - Publish steps do NOT set `NODE_AUTH_TOKEN`
 - `id-token: write` is in `permissions:` (so the OIDC token is available)
-- `NPM_CONFIG_PROVENANCE: 'true'` on the Publish step (provenance attestation via OIDC)
+- `NPM_CONFIG_PROVENANCE: 'true'` on the Publish step (provenance attestation)
+- Publish uses the npm CLI (via `scripts/publish-packages.sh`), not `lerna publish`
