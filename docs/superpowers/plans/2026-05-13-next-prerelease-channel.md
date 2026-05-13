@@ -41,6 +41,7 @@
 ## Task 1: Retire Competing Master Prerelease State
 
 **Files:**
+
 - Modify: `.changeset/pre.json`
 
 - [ ] **Step 1: Confirm whether `master` still needs alpha releases**
@@ -89,6 +90,7 @@ Expected: future normal feature changes on `master` add `.changeset/*.md` files 
 ## Task 2: Create the Next Branch and Convert Prerelease State
 
 **Files:**
+
 - Modify: `.changeset/pre.json`
 
 - [ ] **Step 1: Start from current master**
@@ -186,6 +188,7 @@ Expected: only `.changeset/pre.json` is staged and committed.
 ## Task 3: Update the Release Workflow for Both Branches
 
 **Files:**
+
 - Modify: `.github/workflows/release.yml`
 
 - [ ] **Step 1: Update release workflow trigger**
@@ -207,15 +210,15 @@ on:
 Confirm this block remains:
 
 ```yaml
-      - name: Create Release Pull Request or Publish to npm
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          publish: yarn run release
-        env:
-          NODE_OPTIONS: '--max-old-space-size=4096'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+- name: Create Release Pull Request or Publish to npm
+  id: changesets
+  uses: changesets/action@v1
+  with:
+    publish: yarn run release
+  env:
+    NODE_OPTIONS: '--max-old-space-size=4096'
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 ```
 
 Rationale: Changesets reads `.changeset/pre.json` from the active branch. On `next` it publishes `next`. On `master`, after alpha is retired, it follows the normal Changesets release path without next prerelease metadata.
@@ -225,9 +228,9 @@ Rationale: Changesets reads `.changeset/pre.json` from the active branch. On `ne
 Keep or set the build step to:
 
 ```yaml
-      - name: Build Chrome Extension
-        if: steps.changesets.outputs.published == 'true'
-        run: NODE_OPTIONS='--max-old-space-size=4096' DISABLE_WORKER_INLINING=true yarn turbo run prepublish --filter=@rrweb/web-extension
+- name: Build Chrome Extension
+  if: steps.changesets.outputs.published == 'true'
+  run: NODE_OPTIONS='--max-old-space-size=4096' DISABLE_WORKER_INLINING=true yarn turbo run prepublish --filter=@rrweb/web-extension
 ```
 
 - [ ] **Step 4: Gate production extension publish to master**
@@ -235,16 +238,16 @@ Keep or set the build step to:
 Replace the existing `Publish Chrome Extension` step with:
 
 ```yaml
-      - name: Publish Chrome Extension
-        uses: mnao305/chrome-extension-upload@v5.0.0
-        if: steps.changesets.outputs.published == 'true' && github.ref == 'refs/heads/master'
-        with:
-          extension-id: 'pdaldeopoccdhlkabbkcjmecmmoninhe'
-          file-path: ./packages/web-extension/dist/chrome.zip
-          client-id: ${{ secrets.CWS_CLIENT_ID }}
-          client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
-          refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
-          publish: true
+- name: Publish Chrome Extension
+  uses: mnao305/chrome-extension-upload@v5.0.0
+  if: steps.changesets.outputs.published == 'true' && github.ref == 'refs/heads/master'
+  with:
+    extension-id: 'pdaldeopoccdhlkabbkcjmecmmoninhe'
+    file-path: ./packages/web-extension/dist/chrome.zip
+    client-id: ${{ secrets.CWS_CLIENT_ID }}
+    client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
+    refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
+    publish: true
 ```
 
 - [ ] **Step 5: Add Next extension publish step**
@@ -252,16 +255,16 @@ Replace the existing `Publish Chrome Extension` step with:
 Add this step immediately after the production extension publish step:
 
 ```yaml
-      - name: Publish Next Chrome Extension
-        uses: mnao305/chrome-extension-upload@v5.0.0
-        if: steps.changesets.outputs.published == 'true' && github.ref == 'refs/heads/next'
-        with:
-          extension-id: ${{ secrets.NEXT_CWS_EXTENSION_ID }}
-          file-path: ./packages/web-extension/dist/chrome.zip
-          client-id: ${{ secrets.NEXT_CWS_CLIENT_ID }}
-          client-secret: ${{ secrets.NEXT_CWS_CLIENT_SECRET }}
-          refresh-token: ${{ secrets.NEXT_CWS_REFRESH_TOKEN }}
-          publish: true
+- name: Publish Next Chrome Extension
+  uses: mnao305/chrome-extension-upload@v5.0.0
+  if: steps.changesets.outputs.published == 'true' && github.ref == 'refs/heads/next'
+  with:
+    extension-id: ${{ secrets.NEXT_CWS_EXTENSION_ID }}
+    file-path: ./packages/web-extension/dist/chrome.zip
+    client-id: ${{ secrets.NEXT_CWS_CLIENT_ID }}
+    client-secret: ${{ secrets.NEXT_CWS_CLIENT_SECRET }}
+    refresh-token: ${{ secrets.NEXT_CWS_REFRESH_TOKEN }}
+    publish: true
 ```
 
 - [ ] **Step 6: Validate workflow syntax locally**
@@ -290,13 +293,14 @@ git commit -m "ci: publish next prerelease channel"
 ## Task 4: Document Maintainer Usage
 
 **Files:**
+
 - Create: `docs/releases/next-channel.md`
 
 - [ ] **Step 1: Create release docs**
 
 Create `docs/releases/next-channel.md` with:
 
-```markdown
+````markdown
 # Next Release Channel
 
 The `next` branch publishes rrweb prereleases for Next development without moving npm's `latest` tag.
@@ -336,6 +340,7 @@ git restore --staged .changeset/pre.json 'packages/*/CHANGELOG.md' 'packages/plu
 git restore .changeset/pre.json 'packages/*/CHANGELOG.md' 'packages/plugins/*/CHANGELOG.md' 'packages/*/package.json' 'packages/plugins/*/package.json'
 git commit
 ```
+````
 
 ## Chrome Extension
 
@@ -347,7 +352,8 @@ Next extension releases use a separate Chrome Web Store listing. The release wor
 - `NEXT_CWS_REFRESH_TOKEN`
 
 Production extension releases continue to use the existing production listing and secrets from `master`.
-```
+
+````
 
 - [ ] **Step 2: Commit docs**
 
@@ -356,11 +362,12 @@ Run:
 ```bash
 git add docs/releases/next-channel.md
 git commit -m "docs: describe next release channel"
-```
+````
 
 ## Task 5: Verify End-to-End Release Behavior Without Publishing
 
 **Files:**
+
 - Read-only verification unless a failure reveals a needed fix.
 
 - [ ] **Step 1: Verify branch-local Changesets state**
@@ -424,6 +431,7 @@ Expected: no staged files. The unrelated generated-file change at `packages/rrwe
 ## Task 6: Push and Observe First Release PR
 
 **Files:**
+
 - No local file edits expected.
 
 - [ ] **Step 1: Push Next branch**
@@ -453,6 +461,7 @@ After merge, the `Release` workflow on `next` should publish npm packages with t
 ## Task 7: Promote Next Work Back To Master
 
 **Files:**
+
 - Modify: source/docs/tests touched by selected Next feature commits.
 - Keep: `.changeset/*.md` files from selected feature commits.
 - Exclude: `.changeset/pre.json`, generated `CHANGELOG.md` release sections, and version-only package `package.json` changes from Next release commits.
