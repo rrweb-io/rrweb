@@ -366,6 +366,9 @@ function buildNode(
 
         if (name === 'rr_width') {
           (node as HTMLElement).style.setProperty('width', value.toString());
+          if (tagName === 'canvas') {
+            (node as HTMLElement).style.setProperty('display', 'block');
+          }
         } else if (name === 'rr_height') {
           (node as HTMLElement).style.setProperty('height', value.toString());
         } else if (

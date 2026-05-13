@@ -14,6 +14,7 @@ import {
   vi,
 } from 'vitest';
 
+import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import { getServerURL, waitForRAF } from './utils';
 
 const htmlFolder = path.join(__dirname, 'html');
@@ -557,5 +558,62 @@ describe('shadow DOM integration tests', function (this: ISuite) {
       2,
     );
     await assertSnapshot(snapshotResult);
+  });
+});
+
+describe('snapshot/rebuild image tests', function (this: ISuite) {
+  expect.extend({ toMatchImageSnapshot });
+  vi.setConfig({ testTimeout: 30_000 });
+  let server: ISuite['server'];
+  let serverURL: ISuite['serverURL'];
+  let browser: ISuite['browser'];
+  let code: ISuite['code'];
+
+  beforeAll(async () => {
+    server = await startServer();
+    serverURL = getServerURL(server);
+    browser = await puppeteer.launch({
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+    code = fs.readFileSync(
+      path.resolve(__dirname, '../dist/rrweb-snapshot.umd.cjs'),
+      'utf-8',
+    );
+  });
+
+  afterAll(async () => {
+    await browser.close();
+    await server.close();
+  });
+
+  it('canvas dimensions are preserved after rebuild', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    page.on('console', (msg) => console.log(msg.text()));
+
+    // background-grey should extend to full rhs if <div> is dimensioned properly
+    await page.goto(`${serverURL}/html/canvas-layout.html`, {
+      waitUntil: 'load',
+    });
+    await waitForRAF(page);
+
+    await page.evaluate(`${code}
+      const snap = rrwebSnapshot.snapshot(document);
+      const iframe = document.createElement('iframe');
+      iframe.id = 'rebuild-iframe';
+      iframe.setAttribute('width', document.body.clientWidth);
+      iframe.setAttribute('height', document.body.clientHeight);
+      iframe.setAttribute('sandbox', 'allow-same-origin');  // apply other restrictions including !allow-scripts
+      document.body.appendChild(iframe);
+      rrwebSnapshot.rebuild(snap, { doc: iframe.contentDocument });
+    `);
+    await waitForRAF(page);
+
+    const iframeElement = await page.$('#rebuild-iframe');
+    const rebuildImage = await iframeElement!.screenshot();
+    expect(rebuildImage).toMatchImageSnapshot({
+      customSnapshotIdentifier: 'canvas-layout-rebuilt',
+      failureThreshold: 0.05,
+      failureThresholdType: 'percent',
+    });
   });
 });
