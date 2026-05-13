@@ -217,7 +217,7 @@ setInterval(save, 10 * 1000);
 | maskInputFn              | -                  | 自定义特定类型的输入框内容记录逻辑                                                                                                                                                    |
 | maskTextFn               | -                  | 自定义文字内容的记录逻辑                                                                                                                                                              |
 | slimDOMOptions           | {}                 | 去除 DOM 中不必要的部分 <br />类型详见[列表](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L97-L108)           |
-| inlineStylesheet         | true               | 是否将样式表内联                                                                                                                                                                      |
+| inlineStylesheet         | true               | 自 2.0.0 起弃用。2.0 中仍受支持，但计划由未来的 `captureAssets` 资源录制 API 取代。                                                                                                  |
 | hooks                    | {}                 | 各类事件的回调<br />类型详见[列表](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                                                 |
 | packFn                   | -                  | 数据压缩函数，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                            |
 | sampling                 | -                  | 数据抽样策略，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                            |
@@ -225,7 +225,7 @@ setInterval(save, 10 * 1000);
 | recordCanvas             | false              | 是否记录 canvas 内容, 可用选项：`false`, `true`                                                                                                                                       |
 | recordCrossOriginIframes | false              | 是否记录 cross origin iframes。 必须在每个子 iframe 中注入 rrweb 才能使其工作。 可用选项：`false`, `true`                                                                             |
 | recordAfter              | 'load'             | 如果 document 还没有加载完成，recorder 将会在指定的事件触发后开始录制。可用选项： `DOMContentLoaded`, `load`                                                                          |
-| inlineImages             | false              | 是否将图片内容记内联录制                                                                                                                                                              |
+| inlineImages             | false              | 自 2.0.0 起弃用。2.0 中仍受支持，但计划由未来的 `captureAssets` 资源录制 API 取代。                                                                                                  |
 | collectFonts             | false              | 是否记录页面中的字体文件                                                                                                                                                              |
 | userTriggeredOnInput     | false              | [什么是 `userTriggered`](https://github.com/rrweb-io/rrweb/pull/495)                                                                                                                  |
 | plugins                  | []                 | 加载插件以获得额外的录制功能. [什么是插件？](./docs/recipes/plugin.zh_CN.md)                                                                                                          |
