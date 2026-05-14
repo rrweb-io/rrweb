@@ -232,6 +232,29 @@ export function mutationObserverCtor(): (typeof MutationObserver)['prototype']['
   return getUntaintedPrototype('MutationObserver').constructor;
 }
 
+// Some libraries (i.e. jsPDF v1.1.135) override window.Proxy with their own implementation
+// Try to pull a clean implementation from a newly created iframe
+export function getUntaintedProxy(): ProxyConstructor {
+  let Proxy = window.Proxy;
+  try {
+    if (
+      typeof window.Proxy !== 'function' ||
+      !window.Proxy?.toString().includes('[native code]')
+    ) {
+      const cleanFrame = document.createElement('iframe');
+      cleanFrame.style.display = 'none';
+      document.documentElement.appendChild(cleanFrame);
+      Proxy =
+        (cleanFrame.contentWindow as Window & { Proxy: typeof Proxy })?.Proxy ||
+        window.Proxy;
+      document.documentElement.removeChild(cleanFrame);
+    }
+  } catch (err) {
+    console.debug('Unable to get untainted Proxy from iframe', err);
+  }
+  return Proxy;
+}
+
 // copy from https://github.com/getsentry/sentry-javascript/blob/b2109071975af8bf0316d3b5b38f519bdaf5dc15/packages/utils/src/object.ts
 export function patch(
   source: { [key: string]: any },
