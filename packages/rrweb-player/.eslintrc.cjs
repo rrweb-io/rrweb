@@ -1,6 +1,15 @@
 /** @type { import("eslint").Linter.Config } */
 module.exports = {
   root: true,
+  ignorePatterns: [
+    'dist',
+    'types',
+    'vite.config.ts',
+    'vite-env.d.ts',
+    'svelte.config.js',
+    'public/events.js',
+    'src/**/*.d.ts',
+  ],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
