@@ -144,7 +144,7 @@ export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
     } catch (error) {
       importStringified = rule.cssText;
     }
-    if (rule.styleSheet.href) {
+    if (rule?.styleSheet?.href) {
       // url()s within the imported stylesheet are relative to _that_ sheet's href
       return absolutifyURLs(importStringified, rule.styleSheet.href);
     }
