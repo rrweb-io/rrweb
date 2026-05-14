@@ -698,7 +698,10 @@ exports[`record integration tests > can mask character data mutations 1`] = `
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"canvas\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"rr_width\\": \\"300px\\",
+                      \\"rr_height\\": \\"150px\\"
+                    },
                     \\"childNodes\\": [],
                     \\"id\\": 15
                   },
@@ -916,7 +919,10 @@ exports[`record integration tests > can mask character data mutations with regex
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"canvas\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"rr_width\\": \\"300px\\",
+                      \\"rr_height\\": \\"150px\\"
+                    },
                     \\"childNodes\\": [],
                     \\"id\\": 15
                   },
@@ -1803,7 +1809,10 @@ exports[`record integration tests > can record attribute mutation 1`] = `
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"canvas\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"rr_width\\": \\"300px\\",
+                      \\"rr_height\\": \\"150px\\"
+                    },
                     \\"childNodes\\": [],
                     \\"id\\": 15
                   },
@@ -1974,7 +1983,10 @@ exports[`record integration tests > can record character data muatations 1`] = `
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"canvas\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"rr_width\\": \\"300px\\",
+                      \\"rr_height\\": \\"150px\\"
+                    },
                     \\"childNodes\\": [],
                     \\"id\\": 15
                   },
@@ -2152,7 +2164,10 @@ exports[`record integration tests > can record childList mutations 1`] = `
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"canvas\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"rr_width\\": \\"300px\\",
+                      \\"rr_height\\": \\"150px\\"
+                    },
                     \\"childNodes\\": [],
                     \\"id\\": 15
                   },
@@ -5470,7 +5485,10 @@ exports[`record integration tests > handles null attribute values 1`] = `
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"canvas\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"rr_width\\": \\"300px\\",
+                      \\"rr_height\\": \\"150px\\"
+                    },
                     \\"childNodes\\": [],
                     \\"id\\": 15
                   },
@@ -17415,7 +17433,10 @@ exports[`record integration tests > will serialize node before record 1`] = `
                   {
                     \\"type\\": 2,
                     \\"tagName\\": \\"canvas\\",
-                    \\"attributes\\": {},
+                    \\"attributes\\": {
+                      \\"rr_width\\": \\"300px\\",
+                      \\"rr_height\\": \\"150px\\"
+                    },
                     \\"childNodes\\": [],
                     \\"id\\": 15
                   },
