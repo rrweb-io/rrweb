@@ -8,7 +8,7 @@ module.exports = {
     'vite-env.d.ts',
     'svelte.config.js',
     'public/events.js',
-    'src/**/*.d.ts',
+    'src/**/*.svelte.d.ts',
   ],
   extends: [
     'eslint:recommended',
