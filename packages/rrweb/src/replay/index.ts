@@ -1303,14 +1303,17 @@ export class Replayer {
           return this.debugNodeNotFound(d, d.id);
         }
         const mediaEl = target as HTMLMediaElement | RRMediaElement;
-        const { events } = this.service.state.context;
+        // sometimes we receive MediaInteraction events on non-media elements (e.g. DIV)
+        // only process media mutations on supported media elements to prevent errors during playback
+        if (this.mediaManager.isSupportedMediaElement(mediaEl)) {
+          const { events } = this.service.state.context;
 
-        this.mediaManager.mediaMutation({
-          target: mediaEl,
-          timeOffset: e.timestamp - events[0].timestamp,
-          mutation: d,
-        });
-
+          this.mediaManager.mediaMutation({
+            target: mediaEl,
+            timeOffset: e.timestamp - events[0].timestamp,
+            mutation: d,
+          });
+        }
         break;
       }
       case IncrementalSource.StyleSheetRule:
