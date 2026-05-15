@@ -6,6 +6,7 @@ export enum EventType {
   Meta,
   Custom,
   Plugin,
+  Asset,
 }
 
 export type domContentLoadedEvent = {
@@ -57,6 +58,15 @@ export type pluginEvent<T = unknown> = {
     plugin: string;
     payload: T;
   };
+};
+
+export type assetEvent = {
+  type: EventType.Asset;
+  data: assetParam;
+};
+
+export type assetEventWithTime = assetEvent & {
+  timestamp: number;
 };
 
 export enum IncrementalSource {
@@ -163,7 +173,8 @@ export type eventWithoutTime =
   | incrementalSnapshotEvent
   | metaEvent
   | customEvent
-  | pluginEvent;
+  | pluginEvent
+  | assetEvent;
 
 /**
  * @deprecated intended for internal use
@@ -382,16 +393,23 @@ export enum CanvasContext {
   WebGL2,
 }
 
+export type SerializedCssTextArg = {
+  rr_type: 'CssText';
+  cssTexts: string[];
+};
+
+export type SerializedBlobArg = {
+  rr_type: 'Blob';
+  data: Array<CanvasArg>;
+  type?: string;
+};
+
 export type SerializedCanvasArg =
   | {
       rr_type: 'ArrayBuffer';
       base64: string; // base64
     }
-  | {
-      rr_type: 'Blob';
-      data: Array<CanvasArg>;
-      type?: string;
-    }
+  | SerializedBlobArg
   | {
       rr_type: string;
       src: string; // url of image
@@ -607,6 +625,22 @@ export type customElementParam = {
 };
 
 export type customElementCallback = (c: customElementParam) => void;
+
+export type assetParam =
+  | {
+      url: string;
+      payload: SerializedCanvasArg | SerializedCssTextArg;
+      timestamp?: number;
+    }
+  | {
+      url: string;
+      failed: {
+        status?: number;
+        message: string;
+      };
+    };
+
+export type assetCallback = (d: assetParam, timestamp?: number | true) => void;
 
 /**
  *  @deprecated
