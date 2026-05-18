@@ -844,6 +844,7 @@ export class Replayer {
       afterAppend,
       cache: this.cache,
       mirror: this.mirror,
+      unsafeAllowUnprotectedRebuild: this.config.UNSAFE_replayCanvas,
     });
     afterAppend(this.iframe.contentDocument, event.data.node.id);
 

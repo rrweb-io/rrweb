@@ -89,6 +89,37 @@ describe('replayer', function () {
     });
   });
 
+  it('creates a replay iframe with the supported sandbox policy', async () => {
+    const sandbox = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.iframe.getAttribute('sandbox');
+    `);
+
+    expect(sandbox).toBe('allow-same-origin');
+  });
+
+  it('keeps UNSAFE_replayCanvas explicit by using an unprotected sandbox policy', async () => {
+    const sandbox = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events, { UNSAFE_replayCanvas: true });
+      replayer.iframe.getAttribute('sandbox');
+    `);
+
+    expect(sandbox).toBe('allow-same-origin allow-scripts');
+  });
+
+  it('can rebuild the first full snapshot when UNSAFE_replayCanvas is enabled', async () => {
+    const rebuilt = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events, { UNSAFE_replayCanvas: true });
+      replayer.play(0);
+      Boolean(replayer.iframe.contentDocument.querySelector('html'));
+    `);
+
+    expect(rebuilt).toBe(true);
+  });
+
   it('will start actions when play', async () => {
     const actionLength = await page.evaluate(`
       const { Replayer } = rrweb;
