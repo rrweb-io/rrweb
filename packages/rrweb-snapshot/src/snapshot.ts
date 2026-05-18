@@ -707,8 +707,14 @@ function serializeElementNode(
           )
         };
       } catch(err) {
+        const isSecurityError = err instanceof DOMException && err.name === 'SecurityError';
+        if (isSecurityError) {
+          // A tainted canvas cannot be untainted; discard it so the next call gets a fresh one.
+          canvasService = null;
+          canvasCtx = null;
+        }
         return {
-          isSecurityError: (err instanceof DOMException && err.name === 'SecurityError'),
+          isSecurityError,
           err: err instanceof Error ? err : new Error(String(err)),
         }
       }
