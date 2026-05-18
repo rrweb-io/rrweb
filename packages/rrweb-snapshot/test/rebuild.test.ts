@@ -91,13 +91,26 @@ describe('rebuild', function () {
     onIframe?: (iframe: HTMLIFrameElement) => void,
   ): () => void {
     const createElement = document.createElement.bind(document);
+    const getTokens = (iframe: HTMLIFrameElement) =>
+      (iframe.getAttribute('sandbox') || '').trim().split(/\s+/).filter(Boolean);
     const spy = vi
       .spyOn(document, 'createElement')
       .mockImplementation(((tagName: string, options?: ElementCreationOptions) => {
         const element = createElement(tagName, options);
         if (tagName.toLowerCase() === 'iframe') {
           const iframe = element as HTMLIFrameElement;
-          setIframeSandbox(iframe, 'allow-same-origin');
+          Object.defineProperty(iframe, 'sandbox', {
+            configurable: true,
+            value: {
+              get length() {
+                return getTokens(iframe).length;
+              },
+              contains: (token: string) => getTokens(iframe).includes(token),
+              item: (index: number) => getTokens(iframe)[index] ?? null,
+              toString: () => iframe.getAttribute('sandbox') || '',
+              [Symbol.iterator]: () => getTokens(iframe)[Symbol.iterator](),
+            },
+          });
           onIframe?.(iframe);
         }
         return element;
