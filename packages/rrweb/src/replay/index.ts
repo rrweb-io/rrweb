@@ -4,6 +4,7 @@ import {
   buildNodeWithSN,
   type BuildCache,
   createCache,
+  createSandboxedIframe,
   Mirror,
   createMirror,
   toLowerCase,
@@ -610,16 +611,18 @@ export class Replayer {
       this.wrapper.appendChild(this.mouseTail);
     }
 
-    this.iframe = document.createElement('iframe');
-    const attributes = ['allow-same-origin'];
     if (this.config.UNSAFE_replayCanvas) {
-      attributes.push('allow-scripts');
+      this.iframe = document.createElement('iframe');
+      this.iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts');
+      this.wrapper.appendChild(this.iframe);
+    } else {
+      this.iframe = createSandboxedIframe({
+        root: this.wrapper,
+      });
     }
     // hide iframe before first meta event
     this.iframe.style.display = 'none';
-    this.iframe.setAttribute('sandbox', attributes.join(' '));
     this.disableInteract();
-    this.wrapper.appendChild(this.iframe);
     if (this.iframe.contentWindow && this.iframe.contentDocument) {
       smoothscrollPolyfill(
         this.iframe.contentWindow,

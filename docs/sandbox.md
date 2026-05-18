@@ -14,7 +14,7 @@ We reconstruct the recorded DOM in an `iframe` element when we rebuild the snaps
 
 This is in line with our expectations, especially when dealing with JS scripts is safer and more reliable than implementing this security ourselves.
 
-`rrweb-snapshot.rebuild()` enforces this boundary in browser environments. Browser rebuilds should use `rebuildIntoSandboxedIframe()`, which creates an iframe with exactly `sandbox="allow-same-origin"` before rebuilding into it. Direct `rebuild()` calls against caller-created browser documents must explicitly opt into an unprotected rebuild with `unsafeAllowUnprotectedRebuild: true`.
+`rrweb-snapshot.rebuild()` enforces this boundary in browser environments. Browser rebuilds should use `rebuildIntoSandboxedIframe()` or an iframe created by `createSandboxedIframe()`, which creates an iframe with exactly `sandbox="allow-same-origin"` before rebuilding into it. Direct `rebuild()` calls against caller-created browser documents must explicitly opt into an unprotected rebuild with `unsafeAllowUnprotectedRebuild: true`.
 
 ## Avoid link jumps
 

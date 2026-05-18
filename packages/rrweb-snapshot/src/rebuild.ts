@@ -112,6 +112,11 @@ type RebuildIntoSandboxedIframeOptions = Omit<
   iframeAttributes?: Record<string, string> & { sandbox?: never };
 };
 
+type CreateSandboxedIframeOptions = {
+  root: Element;
+  iframeAttributes?: Record<string, string> & { sandbox?: never };
+};
+
 function isSupportedSandboxedIframe(
   frameElement: Element | null,
 ): frameElement is HTMLIFrameElement {
@@ -123,13 +128,9 @@ function isSupportedSandboxedIframe(
     return false;
   }
 
-  const sandboxTokens = Array.from(
-    (frameElement as HTMLIFrameElement).sandbox,
-  );
+  const sandboxTokens = Array.from((frameElement as HTMLIFrameElement).sandbox);
 
-  return (
-    sandboxTokens.length === 1 && sandboxTokens[0] === 'allow-same-origin'
-  );
+  return sandboxTokens.length === 1 && sandboxTokens[0] === 'allow-same-origin';
 }
 
 function assertRebuildTargetAllowed(options: RebuildOptions): void {
@@ -702,10 +703,9 @@ function rebuild(
   return node;
 }
 
-export function rebuildIntoSandboxedIframe(
-  n: serializedNodeWithId,
-  options: RebuildIntoSandboxedIframeOptions,
-): { iframe: HTMLIFrameElement; node: Node | null } {
+export function createSandboxedIframe(
+  options: CreateSandboxedIframeOptions,
+): HTMLIFrameElement {
   const iframe = options.root.ownerDocument.createElement('iframe');
 
   for (const [name, value] of Object.entries(options.iframeAttributes || {})) {
@@ -720,6 +720,16 @@ export function rebuildIntoSandboxedIframe(
 
   const doc = iframe.contentDocument!;
   sandboxedRebuildDocuments.add(doc);
+
+  return iframe;
+}
+
+export function rebuildIntoSandboxedIframe(
+  n: serializedNodeWithId,
+  options: RebuildIntoSandboxedIframeOptions,
+): { iframe: HTMLIFrameElement; node: Node | null } {
+  const iframe = createSandboxedIframe(options);
+  const doc = iframe.contentDocument!;
 
   let node: Node | null;
   try {

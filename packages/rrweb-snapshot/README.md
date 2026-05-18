@@ -39,6 +39,8 @@ const { iframe, node } = rebuildIntoSandboxedIframe(snapshot, {
 });
 ```
 
+If you need to manage the iframe separately, create it with `createSandboxedIframe()` before calling `rebuild()`.
+
 If you intentionally accept the script-execution risk, pass `unsafeAllowUnprotectedRebuild: true` to `rebuild`.
 
 There are several things will be done during rebuild:

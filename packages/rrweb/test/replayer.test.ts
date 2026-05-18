@@ -109,6 +109,48 @@ describe('replayer', function () {
     expect(sandbox).toBe('allow-same-origin allow-scripts');
   });
 
+  it('can rebuild the first full snapshot with the default sandbox policy', async () => {
+    const rebuiltSnapshotContent = await page.evaluate(`
+      (async () => {
+        const { Replayer, ReplayerEvents } = rrweb;
+        const replayer = new Replayer(events);
+
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(
+            () => reject(new Error('Timed out waiting for full snapshot rebuild')),
+            1000,
+          );
+          replayer.on(ReplayerEvents.FullsnapshotRebuilded, () => {
+            clearTimeout(timeout);
+            resolve();
+          });
+          replayer.play(0);
+        });
+
+        const doc = replayer.iframe.contentDocument;
+        return {
+          sandbox: replayer.iframe.getAttribute('sandbox'),
+          htmlTag: doc.documentElement.localName,
+          headTag: doc.head.localName,
+          headChildElementCount: doc.head.childElementCount,
+          bodyTag: doc.body.localName,
+          bodyChildElementCount: doc.body.childElementCount,
+          bodyText: doc.body.textContent,
+        };
+      })();
+    `);
+
+    expect(rebuiltSnapshotContent).toEqual({
+      sandbox: 'allow-same-origin',
+      htmlTag: 'html',
+      headTag: 'head',
+      headChildElementCount: 0,
+      bodyTag: 'body',
+      bodyChildElementCount: 0,
+      bodyText: '',
+    });
+  });
+
   it('can rebuild the first full snapshot when UNSAFE_replayCanvas is enabled', async () => {
     const rebuiltSnapshotContent = await page.evaluate(`
       (async () => {

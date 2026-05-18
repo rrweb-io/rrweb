@@ -26,7 +26,7 @@ Expected: dependencies install successfully; baseline tests pass before implemen
 ## File Structure
 
 - `packages/rrweb-snapshot/src/rebuild.ts`: add rebuild target validation, the unsafe option, and the safe helper implementation.
-- `packages/rrweb-snapshot/src/index.ts`: export `rebuildIntoSandboxedIframe`.
+- `packages/rrweb-snapshot/src/index.ts`: export `createSandboxedIframe` and `rebuildIntoSandboxedIframe`.
 - `packages/rrweb-snapshot/test/rebuild.test.ts`: add jsdom tests for the guard, unsafe opt-out, and safe helper.
 - `packages/rrweb/src/replay/index.ts`: pass `unsafeAllowUnprotectedRebuild` only when `UNSAFE_replayCanvas` is enabled.
 - `packages/rrweb/test/replayer.test.ts`: add replay iframe sandbox tests for normal and unsafe canvas modes.
@@ -518,7 +518,7 @@ Replace the `#### rebuild` section with:
 
 `rebuild` will build the DOM according to the taken snapshot.
 
-In browser environments, `rebuild` is a low-level API and requires a document created by `rebuildIntoSandboxedIframe()` by default. Untrusted replay data must not be rebuilt directly into the top-level `document` or a caller-created iframe document.
+In browser environments, `rebuild` is a low-level API and requires a document created by `rebuildIntoSandboxedIframe()` or `createSandboxedIframe()` by default. Untrusted replay data must not be rebuilt directly into the top-level `document` or a caller-created iframe document.
 
 For browser usage, prefer `rebuildIntoSandboxedIframe`:
 
@@ -544,7 +544,7 @@ There are several things will be done during rebuild:
 After the paragraph ending `implementing this security ourselves.`, add:
 
 ```md
-`rrweb-snapshot.rebuild()` enforces this boundary in browser environments. Browser rebuilds should use `rebuildIntoSandboxedIframe()`, which creates an iframe with exactly `sandbox="allow-same-origin"` before rebuilding into it. Direct `rebuild()` calls against caller-created browser documents must explicitly opt into an unprotected rebuild with `unsafeAllowUnprotectedRebuild: true`.
+`rrweb-snapshot.rebuild()` enforces this boundary in browser environments. Browser rebuilds should use `rebuildIntoSandboxedIframe()` or an iframe created by `createSandboxedIframe()`, which creates an iframe with exactly `sandbox="allow-same-origin"` before rebuilding into it. Direct `rebuild()` calls against caller-created browser documents must explicitly opt into an unprotected rebuild with `unsafeAllowUnprotectedRebuild: true`.
 ```
 
 - [ ] **Step 3: Update `guide.md` option text**
@@ -602,7 +602,7 @@ Create `.changeset/sandboxed-rebuilds.md`:
 'rrweb': patch
 ---
 
-Require browser `rebuild()` calls to target a document created by `rebuildIntoSandboxedIframe()` by default. Use `rebuildIntoSandboxedIframe()` for untrusted replay data, or pass `unsafeAllowUnprotectedRebuild: true` only when accepting the script-execution risk.
+Require browser `rebuild()` calls to target a document created by `rebuildIntoSandboxedIframe()` or `createSandboxedIframe()` by default. Use these helpers for untrusted replay data, or pass `unsafeAllowUnprotectedRebuild: true` only when accepting the script-execution risk.
 
 `rrweb` now marks `UNSAFE_replayCanvas` rebuilds as an explicit unsafe path because canvas replay adds script permission to the replay iframe.
 ```

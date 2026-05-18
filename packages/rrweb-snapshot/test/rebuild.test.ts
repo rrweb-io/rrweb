@@ -8,6 +8,7 @@ import rebuild, {
   adaptCssForReplay,
   buildNodeWithSN,
   createCache,
+  createSandboxedIframe,
   rebuildIntoSandboxedIframe,
 } from '../src/rebuild';
 import { NodeType } from '@rrweb/types';
@@ -69,10 +70,7 @@ describe('rebuild', function () {
     ],
   } as const;
 
-  function setIframeSandbox(
-    iframe: HTMLIFrameElement,
-    sandbox: string,
-  ): void {
+  function setIframeSandbox(iframe: HTMLIFrameElement, sandbox: string): void {
     const tokens = sandbox.trim().split(/\s+/).filter(Boolean);
     iframe.setAttribute('sandbox', sandbox);
     Object.defineProperty(iframe, 'sandbox', {
@@ -92,29 +90,33 @@ describe('rebuild', function () {
   ): () => void {
     const createElement = document.createElement.bind(document);
     const getTokens = (iframe: HTMLIFrameElement) =>
-      (iframe.getAttribute('sandbox') || '').trim().split(/\s+/).filter(Boolean);
-    const spy = vi
-      .spyOn(document, 'createElement')
-      .mockImplementation(((tagName: string, options?: ElementCreationOptions) => {
-        const element = createElement(tagName, options);
-        if (tagName.toLowerCase() === 'iframe') {
-          const iframe = element as HTMLIFrameElement;
-          Object.defineProperty(iframe, 'sandbox', {
-            configurable: true,
-            value: {
-              get length() {
-                return getTokens(iframe).length;
-              },
-              contains: (token: string) => getTokens(iframe).includes(token),
-              item: (index: number) => getTokens(iframe)[index] ?? null,
-              toString: () => iframe.getAttribute('sandbox') || '',
-              [Symbol.iterator]: () => getTokens(iframe)[Symbol.iterator](),
+      (iframe.getAttribute('sandbox') || '')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+    const spy = vi.spyOn(document, 'createElement').mockImplementation(((
+      tagName: string,
+      options?: ElementCreationOptions,
+    ) => {
+      const element = createElement(tagName, options);
+      if (tagName.toLowerCase() === 'iframe') {
+        const iframe = element as HTMLIFrameElement;
+        Object.defineProperty(iframe, 'sandbox', {
+          configurable: true,
+          value: {
+            get length() {
+              return getTokens(iframe).length;
             },
-          });
-          onIframe?.(iframe);
-        }
-        return element;
-      }) as typeof document.createElement);
+            contains: (token: string) => getTokens(iframe).includes(token),
+            item: (index: number) => getTokens(iframe)[index] ?? null,
+            toString: () => iframe.getAttribute('sandbox') || '',
+            [Symbol.iterator]: () => getTokens(iframe)[Symbol.iterator](),
+          },
+        });
+        onIframe?.(iframe);
+      }
+      return element;
+    }) as typeof document.createElement);
 
     return () => spy.mockRestore();
   }
@@ -148,6 +150,31 @@ describe('rebuild', function () {
       );
 
       iframe.remove();
+    });
+
+    it('allows rebuilding into an iframe document created by createSandboxedIframe', () => {
+      const root = document.createElement('div');
+      document.body.appendChild(root);
+      const restoreCreateElement = mockCreatedIframeSandboxDomApi();
+
+      try {
+        const iframe = createSandboxedIframe({
+          root,
+        });
+
+        const node = rebuild(simpleSnapshot, {
+          doc: iframe.contentDocument!,
+          cache,
+          mirror,
+        });
+
+        expect(root.contains(iframe)).toBe(true);
+        expect(iframe.getAttribute('sandbox')).toBe('allow-same-origin');
+        expect(node).toBe(iframe.contentDocument);
+      } finally {
+        restoreCreateElement();
+        root.remove();
+      }
     });
 
     it('throws for sandbox policies other than exactly allow-same-origin', () => {
