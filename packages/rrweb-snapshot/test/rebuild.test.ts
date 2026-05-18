@@ -4,7 +4,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { beforeEach, describe, expect as _expect, it, vi } from 'vitest';
-import {
+import rebuild, {
   adaptCssForReplay,
   buildNodeWithSN,
   createCache,
@@ -44,6 +44,94 @@ describe('rebuild', function () {
   beforeEach(() => {
     mirror = createMirror();
     cache = createCache();
+  });
+
+  const simpleSnapshot = {
+    id: 1,
+    type: NodeType.Document,
+    childNodes: [
+      {
+        id: 2,
+        type: NodeType.Element,
+        tagName: 'html',
+        attributes: {},
+        childNodes: [
+          {
+            id: 3,
+            type: NodeType.Element,
+            tagName: 'body',
+            attributes: {},
+            childNodes: [],
+          },
+        ],
+      },
+    ],
+  } as const;
+
+  describe('browser rebuild target guard', () => {
+    it('throws when rebuilding into the top-level browser document', () => {
+      expect(() =>
+        rebuild(simpleSnapshot, {
+          doc: document,
+          cache,
+          mirror,
+        }),
+      ).toThrow(
+        'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document',
+      );
+    });
+
+    it('allows rebuilding into an iframe with exactly allow-same-origin sandbox', () => {
+      const iframe = document.createElement('iframe');
+      iframe.setAttribute('sandbox', 'allow-same-origin');
+      document.body.appendChild(iframe);
+
+      const node = rebuild(simpleSnapshot, {
+        doc: iframe.contentDocument!,
+        cache,
+        mirror,
+      });
+
+      expect(node).toBe(iframe.contentDocument);
+      expect(iframe.contentDocument!.body).not.toBeNull();
+      iframe.remove();
+    });
+
+    it('throws for sandbox policies other than exactly allow-same-origin', () => {
+      for (const sandbox of [
+        '',
+        'allow-scripts',
+        'allow-same-origin allow-scripts',
+        'allow-same-origin allow-forms',
+      ]) {
+        const iframe = document.createElement('iframe');
+        iframe.setAttribute('sandbox', sandbox);
+        document.body.appendChild(iframe);
+
+        expect(() =>
+          rebuild(simpleSnapshot, {
+            doc: iframe.contentDocument!,
+            cache: createCache(),
+            mirror: createMirror(),
+          }),
+        ).toThrow(
+          'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document',
+        );
+
+        iframe.remove();
+      }
+    });
+
+    it('allows an unprotected rebuild when the caller explicitly opts out', () => {
+      const node = rebuild(simpleSnapshot, {
+        doc: document,
+        cache,
+        mirror,
+        unsafeAllowUnprotectedRebuild: true,
+      });
+
+      expect(node).toBe(document);
+    });
   });
 
   describe('rr_dataURL', function () {

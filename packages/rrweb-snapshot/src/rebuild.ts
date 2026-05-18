@@ -89,6 +89,56 @@ export function createCache(): BuildCache {
   };
 }
 
+const REBUILD_TARGET_ERROR =
+  'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document. Use rebuildIntoSandboxedIframe(), pass a sandboxed iframe document, or set unsafeAllowUnprotectedRebuild: true only when you accept the script-execution risk.';
+
+type RebuildOptions = {
+  doc: Document;
+  onVisit?: (node: Node) => unknown;
+  hackCss?: boolean;
+  afterAppend?: (n: Node, id: number) => unknown;
+  cache: BuildCache;
+  mirror: Mirror;
+  unsafeAllowUnprotectedRebuild?: boolean;
+};
+
+function isSupportedSandboxedIframe(
+  frameElement: Element | null,
+): frameElement is HTMLIFrameElement {
+  if (!frameElement || frameElement.tagName !== 'IFRAME') {
+    return false;
+  }
+
+  const sandboxTokens =
+    'sandbox' in frameElement
+      ? Array.from((frameElement as HTMLIFrameElement).sandbox)
+      : (frameElement.getAttribute('sandbox') ?? '')
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
+
+  return (
+    sandboxTokens.length === 1 && sandboxTokens[0] === 'allow-same-origin'
+  );
+}
+
+function assertRebuildTargetAllowed(options: RebuildOptions): void {
+  if (options.unsafeAllowUnprotectedRebuild) {
+    return;
+  }
+
+  const win = options.doc.defaultView;
+  if (!win) {
+    return;
+  }
+
+  if (isSupportedSandboxedIframe(win.frameElement)) {
+    return;
+  }
+
+  throw new Error(REBUILD_TARGET_ERROR);
+}
+
 /**
  * undo splitCssText/markCssSplits
  * (would move to utils.ts but uses `adaptCssForReplay`)
@@ -610,15 +660,10 @@ function handleScroll(node: Node, mirror: Mirror) {
 
 function rebuild(
   n: serializedNodeWithId,
-  options: {
-    doc: Document;
-    onVisit?: (node: Node) => unknown;
-    hackCss?: boolean;
-    afterAppend?: (n: Node, id: number) => unknown;
-    cache: BuildCache;
-    mirror: Mirror;
-  },
+  options: RebuildOptions,
 ): Node | null {
+  assertRebuildTargetAllowed(options);
+
   const {
     doc,
     onVisit,
