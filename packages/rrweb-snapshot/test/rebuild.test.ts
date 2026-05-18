@@ -184,21 +184,29 @@ describe('rebuild', function () {
         'allow-same-origin allow-scripts',
         'allow-same-origin allow-forms',
       ]) {
-        const iframe = document.createElement('iframe');
-        setIframeSandbox(iframe, sandbox);
-        document.body.appendChild(iframe);
+        const root = document.createElement('div');
+        document.body.appendChild(root);
+        const restoreCreateElement = mockCreatedIframeSandboxDomApi();
 
-        expect(() =>
-          rebuild(simpleSnapshot, {
-            doc: iframe.contentDocument!,
-            cache: createCache(),
-            mirror: createMirror(),
-          }),
-        ).toThrow(
-          'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document',
-        );
+        try {
+          const iframe = createSandboxedIframe({
+            root,
+          });
+          setIframeSandbox(iframe, sandbox);
 
-        iframe.remove();
+          expect(() =>
+            rebuild(simpleSnapshot, {
+              doc: iframe.contentDocument!,
+              cache: createCache(),
+              mirror: createMirror(),
+            }),
+          ).toThrow(
+            'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document',
+          );
+        } finally {
+          restoreCreateElement();
+          root.remove();
+        }
       }
     });
 
