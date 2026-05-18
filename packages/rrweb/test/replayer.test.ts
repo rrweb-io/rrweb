@@ -110,14 +110,36 @@ describe('replayer', function () {
   });
 
   it('can rebuild the first full snapshot when UNSAFE_replayCanvas is enabled', async () => {
-    const rebuilt = await page.evaluate(`
-      const { Replayer } = rrweb;
-      const replayer = new Replayer(events, { UNSAFE_replayCanvas: true });
-      replayer.play(0);
-      Boolean(replayer.iframe.contentDocument.querySelector('html'));
+    const rebuiltSnapshotIds = await page.evaluate(`
+      (async () => {
+        const { Replayer, ReplayerEvents } = rrweb;
+        const replayer = new Replayer(events, { UNSAFE_replayCanvas: true });
+
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(
+            () => reject(new Error('Timed out waiting for full snapshot rebuild')),
+            1000,
+          );
+          replayer.on(ReplayerEvents.FullsnapshotRebuilded, () => {
+            clearTimeout(timeout);
+            resolve();
+          });
+          replayer.play(0);
+        });
+
+        const doc = replayer.iframe.contentDocument;
+        const mirror = replayer.getMirror();
+        return {
+          htmlId: mirror.getId(doc.documentElement),
+          bodyId: mirror.getId(doc.body),
+        };
+      })();
     `);
 
-    expect(rebuilt).toBe(true);
+    expect(rebuiltSnapshotIds).toEqual({
+      htmlId: 2,
+      bodyId: 4,
+    });
   });
 
   it('will start actions when play', async () => {
