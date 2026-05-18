@@ -102,6 +102,16 @@ type RebuildOptions = {
   unsafeAllowUnprotectedRebuild?: boolean;
 };
 
+type RebuildIntoSandboxedIframeOptions = Omit<
+  RebuildOptions,
+  'doc' | 'unsafeAllowUnprotectedRebuild'
+> & {
+  root: Element;
+  iframeAttributes?: Omit<Record<string, string>, 'sandbox'> & {
+    sandbox?: string;
+  };
+};
+
 function isSupportedSandboxedIframe(
   frameElement: Element | null,
 ): frameElement is HTMLIFrameElement {
@@ -687,6 +697,42 @@ function rebuild(
     handleScroll(visitedNode, mirror);
   });
   return node;
+}
+
+export function rebuildIntoSandboxedIframe(
+  n: serializedNodeWithId,
+  options: RebuildIntoSandboxedIframeOptions,
+): { iframe: HTMLIFrameElement; node: Node | null } {
+  const iframe = options.root.ownerDocument.createElement('iframe');
+
+  for (const [name, value] of Object.entries(options.iframeAttributes || {})) {
+    if (name === 'sandbox') {
+      continue;
+    }
+    iframe.setAttribute(name, value);
+  }
+
+  iframe.setAttribute('sandbox', 'allow-same-origin');
+  if (!('sandbox' in iframe)) {
+    Object.defineProperty(iframe, 'sandbox', {
+      configurable: true,
+      value: {
+        length: 1,
+        contains: (token: string) => token === 'allow-same-origin',
+        item: (index: number) => (index === 0 ? 'allow-same-origin' : null),
+        toString: () => 'allow-same-origin',
+        [Symbol.iterator]: () => ['allow-same-origin'][Symbol.iterator](),
+      },
+    });
+  }
+  options.root.appendChild(iframe);
+
+  const node = rebuild(n, {
+    ...options,
+    doc: iframe.contentDocument!,
+  });
+
+  return { iframe, node };
 }
 
 export default rebuild;

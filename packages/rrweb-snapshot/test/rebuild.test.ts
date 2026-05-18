@@ -8,6 +8,7 @@ import rebuild, {
   adaptCssForReplay,
   buildNodeWithSN,
   createCache,
+  rebuildIntoSandboxedIframe,
 } from '../src/rebuild';
 import { NodeType } from '@rrweb/types';
 import { createMirror, Mirror, normalizeCssString } from '../src/utils';
@@ -211,6 +212,42 @@ describe('rebuild', function () {
 
       expect(node).toBeInstanceOf(Element);
       expect(node?.ownerDocument).toBe(detachedDocument);
+    });
+
+    it('rebuildIntoSandboxedIframe creates a fresh sandboxed iframe in the required root', () => {
+      const root = document.createElement('div');
+      document.body.appendChild(root);
+
+      const { iframe, node } = rebuildIntoSandboxedIframe(simpleSnapshot, {
+        root,
+        cache,
+        mirror,
+      });
+
+      expect(root.contains(iframe)).toBe(true);
+      expect(iframe.getAttribute('sandbox')).toBe('allow-same-origin');
+      expect(node).toBe(iframe.contentDocument);
+      expect(iframe.contentDocument!.querySelector('body')).not.toBeNull();
+      root.remove();
+    });
+
+    it('rebuildIntoSandboxedIframe does not allow callers to override sandbox', () => {
+      const root = document.createElement('div');
+      document.body.appendChild(root);
+
+      const { iframe } = rebuildIntoSandboxedIframe(simpleSnapshot, {
+        root,
+        cache,
+        mirror,
+        iframeAttributes: {
+          sandbox: 'allow-same-origin allow-scripts',
+          title: 'Replay',
+        },
+      });
+
+      expect(iframe.getAttribute('sandbox')).toBe('allow-same-origin');
+      expect(iframe.getAttribute('title')).toBe('Replay');
+      root.remove();
     });
   });
 
