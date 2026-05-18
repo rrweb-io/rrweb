@@ -22,14 +22,14 @@ The current `rrweb` replayer already creates a top-level iframe with `sandbox="a
 
 ## API Boundary
 
-`rrweb-snapshot.rebuild()` will validate browser `Document` targets before mutating them. In a real browser document, rebuild is allowed only when the target document belongs to an iframe whose sandbox token set is exactly `allow-same-origin`.
+`rrweb-snapshot.rebuild()` will validate browser `Document` targets before mutating them. In a real browser document, protected rebuild is allowed only for a document created by `rebuildIntoSandboxedIframe()`, whose iframe sandbox token set is exactly `allow-same-origin`.
 
 This guard belongs to `rebuild()` only. Lower-level node builders such as `buildNodeWithSN()` do not own the browser sandbox policy in this change.
 
 If validation fails, `rebuild()` throws a clear error:
 
 ```text
-rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document. Use rebuildIntoSandboxedIframe(), pass a sandboxed iframe document, or set unsafeAllowUnprotectedRebuild: true only when you accept the script-execution risk.
+rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document. Use rebuildIntoSandboxedIframe() or set unsafeAllowUnprotectedRebuild: true only when you accept the script-execution risk.
 ```
 
 The API will accept an explicit unsafe option for callers that accept the risk:
@@ -71,12 +71,11 @@ Nested iframe sandbox attributes are not part of this issue fix. For normal rrwe
 
 ## Error Handling And Compatibility
 
-The guard applies when the target document has a live `defaultView`. If `doc.defaultView` is absent, the browser sandbox check does not run. If `doc.defaultView` exists, the target is allowed only when `doc.defaultView.frameElement` is an iframe whose sandbox token set is exactly `allow-same-origin`, unless `unsafeAllowUnprotectedRebuild: true` is set. Test environments that model browser documents can use the explicit unsafe option where they intentionally rebuild fixtures into the top-level document.
+The guard applies when the target document has a live `defaultView`. If `doc.defaultView` is absent, the browser sandbox check does not run. If `doc.defaultView` exists, the target is allowed only when it was created by `rebuildIntoSandboxedIframe()` and `doc.defaultView.frameElement` is an iframe whose sandbox token set is exactly `allow-same-origin`, unless `unsafeAllowUnprotectedRebuild: true` is set. Test environments that model browser documents can use the explicit unsafe option where they intentionally rebuild fixtures into the top-level document.
 
 This is an intentional breaking change for unprotected direct browser use of `rrweb-snapshot.rebuild()`. The migration paths are:
 
 - use `rebuildIntoSandboxedIframe()` for untrusted replay content;
-- pass an already-sandboxed iframe document to `rebuild()`;
 - set `unsafeAllowUnprotectedRebuild: true` only when you accept the script-execution risk.
 
 ## Testing
@@ -84,7 +83,7 @@ This is an intentional breaking change for unprotected direct browser use of `rr
 Add `rrweb-snapshot` tests for:
 
 - `rebuild()` throws when targeting the top-level browser `document`;
-- `rebuild()` works when targeting an iframe document whose iframe has `sandbox="allow-same-origin"`;
+- `rebuild()` throws for caller-supplied iframe documents, even when the iframe currently has `sandbox="allow-same-origin"`;
 - `rebuild()` throws for any sandbox token set other than exactly `allow-same-origin`;
 - `unsafeAllowUnprotectedRebuild: true` allows unprotected rebuild for callers that explicitly accept the risk;
 - `rebuildIntoSandboxedIframe()` creates the iframe, applies sandbox before rebuild, and returns the rebuilt node;

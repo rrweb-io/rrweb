@@ -37,6 +37,7 @@ Expected: dependencies install successfully; baseline tests pass before implemen
 ## Task 1: Guard Browser Rebuild Targets
 
 **Files:**
+
 - Modify: `packages/rrweb-snapshot/src/rebuild.ts`
 - Test: `packages/rrweb-snapshot/test/rebuild.test.ts`
 
@@ -55,93 +56,93 @@ import rebuild, {
 Inside the existing `describe('rebuild', function () { ... })`, after `beforeEach`, add this helper and tests:
 
 ```ts
-  const simpleSnapshot = {
-    id: 1,
-    type: NodeType.Document,
-    childNodes: [
-      {
-        id: 2,
-        type: NodeType.Element,
-        tagName: 'html',
-        attributes: {},
-        childNodes: [
-          {
-            id: 3,
-            type: NodeType.Element,
-            tagName: 'body',
-            attributes: {},
-            childNodes: [],
-          },
-        ],
-      },
-    ],
-  } as const;
+const simpleSnapshot = {
+  id: 1,
+  type: NodeType.Document,
+  childNodes: [
+    {
+      id: 2,
+      type: NodeType.Element,
+      tagName: 'html',
+      attributes: {},
+      childNodes: [
+        {
+          id: 3,
+          type: NodeType.Element,
+          tagName: 'body',
+          attributes: {},
+          childNodes: [],
+        },
+      ],
+    },
+  ],
+} as const;
 
-  describe('browser rebuild target guard', () => {
-    it('throws when rebuilding into the top-level browser document', () => {
+describe('browser rebuild target guard', () => {
+  it('throws when rebuilding into the top-level browser document', () => {
+    expect(() =>
+      rebuild(simpleSnapshot, {
+        doc: document,
+        cache,
+        mirror,
+      }),
+    ).toThrow(
+      'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document',
+    );
+  });
+
+  it('allows rebuilding into an iframe with exactly allow-same-origin sandbox', () => {
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('sandbox', 'allow-same-origin');
+    document.body.appendChild(iframe);
+
+    const node = rebuild(simpleSnapshot, {
+      doc: iframe.contentDocument!,
+      cache,
+      mirror,
+    });
+
+    expect(node).toBe(iframe.contentDocument);
+    expect(iframe.contentDocument!.body).not.toBeNull();
+    iframe.remove();
+  });
+
+  it('throws for sandbox policies other than exactly allow-same-origin', () => {
+    for (const sandbox of [
+      '',
+      'allow-scripts',
+      'allow-same-origin allow-scripts',
+      'allow-same-origin allow-forms',
+    ]) {
+      const iframe = document.createElement('iframe');
+      iframe.setAttribute('sandbox', sandbox);
+      document.body.appendChild(iframe);
+
       expect(() =>
         rebuild(simpleSnapshot, {
-          doc: document,
-          cache,
-          mirror,
+          doc: iframe.contentDocument!,
+          cache: createCache(),
+          mirror: createMirror(),
         }),
       ).toThrow(
         'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document',
       );
-    });
 
-    it('allows rebuilding into an iframe with exactly allow-same-origin sandbox', () => {
-      const iframe = document.createElement('iframe');
-      iframe.setAttribute('sandbox', 'allow-same-origin');
-      document.body.appendChild(iframe);
-
-      const node = rebuild(simpleSnapshot, {
-        doc: iframe.contentDocument!,
-        cache,
-        mirror,
-      });
-
-      expect(node).toBe(iframe.contentDocument);
-      expect(iframe.contentDocument!.body).not.toBeNull();
       iframe.remove();
-    });
-
-    it('throws for sandbox policies other than exactly allow-same-origin', () => {
-      for (const sandbox of [
-        '',
-        'allow-scripts',
-        'allow-same-origin allow-scripts',
-        'allow-same-origin allow-forms',
-      ]) {
-        const iframe = document.createElement('iframe');
-        iframe.setAttribute('sandbox', sandbox);
-        document.body.appendChild(iframe);
-
-        expect(() =>
-          rebuild(simpleSnapshot, {
-            doc: iframe.contentDocument!,
-            cache: createCache(),
-            mirror: createMirror(),
-          }),
-        ).toThrow(
-          'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document',
-        );
-
-        iframe.remove();
-      }
-    });
-
-    it('allows an unprotected rebuild when the caller explicitly opts out', () => {
-      const node = rebuild(simpleSnapshot, {
-        doc: document,
-        cache,
-        mirror,
-        unsafeAllowUnprotectedRebuild: true,
-      });
-
-      expect(node).toBe(document);
-    });
+    }
   });
+
+  it('allows an unprotected rebuild when the caller explicitly opts out', () => {
+    const node = rebuild(simpleSnapshot, {
+      doc: document,
+      cache,
+      mirror,
+      unsafeAllowUnprotectedRebuild: true,
+    });
+
+    expect(node).toBe(document);
+  });
+});
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
@@ -160,7 +161,7 @@ In `packages/rrweb-snapshot/src/rebuild.ts`, add these constants/types near `cre
 
 ```ts
 const REBUILD_TARGET_ERROR =
-  'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document. Use rebuildIntoSandboxedIframe(), pass a sandboxed iframe document, or set unsafeAllowUnprotectedRebuild: true only when you accept the script-execution risk.';
+  'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document. Use rebuildIntoSandboxedIframe() or set unsafeAllowUnprotectedRebuild: true only when you accept the script-execution risk.';
 
 type RebuildOptions = {
   doc: Document;
@@ -183,12 +184,8 @@ function isSupportedSandboxedIframe(
     return false;
   }
 
-  const sandboxTokens = Array.from(
-    (frameElement as HTMLIFrameElement).sandbox,
-  );
-  return (
-    sandboxTokens.length === 1 && sandboxTokens[0] === 'allow-same-origin'
-  );
+  const sandboxTokens = Array.from((frameElement as HTMLIFrameElement).sandbox);
+  return sandboxTokens.length === 1 && sandboxTokens[0] === 'allow-same-origin';
 }
 
 function assertRebuildTargetAllowed(options: RebuildOptions): void {
@@ -248,6 +245,7 @@ git commit -m "fix(snapshot): guard unprotected browser rebuilds"
 ## Task 2: Add Minimal Safe Iframe Helper
 
 **Files:**
+
 - Modify: `packages/rrweb-snapshot/src/rebuild.ts`
 - Modify: `packages/rrweb-snapshot/src/index.ts`
 - Test: `packages/rrweb-snapshot/test/rebuild.test.ts`
@@ -268,41 +266,41 @@ import rebuild, {
 Add tests inside `describe('browser rebuild target guard', () => { ... })`:
 
 ```ts
-    it('rebuildIntoSandboxedIframe creates a fresh sandboxed iframe in the required root', () => {
-      const root = document.createElement('div');
-      document.body.appendChild(root);
+it('rebuildIntoSandboxedIframe creates a fresh sandboxed iframe in the required root', () => {
+  const root = document.createElement('div');
+  document.body.appendChild(root);
 
-      const { iframe, node } = rebuildIntoSandboxedIframe(simpleSnapshot, {
-        root,
-        cache,
-        mirror,
-      });
+  const { iframe, node } = rebuildIntoSandboxedIframe(simpleSnapshot, {
+    root,
+    cache,
+    mirror,
+  });
 
-      expect(root.contains(iframe)).toBe(true);
-      expect(iframe.getAttribute('sandbox')).toBe('allow-same-origin');
-      expect(node).toBe(iframe.contentDocument);
-      expect(iframe.contentDocument!.querySelector('body')).not.toBeNull();
-      root.remove();
-    });
+  expect(root.contains(iframe)).toBe(true);
+  expect(iframe.getAttribute('sandbox')).toBe('allow-same-origin');
+  expect(node).toBe(iframe.contentDocument);
+  expect(iframe.contentDocument!.querySelector('body')).not.toBeNull();
+  root.remove();
+});
 
-    it('rebuildIntoSandboxedIframe does not allow callers to override sandbox', () => {
-      const root = document.createElement('div');
-      document.body.appendChild(root);
+it('rebuildIntoSandboxedIframe does not allow callers to override sandbox', () => {
+  const root = document.createElement('div');
+  document.body.appendChild(root);
 
-      const { iframe } = rebuildIntoSandboxedIframe(simpleSnapshot, {
-        root,
-        cache,
-        mirror,
-        iframeAttributes: {
-          sandbox: 'allow-same-origin allow-scripts',
-          title: 'Replay',
-        },
-      });
+  const { iframe } = rebuildIntoSandboxedIframe(simpleSnapshot, {
+    root,
+    cache,
+    mirror,
+    iframeAttributes: {
+      sandbox: 'allow-same-origin allow-scripts',
+      title: 'Replay',
+    },
+  });
 
-      expect(iframe.getAttribute('sandbox')).toBe('allow-same-origin');
-      expect(iframe.getAttribute('title')).toBe('Replay');
-      root.remove();
-    });
+  expect(iframe.getAttribute('sandbox')).toBe('allow-same-origin');
+  expect(iframe.getAttribute('title')).toBe('Replay');
+  root.remove();
+});
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
@@ -416,6 +414,7 @@ git commit -m "feat(snapshot): add sandboxed iframe rebuild helper"
 ## Task 3: Integrate Guard With rrweb Replayer
 
 **Files:**
+
 - Modify: `packages/rrweb/src/replay/index.ts`
 - Test: `packages/rrweb/test/replayer.test.ts`
 
@@ -424,36 +423,36 @@ git commit -m "feat(snapshot): add sandboxed iframe rebuild helper"
 In `packages/rrweb/test/replayer.test.ts`, add these tests after `it('can get meta data', async () => { ... })`:
 
 ```ts
-  it('creates a replay iframe with the supported sandbox policy', async () => {
-    const sandbox = await page.evaluate(`
+it('creates a replay iframe with the supported sandbox policy', async () => {
+  const sandbox = await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events);
       replayer.iframe.getAttribute('sandbox');
     `);
 
-    expect(sandbox).toBe('allow-same-origin');
-  });
+  expect(sandbox).toBe('allow-same-origin');
+});
 
-  it('keeps UNSAFE_replayCanvas explicit by using an unprotected sandbox policy', async () => {
-    const sandbox = await page.evaluate(`
+it('keeps UNSAFE_replayCanvas explicit by using an unprotected sandbox policy', async () => {
+  const sandbox = await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events, { UNSAFE_replayCanvas: true });
       replayer.iframe.getAttribute('sandbox');
     `);
 
-    expect(sandbox).toBe('allow-same-origin allow-scripts');
-  });
+  expect(sandbox).toBe('allow-same-origin allow-scripts');
+});
 
-  it('can rebuild the first full snapshot when UNSAFE_replayCanvas is enabled', async () => {
-    const rebuilt = await page.evaluate(`
+it('can rebuild the first full snapshot when UNSAFE_replayCanvas is enabled', async () => {
+  const rebuilt = await page.evaluate(`
       const { Replayer } = rrweb;
       const replayer = new Replayer(events, { UNSAFE_replayCanvas: true });
       replayer.play(0);
       Boolean(replayer.iframe.contentDocument.querySelector('html'));
     `);
 
-    expect(rebuilt).toBe(true);
-  });
+  expect(rebuilt).toBe(true);
+});
 ```
 
 - [ ] **Step 2: Run tests to verify unsafe canvas rebuild fails**
@@ -472,13 +471,13 @@ Expected: default sandbox test passes. The unsafe canvas rebuild test fails unti
 In `packages/rrweb/src/replay/index.ts`, update the full snapshot rebuild call:
 
 ```ts
-    rebuild(event.data.node, {
-      doc: this.iframe.contentDocument,
-      afterAppend,
-      cache: this.cache,
-      mirror: this.mirror,
-      unsafeAllowUnprotectedRebuild: this.config.UNSAFE_replayCanvas,
-    });
+rebuild(event.data.node, {
+  doc: this.iframe.contentDocument,
+  afterAppend,
+  cache: this.cache,
+  mirror: this.mirror,
+  unsafeAllowUnprotectedRebuild: this.config.UNSAFE_replayCanvas,
+});
 ```
 
 Do not pass the unsafe option from any other call site unless a test proves that call reaches the guarded `rebuild()` path with an unprotected browser target.
@@ -504,6 +503,7 @@ git commit -m "fix(rrweb): mark unsafe canvas rebuilds explicitly"
 ## Task 4: Update Public Docs
 
 **Files:**
+
 - Modify: `packages/rrweb-snapshot/README.md`
 - Modify: `docs/sandbox.md`
 - Modify: `guide.md`
@@ -518,7 +518,7 @@ Replace the `#### rebuild` section with:
 
 `rebuild` will build the DOM according to the taken snapshot.
 
-In browser environments, `rebuild` is a low-level API and requires a sandboxed iframe document by default. Untrusted replay data must not be rebuilt directly into the top-level `document`.
+In browser environments, `rebuild` is a low-level API and requires a document created by `rebuildIntoSandboxedIframe()` by default. Untrusted replay data must not be rebuilt directly into the top-level `document` or a caller-created iframe document.
 
 For browser usage, prefer `rebuildIntoSandboxedIframe`:
 
@@ -544,7 +544,7 @@ There are several things will be done during rebuild:
 After the paragraph ending `implementing this security ourselves.`, add:
 
 ```md
-`rrweb-snapshot.rebuild()` enforces this boundary in browser environments. Direct browser rebuilds must target an iframe document with `sandbox="allow-same-origin"`, or callers must explicitly opt into an unprotected rebuild with `unsafeAllowUnprotectedRebuild: true`.
+`rrweb-snapshot.rebuild()` enforces this boundary in browser environments. Browser rebuilds should use `rebuildIntoSandboxedIframe()`, which creates an iframe with exactly `sandbox="allow-same-origin"` before rebuilding into it. Direct `rebuild()` calls against caller-created browser documents must explicitly opt into an unprotected rebuild with `unsafeAllowUnprotectedRebuild: true`.
 ```
 
 - [ ] **Step 3: Update `guide.md` option text**
@@ -589,6 +589,7 @@ git commit -m "docs: explain sandboxed rebuild requirements"
 ## Task 5: Add Changeset And Full Verification
 
 **Files:**
+
 - Create: `.changeset/sandboxed-rebuilds.md`
 
 - [ ] **Step 1: Add changeset**
@@ -597,11 +598,11 @@ Create `.changeset/sandboxed-rebuilds.md`:
 
 ```md
 ---
-"rrweb-snapshot": major
-"rrweb": patch
+'rrweb-snapshot': major
+'rrweb': patch
 ---
 
-Require browser `rebuild()` calls to target a sandboxed iframe document by default. Use `rebuildIntoSandboxedIframe()` for untrusted replay data, or pass `unsafeAllowUnprotectedRebuild: true` only when accepting the script-execution risk.
+Require browser `rebuild()` calls to target a document created by `rebuildIntoSandboxedIframe()` by default. Use `rebuildIntoSandboxedIframe()` for untrusted replay data, or pass `unsafeAllowUnprotectedRebuild: true` only when accepting the script-execution risk.
 
 `rrweb` now marks `UNSAFE_replayCanvas` rebuilds as an explicit unsafe path because canvas replay adds script permission to the replay iframe.
 ```

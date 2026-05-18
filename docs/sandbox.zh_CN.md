@@ -14,7 +14,7 @@
 
 这与我们的预期是相符的，尤其是对 JS 脚本的处理相比自行实现会更加安全、可靠。
 
-`rrweb-snapshot.rebuild()` 会在浏览器环境中强制执行这一边界。直接在浏览器中重建时，目标必须是一个 iframe 文档，并且拥有该文档的 iframe 必须精确设置为 `sandbox="allow-same-origin"`；否则调用方必须通过 `unsafeAllowUnprotectedRebuild: true` 显式选择不受保护的重建。
+`rrweb-snapshot.rebuild()` 会在浏览器环境中强制执行这一边界。浏览器重建应使用 `rebuildIntoSandboxedIframe()`，它会先创建精确设置为 `sandbox="allow-same-origin"` 的 iframe，再在其中重建。直接对调用方创建的浏览器文档调用 `rebuild()` 时，必须通过 `unsafeAllowUnprotectedRebuild: true` 显式选择不受保护的重建。
 
 ## 避免链接跳转
 

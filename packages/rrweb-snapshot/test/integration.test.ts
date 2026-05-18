@@ -205,14 +205,14 @@ describe('integration tests', function (this: ISuite) {
     );
     const rebuildRenderedHeight = await page.evaluate(`${code}
 const snap = rrwebSnapshot.snapshot(document);
-const iframe = document.createElement('iframe');
-iframe.setAttribute('width', document.body.clientWidth)
-iframe.setAttribute('height', document.body.clientHeight)
-iframe.setAttribute('sandbox', 'allow-same-origin')
+const { iframe } = rrwebSnapshot.rebuildIntoSandboxedIframe(snap, {
+  root: document.body,
+  iframeAttributes: {
+    width: document.body.clientWidth,
+    height: document.body.clientHeight,
+  },
+});
 iframe.style.transform = 'scale(0.3)'; // mini-me
-document.body.appendChild(iframe);
-// magic here! rebuild in a new iframe
-const rebuildNode = rrwebSnapshot.rebuild(snap, { doc: iframe.contentDocument })[0];
 iframe.contentDocument.querySelector('center').clientHeight
 `);
     const rebuildCompatMode = await page.evaluate(

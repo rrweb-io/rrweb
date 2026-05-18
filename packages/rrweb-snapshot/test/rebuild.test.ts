@@ -132,19 +132,21 @@ describe('rebuild', function () {
       );
     });
 
-    it('allows rebuilding into an iframe with exactly allow-same-origin sandbox', () => {
+    it('throws for caller-supplied iframe documents even with exactly allow-same-origin sandbox', () => {
       const iframe = document.createElement('iframe');
       setIframeSandbox(iframe, 'allow-same-origin');
       document.body.appendChild(iframe);
 
-      const node = rebuild(simpleSnapshot, {
-        doc: iframe.contentDocument!,
-        cache,
-        mirror,
-      });
+      expect(() =>
+        rebuild(simpleSnapshot, {
+          doc: iframe.contentDocument!,
+          cache,
+          mirror,
+        }),
+      ).toThrow(
+        'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document',
+      );
 
-      expect(node).toBe(iframe.contentDocument);
-      expect(iframe.contentDocument!.body).not.toBeNull();
       iframe.remove();
     });
 

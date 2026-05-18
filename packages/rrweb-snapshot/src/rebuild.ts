@@ -90,7 +90,9 @@ export function createCache(): BuildCache {
 }
 
 const REBUILD_TARGET_ERROR =
-  'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document. Use rebuildIntoSandboxedIframe(), pass a sandboxed iframe document, or set unsafeAllowUnprotectedRebuild: true only when you accept the script-execution risk.';
+  'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document. Use rebuildIntoSandboxedIframe() or set unsafeAllowUnprotectedRebuild: true only when you accept the script-execution risk.';
+
+const sandboxedRebuildDocuments = new WeakSet<Document>();
 
 type RebuildOptions = {
   doc: Document;
@@ -140,7 +142,10 @@ function assertRebuildTargetAllowed(options: RebuildOptions): void {
     return;
   }
 
-  if (isSupportedSandboxedIframe(win.frameElement)) {
+  if (
+    sandboxedRebuildDocuments.has(options.doc) &&
+    isSupportedSandboxedIframe(win.frameElement)
+  ) {
     return;
   }
 
@@ -713,11 +718,14 @@ export function rebuildIntoSandboxedIframe(
   iframe.setAttribute('sandbox', 'allow-same-origin');
   options.root.appendChild(iframe);
 
+  const doc = iframe.contentDocument!;
+  sandboxedRebuildDocuments.add(doc);
+
   let node: Node | null;
   try {
     node = rebuild(n, {
       ...options,
-      doc: iframe.contentDocument!,
+      doc,
     });
   } catch (error) {
     iframe.parentNode?.removeChild(iframe);
