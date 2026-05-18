@@ -140,6 +140,40 @@ describe('rebuild', function () {
       }
     });
 
+    it('throws when only a raw sandbox attribute is present without the sandbox DOM API', () => {
+      const iframe = document.createElement('iframe');
+      iframe.setAttribute('sandbox', 'allow-same-origin');
+
+      const iframePrototype = Object.getPrototypeOf(iframe);
+      const sandboxDescriptor = Object.getOwnPropertyDescriptor(
+        iframePrototype,
+        'sandbox',
+      );
+      if (sandboxDescriptor) {
+        delete iframePrototype.sandbox;
+      }
+
+      try {
+        expect('sandbox' in iframe).toBe(false);
+        document.body.appendChild(iframe);
+
+        expect(() =>
+          rebuild(simpleSnapshot, {
+            doc: iframe.contentDocument!,
+            cache: createCache(),
+            mirror: createMirror(),
+          }),
+        ).toThrow(
+          'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document',
+        );
+      } finally {
+        iframe.remove();
+        if (sandboxDescriptor) {
+          Object.defineProperty(iframePrototype, 'sandbox', sandboxDescriptor);
+        }
+      }
+    });
+
     it('allows an unprotected rebuild when the caller explicitly opts out', () => {
       const node = rebuild(simpleSnapshot, {
         doc: document,
