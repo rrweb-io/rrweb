@@ -109,13 +109,13 @@ function isSupportedSandboxedIframe(
     return false;
   }
 
-  const sandboxTokens =
-    'sandbox' in frameElement
-      ? Array.from((frameElement as HTMLIFrameElement).sandbox)
-      : (frameElement.getAttribute('sandbox') ?? '')
-          .trim()
-          .split(/\s+/)
-          .filter(Boolean);
+  if (!('sandbox' in frameElement)) {
+    return false;
+  }
+
+  const sandboxTokens = Array.from(
+    (frameElement as HTMLIFrameElement).sandbox,
+  );
 
   return (
     sandboxTokens.length === 1 && sandboxTokens[0] === 'allow-same-origin'

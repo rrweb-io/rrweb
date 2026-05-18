@@ -68,6 +68,24 @@ describe('rebuild', function () {
     ],
   } as const;
 
+  function setIframeSandbox(
+    iframe: HTMLIFrameElement,
+    sandbox: string,
+  ): void {
+    const tokens = sandbox.trim().split(/\s+/).filter(Boolean);
+    iframe.setAttribute('sandbox', sandbox);
+    Object.defineProperty(iframe, 'sandbox', {
+      configurable: true,
+      value: {
+        length: tokens.length,
+        contains: (token: string) => tokens.includes(token),
+        item: (index: number) => tokens[index] ?? null,
+        toString: () => sandbox,
+        [Symbol.iterator]: () => tokens[Symbol.iterator](),
+      },
+    });
+  }
+
   describe('browser rebuild target guard', () => {
     it('throws when rebuilding into the top-level browser document', () => {
       expect(() =>
@@ -83,7 +101,7 @@ describe('rebuild', function () {
 
     it('allows rebuilding into an iframe with exactly allow-same-origin sandbox', () => {
       const iframe = document.createElement('iframe');
-      iframe.setAttribute('sandbox', 'allow-same-origin');
+      setIframeSandbox(iframe, 'allow-same-origin');
       document.body.appendChild(iframe);
 
       const node = rebuild(simpleSnapshot, {
@@ -105,7 +123,7 @@ describe('rebuild', function () {
         'allow-same-origin allow-forms',
       ]) {
         const iframe = document.createElement('iframe');
-        iframe.setAttribute('sandbox', sandbox);
+        setIframeSandbox(iframe, sandbox);
         document.body.appendChild(iframe);
 
         expect(() =>
