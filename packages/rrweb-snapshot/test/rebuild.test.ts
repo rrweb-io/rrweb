@@ -132,6 +132,34 @@ describe('rebuild', function () {
 
       expect(node).toBe(document);
     });
+
+    it('allows rebuilding into a document without a defaultView', () => {
+      const detachedDocument = document.implementation.createDocument(
+        null,
+        '',
+        null,
+      );
+
+      expect(detachedDocument.defaultView).toBeNull();
+
+      const node = rebuild(
+        {
+          id: 4,
+          type: NodeType.Element,
+          tagName: 'div',
+          attributes: {},
+          childNodes: [],
+        },
+        {
+          doc: detachedDocument,
+          cache,
+          mirror,
+        },
+      );
+
+      expect(node).toBeInstanceOf(Element);
+      expect(node?.ownerDocument).toBe(detachedDocument);
+    });
   });
 
   describe('rr_dataURL', function () {

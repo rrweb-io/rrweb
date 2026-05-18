@@ -163,7 +163,7 @@ describe('integration tests', function (this: ISuite) {
         (await page.evaluate(`${code}
         const x = new XMLSerializer();
         const snap = rrwebSnapshot.snapshot(document);
-        let out = x.serializeToString(rrwebSnapshot.rebuild(snap, { doc: document }));
+        let out = x.serializeToString(rrwebSnapshot.rebuild(snap, { doc: document, unsafeAllowUnprotectedRebuild: true }));
         if (document.querySelector('html').getAttribute('xmlns') !== 'http://www.w3.org/1999/xhtml') {
           // this is just an artefact of serializeToString
           out = out.replace(' xmlns=\"http://www.w3.org/1999/xhtml\"', '');
@@ -208,6 +208,7 @@ const snap = rrwebSnapshot.snapshot(document);
 const iframe = document.createElement('iframe');
 iframe.setAttribute('width', document.body.clientWidth)
 iframe.setAttribute('height', document.body.clientHeight)
+iframe.setAttribute('sandbox', 'allow-same-origin')
 iframe.style.transform = 'scale(0.3)'; // mini-me
 document.body.appendChild(iframe);
 // magic here! rebuild in a new iframe
