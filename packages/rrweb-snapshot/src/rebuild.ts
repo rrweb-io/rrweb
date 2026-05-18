@@ -94,13 +94,32 @@ const REBUILD_TARGET_ERROR =
 
 const sandboxedRebuildDocuments = new WeakSet<Document>();
 
+/**
+ * Options used to rebuild a serialized snapshot into a live document.
+ *
+ * Browser rebuilds are protected by default. Use
+ * `rebuildIntoSandboxedIframe()` or `createSandboxedIframe()` when replaying
+ * untrusted data.
+ */
 type RebuildOptions = {
+  /** Target document that receives the rebuilt nodes. */
   doc: Document;
+  /** Called after each rebuilt node is created and before it may be appended. */
   onVisit?: (node: Node) => unknown;
+  /** Adapts CSS selectors for replay-specific hover behavior when enabled. */
   hackCss?: boolean;
+  /** Called after a rebuilt node is appended to its parent. */
   afterAppend?: (n: Node, id: number) => unknown;
+  /** Per-rebuild cache for derived snapshot data. */
   cache: BuildCache;
+  /** Mirror used to associate serialized node ids with rebuilt nodes. */
   mirror: Mirror;
+  /**
+   * Explicit unsafe opt-out from protected browser rebuild checks.
+   *
+   * Setting this to `true` allows rebuilding directly into an unprotected
+   * browser document and can execute scripts from replay data.
+   */
   unsafeAllowUnprotectedRebuild?: boolean;
 };
 
