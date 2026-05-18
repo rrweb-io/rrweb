@@ -720,9 +720,7 @@ export function rebuildIntoSandboxedIframe(
       doc: iframe.contentDocument!,
     });
   } catch (error) {
-    if (iframe.isConnected) {
-      iframe.remove();
-    }
+    iframe.parentNode?.removeChild(iframe);
     throw error;
   }
 

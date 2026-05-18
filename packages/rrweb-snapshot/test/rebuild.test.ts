@@ -87,14 +87,18 @@ describe('rebuild', function () {
     });
   }
 
-  function mockCreatedIframeSandboxDomApi(): () => void {
+  function mockCreatedIframeSandboxDomApi(
+    onIframe?: (iframe: HTMLIFrameElement) => void,
+  ): () => void {
     const createElement = document.createElement.bind(document);
     const spy = vi
       .spyOn(document, 'createElement')
       .mockImplementation(((tagName: string, options?: ElementCreationOptions) => {
         const element = createElement(tagName, options);
         if (tagName.toLowerCase() === 'iframe') {
-          setIframeSandbox(element as HTMLIFrameElement, 'allow-same-origin');
+          const iframe = element as HTMLIFrameElement;
+          setIframeSandbox(iframe, 'allow-same-origin');
+          onIframe?.(iframe);
         }
         return element;
       }) as typeof document.createElement);
@@ -277,8 +281,11 @@ describe('rebuild', function () {
 
     it('rebuildIntoSandboxedIframe removes the iframe when rebuild throws', () => {
       const root = document.createElement('div');
-      document.body.appendChild(root);
-      const restoreCreateElement = mockCreatedIframeSandboxDomApi();
+      let createdIframe: HTMLIFrameElement | undefined;
+      const restoreCreateElement = mockCreatedIframeSandboxDomApi((iframe) => {
+        document.body.appendChild(iframe);
+        createdIframe = iframe;
+      });
 
       try {
         expect(() =>
@@ -292,10 +299,10 @@ describe('rebuild', function () {
           }),
         ).toThrow('after append failed');
 
-        expect(root.querySelector('iframe')).toBeNull();
+        expect(createdIframe).toBeDefined();
+        expect(root.contains(createdIframe!)).toBe(false);
       } finally {
         restoreCreateElement();
-        root.remove();
       }
     });
   });
