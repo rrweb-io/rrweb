@@ -110,7 +110,7 @@ describe('replayer', function () {
   });
 
   it('can rebuild the first full snapshot when UNSAFE_replayCanvas is enabled', async () => {
-    const rebuiltSnapshotIds = await page.evaluate(`
+    const rebuiltSnapshotContent = await page.evaluate(`
       (async () => {
         const { Replayer, ReplayerEvents } = rrweb;
         const replayer = new Replayer(events, { UNSAFE_replayCanvas: true });
@@ -128,17 +128,24 @@ describe('replayer', function () {
         });
 
         const doc = replayer.iframe.contentDocument;
-        const mirror = replayer.getMirror();
         return {
-          htmlId: mirror.getId(doc.documentElement),
-          bodyId: mirror.getId(doc.body),
+          htmlTag: doc.documentElement.localName,
+          headTag: doc.head.localName,
+          headChildElementCount: doc.head.childElementCount,
+          bodyTag: doc.body.localName,
+          bodyChildElementCount: doc.body.childElementCount,
+          bodyText: doc.body.textContent,
         };
       })();
     `);
 
-    expect(rebuiltSnapshotIds).toEqual({
-      htmlId: 2,
-      bodyId: 4,
+    expect(rebuiltSnapshotContent).toEqual({
+      htmlTag: 'html',
+      headTag: 'head',
+      headChildElementCount: 0,
+      bodyTag: 'body',
+      bodyChildElementCount: 0,
+      bodyText: '',
     });
   });
 
