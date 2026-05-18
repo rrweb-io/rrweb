@@ -87,6 +87,21 @@ describe('rebuild', function () {
     });
   }
 
+  function mockCreatedIframeSandboxDomApi(): () => void {
+    const createElement = document.createElement.bind(document);
+    const spy = vi
+      .spyOn(document, 'createElement')
+      .mockImplementation(((tagName: string, options?: ElementCreationOptions) => {
+        const element = createElement(tagName, options);
+        if (tagName.toLowerCase() === 'iframe') {
+          setIframeSandbox(element as HTMLIFrameElement, 'allow-same-origin');
+        }
+        return element;
+      }) as typeof document.createElement);
+
+    return () => spy.mockRestore();
+  }
+
   describe('browser rebuild target guard', () => {
     it('throws when rebuilding into the top-level browser document', () => {
       expect(() =>
@@ -217,37 +232,47 @@ describe('rebuild', function () {
     it('rebuildIntoSandboxedIframe creates a fresh sandboxed iframe in the required root', () => {
       const root = document.createElement('div');
       document.body.appendChild(root);
+      const restoreCreateElement = mockCreatedIframeSandboxDomApi();
 
-      const { iframe, node } = rebuildIntoSandboxedIframe(simpleSnapshot, {
-        root,
-        cache,
-        mirror,
-      });
+      try {
+        const { iframe, node } = rebuildIntoSandboxedIframe(simpleSnapshot, {
+          root,
+          cache,
+          mirror,
+        });
 
-      expect(root.contains(iframe)).toBe(true);
-      expect(iframe.getAttribute('sandbox')).toBe('allow-same-origin');
-      expect(node).toBe(iframe.contentDocument);
-      expect(iframe.contentDocument!.querySelector('body')).not.toBeNull();
-      root.remove();
+        expect(root.contains(iframe)).toBe(true);
+        expect(iframe.getAttribute('sandbox')).toBe('allow-same-origin');
+        expect(node).toBe(iframe.contentDocument);
+        expect(iframe.contentDocument!.querySelector('body')).not.toBeNull();
+      } finally {
+        restoreCreateElement();
+        root.remove();
+      }
     });
 
     it('rebuildIntoSandboxedIframe does not allow callers to override sandbox', () => {
       const root = document.createElement('div');
       document.body.appendChild(root);
+      const restoreCreateElement = mockCreatedIframeSandboxDomApi();
 
-      const { iframe } = rebuildIntoSandboxedIframe(simpleSnapshot, {
-        root,
-        cache,
-        mirror,
-        iframeAttributes: {
-          sandbox: 'allow-same-origin allow-scripts',
-          title: 'Replay',
-        },
-      });
+      try {
+        const { iframe } = rebuildIntoSandboxedIframe(simpleSnapshot, {
+          root,
+          cache,
+          mirror,
+          iframeAttributes: {
+            sandbox: 'allow-same-origin allow-scripts',
+            title: 'Replay',
+          },
+        });
 
-      expect(iframe.getAttribute('sandbox')).toBe('allow-same-origin');
-      expect(iframe.getAttribute('title')).toBe('Replay');
-      root.remove();
+        expect(iframe.getAttribute('sandbox')).toBe('allow-same-origin');
+        expect(iframe.getAttribute('title')).toBe('Replay');
+      } finally {
+        restoreCreateElement();
+        root.remove();
+      }
     });
   });
 

@@ -713,18 +713,6 @@ export function rebuildIntoSandboxedIframe(
   }
 
   iframe.setAttribute('sandbox', 'allow-same-origin');
-  if (!('sandbox' in iframe)) {
-    Object.defineProperty(iframe, 'sandbox', {
-      configurable: true,
-      value: {
-        length: 1,
-        contains: (token: string) => token === 'allow-same-origin',
-        item: (index: number) => (index === 0 ? 'allow-same-origin' : null),
-        toString: () => 'allow-same-origin',
-        [Symbol.iterator]: () => ['allow-same-origin'][Symbol.iterator](),
-      },
-    });
-  }
   options.root.appendChild(iframe);
 
   const node = rebuild(n, {
