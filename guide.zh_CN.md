@@ -380,7 +380,7 @@ replayer.destroy();
 | liveMode            | false         | 是否开启直播模式                                                                                                                                                                                     |
 | insertStyleRules    | []            | 可以传入多个 CSS rule string，用于自定义回放时 iframe 内的样式                                                                                                                                       |
 | triggerFocus        | true          | 回放时是否回放 focus 交互                                                                                                                                                                            |
-| UNSAFE_replayCanvas | false         | 回放时是否回放 canvas 内容，**开启后将会关闭沙盒策略，导致一定风险**                                                                                                                                 |
+| UNSAFE_replayCanvas | false         | 回放时是否回放 canvas 内容，**开启后会向回放 iframe 添加 `allow-scripts`，并退出沙盒的脚本执行保护。仅在你接受该风险的回放数据上使用。**                                                             |
 | pauseAnimation      | true          | 当播放器停止播放时，是否将 CSS 动画也停止播放                                                                                                                                                        |
 | mouseTail           | true          | 是否在回放时增加鼠标轨迹。传入 false 可关闭，传入对象可以定制轨迹持续时间、样式等，配置详见[类型](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
 | unpackFn            | -             | 数据解压缩函数，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                                         |
