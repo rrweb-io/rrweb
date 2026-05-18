@@ -395,7 +395,7 @@ export enum CanvasContext {
 
 export type SerializedCssTextArg = {
   rr_type: 'CssText';
-  cssTexts: string[];
+  cssTexts: string[]; // usually just a single item
 };
 
 export type SerializedBlobArg = {
