@@ -25,6 +25,20 @@ There are several things will be done during snapshot:
 
 `rebuild` will build the DOM according to the taken snapshot.
 
+In browser environments, `rebuild` is a low-level API and requires a sandboxed iframe document by default. Untrusted replay data must not be rebuilt directly into the top-level `document`.
+
+For browser usage, prefer `rebuildIntoSandboxedIframe`:
+
+```ts
+const { iframe, node } = rebuildIntoSandboxedIframe(snapshot, {
+  root: document.body,
+  cache,
+  mirror,
+});
+```
+
+If you intentionally accept the script-execution risk, pass `unsafeAllowUnprotectedRebuild: true` to `rebuild`.
+
 There are several things will be done during rebuild:
 
 1. Add data-rrid attribute if the Node is an Element.
