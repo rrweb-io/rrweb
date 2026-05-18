@@ -264,11 +264,35 @@ describe('rebuild', function () {
           iframeAttributes: {
             sandbox: 'allow-same-origin allow-scripts',
             title: 'Replay',
-          },
+          } as Record<string, string>,
         });
 
         expect(iframe.getAttribute('sandbox')).toBe('allow-same-origin');
         expect(iframe.getAttribute('title')).toBe('Replay');
+      } finally {
+        restoreCreateElement();
+        root.remove();
+      }
+    });
+
+    it('rebuildIntoSandboxedIframe removes the iframe when rebuild throws', () => {
+      const root = document.createElement('div');
+      document.body.appendChild(root);
+      const restoreCreateElement = mockCreatedIframeSandboxDomApi();
+
+      try {
+        expect(() =>
+          rebuildIntoSandboxedIframe(simpleSnapshot, {
+            root,
+            cache,
+            mirror,
+            afterAppend: () => {
+              throw new Error('after append failed');
+            },
+          }),
+        ).toThrow('after append failed');
+
+        expect(root.querySelector('iframe')).toBeNull();
       } finally {
         restoreCreateElement();
         root.remove();

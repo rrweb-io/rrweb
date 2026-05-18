@@ -107,9 +107,7 @@ type RebuildIntoSandboxedIframeOptions = Omit<
   'doc' | 'unsafeAllowUnprotectedRebuild'
 > & {
   root: Element;
-  iframeAttributes?: Omit<Record<string, string>, 'sandbox'> & {
-    sandbox?: string;
-  };
+  iframeAttributes?: Record<string, string> & { sandbox?: never };
 };
 
 function isSupportedSandboxedIframe(
@@ -715,10 +713,18 @@ export function rebuildIntoSandboxedIframe(
   iframe.setAttribute('sandbox', 'allow-same-origin');
   options.root.appendChild(iframe);
 
-  const node = rebuild(n, {
-    ...options,
-    doc: iframe.contentDocument!,
-  });
+  let node: Node | null;
+  try {
+    node = rebuild(n, {
+      ...options,
+      doc: iframe.contentDocument!,
+    });
+  } catch (error) {
+    if (iframe.isConnected) {
+      iframe.remove();
+    }
+    throw error;
+  }
 
   return { iframe, node };
 }
