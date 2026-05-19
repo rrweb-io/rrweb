@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "yarn turbo run prepublish",
-    "test": "vitest run",
+    "test": "yarn prepublish && vitest run",
     "test:watch": "vitest watch",
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build",
