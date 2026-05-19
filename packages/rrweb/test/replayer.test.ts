@@ -89,6 +89,147 @@ describe('replayer', function () {
     });
   });
 
+  it('creates a replay iframe with the supported sandbox policy', async () => {
+    const sandbox = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.iframe.getAttribute('sandbox');
+    `);
+
+    expect(sandbox).toBe('allow-same-origin');
+  });
+
+  it('keeps UNSAFE_replayCanvas explicit by using an unprotected sandbox policy', async () => {
+    const sandbox = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events, { UNSAFE_replayCanvas: true });
+      replayer.iframe.getAttribute('sandbox');
+    `);
+
+    expect(sandbox).toBe('allow-same-origin allow-scripts');
+  });
+
+  it('can rebuild the first full snapshot with the default sandbox policy', async () => {
+    const rebuiltSnapshotContent = await page.evaluate(`
+      (async () => {
+        const { Replayer, ReplayerEvents } = rrweb;
+        const replayer = new Replayer(events);
+
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(
+            () => reject(new Error('Timed out waiting for full snapshot rebuild')),
+            1000,
+          );
+          replayer.on(ReplayerEvents.FullsnapshotRebuilded, () => {
+            clearTimeout(timeout);
+            resolve();
+          });
+          replayer.play(0);
+        });
+
+        const doc = replayer.iframe.contentDocument;
+        return {
+          sandbox: replayer.iframe.getAttribute('sandbox'),
+          htmlTag: doc.documentElement.localName,
+          headTag: doc.head.localName,
+          headChildElementCount: doc.head.childElementCount,
+          bodyTag: doc.body.localName,
+          bodyChildElementCount: doc.body.childElementCount,
+          bodyText: doc.body.textContent,
+        };
+      })();
+    `);
+
+    expect(rebuiltSnapshotContent).toEqual({
+      sandbox: 'allow-same-origin',
+      htmlTag: 'html',
+      headTag: 'head',
+      headChildElementCount: 0,
+      bodyTag: 'body',
+      bodyChildElementCount: 0,
+      bodyText: '',
+    });
+  });
+
+  it('can rebuild the first full snapshot when UNSAFE_replayCanvas is enabled', async () => {
+    const rebuiltSnapshotContent = await page.evaluate(`
+      (async () => {
+        const { Replayer, ReplayerEvents } = rrweb;
+        const replayer = new Replayer(events, { UNSAFE_replayCanvas: true });
+
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(
+            () => reject(new Error('Timed out waiting for full snapshot rebuild')),
+            1000,
+          );
+          replayer.on(ReplayerEvents.FullsnapshotRebuilded, () => {
+            clearTimeout(timeout);
+            resolve();
+          });
+          replayer.play(0);
+        });
+
+        const doc = replayer.iframe.contentDocument;
+        return {
+          htmlTag: doc.documentElement.localName,
+          headTag: doc.head.localName,
+          headChildElementCount: doc.head.childElementCount,
+          bodyTag: doc.body.localName,
+          bodyChildElementCount: doc.body.childElementCount,
+          bodyText: doc.body.textContent,
+        };
+      })();
+    `);
+
+    expect(rebuiltSnapshotContent).toEqual({
+      htmlTag: 'html',
+      headTag: 'head',
+      headChildElementCount: 0,
+      bodyTag: 'body',
+      bodyChildElementCount: 0,
+      bodyText: '',
+    });
+  });
+
+  it('can rebuild a UNSAFE_replayCanvas iframe after setConfig disables the option', async () => {
+    const rebuiltSnapshotContent = await page.evaluate(`
+      (async () => {
+        const { Replayer, ReplayerEvents } = rrweb;
+        const replayer = new Replayer(events, { UNSAFE_replayCanvas: true });
+        replayer.setConfig({ UNSAFE_replayCanvas: false });
+
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(
+            () => reject(new Error('Timed out waiting for full snapshot rebuild')),
+            1000,
+          );
+          replayer.on(ReplayerEvents.FullsnapshotRebuilded, () => {
+            clearTimeout(timeout);
+            resolve();
+          });
+          replayer.play(0);
+        });
+
+        const doc = replayer.iframe.contentDocument;
+        return {
+          sandbox: replayer.iframe.getAttribute('sandbox'),
+          htmlTag: doc.documentElement.localName,
+          headTag: doc.head.localName,
+          bodyTag: doc.body.localName,
+          bodyText: doc.body.textContent,
+        };
+      })();
+    `);
+
+    expect(rebuiltSnapshotContent).toEqual({
+      sandbox: 'allow-same-origin allow-scripts',
+      htmlTag: 'html',
+      headTag: 'head',
+      bodyTag: 'body',
+      bodyText: '',
+    });
+  });
+
   it('will start actions when play', async () => {
     const actionLength = await page.evaluate(`
       const { Replayer } = rrweb;
