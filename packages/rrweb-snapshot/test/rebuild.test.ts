@@ -331,6 +331,7 @@ describe('rebuild', function () {
 
     it('rebuildIntoSandboxedIframe removes the iframe when rebuild throws', () => {
       const root = document.createElement('div');
+      document.body.appendChild(root);
       let createdIframe: HTMLIFrameElement | undefined;
       const restoreCreateElement = mockCreatedIframeSandboxDomApi((iframe) => {
         document.body.appendChild(iframe);
@@ -353,7 +354,34 @@ describe('rebuild', function () {
         expect(root.contains(createdIframe!)).toBe(false);
       } finally {
         restoreCreateElement();
+        root.remove();
       }
+    });
+
+    it('createSandboxedIframe rejects a detached root without appending an iframe', () => {
+      const root = document.createElement('div');
+
+      expect(() =>
+        createSandboxedIframe({
+          root,
+        }),
+      ).toThrow('root to be connected to a document');
+
+      expect(root.querySelector('iframe')).toBeNull();
+    });
+
+    it('rebuildIntoSandboxedIframe rejects a detached root without appending an iframe', () => {
+      const root = document.createElement('div');
+
+      expect(() =>
+        rebuildIntoSandboxedIframe(simpleSnapshot, {
+          root,
+          cache,
+          mirror,
+        }),
+      ).toThrow('root to be connected to a document');
+
+      expect(root.querySelector('iframe')).toBeNull();
     });
   });
 

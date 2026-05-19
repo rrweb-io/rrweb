@@ -91,6 +91,8 @@ export function createCache(): BuildCache {
 
 const REBUILD_TARGET_ERROR =
   'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document. Use rebuildIntoSandboxedIframe() or set unsafeAllowUnprotectedRebuild: true only when you accept the script-execution risk.';
+const SANDBOXED_IFRAME_ROOT_ERROR =
+  'rrweb-snapshot.createSandboxedIframe() requires root to be connected to a document before creating a sandboxed iframe.';
 
 const sandboxedRebuildDocuments = new WeakSet<Document>();
 
@@ -725,6 +727,10 @@ function rebuild(
 export function createSandboxedIframe(
   options: CreateSandboxedIframeOptions,
 ): HTMLIFrameElement {
+  if (!options.root.isConnected) {
+    throw new Error(SANDBOXED_IFRAME_ROOT_ERROR);
+  }
+
   const iframe = options.root.ownerDocument.createElement('iframe');
 
   for (const [name, value] of Object.entries(options.iframeAttributes || {})) {
@@ -737,7 +743,12 @@ export function createSandboxedIframe(
   iframe.setAttribute('sandbox', 'allow-same-origin');
   options.root.appendChild(iframe);
 
-  const doc = iframe.contentDocument!;
+  const doc = iframe.contentDocument;
+  if (!doc || !iframe.contentWindow) {
+    iframe.parentNode?.removeChild(iframe);
+    throw new Error(SANDBOXED_IFRAME_ROOT_ERROR);
+  }
+
   sandboxedRebuildDocuments.add(doc);
 
   return iframe;
