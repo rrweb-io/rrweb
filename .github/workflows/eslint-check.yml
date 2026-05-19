@@ -32,6 +32,8 @@ jobs:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Build Packages
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
       - name: Eslint Check
         run: yarn turbo run lint
       - name: Save Code Linting Report JSON
@@ -74,7 +76,7 @@ jobs:
       # --- Base branch ---
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.base_ref }}
+          ref: ${{ github.event.pull_request.base.sha }}
       - name: Download PR bundle sizes
         uses: actions/download-artifact@v4
         with:
