@@ -125,18 +125,34 @@ type RebuildOptions = {
   unsafeAllowUnprotectedRebuild?: boolean;
 };
 
-type RebuildIntoSandboxedIframeOptions = Omit<
-  RebuildOptions,
-  'doc' | 'unsafeAllowUnprotectedRebuild'
-> & {
+/**
+ * Options for creating a sandboxed iframe that is safe for snapshot rebuilds.
+ *
+ * The `root` element must already be connected to a document so the iframe can
+ * create a live `contentDocument`. The helper always sets `sandbox` to exactly
+ * `allow-same-origin`; any caller-provided `sandbox` attribute is ignored.
+ */
+type CreateSandboxedIframeOptions = {
+  /** Connected element that receives the created iframe. */
   root: Element;
+  /**
+   * Attributes to apply to the iframe before insertion.
+   *
+   * `sandbox` is intentionally excluded and ignored at runtime because this
+   * helper must force the sandbox policy required by protected rebuilds.
+   */
   iframeAttributes?: Record<string, string> & { sandbox?: never };
 };
 
-type CreateSandboxedIframeOptions = {
-  root: Element;
-  iframeAttributes?: Record<string, string> & { sandbox?: never };
-};
+/**
+ * Options for rebuilding a serialized snapshot into a new sandboxed iframe.
+ *
+ * Inherits the iframe creation options and the standard rebuild callbacks and
+ * cache options, while choosing the target document internally from the created
+ * iframe. Use this helper for untrusted replay data.
+ */
+type RebuildIntoSandboxedIframeOptions = CreateSandboxedIframeOptions &
+  Omit<RebuildOptions, 'doc' | 'unsafeAllowUnprotectedRebuild'>;
 
 function isSupportedSandboxedIframe(
   frameElement: Element | null,
@@ -724,6 +740,17 @@ function rebuild(
   return node;
 }
 
+/**
+ * Create and append an iframe configured for protected snapshot rebuilds.
+ *
+ * The `root` option must be connected to a document. The returned iframe is
+ * appended to `root`, tracked as an allowed rebuild target, and forced to use
+ * exactly `sandbox="allow-same-origin"`. A caller-provided `sandbox` attribute
+ * is ignored so replay data cannot weaken or expand the sandbox policy.
+ *
+ * Use this helper, or `rebuildIntoSandboxedIframe()`, when preparing a target
+ * for untrusted replay data.
+ */
 export function createSandboxedIframe(
   options: CreateSandboxedIframeOptions,
 ): HTMLIFrameElement {
@@ -754,6 +781,15 @@ export function createSandboxedIframe(
   return iframe;
 }
 
+/**
+ * Rebuild a serialized snapshot into a newly created sandboxed iframe.
+ *
+ * This is the preferred helper for untrusted replay data. It creates an iframe
+ * with `sandbox` forced to exactly `allow-same-origin`, rebuilds into that
+ * iframe's document, and returns both the iframe and rebuilt root node. If the
+ * rebuild fails, the newly appended iframe is removed before the error is
+ * rethrown.
+ */
 export function rebuildIntoSandboxedIframe(
   n: serializedNodeWithId,
   options: RebuildIntoSandboxedIframeOptions,
