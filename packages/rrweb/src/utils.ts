@@ -12,7 +12,7 @@ import type {
 } from '@rrweb/types';
 import type { Mirror, SlimDOMOptions } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
-import { RRNode, RRIFrameElement, BaseRRNode } from 'rrdom';
+import type { RRNode, RRIFrameElement } from 'rrdom'; // only as a type so we don't bundle rrdom into record.js
 import dom from '@rrweb/utils';
 
 export function on(
@@ -414,8 +414,11 @@ export function hasShadowRoot<T extends Node | RRNode>(
   n: T,
 ): n is T & { shadowRoot: ShadowRoot } {
   if (!n) return false;
-  if (n instanceof BaseRRNode && 'shadowRoot' in n) {
-    return Boolean(n.shadowRoot);
+  const isRRDom = !(n instanceof Node);
+  if (isRRDom && 'shadowRoot' in n) {
+    return Boolean(
+      (n as unknown as { shadowRoot: ShadowRoot | null }).shadowRoot,
+    );
   }
   return Boolean(dom.shadowRoot(n as unknown as Element));
 }

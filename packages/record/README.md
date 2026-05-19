@@ -55,7 +55,8 @@ record({
 ## Notes
 
 Currently this package is really just a wrapper around the `record` function in the main `rrweb` package.
-All `record` related code will get moved here in the future.
+All `record` related code will get moved here in the future. There is custom vite config for this package in
+order to optimize the build output. This is documented in the rrweb-snapshot [build notes](../rrweb-snapshot/BUILD.md).
 
 ## Sponsors
 
