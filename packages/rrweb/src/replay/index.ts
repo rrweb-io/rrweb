@@ -118,7 +118,7 @@ function indicatesTouchDevice(e: eventWithTime) {
 export class Replayer {
   public wrapper: HTMLDivElement;
   public iframe: HTMLIFrameElement;
-  private unsafeReplayCanvasIframe = false;
+  private UNSAFE_replayCanvas = false;
 
   public service: ReturnType<typeof createPlayerService>;
   public speedService: ReturnType<typeof createSpeedService>;
@@ -616,12 +616,12 @@ export class Replayer {
       this.iframe = document.createElement('iframe');
       this.iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts');
       this.wrapper.appendChild(this.iframe);
-      this.unsafeReplayCanvasIframe = true;
+      this.UNSAFE_replayCanvas = true;
     } else {
       this.iframe = createSandboxedIframe({
         root: this.wrapper,
       });
-      this.unsafeReplayCanvasIframe = false;
+      this.UNSAFE_replayCanvas = false;
     }
     // hide iframe before first meta event
     this.iframe.style.display = 'none';
@@ -850,7 +850,7 @@ export class Replayer {
       afterAppend,
       cache: this.cache,
       mirror: this.mirror,
-      unsafeAllowUnprotectedRebuild: this.unsafeReplayCanvasIframe,
+      UNSAFE_allowUnprotectedRebuild: this.UNSAFE_replayCanvas,
     });
     afterAppend(this.iframe.contentDocument, event.data.node.id);
 

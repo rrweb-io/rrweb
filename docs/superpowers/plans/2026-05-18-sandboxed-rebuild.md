@@ -28,7 +28,7 @@ Expected: dependencies install successfully; baseline tests pass before implemen
 - `packages/rrweb-snapshot/src/rebuild.ts`: add rebuild target validation, the unsafe option, and the safe helper implementation.
 - `packages/rrweb-snapshot/src/index.ts`: export `createSandboxedIframe` and `rebuildIntoSandboxedIframe`.
 - `packages/rrweb-snapshot/test/rebuild.test.ts`: add jsdom tests for the guard, unsafe opt-out, and safe helper.
-- `packages/rrweb/src/replay/index.ts`: pass `unsafeAllowUnprotectedRebuild` only when `UNSAFE_replayCanvas` is enabled.
+- `packages/rrweb/src/replay/index.ts`: pass `UNSAFE_allowUnprotectedRebuild` only when `UNSAFE_replayCanvas` is enabled.
 - `packages/rrweb/test/replayer.test.ts`: add replay iframe sandbox tests for normal and unsafe canvas modes.
 - `packages/rrweb-snapshot/README.md`: document safe browser rebuild usage.
 - `docs/sandbox.md`, `guide.md`, `docs/recipes/canvas.md`: document the sandbox requirement and canvas opt-out.
@@ -137,7 +137,7 @@ describe('browser rebuild target guard', () => {
       doc: document,
       cache,
       mirror,
-      unsafeAllowUnprotectedRebuild: true,
+      UNSAFE_allowUnprotectedRebuild: true,
     });
 
     expect(node).toBe(document);
@@ -153,7 +153,7 @@ Run:
 ./node_modules/.bin/vitest run packages/rrweb-snapshot/test/rebuild.test.ts
 ```
 
-Expected: tests fail because `rebuild` does not reject unprotected browser documents and does not accept `unsafeAllowUnprotectedRebuild`.
+Expected: tests fail because `rebuild` does not reject unprotected browser documents and does not accept `UNSAFE_allowUnprotectedRebuild`.
 
 - [ ] **Step 3: Implement the guard and option**
 
@@ -161,7 +161,7 @@ In `packages/rrweb-snapshot/src/rebuild.ts`, add these constants/types near `cre
 
 ```ts
 const REBUILD_TARGET_ERROR =
-  'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document. Use rebuildIntoSandboxedIframe() or set unsafeAllowUnprotectedRebuild: true only when you accept the script-execution risk.';
+  'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document. Use rebuildIntoSandboxedIframe() or set UNSAFE_allowUnprotectedRebuild: true only when you accept the script-execution risk.';
 
 type RebuildOptions = {
   doc: Document;
@@ -170,7 +170,7 @@ type RebuildOptions = {
   afterAppend?: (n: Node, id: number) => unknown;
   cache: BuildCache;
   mirror: Mirror;
-  unsafeAllowUnprotectedRebuild?: boolean;
+  UNSAFE_allowUnprotectedRebuild?: boolean;
 };
 
 function isSupportedSandboxedIframe(
@@ -189,7 +189,7 @@ function isSupportedSandboxedIframe(
 }
 
 function assertRebuildTargetAllowed(options: RebuildOptions): void {
-  if (options.unsafeAllowUnprotectedRebuild) {
+  if (options.UNSAFE_allowUnprotectedRebuild) {
     return;
   }
 
@@ -320,7 +320,7 @@ In `packages/rrweb-snapshot/src/rebuild.ts`, add this type after `RebuildOptions
 ```ts
 type RebuildIntoSandboxedIframeOptions = Omit<
   RebuildOptions,
-  'doc' | 'unsafeAllowUnprotectedRebuild'
+  'doc' | 'UNSAFE_allowUnprotectedRebuild'
 > & {
   root: Element;
   iframeAttributes?: Omit<Record<string, string>, 'sandbox'> & {
@@ -464,7 +464,7 @@ Run:
 ./node_modules/.bin/cross-env PUPPETEER_HEADLESS=true ./node_modules/.bin/vitest run packages/rrweb/test/replayer.test.ts -t "UNSAFE_replayCanvas|supported sandbox policy"
 ```
 
-Expected: default sandbox test passes. The unsafe canvas rebuild test fails until the replayer passes `unsafeAllowUnprotectedRebuild`.
+Expected: default sandbox test passes. The unsafe canvas rebuild test fails until the replayer passes `UNSAFE_allowUnprotectedRebuild`.
 
 - [ ] **Step 3: Pass unsafe option only for `UNSAFE_replayCanvas`**
 
@@ -476,7 +476,7 @@ rebuild(event.data.node, {
   afterAppend,
   cache: this.cache,
   mirror: this.mirror,
-  unsafeAllowUnprotectedRebuild: this.config.UNSAFE_replayCanvas,
+  UNSAFE_allowUnprotectedRebuild: this.config.UNSAFE_replayCanvas,
 });
 ```
 
@@ -530,7 +530,7 @@ const { iframe, node } = rebuildIntoSandboxedIframe(snapshot, {
 });
 ```
 
-If you intentionally accept the script-execution risk, pass `unsafeAllowUnprotectedRebuild: true` to `rebuild`.
+If you intentionally accept the script-execution risk, pass `UNSAFE_allowUnprotectedRebuild: true` to `rebuild`.
 
 There are several things will be done during rebuild:
 
@@ -544,7 +544,7 @@ There are several things will be done during rebuild:
 After the paragraph ending `implementing this security ourselves.`, add:
 
 ```md
-`rrweb-snapshot.rebuild()` enforces this boundary in browser environments. Browser rebuilds should use `rebuildIntoSandboxedIframe()` or an iframe created by `createSandboxedIframe()`, which creates an iframe with exactly `sandbox="allow-same-origin"` before rebuilding into it. Direct `rebuild()` calls against caller-created browser documents must explicitly opt into an unprotected rebuild with `unsafeAllowUnprotectedRebuild: true`.
+`rrweb-snapshot.rebuild()` enforces this boundary in browser environments. Browser rebuilds should use `rebuildIntoSandboxedIframe()` or an iframe created by `createSandboxedIframe()`, which creates an iframe with exactly `sandbox="allow-same-origin"` before rebuilding into it. Direct `rebuild()` calls against caller-created browser documents must explicitly opt into an unprotected rebuild with `UNSAFE_allowUnprotectedRebuild: true`.
 ```
 
 - [ ] **Step 3: Update `guide.md` option text**
@@ -602,7 +602,7 @@ Create `.changeset/sandboxed-rebuilds.md`:
 'rrweb': patch
 ---
 
-Require browser `rebuild()` calls to target a document created by `rebuildIntoSandboxedIframe()` or `createSandboxedIframe()` by default. Use these helpers for untrusted replay data, or pass `unsafeAllowUnprotectedRebuild: true` only when accepting the script-execution risk.
+Require browser `rebuild()` calls to target a document created by `rebuildIntoSandboxedIframe()` or `createSandboxedIframe()` by default. Use these helpers for untrusted replay data, or pass `UNSAFE_allowUnprotectedRebuild: true` only when accepting the script-execution risk.
 
 `rrweb` now marks `UNSAFE_replayCanvas` rebuilds as an explicit unsafe path because canvas replay adds script permission to the replay iframe.
 ```

@@ -29,7 +29,7 @@ This guard belongs to `rebuild()` only. Lower-level node builders such as `build
 If validation fails, `rebuild()` throws a clear error:
 
 ```text
-rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document. Use rebuildIntoSandboxedIframe() or set unsafeAllowUnprotectedRebuild: true only when you accept the script-execution risk.
+rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document. Use rebuildIntoSandboxedIframe() or set UNSAFE_allowUnprotectedRebuild: true only when you accept the script-execution risk.
 ```
 
 The API will accept an explicit unsafe option for callers that accept the risk:
@@ -39,7 +39,7 @@ rebuild(node, {
   doc,
   cache,
   mirror,
-  unsafeAllowUnprotectedRebuild: true,
+  UNSAFE_allowUnprotectedRebuild: true,
 });
 ```
 
@@ -71,12 +71,12 @@ Nested iframe sandbox attributes are not part of this issue fix. For normal rrwe
 
 ## Error Handling And Compatibility
 
-The guard applies when the target document has a live `defaultView`. If `doc.defaultView` is absent, the browser sandbox check does not run. If `doc.defaultView` exists, the target is allowed only when it was created by `rebuildIntoSandboxedIframe()` or `createSandboxedIframe()` and `doc.defaultView.frameElement` is an iframe whose sandbox token set is exactly `allow-same-origin`, unless `unsafeAllowUnprotectedRebuild: true` is set. Test environments that model browser documents can use the explicit unsafe option where they intentionally rebuild fixtures into the top-level document.
+The guard applies when the target document has a live `defaultView`. If `doc.defaultView` is absent, the browser sandbox check does not run. If `doc.defaultView` exists, the target is allowed only when it was created by `rebuildIntoSandboxedIframe()` or `createSandboxedIframe()` and `doc.defaultView.frameElement` is an iframe whose sandbox token set is exactly `allow-same-origin`, unless `UNSAFE_allowUnprotectedRebuild: true` is set. Test environments that model browser documents can use the explicit unsafe option where they intentionally rebuild fixtures into the top-level document.
 
 This is an intentional breaking change for unprotected direct browser use of `rrweb-snapshot.rebuild()`. The migration paths are:
 
 - use `rebuildIntoSandboxedIframe()` or `createSandboxedIframe()` for untrusted replay content;
-- set `unsafeAllowUnprotectedRebuild: true` only when you accept the script-execution risk.
+- set `UNSAFE_allowUnprotectedRebuild: true` only when you accept the script-execution risk.
 
 ## Testing
 
@@ -85,7 +85,7 @@ Add `rrweb-snapshot` tests for:
 - `rebuild()` throws when targeting the top-level browser `document`;
 - `rebuild()` throws for caller-supplied iframe documents, even when the iframe currently has `sandbox="allow-same-origin"`;
 - `rebuild()` throws for any sandbox token set other than exactly `allow-same-origin`;
-- `unsafeAllowUnprotectedRebuild: true` allows unprotected rebuild for callers that explicitly accept the risk;
+- `UNSAFE_allowUnprotectedRebuild: true` allows unprotected rebuild for callers that explicitly accept the risk;
 - `rebuildIntoSandboxedIframe()` creates the iframe, applies sandbox before rebuild, and returns the rebuilt node;
 - nested iframes cannot relax the target document's ancestor sandbox in normal replay.
 

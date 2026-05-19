@@ -90,7 +90,7 @@ export function createCache(): BuildCache {
 }
 
 const REBUILD_TARGET_ERROR =
-  'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document. Use rebuildIntoSandboxedIframe() or set unsafeAllowUnprotectedRebuild: true only when you accept the script-execution risk.';
+  'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document. Use rebuildIntoSandboxedIframe() or set UNSAFE_allowUnprotectedRebuild: true only when you accept the script-execution risk.';
 const SANDBOXED_IFRAME_ROOT_ERROR =
   'rrweb-snapshot.createSandboxedIframe() requires root to be connected to a document before creating a sandboxed iframe.';
 
@@ -122,7 +122,7 @@ type RebuildOptions = {
    * Setting this to `true` allows rebuilding directly into an unprotected
    * browser document and can execute scripts from replay data.
    */
-  unsafeAllowUnprotectedRebuild?: boolean;
+  UNSAFE_allowUnprotectedRebuild?: boolean;
 };
 
 /**
@@ -152,7 +152,7 @@ type CreateSandboxedIframeOptions = {
  * iframe. Use this helper for untrusted replay data.
  */
 type RebuildIntoSandboxedIframeOptions = CreateSandboxedIframeOptions &
-  Omit<RebuildOptions, 'doc' | 'unsafeAllowUnprotectedRebuild'>;
+  Omit<RebuildOptions, 'doc' | 'UNSAFE_allowUnprotectedRebuild'>;
 
 function isSupportedSandboxedIframe(
   frameElement: Element | null,
@@ -171,7 +171,7 @@ function isSupportedSandboxedIframe(
 }
 
 function assertRebuildTargetAllowed(options: RebuildOptions): void {
-  if (options.unsafeAllowUnprotectedRebuild) {
+  if (options.UNSAFE_allowUnprotectedRebuild) {
     return;
   }
 

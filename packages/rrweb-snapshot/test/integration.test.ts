@@ -163,7 +163,7 @@ describe('integration tests', function (this: ISuite) {
         (await page.evaluate(`${code}
         const x = new XMLSerializer();
         const snap = rrwebSnapshot.snapshot(document);
-        let out = x.serializeToString(rrwebSnapshot.rebuild(snap, { doc: document, unsafeAllowUnprotectedRebuild: true }));
+        let out = x.serializeToString(rrwebSnapshot.rebuild(snap, { doc: document, UNSAFE_allowUnprotectedRebuild: true }));
         if (document.querySelector('html').getAttribute('xmlns') !== 'http://www.w3.org/1999/xhtml') {
           // this is just an artefact of serializeToString
           out = out.replace(' xmlns=\"http://www.w3.org/1999/xhtml\"', '');

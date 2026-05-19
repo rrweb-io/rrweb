@@ -249,7 +249,7 @@ describe('rebuild', function () {
         doc: document,
         cache,
         mirror,
-        unsafeAllowUnprotectedRebuild: true,
+        UNSAFE_allowUnprotectedRebuild: true,
       });
 
       expect(node).toBe(document);
