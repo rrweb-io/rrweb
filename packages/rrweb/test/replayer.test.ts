@@ -191,6 +191,45 @@ describe('replayer', function () {
     });
   });
 
+  it('can rebuild a UNSAFE_replayCanvas iframe after setConfig disables the option', async () => {
+    const rebuiltSnapshotContent = await page.evaluate(`
+      (async () => {
+        const { Replayer, ReplayerEvents } = rrweb;
+        const replayer = new Replayer(events, { UNSAFE_replayCanvas: true });
+        replayer.setConfig({ UNSAFE_replayCanvas: false });
+
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(
+            () => reject(new Error('Timed out waiting for full snapshot rebuild')),
+            1000,
+          );
+          replayer.on(ReplayerEvents.FullsnapshotRebuilded, () => {
+            clearTimeout(timeout);
+            resolve();
+          });
+          replayer.play(0);
+        });
+
+        const doc = replayer.iframe.contentDocument;
+        return {
+          sandbox: replayer.iframe.getAttribute('sandbox'),
+          htmlTag: doc.documentElement.localName,
+          headTag: doc.head.localName,
+          bodyTag: doc.body.localName,
+          bodyText: doc.body.textContent,
+        };
+      })();
+    `);
+
+    expect(rebuiltSnapshotContent).toEqual({
+      sandbox: 'allow-same-origin allow-scripts',
+      htmlTag: 'html',
+      headTag: 'head',
+      bodyTag: 'body',
+      bodyText: '',
+    });
+  });
+
   it('will start actions when play', async () => {
     const actionLength = await page.evaluate(`
       const { Replayer } = rrweb;
