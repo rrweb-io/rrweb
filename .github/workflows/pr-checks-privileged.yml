@@ -37,15 +37,27 @@ jobs:
             if (run.pull_requests && run.pull_requests.length > 0) {
               return run.pull_requests[0].number;
             }
-            // Fallback for fork PRs (pull_requests is empty for forks)
+
+            // Fallback for fork PRs (pull_requests is empty for forks).
+            // The Pulls API expects the head filter as "owner:branch", not
+            // "owner/repo:branch".
+            const headOwner =
+              run.head_repository?.owner?.login ||
+              run.head_repository?.owner?.name;
+            if (!headOwner) {
+              core.setFailed('Could not determine workflow run head owner');
+              return;
+            }
+
+            const head = `${headOwner}:${run.head_branch}`;
             const { data: prs } = await github.rest.pulls.list({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              head: `${run.head_repository.full_name}:${run.head_branch}`,
+              head,
               state: 'open',
             });
             if (prs.length === 0) {
-              core.setFailed('Could not determine PR number');
+              core.setFailed(`Could not determine PR number for head ${head}`);
               return;
             }
             return prs[0].number;
