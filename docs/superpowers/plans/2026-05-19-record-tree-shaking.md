@@ -20,6 +20,7 @@
 ## Task 1: Confirm The Baseline
 
 **Files:**
+
 - Read: `packages/record/dist/record.js`
 - Modify: none
 
@@ -56,6 +57,7 @@ Expected: at least one match in a built JavaScript artifact. In this workspace, 
 ## Task 2: Add Failing Bundle Regression Tests
 
 **Files:**
+
 - Modify: `packages/record/test/record.test.ts`
 
 - [ ] **Step 1: Replace the test file with build-output checks**
@@ -129,6 +131,7 @@ Expected: the new `postcss` assertion fails, or the size assertion fails, becaus
 ## Task 3: Mark rrweb-snapshot As Side-Effect-Free
 
 **Files:**
+
 - Modify: `packages/rrweb-snapshot/package.json`
 
 - [ ] **Step 1: Add the package metadata**
@@ -158,6 +161,7 @@ Expected: prints `ok`.
 ## Task 4: Add The Record-Local Source Resolver
 
 **Files:**
+
 - Modify: `packages/record/vite.config.ts`
 
 - [ ] **Step 1: Replace the config with an inline exact-import resolver**
@@ -169,10 +173,7 @@ import config from '../../vite.config.default';
 
 const sourceEntryByPackageName = new Map([
   ['rrweb', path.resolve(__dirname, '../rrweb/src/entries/record.ts')],
-  [
-    'rrweb-snapshot',
-    path.resolve(__dirname, '../rrweb-snapshot/src/index.ts'),
-  ],
+  ['rrweb-snapshot', path.resolve(__dirname, '../rrweb-snapshot/src/index.ts')],
   ['rrdom', path.resolve(__dirname, '../rrdom/src/index.ts')],
 ]);
 
@@ -204,6 +205,7 @@ Expected: TypeScript check succeeds.
 ## Task 5: Make The rrweb Record Entry A Direct Re-Export
 
 **Files:**
+
 - Modify: `packages/rrweb/src/entries/record.ts`
 
 - [ ] **Step 1: Replace default-import-then-export with a direct named re-export**
@@ -225,6 +227,7 @@ Expected: TypeScript check succeeds.
 ## Task 6: Build And Set The Final Size Threshold
 
 **Files:**
+
 - Modify: `packages/record/test/record.test.ts`
 
 - [ ] **Step 1: Build the fixed record package**
@@ -262,6 +265,7 @@ const MAX_RECORD_JS_BYTES = BASELINE_RECORD_JS_BYTES - 200 * 1024;
 ## Task 7: Verify The Regression Tests Pass
 
 **Files:**
+
 - Test: `packages/record/test/record.test.ts`
 
 - [ ] **Step 1: Run the focused record tests**
@@ -287,6 +291,7 @@ Expected: no matches and exit code `1`.
 ## Task 8: Run Final Verification
 
 **Files:**
+
 - Test: `packages/rrweb-snapshot/package.json`
 - Test: `packages/record/vite.config.ts`
 - Test: `packages/rrweb/src/entries/record.ts`
@@ -335,6 +340,7 @@ Expected: diff only contains the planned implementation and test changes.
 ## Task 9: Commit The Implementation
 
 **Files:**
+
 - Stage: `packages/rrweb-snapshot/package.json`
 - Stage: `packages/record/vite.config.ts`
 - Stage: `packages/rrweb/src/entries/record.ts`

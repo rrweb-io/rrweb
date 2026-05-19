@@ -4,10 +4,7 @@ import config from '../../vite.config.default';
 
 const sourceEntryByPackageName = new Map([
   ['rrweb', path.resolve(__dirname, '../rrweb/src/entries/record.ts')],
-  [
-    'rrweb-snapshot',
-    path.resolve(__dirname, '../rrweb-snapshot/src/index.ts'),
-  ],
+  ['rrweb-snapshot', path.resolve(__dirname, '../rrweb-snapshot/src/index.ts')],
   ['rrdom', path.resolve(__dirname, '../rrdom/src/index.ts')],
 ]);
 
