@@ -32,7 +32,10 @@ rrwebWs.stop(false);
 ### Script Tag
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@rrweb/ws@latest/dist/ws.umd.cjs" autostart>
+<script
+  src="https://cdn.jsdelivr.net/npm/@rrweb/ws@latest/dist/ws.umd.cjs"
+  autostart
+>
   {
     "serverUrl": "https://api.rrweb.com/recordings/{recordingId}/ingest/ws",
     "publicApiKey": "ak_...",
