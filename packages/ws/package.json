@@ -1,0 +1,76 @@
+{
+  "name": "@rrweb/ws",
+  "version": "2.0.0-alpha.20",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "rrweb",
+    "@rrweb/ws",
+    "websocket"
+  ],
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "yarn turbo run prepublish",
+    "retest": "cross-env PUPPETEER_HEADLESS=true yarn retest:headful",
+    "retest:headful": "vitest run --exclude test/benchmark",
+    "build-and-test": "yarn build && yarn retest",
+    "test:headless": "cross-env PUPPETEER_HEADLESS=true yarn build-and-test",
+    "test:headful": "cross-env PUPPETEER_HEADLESS=false yarn build-and-test",
+    "test": "yarn test:headless",
+    "test:watch": "yarn build && cross-env PUPPETEER_HEADLESS=true yarn vitest --exclude test/benchmark",
+    "test:update": "yarn test:headless --update",
+    "retest:update": "cross-env PUPPETEER_HEADLESS=true yarn retest --update",
+    "check-types": "tsc -noEmit",
+    "prepublish": "tsc -noEmit && vite build",
+    "lint": "yarn eslint src/**/*.ts"
+  },
+  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/ws#readme",
+  "bugs": {
+    "url": "https://github.com/rrweb-io/rrweb/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb.git"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/ws.cjs",
+  "module": "./dist/ws.js",
+  "unpkg": "./dist/ws.umd.cjs",
+  "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/ws.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/ws.cjs"
+      }
+    }
+  },
+  "files": [
+    "umd",
+    "dist",
+    "package.json"
+  ],
+  "devDependencies": {
+    "puppeteer": "^20.9.0",
+    "typescript": "^5.4.5",
+    "vite": "^6.0.1",
+    "vite-plugin-dts": "^3.9.1",
+    "vitest": "^1.4.0"
+  },
+  "dependencies": {
+    "@rrweb/record": "^2.0.0-alpha.20",
+    "@rrweb/types": "^2.0.0-alpha.20",
+    "@rrweb/utils": "^2.0.0-alpha.20",
+    "rrweb": "^2.0.0-alpha.20",
+    "websocket-ts": "^2.2.1"
+  },
+  "browserslist": [
+    "supports es6-class"
+  ]
+}
