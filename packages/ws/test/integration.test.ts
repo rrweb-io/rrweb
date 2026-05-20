@@ -13,16 +13,29 @@ import type { wsRecordOptions } from '../src';
 import { eventWithTime, EventType } from '@rrweb/types';
 import { randomUUID } from 'crypto';
 
-// defined in packages/ws/.env
-const TEST_API_KEY = import.meta.env.VITE_TEST_API_KEY;
+// These default to the local test server used by the integration suite.
+const TEST_SERVER_URL =
+  import.meta.env.VITE_RRWEB_WS_SERVER_URL ||
+  'http://localhost:8787/recordings/{recordingId}/ingest/ws';
+const TEST_API_BASE_URL = (
+  import.meta.env.VITE_RRWEB_WS_API_BASE_URL || 'http://localhost:8787'
+).replace(/\/$/, '');
+const TEST_API_KEY = import.meta.env.VITE_TEST_API_KEY || '';
+
+function apiUrl(path: string): string {
+  return `${TEST_API_BASE_URL}${path}`;
+}
+
+function postIngestUrl(serverUrl: string): string {
+  return serverUrl.replace(/\/ws(?=([?#]|$))/, '');
+}
 
 function defaultOptions(
   options: Partial<wsRecordOptions> = {},
 ): Partial<wsRecordOptions> {
   options.emit = 'emitFnName';
   if (!options.serverUrl) {
-    options.serverUrl =
-      'http://localhost:8787/recordings/{recordingId}/ingest/ws';
+    options.serverUrl = TEST_SERVER_URL;
   }
   options.publicApiKey = TEST_API_KEY;
 
@@ -85,7 +98,7 @@ ${JSON.stringify(defaultOptions(options))}
     {},
     {
       disableWebsockets: true, // dummy
-      serverUrl: 'http://localhost:8787/recordings/{recordingId}/ingest', // actually disable websockets
+      serverUrl: postIngestUrl(TEST_SERVER_URL), // actually disable websockets
     },
   ])('can roundtrip events: %j', async (options, { expect }) => {
     let optionsIn = JSON.stringify(options);
@@ -128,7 +141,9 @@ ${JSON.stringify(defaultOptions(options))}
 
     expect(snapshots.length).toBeGreaterThan(1); // meta and fullsnapshot
 
-    recordingId = (await page.evaluate('rrwebWs.getRecordingId()')) as string;
+    recordingId = (await page.evaluate(
+      'rrwebWs.getRecordingId()',
+    )) as string;
 
     expect(recordingId).toMatch(
       /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
@@ -162,7 +177,7 @@ ${JSON.stringify(defaultOptions(options))}
       .poll(
         async () => {
           const res = await fetch(
-            `http://localhost:8787/recordings/${recordingId}/events`,
+            apiUrl(`/recordings/${recordingId}/events`),
             {
               headers: {
                 Authorization: 'Bearer ' + TEST_API_KEY,
@@ -198,7 +213,7 @@ ${JSON.stringify(defaultOptions(options))}
       .poll(
         async () => {
           const res = await fetch(
-            `http://localhost:8787/recordings/${recordingId}`,
+            apiUrl(`/recordings/${recordingId}`),
             {
               headers: {
                 Authorization: 'Bearer ' + TEST_API_KEY,
@@ -275,7 +290,9 @@ ${JSON.stringify(defaultOptions(options))}
 
     expect(snapshots.length).toBeGreaterThan(1); // meta and fullsnapshot
 
-    recordingId = (await page.evaluate('rrwebWs.getRecordingId()')) as string;
+    recordingId = (await page.evaluate(
+      'rrwebWs.getRecordingId()',
+    )) as string;
 
     expect(recordingId).toMatch(
       /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
@@ -298,15 +315,13 @@ ${JSON.stringify(defaultOptions(options))}
 
     expect(recordingId).not.toMatch(recordingId2);
 
-    console.log(
-      `http://localhost:8787/replay?meta[sessionId]=${options.meta.sessionId}`,
-    );
+    console.log(apiUrl(`/replay?meta[sessionId]=${options.meta.sessionId}`));
     let serverEvents = null;
     await expect
       .poll(
         async () => {
           const res = await fetch(
-            `http://localhost:8787/replay?meta[sessionId]=${options.meta.sessionId}`,
+            apiUrl(`/replay?meta[sessionId]=${options.meta.sessionId}`),
             {
               headers: {
                 Authorization: 'Bearer ' + TEST_API_KEY,

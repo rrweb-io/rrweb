@@ -4,21 +4,21 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>WS Client</title>
+    <title>@rrweb/ws</title>
     <script>
-      function mitFn(e) { console.log('ok', e) };
+      function emitFn(e) { console.log('ok', e) };
     </script>
     <script src="../dist/ws.umd.cjs">
       // provide some config
       {
-        "emit": "mitFn",
-        "serverUrl": "http://localhost:8787/recordings/{recordingId}/ingest/ws",
+        "emit": "emitFn",
+        "serverUrl": "https://api.rrweb.com/recordings/{recordingId}/ingest/ws",
         "publicApiKey": document.location.search.split('publicApiKey=')[1],
-          "autostart": true,
-          "blockSelector": '.my-block',
-          "meta": {
-              "visitor": 'x1234',
-          }
+        "autostart": true,
+        "blockSelector": '.my-block',
+        "meta": {
+          "visitor": 'x1234',
+        }
       }
     </script>
   </head>

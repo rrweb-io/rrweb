@@ -1,9 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable compat/compat */
 import { record } from '@rrweb/record';
 
 import { EventType } from '@rrweb/types';
@@ -35,6 +29,10 @@ export type wsRecordOptions = Omit<recordOptions<eventWithTime>, 'emit'> &
   };
 
 type websocketListenerHandler = (i: Websocket, ev: MessageEvent) => void;
+type ServerMessage =
+  | { type: 'error' }
+  | { type: 'upstream-result'; ok?: boolean }
+  | { type?: unknown; ok?: unknown };
 
 export type customEventWithTime = customEvent & {
   timestamp: number;
@@ -54,6 +52,10 @@ let wsConnectionPaused = false;
 
 const buffer: ArrayQueue<string> = new ArrayQueue();
 let rrwebStopFn: listenerHandler | undefined;
+
+function isServerMessage(value: unknown): value is ServerMessage {
+  return typeof value === 'object' && value !== null;
+}
 
 export function stop(resetRecordingId: boolean) {
   // reset all state so that start() can start afresh
@@ -97,6 +99,7 @@ function getSetVisitorId() {
     });
   }
   if (!value) {
+    // eslint-disable-next-line compat/compat -- @rrweb/ws targets modern browsers with crypto UUID support for recording/session identity.
     value = self.crypto.randomUUID();
     const date = new Date();
     date.setTime(date.getTime() + 366 * 86400000); // 1 year
@@ -115,6 +118,7 @@ function getSetRecordingId(): string | null {
   try {
     value = sessionStorage.getItem(sessionStorageName);
     if (!value) {
+      // eslint-disable-next-line compat/compat -- @rrweb/ws targets modern browsers with crypto UUID support for recording/session identity.
       value = self.crypto.randomUUID();
       try {
         sessionStorage.setItem(sessionStorageName, value);
@@ -179,8 +183,8 @@ async function postData(
 ) {
   const keepaliveLimit = 65000;
   let done = false;
-  const responses = [];
-  const toSend = [];
+  const responses: Response[] = [];
+  const toSend: string[] = [];
   // eslint-disable-next-line no-constant-condition
   while (true) {
     let body;
@@ -205,6 +209,7 @@ async function postData(
       body = buffer;
       done = true;
     }
+    // eslint-disable-next-line compat/compat -- fetch is the runtime transport for POST fallback in supported browsers.
     const response = await fetch(postUrl, {
       method: 'POST',
       headers: {
@@ -256,15 +261,16 @@ export function start(options: wsRecordOptions = defaultClientConfig) {
   const configEmit = recordOptions.emit;
 
   const handleMessage = (_: Websocket, ev: MessageEvent) => {
-    const event = JSON.parse(ev.data);
+    const parsedEvent: unknown = JSON.parse(String(ev.data));
     if (
-      event.type === 'error' ||
-      (event.type === 'upstream-result' && !event.ok)
+      isServerMessage(parsedEvent) &&
+      (parsedEvent.type === 'error' ||
+        (parsedEvent.type === 'upstream-result' && !parsedEvent.ok))
     ) {
-      console.warn('received error, pausing websockets:', event);
+      console.warn('received error, pausing websockets:', parsedEvent);
       wsConnectionPaused = true;
     } else {
-      console.log(`received message: ${ev.data}`);
+      console.log(`received message: ${String(ev.data)}`);
     }
   };
 
@@ -358,9 +364,10 @@ export function start(options: wsRecordOptions = defaultClientConfig) {
         typeof (window as unknown as Record<string, unknown>)[configEmit] ===
         'function'
       ) {
-        const emit = (window as unknown as Record<string, unknown>)[configEmit];
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-call
-        (emit as any)(event);
+        const emit = (window as unknown as Record<string, unknown>)[
+          configEmit
+        ] as (event: eventWithTime) => void;
+        emit(event);
       } else {
         console.error('Could not understand emit config option:', configEmit);
       }
@@ -475,6 +482,7 @@ if (document && document.currentScript) {
   const self = document.currentScript as HTMLScriptElement;
   if (self.innerText && self.innerText.trim()) {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- script tag config is an external payload.
       config = JSON.parse(
         self.innerText
           .replace(/^\s*\/\/.*/gm, '') // remove comment lines
@@ -502,14 +510,18 @@ if (document && document.currentScript) {
         const srcUrl = new URL(self.src);
         if (srcUrl.hostname) {
           let apiHost = srcUrl.hostname;
-          if (apiHost.startsWith('rrweb')) {
-            apiHost = 'api.' + apiHost;
+          if (
+            apiHost === 'rrweb.com' ||
+            apiHost === 'www.rrweb.com' ||
+            apiHost === 'rrweb.io' ||
+            apiHost.endsWith('.rrweb.io')
+          ) {
+            apiHost = 'api.rrweb.com';
           }
           config.serverUrl = `https://${apiHost}/recordings/{recordingId}/ingest/ws`;
         }
       }
     } catch {
-      // eslint-ignore-next-line
       // maybe we are in a weird environment, we're likely gonna fail when we next call new URL on serverurl
     }
   }
@@ -519,8 +531,9 @@ if (document && document.currentScript) {
     start(config);
   }
 }
-function looseJsonParse(obj: string) {
+function looseJsonParse(obj: string): wsRecordOptions {
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#never_use_direct_eval!
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- intentionally supports copied script config with bare names/single quotes.
   return eval?.(`"use strict";(${obj})`);
 }
 
