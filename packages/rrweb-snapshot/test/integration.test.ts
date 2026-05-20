@@ -599,13 +599,14 @@ describe('snapshot/rebuild image tests', function (this: ISuite) {
 
     await page.evaluate(`${code}
       const snap = rrwebSnapshot.snapshot(document);
-      const iframe = document.createElement('iframe');
+      const { iframe, node } = rrwebSnapshot.rebuildIntoSandboxedIframe(
+        snap, {
+          root: document.body,
+        }
+      );
       iframe.id = 'rebuild-iframe';
       iframe.setAttribute('width', document.body.clientWidth);
       iframe.setAttribute('height', document.body.clientHeight);
-      iframe.setAttribute('sandbox', 'allow-same-origin');  // apply other restrictions including !allow-scripts
-      document.body.appendChild(iframe);
-      rrwebSnapshot.rebuild(snap, { doc: iframe.contentDocument });
     `);
     await waitForRAF(page);
 
