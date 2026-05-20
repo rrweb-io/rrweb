@@ -1481,7 +1481,9 @@ export class Replayer {
     const legacy_missingNodeMap: missingNodeMap = {
       ...this.legacy_missingNodeRetryMap,
     };
-    const queue: addedNodeMutation[] = [];
+    // this structure should not now normally be needed after #1652
+    // but is definitely needed for recordings produced prior to that
+    const legacy_queue: addedNodeMutation[] = [];
 
     // next not present at this moment
     const nextNotInDOM = (mutation: addedNodeMutation) => {
@@ -1513,7 +1515,7 @@ export class Replayer {
           // is newly added document, maybe the document node of an iframe
           return this.newDocumentQueue.push(mutation);
         }
-        return queue.push(mutation);
+        return legacy_queue.push(mutation);
       }
 
       if (mutation.node.isShadow) {
@@ -1533,7 +1535,7 @@ export class Replayer {
         next = mirror.getNode(mutation.nextId);
       }
       if (nextNotInDOM(mutation)) {
-        return queue.push(mutation);
+        return legacy_queue.push(mutation);
       }
 
       if (mutation.node.rootId && !mirror.getNode(mutation.node.rootId)) {
@@ -1715,10 +1717,10 @@ export class Replayer {
     });
 
     const startTime = Date.now();
-    while (queue.length) {
-      // transform queue to resolve tree
-      const resolveTrees = queueToResolveTrees(queue);
-      queue.length = 0;
+    while (legacy_queue.length) {
+      // transform legacy_queue to resolve tree
+      const resolveTrees = queueToResolveTrees(legacy_queue);
+      legacy_queue.length = 0;
       if (Date.now() - startTime > 500) {
         this.warn(
           'Timeout in the loop, please check the resolve tree data:',

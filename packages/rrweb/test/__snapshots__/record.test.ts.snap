@@ -1099,15 +1099,6 @@ exports[`record > captures adopted stylesheets in shadow doms and iframe 1`] = `
           }
         },
         {
-          \\"parentId\\": 26,
-          \\"nextId\\": null,
-          \\"node\\": {
-            \\"type\\": 3,
-            \\"textContent\\": \\"span in shadow dom 2\\",
-            \\"id\\": 27
-          }
-        },
-        {
           \\"parentId\\": 16,
           \\"nextId\\": 26,
           \\"node\\": {
@@ -1115,16 +1106,25 @@ exports[`record > captures adopted stylesheets in shadow doms and iframe 1`] = `
             \\"tagName\\": \\"div\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 28,
+            \\"id\\": 27,
             \\"isShadow\\": true
           }
         },
         {
-          \\"parentId\\": 28,
+          \\"parentId\\": 27,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 3,
             \\"textContent\\": \\"div in shadow dom 2\\",
+            \\"id\\": 28
+          }
+        },
+        {
+          \\"parentId\\": 26,
+          \\"nextId\\": null,
+          \\"node\\": {
+            \\"type\\": 3,
+            \\"textContent\\": \\"span in shadow dom 2\\",
             \\"id\\": 29
           }
         }
