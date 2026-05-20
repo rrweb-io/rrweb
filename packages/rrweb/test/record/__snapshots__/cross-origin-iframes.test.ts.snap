@@ -4873,7 +4873,10 @@ exports[`cross origin iframes > move-node.html > should record canvas elements 1
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"canvas\\",
-            \\"attributes\\": {},
+            \\"attributes\\": {
+              \\"rr_width\\": \\"300px\\",
+              \\"rr_height\\": \\"150px\\"
+            },
             \\"childNodes\\": [],
             \\"rootId\\": 11,
             \\"id\\": 33

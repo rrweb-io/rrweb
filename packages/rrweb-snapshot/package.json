@@ -56,6 +56,7 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot#readme",
   "devDependencies": {
+    "@types/jest-image-snapshot": "^6.1.0",
     "@rrweb/types": "^2.0.0-alpha.20",
     "@rrweb/utils": "^2.0.0-alpha.20",
     "@types/jsdom": "^20.0.0",
@@ -67,6 +68,7 @@
     "typescript": "^5.4.5",
     "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1",
+    "jest-image-snapshot": "^6.2.0",
     "vitest": "^1.4.0"
   },
   "dependencies": {

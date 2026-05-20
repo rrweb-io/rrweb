@@ -655,8 +655,8 @@ function serializeElementNode(
   }
 
   // canvas image data
-  if (tagName === 'canvas' && recordCanvas) {
-    if ((n as ICanvas).__context === '2d') {
+  if (tagName === 'canvas') {
+    if (recordCanvas && (n as ICanvas).__context === '2d') {
       // only record this on 2d canvas
       if (!is2DCanvasBlank(n as HTMLCanvasElement)) {
         attributes.rr_dataURL = (n as HTMLCanvasElement).toDataURL(
@@ -664,7 +664,7 @@ function serializeElementNode(
           dataURLOptions.quality,
         );
       }
-    } else if (!('__context' in n)) {
+    } else if (recordCanvas && !('__context' in n)) {
       // context is unknown, better not call getContext to trigger it
       const canvasDataURL = (n as HTMLCanvasElement).toDataURL(
         dataURLOptions.type,
@@ -684,6 +684,14 @@ function serializeElementNode(
       if (canvasDataURL !== blankCanvasDataURL) {
         attributes.rr_dataURL = canvasDataURL;
       }
+    } else {
+      // explicitly record dimensions in case the unrecorded canvas affects layout;
+      // normally with UNSAFE_replayCanvas during replay the `canvas.getContext()`
+      // initialization will force browser to commit to the canvas's intrisic size
+      // as layout size
+      const { width, height } = n.getBoundingClientRect();
+      attributes.rr_width = `${width}px`;
+      attributes.rr_height = `${height}px`;
     }
   }
   // save image offline

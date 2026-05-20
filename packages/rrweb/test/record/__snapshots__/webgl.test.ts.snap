@@ -467,7 +467,10 @@ exports[`record webgl > will record changes to a canvas element before the canva
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"canvas\\",
-            \\"attributes\\": {},
+            \\"attributes\\": {
+              \\"rr_width\\": \\"300px\\",
+              \\"rr_height\\": \\"150px\\"
+            },
             \\"childNodes\\": [],
             \\"id\\": 11
           }
@@ -611,7 +614,10 @@ exports[`record webgl > will record changes to a canvas element before the canva
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"canvas\\",
-            \\"attributes\\": {},
+            \\"attributes\\": {
+              \\"rr_width\\": \\"300px\\",
+              \\"rr_height\\": \\"150px\\"
+            },
             \\"childNodes\\": [],
             \\"id\\": 11
           }

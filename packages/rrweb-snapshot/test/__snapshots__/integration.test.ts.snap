@@ -306,6 +306,15 @@ exports[`integration tests > [html file]: block-element.html 1`] = `
   </body></html>"
 `;
 
+exports[`integration tests > [html file]: canvas-layout.html 1`] = `
+"<html xmlns=\\"http://www.w3.org/1999/xhtml\\"><head></head><body>
+    <div style=\\"background-color:grey;\\">
+      <img src=\\"http://localhost:3030/images/robot.png\\" alt=\\"This is a robot\\" style=\\"position:absolute;\\" />
+      <canvas width=\\"76\\" height=\\"96\\" style=\\"width: 76px; display: block; height: 96px;\\"></canvas>
+    </div>
+  </body></html>"
+`;
+
 exports[`integration tests > [html file]: compat-mode.html 1`] = `
 "<!-- no doctype! --><html><head>
   <title>Compat Mode; image resizing</title>
