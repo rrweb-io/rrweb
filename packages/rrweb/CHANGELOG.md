@@ -1,5 +1,29 @@
 # rrweb
 
+## 2.0.0-alpha.21
+
+### Patch Changes
+
+- [#1762](https://github.com/rrweb-io/rrweb/pull/1762) [`22bc4c3`](https://github.com/rrweb-io/rrweb/commit/22bc4c334e88f0b8ee5488d9e1e95cd8093a15c8) Thanks [@Juice10](https://github.com/Juice10)! - Drop base64 inlined worker source from all bundles
+
+- [#1829](https://github.com/rrweb-io/rrweb/pull/1829) [`bfe14c5`](https://github.com/rrweb-io/rrweb/commit/bfe14c532a3149a38a8fab0a54672405279d636f) Thanks [@Juice10](https://github.com/Juice10)! - Mark `inlineImages` and `inlineStylesheet` record options as deprecated in docs and public types while preserving existing behavior.
+
+- [#1775](https://github.com/rrweb-io/rrweb/pull/1775) [`b149cf3`](https://github.com/rrweb-io/rrweb/commit/b149cf31ed28cac7b6627972b423d29723524d87) Thanks [@alailsonko](https://github.com/alailsonko)! - fix: improve nested CSS rule handling and replayer handling of missing rules
+
+- [#1837](https://github.com/rrweb-io/rrweb/pull/1837) [`527d9d3`](https://github.com/rrweb-io/rrweb/commit/527d9d3913bae7f0f7741517f4b09f7a99aae57a) Thanks [@Juice10](https://github.com/Juice10)! - Tree-shake replay-only `postcss` code from the `@rrweb/record` bundle.
+
+- [#1834](https://github.com/rrweb-io/rrweb/pull/1834) [`43e4f5b`](https://github.com/rrweb-io/rrweb/commit/43e4f5b4ad4bb0525a874a545d69443bc58bc47e) Thanks [@Juice10](https://github.com/Juice10)! - Require browser `rebuild()` calls to target a document created by `rebuildIntoSandboxedIframe()` or `createSandboxedIframe()` by default. Use these helpers for untrusted replay data, or pass `UNSAFE_allowUnprotectedRebuild: true` only when accepting the script-execution risk.
+
+  `rrweb` now marks `UNSAFE_replayCanvas` rebuilds as an explicit unsafe path because canvas replay adds script permission to the replay iframe.
+
+- [#1704](https://github.com/rrweb-io/rrweb/pull/1704) [`33e01f5`](https://github.com/rrweb-io/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Provide a /umd/ output folder alongside the /dist/ one so that we can serve UMD (Universal Module Definition) files with a .js extension, without upsetting expectations set by package.json that all .js files in /dist/ are modules
+
+- Updated dependencies [[`0f0a532`](https://github.com/rrweb-io/rrweb/commit/0f0a532a2ca6b9a71acefcf3af4415beb47db0bb), [`22bc4c3`](https://github.com/rrweb-io/rrweb/commit/22bc4c334e88f0b8ee5488d9e1e95cd8093a15c8), [`527d9d3`](https://github.com/rrweb-io/rrweb/commit/527d9d3913bae7f0f7741517f4b09f7a99aae57a), [`43e4f5b`](https://github.com/rrweb-io/rrweb/commit/43e4f5b4ad4bb0525a874a545d69443bc58bc47e), [`33e01f5`](https://github.com/rrweb-io/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0)]:
+  - @rrweb/types@2.0.0-alpha.21
+  - rrweb-snapshot@2.0.0-alpha.21
+  - rrdom@2.0.0-alpha.21
+  - @rrweb/utils@2.0.0-alpha.21
+
 ## 2.0.0-alpha.20
 
 ### Patch Changes
