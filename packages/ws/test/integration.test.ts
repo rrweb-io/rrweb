@@ -128,9 +128,7 @@ ${JSON.stringify(defaultOptions(options))}
 
     expect(snapshots.length).toBeGreaterThan(1); // meta and fullsnapshot
 
-    recordingId = (await page.evaluate(
-      'rrwebWs.getRecordingId()',
-    )) as string;
+    recordingId = (await page.evaluate('rrwebWs.getRecordingId()')) as string;
 
     expect(recordingId).toMatch(
       /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
@@ -277,9 +275,7 @@ ${JSON.stringify(defaultOptions(options))}
 
     expect(snapshots.length).toBeGreaterThan(1); // meta and fullsnapshot
 
-    recordingId = (await page.evaluate(
-      'rrwebWs.getRecordingId()',
-    )) as string;
+    recordingId = (await page.evaluate('rrwebWs.getRecordingId()')) as string;
 
     expect(recordingId).toMatch(
       /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/,
