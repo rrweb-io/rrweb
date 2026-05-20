@@ -14,6 +14,8 @@ import rebuild, {
   buildNodeWithSN,
   adaptCssForReplay,
   createCache,
+  createSandboxedIframe,
+  rebuildIntoSandboxedIframe,
 } from './rebuild';
 export * from './types';
 // Legacy broad export kept for compatibility. New internal imports should
@@ -24,6 +26,8 @@ export {
   snapshot,
   serializeNodeWithId,
   rebuild,
+  createSandboxedIframe,
+  rebuildIntoSandboxedIframe,
   buildNodeWithSN,
   adaptCssForReplay,
   createCache,
