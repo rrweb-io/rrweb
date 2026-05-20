@@ -1,5 +1,21 @@
 # rrweb-snapshot
 
+## 2.0.0-alpha.21
+
+### Major Changes
+
+- [#1834](https://github.com/rrweb-io/rrweb/pull/1834) [`43e4f5b`](https://github.com/rrweb-io/rrweb/commit/43e4f5b4ad4bb0525a874a545d69443bc58bc47e) Thanks [@Juice10](https://github.com/Juice10)! - Require browser `rebuild()` calls to target a document created by `rebuildIntoSandboxedIframe()` or `createSandboxedIframe()` by default. Use these helpers for untrusted replay data, or pass `UNSAFE_allowUnprotectedRebuild: true` only when accepting the script-execution risk.
+
+  `rrweb` now marks `UNSAFE_replayCanvas` rebuilds as an explicit unsafe path because canvas replay adds script permission to the replay iframe.
+
+### Patch Changes
+
+- [#1762](https://github.com/rrweb-io/rrweb/pull/1762) [`22bc4c3`](https://github.com/rrweb-io/rrweb/commit/22bc4c334e88f0b8ee5488d9e1e95cd8093a15c8) Thanks [@Juice10](https://github.com/Juice10)! - Drop base64 inlined worker source from all bundles
+
+- [#1837](https://github.com/rrweb-io/rrweb/pull/1837) [`527d9d3`](https://github.com/rrweb-io/rrweb/commit/527d9d3913bae7f0f7741517f4b09f7a99aae57a) Thanks [@Juice10](https://github.com/Juice10)! - Tree-shake replay-only `postcss` code from the `@rrweb/record` bundle.
+
+- [#1704](https://github.com/rrweb-io/rrweb/pull/1704) [`33e01f5`](https://github.com/rrweb-io/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Provide a /umd/ output folder alongside the /dist/ one so that we can serve UMD (Universal Module Definition) files with a .js extension, without upsetting expectations set by package.json that all .js files in /dist/ are modules
+
 ## 2.0.0-alpha.20
 
 ## 2.0.0-alpha.19
