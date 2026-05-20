@@ -1,5 +1,12 @@
 # rrvideo
 
+## 1.1.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @newrelic/rrweb-player@1.1.1
+
 ## 1.1.0
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # rrweb-player
 
+## 1.1.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @newrelic/rrweb-replay@1.1.1
+  - @newrelic/rrweb-packer@1.1.1
+
 ## 1.1.0
 
 ### Patch Changes

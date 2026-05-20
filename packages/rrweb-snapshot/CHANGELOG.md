@@ -1,5 +1,13 @@
 # rrweb-snapshot
 
+## 1.1.1
+
+### Patch Changes
+
+- [#13](https://github.com/newrelic-forks/rrweb/pull/13) [`c64f665`](https://github.com/newrelic-forks/rrweb/commit/c64f6652c6647e6d2541ee35efc5e76ba6758828) Thanks [@ptang-nr](https://github.com/ptang-nr)! - Update rrweb handling of inlining images.
+  Patch image inlining so that images are unaltered in the DOM and prevents images from breaking when server doesn't support CORS.
+  Reset tainted canvas after encountering a CORS error to prevent subsequent fixable images from being un-inlined.
+
 ## 1.1.0
 
 ### Patch Changes

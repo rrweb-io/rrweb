@@ -1,5 +1,15 @@
 # rrweb
 
+## 1.1.1
+
+### Patch Changes
+
+- Updated dependencies [[`c64f665`](https://github.com/newrelic-forks/rrweb/commit/c64f6652c6647e6d2541ee35efc5e76ba6758828)]:
+  - @newrelic/rrweb-snapshot@1.1.1
+  - @newrelic/rrdom@1.1.1
+  - @newrelic/rrweb-types@1.1.1
+  - @newrelic/rrweb-utils@1.1.1
+
 ## 1.1.0
 
 ### Patch Changes

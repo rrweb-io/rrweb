@@ -1,5 +1,13 @@
 # @rrweb/replay
 
+## 1.1.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @newrelic/rrweb@1.1.1
+  - @newrelic/rrweb-types@1.1.1
+
 ## 1.1.0
 
 ### Minor Changes

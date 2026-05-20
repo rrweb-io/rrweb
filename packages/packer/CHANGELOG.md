@@ -1,5 +1,12 @@
 # @rrweb/packer
 
+## 1.1.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @newrelic/rrweb-types@1.1.1
+
 ## 1.1.0
 
 ### Patch Changes
