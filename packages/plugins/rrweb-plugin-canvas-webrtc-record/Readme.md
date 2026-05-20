@@ -69,6 +69,8 @@ replayer.startLive(); // start the replayer in live mode
 replayer.addEvent(event); // call this whenever an event is received from the record script
 ```
 
+**Enabling canvas replay adds `allow-scripts` to the replay iframe and opts out of rrweb's sandbox script-execution protection. Only use `UNSAFE_replayCanvas` for replay data whose risk you accept.**
+
 ## More info
 
 https://github.com/rrweb-io/rrweb/pull/976

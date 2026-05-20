@@ -4,6 +4,7 @@ import {
   buildNodeWithSN,
   type BuildCache,
   createCache,
+  createSandboxedIframe,
   Mirror,
   createMirror,
   toLowerCase,
@@ -117,6 +118,7 @@ function indicatesTouchDevice(e: eventWithTime) {
 export class Replayer {
   public wrapper: HTMLDivElement;
   public iframe: HTMLIFrameElement;
+  private UNSAFE_replayCanvas = false;
 
   public service: ReturnType<typeof createPlayerService>;
   public speedService: ReturnType<typeof createSpeedService>;
@@ -610,16 +612,20 @@ export class Replayer {
       this.wrapper.appendChild(this.mouseTail);
     }
 
-    this.iframe = document.createElement('iframe');
-    const attributes = ['allow-same-origin'];
     if (this.config.UNSAFE_replayCanvas) {
-      attributes.push('allow-scripts');
+      this.iframe = document.createElement('iframe');
+      this.iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts');
+      this.wrapper.appendChild(this.iframe);
+      this.UNSAFE_replayCanvas = true;
+    } else {
+      this.iframe = createSandboxedIframe({
+        root: this.wrapper,
+      });
+      this.UNSAFE_replayCanvas = false;
     }
     // hide iframe before first meta event
     this.iframe.style.display = 'none';
-    this.iframe.setAttribute('sandbox', attributes.join(' '));
     this.disableInteract();
-    this.wrapper.appendChild(this.iframe);
     if (this.iframe.contentWindow && this.iframe.contentDocument) {
       smoothscrollPolyfill(
         this.iframe.contentWindow,
@@ -844,6 +850,7 @@ export class Replayer {
       afterAppend,
       cache: this.cache,
       mirror: this.mirror,
+      UNSAFE_allowUnprotectedRebuild: this.UNSAFE_replayCanvas,
     });
     afterAppend(this.iframe.contentDocument, event.data.node.id);
 
