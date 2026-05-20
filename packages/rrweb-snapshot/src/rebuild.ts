@@ -12,7 +12,7 @@ import {
   Mirror,
   isNodeMetaEqual,
   extractFileExtension,
-} from './utils';
+} from './rebuild-utils';
 import postcss from 'postcss';
 
 const tagMap: tagMap = {
