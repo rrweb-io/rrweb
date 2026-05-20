@@ -14,6 +14,8 @@ import rebuild, {
   buildNodeWithSN,
   adaptCssForReplay,
   createCache,
+  createSandboxedIframe,
+  rebuildIntoSandboxedIframe,
 } from './rebuild';
 export * from './types';
 export * from './utils';
@@ -22,6 +24,8 @@ export {
   snapshot,
   serializeNodeWithId,
   rebuild,
+  createSandboxedIframe,
+  rebuildIntoSandboxedIframe,
   buildNodeWithSN,
   adaptCssForReplay,
   createCache,

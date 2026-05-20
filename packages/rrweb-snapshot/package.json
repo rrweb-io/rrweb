@@ -48,6 +48,7 @@
     "dist",
     "package.json"
   ],
+  "sideEffects": false,
   "author": "yanzhen@smartx.com",
   "license": "MIT",
   "bugs": {
