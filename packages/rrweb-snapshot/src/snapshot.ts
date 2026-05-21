@@ -587,10 +587,14 @@ function serializeElementNode(
   }
   // remote css
   if (tagName === 'link' && inlineStylesheet) {
-    //TODO: maybe replace this `.styleSheets` with original one
-    const stylesheet = Array.from(doc.styleSheets).find((s) => {
-      return s.href === (n as HTMLLinkElement).href;
-    });
+    // Try the element's .sheet first (works on WebKit even when
+    // document.styleSheets hasn't been updated yet), then fall back
+    // to searching document.styleSheets by href.
+    const stylesheet =
+      (n as HTMLLinkElement).sheet ||
+      Array.from(doc.styleSheets).find((s) => {
+        return s.href === (n as HTMLLinkElement).href;
+      });
     let cssText: string | null = null;
     if (stylesheet) {
       cssText = stringifyStylesheet(stylesheet);
