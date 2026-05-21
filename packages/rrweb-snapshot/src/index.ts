@@ -18,6 +18,8 @@ import rebuild, {
   rebuildIntoSandboxedIframe,
 } from './rebuild';
 export * from './types';
+// Legacy broad export kept for compatibility. New internal imports should
+// prefer snapshot-utils.ts / rebuild-utils.ts domain entrypoints.
 export * from './utils';
 
 export {
