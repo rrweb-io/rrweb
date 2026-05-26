@@ -21,6 +21,10 @@ type BypassOptions = Omit<
   sampling: SamplingStrategy;
 };
 
+type ElementWithShadowRoot = Element & {
+  __rrClosedShadowRoot: ShadowRoot;
+};
+
 export class ShadowDomManager {
   private shadowDoms = new WeakSet<ShadowRoot>();
   private mutationCb: mutationCallBack;
@@ -133,9 +137,13 @@ export class ShadowDomManager {
             // For the shadow dom elements in the document, monitor their dom mutations.
             // For shadow dom elements that aren't in the document yet,
             // we start monitoring them once their shadow dom host is appended to the document.
-            const shadowRootEl = dom.shadowRoot(this);
-            if (shadowRootEl && inDom(this))
-              manager.addShadowRoot(shadowRootEl, doc);
+            if (sRoot && inDom(this)) {
+              manager.addShadowRoot(sRoot, doc);
+            }
+            if (option.mode === 'closed') {
+              // FIXME: this exposes a closed root
+              (this as ElementWithShadowRoot).__rrClosedShadowRoot = sRoot;
+            }
             return sRoot;
           };
         },
