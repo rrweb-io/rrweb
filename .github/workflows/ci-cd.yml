@@ -65,3 +65,35 @@ jobs:
           name: image-diff
           path: packages/**/__image_snapshots__/__diff_output__/*.png
           if-no-files-found: ignore
+
+  webkit:
+    name: WebKit (Safari engine) tests
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js lts/*
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
+
+      - name: Build rrweb-snapshot
+        run: yarn build
+        working-directory: packages/rrweb-snapshot
+
+      - name: Install Playwright WebKit browser
+        run: npx playwright install webkit && npx playwright install-deps webkit
+        working-directory: packages/rrweb-snapshot
+
+      - name: Run WebKit tests
+        run: yarn test:webkit
+        working-directory: packages/rrweb-snapshot
