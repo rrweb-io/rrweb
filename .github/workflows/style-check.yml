@@ -19,9 +19,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
-          cache: 'pnpm'
-      - name: Enable Corepack
-        run: corepack enable
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          cache: true
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
         env:
@@ -45,9 +46,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
-          cache: 'pnpm'
-      - name: Enable Corepack
-        run: corepack enable
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          cache: true
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
         env:

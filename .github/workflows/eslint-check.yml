@@ -25,9 +25,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
-          cache: 'pnpm'
-      - name: Enable Corepack
-        run: corepack enable
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          cache: true
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
         env:
@@ -86,15 +87,27 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
-          cache: 'pnpm'
-      - name: Enable Corepack
-        run: corepack enable
+      - name: Setup pnpm
+        if: ${{ hashFiles('pnpm-lock.yaml') != '' }}
+        uses: pnpm/action-setup@v6
+        with:
+          cache: true
       - name: Install base dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm install --frozen-lockfile
+          else
+            yarn install --frozen-lockfile
+          fi
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Build base branch
-        run: NODE_OPTIONS='--max-old-space-size=4096' pnpm run build:all
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            NODE_OPTIONS='--max-old-space-size=4096' pnpm run build:all
+          else
+            NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
+          fi
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Measure base bundle sizes
