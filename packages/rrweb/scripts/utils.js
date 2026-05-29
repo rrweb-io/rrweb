@@ -20,11 +20,19 @@ export const startServer = (defaultPort = 3030) =>
         .normalize(parsedUrl.pathname)
         .replace(/^(\.\.[\/\\])+/, '');
       let pathname = path.join(__dirname, sanitizePath);
-      if (
-        /^\/rrweb.*\.js.*/.test(sanitizePath) ||
-        /^\/plugins\/.*/.test(sanitizePath)
-      ) {
+      if (/^\/rrweb.*\.c?js.*/.test(sanitizePath)) {
         pathname = path.join(__dirname, `../dist`, sanitizePath);
+      }
+      if (/^\/plugins\/.*/.test(sanitizePath)) {
+        console.log('sanitizePath', sanitizePath);
+        const pluginName = sanitizePath.split('/')[2].replace('.js', '');
+        pathname = path.join(
+          __dirname,
+          `../../plugins/`,
+          pluginName,
+          `dist/${pluginName}.umd.cjs`,
+        );
+        console.log('pathname', pathname);
       }
       try {
         const data = fs.readFileSync(pathname);

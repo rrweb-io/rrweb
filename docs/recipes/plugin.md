@@ -4,7 +4,12 @@ The plugin API is designed to extend the function of rrweb without bump the size
 
 # Available plugins
 
-- [console](./console.md)
+- [@rrweb/rrweb-plugin-console-record](packages/plugins/rrweb-plugin-console-record): A plugin for recording console logs.
+- [@rrweb/rrweb-plugin-console-replay](packages/plugins/rrweb-plugin-console-replay): A plugin for replaying console logs.
+- [@rrweb/rrweb-plugin-sequential-id-record](packages/plugins/rrweb-plugin-sequential-id-record): A plugin for recording sequential IDs.
+- [@rrweb/rrweb-plugin-sequential-id-replay](packages/plugins/rrweb-plugin-sequential-id-replay): A plugin for replaying sequential IDs.
+- [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record): A plugin for stream `<canvas>` via WebRTC.
+- [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay): A plugin for playing streamed `<canvas>` via WebRTC.
 
 ## Interface
 
@@ -33,6 +38,8 @@ Both record and replay plugins have a type interface.
 #### record plugin
 
 ```ts
+import { record } from '@rrweb/record';
+
 const exampleRecordPlugin: RecordPlugin<{ foo: string }> = {
   name: 'my-scope/example@1',
   observer(cb, options) {
@@ -49,7 +56,7 @@ const exampleRecordPlugin: RecordPlugin<{ foo: string }> = {
   },
 };
 
-rrweb.record({
+record({
   emit: emit(event) {},
   plugins: [exampleRecordPlugin],
 });
@@ -74,6 +81,8 @@ In this example, the record plugin will emit events like this:
 #### replay plugin
 
 ```ts
+import { Replayer } from '@rrweb/replay';
+
 const exampleReplayPlugin: ReplayPlugin = {
   handler(event, isSync, context) {
     if (event.type === EventType.Plugin) {
@@ -85,7 +94,7 @@ const exampleReplayPlugin: ReplayPlugin = {
   },
 };
 
-const replayer = new rrweb.Replayer(events, {
+const replayer = new Replayer(events, {
   plugins: [exampleReplayPlugin],
 });
 ```

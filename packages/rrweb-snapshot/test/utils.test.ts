@@ -1,9 +1,16 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
-import { NodeType, serializedNode } from '../src/types';
-import { extractFileExtension, isNodeMetaEqual } from '../src/utils';
-import { serializedNodeWithId } from 'rrweb-snapshot';
+import { describe, it, test, expect } from 'vitest';
+import {
+  escapeImportStatement,
+  extractFileExtension,
+  fixSafariColons,
+  isNodeMetaEqual,
+  stringifyStylesheet,
+} from '../src/utils';
+import { NodeType } from '@rrweb/types';
+import type { serializedNode, serializedNodeWithId } from '@rrweb/types';
 
 describe('utils', () => {
   describe('isNodeMetaEqual()', () => {
@@ -196,6 +203,127 @@ describe('utils', () => {
       const path = 'https://example.com/scripts/app.min.js?version=1.0';
       const extension = extractFileExtension(path);
       expect(extension).toBe('js');
+    });
+  });
+
+  describe('escapeImportStatement', () => {
+    it('parses imports with quotes correctly', () => {
+      const out1 = escapeImportStatement({
+        cssText: `@import url("/foo.css;900;800"");`,
+        href: '/foo.css;900;800"',
+        media: {
+          length: 0,
+        },
+        layerName: null,
+        supportsText: null,
+      } as unknown as CSSImportRule);
+      expect(out1).toEqual(`@import url("/foo.css;900;800\\"");`);
+
+      const out2 = escapeImportStatement({
+        cssText: `@import url("/foo.css;900;800"") supports(display: flex);`,
+        href: '/foo.css;900;800"',
+        media: {
+          length: 0,
+        },
+        layerName: null,
+        supportsText: 'display: flex',
+      } as unknown as CSSImportRule);
+      expect(out2).toEqual(
+        `@import url("/foo.css;900;800\\"") supports(display: flex);`,
+      );
+
+      const out3 = escapeImportStatement({
+        cssText: `@import url("/foo.css;900;800"");`,
+        href: '/foo.css;900;800"',
+        media: {
+          length: 1,
+          mediaText: 'print, screen',
+        },
+        layerName: null,
+        supportsText: null,
+      } as unknown as CSSImportRule);
+      expect(out3).toEqual(`@import url("/foo.css;900;800\\"") print, screen;`);
+
+      const out4 = escapeImportStatement({
+        cssText: `@import url("/foo.css;900;800"") layer(layer-1);`,
+        href: '/foo.css;900;800"',
+        media: {
+          length: 0,
+        },
+        layerName: 'layer-1',
+        supportsText: null,
+      } as unknown as CSSImportRule);
+      expect(out4).toEqual(
+        `@import url("/foo.css;900;800\\"") layer(layer-1);`,
+      );
+
+      const out5 = escapeImportStatement({
+        cssText: `@import url("/foo.css;900;800"") layer;`,
+        href: '/foo.css;900;800"',
+        media: {
+          length: 0,
+        },
+        layerName: '',
+        supportsText: null,
+      } as unknown as CSSImportRule);
+      expect(out5).toEqual(`@import url("/foo.css;900;800\\"") layer;`);
+    });
+  });
+  describe('fixSafariColons', () => {
+    it('parses : in attribute selectors correctly', () => {
+      const out1 = fixSafariColons('[data-foo] { color: red; }');
+      expect(out1).toEqual('[data-foo] { color: red; }');
+
+      const out2 = fixSafariColons('[data-foo:other] { color: red; }');
+      expect(out2).toEqual('[data-foo\\:other] { color: red; }');
+
+      const out3 = fixSafariColons('[data-aa\\:other] { color: red; }');
+      expect(out3).toEqual('[data-aa\\:other] { color: red; }');
+    });
+  });
+
+  describe('stringifyStylesheet', () => {
+    it('returns null if rules are missing', () => {
+      const mockSheet = {
+        rules: null,
+        cssRules: null,
+      } as unknown as CSSStyleSheet;
+      expect(stringifyStylesheet(mockSheet)).toBeNull();
+    });
+
+    it('stringifies rules using .cssRules if .rules is missing', () => {
+      const mockRule1 = { cssText: 'div { margin: 0; }' } as CSSRule;
+      const mockSheet = {
+        cssRules: [mockRule1],
+        href: 'https://example.com/main.css',
+      } as unknown as CSSStyleSheet;
+      expect(stringifyStylesheet(mockSheet)).toBe('div { margin: 0; }');
+    });
+
+    it('uses ownerNode.baseURI for inline styles', () => {
+      const mockFontFaceRule = {
+        cssText: `
+          @font-face {
+            font-family: 'MockFont';
+            src: url('../fonts/mockfont.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+          }
+        `,
+      } as CSSRule;
+      const mockOwnerNode = {
+        baseURI: 'https://example.com/fonts/',
+      } as unknown as Node;
+      const mockSheet = {
+        cssRules: [mockFontFaceRule],
+        href: null,
+        ownerNode: mockOwnerNode,
+      } as unknown as CSSStyleSheet;
+      expect(
+        stringifyStylesheet(mockSheet)?.replace(/\s+/g, ' ').trim(),
+      ).toEqual(
+        "@font-face { font-family: 'MockFont'; src: url('https://example.com/fonts/mockfont.woff2') format('woff2'); font-weight: normal; font-style: normal; }",
+      );
     });
   });
 });

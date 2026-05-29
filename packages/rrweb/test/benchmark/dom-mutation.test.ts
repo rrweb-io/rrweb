@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { vi } from 'vitest';
 import type { Page } from 'puppeteer';
 import type { eventWithTime } from '@rrweb/types';
 import type { recordOptions } from '../../src/types';
@@ -18,6 +19,12 @@ const suites: Array<
   //   eval: 'document.querySelector("button").click()',
   //   times: 10,
   // },
+  {
+    title: 'create 1000x 1 DOM nodes with deeply nested children',
+    html: 'benchmark-dom-mutation-deep-nested.html',
+    eval: 'window.workload()',
+    times: 10,
+  },
   {
     title: 'create 1000x10 DOM nodes',
     html: 'benchmark-dom-mutation.html',
@@ -55,7 +62,7 @@ function avg(v: number[]): number {
 }
 
 describe('benchmark: mutation observer', () => {
-  jest.setTimeout(240000);
+  vi.setConfig({ testTimeout: 240000 });
   let page: ISuite['page'];
   let browser: ISuite['browser'];
   let server: ISuite['server'];
@@ -64,7 +71,7 @@ describe('benchmark: mutation observer', () => {
     server = await startServer();
     browser = await launchPuppeteer({
       dumpio: true,
-      headless: true,
+      headless: 'new',
     });
   });
 
@@ -84,7 +91,7 @@ describe('benchmark: mutation observer', () => {
 
   const addRecordingScript = async (page: Page) => {
     // const scriptUrl = `${getServerURL(server)}/rrweb-1.1.3.js`;
-    const scriptUrl = `${getServerURL(server)}/rrweb.js`;
+    const scriptUrl = `${getServerURL(server)}/rrweb.umd.cjs`;
     await page.evaluate((url) => {
       const scriptEl = document.createElement('script');
       scriptEl.src = url;

@@ -8,7 +8,10 @@ This feature aims to provide developers with more information about the bug scen
 You can enable the logger using default option like this:
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+import { getRecordConsolePlugin } from '@rrweb/rrweb-plugin-console-record';
+
+record({
   emit: function emit(event) {
     // you should use console.log in this way to avoid errors.
     const defaultLog = console.log['__rrweb_original__']
@@ -17,7 +20,7 @@ rrweb.record({
     defaultLog(event);
   },
   // to use default record option
-  plugins: [rrweb.getRecordConsolePlugin()],
+  plugins: [getRecordConsolePlugin()],
 });
 ```
 
@@ -27,7 +30,10 @@ You should call console.log.\_\_rrweb_original\_\_() instead.
 You can also customize the behavior of logger like this:
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+import { getRecordConsolePlugin } from '@rrweb/rrweb-plugin-console-record';
+
+record({
   emit: function emit(event) {
     // you should use console.log in this way to avoid errors.
     const defaultLog = console.log['__rrweb_original__']
@@ -37,7 +43,7 @@ rrweb.record({
   },
   // customized options
   plugins: [
-    rrweb.getRecordConsolePlugin({
+    getRecordConsolePlugin({
       level: ['info', 'log', 'warn', 'error'],
       lengthThreshold: 10000,
       stringifyOptions: {
@@ -64,9 +70,12 @@ All options are described below:
 If recorded events include data of console log type, we will automatically play them.
 
 ```js
-const replayer = new rrweb.Replayer(events, {
+import { Replayer } from '@rrweb/replay';
+import { getReplayConsolePlugin } from '@rrweb/rrweb-plugin-console-replay';
+
+const replayer = new Replayer(events, {
   plugins: [
-    rrweb.getReplayConsolePlugin({
+    getReplayConsolePlugin({
       level: ['info', 'log', 'warn', 'error'],
     }),
   ],

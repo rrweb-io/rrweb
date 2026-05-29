@@ -1,5 +1,169 @@
 # rrweb
 
+## 2.0.0-alpha.20
+
+### Patch Changes
+
+- [#1763](https://github.com/rrweb-io/rrweb/pull/1763) [`6388fb5`](https://github.com/rrweb-io/rrweb/commit/6388fb5a468e1a860ab8bb5c6826c811dcc3100c) Thanks [@wfk007](https://github.com/wfk007)! - fix: wujie monkeypatches ownerDocument
+
+- Updated dependencies [[`6388fb5`](https://github.com/rrweb-io/rrweb/commit/6388fb5a468e1a860ab8bb5c6826c811dcc3100c)]:
+  - @rrweb/utils@2.0.0-alpha.20
+  - rrweb-snapshot@2.0.0-alpha.20
+  - rrdom@2.0.0-alpha.20
+  - @rrweb/types@2.0.0-alpha.20
+
+## 2.0.0-alpha.19
+
+### Patch Changes
+
+- [#1615](https://github.com/rrweb-io/rrweb/pull/1615) [`dc20cd4`](https://github.com/rrweb-io/rrweb/commit/dc20cd45cc63058325784444af6bd32ed2cace48) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Improve performance of splitCssText for <style> elements with large css content - see #1603
+
+- [#1640](https://github.com/rrweb-io/rrweb/pull/1640) [`3e9e42f`](https://github.com/rrweb-io/rrweb/commit/3e9e42fdfd6349087d7a0345af1b39dd56528502) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Improve performance of splitCssText for <style> elements with large css content - see #1603
+
+- [#1600](https://github.com/rrweb-io/rrweb/pull/1600) [`a6893f7`](https://github.com/rrweb-io/rrweb/commit/a6893f73abe217a95d28996e01b7ec8261e42de3) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - #1575 Fix that postcss could fall over when trying to process css content split arbitrarily
+
+- [#1631](https://github.com/rrweb-io/rrweb/pull/1631) [`88ea2d0`](https://github.com/rrweb-io/rrweb/commit/88ea2d05c1869026111c91f7aa14ea7a7193fcd8) Thanks [@pauldambra](https://github.com/pauldambra)! - Move patch function into @rrweb/utils to improve bundling
+
+- [#1695](https://github.com/rrweb-io/rrweb/pull/1695) [`fc390a9`](https://github.com/rrweb-io/rrweb/commit/fc390a954c4fc17fe2ee0e2b6edba634611349e0) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - fix: rrweb recorder may throw error when stopping recording after an iframe becomes cross-origin
+
+- [#1618](https://github.com/rrweb-io/rrweb/pull/1618) [`79837ac`](https://github.com/rrweb-io/rrweb/commit/79837ac8f2f459935f6737210890b5c12033a53b) Thanks [@billyvg](https://github.com/billyvg)! - This fixes an issue where inlined CSS from a remotely loaded `<link>` does not get applied properly due to object reference mutation.
+
+- [#1614](https://github.com/rrweb-io/rrweb/pull/1614) [`6f4e691`](https://github.com/rrweb-io/rrweb/commit/6f4e691f39cc59b655d1be4f951128beecb88acb) Thanks [@billyvg](https://github.com/billyvg)! - Change to ignore all link[rel="modulepreload"] instead of including only those with `as="script"`
+
+- [#1599](https://github.com/rrweb-io/rrweb/pull/1599) [`9cd28b7`](https://github.com/rrweb-io/rrweb/commit/9cd28b703ec08a77dc6b790dbffb20dfb8e9a513) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - #1596 Add masking for innerText mutations on textarea elements
+
+- Updated dependencies [[`47a7c3f`](https://github.com/rrweb-io/rrweb/commit/47a7c3faa6fdbd3a515f473dc3a979acd2c8276e), [`dc20cd4`](https://github.com/rrweb-io/rrweb/commit/dc20cd45cc63058325784444af6bd32ed2cace48), [`3e9e42f`](https://github.com/rrweb-io/rrweb/commit/3e9e42fdfd6349087d7a0345af1b39dd56528502), [`a6893f7`](https://github.com/rrweb-io/rrweb/commit/a6893f73abe217a95d28996e01b7ec8261e42de3), [`88ea2d0`](https://github.com/rrweb-io/rrweb/commit/88ea2d05c1869026111c91f7aa14ea7a7193fcd8), [`f2419f2`](https://github.com/rrweb-io/rrweb/commit/f2419f2513e9ad3ea597e2b5a4463a4fbf74868f), [`6f4e691`](https://github.com/rrweb-io/rrweb/commit/6f4e691f39cc59b655d1be4f951128beecb88acb), [`76df979`](https://github.com/rrweb-io/rrweb/commit/76df9799ecc14930fa914e5623a73ea7726e3747)]:
+  - rrweb-snapshot@2.0.0-alpha.19
+  - @rrweb/utils@2.0.0-alpha.19
+  - rrdom@2.0.0-alpha.19
+  - @rrweb/types@2.0.0-alpha.19
+
+## 2.0.0-alpha.18
+
+### Minor Changes
+
+- [#1543](https://github.com/rrweb-io/rrweb/pull/1543) [`53b83bb`](https://github.com/rrweb-io/rrweb/commit/53b83bb037f9cb30c93179548f436ed776f143ab) Thanks [@JonasBa](https://github.com/JonasBa)! - Optimize isParentRemoved check
+
+### Patch Changes
+
+- [#1535](https://github.com/rrweb-io/rrweb/pull/1535) [`04ee6ed`](https://github.com/rrweb-io/rrweb/commit/04ee6eda57157f0e04f18f907d8f3e59ababc753) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Slight simplification to how we replace :hover after #1458
+
+- [#1437](https://github.com/rrweb-io/rrweb/pull/1437) [`5fbb904`](https://github.com/rrweb-io/rrweb/commit/5fbb904edb653f3da17e6775ee438d81ef0bba83) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Edge case: Provide support for mutations on a <style> element which (unusually) has multiple text nodes
+
+- [#1593](https://github.com/rrweb-io/rrweb/pull/1593) [`5a78938`](https://github.com/rrweb-io/rrweb/commit/5a789385a341311ba327a768fe0e2f0f2f5002ee) Thanks [@daibhin](https://github.com/daibhin)! - `NodeType` enum was moved from rrweb-snapshot to @rrweb/types
+  The following types where moved from rrweb-snapshot to @rrweb/types: `documentNode`, `documentTypeNode`, `legacyAttributes`, `textNode`, `cdataNode`, `commentNode`, `elementNode`, `serializedNode`, `serializedNodeWithId`, `serializedElementNodeWithId`, `serializedTextNodeWithId`, `IMirror`, `INode`, `mediaAttributes`, `attributes` and `DataURLOptions`
+- Updated dependencies [[`8e55c45`](https://github.com/rrweb-io/rrweb/commit/8e55c455ff2987a3b5f367f23f48c1f2de74ce45), [`02cc62d`](https://github.com/rrweb-io/rrweb/commit/02cc62dd44b52f579a332b55c49896a5cb7cc694), [`04ee6ed`](https://github.com/rrweb-io/rrweb/commit/04ee6eda57157f0e04f18f907d8f3e59ababc753), [`5fbb904`](https://github.com/rrweb-io/rrweb/commit/5fbb904edb653f3da17e6775ee438d81ef0bba83), [`5a78938`](https://github.com/rrweb-io/rrweb/commit/5a789385a341311ba327a768fe0e2f0f2f5002ee)]:
+  - rrdom@2.0.0-alpha.18
+  - rrweb-snapshot@2.0.0-alpha.18
+  - @rrweb/types@2.0.0-alpha.18
+  - @rrweb/utils@2.0.0-alpha.18
+
+## 2.0.0-alpha.17
+
+### Minor Changes
+
+- [#1503](https://github.com/rrweb-io/rrweb/pull/1503) [`335639a`](https://github.com/rrweb-io/rrweb/commit/335639af9b0ce7f70eb0f38ce113d877c7325158) Thanks [@Juice10](https://github.com/Juice10)! - Support top-layer <dialog> components. Fixes #1381.
+
+### Patch Changes
+
+- [#1417](https://github.com/rrweb-io/rrweb/pull/1417) [`40bbc25`](https://github.com/rrweb-io/rrweb/commit/40bbc25fc287badc317a53f2d3f21b1c9f2b211b) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - fix: duplicate textContent for style elements cause incremental style mutations to be invalid
+
+- [#1527](https://github.com/rrweb-io/rrweb/pull/1527) [`68076b7`](https://github.com/rrweb-io/rrweb/commit/68076b724ff19d198d4f351a05063b85e1705a8c) Thanks [@arredgroup](https://github.com/arredgroup)! - Export takeFullSnapshot function for a recording process
+
+- [#1515](https://github.com/rrweb-io/rrweb/pull/1515) [`8059d96`](https://github.com/rrweb-io/rrweb/commit/8059d9695146626b102b2059a3a9b932d5f598f6) Thanks [@okejminja](https://github.com/okejminja)! - Added support for deprecated addRule & removeRule methods
+
+- [#1509](https://github.com/rrweb-io/rrweb/pull/1509) [`be6bf52`](https://github.com/rrweb-io/rrweb/commit/be6bf52c248c35de1b3491e3a3440ff61f876414) Thanks [@Juice10](https://github.com/Juice10)! - Reverse monkey patch built in methods to support LWC (and other frameworks like angular which monkey patch built in methods).
+
+- Updated dependencies [[`40bbc25`](https://github.com/rrweb-io/rrweb/commit/40bbc25fc287badc317a53f2d3f21b1c9f2b211b), [`335639a`](https://github.com/rrweb-io/rrweb/commit/335639af9b0ce7f70eb0f38ce113d877c7325158), [`335639a`](https://github.com/rrweb-io/rrweb/commit/335639af9b0ce7f70eb0f38ce113d877c7325158), [`d350da8`](https://github.com/rrweb-io/rrweb/commit/d350da8552d8616dd118ee550bdfbce082986562), [`be6bf52`](https://github.com/rrweb-io/rrweb/commit/be6bf52c248c35de1b3491e3a3440ff61f876414)]:
+  - rrweb-snapshot@2.0.0-alpha.17
+  - rrdom@2.0.0-alpha.17
+  - @rrweb/types@2.0.0-alpha.17
+  - @rrweb/utils@2.0.0-alpha.17
+
+## 2.0.0-alpha.16
+
+### Patch Changes
+
+- [#1386](https://github.com/rrweb-io/rrweb/pull/1386) [`a2c8a1a`](https://github.com/rrweb-io/rrweb/commit/a2c8a1a37bfcf8389b280af792262c8263a979a3) Thanks [@ababik](https://github.com/ababik)! - Fix that the optional `maskInputFn` was being accidentally ignored during the creation of the full snapshot
+
+- [#1512](https://github.com/rrweb-io/rrweb/pull/1512) [`d08624c`](https://github.com/rrweb-io/rrweb/commit/d08624cb28add386c3618a0e6607424c3f1884d8) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - optimisation: skip mask check on leaf elements
+
+- Updated dependencies [[`a2c8a1a`](https://github.com/rrweb-io/rrweb/commit/a2c8a1a37bfcf8389b280af792262c8263a979a3), [`d08624c`](https://github.com/rrweb-io/rrweb/commit/d08624cb28add386c3618a0e6607424c3f1884d8)]:
+  - rrweb-snapshot@2.0.0-alpha.16
+  - rrdom@2.0.0-alpha.16
+  - @rrweb/types@2.0.0-alpha.16
+
+## 2.0.0-alpha.15
+
+### Major Changes
+
+- [#1497](https://github.com/rrweb-io/rrweb/pull/1497) [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf) Thanks [@Juice10](https://github.com/Juice10)! - Split plugins out of rrweb and move them into their own packages: @rrweb/packer, @rrweb/rrweb-plugin-canvas-webrtc-record, @rrweb/rrweb-plugin-canvas-webrtc-replay, @rrweb/rrweb-plugin-sequential-id-record, @rrweb/rrweb-plugin-sequential-id-replay, @rrweb/rrweb-plugin-console-record, @rrweb/rrweb-plugin-console-replay. Check out the README of each package for more information or check out https://github.com/rrweb-io/rrweb/pull/1033 to see the changes.
+
+- [#1497](https://github.com/rrweb-io/rrweb/pull/1497) [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf) Thanks [@Juice10](https://github.com/Juice10)! - Distributed files have new filenames, paths and extensions. **Important: If you reference distributed files or types directly, you might have to update your paths/filenames. E.g. you import from `rrweb/typings/...` or `rrdom/es`. However you run `import rrweb from 'rrweb'` you won't notice a difference with this change.** If you include rrweb files directly in a script tag, you might have to update that path to include a the `.umd.cjs` files instead. All `.js` files now use ES modules which can be used in modern browsers, node.js and bundlers that support ES modules. All npm packages now also ship `.cjs` and `.umd.cjs` files. The `.umd.cjs` files are CommonJS modules that bundle all files together to make it easy to ship one file to browser environments (similar to the previous `.js` files). The `.cjs` files are CommonJS modules that can be used in older Node.js environments. Types should be better defined in `package.json` and if you need specific types they might be exported from new packages (for example `PlayerMachineState` and `SpeedMachineState` are now exported from `@rrweb/replay`). Check the `package.json`'s `main` and `exports` field for the available files.
+
+- [#1497](https://github.com/rrweb-io/rrweb/pull/1497) [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf) Thanks [@Juice10](https://github.com/Juice10)! - Remove the rrweb-all.js, rrweb-record.js, and rrweb-replay.js files from `rrweb` package. Now you can use `@rrweb/all`, `@rrweb/record`, and `@rrweb/replay` packages instead. Check out the README of each package for more information or check out [PR #1033](https://github.com/rrweb-io/rrweb/pull/1033) to see the changes.
+
+### Patch Changes
+
+- [#1033](https://github.com/rrweb-io/rrweb/pull/1033) [`7261c43`](https://github.com/rrweb-io/rrweb/commit/7261c43f60973e88325edf832e4d0e057fbff0ae) Thanks [@Juice10](https://github.com/Juice10)! - Export `ReplayPlugin` from rrweb directly. Previously we had to do `import type { ReplayPlugin } from 'rrweb/dist/types';` now we can do `import type { ReplayPlugin } from 'rrweb';`
+
+- [#1468](https://github.com/rrweb-io/rrweb/pull/1468) [`4014305`](https://github.com/rrweb-io/rrweb/commit/40143059446cee5c042c007b1c2e976f36e172f5) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - inlineImages: during snapshot avoid adding an event listener for inlining of same-origin images (async listener mutates the snapshot which can be problematic)
+
+- [#1489](https://github.com/rrweb-io/rrweb/pull/1489) [`609b7fa`](https://github.com/rrweb-io/rrweb/commit/609b7fac79a552f746dc880a28927dee382cd082) Thanks [@JonasBa](https://github.com/JonasBa)! - Optimize performance of isParentRemoved by converting it to an iterative procedure
+
+- [#1493](https://github.com/rrweb-io/rrweb/pull/1493) [`82f6fec`](https://github.com/rrweb-io/rrweb/commit/82f6fecf36413ecbc994a510144487f1de20d1d5) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Replay: Replace negative lookbehind in regexes from css parser as it causes issues with Safari 16
+
+- [#1353](https://github.com/rrweb-io/rrweb/pull/1353) [`5c27b76`](https://github.com/rrweb-io/rrweb/commit/5c27b763192bda9dd91806f95df7c1cd0ab083a6) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix: some nested cross-origin iframes can't be recorded
+
+- [#1328](https://github.com/rrweb-io/rrweb/pull/1328) [`d38893f`](https://github.com/rrweb-io/rrweb/commit/d38893f6338facf331fd1f6e63c121120b81177d) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Refactor to preclude the need for a continuous raf loop running in the background which is related to shadowDom
+
+- [#1295](https://github.com/rrweb-io/rrweb/pull/1295) [`d7cf8dd`](https://github.com/rrweb-io/rrweb/commit/d7cf8dd07547f6fb22ef82e341a88357c4053bd3) Thanks [@colingm](https://github.com/colingm)! - Return early for child same origin frames
+
+- [#760](https://github.com/rrweb-io/rrweb/pull/760) [`e08706a`](https://github.com/rrweb-io/rrweb/commit/e08706ae60268b6eb05c6292ef948c71bd423ce3) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Add slimDOM option to block animation on <title> tag; enabled when the 'all' value is used for slimDOM
+
+- Updated dependencies [[`4014305`](https://github.com/rrweb-io/rrweb/commit/40143059446cee5c042c007b1c2e976f36e172f5), [`82f6fec`](https://github.com/rrweb-io/rrweb/commit/82f6fecf36413ecbc994a510144487f1de20d1d5), [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf), [`f3cf092`](https://github.com/rrweb-io/rrweb/commit/f3cf0928df30d5ed5c0d573c524be6e744c0f8d3), [`e08706a`](https://github.com/rrweb-io/rrweb/commit/e08706ae60268b6eb05c6292ef948c71bd423ce3)]:
+  - rrweb-snapshot@2.0.0-alpha.15
+  - rrdom@2.0.0-alpha.15
+  - @rrweb/types@2.0.0-alpha.15
+
+## 2.0.0-alpha.14
+
+### Patch Changes
+
+- [#1464](https://github.com/rrweb-io/rrweb/pull/1464) [`03b5216`](https://github.com/rrweb-io/rrweb/commit/03b5216a9403f1509b4f69d1d71ef9874277fe91) Thanks [@colingm](https://github.com/colingm)! - better support for coexistence with older libraries (e.g. MooTools & Prototype.js) which modify the in-built `Array.from` function
+
+- [#1441](https://github.com/rrweb-io/rrweb/pull/1441) [`ae6908d`](https://github.com/rrweb-io/rrweb/commit/ae6908dcdcd7c732c1ce79eea19de5240bec1151) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - perf: Avoid an extra function call and object clone during event emission
+
+- [#1481](https://github.com/rrweb-io/rrweb/pull/1481) [`46f1b25`](https://github.com/rrweb-io/rrweb/commit/46f1b252a5919c68c68e825bd6089cc2e7d34e7c) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fix and test for bug #1457 which was affecting replay of complex tailwind css
+
+- [#1476](https://github.com/rrweb-io/rrweb/pull/1476) [`cbbd1e5`](https://github.com/rrweb-io/rrweb/commit/cbbd1e55f1f7fa2eed9fa11e4152b509bdfd88f7) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fixup for multiple background-clip replacement
+
+- [#1467](https://github.com/rrweb-io/rrweb/pull/1467) [`e96f668`](https://github.com/rrweb-io/rrweb/commit/e96f668c86bd0ab5dc190bb2957a170271bb2ebc) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Bugfix after #1434 perf improvements: fix that blob urls persist on the shared anchor element and can't be later modified
+
+- Updated dependencies [[`03b5216`](https://github.com/rrweb-io/rrweb/commit/03b5216a9403f1509b4f69d1d71ef9874277fe91), [`46f1b25`](https://github.com/rrweb-io/rrweb/commit/46f1b252a5919c68c68e825bd6089cc2e7d34e7c), [`cbbd1e5`](https://github.com/rrweb-io/rrweb/commit/cbbd1e55f1f7fa2eed9fa11e4152b509bdfd88f7), [`5e7943d`](https://github.com/rrweb-io/rrweb/commit/5e7943dbae6e2cde76c484bdd26bc0b96f1b6dce), [`c0f83af`](https://github.com/rrweb-io/rrweb/commit/c0f83afab8f1565633de0e986b7e96fa56f2d25c), [`e96f668`](https://github.com/rrweb-io/rrweb/commit/e96f668c86bd0ab5dc190bb2957a170271bb2ebc)]:
+  - rrweb-snapshot@2.0.0-alpha.14
+  - rrdom@2.0.0-alpha.14
+  - @rrweb/types@2.0.0-alpha.14
+
+## 2.0.0-alpha.13
+
+### Minor Changes
+
+- [#1432](https://github.com/rrweb-io/rrweb/pull/1432) [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961) Thanks [@Juice10](https://github.com/Juice10)! - Full overhawl of `video` and `audio` element playback. More robust and fixes lots of bugs related to pausing/playing/skipping/muting/playbackRate etc.
+
+### Patch Changes
+
+- [#1422](https://github.com/rrweb-io/rrweb/pull/1422) [`3d1877c`](https://github.com/rrweb-io/rrweb/commit/3d1877cff83d9a018630674fb6e730050ceef812) Thanks [@marandaneto](https://github.com/marandaneto)! - fix: createImageBitmap throws DOMException if source is 0 width or height
+
+- [#1432](https://github.com/rrweb-io/rrweb/pull/1432) [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961) Thanks [@Juice10](https://github.com/Juice10)! - Record `loop` on `<audio>` & `<video>` elements.
+
+- [#1445](https://github.com/rrweb-io/rrweb/pull/1445) [`02f50d2`](https://github.com/rrweb-io/rrweb/commit/02f50d260cfe72209c94de1679336737f238e216) Thanks [@daibhin](https://github.com/daibhin)! - fix: protect against missing parentNode
+
+- Updated dependencies [[`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`f7c6973`](https://github.com/rrweb-io/rrweb/commit/f7c6973ae9c21b9ea014bdef7101f976f04d9356), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`c278d06`](https://github.com/rrweb-io/rrweb/commit/c278d068a0e2f1175cce7cc63920ac1fbf4783cf)]:
+  - rrdom@2.0.0-alpha.13
+  - rrweb-snapshot@2.0.0-alpha.13
+  - @rrweb/types@2.0.0-alpha.13
+
 ## 2.0.0-alpha.12
 
 ### Minor Changes

@@ -6,67 +6,132 @@
 
 ## Installation
 
-### Direct `<script>` include
+| Goal                            | Recommended package(s)            |
+| ------------------------------- | --------------------------------- |
+| Most projects (record + replay) | `@rrweb/record` + `@rrweb/replay` |
+| Single-package convenience      | `@rrweb/all`                      |
+| Legacy compatibility only       | `rrweb`                           |
 
-You are recommended to install rrweb via jsdelivr's CDN service:
+In most production setups, recorder and replayer are deployed to different pages/apps. Use `@rrweb/record` on recorded pages and `@rrweb/replay` (or `rrweb-player`) on replay pages. Use `@rrweb/all` when you intentionally want one package for convenience (for example demos, tooling, or simplified setups).
+
+### 1) Bundler / npm (Recommended)
+
+```shell
+npm install @rrweb/record @rrweb/replay
+```
+
+```js
+import { record } from '@rrweb/record';
+import { Replayer } from '@rrweb/replay';
+import '@rrweb/replay/dist/style.css';
+```
+
+Use `@rrweb/all` as a convenience package if you want a single import:
+
+```shell
+npm install @rrweb/all
+```
+
+```js
+import { record, Replayer } from '@rrweb/all';
+import '@rrweb/all/dist/style.css';
+```
+
+`require(...)` / CommonJS remains available for compatibility via each package's `exports`/`main`, but ESM imports are the primary path for 2.x.
+
+### 2) Browser Without Bundler (No-Build)
+
+Use ES modules and import maps with jsDelivr `+esm`:
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css"
+  href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js"></script>
+<script type="importmap">
+  {
+    "imports": {
+      "@rrweb/record": "https://cdn.jsdelivr.net/npm/@rrweb/record@latest/+esm",
+      "@rrweb/replay": "https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/+esm"
+    }
+  }
+</script>
+<script type="module">
+  import { record } from '@rrweb/record';
+
+  record({
+    emit(event) {
+      console.log(event);
+    },
+  });
+</script>
 ```
 
-Also, you can link to a specific version number that you can update manually:
+Or use `@rrweb/all` as a convenience browser ESM import:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/rrweb@0.7.0/dist/rrweb.min.js"></script>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@rrweb/all@latest/dist/style.css"
+/>
+<script type="importmap">
+  {
+    "imports": {
+      "@rrweb/all": "https://cdn.jsdelivr.net/npm/@rrweb/all@latest/+esm"
+    }
+  }
+</script>
+<script type="module">
+  import { record, Replayer } from '@rrweb/all';
+</script>
 ```
 
-#### Only include the recorder code
+### 3) Legacy Direct `<script>` Include (UMD Fallback)
 
-rrweb's code includes both the record and the replay parts. Most of the time you only need to include the record part into your targeted web Apps.
-This also can be done by using the CDN service:
+Use this only for compatibility with non-module environments.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/record/rrweb-record.min.js"></script>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.20/dist/style.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.20/umd/rrweb.min.js"></script>
 ```
 
-#### Other bundles
+The UMD build exposes global `rrweb`.
 
-Besides the `record/rrweb-record.min.js` entry, rrweb also provides other bundles for different usage.
+Legacy single-purpose UMD bundles:
 
-```shell
-# Include record, replay, compression, and decompression.
-rrweb-all.js
-rrweb-all.min.js
-# Include record and replay.
-rrweb.js
-rrweb.min.js
-# Include the styles for replay.
-rrweb.min.css
-# Record
-record/rrweb-record.js
-record/rrweb-record.min.js
-# Data compression.
-record/rrweb-record-pack.js
-record/rrweb-record-pack.min.js
-# Replay
-replay/rrweb-replay.js
-replay/rrweb-replay.min.js
-# Data decompression.
-replay/rrweb-replay-unpack.js
-replay/rrweb-replay-unpack.min.js
+```html
+<script src="https://cdn.jsdelivr.net/npm/@rrweb/record@2.0.0-alpha.20/umd/record.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@rrweb/replay@2.0.0-alpha.20/umd/replay.min.js"></script>
 ```
 
-### NPM
+The UMD globals are `rrwebRecord` and `rrwebReplay`.
 
-```shell
-npm install --save rrweb
-```
+#### Other packages
 
-rrweb provides both commonJS and ES modules bundles, which are easy to use with the popular bundlers.
+Besides the `@rrweb/record` and `@rrweb/replay` packages, rrweb also provides other packages for different usage.
+
+- [rrweb](packages/rrweb): The core package of rrweb, including record and replay functions.
+- [rrweb-player](packages/rrweb-player): A GUI for rrweb, providing a timeline and buttons for things like pause, fast-forward, and speedup.
+- [rrweb-snapshot](packages/rrweb-snapshot): Handles snapshot and rebuilding features, converting the DOM and its state into a serializable data structure.
+- [rrdom](packages/rrdom): A virtual dom package rrweb.
+- [rrdom-nodejs](packages/rrdom-nodejs): The Node.js version of rrdom for server-side DOM operations.
+- [@rrweb/all](packages/all): A convenience package that includes `rrweb` and `@rrweb/packer`.
+- [@rrweb/record](packages/record): A package for recording rrweb sessions.
+- [@rrweb/replay](packages/replay): A package for replaying rrweb sessions.
+- [@rrweb/packer](packages/packer): A package for packing and unpacking rrweb data.
+- [@rrweb/types](packages/types): Contains types shared across rrweb packages.
+- [@rrweb/utils](packages/utils): Contains utility functions shared across rrweb packages.
+- [web-extension](packages/web-extension): A web extension for rrweb.
+- [rrvideo](packages/rrvideo): A package for handling video operations in rrweb.
+- [@rrweb/rrweb-plugin-console-record](packages/plugins/rrweb-plugin-console-record): A plugin for recording console logs.
+- [@rrweb/rrweb-plugin-console-replay](packages/plugins/rrweb-plugin-console-replay): A plugin for replaying console logs.
+- [@rrweb/rrweb-plugin-sequential-id-record](packages/plugins/rrweb-plugin-sequential-id-record): A plugin for recording sequential IDs.
+- [@rrweb/rrweb-plugin-sequential-id-replay](packages/plugins/rrweb-plugin-sequential-id-replay): A plugin for replaying sequential IDs.
+- [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record): A plugin for stream `<canvas>` via WebRTC.
+- [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay): A plugin for playing streamed `<canvas>` via WebRTC.
 
 ### Compatibility Note
 
@@ -76,11 +141,14 @@ rrweb does **not** support IE11 and below because it uses the `MutationObserver`
 
 ### Record
 
-**If you only included the record code with `<script>`**, then you must use the global variable `rrwebRecord` instead of `rrweb.record`.
-The following sample code will use the variable `rrweb` which is the default exporter of this library.
+Use `record` from `@rrweb/record` in modern setups:
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+```
+
+```js
+record({
   emit(event) {
     // store the event in any way you like
   },
@@ -92,7 +160,7 @@ During recording, the recorder will emit when there is some event incurred, all 
 The `record` method returns a function which can be called to stop events from firing:
 
 ```js
-let stopFn = rrweb.record({
+let stopFn = record({
   emit(event) {
     if (events.length > 100) {
       // stop after 100 events
@@ -107,7 +175,7 @@ A more real-world usage may look like this:
 ```js
 let events = [];
 
-rrweb.record({
+record({
   emit(event) {
     // push event into the events array
     events.push(event);
@@ -133,7 +201,7 @@ setInterval(save, 10 * 1000);
 
 #### Options
 
-The parameter of `rrweb.record` accepts the following options.
+The `record` function accepts the following options.
 
 | key                      | default            | description                                                                                                                                                                                   |
 | ------------------------ | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -153,14 +221,14 @@ The parameter of `rrweb.record` accepts the following options.
 | maskTextFn               | -                  | customize mask text content recording logic                                                                                                                                                   |
 | slimDOMOptions           | {}                 | remove unnecessary parts of the DOM <br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L97-L108)  |
 | dataURLOptions           | {}                 | Canvas image format and quality ,This parameter will be passed to the OffscreenCanvas.convertToBlob(),Using this parameter effectively reduces the size of the recorded data                  |
-| inlineStylesheet         | true               | whether to inline the stylesheet in the events                                                                                                                                                |
+| inlineStylesheet         | true               | Deprecated since 2.0.0. Still supported, but planned to be superseded by future `captureAssets` asset recording APIs.                                                                         |
 | hooks                    | {}                 | hooks for events<br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                                                  |
 | packFn                   | -                  | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                |
 | sampling                 | -                  | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                |
 | recordCanvas             | false              | Whether to record the canvas element. Available options:<br/>`false`, <br/>`true`                                                                                                             |
 | recordCrossOriginIframes | false              | Whether to record cross origin iframes. rrweb has to be injected in each child iframe for this to work. Available options:<br/>`false`, <br/>`true`                                           |
 | recordAfter              | 'load'             | If the document is not ready, then the recorder will start recording after the specified event is fired. Available options: `DOMContentLoaded`, `load`                                        |
-| inlineImages             | false              | whether to record the image content                                                                                                                                                           |
+| inlineImages             | false              | Deprecated since 2.0.0. Still supported, but planned to be superseded by future `captureAssets` asset recording APIs.                                                                         |
 | collectFonts             | false              | whether to collect fonts in the website                                                                                                                                                       |
 | userTriggeredOnInput     | false              | whether to add `userTriggered` on input events that indicates if this event was triggered directly by the user or not. [What is `userTriggered`?](https://github.com/rrweb-io/rrweb/pull/495) |
 | plugins                  | []                 | load plugins to provide extended record functions. [What is plugins?](./docs/recipes/plugin.md)                                                                                               |
@@ -186,7 +254,7 @@ By default, all the emitted events are required to replay a session and if you d
 // We use a two-dimensional array to store multiple events array
 const eventsMatrix = [[]];
 
-rrweb.record({
+record({
   emit(event, isCheckout) {
     // isCheckout is a flag to tell you the events has been checkout
     if (isCheckout) {
@@ -221,7 +289,7 @@ Similarly, you can also configure `checkoutEveryNms` to capture the last N minut
 // We use a two-dimensional array to store multiple events array
 const eventsMatrix = [[]];
 
-rrweb.record({
+record({
   emit(event, isCheckout) {
     // isCheckout is a flag to tell you the events has been checkout
     if (isCheckout) {
@@ -252,28 +320,36 @@ With the sample code above, you will finally get the last 5 to 10 minutes of eve
 
 ### Replay
 
-You need to include the style sheet before replay:
+For bundler usage, include the style sheet in your app entry:
+
+```js
+import '@rrweb/replay/dist/style.css';
+```
+
+For browser/no-build usage, include the style sheet in HTML:
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css"
+  href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
 />
 ```
 
-And then initialize the replayer with the following code:
+And then initialize the replayer:
 
 ```js
+import { Replayer } from '@rrweb/replay';
+
 const events = YOUR_EVENTS;
 
-const replayer = new rrweb.Replayer(events);
+const replayer = new Replayer(events);
 replayer.play();
 ```
 
 #### Control the replayer by API
 
 ```js
-const replayer = new rrweb.Replayer(events);
+const replayer = new Replayer(events);
 
 // play
 replayer.play();
@@ -295,52 +371,72 @@ replayer.destroy();
 
 The replayer accepts options as its constructor's second parameter, and it has the following options:
 
-| key                 | default       | description                                                                                                                                                                                                                    |
-| ------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| speed               | 1             | replay speed ratio                                                                                                                                                                                                             |
-| root                | document.body | the root element of replayer                                                                                                                                                                                                   |
-| loadTimeout         | 0             | timeout of loading remote style sheet                                                                                                                                                                                          |
-| skipInactive        | false         | whether to skip inactive time                                                                                                                                                                                                  |
-| showWarning         | true          | whether to print warning messages during replay                                                                                                                                                                                |
-| showDebug           | false         | whether to print debug messages during replay                                                                                                                                                                                  |
-| blockClass          | 'rr-block'    | element with the class name will display as a blocked area                                                                                                                                                                     |
-| liveMode            | false         | whether to enable live mode                                                                                                                                                                                                    |
-| insertStyleRules    | []            | accepts multiple CSS rule string, which will be injected into the replay iframe                                                                                                                                                |
-| triggerFocus        | true          | whether to trigger focus during replay                                                                                                                                                                                         |
-| UNSAFE_replayCanvas | false         | whether to replay the canvas element. **Enable this will remove the sandbox, which is unsafe.**                                                                                                                                |
-| pauseAnimation      | true          | whether to pause CSS animation when the replayer is paused                                                                                                                                                                     |
-| mouseTail           | true          | whether to show mouse tail during replay. Set to false to disable mouse tail. A complete config can be found in this [type](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
-| unpackFn            | -             | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                                                 |
-| logConfig           | -             | configuration of console output playback, refer to the [console recipe](./docs/recipes/console.md)                                                                                                                             |
-| plugins             | []            | load plugins to provide extended replay functions. [What is plugins?](./docs/recipes/plugin.md)                                                                                                                                |
-| useVirtualDom       | true          | whether to use Virtual Dom optimization in the process of skipping to a new point of time                                                                                                                                      |
-| logger              | console       | The logger object used by the replayer to print warnings or errors                                                                                                                                                             |
+| key                     | default       | description                                                                                                                                                                                                                    |
+| ----------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| speed                   | 1             | replay speed ratio                                                                                                                                                                                                             |
+| root                    | document.body | the root element of replayer                                                                                                                                                                                                   |
+| loadTimeout             | 0             | timeout of loading remote style sheet                                                                                                                                                                                          |
+| skipInactive            | false         | whether to skip inactive time                                                                                                                                                                                                  |
+| inactivePeriodThreshold | 10000         | the threshold in milliseconds for what should be considered an inactive period                                                                                                                                                 |
+| showWarning             | true          | whether to print warning messages during replay                                                                                                                                                                                |
+| showDebug               | false         | whether to print debug messages during replay                                                                                                                                                                                  |
+| blockClass              | 'rr-block'    | element with the class name will display as a blocked area                                                                                                                                                                     |
+| liveMode                | false         | whether to enable live mode                                                                                                                                                                                                    |
+| insertStyleRules        | []            | accepts multiple CSS rule string, which will be injected into the replay iframe                                                                                                                                                |
+| triggerFocus            | true          | whether to trigger focus during replay                                                                                                                                                                                         |
+| UNSAFE_replayCanvas     | false         | whether to replay the canvas element. **Enabling this adds `allow-scripts` to the replay iframe and opts out of the sandbox script-execution protection, which is unsafe.**                                                    |
+| pauseAnimation          | true          | whether to pause CSS animation when the replayer is paused                                                                                                                                                                     |
+| mouseTail               | true          | whether to show mouse tail during replay. Set to false to disable mouse tail. A complete config can be found in this [type](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
+| unpackFn                | -             | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                                                 |
+| logConfig               | -             | configuration of console output playback, refer to the [console recipe](./docs/recipes/console.md)                                                                                                                             |
+| plugins                 | []            | load plugins to provide extended replay functions. [What is plugins?](./docs/recipes/plugin.md)                                                                                                                                |
+| useVirtualDom           | true          | whether to use Virtual Dom optimization in the process of skipping to a new point of time                                                                                                                                      |
+| logger                  | console       | The logger object used by the replayer to print warnings or errors                                                                                                                                                             |
 
 #### Use rrweb-player
 
-Since rrweb's replayer only provides a basic UI, you can choose rrweb-replayer which is based on rrweb's public APIs but has a feature-rich replayer UI.
+Since `Replayer` from [@rrweb/replay](packages/replay/) only provides a basic UI, you can choose [rrweb-player](packages/rrweb-player/), which is based on rrweb's public APIs and provides a feature-rich replayer UI.
 
 ##### Installation
 
-rrweb-player can also be included with `<script>`：
+Bundler / npm (recommended):
+
+```shell
+npm install rrweb-player
+```
+
+```js
+import rrwebPlayer from 'rrweb-player';
+import 'rrweb-player/dist/style.css';
+```
+
+Browser without bundler (ESM + import maps):
 
 ```html
 <link
   rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/index.js"></script>
+<script type="importmap">
+  {
+    "imports": {
+      "rrweb-player": "https://cdn.jsdelivr.net/npm/rrweb-player@latest/+esm"
+    }
+  }
+</script>
+<script type="module">
+  import rrwebPlayer from 'rrweb-player';
+</script>
 ```
 
-Or installed by using NPM：
+Legacy direct `<script>` include (UMD fallback):
 
-```shell
-npm install --save rrweb-player
-```
-
-```js
-import rrwebPlayer from 'rrweb-player';
-import 'rrweb-player/dist/style.css';
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/rrweb-player@2.0.0-alpha.20/dist/style.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/rrweb-player@2.0.0-alpha.20/umd/rrweb-player.min.js"></script>
 ```
 
 ##### Usage
@@ -366,15 +462,15 @@ new rrwebPlayer({
 | speedOption    | [1, 2, 4, 8] | speed options in UI                                                  |
 | showController | true         | whether to show the controller UI                                    |
 | tags           | {}           | customize the custom events style with a key-value map               |
-| ...            | -            | all the rrweb Replayer options will be bypassed                      |
+| ...            | -            | all other Replayer options are forwarded                             |
 
 #### Events
 
-Developers may want to extend the rrweb's replayer or respond to its events. Such as giving notification when the replayer starts to skip inactive time.
-So rrweb expose a public API `on` which allow developers to listen to the events and customize the reactions, and it has the following events:
+Developers may want to extend the replayer or respond to its events, for example to notify users when inactive time starts being skipped.
+`Replayer` exposes a public API `on` that lets developers listen for events and customize behavior:
 
 ```js
-const replayer = new rrweb.Replayer(events);
+const replayer = new Replayer(events);
 replayer.on(EVENT_NAME, (payload) => {
   ...
 })

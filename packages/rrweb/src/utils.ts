@@ -8,10 +8,12 @@ import type {
   IWindow,
   DeprecatedMirror,
   textMutation,
+  IMirror,
 } from '@rrweb/types';
-import type { IMirror, Mirror } from 'rrweb-snapshot';
+import type { Mirror, SlimDOMOptions } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
-import type { RRNode, RRIFrameElement } from 'rrdom';
+import { RRNode, RRIFrameElement, BaseRRNode } from 'rrdom';
+import dom from '@rrweb/utils';
 
 export function on(
   type: string,
@@ -134,49 +136,6 @@ export function hookSetter<T>(
   return () => hookSetter(target, key, original || {}, true);
 }
 
-// copy from https://github.com/getsentry/sentry-javascript/blob/b2109071975af8bf0316d3b5b38f519bdaf5dc15/packages/utils/src/object.ts
-export function patch(
-  source: { [key: string]: any },
-  name: string,
-  replacement: (...args: unknown[]) => unknown,
-): () => void {
-  try {
-    if (!(name in source)) {
-      return () => {
-        //
-      };
-    }
-
-    const original = source[name] as () => unknown;
-    const wrapped = replacement(original);
-
-    // Make sure it's a function first, as we need to attach an empty prototype for `defineProperties` to work
-    // otherwise it'll throw "TypeError: Object.defineProperties called on non-object"
-    if (typeof wrapped === 'function') {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      wrapped.prototype = wrapped.prototype || {};
-      Object.defineProperties(wrapped, {
-        __rrweb_original__: {
-          enumerable: false,
-          value: original,
-        },
-      });
-    }
-
-    source[name] = wrapped;
-
-    return () => {
-      source[name] = original;
-    };
-  } catch {
-    return () => {
-      //
-    };
-    // This can throw if multiple fill happens on a global object like XMLHttpRequest
-    // Fixes https://github.com/getsentry/sentry-javascript/issues/2043
-  }
-}
-
 // guard against old third party libraries which redefine Date.now
 let nowTimestamp = Date.now;
 
@@ -193,8 +152,8 @@ export function getWindowScroll(win: Window) {
       ? doc.scrollingElement.scrollLeft
       : win.pageXOffset !== undefined
       ? win.pageXOffset
-      : doc?.documentElement.scrollLeft ||
-        doc?.body?.parentElement?.scrollLeft ||
+      : doc.documentElement.scrollLeft ||
+        (doc?.body && dom.parentElement(doc.body)?.scrollLeft) ||
         doc?.body?.scrollLeft ||
         0,
     top: doc.scrollingElement
@@ -202,7 +161,7 @@ export function getWindowScroll(win: Window) {
       : win.pageYOffset !== undefined
       ? win.pageYOffset
       : doc?.documentElement.scrollTop ||
-        doc?.body?.parentElement?.scrollTop ||
+        (doc?.body && dom.parentElement(doc.body)?.scrollTop) ||
         doc?.body?.scrollTop ||
         0,
   };
@@ -237,7 +196,7 @@ export function closestElementOfNode(node: Node | null): HTMLElement | null {
   const el: HTMLElement | null =
     node.nodeType === node.ELEMENT_NODE
       ? (node as HTMLElement)
-      : node.parentElement;
+      : dom.parentElement(node);
   return el;
 }
 
@@ -285,7 +244,17 @@ export function isSerialized(n: Node, mirror: Mirror): boolean {
   return mirror.getId(n) !== -1;
 }
 
-export function isIgnored(n: Node, mirror: Mirror): boolean {
+export function isIgnored(
+  n: Node,
+  mirror: Mirror,
+  slimDOMOptions: SlimDOMOptions,
+): boolean {
+  if ((n as Element).tagName === 'TITLE' && slimDOMOptions.headTitleMutations) {
+    // we do this check here but not in rrweb-snapshot
+    // to block mutations/animations on the title.
+    // the headTitleMutations option isn't intended to block recording of the initial value
+    return true;
+  }
   // The main part of the slimDOM check happens in
   // rrweb-snapshot::serializeNodeWithId
   return mirror.getId(n) === IGNORED_NODE;
@@ -299,17 +268,15 @@ export function isAncestorRemoved(target: Node, mirror: Mirror): boolean {
   if (!mirror.has(id)) {
     return true;
   }
-  if (
-    target.parentNode &&
-    target.parentNode.nodeType === target.DOCUMENT_NODE
-  ) {
+  const parent = dom.parentNode(target);
+  if (parent && parent.nodeType === target.DOCUMENT_NODE) {
     return false;
   }
   // if the root is not document, it means the node is not in the DOM tree anymore
-  if (!target.parentNode) {
+  if (!parent) {
     return true;
   }
-  return isAncestorRemoved(target.parentNode, mirror);
+  return isAncestorRemoved(parent, mirror);
 }
 
 export function legacy_isTouchEvent(
@@ -329,24 +296,6 @@ export function polyfill(win = window) {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     win.DOMTokenList.prototype.forEach = Array.prototype
       .forEach as unknown as DOMTokenList['forEach'];
-  }
-
-  // https://github.com/Financial-Times/polyfill-service/pull/183
-  if (!Node.prototype.contains) {
-    Node.prototype.contains = (...args: unknown[]) => {
-      let node = args[0] as Node | null;
-      if (!(0 in args)) {
-        throw new TypeError('1 argument is required');
-      }
-
-      do {
-        if (this === node) {
-          return true;
-        }
-      } while ((node = node && node.parentNode));
-
-      return false;
-    };
   }
 }
 
@@ -473,21 +422,39 @@ export function getBaseDimension(
 export function hasShadowRoot<T extends Node | RRNode>(
   n: T,
 ): n is T & { shadowRoot: ShadowRoot } {
-  return Boolean((n as unknown as Element)?.shadowRoot);
+  if (!n) return false;
+  if (n instanceof BaseRRNode && 'shadowRoot' in n) {
+    return Boolean(n.shadowRoot);
+  }
+  return Boolean(dom.shadowRoot(n as unknown as Element));
 }
 
+/**
+ * Traverses a CSSRuleList to find a nested rule at the given position.
+ *
+ * Returns null instead of throwing if the rule doesn't exist. This is important
+ * because during replay:
+ * - StyleDeclaration events may reference rules added dynamically that don't
+ *   exist yet due to timing/ordering issues
+ * - StyleSheetRule events that create rules may not have been processed yet
+ * - Constructed/adopted stylesheets may not be fully synchronized
+ *
+ * @param rules - The CSSRuleList to traverse
+ * @param position - Array of indices, e.g., [0, 1, 0] for rules[0].cssRules[1].cssRules[0]
+ * @returns The nested rule, or null if not found
+ */
 export function getNestedRule(
   rules: CSSRuleList,
   position: number[],
-): CSSGroupingRule {
-  const rule = rules[position[0]] as CSSGroupingRule;
+): CSSGroupingRule | null {
+  const rule = rules?.[position[0]] as CSSGroupingRule | null;
+  if (!rule) {
+    return null;
+  }
   if (position.length === 1) {
     return rule;
   } else {
-    return getNestedRule(
-      (rule.cssRules[position[1]] as CSSGroupingRule).cssRules,
-      position.slice(2),
-    );
+    return getNestedRule(rule.cssRules, position.slice(1));
   }
 }
 
@@ -565,10 +532,11 @@ export class StyleSheetMirror {
 export function getShadowHost(n: Node): Element | null {
   let shadowHost: Element | null = null;
   if (
-    n.getRootNode?.()?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
-    (n.getRootNode() as ShadowRoot).host
+    'getRootNode' in n &&
+    dom.getRootNode(n)?.nodeType === Node.DOCUMENT_FRAGMENT_NODE &&
+    dom.host(dom.getRootNode(n) as ShadowRoot)
   )
-    shadowHost = (n.getRootNode() as ShadowRoot).host;
+    shadowHost = dom.host(dom.getRootNode(n) as ShadowRoot);
   return shadowHost;
 }
 
@@ -587,14 +555,14 @@ export function getRootShadowHost(n: Node): Node {
 }
 
 export function shadowHostInDom(n: Node): boolean {
-  const doc = n.ownerDocument;
+  const doc = dom.ownerDocument(n);
   if (!doc) return false;
   const shadowHost = getRootShadowHost(n);
-  return doc.contains(shadowHost);
+  return dom.contains(doc, shadowHost);
 }
 
 export function inDom(n: Node): boolean {
-  const doc = n.ownerDocument;
+  const doc = dom.ownerDocument(n);
   if (!doc) return false;
-  return doc.contains(n) || shadowHostInDom(n);
+  return dom.contains(doc, n) || shadowHostInDom(n);
 }

@@ -1,4 +1,4 @@
-import type { ICanvas, Mirror, DataURLOptions } from 'rrweb-snapshot';
+import type { ICanvas, Mirror } from 'rrweb-snapshot';
 import type {
   blockClass,
   canvasManagerMutationCallback,
@@ -8,13 +8,14 @@ import type {
   IWindow,
   listenerHandler,
   CanvasArg,
+  DataURLOptions,
 } from '@rrweb/types';
 import { isBlocked } from '../../../utils';
 import { CanvasContext } from '@rrweb/types';
 import initCanvas2DMutationObserver from './2d';
 import initCanvasContextObserver from './canvas';
 import initCanvasWebGLMutationObserver from './webgl';
-import ImageBitmapDataURLWorker from 'web-worker:../../workers/image-bitmap-data-url-worker.ts';
+import ImageBitmapDataURLWorker from '../../workers/image-bitmap-data-url-worker?worker&inline';
 import type { ImageBitmapDataURLRequestWorker } from '../../workers/image-bitmap-data-url-worker';
 
 export type RafStamps = { latestId: number; invokeId: number | null };
@@ -262,7 +263,6 @@ export class CanvasManager {
       win,
       blockClass,
       blockSelector,
-      this.mirror,
     );
 
     this.resetObservers = () => {
@@ -286,7 +286,7 @@ export class CanvasManager {
 
   flushPendingCanvasMutations() {
     this.pendingCanvasMutations.forEach(
-      (values: canvasMutationCommand[], canvas: HTMLCanvasElement) => {
+      (_values: canvasMutationCommand[], canvas: HTMLCanvasElement) => {
         const id = this.mirror.getId(canvas);
         this.flushPendingCanvasMutationFor(canvas, id);
       },

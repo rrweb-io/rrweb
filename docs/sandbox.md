@@ -14,13 +14,15 @@ We reconstruct the recorded DOM in an `iframe` element when we rebuild the snaps
 
 This is in line with our expectations, especially when dealing with JS scripts is safer and more reliable than implementing this security ourselves.
 
+`rrweb-snapshot.rebuild()` enforces this boundary in browser environments. Browser rebuilds should use `rebuildIntoSandboxedIframe()` or an iframe created by `createSandboxedIframe()`, which creates an iframe with exactly `sandbox="allow-same-origin"` before rebuilding into it. Direct `rebuild()` calls against caller-created browser documents must explicitly opt into an unprotected rebuild with `UNSAFE_allowUnprotectedRebuild: true`.
+
 ## Avoid link jumps
 
 When you click the a element link, the default event is to jump to the URL corresponding to its href attribute. During replay, we will ensure visually correct replay by rebuilding the page DOM after the jump, and the original jump should be prohibited.
 
 Usually we will capture all an elements click events through the event handler proxy and disable the default event via `event.preventDefault()`. But when we put the replay page in the sandbox, all the event handlers will not be executed, and we will not be able to implement the event delegation.
 
-When replaying interactive events, note that replaying the JS `click` event is not nessecary because click events do not have any impact when JS is disabled. However, in order to optimize the replay effect, we can add special animation effects to visualize elements being clicked with the mouse, to clearly show the viewer that a click has occurred.
+When replaying interactive events, note that replaying the JS `click` event is not necessary because click events do not have any impact when JS is disabled. However, in order to optimize the replay effect, we can add special animation effects to visualize elements being clicked with the mouse, to clearly show the viewer that a click has occurred.
 
 ## iframe style settings
 
