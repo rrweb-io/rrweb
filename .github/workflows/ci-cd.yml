@@ -50,8 +50,11 @@ jobs:
         with:
           chrome-version: ${{ steps.puppeteer-browser.outputs.revision }}
 
-      - name: Install Playwright system dependencies
-        run: cd packages/rrvideo && yarn playwright install-deps chromium
+      - name: Install Playwright system dependencies and ffmpeg
+        run: |
+          cd packages/rrvideo
+          yarn playwright install-deps chromium
+          yarn playwright install ffmpeg
 
       - name: Check types
         run: yarn check-types
