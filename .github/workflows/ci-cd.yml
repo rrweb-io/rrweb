@@ -54,6 +54,7 @@ jobs:
         run: |
           cd packages/rrvideo
           yarn playwright install-deps chromium
+          sudo apt-get install -y ffmpeg
           ffmpeg_path="$(node - <<'NODE'
           const path = require('path');
           const registryPath = path.join(
