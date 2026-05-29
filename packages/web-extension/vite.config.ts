@@ -63,6 +63,22 @@ function getExtensionVersion(rrwebVersion: string): string {
   }
 }
 
+function getRrwebVersion(rrwebDependency: string): string {
+  if (rrwebDependency.startsWith('workspace:')) {
+    const rrwebPackageJson = readJsonFile(
+      path.resolve(__dirname, '../rrweb/package.json'),
+    ) as PackageJson;
+
+    if (!rrwebPackageJson.version) {
+      throw new Error('Missing rrweb workspace package version');
+    }
+
+    return rrwebPackageJson.version;
+  }
+
+  return rrwebDependency.replace('^', '');
+}
+
 export default defineConfig({
   root: 'src',
   // Configure our outputs - nothing special, this is normal vite config
@@ -96,7 +112,7 @@ export default defineConfig({
         const BrowserName =
           process.env.TARGET_BROWSER === 'chrome' ? 'chrome' : 'firefox';
         const commonManifest = originalManifest.common;
-        const rrwebVersion = packageJson.dependencies!.rrweb!.replace('^', '');
+        const rrwebVersion = getRrwebVersion(packageJson.dependencies!.rrweb!);
         const manifest = {
           version: getExtensionVersion(rrwebVersion),
           author: packageJson.author,

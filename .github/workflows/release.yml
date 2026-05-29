@@ -22,9 +22,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
+          cache: 'pnpm'
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
 
@@ -32,7 +36,7 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: yarn run release
+          publish: pnpm run release
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -40,7 +44,7 @@ jobs:
 
       - name: Build Chrome Extension
         if: steps.changesets.outputs.published == 'true'
-        run: NODE_OPTIONS='--max-old-space-size=4096' DISABLE_WORKER_INLINING=true yarn turbo run prepublish --filter=@rrweb/web-extension
+        run: NODE_OPTIONS='--max-old-space-size=4096' DISABLE_WORKER_INLINING=true pnpm exec turbo run prepublish --filter=@rrweb/web-extension
 
       - name: Publish Chrome Extension
         uses: mnao305/chrome-extension-upload@v5.0.0

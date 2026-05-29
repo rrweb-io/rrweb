@@ -27,18 +27,22 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
-          cache: 'yarn'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          cache: true
 
       - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
 
       - name: Build Project
-        run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
+        run: NODE_OPTIONS='--max-old-space-size=4096' pnpm run build:all
 
       - name: Install Playwright browsers
-        run: cd packages/rrvideo && yarn playwright install chromium
+        run: cd packages/rrvideo && pnpm exec playwright install chromium
 
       - name: Read Puppeteer browser revision
         id: puppeteer-browser
@@ -53,10 +57,10 @@ jobs:
           chrome-version: ${{ steps.puppeteer-browser.outputs.revision }}
 
       - name: Check types
-        run: yarn check-types
+        run: pnpm run check-types
 
       - name: Run tests
-        run: PUPPETEER_EXECUTABLE_PATH=${{ steps.setup-chrome.outputs.chrome-path }} PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
+        run: PUPPETEER_EXECUTABLE_PATH=${{ steps.setup-chrome.outputs.chrome-path }} PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" pnpm run test
 
       - name: Upload diff images to GitHub
         uses: actions/upload-artifact@v4

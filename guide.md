@@ -508,7 +508,7 @@ And there are three rrweb-replayer event will be emitted in the same way:
 
 You can also play with rrweb by using the REPL testing tool which does not need installation.
 
-Run `yarn repl` to launch a browser and ask for a URL you want to test on the CLI:
+Run `pnpm run repl` to launch a browser and ask for a URL you want to test on the CLI:
 
 ```
 Enter the url you want to record, e.g https://react-redux.realworld.io:
@@ -537,4 +537,4 @@ At this point, you can enter 'y' again on the CLI. The test tool will save the r
 Saved at PATH_TO_YOUR_REPO/temp/replay_2018_11_23T07_53_30.html
 ```
 
-This file uses the latest rrweb bundle code, so we can run `npm run bundle:browser` after patching the code, then refresh the static file to see and debug the impact of the latest code on replay.
+This file uses the latest rrweb bundle code, so we can run `pnpm run build` after patching the code, then refresh the static file to see and debug the impact of the latest code on replay.

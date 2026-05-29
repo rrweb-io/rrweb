@@ -25,19 +25,21 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
-          cache: 'yarn'
+          cache: 'pnpm'
+      - name: Enable Corepack
+        run: corepack enable
       - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Build Packages
-        run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
+        run: NODE_OPTIONS='--max-old-space-size=4096' pnpm run build:all
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Eslint Check
-        run: yarn turbo run lint
+        run: pnpm exec turbo run lint
       - name: Save Code Linting Report JSON
-        run: yarn lint:report
+        run: pnpm run lint:report
         # Continue to the next step even if this fails
         continue-on-error: true
       - name: Upload ESLint Report
@@ -84,13 +86,15 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
-          cache: 'yarn'
+          cache: 'pnpm'
+      - name: Enable Corepack
+        run: corepack enable
       - name: Install base dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Build base branch
-        run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
+        run: NODE_OPTIONS='--max-old-space-size=4096' pnpm run build:all
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Measure base bundle sizes

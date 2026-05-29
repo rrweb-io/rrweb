@@ -2,7 +2,7 @@
 
 Plugin that live streams contents of canvas elements via webrtc
 
-## Example of live streaming via `yarn live-stream`
+## Example of live streaming via `pnpm live-stream`
 
 https://user-images.githubusercontent.com/4106/186701616-fd71a107-5d53-423c-ba09-0395a3a0252f.mov
 

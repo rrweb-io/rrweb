@@ -19,13 +19,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
-          cache: 'yarn'
+          cache: 'pnpm'
+      - name: Enable Corepack
+        run: corepack enable
       - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Prettier Check
-        run: yarn prettier --check '**/*.{ts,md}'
+        run: pnpm exec prettier --check '**/*.{ts,md}'
 
   prettier:
     # Skip the format code action in forked PRs
@@ -43,13 +45,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: lts/*
-          cache: 'yarn'
+          cache: 'pnpm'
+      - name: Enable Corepack
+        run: corepack enable
       - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Prettify Code
-        run: yarn prettier --write '**/*.{ts,md}'
+        run: pnpm exec prettier --write '**/*.{ts,md}'
       - name: Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
