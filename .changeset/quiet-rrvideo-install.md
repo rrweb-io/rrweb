@@ -2,4 +2,4 @@
 "rrvideo": patch
 ---
 
-Stop downloading Playwright browsers during package installation.
+Remove rrvideo's install lifecycle hook that ran Playwright browser downloads.

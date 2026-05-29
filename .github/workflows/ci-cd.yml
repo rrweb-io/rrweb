@@ -39,11 +39,16 @@ jobs:
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
 
+      - name: Read Puppeteer browser revision
+        id: puppeteer-browser
+        run: |
+          echo "revision=$(node -p "require('./.puppeteerrc.cjs').browserRevision")" >> "$GITHUB_OUTPUT"
+
       - name: Setup Chrome
         id: setup-chrome
         uses: browser-actions/setup-chrome@v2
         with:
-          chrome-version: 115.0.5790.98
+          chrome-version: ${{ steps.puppeteer-browser.outputs.revision }}
 
       - name: Install Playwright browsers and dependencies
         run: cd packages/rrvideo && yarn playwright install --with-deps chromium
