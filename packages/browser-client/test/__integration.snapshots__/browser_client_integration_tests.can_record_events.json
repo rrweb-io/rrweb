@@ -1,0 +1,140 @@
+[
+  {
+    "type": 4,
+    "data": {
+      "href": "about:blank",
+      "width": 1920,
+      "height": 1080
+    }
+  },
+  {
+    "type": 2,
+    "data": {
+      "node": {
+        "type": 0,
+        "childNodes": [
+          {
+            "type": 1,
+            "name": "html",
+            "publicId": "",
+            "systemId": "",
+            "id": 2
+          },
+          {
+            "type": 2,
+            "tagName": "html",
+            "attributes": {
+              "lang": "en"
+            },
+            "childNodes": [
+              {
+                "type": 2,
+                "tagName": "head",
+                "attributes": {},
+                "childNodes": [
+                  {
+                    "type": 2,
+                    "tagName": "meta",
+                    "attributes": {
+                      "charset": "UTF-8"
+                    },
+                    "childNodes": [],
+                    "id": 5
+                  },
+                  {
+                    "type": 2,
+                    "tagName": "meta",
+                    "attributes": {
+                      "name": "viewport",
+                      "content": "width=device-width, initial-scale=1.0"
+                    },
+                    "childNodes": [],
+                    "id": 6
+                  },
+                  {
+                    "type": 2,
+                    "tagName": "title",
+                    "attributes": {},
+                    "childNodes": [
+                      {
+                        "type": 3,
+                        "textContent": "Link click",
+                        "id": 8
+                      }
+                    ],
+                    "id": 7
+                  }
+                ],
+                "id": 4
+              },
+              {
+                "type": 3,
+                "textContent": "\n    \n\n  ",
+                "id": 9
+              },
+              {
+                "type": 2,
+                "tagName": "body",
+                "attributes": {},
+                "childNodes": [
+                  {
+                    "type": 3,
+                    "textContent": "\n    ",
+                    "id": 11
+                  },
+                  {
+                    "type": 2,
+                    "tagName": "span",
+                    "attributes": {
+                      "id": "not-a-link"
+                    },
+                    "childNodes": [
+                      {
+                        "type": 3,
+                        "textContent": "not link",
+                        "id": 13
+                      }
+                    ],
+                    "id": 12
+                  },
+                  {
+                    "type": 3,
+                    "textContent": "\n    ",
+                    "id": 14
+                  },
+                  {
+                    "type": 2,
+                    "tagName": "a",
+                    "attributes": {
+                      "href": "about:blank#clicked"
+                    },
+                    "childNodes": [
+                      {
+                        "type": 3,
+                        "textContent": "link",
+                        "id": 16
+                      }
+                    ],
+                    "id": 15
+                  },
+                  {
+                    "type": 3,
+                    "textContent": "\n  \n\n",
+                    "id": 17
+                  }
+                ],
+                "id": 10
+              }
+            ],
+            "id": 3
+          }
+        ],
+        "id": 1
+      },
+      "initialOffset": {
+        "left": 0,
+        "top": 0
+      }
+    }
+  }
+]
