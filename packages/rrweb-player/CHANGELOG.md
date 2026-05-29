@@ -123,3 +123,51 @@
 
 - Updated dependencies [[`1385f7a`](https://github.com/rrweb-io/rrweb/commit/1385f7acc0052f83be1458a7b00e18c026ee393f), [`227d43a`](https://github.com/rrweb-io/rrweb/commit/227d43abb93d57cadc70c760b28c46911bf7d8ff), [`227d43a`](https://github.com/rrweb-io/rrweb/commit/227d43abb93d57cadc70c760b28c46911bf7d8ff), [`3cc4323`](https://github.com/rrweb-io/rrweb/commit/3cc4323094065a12f8b65afecd45061d604e245f), [`502d15d`](https://github.com/rrweb-io/rrweb/commit/502d15df9f7f43b3408ccfbb3f14c4bb007883c4), [`8d209a6`](https://github.com/rrweb-io/rrweb/commit/8d209a62f31c4c80e3e5bc36e47d7282ee854ac7)]:
   - rrweb@2.0.0-alpha.5
+
+## 1.0.0-alpha.4
+
+### Major Changes
+
+- [#1031](https://github.com/rrweb-io/rrweb/pull/1031) [`ad9bc3e`](https://github.com/rrweb-io/rrweb/commit/ad9bc3ed16d9172490bd8350c6922e3726a7f585) Thanks [@Juice10](https://github.com/Juice10)! - Move shared rrweb event and recorder types into the new `@rrweb/types` package.
+
+### Minor Changes
+
+- [#1039](https://github.com/rrweb-io/rrweb/pull/1039) [`bdd8940`](https://github.com/rrweb-io/rrweb/commit/bdd8940098590e81bc4d36f7bcf0e0f382226039) Thanks [@DexxDing](https://github.com/DexxDing)! - Add inactive-period indicators to the player progress bar with a configurable `inactiveColor` option.
+
+### Patch Changes
+
+- [#1028](https://github.com/rrweb-io/rrweb/pull/1028) [`2286c11`](https://github.com/rrweb-io/rrweb/commit/2286c11939295a59702f7322fa53b60b03b2065c) Thanks [@MengZihan712](https://github.com/MengZihan712)! - Fix fullscreen player sizing so the progress bar and controls remain visible.
+
+- [#1014](https://github.com/rrweb-io/rrweb/pull/1014) [`9de0de2`](https://github.com/rrweb-io/rrweb/commit/9de0de2cce7656621de590cbf864a65643ed5eed) Thanks [@Juice10](https://github.com/Juice10)! - Add the missing `maxScale` option to rrweb-player TypeScript definitions and document player option defaults.
+
+- [#1045](https://github.com/rrweb-io/rrweb/pull/1045) [`e08d039`](https://github.com/rrweb-io/rrweb/commit/e08d03982b468360eafc4c9e2a3d257b73da4487) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix rrweb-player TypeScript imports after the `@rrweb/types` split.
+
+## 1.0.0-alpha.3
+
+### Minor Changes
+
+- [#1007](https://github.com/rrweb-io/rrweb/pull/1007) [`3924aaf`](https://github.com/rrweb-io/rrweb/commit/3924aafde2b07f27e30a0117f33451ad8f289bf3) Thanks [@Juice10](https://github.com/Juice10)! - Add `player.playRange(start, end, loop?, afterHook?)` to play a bounded time range, optionally looping or invoking a callback when the range ends.
+
+- [#1006](https://github.com/rrweb-io/rrweb/pull/1006) [`6f63cf1`](https://github.com/rrweb-io/rrweb/commit/6f63cf15fcaef7e322ff28999410b0bfb77f7d31) Thanks [@Juice10](https://github.com/Juice10)! - Add a `maxScale` option to configure the player's maximum replay scale, with `0` allowing unlimited scaling.
+
+## 1.0.0-alpha.2
+
+### Patch Changes
+
+- Updated dependencies [[`b2d5689`](https://github.com/rrweb-io/rrweb/commit/b2d5689864eff62c80c4439e9a4e4f0f6983b1f5), [`a8478f1`](https://github.com/rrweb-io/rrweb/commit/a8478f1dd7613a08d5f15d176d6e555497f83e0d), [`ce6019d`](https://github.com/rrweb-io/rrweb/commit/ce6019d2d6264ac8ef4cc0c5f8ff1733787f9ea0), [`bac1d7b`](https://github.com/rrweb-io/rrweb/commit/bac1d7b0cbfcf1157476c49b4b12e178aab7fc94), [`5ba933c`](https://github.com/rrweb-io/rrweb/commit/5ba933ccdb8b51dfc067319d418dbadd2f7642db), [`fd85c79`](https://github.com/rrweb-io/rrweb/commit/fd85c79e853ef89a860e795a8ae3ba318ef42ae8)]:
+  - rrweb@2.0.0-alpha.2
+
+## 1.0.0-alpha.1
+
+### Patch Changes
+
+- Updated dependencies [[`f1b23dd`](https://github.com/rrweb-io/rrweb/commit/f1b23ddc714ebaf9b66ca7a913f740e2c0524868)]:
+  - rrweb@2.0.0-alpha.1
+
+## 1.0.0-alpha.0
+
+### Minor Changes
+
+- [#859](https://github.com/rrweb-io/rrweb/pull/859) [`e238462`](https://github.com/rrweb-io/rrweb/commit/e238462f3aff10b0242a4aef729065b7b9c8e7a1) Thanks [@Juice10](https://github.com/Juice10)! - Add support for recording canvas snapshots at a configured FPS.
+
+- [#895](https://github.com/rrweb-io/rrweb/pull/895) [`de755ae`](https://github.com/rrweb-io/rrweb/commit/de755ae572c04131f74f251b06da6de648b112c4) Thanks [@Juice10](https://github.com/Juice10)! - Add the fast-forward virtual DOM optimization for replay.

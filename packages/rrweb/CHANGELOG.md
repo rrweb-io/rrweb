@@ -402,3 +402,117 @@
   - rrweb-snapshot@2.0.0-alpha.5
   - rrdom@2.0.0-alpha.5
   - @rrweb/types@2.0.0-alpha.5
+
+## 2.0.0-alpha.4
+
+### Major Changes
+
+- [#1031](https://github.com/rrweb-io/rrweb/pull/1031) [`ad9bc3e`](https://github.com/rrweb-io/rrweb/commit/ad9bc3ed16d9172490bd8350c6922e3726a7f585) Thanks [@Juice10](https://github.com/Juice10)! - Move shared rrweb event and recorder types into the new `@rrweb/types` package.
+
+### Minor Changes
+
+- [#1035](https://github.com/rrweb-io/rrweb/pull/1035) [`2a80949`](https://github.com/rrweb-io/rrweb/commit/2a809499739ed2068bf6d9c614142f9dc8cb09ab) Thanks [@Juice10](https://github.com/Juice10)! - Add support for recording cross-origin iframes via `recordCrossOriginIframes`.
+
+### Patch Changes
+
+- [#1029](https://github.com/rrweb-io/rrweb/pull/1029) [`fdb7135`](https://github.com/rrweb-io/rrweb/commit/fdb7135fc6a13db4afddc5a25aa63c5c70f3d14b) Thanks [@Juice10](https://github.com/Juice10)! - Fix replaying element scroll positions when both `scrollTop` and `scrollLeft` are applied.
+
+- [#1037](https://github.com/rrweb-io/rrweb/pull/1037) [`a9fffb3`](https://github.com/rrweb-io/rrweb/commit/a9fffb3b26960ca6476dc463094a26f926dd3b1c) Thanks [@QuentinLowe](https://github.com/QuentinLowe)! - Use the correct document when registering shadow roots inside iframes.
+
+- [#1041](https://github.com/rrweb-io/rrweb/pull/1041) [`1990524`](https://github.com/rrweb-io/rrweb/commit/1990524ef2bf6aff7d488a1532d028f876c235b0) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix shadow DOM mutation handling that could enter an infinite loop on some pages.
+
+- [#1034](https://github.com/rrweb-io/rrweb/pull/1034) [`5012b1e`](https://github.com/rrweb-io/rrweb/commit/5012b1eb57415fe350a6f599f9c16fbcf67ad145) Thanks [@wfk007](https://github.com/wfk007)! - Fix custom events and full snapshots after stopping and restarting recording.
+
+- [#1020](https://github.com/rrweb-io/rrweb/pull/1020) [`7edfefe`](https://github.com/rrweb-io/rrweb/commit/7edfefe6a62c477a1ba9d9fe747a65c31c0e0ffb) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix recorder crashes when non-shadow-root nodes expose a `host` property.
+
+- [#1016](https://github.com/rrweb-io/rrweb/pull/1016) [`87aa3b6`](https://github.com/rrweb-io/rrweb/commit/87aa3b6ad4c71285a9b002b8f523e6c8b7c14491) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Avoid recording noisy read-only WebGL properties such as `isContextLost`.
+
+- [#1013](https://github.com/rrweb-io/rrweb/pull/1013) [`20ad416`](https://github.com/rrweb-io/rrweb/commit/20ad416d05a7532b75ccdcf88f044a8e592d4e12) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fix WebGL variable tracking when multiple contexts are patched.
+
+## 2.0.0-alpha.3
+
+### Minor Changes
+
+- [#989](https://github.com/rrweb-io/rrweb/pull/989) [`3809060`](https://github.com/rrweb-io/rrweb/commit/38090606b98e2d64073e74194d2c5c42453e8b5c) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Add support for recording and replaying constructable `adoptedStyleSheets`, including stylesheet mutations, `replace`/`replaceSync`, shadow roots, iframes, live mode, and virtual DOM replay.
+
+### Patch Changes
+
+- [#1012](https://github.com/rrweb-io/rrweb/pull/1012) [`6f44bb7`](https://github.com/rrweb-io/rrweb/commit/6f44bb72794118cf38e7ac87c76326ded9d9c409) Thanks [@Juice10](https://github.com/Juice10)! - Ensure replay plugin `onBuild` hooks run for newly appended mutation nodes and top-level rebuilt document nodes.
+
+- [#995](https://github.com/rrweb-io/rrweb/pull/995) [`55ebce7`](https://github.com/rrweb-io/rrweb/commit/55ebce733393da99b01e786f9bc77bf5362ba828) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix replay of delayed inlined stylesheet links by updating the existing link/style node attributes instead of adding a child node.
+
+## 2.0.0-alpha.2
+
+### Minor Changes
+
+- [#936](https://github.com/rrweb-io/rrweb/pull/936) [`b2d5689`](https://github.com/rrweb-io/rrweb/commit/b2d5689864eff62c80c4439e9a4e4f0f6983b1f5) Thanks [@0jinxing](https://github.com/0jinxing)! - Add recording and replay support for text selection events.
+
+- [#953](https://github.com/rrweb-io/rrweb/pull/953) [`5f59f91`](https://github.com/rrweb-io/rrweb/commit/5f59f917765ff87ad9a6e4342c910057b4f9a31a) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Add a `destroy()` method to fully remove a replayer instance and emit a destroy event.
+
+- [#976](https://github.com/rrweb-io/rrweb/pull/976) [`a8478f1`](https://github.com/rrweb-io/rrweb/commit/a8478f1dd7613a08d5f15d176d6e555497f83e0d) Thanks [@Juice10](https://github.com/Juice10)! - Add canvas WebRTC record and replay plugins for live-streaming canvas contents.
+
+- [#1000](https://github.com/rrweb-io/rrweb/pull/1000) [`ce6019d`](https://github.com/rrweb-io/rrweb/commit/ce6019d2d6264ac8ef4cc0c5f8ff1733787f9ea0) Thanks [@wfk007](https://github.com/wfk007)! - Add support for recording and replaying media `playbackRate` changes.
+
+- [#967](https://github.com/rrweb-io/rrweb/pull/967) [`bac1d7b`](https://github.com/rrweb-io/rrweb/commit/bac1d7b0cbfcf1157476c49b4b12e178aab7fc94) Thanks [@QxQstar](https://github.com/QxQstar)! - Add `dataURLOptions` to control canvas snapshot image format and quality.
+
+- [#894](https://github.com/rrweb-io/rrweb/pull/894) [`5ba933c`](https://github.com/rrweb-io/rrweb/commit/5ba933ccdb8b51dfc067319d418dbadd2f7642db) Thanks [@dbseel](https://github.com/dbseel)! - Add `ignoreCSSAttributes` and apply `blockSelector` checks consistently across recorder observers.
+
+### Patch Changes
+
+- [#927](https://github.com/rrweb-io/rrweb/pull/927) [`fd85c79`](https://github.com/rrweb-io/rrweb/commit/fd85c79e853ef89a860e795a8ae3ba318ef42ae8) Thanks [@Juice10](https://github.com/Juice10)! - Fix iframe reload and rrdom diff issues by handling negative and unserialized node ids correctly.
+
+- [#952](https://github.com/rrweb-io/rrweb/pull/952) [`a0d5373`](https://github.com/rrweb-io/rrweb/commit/a0d537385fb90776a4987ed52130e8a9d5983694) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix errors when replaying selection events during fast-forward playback.
+
+- [#966](https://github.com/rrweb-io/rrweb/pull/966) [`ac7935e`](https://github.com/rrweb-io/rrweb/commit/ac7935e39d98a8d004a658451a1fd821a45b1edc) Thanks [@QxQstar](https://github.com/QxQstar)! - Fix FPS-based canvas recording when `blockClass` is a regular expression.
+
+- [#956](https://github.com/rrweb-io/rrweb/pull/956) [`e7fdf53`](https://github.com/rrweb-io/rrweb/commit/e7fdf533611ed7f34d7aef70f928710a64840302) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix recording of multiple children inside a shadow root.
+
+- [#991](https://github.com/rrweb-io/rrweb/pull/991) [`7be26b0`](https://github.com/rrweb-io/rrweb/commit/7be26b07a269e66bda3f13dfb06ba548910b4f77) Thanks [@QuentinLowe](https://github.com/QuentinLowe)! - Fix input hooks inside iframes by using the iframe document's own window prototypes.
+
+- [#998](https://github.com/rrweb-io/rrweb/pull/998) [`49d143f`](https://github.com/rrweb-io/rrweb/commit/49d143f7ac0c641a6d820082b6dd50a2c0500b4d) Thanks [@dbseel](https://github.com/dbseel)! - Fix replay timing for mouse move events with empty or missing positions.
+
+- [#962](https://github.com/rrweb-io/rrweb/pull/962) [`6007266`](https://github.com/rrweb-io/rrweb/commit/60072666c5b7c6b0c197ac3ac025d52d92b6c084) Thanks [@wfk007](https://github.com/wfk007)! - Fix recorder restart behavior by resetting internal record functions when recording stops.
+
+- [#1002](https://github.com/rrweb-io/rrweb/pull/1002) [`96b7466`](https://github.com/rrweb-io/rrweb/commit/96b746645e9d9cc00c1a4c9e0bf6e1771236524e) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix duplicate shadow DOM recording by avoiding repeated observation of the same shadow root.
+
+- [#1003](https://github.com/rrweb-io/rrweb/pull/1003) [`08ab7ab`](https://github.com/rrweb-io/rrweb/commit/08ab7ab4c7e4def750d159f3950218c87817d177) Thanks [@Juice10](https://github.com/Juice10)! - Fix live mode timer setup to reuse the configured speed and live mode settings.
+
+- [#1001](https://github.com/rrweb-io/rrweb/pull/1001) [`c619a59`](https://github.com/rrweb-io/rrweb/commit/c619a59df8126640cd1f9021ec3f65174d0629b7) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fix `addAction` so replay actions added after timer startup take effect without stopping and restarting.
+
+## 2.0.0-alpha.1
+
+### Patch Changes
+
+- [#938](https://github.com/rrweb-io/rrweb/pull/938) [`f3064c1`](https://github.com/rrweb-io/rrweb/commit/f3064c1f09f748a00c28a284a4b9dbead2f699dd) Thanks [@lele0108](https://github.com/lele0108)! - Fix SVG `<use href="#...">` snapshot serialization so local fragment references are preserved instead of converted to absolute URLs.
+
+- [#935](https://github.com/rrweb-io/rrweb/pull/935) [`8ad4325`](https://github.com/rrweb-io/rrweb/commit/8ad43254af39326fdbd510d4df8061c5f4d38d3e) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix console plugin recording so `undefined` values are serialized and replay correctly.
+
+- [#942](https://github.com/rrweb-io/rrweb/pull/942) [`f03504a`](https://github.com/rrweb-io/rrweb/commit/f03504a7af09926fcf9e06a50130eb03deea015a) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix recording and replay of polyfilled Shadow DOM from ShadyDOM and `@lwc/synthetic-shadow`.
+
+- [#944](https://github.com/rrweb-io/rrweb/pull/944) [`f1b23dd`](https://github.com/rrweb-io/rrweb/commit/f1b23ddc714ebaf9b66ca7a913f740e2c0524868) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix fast-forward replay so canvas image data inside iframes is restored when rebuilding through the virtual DOM path.
+
+## 2.0.0-alpha.0
+
+### Major Changes
+
+- [#868](https://github.com/rrweb-io/rrweb/pull/868) [`e4f680e`](https://github.com/rrweb-io/rrweb/commit/e4f680e8f52210596cd68d17f8d54eb8a0d8e65c) Thanks [@Juice10](https://github.com/Juice10)! - Remove `INode` / `node.__sn` usage and use `Mirror` as the source of truth.
+
+- [#913](https://github.com/rrweb-io/rrweb/pull/913) [`74f553a`](https://github.com/rrweb-io/rrweb/commit/74f553af9241c32a028ee60335a640b3ea2a27d5) Thanks [@Yuyz0112](https://github.com/Yuyz0112)! - Move browser-only rrdom features into the new `rrdom` package.
+
+### Minor Changes
+
+- [#859](https://github.com/rrweb-io/rrweb/pull/859) [`e238462`](https://github.com/rrweb-io/rrweb/commit/e238462f3aff10b0242a4aef729065b7b9c8e7a1) Thanks [@Juice10](https://github.com/Juice10)! - Add support for recording canvas snapshots at a configured FPS.
+
+- [#895](https://github.com/rrweb-io/rrweb/pull/895) [`de755ae`](https://github.com/rrweb-io/rrweb/commit/de755ae572c04131f74f251b06da6de648b112c4) Thanks [@Juice10](https://github.com/Juice10)! - Add the fast-forward virtual DOM optimization for replay.
+
+### Patch Changes
+
+- [#867](https://github.com/rrweb-io/rrweb/pull/867) [`93fec1f`](https://github.com/rrweb-io/rrweb/commit/93fec1f3c4c81ca9b7ce627ab6a8d1bdd6106f68) Thanks [@rahulrelicx](https://github.com/rahulrelicx)! - Fix a mutation edge case when a blocked element class is later unblocked.
+
+- [#891](https://github.com/rrweb-io/rrweb/pull/891) [`3cdcb8a`](https://github.com/rrweb-io/rrweb/commit/3cdcb8a1851d61eecfe3330f1a38fc7338380fcd) Thanks [@dkozlovskyi](https://github.com/dkozlovskyi)! - Fix issue #890 in replay/recording behavior.
+
+- [#885](https://github.com/rrweb-io/rrweb/pull/885) [`69499be`](https://github.com/rrweb-io/rrweb/commit/69499be6d7cd1916599a3ca4f3d04f893bc9d289) Thanks [@Juice10](https://github.com/Juice10)! - Apply only the latest queued text mutation for better replay behavior and performance.
+
+- [#903](https://github.com/rrweb-io/rrweb/pull/903) [`058c457`](https://github.com/rrweb-io/rrweb/commit/058c4579530414f6e55434fb28f9227443ed3b6d) Thanks [@Juice10](https://github.com/Juice10)! - Speed up snapshotting of many newly added DOM nodes.
+
+- [#909](https://github.com/rrweb-io/rrweb/pull/909) [`d5d877e`](https://github.com/rrweb-io/rrweb/commit/d5d877e3c19364784abf08f6e3eea4ba911fe4e3) Thanks [@Juice10](https://github.com/Juice10)! - Inline stylesheets when they load so late stylesheet content is captured.
