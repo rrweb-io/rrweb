@@ -134,6 +134,7 @@ export async function transformToVideo(options: RRvideoConfig) {
   Object.assign(config.rrwebPlayer, scaledViewport);
   const browser = await chromium.launch({
     headless: config.headless,
+    executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
   });
   const context = await browser.newContext({
     viewport: scaledViewport,
