@@ -30,10 +30,14 @@ jobs:
         run: yarn install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: true
       - name: Build Packages
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: true
       - name: Eslint Check
         run: yarn turbo run lint
       - name: Save Code Linting Report JSON
@@ -85,14 +89,34 @@ jobs:
         with:
           node-version: lts/*
           cache: 'yarn'
+      - name: Remove legacy rrvideo install hook
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          const packageJsonPath = 'packages/rrvideo/package.json';
+          const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+
+          if (packageJson.scripts?.install === 'playwright install') {
+            delete packageJson.scripts.install;
+            fs.writeFileSync(
+              packageJsonPath,
+              `${JSON.stringify(packageJson, null, 2)}\n`,
+            );
+          }
+          NODE
       - name: Install base dependencies
         run: yarn install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: true
       - name: Build base branch
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: true
       - name: Measure base bundle sizes
         run: node /tmp/measure-bundle-sizes.js base-sizes.json
 

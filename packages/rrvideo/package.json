@@ -12,7 +12,6 @@
   ],
   "types": "build/index.d.ts",
   "scripts": {
-    "install": "playwright install",
     "build": "tsc",
     "test": "jest",
     "check-types": "tsc -noEmit",
