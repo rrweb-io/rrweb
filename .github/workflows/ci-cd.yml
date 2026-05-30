@@ -32,7 +32,7 @@ jobs:
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
         env:
-          PUPPETEER_DOWNLOAD_BASE_URL: 'https://storage.googleapis.com/chrome-for-testing-public'
+          PUPPETEER_SKIP_DOWNLOAD: true
 
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
@@ -43,7 +43,8 @@ jobs:
       - name: Read Puppeteer browser revision
         id: puppeteer-browser
         run: |
-          echo "revision=$(node -p "require('./.puppeteerrc.cjs').browserRevision")" >> "$GITHUB_OUTPUT"
+          revision=$(node -p "require('./.puppeteerrc.cjs').browserRevision")
+          echo "revision=${revision}" >> "$GITHUB_OUTPUT"
 
       - name: Setup Chrome
         id: setup-chrome
