@@ -145,3 +145,55 @@
 
 - Updated dependencies [[`1385f7a`](https://github.com/rrweb-io/rrweb/commit/1385f7acc0052f83be1458a7b00e18c026ee393f), [`227d43a`](https://github.com/rrweb-io/rrweb/commit/227d43abb93d57cadc70c760b28c46911bf7d8ff)]:
   - rrweb-snapshot@2.0.0-alpha.5
+
+## 0.1.7
+
+### Major Changes
+
+- [#1031](https://github.com/rrweb-io/rrweb/pull/1031) [`ad9bc3e`](https://github.com/rrweb-io/rrweb/commit/ad9bc3ed16d9172490bd8350c6922e3726a7f585) Thanks [@Juice10](https://github.com/Juice10)! - Move shared rrweb event and recorder types into the new `@rrweb/types` package.
+
+### Minor Changes
+
+- [#1035](https://github.com/rrweb-io/rrweb/pull/1035) [`2a80949`](https://github.com/rrweb-io/rrweb/commit/2a809499739ed2068bf6d9c614142f9dc8cb09ab) Thanks [@Juice10](https://github.com/Juice10)! - Add support for recording cross-origin iframes via `recordCrossOriginIframes`.
+
+## 0.1.6
+
+### Minor Changes
+
+- [#989](https://github.com/rrweb-io/rrweb/pull/989) [`3809060`](https://github.com/rrweb-io/rrweb/commit/38090606b98e2d64073e74194d2c5c42453e8b5c) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Add support for recording and replaying constructable `adoptedStyleSheets`, including stylesheet mutations, `replace`/`replaceSync`, shadow roots, iframes, live mode, and virtual DOM replay.
+
+### Patch Changes
+
+- [#995](https://github.com/rrweb-io/rrweb/pull/995) [`55ebce7`](https://github.com/rrweb-io/rrweb/commit/55ebce733393da99b01e786f9bc77bf5362ba828) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix replay of delayed inlined stylesheet links by updating the existing link/style node attributes instead of adding a child node, and preserve mirror metadata when replacing rrdom nodes.
+
+## 0.1.5
+
+### Minor Changes
+
+- [#1000](https://github.com/rrweb-io/rrweb/pull/1000) [`ce6019d`](https://github.com/rrweb-io/rrweb/commit/ce6019d2d6264ac8ef4cc0c5f8ff1733787f9ea0) Thanks [@wfk007](https://github.com/wfk007)! - Add support for recording and replaying media `playbackRate` changes.
+
+### Patch Changes
+
+- [#927](https://github.com/rrweb-io/rrweb/pull/927) [`fd85c79`](https://github.com/rrweb-io/rrweb/commit/fd85c79e853ef89a860e795a8ae3ba318ef42ae8) Thanks [@Juice10](https://github.com/Juice10)! - Fix iframe reload and rrdom diff issues by handling negative and unserialized node ids correctly.
+
+## 0.1.4
+
+### Patch Changes
+
+- [#944](https://github.com/rrweb-io/rrweb/pull/944) [`f1b23dd`](https://github.com/rrweb-io/rrweb/commit/f1b23ddc714ebaf9b66ca7a913f740e2c0524868) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix fast-forward replay so canvas image data inside iframes is restored when rebuilding through the virtual DOM path.
+
+## 0.1.3
+
+### Major Changes
+
+- [#913](https://github.com/rrweb-io/rrweb/pull/913) [`74f553a`](https://github.com/rrweb-io/rrweb/commit/74f553af9241c32a028ee60335a640b3ea2a27d5) Thanks [@Yuyz0112](https://github.com/Yuyz0112)! - Move browser-only rrdom features into the new `rrdom` package.
+
+### Minor Changes
+
+- [#895](https://github.com/rrweb-io/rrweb/pull/895) [`de755ae`](https://github.com/rrweb-io/rrweb/commit/de755ae572c04131f74f251b06da6de648b112c4) Thanks [@Juice10](https://github.com/Juice10)! - Add the fast-forward virtual DOM optimization for replay.
+
+### Patch Changes
+
+- [#923](https://github.com/rrweb-io/rrweb/pull/923) [`a31e272`](https://github.com/rrweb-io/rrweb/commit/a31e272bddb0b750a584fd38336417a6e0254b1b) Thanks [@Juice10](https://github.com/Juice10)! - Remove children from `Document` nodes even when the document is not in the mirror.
+
+- [#925](https://github.com/rrweb-io/rrweb/pull/925) [`01612b7`](https://github.com/rrweb-io/rrweb/commit/01612b7a6d9cc10eaf8bd31f7b335d1d54aa845a) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Switch CSSOM usage to the rrweb-owned `rrweb-cssom` package.
