@@ -40,12 +40,22 @@ jobs:
       - name: Install Playwright browsers
         run: cd packages/rrvideo && yarn playwright install chromium
 
+      - name: Read Puppeteer browser revision
+        id: puppeteer-browser
+        run: |
+          echo "revision=$(node -p "require('./.puppeteerrc.cjs').browserRevision")" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Chrome
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: ${{ steps.puppeteer-browser.outputs.revision }}
+
       - name: Check types
         run: yarn check-types
 
       - name: Run tests
-        # run: PUPPETEER_EXECUTABLE_PATH=${{ steps.setup-chrome.outputs.chrome-path }} PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
-        run: PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
+        run: PUPPETEER_EXECUTABLE_PATH=${{ steps.setup-chrome.outputs.chrome-path }} PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
 
       - name: Upload diff images to GitHub
         uses: actions/upload-artifact@v4
