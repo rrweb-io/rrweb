@@ -14,11 +14,11 @@
     "pack:chrome": "cross-env TARGET_BROWSER=chrome ZIP=true vite build",
     "pack:firefox": "cross-env TARGET_BROWSER=firefox ZIP=true vite build",
     "check-types": "tsc -noEmit",
-    "build": "npm run pack:chrome && npm run pack:firefox",
-    "prepublish": "yarn build"
+    "build": "pnpm run pack:chrome && pnpm run pack:firefox",
+    "prepublish": "pnpm run build"
   },
   "devDependencies": {
-    "@rrweb/types": "^2.0.0-alpha.20",
+    "@rrweb/types": "workspace:^",
     "@types/chrome": "^0.0.287",
     "@types/react-dom": "^18.0.6",
     "@types/semver": "^7.5.8",
@@ -44,7 +44,7 @@
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
     "react-router-dom": "^6.4.1",
-    "rrweb": "^2.0.0-alpha.20",
-    "rrweb-player": "^2.0.0-alpha.20"
+    "rrweb": "workspace:^",
+    "rrweb-player": "workspace:^"
   }
 }

@@ -26,7 +26,7 @@
   ],
   "scripts": {
     "dev": "vite build --watch",
-    "build": "yarn turbo run prepublish",
+    "build": "turbo run prepublish",
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build"
   },
@@ -44,13 +44,13 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
-    "@rrweb/rrweb-plugin-console-record": "^2.0.0-alpha.20",
-    "rrweb": "^2.0.0-alpha.20",
+    "@rrweb/rrweb-plugin-console-record": "workspace:^",
+    "rrweb": "workspace:^",
     "typescript": "^5.4.5",
     "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1"
   },
   "peerDependencies": {
-    "rrweb": "^2.0.0-alpha.20"
+    "rrweb": "workspace:^"
   }
 }

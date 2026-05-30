@@ -110,3 +110,9 @@
 packages/rrweb-player/.svelte-kit/generated/*
 packages/rrweb-player/.svelte-kit/ambient.d.ts
 packages/rrweb-player/.svelte-kit/non-ambient.d.ts
+packages/rrweb-player/src/**/*.svelte.d.ts
+
+# package build output
+packages/**/dist/**
+packages/**/build/**
+packages/rrweb-player/types/**

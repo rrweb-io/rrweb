@@ -16,7 +16,7 @@
     "build": "tsc",
     "test": "jest",
     "check-types": "tsc -noEmit",
-    "prepublish": "yarn build"
+    "prepublish": "pnpm run build"
   },
   "author": "yanzhen@smartx.com",
   "license": "MIT",
@@ -27,13 +27,13 @@
     "@types/node": "^18.15.11",
     "jest": "^27.5.1",
     "ts-jest": "^27.1.3",
-    "@rrweb/types": "^2.0.0-alpha.20"
+    "@rrweb/types": "workspace:^"
   },
   "dependencies": {
     "@open-tech-world/cli-progress-bar": "^2.0.2",
     "fs-extra": "^11.1.1",
     "minimist": "^1.2.5",
     "playwright": "^1.60.0",
-    "rrweb-player": "^2.0.0-alpha.20"
+    "rrweb-player": "workspace:^"
   }
 }

@@ -5,7 +5,7 @@ for dir in "$packages_dir"/*/ "$packages_dir/plugins"/*/ ; do
     if [ -d "$dir" ] && [ -f "$dir/package.json" ]; then
         (
             cd "$dir" || exit
-            npx publint --strict
+            pnpm dlx publint --strict
             attw --pack . --exclude-entrypoints dist/style.css
         )
     fi

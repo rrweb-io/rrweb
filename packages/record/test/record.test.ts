@@ -15,7 +15,7 @@ const MAX_RECORD_JS_BYTES = BASELINE_RECORD_JS_BYTES - 200 * 1024;
 function requireBuiltRecordBundle() {
   if (!existsSync(recordJsPath)) {
     throw new Error(
-      'Missing packages/record/dist/record.js. Run `yarn workspace @rrweb/record build` before running this test.',
+      'Missing packages/record/dist/record.js. Run `pnpm --filter @rrweb/record build` before running this test.',
     );
   }
 }
@@ -23,7 +23,7 @@ function requireBuiltRecordBundle() {
 function emittedJavaScriptFiles() {
   if (!existsSync(distDir)) {
     throw new Error(
-      'Missing packages/record/dist. Run `yarn workspace @rrweb/record build` before running this test.',
+      'Missing packages/record/dist. Run `pnpm --filter @rrweb/record build` before running this test.',
     );
   }
   return readdirSync(distDir)
