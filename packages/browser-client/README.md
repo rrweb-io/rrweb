@@ -21,7 +21,6 @@ import rrwebBrowserClient, {
 } from '@rrweb/browser-client';
 
 start({
-  serverUrl: 'https://api.rrweb.com/recordings/{recordingId}/events/ws',
   publicApiKey: 'public_key_rr_...',
   includePii: false,
   meta: {
@@ -40,17 +39,18 @@ The default export exposes the same methods:
 
 ```js
 rrwebBrowserClient.start({
-  serverUrl: 'https://api.rrweb.com/recordings/{recordingId}/events/ws',
   publicApiKey: 'public_key_rr_...',
 });
 ```
 
 ## Options
 
-- `serverUrl`: events endpoint. Include `{recordingId}` in the URL, or the client will add it as a query parameter. `http` and `https` URLs are converted to `ws` and `wss` for the WebSocket connection, and the HTTP fallback posts to the same endpoint without a trailing `/ws`. See [Recording endpoint proxying](https://rrweb.com/docs/cloud/ingest-proxying) when routing events through your own domain.
+- `serverUrl`: optional events endpoint. Defaults to `https://api.rrweb.com/recordings/{recordingId}/events/ws`. Include `{recordingId}` in custom URLs, or the client will add it as a query parameter. `http` and `https` URLs are converted to `ws` and `wss` for the WebSocket connection, and the HTTP fallback posts to the same endpoint without a trailing `/ws`. See [Recording endpoint proxying](https://rrweb.com/docs/cloud/ingest-proxying) when routing events through your own domain.
 - `publicApiKey`: public write-only API key sent with WebSocket and HTTP fallback requests. rrweb Cloud public keys use the `public_key_rr_...` format. See [API Keys](https://rrweb.com/docs/cloud/api-keys).
 - `includePii`: default `false`. When enabled, the client includes additional visitor metadata such as language, timezone, screen size, title, and referrer details. See [Pre-baked metadata](https://rrweb.com/docs/cloud/prebaked-meta).
-- `meta`: custom recording metadata sent before recorded events. See [Application Metadata](https://rrweb.com/docs/cloud/application-meta).
+- `meta`: custom recording metadata sent before recorded events. Built-in diagnostics such as `recordVersion`, `recordCommitHash`, `jsSource`, and `jsEntrypoint` are added automatically after custom metadata. See [Application Metadata](https://rrweb.com/docs/cloud/application-meta).
+- `jsSource`: optional source identifier for programmatic loaders. URL values are recorded without query strings or hashes.
+- `jsEntrypoint`: optional entrypoint label. Defaults to `programmatic` for direct `start()` calls and `script-tag` for script-tag autostart.
 - rrweb record options: other options are passed through to `record()` from rrweb, such as masking, blocking, sampling, and DOM capture options. See the [rrweb recording docs](https://rrweb.com/docs/packages/record/readme).
 
 ### Stylesheet Capture

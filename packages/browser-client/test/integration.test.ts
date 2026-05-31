@@ -13,6 +13,10 @@ import type { browserClientRecordOptions } from '../src';
 import { eventWithTime, EventType } from '@rrweb/types';
 import { randomUUID } from 'crypto';
 
+const browserClientPackage = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8'),
+) as { version: string };
+
 // These default to the local test server used by the integration suite.
 const TEST_SERVER_URL =
   import.meta.env.VITE_RRWEB_BROWSER_CLIENT_SERVER_URL ||
@@ -274,6 +278,10 @@ ${JSON.stringify(defaultOptions(options))}
             domain: 'localhost',
             includePii: 'false', // TODO: could this be a real boolean?
             reality: 'updated',
+            recordVersion: browserClientPackage.version,
+            recordCommitHash: expect.any(String),
+            jsSource: `${testServerURL}/browser-client.umd.cjs`,
+            jsEntrypoint: 'script-tag',
           },
         });
 

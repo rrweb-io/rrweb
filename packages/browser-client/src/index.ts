@@ -13,11 +13,16 @@ import {
   WebsocketEvent,
 } from 'websocket-ts';
 
+declare const __RRWEB_BROWSER_CLIENT_VERSION__: string;
+declare const __RRWEB_BROWSER_CLIENT_COMMIT_HASH__: string;
+
 export type clientConfig = {
-  serverUrl: string;
+  serverUrl?: string;
   publicApiKey: string;
   autostart: boolean;
   includePii: boolean;
+  jsSource?: string;
+  jsEntrypoint?: string;
   meta?: nameValues;
 };
 
@@ -41,8 +46,10 @@ export type customEventWithTime = customEvent & {
   timestamp: number;
 };
 
+const defaultServerUrl =
+  'https://api.rrweb.com/recordings/{recordingId}/events/ws';
 let defaultClientConfig: clientConfig = {
-  serverUrl: 'ws://localhost:40000',
+  serverUrl: defaultServerUrl,
   publicApiKey: '',
   autostart: false,
   includePii: false,
@@ -58,6 +65,24 @@ let rrwebStopFn: listenerHandler | undefined;
 
 function isServerMessage(value: unknown): value is ServerMessage {
   return typeof value === 'object' && value !== null;
+}
+
+function sanitizeScriptSource(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  try {
+    const url = new URL(value);
+    url.search = '';
+    url.hash = '';
+    return url.href;
+  } catch {
+    return value;
+  }
+}
+
+function scriptSourceFromElement(
+  script: HTMLScriptElement,
+): string | undefined {
+  return sanitizeScriptSource(script.src);
 }
 
 export function stop(resetRecordingId: boolean) {
@@ -247,8 +272,14 @@ async function postData(
 export function start(
   options: browserClientRecordOptions = defaultClientConfig,
 ) {
-  const { includePii, publicApiKey, ...recordOptions } = options;
-  let { serverUrl } = options;
+  const {
+    includePii,
+    publicApiKey,
+    jsSource: rawJsSource,
+    jsEntrypoint,
+    ...recordOptions
+  } = options;
+  let { serverUrl = defaultServerUrl } = options;
 
   if (recordOptions.slimDOMOptions === undefined) {
     recordOptions.slimDOMOptions = 'all';
@@ -340,6 +371,14 @@ export function start(
   }
   if (options.meta) {
     Object.assign(initialPayload, options.meta);
+  }
+  initialPayload.recordVersion = __RRWEB_BROWSER_CLIENT_VERSION__;
+  initialPayload.recordCommitHash = __RRWEB_BROWSER_CLIENT_COMMIT_HASH__;
+  initialPayload.jsEntrypoint = jsEntrypoint ?? 'programmatic';
+
+  const jsSource = sanitizeScriptSource(rawJsSource);
+  if (jsSource) {
+    initialPayload.jsSource = jsSource;
   }
 
   const metaEvent: customEventWithTime = {
@@ -501,6 +540,8 @@ if (document && document.currentScript) {
       );
     }
   }
+  config.jsSource ??= scriptSourceFromElement(self);
+  config.jsEntrypoint ??= self.dataset.rrwebEntrypoint || 'script-tag';
   if (truthyAttr.includes(self.getAttribute('includepii'))) {
     config.includePii = true;
   }
@@ -517,6 +558,7 @@ if (document && document.currentScript) {
           if (
             apiHost === 'rrweb.com' ||
             apiHost === 'www.rrweb.com' ||
+            apiHost === 'cdn.rrweb.com' ||
             apiHost === 'rrweb.io' ||
             apiHost.endsWith('.rrweb.io')
           ) {
