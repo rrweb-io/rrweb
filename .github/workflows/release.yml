@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - next
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -47,11 +48,22 @@ jobs:
 
       - name: Publish Chrome Extension
         uses: mnao305/chrome-extension-upload@v5.0.0
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.changesets.outputs.published == 'true' && github.ref == 'refs/heads/master'
         with:
           extension-id: 'pdaldeopoccdhlkabbkcjmecmmoninhe'
           file-path: ./packages/web-extension/dist/chrome.zip
           client-id: ${{ secrets.CWS_CLIENT_ID }}
           client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
           refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
+          publish: true
+
+      - name: Publish Next Chrome Extension
+        uses: mnao305/chrome-extension-upload@v5.0.0
+        if: steps.changesets.outputs.published == 'true' && github.ref == 'refs/heads/next'
+        with:
+          extension-id: ${{ secrets.NEXT_CWS_EXTENSION_ID }}
+          file-path: ./packages/web-extension/dist/chrome.zip
+          client-id: ${{ secrets.NEXT_CWS_CLIENT_ID }}
+          client-secret: ${{ secrets.NEXT_CWS_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.NEXT_CWS_REFRESH_TOKEN }}
           publish: true
