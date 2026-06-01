@@ -10,6 +10,12 @@ Record and Replay is the most common use case, which is suitable for any scenari
 
 [link](./record-and-replay.md)
 
+### Asset Capture
+
+Asset capture records external resources as asset events so replay can apply images, media, object URLs, and stylesheets even when the original URL is unavailable or has changed.
+
+[link](./assets.md)
+
 ### Dive Into Events
 
 The events recorded by rrweb are a set of strictly-typed JSON data. You may discover some flexible ways to use them when you are familiar with the details.
