@@ -27,6 +27,14 @@ import {
   type scrollCallback,
   type canvasMutationParam,
   type adoptedStyleSheetParam,
+  type assetParam,
+  type asset,
+  type assetStatus,
+  type fullSnapshotEvent,
+  type fullSnapshotEventWithTime,
+  type assetEventWithTime,
+  type attributeMutation,
+  type serializedElementNodeWithId,
 } from '@rrweb/types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
@@ -40,11 +48,16 @@ import {
   unregisterErrorHandler,
 } from './error-handler';
 import dom from '@rrweb/utils';
+import AssetManager from './observers/asset-manager';
 
-let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
+let wrappedEmit!: (
+  e: eventWithoutTime | eventWithTime,
+  isCheckout?: boolean,
+) => void;
 
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
 let canvasManager!: CanvasManager;
+let assetManager!: AssetManager;
 let recording = false;
 
 // Multiple tools (i.e. MooTools, Prototype.js) override Array.from and drop support for the 2nd parameter
@@ -95,11 +108,34 @@ function record<T = eventWithTime>(
     userTriggeredOnInput = false,
     collectFonts = false,
     inlineImages = false,
+    captureAssets: _captureAssets,
     plugins,
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
     errorHandler,
   } = options;
+
+  const captureAssets: Exclude<
+    recordOptions<eventWithTime>['captureAssets'],
+    undefined
+  > = {
+    objectURLs: true,
+    origins: false,
+    ..._captureAssets,
+  };
+
+  if (inlineImages && captureAssets.images === undefined) {
+    captureAssets.images = true;
+  }
+  if (captureAssets.stylesheets === undefined) {
+    if (inlineStylesheet === 'all') {
+      captureAssets.stylesheets = true;
+    } else if (inlineStylesheet === true) {
+      captureAssets.stylesheets = 'without-fetch';
+    } else if (inlineStylesheet === false) {
+      captureAssets.stylesheets = false;
+    }
+  }
 
   registerErrorHandler(errorHandler);
 
@@ -182,9 +218,11 @@ function record<T = eventWithTime>(
     }
     return e as unknown as T;
   };
-  wrappedEmit = (r: eventWithoutTime, isCheckout?: boolean) => {
+  wrappedEmit = (r: eventWithoutTime | eventWithTime, isCheckout?: boolean) => {
     const e = r as eventWithTime;
-    e.timestamp = nowTimestamp();
+    if (!('timestamp' in e) || e.timestamp === undefined) {
+      e.timestamp = nowTimestamp();
+    }
     if (
       mutationBuffers[0]?.isFrozen() &&
       e.type !== EventType.FullSnapshot &&
@@ -260,6 +298,16 @@ function record<T = eventWithTime>(
       },
     });
 
+  const wrappedAssetEmit = (p: assetParam, snapshotTimestamp?: number | true) =>
+    wrappedEmit({
+      type: EventType.Asset,
+      data: p,
+      timestamp:
+        snapshotTimestamp === true
+          ? assetManager.lastFullSnapshotTimestamp
+          : snapshotTimestamp,
+    } as assetEventWithTime);
+
   const wrappedAdoptedStyleSheetEmit = (a: adoptedStyleSheetParam) =>
     wrappedEmit({
       type: EventType.IncrementalSnapshot,
@@ -273,6 +321,29 @@ function record<T = eventWithTime>(
     mutationCb: wrappedMutationEmit,
     adoptedStyleSheetCb: wrappedAdoptedStyleSheetEmit,
   });
+  const emitCapturedStylesheetAttributes = (
+    childSn: serializedElementNodeWithId,
+  ) => {
+    const capturedAttributes: attributeMutation['attributes'] =
+      Object.fromEntries(
+        Object.entries(childSn.attributes).filter(([name]) =>
+          name.startsWith('rr_captured_'),
+        ),
+      ) as attributeMutation['attributes'];
+    if (Object.keys(capturedAttributes).length) {
+      wrappedMutationEmit({
+        adds: [],
+        removes: [],
+        texts: [],
+        attributes: [
+          {
+            id: childSn.id,
+            attributes: capturedAttributes,
+          },
+        ],
+      });
+    }
+  };
 
   const iframeManager = new IframeManager({
     mirror,
@@ -308,6 +379,12 @@ function record<T = eventWithTime>(
     dataURLOptions,
   });
 
+  assetManager = new AssetManager({
+    mutationCb: wrappedAssetEmit,
+    win: window,
+    captureAssets,
+  });
+
   const shadowDomManager = new ShadowDomManager({
     mutationCb: wrappedMutationEmit,
     scrollCb: wrappedScrollEmit,
@@ -323,11 +400,13 @@ function record<T = eventWithTime>(
       maskInputFn,
       recordCanvas,
       inlineImages,
+      captureAssets,
       sampling,
       slimDOMOptions,
       iframeManager,
       stylesheetManager,
       canvasManager,
+      assetManager,
       keepIframeSrcFn,
       processedNodeManager,
     },
@@ -356,13 +435,17 @@ function record<T = eventWithTime>(
     shadowDomManager.init();
 
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
+    const capturedAssetStatuses: assetStatus[] = [];
+    const fullSnapshotTimestamp = nowTimestamp();
+    assetManager.lastFullSnapshotTimestamp = fullSnapshotTimestamp;
+
     const node = snapshot(document, {
       mirror,
       blockClass,
       blockSelector,
       maskTextClass,
       maskTextSelector,
-      inlineStylesheet,
+      inlineStylesheet: Boolean(inlineStylesheet),
       maskAllInputs: maskInputOptions,
       maskTextFn,
       maskInputFn,
@@ -370,6 +453,7 @@ function record<T = eventWithTime>(
       dataURLOptions,
       recordCanvas,
       inlineImages,
+      captureAssets,
       onSerialize: (n) => {
         if (isSerializedIframe(n, mirror)) {
           iframeManager.addIframe(n as HTMLIFrameElement);
@@ -388,6 +472,15 @@ function record<T = eventWithTime>(
       },
       onStylesheetLoad: (linkEl, childSn) => {
         stylesheetManager.attachLinkElement(linkEl, childSn);
+        emitCapturedStylesheetAttributes(childSn);
+      },
+      onAssetDetected: (asset: asset) => {
+        const assetStatus = assetManager.capture(asset, true);
+        if (Array.isArray(assetStatus)) {
+          capturedAssetStatuses.push(...assetStatus);
+        } else {
+          capturedAssetStatuses.push(assetStatus);
+        }
       },
       keepIframeSrcFn,
     });
@@ -396,14 +489,19 @@ function record<T = eventWithTime>(
       return console.warn('Failed to snapshot the document');
     }
 
+    const data: fullSnapshotEvent['data'] = {
+      node,
+      initialOffset: getWindowScroll(window),
+    };
+    if (capturedAssetStatuses.length) {
+      data.capturedAssetStatuses = capturedAssetStatuses;
+    }
     wrappedEmit(
       {
         type: EventType.FullSnapshot,
-        data: {
-          node,
-          initialOffset: getWindowScroll(window),
-        },
-      },
+        timestamp: fullSnapshotTimestamp,
+        data,
+      } as fullSnapshotEventWithTime,
       isCheckout,
     );
     mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
@@ -518,6 +616,7 @@ function record<T = eventWithTime>(
           recordDOM,
           recordCanvas,
           inlineImages,
+          captureAssets,
           userTriggeredOnInput,
           collectFonts,
           doc,
@@ -533,6 +632,7 @@ function record<T = eventWithTime>(
           shadowDomManager,
           processedNodeManager,
           canvasManager,
+          assetManager,
           ignoreCSSAttributes,
           plugins:
             plugins
@@ -615,6 +715,7 @@ function record<T = eventWithTime>(
         }
       });
       processedNodeManager.destroy();
+      assetManager.reset();
       recording = false;
       unregisterErrorHandler();
     };
