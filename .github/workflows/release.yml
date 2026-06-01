@@ -40,7 +40,6 @@ jobs:
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Build Chrome Extension
         if: steps.changesets.outputs.published == 'true'
