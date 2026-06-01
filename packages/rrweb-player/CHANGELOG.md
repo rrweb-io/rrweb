@@ -6,6 +6,20 @@
 
 - [#1497](https://github.com/rrweb-io/rrweb/pull/1497) [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf) Thanks [@Juice10](https://github.com/Juice10)! - Distributed files have new filenames, paths and extensions. **Important: If you reference distributed files or types directly, you might have to update your paths/filenames. E.g. you import from `rrweb/typings/...` or `rrdom/es`. However you run `import rrweb from 'rrweb'` you won't notice a difference with this change.** If you include rrweb files directly in a script tag, you might have to update that path to include a the `.umd.cjs` files instead. All `.js` files now use ES modules which can be used in modern browsers, node.js and bundlers that support ES modules. All npm packages now also ship `.cjs` and `.umd.cjs` files. The `.umd.cjs` files are CommonJS modules that bundle all files together to make it easy to ship one file to browser environments (similar to the previous `.js` files). The `.cjs` files are CommonJS modules that can be used in older Node.js environments. Types should be better defined in `package.json` and if you need specific types they might be exported from new packages (for example `PlayerMachineState` and `SpeedMachineState` are now exported from `@rrweb/replay`). Check the `package.json`'s `main` and `exports` field for the available files.
 
+- [#1031](https://github.com/rrweb-io/rrweb/pull/1031) [`ad9bc3e`](https://github.com/rrweb-io/rrweb/commit/ad9bc3ed16d9172490bd8350c6922e3726a7f585) Thanks [@Juice10](https://github.com/Juice10)! - Move shared rrweb event and recorder types into the new `@rrweb/types` package.
+
+### Minor Changes
+
+- [#1039](https://github.com/rrweb-io/rrweb/pull/1039) [`bdd8940`](https://github.com/rrweb-io/rrweb/commit/bdd8940098590e81bc4d36f7bcf0e0f382226039) Thanks [@DexxDing](https://github.com/DexxDing)! - Add inactive-period indicators to the player progress bar with a configurable `inactiveColor` option.
+
+- [#1007](https://github.com/rrweb-io/rrweb/pull/1007) [`3924aaf`](https://github.com/rrweb-io/rrweb/commit/3924aafde2b07f27e30a0117f33451ad8f289bf3) Thanks [@Juice10](https://github.com/Juice10)! - Add `player.playRange(start, end, loop?, afterHook?)` to play a bounded time range, optionally looping or invoking a callback when the range ends.
+
+- [#1006](https://github.com/rrweb-io/rrweb/pull/1006) [`6f63cf1`](https://github.com/rrweb-io/rrweb/commit/6f63cf15fcaef7e322ff28999410b0bfb77f7d31) Thanks [@Juice10](https://github.com/Juice10)! - Add a `maxScale` option to configure the player's maximum replay scale, with `0` allowing unlimited scaling.
+
+- [#859](https://github.com/rrweb-io/rrweb/pull/859) [`e238462`](https://github.com/rrweb-io/rrweb/commit/e238462f3aff10b0242a4aef729065b7b9c8e7a1) Thanks [@Juice10](https://github.com/Juice10)! - Add support for recording canvas snapshots at a configured FPS.
+
+- [#895](https://github.com/rrweb-io/rrweb/pull/895) [`de755ae`](https://github.com/rrweb-io/rrweb/commit/de755ae572c04131f74f251b06da6de648b112c4) Thanks [@Juice10](https://github.com/Juice10)! - Add the fast-forward virtual DOM optimization for replay.
+
 ### Patch Changes
 
 - [#1198](https://github.com/rrweb-io/rrweb/pull/1198) [`b5e30cf`](https://github.com/rrweb-io/rrweb/commit/b5e30cf6cc7f5335d674ef1917a92bdf2895fe9e) Thanks [@charliegracie](https://github.com/charliegracie)! - Reset the finished flag in Controller `goto` instead of `handleProgressClick` so that it is properly handled if `goto` is called directly.
@@ -17,6 +31,18 @@
 - [#1247](https://github.com/rrweb-io/rrweb/pull/1247) [`a01a12e`](https://github.com/rrweb-io/rrweb/commit/a01a12ef6769f26aa922ccd6ac76499f0837f0c2) Thanks [@Juice10](https://github.com/Juice10)! - Fix `player.getMirror`, `player.playRange`, `player.$set` types in rrwebPlayer
 
 - [#1704](https://github.com/rrweb-io/rrweb/pull/1704) [`33e01f5`](https://github.com/rrweb-io/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Provide a /umd/ output folder alongside the /dist/ one so that we can serve UMD (Universal Module Definition) files with a .js extension, without upsetting expectations set by package.json that all .js files in /dist/ are modules
+
+- [#1028](https://github.com/rrweb-io/rrweb/pull/1028) [`2286c11`](https://github.com/rrweb-io/rrweb/commit/2286c11939295a59702f7322fa53b60b03b2065c) Thanks [@MengZihan712](https://github.com/MengZihan712)! - Fix fullscreen player sizing so the progress bar and controls remain visible.
+
+- [#1014](https://github.com/rrweb-io/rrweb/pull/1014) [`9de0de2`](https://github.com/rrweb-io/rrweb/commit/9de0de2cce7656621de590cbf864a65643ed5eed) Thanks [@Juice10](https://github.com/Juice10)! - Add the missing `maxScale` option to rrweb-player TypeScript definitions and document player option defaults.
+
+- [#1045](https://github.com/rrweb-io/rrweb/pull/1045) [`e08d039`](https://github.com/rrweb-io/rrweb/commit/e08d03982b468360eafc4c9e2a3d257b73da4487) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix rrweb-player TypeScript imports after the `@rrweb/types` split.
+
+- Updated dependencies [[`b2d5689`](https://github.com/rrweb-io/rrweb/commit/b2d5689864eff62c80c4439e9a4e4f0f6983b1f5), [`a8478f1`](https://github.com/rrweb-io/rrweb/commit/a8478f1dd7613a08d5f15d176d6e555497f83e0d), [`ce6019d`](https://github.com/rrweb-io/rrweb/commit/ce6019d2d6264ac8ef4cc0c5f8ff1733787f9ea0), [`bac1d7b`](https://github.com/rrweb-io/rrweb/commit/bac1d7b0cbfcf1157476c49b4b12e178aab7fc94), [`5ba933c`](https://github.com/rrweb-io/rrweb/commit/5ba933ccdb8b51dfc067319d418dbadd2f7642db), [`fd85c79`](https://github.com/rrweb-io/rrweb/commit/fd85c79e853ef89a860e795a8ae3ba318ef42ae8)]:
+  - rrweb@2.0.0-alpha.2
+
+- Updated dependencies [[`f1b23dd`](https://github.com/rrweb-io/rrweb/commit/f1b23ddc714ebaf9b66ca7a913f740e2c0524868)]:
+  - rrweb@2.0.0-alpha.1
 
 - Updated dependencies [[`22bc4c3`](https://github.com/rrweb-io/rrweb/commit/22bc4c334e88f0b8ee5488d9e1e95cd8093a15c8), [`db20184`](https://github.com/rrweb-io/rrweb/commit/db201841accd2b5df3cd7c88779aa62ab158501c), [`22bc4c3`](https://github.com/rrweb-io/rrweb/commit/22bc4c334e88f0b8ee5488d9e1e95cd8093a15c8), [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf), [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf), [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf), [`33e01f5`](https://github.com/rrweb-io/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0)]:
   - @rrweb/replay@2.0.0

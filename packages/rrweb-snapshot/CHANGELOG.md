@@ -13,6 +13,8 @@
 - [#1593](https://github.com/rrweb-io/rrweb/pull/1593) [`5a78938`](https://github.com/rrweb-io/rrweb/commit/5a789385a341311ba327a768fe0e2f0f2f5002ee) Thanks [@daibhin](https://github.com/daibhin)! - `NodeType` enum was moved from rrweb-snapshot to @rrweb/types
   The following types where moved from rrweb-snapshot to @rrweb/types: `documentNode`, `documentTypeNode`, `legacyAttributes`, `textNode`, `cdataNode`, `commentNode`, `elementNode`, `serializedNode`, `serializedNodeWithId`, `serializedElementNodeWithId`, `serializedTextNodeWithId`, `IMirror`, `INode`, `mediaAttributes`, `attributes` and `DataURLOptions`
 
+- [#868](https://github.com/rrweb-io/rrweb/pull/868) [`e4f680e`](https://github.com/rrweb-io/rrweb/commit/e4f680e8f52210596cd68d17f8d54eb8a0d8e65c) Thanks [@Juice10](https://github.com/Juice10)! - Remove `INode` / `node.__sn` usage and use `Mirror` as the source of truth.
+
 ### Minor Changes
 
 - [#1432](https://github.com/rrweb-io/rrweb/pull/1432) [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961) Thanks [@Juice10](https://github.com/Juice10)! - Video and Audio elements now also capture `playbackRate`, `muted`, `loop`, `volume`.
@@ -26,6 +28,12 @@
 - [#1152](https://github.com/rrweb-io/rrweb/pull/1152) [`eac9b18`](https://github.com/rrweb-io/rrweb/commit/eac9b18bbfa3c350797b99b583dd93a5fc32b828) Thanks [@mydea](https://github.com/mydea)! - feat: Ignore `autoplay` attribute on video/audio elements
 
 - [#1310](https://github.com/rrweb-io/rrweb/pull/1310) [`7c0dc9d`](https://github.com/rrweb-io/rrweb/commit/7c0dc9dfe1564c9d6624557c5b394e7844955882) Thanks [@benjackwhite](https://github.com/benjackwhite)! - Extends maskTextFn to pass the HTMLElement to the deciding function
+
+- [#1035](https://github.com/rrweb-io/rrweb/pull/1035) [`2a80949`](https://github.com/rrweb-io/rrweb/commit/2a809499739ed2068bf6d9c614142f9dc8cb09ab) Thanks [@Juice10](https://github.com/Juice10)! - Add support for cross-origin iframe recording, including event/id remapping and `genId` export support.
+
+- [#989](https://github.com/rrweb-io/rrweb/pull/989) [`3809060`](https://github.com/rrweb-io/rrweb/commit/38090606b98e2d64073e74194d2c5c42453e8b5c) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Add support for recording and replaying constructable `adoptedStyleSheets`, including stylesheet mutations, `replace`/`replaceSync`, shadow roots, iframes, live mode, and virtual DOM replay.
+
+- [#895](https://github.com/rrweb-io/rrweb/pull/895) [`de755ae`](https://github.com/rrweb-io/rrweb/commit/de755ae572c04131f74f251b06da6de648b112c4) Thanks [@Juice10](https://github.com/Juice10)! - Add the fast-forward virtual DOM optimization for replay.
 
 ### Patch Changes
 
@@ -132,6 +140,32 @@
 - [#760](https://github.com/rrweb-io/rrweb/pull/760) [`e08706a`](https://github.com/rrweb-io/rrweb/commit/e08706ae60268b6eb05c6292ef948c71bd423ce3) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Add slimDOM option to block animation on <title> tag; enabled when the 'all' value is used for slimDOM
 
 - [#1509](https://github.com/rrweb-io/rrweb/pull/1509) [`be6bf52`](https://github.com/rrweb-io/rrweb/commit/be6bf52c248c35de1b3491e3a3440ff61f876414) Thanks [@Juice10](https://github.com/Juice10)! - Reverse monkey patch built in methods to support LWC (and other frameworks like angular which monkey patch built in methods).
+
+- [#1047](https://github.com/rrweb-io/rrweb/pull/1047) [`9bbc3e0`](https://github.com/rrweb-io/rrweb/commit/9bbc3e003318759e67409c9eceeb7aae2947c314) Thanks [@Juice10](https://github.com/Juice10)! - Preserve `-webkit-background-clip: text` when serializing CSS rules.
+
+- [#1012](https://github.com/rrweb-io/rrweb/pull/1012) [`6f44bb7`](https://github.com/rrweb-io/rrweb/commit/6f44bb72794118cf38e7ac87c76326ded9d9c409) Thanks [@Juice10](https://github.com/Juice10)! - Ensure replay plugin `onBuild` hooks run for newly appended mutation nodes and top-level rebuilt document nodes.
+
+- [#995](https://github.com/rrweb-io/rrweb/pull/995) [`55ebce7`](https://github.com/rrweb-io/rrweb/commit/55ebce733393da99b01e786f9bc77bf5362ba828) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix replay of delayed inlined stylesheet links by updating the existing link/style node attributes instead of adding a child node.
+
+- [#970](https://github.com/rrweb-io/rrweb/pull/970) [`23e3a73`](https://github.com/rrweb-io/rrweb/commit/23e3a73b949af0dcfa1fefc6e93cc1bb1c7a7c1f) Thanks [@Juice10](https://github.com/Juice10)! - Apply internal `rr_*` attributes after normal attributes so replay-only values such as `rr_dataURL` are not overwritten by serialized DOM attributes.
+
+- [#927](https://github.com/rrweb-io/rrweb/pull/927) [`fd85c79`](https://github.com/rrweb-io/rrweb/commit/fd85c79e853ef89a860e795a8ae3ba318ef42ae8) Thanks [@Juice10](https://github.com/Juice10)! - Fix iframe reload and rrdom diff issues by handling negative and unserialized node ids correctly.
+
+- [#984](https://github.com/rrweb-io/rrweb/pull/984) [`6eaec04`](https://github.com/rrweb-io/rrweb/commit/6eaec042d0369fd957a5d8c57cf1397eb7023b64) Thanks [@QuentinLowe](https://github.com/QuentinLowe)! - Fix iframe replay failures after the second full snapshot.
+
+- [#994](https://github.com/rrweb-io/rrweb/pull/994) [`a9a2559`](https://github.com/rrweb-io/rrweb/commit/a9a25593f19a36ea68627ce34a4607ab7f66d243) Thanks [@wfk007](https://github.com/wfk007)! - Fix missing mutations when using `slimDOMOptions` by tracking ignored nodes in the mirror.
+
+- [#938](https://github.com/rrweb-io/rrweb/pull/938) [`f3064c1`](https://github.com/rrweb-io/rrweb/commit/f3064c1f09f748a00c28a284a4b9dbead2f699dd) Thanks [@lele0108](https://github.com/lele0108)! - Fix SVG `<use href="#...">` snapshot serialization so local fragment references are preserved instead of converted to absolute URLs.
+
+- [#942](https://github.com/rrweb-io/rrweb/pull/942) [`f03504a`](https://github.com/rrweb-io/rrweb/commit/f03504a7af09926fcf9e06a50130eb03deea015a) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix recording and replay of polyfilled Shadow DOM from ShadyDOM and `@lwc/synthetic-shadow`.
+
+- [#944](https://github.com/rrweb-io/rrweb/pull/944) [`f1b23dd`](https://github.com/rrweb-io/rrweb/commit/f1b23ddc714ebaf9b66ca7a913f740e2c0524868) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix fast-forward replay so canvas image data inside iframes is restored when rebuilding through the virtual DOM path.
+
+- [#906](https://github.com/rrweb-io/rrweb/pull/906) [`9da1e43`](https://github.com/rrweb-io/rrweb/commit/9da1e432c7ad78dcba638d31f99a9b50c8f1921f) Thanks [@Juice10](https://github.com/Juice10)! - Fix issue #904 in snapshot serialization.
+
+- [#903](https://github.com/rrweb-io/rrweb/pull/903) [`058c457`](https://github.com/rrweb-io/rrweb/commit/058c4579530414f6e55434fb28f9227443ed3b6d) Thanks [@Juice10](https://github.com/Juice10)! - Speed up snapshotting of many newly added DOM nodes.
+
+- [#909](https://github.com/rrweb-io/rrweb/pull/909) [`d5d877e`](https://github.com/rrweb-io/rrweb/commit/d5d877e3c19364784abf08f6e3eea4ba911fe4e3) Thanks [@Juice10](https://github.com/Juice10)! - Inline stylesheets when they load so late stylesheet content is captured.
 
 ## 2.0.0-alpha.20
 
