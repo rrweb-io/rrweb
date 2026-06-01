@@ -6,6 +6,7 @@ import {
   escapeImportStatement,
   extractFileExtension,
   fixSafariColons,
+  shouldCaptureAsset,
   isNodeMetaEqual,
   stringifyStylesheet,
 } from '../src/utils';
@@ -324,6 +325,99 @@ describe('utils', () => {
       ).toEqual(
         "@font-face { font-family: 'MockFont'; src: url('https://example.com/fonts/mockfont.woff2') format('woff2'); font-weight: normal; font-style: normal; }",
       );
+    });
+  });
+
+  describe('shouldCaptureAsset', () => {
+    it('identifies picture srcset image sources when image capture is enabled', () => {
+      const picture = document.createElement('picture');
+      const source = document.createElement('source');
+      source.srcset = 'https://example.com/img1.png';
+      source.src = 'https://example.com/img2.png';
+      const fallbackImg = document.createElement('img');
+      fallbackImg.src = 'https://example.com/img3.png';
+
+      picture.append(source);
+      picture.append(fallbackImg);
+
+      expect(
+        shouldCaptureAsset(source, 'srcset', source.srcset, { images: true }),
+      ).toBe(true);
+      expect(
+        shouldCaptureAsset(source, 'src', source.src, { images: true }),
+      ).toBe(false);
+      expect(
+        shouldCaptureAsset(fallbackImg, 'src', fallbackImg.src, {
+          images: true,
+        }),
+      ).toBe(true);
+      expect(
+        shouldCaptureAsset(source, 'srcset', source.srcset, { images: false }),
+      ).toBe(false);
+    });
+
+    it('identifies media source assets only for enabled media types', () => {
+      const video = document.createElement('video');
+      const videoSource = document.createElement('source');
+      videoSource.src = 'https://example.com/show.mp4';
+      videoSource.srcset = 'https://example.com/show@2x.mp4';
+      video.append(videoSource);
+
+      const audio = document.createElement('audio');
+      const audioSource = document.createElement('source');
+      audioSource.src = 'https://example.com/sound.mp3';
+      audio.append(audioSource);
+
+      expect(
+        shouldCaptureAsset(videoSource, 'src', videoSource.src, {
+          video: true,
+        }),
+      ).toBe(true);
+      expect(
+        shouldCaptureAsset(videoSource, 'srcset', videoSource.srcset, {
+          video: true,
+        }),
+      ).toBe(false);
+      expect(
+        shouldCaptureAsset(videoSource, 'src', videoSource.src, {
+          video: false,
+        }),
+      ).toBe(false);
+      expect(
+        shouldCaptureAsset(audioSource, 'src', audioSource.src, {
+          audio: true,
+        }),
+      ).toBe(true);
+    });
+
+    it('identifies loaded stylesheet links according to stylesheet config', () => {
+      const element = document.createElement('link');
+      element.setAttribute('rel', 'StyleSheet');
+      Object.defineProperty(element, 'sheet', {
+        value: true,
+      });
+
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          objectURLs: false,
+          origins: false,
+          stylesheets: false,
+        }),
+      ).toBe(false);
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          objectURLs: false,
+          origins: false,
+          stylesheets: true,
+        }),
+      ).toBe(true);
+      expect(
+        shouldCaptureAsset(element, 'href', 'https://example.com/style.css', {
+          objectURLs: false,
+          origins: ['https://example.com'],
+          stylesheets: 'without-fetch',
+        }),
+      ).toBe(true);
     });
   });
 });

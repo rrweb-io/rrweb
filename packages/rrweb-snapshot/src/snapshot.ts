@@ -16,6 +16,8 @@ import type {
   attributes,
   mediaAttributes,
   DataURLOptions,
+  asset,
+  captureAssetsParam,
 } from '@rrweb/types';
 import {
   Mirror,
@@ -31,6 +33,11 @@ import {
   absolutifyURLs,
   markCssSplits,
 } from './snapshot-utils';
+import {
+  lowerIfExists,
+  shouldCaptureAsset,
+  stringifyCssRules,
+} from './utils';
 import dom from '@rrweb/utils';
 
 let _id = 1;
@@ -40,6 +47,11 @@ export const IGNORED_NODE = -2;
 
 export function genId(): number {
   return _id++;
+}
+
+let _styleId = 1;
+export function genStyleId(): number {
+  return _styleId++;
 }
 
 function getValidTagName(element: HTMLElement): Lowercase<string> {
@@ -66,7 +78,11 @@ let canvasCtx: CanvasRenderingContext2D | null;
 const SRCSET_NOT_SPACES = /^[^ \t\n\r\u000c]+/; // Don't use \s, to avoid matching non-breaking space
 // eslint-disable-next-line no-control-regex
 const SRCSET_COMMAS_OR_SPACES = /^[, \t\n\r\u000c]+/;
-function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
+function parseSrcsetString(
+  doc: Document,
+  attributeValue: string,
+  urlCallback: (doc: Document, url: string) => string,
+) {
   /*
     run absoluteToDoc over every url in the srcset
 
@@ -103,13 +119,13 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
     let url = collectCharacters(SRCSET_NOT_SPACES);
     if (url.slice(-1) === ',') {
       // aside: according to spec more than one comma at the end is a parse error, but we ignore that
-      url = absoluteToDoc(doc, url.substring(0, url.length - 1));
+      url = urlCallback(doc, url.substring(0, url.length - 1));
       // the trailing comma splits the srcset, so the interpretion is that
       // another url will follow, and the descriptor is empty
       output.push(url);
     } else {
       let descriptorsStr = '';
-      url = absoluteToDoc(doc, url);
+      url = urlCallback(doc, url);
       let inParens = false;
       // eslint-disable-next-line no-constant-condition
       while (true) {
@@ -140,6 +156,21 @@ function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
   return output.join(', ');
 }
 
+function getAbsoluteSrcsetString(doc: Document, attributeValue: string) {
+  return parseSrcsetString(doc, attributeValue, (doc, url) =>
+    absoluteToDoc(doc, url),
+  );
+}
+
+export function getSourcesFromSrcset(attributeValue: string): string[] {
+  const urls = new Set<string>();
+  parseSrcsetString(document, attributeValue, (_, url) => {
+    urls.add(url);
+    return url;
+  });
+  return Array.from(urls);
+}
+
 const cachedDocument = new WeakMap<Document, HTMLAnchorElement>();
 
 export function absoluteToDoc(doc: Document, attributeValue: string): string {
@@ -154,7 +185,7 @@ function isSVGElement(el: Element): boolean {
   return Boolean(el.tagName === 'svg' || (el as SVGElement).ownerSVGElement);
 }
 
-function getHref(doc: Document, customHref?: string) {
+export function getHref(doc: Document, customHref?: string) {
   let a = cachedDocument.get(doc);
   if (!a) {
     a = doc.createElement('a');
@@ -397,6 +428,7 @@ function serializeNode(
     maskInputFn: MaskInputFn | undefined;
     dataURLOptions?: DataURLOptions;
     inlineImages: boolean;
+    captureAssets?: captureAssetsParam;
     recordCanvas: boolean;
     keepIframeSrcFn: KeepIframeSrcFn;
     /**
@@ -404,6 +436,7 @@ function serializeNode(
      */
     newlyAddedElement?: boolean;
     cssCaptured?: boolean;
+    onAssetDetected?: (asset: asset) => unknown;
   },
 ): serializedNode | false {
   const {
@@ -418,10 +451,12 @@ function serializeNode(
     maskInputFn,
     dataURLOptions = {},
     inlineImages,
+    captureAssets = {},
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement = false,
     cssCaptured = false,
+    onAssetDetected,
   } = options;
   // Only record root id when document object is not the base document
   const rootId = getRootId(doc, mirror);
@@ -457,10 +492,12 @@ function serializeNode(
         maskInputFn,
         dataURLOptions,
         inlineImages,
+        captureAssets,
         recordCanvas,
         keepIframeSrcFn,
         newlyAddedElement,
         rootId,
+        onAssetDetected,
       });
     case n.TEXT_NODE:
       return serializeTextNode(n as Text, {
@@ -547,6 +584,7 @@ function serializeElementNode(
     maskInputFn: MaskInputFn | undefined;
     dataURLOptions?: DataURLOptions;
     inlineImages: boolean;
+    captureAssets?: captureAssetsParam;
     recordCanvas: boolean;
     keepIframeSrcFn: KeepIframeSrcFn;
     /**
@@ -554,6 +592,7 @@ function serializeElementNode(
      */
     newlyAddedElement?: boolean;
     rootId: number | undefined;
+    onAssetDetected?: (asset: asset) => unknown;
   },
 ): serializedNode | false {
   const {
@@ -565,28 +604,77 @@ function serializeElementNode(
     maskInputFn,
     dataURLOptions = {},
     inlineImages,
+    captureAssets = {},
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement = false,
     rootId,
+    onAssetDetected,
   } = options;
   const needBlock = _isBlockedElement(n, blockClass, blockSelector);
   const tagName = getValidTagName(n);
   let attributes: attributes = {};
   const len = n.attributes.length;
+  if (tagName === 'link' && inlineStylesheet && !needBlock) {
+    const link = n as HTMLLinkElement;
+    if (link.href && lowerIfExists(link.rel) === 'stylesheet' && link.sheet) {
+      let sheetRules: CSSRuleList | undefined;
+      try {
+        sheetRules = link.sheet.cssRules;
+      } catch (e) {
+        // Cross-origin stylesheets are handled by asset capture when enabled.
+      }
+      if (
+        sheetRules &&
+        (!onAssetDetected ||
+          captureAssets._fromMutation ||
+          (captureAssets.stylesheetsRuleThreshold !== undefined &&
+            sheetRules.length < captureAssets.stylesheetsRuleThreshold))
+      ) {
+        attributes._cssText = stringifyCssRules(sheetRules, link.href);
+      }
+    }
+  }
   for (let i = 0; i < len; i++) {
     const attr = n.attributes[i];
+    if (attr.name === '' || attr.name === "''") {
+      continue;
+    }
+    if (attributes._cssText && ['href', 'rel'].includes(attr.name)) {
+      continue;
+    }
     if (!ignoreAttribute(tagName, attr.name, attr.value)) {
-      attributes[attr.name] = transformAttribute(
+      const value = transformAttribute(
         doc,
         tagName,
         toLowerCase(attr.name),
         attr.value,
       );
+      let { name } = attr;
+      if (
+        value &&
+        typeof value === 'string' &&
+        onAssetDetected &&
+        !needBlock &&
+        shouldCaptureAsset(n, attr.name, value, captureAssets)
+      ) {
+        onAssetDetected({
+          element: n,
+          attr: attr.name,
+          value,
+        });
+        name = `rr_captured_${name}`;
+      }
+      attributes[name] = value;
     }
   }
   // remote css
-  if (tagName === 'link' && inlineStylesheet) {
+  if (
+    tagName === 'link' &&
+    inlineStylesheet &&
+    !attributes._cssText &&
+    !onAssetDetected
+  ) {
     //TODO: maybe replace this `.styleSheets` with original one
     const stylesheet = Array.from(doc.styleSheets).find((s) => {
       return s.href === (n as HTMLLinkElement).href;
@@ -601,15 +689,47 @@ function serializeElementNode(
       attributes._cssText = cssText;
     }
   }
-  if (tagName === 'style' && (n as HTMLStyleElement).sheet) {
-    let cssText = stringifyStylesheet(
-      (n as HTMLStyleElement).sheet as CSSStyleSheet,
-    );
-    if (cssText) {
-      if (n.childNodes.length > 1) {
-        cssText = markCssSplits(cssText, n as HTMLStyleElement);
+  if (
+    tagName === 'style' &&
+    inlineStylesheet &&
+    captureAssets.stylesheets !== false &&
+    (n as HTMLStyleElement).sheet
+  ) {
+    const styleEl = n as HTMLStyleElement;
+    const sheet = styleEl.sheet as CSSStyleSheet;
+    let sheetBaseHref = getHref(doc);
+    if (sheetBaseHref === '') {
+      sheetBaseHref = document.location.href;
+    }
+    let styleRules: CSSRuleList | undefined;
+    try {
+      styleRules = sheet.cssRules;
+    } catch (e) {
+      // Inaccessible sheets are handled by asset capture when enabled.
+    }
+    if (
+      styleRules &&
+      (!onAssetDetected ||
+        captureAssets._fromMutation ||
+        (captureAssets.stylesheetsRuleThreshold !== undefined &&
+          styleRules.length < captureAssets.stylesheetsRuleThreshold))
+    ) {
+      let cssText = stringifyStylesheet(sheet);
+      if (cssText) {
+        if (n.childNodes.length > 1) {
+          cssText = markCssSplits(cssText, styleEl);
+        }
+        attributes._cssText = cssText;
       }
-      attributes._cssText = cssText;
+    } else if (onAssetDetected && !captureAssets._fromMutation) {
+      const styleId = genStyleId();
+      onAssetDetected({
+        element: n,
+        attr: 'css_text',
+        value: sheetBaseHref,
+        styleId,
+      });
+      attributes.rr_css_text = `${sheetBaseHref}#rr_style_el:${styleId}`;
     }
   }
   // form fields
@@ -792,16 +912,6 @@ function serializeElementNode(
   };
 }
 
-function lowerIfExists(
-  maybeAttr: string | number | boolean | undefined | null,
-): string {
-  if (maybeAttr === undefined || maybeAttr === null) {
-    return '';
-  } else {
-    return (maybeAttr as string).toLowerCase();
-  }
-}
-
 export function slimDOMDefaults(
   _slimDOMOptions: SlimDOMOptions | 'all' | true | false | undefined,
 ) {
@@ -939,6 +1049,7 @@ export function serializeNodeWithId(
     dataURLOptions?: DataURLOptions;
     keepIframeSrcFn?: KeepIframeSrcFn;
     inlineImages?: boolean;
+    captureAssets?: captureAssetsParam;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: Node) => unknown;
@@ -953,6 +1064,7 @@ export function serializeNodeWithId(
     ) => unknown;
     stylesheetLoadTimeout?: number;
     cssCaptured?: boolean;
+    onAssetDetected?: (asset: asset) => unknown;
   },
 ): serializedNodeWithId | null {
   const {
@@ -970,6 +1082,7 @@ export function serializeNodeWithId(
     slimDOMOptions,
     dataURLOptions = {},
     inlineImages = false,
+    captureAssets = {},
     recordCanvas = false,
     onSerialize,
     onIframeLoad,
@@ -979,9 +1092,23 @@ export function serializeNodeWithId(
     keepIframeSrcFn = () => false,
     newlyAddedElement = false,
     cssCaptured = false,
+    onAssetDetected,
   } = options;
   let { needsMask } = options;
   let { preserveWhiteSpace = true } = options;
+
+  if (onAssetDetected) {
+    if (captureAssets.images === undefined && inlineImages) {
+      captureAssets.images = true;
+    }
+    if (captureAssets.stylesheets === undefined) {
+      if (inlineStylesheet) {
+        captureAssets.stylesheets = 'without-fetch';
+      } else {
+        captureAssets.stylesheets = false;
+      }
+    }
+  }
 
   if (!needsMask) {
     // perf: if needsMask = true, children won't also need to check
@@ -1006,10 +1133,12 @@ export function serializeNodeWithId(
     maskInputFn,
     dataURLOptions,
     inlineImages,
+    captureAssets,
     recordCanvas,
     keepIframeSrcFn,
     newlyAddedElement,
     cssCaptured,
+    onAssetDetected,
   });
   if (!_serializedNode) {
     // TODO: dev only
@@ -1081,6 +1210,7 @@ export function serializeNodeWithId(
       slimDOMOptions,
       dataURLOptions,
       inlineImages,
+      captureAssets,
       recordCanvas,
       preserveWhiteSpace,
       onSerialize,
@@ -1090,6 +1220,7 @@ export function serializeNodeWithId(
       stylesheetLoadTimeout,
       keepIframeSrcFn,
       cssCaptured: false,
+      onAssetDetected,
     };
 
     if (
@@ -1098,11 +1229,17 @@ export function serializeNodeWithId(
       (serializedNode as elementNode).attributes.value !== undefined
     ) {
       // value parameter in DOM reflects the correct value, so ignore childNode
+    } else if (
+      serializedNode.type === NodeType.Element &&
+      serializedNode.tagName === 'iframe' &&
+      (serializedNode as elementNode).attributes.rr_captured_src !== undefined
+    ) {
+      // Captured iframe-like assets should not also recurse into rendered fallback contents.
     } else {
       if (
         serializedNode.type === NodeType.Element &&
-        (serializedNode as elementNode).attributes._cssText !== undefined &&
-        typeof serializedNode.attributes._cssText === 'string'
+        (serializedNode.attributes.rr_css_text ||
+          serializedNode.attributes._cssText)
       ) {
         bypassOptions.cssCaptured = true;
       }
@@ -1134,7 +1271,8 @@ export function serializeNodeWithId(
 
   if (
     serializedNode.type === NodeType.Element &&
-    serializedNode.tagName === 'iframe'
+    serializedNode.tagName === 'iframe' &&
+    (serializedNode as elementNode).attributes.rr_captured_src === undefined
   ) {
     onceIframeLoaded(
       n as HTMLIFrameElement,
@@ -1157,6 +1295,10 @@ export function serializeNodeWithId(
             slimDOMOptions,
             dataURLOptions,
             inlineImages,
+            captureAssets: {
+              ...captureAssets,
+              _fromMutation: true,
+            },
             recordCanvas,
             preserveWhiteSpace,
             onSerialize,
@@ -1165,6 +1307,7 @@ export function serializeNodeWithId(
             onStylesheetLoad,
             stylesheetLoadTimeout,
             keepIframeSrcFn,
+            onAssetDetected,
           });
 
           if (serializedIframeNode) {
@@ -1209,6 +1352,10 @@ export function serializeNodeWithId(
             slimDOMOptions,
             dataURLOptions,
             inlineImages,
+            captureAssets: {
+              ...captureAssets,
+              _fromMutation: true,
+            },
             recordCanvas,
             preserveWhiteSpace,
             onSerialize,
@@ -1217,6 +1364,7 @@ export function serializeNodeWithId(
             onStylesheetLoad,
             stylesheetLoadTimeout,
             keepIframeSrcFn,
+            onAssetDetected,
           });
 
           if (serializedLinkNode) {
@@ -1249,6 +1397,7 @@ function snapshot(
     slimDOM?: 'all' | boolean | SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     inlineImages?: boolean;
+    captureAssets?: captureAssetsParam;
     recordCanvas?: boolean;
     preserveWhiteSpace?: boolean;
     onSerialize?: (n: Node) => unknown;
@@ -1263,6 +1412,7 @@ function snapshot(
     ) => unknown;
     stylesheetLoadTimeout?: number;
     keepIframeSrcFn?: KeepIframeSrcFn;
+    onAssetDetected?: (asset: asset) => unknown;
   },
 ): serializedNodeWithId | null {
   const {
@@ -1273,6 +1423,7 @@ function snapshot(
     maskTextSelector = null,
     inlineStylesheet = true,
     inlineImages = false,
+    captureAssets = {},
     recordCanvas = false,
     maskAllInputs = false,
     maskTextFn,
@@ -1285,6 +1436,7 @@ function snapshot(
     iframeLoadTimeout,
     onStylesheetLoad,
     stylesheetLoadTimeout,
+    onAssetDetected,
     keepIframeSrcFn = () => false,
   } = options || {};
   const maskInputOptions: MaskInputOptions =
@@ -1329,6 +1481,7 @@ function snapshot(
     slimDOMOptions,
     dataURLOptions,
     inlineImages,
+    captureAssets,
     recordCanvas,
     preserveWhiteSpace,
     onSerialize,
@@ -1338,6 +1491,7 @@ function snapshot(
     stylesheetLoadTimeout,
     keepIframeSrcFn,
     newlyAddedElement: false,
+    onAssetDetected,
   });
 }
 
@@ -1361,6 +1515,7 @@ export function visitSnapshot(
 export function cleanupSnapshot() {
   // allow a new recording to start numbering nodes from scratch
   _id = 1;
+  _styleId = 1;
 }
 
 export default snapshot;
