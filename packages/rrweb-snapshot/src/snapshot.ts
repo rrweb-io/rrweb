@@ -33,11 +33,7 @@ import {
   absolutifyURLs,
   markCssSplits,
 } from './snapshot-utils';
-import {
-  lowerIfExists,
-  shouldCaptureAsset,
-  stringifyCssRules,
-} from './utils';
+import { lowerIfExists, shouldCaptureAsset, stringifyCssRules } from './utils';
 import dom from '@rrweb/utils';
 
 let _id = 1;

@@ -338,8 +338,7 @@ describe('onAssetDetected callback', () => {
     expect(onAssetDetected).toHaveBeenCalledWith({
       element: el.querySelector('img'),
       attr: 'srcset',
-      value:
-        'https://example.com/team.jpg, https://example.com/team@2x.jpg 2x',
+      value: 'https://example.com/team.jpg, https://example.com/team@2x.jpg 2x',
     });
     expect(img.attributes).toMatchObject({
       rr_captured_srcset:

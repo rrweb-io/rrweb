@@ -704,13 +704,11 @@ export default class MutationBuffer {
               this.captureAssets,
             )
           ) {
-            this.assetManager.capture(
-              {
-                element: target,
-                attr: attributeName,
-                value: transformedValue,
-              },
-            );
+            this.assetManager.capture({
+              element: target,
+              attr: attributeName,
+              value: transformedValue,
+            });
             attributeName = `rr_captured_${attributeName}`;
           }
           // overwrite attribute if the mutations was triggered in same time
