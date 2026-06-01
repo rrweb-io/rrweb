@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/record",
-  "version": "2.0.0-alpha.20",
+  "version": "2.0.0",
   "publishConfig": {
     "access": "public"
   },
@@ -11,7 +11,8 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "yarn turbo run prepublish",
-    "test": "vitest run",
+    "retest": "vitest run",
+    "test": "yarn build && vitest run",
     "test:watch": "vitest watch",
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build",
@@ -56,9 +57,9 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.20",
-    "rrweb": "^2.0.0-alpha.20",
-    "@rrweb/utils": "^2.0.0-alpha.20"
+    "@rrweb/types": "^2.0.0",
+    "rrweb": "^2.0.0",
+    "@rrweb/utils": "^2.0.0"
   },
   "browserslist": [
     "supports es6-class"

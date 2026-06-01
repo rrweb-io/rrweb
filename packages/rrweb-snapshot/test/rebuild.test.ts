@@ -4,10 +4,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { beforeEach, describe, expect as _expect, it, vi } from 'vitest';
-import {
+import rebuild, {
   adaptCssForReplay,
   buildNodeWithSN,
   createCache,
+  createSandboxedIframe,
+  rebuildIntoSandboxedIframe,
 } from '../src/rebuild';
 import { NodeType } from '@rrweb/types';
 import { createMirror, Mirror, normalizeCssString } from '../src/utils';
@@ -44,6 +46,343 @@ describe('rebuild', function () {
   beforeEach(() => {
     mirror = createMirror();
     cache = createCache();
+  });
+
+  const simpleSnapshot = {
+    id: 1,
+    type: NodeType.Document,
+    childNodes: [
+      {
+        id: 2,
+        type: NodeType.Element,
+        tagName: 'html',
+        attributes: {},
+        childNodes: [
+          {
+            id: 3,
+            type: NodeType.Element,
+            tagName: 'body',
+            attributes: {},
+            childNodes: [],
+          },
+        ],
+      },
+    ],
+  } as const;
+
+  function setIframeSandbox(iframe: HTMLIFrameElement, sandbox: string): void {
+    const tokens = sandbox.trim().split(/\s+/).filter(Boolean);
+    iframe.setAttribute('sandbox', sandbox);
+    Object.defineProperty(iframe, 'sandbox', {
+      configurable: true,
+      value: {
+        length: tokens.length,
+        contains: (token: string) => tokens.includes(token),
+        item: (index: number) => tokens[index] ?? null,
+        toString: () => sandbox,
+        [Symbol.iterator]: () => tokens[Symbol.iterator](),
+      },
+    });
+  }
+
+  function mockCreatedIframeSandboxDomApi(
+    onIframe?: (iframe: HTMLIFrameElement) => void,
+  ): () => void {
+    const createElement = document.createElement.bind(document);
+    const getTokens = (iframe: HTMLIFrameElement) =>
+      (iframe.getAttribute('sandbox') || '')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+    const spy = vi.spyOn(document, 'createElement').mockImplementation(((
+      tagName: string,
+      options?: ElementCreationOptions,
+    ) => {
+      const element = createElement(tagName, options);
+      if (tagName.toLowerCase() === 'iframe') {
+        const iframe = element as HTMLIFrameElement;
+        Object.defineProperty(iframe, 'sandbox', {
+          configurable: true,
+          value: {
+            get length() {
+              return getTokens(iframe).length;
+            },
+            contains: (token: string) => getTokens(iframe).includes(token),
+            item: (index: number) => getTokens(iframe)[index] ?? null,
+            toString: () => iframe.getAttribute('sandbox') || '',
+            [Symbol.iterator]: () => getTokens(iframe)[Symbol.iterator](),
+          },
+        });
+        onIframe?.(iframe);
+      }
+      return element;
+    }) as typeof document.createElement);
+
+    return () => spy.mockRestore();
+  }
+
+  describe('browser rebuild target guard', () => {
+    it('throws when rebuilding into the top-level browser document', () => {
+      expect(() =>
+        rebuild(simpleSnapshot, {
+          doc: document,
+          cache,
+          mirror,
+        }),
+      ).toThrow(
+        'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document',
+      );
+    });
+
+    it('throws for caller-supplied iframe documents even with exactly allow-same-origin sandbox', () => {
+      const iframe = document.createElement('iframe');
+      setIframeSandbox(iframe, 'allow-same-origin');
+      document.body.appendChild(iframe);
+
+      expect(() =>
+        rebuild(simpleSnapshot, {
+          doc: iframe.contentDocument!,
+          cache,
+          mirror,
+        }),
+      ).toThrow(
+        'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document',
+      );
+
+      iframe.remove();
+    });
+
+    it('allows rebuilding into an iframe document created by createSandboxedIframe', () => {
+      const root = document.createElement('div');
+      document.body.appendChild(root);
+      const restoreCreateElement = mockCreatedIframeSandboxDomApi();
+
+      try {
+        const iframe = createSandboxedIframe({
+          root,
+        });
+
+        const node = rebuild(simpleSnapshot, {
+          doc: iframe.contentDocument!,
+          cache,
+          mirror,
+        });
+
+        expect(root.contains(iframe)).toBe(true);
+        expect(iframe.getAttribute('sandbox')).toBe('allow-same-origin');
+        expect(node).toBe(iframe.contentDocument);
+      } finally {
+        restoreCreateElement();
+        root.remove();
+      }
+    });
+
+    it('throws for sandbox policies other than exactly allow-same-origin', () => {
+      for (const sandbox of [
+        '',
+        'allow-scripts',
+        'allow-same-origin allow-scripts',
+        'allow-same-origin allow-forms',
+      ]) {
+        const root = document.createElement('div');
+        document.body.appendChild(root);
+        const restoreCreateElement = mockCreatedIframeSandboxDomApi();
+
+        try {
+          const iframe = createSandboxedIframe({
+            root,
+          });
+          setIframeSandbox(iframe, sandbox);
+
+          expect(() =>
+            rebuild(simpleSnapshot, {
+              doc: iframe.contentDocument!,
+              cache: createCache(),
+              mirror: createMirror(),
+            }),
+          ).toThrow(
+            'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document',
+          );
+        } finally {
+          restoreCreateElement();
+          root.remove();
+        }
+      }
+    });
+
+    it('throws when only a raw sandbox attribute is present without the sandbox DOM API', () => {
+      const iframe = document.createElement('iframe');
+      iframe.setAttribute('sandbox', 'allow-same-origin');
+
+      const iframePrototype = Object.getPrototypeOf(iframe);
+      const sandboxDescriptor = Object.getOwnPropertyDescriptor(
+        iframePrototype,
+        'sandbox',
+      );
+      if (sandboxDescriptor) {
+        delete iframePrototype.sandbox;
+      }
+
+      try {
+        expect('sandbox' in iframe).toBe(false);
+        document.body.appendChild(iframe);
+
+        expect(() =>
+          rebuild(simpleSnapshot, {
+            doc: iframe.contentDocument!,
+            cache: createCache(),
+            mirror: createMirror(),
+          }),
+        ).toThrow(
+          'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document',
+        );
+      } finally {
+        iframe.remove();
+        if (sandboxDescriptor) {
+          Object.defineProperty(iframePrototype, 'sandbox', sandboxDescriptor);
+        }
+      }
+    });
+
+    it('allows an unprotected rebuild when the caller explicitly opts out', () => {
+      const node = rebuild(simpleSnapshot, {
+        doc: document,
+        cache,
+        mirror,
+        UNSAFE_allowUnprotectedRebuild: true,
+      });
+
+      expect(node).toBe(document);
+    });
+
+    it('allows rebuilding into a document without a defaultView', () => {
+      const detachedDocument = document.implementation.createDocument(
+        null,
+        '',
+        null,
+      );
+
+      expect(detachedDocument.defaultView).toBeNull();
+
+      const node = rebuild(
+        {
+          id: 4,
+          type: NodeType.Element,
+          tagName: 'div',
+          attributes: {},
+          childNodes: [],
+        },
+        {
+          doc: detachedDocument,
+          cache,
+          mirror,
+        },
+      );
+
+      expect(node).toBeInstanceOf(Element);
+      expect(node?.ownerDocument).toBe(detachedDocument);
+    });
+
+    it('rebuildIntoSandboxedIframe creates a fresh sandboxed iframe in the required root', () => {
+      const root = document.createElement('div');
+      document.body.appendChild(root);
+      const restoreCreateElement = mockCreatedIframeSandboxDomApi();
+
+      try {
+        const { iframe, node } = rebuildIntoSandboxedIframe(simpleSnapshot, {
+          root,
+          cache,
+          mirror,
+        });
+
+        expect(root.contains(iframe)).toBe(true);
+        expect(iframe.getAttribute('sandbox')).toBe('allow-same-origin');
+        expect(node).toBe(iframe.contentDocument);
+        expect(iframe.contentDocument!.querySelector('body')).not.toBeNull();
+      } finally {
+        restoreCreateElement();
+        root.remove();
+      }
+    });
+
+    it('rebuildIntoSandboxedIframe does not allow callers to override sandbox', () => {
+      const root = document.createElement('div');
+      document.body.appendChild(root);
+      const restoreCreateElement = mockCreatedIframeSandboxDomApi();
+
+      try {
+        const { iframe } = rebuildIntoSandboxedIframe(simpleSnapshot, {
+          root,
+          cache,
+          mirror,
+          iframeAttributes: {
+            sandbox: 'allow-same-origin allow-scripts',
+            title: 'Replay',
+          } as Record<string, string>,
+        });
+
+        expect(iframe.getAttribute('sandbox')).toBe('allow-same-origin');
+        expect(iframe.getAttribute('title')).toBe('Replay');
+      } finally {
+        restoreCreateElement();
+        root.remove();
+      }
+    });
+
+    it('rebuildIntoSandboxedIframe removes the iframe when rebuild throws', () => {
+      const root = document.createElement('div');
+      document.body.appendChild(root);
+      let createdIframe: HTMLIFrameElement | undefined;
+      const restoreCreateElement = mockCreatedIframeSandboxDomApi((iframe) => {
+        document.body.appendChild(iframe);
+        createdIframe = iframe;
+      });
+
+      try {
+        expect(() =>
+          rebuildIntoSandboxedIframe(simpleSnapshot, {
+            root,
+            cache,
+            mirror,
+            afterAppend: () => {
+              throw new Error('after append failed');
+            },
+          }),
+        ).toThrow('after append failed');
+
+        expect(createdIframe).toBeDefined();
+        expect(root.contains(createdIframe!)).toBe(false);
+      } finally {
+        restoreCreateElement();
+        root.remove();
+      }
+    });
+
+    it('createSandboxedIframe rejects a detached root without appending an iframe', () => {
+      const root = document.createElement('div');
+
+      expect(() =>
+        createSandboxedIframe({
+          root,
+        }),
+      ).toThrow('root to be connected to a document');
+
+      expect(root.querySelector('iframe')).toBeNull();
+    });
+
+    it('rebuildIntoSandboxedIframe rejects a detached root without appending an iframe', () => {
+      const root = document.createElement('div');
+
+      expect(() =>
+        rebuildIntoSandboxedIframe(simpleSnapshot, {
+          root,
+          cache,
+          mirror,
+        }),
+      ).toThrow('root to be connected to a document');
+
+      expect(root.querySelector('iframe')).toBeNull();
+    });
   });
 
   describe('rr_dataURL', function () {

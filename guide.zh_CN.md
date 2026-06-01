@@ -217,7 +217,7 @@ setInterval(save, 10 * 1000);
 | maskInputFn              | -                  | 自定义特定类型的输入框内容记录逻辑                                                                                                                                                    |
 | maskTextFn               | -                  | 自定义文字内容的记录逻辑                                                                                                                                                              |
 | slimDOMOptions           | {}                 | 去除 DOM 中不必要的部分 <br />类型详见[列表](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L97-L108)           |
-| inlineStylesheet         | true               | 是否将样式表内联                                                                                                                                                                      |
+| inlineStylesheet         | true               | 自 2.0.0 起弃用。2.0 中仍受支持，但计划由未来的 `captureAssets` 资源录制 API 取代。                                                                                                   |
 | hooks                    | {}                 | 各类事件的回调<br />类型详见[列表](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                                                 |
 | packFn                   | -                  | 数据压缩函数，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                            |
 | sampling                 | -                  | 数据抽样策略，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                            |
@@ -225,7 +225,7 @@ setInterval(save, 10 * 1000);
 | recordCanvas             | false              | 是否记录 canvas 内容, 可用选项：`false`, `true`                                                                                                                                       |
 | recordCrossOriginIframes | false              | 是否记录 cross origin iframes。 必须在每个子 iframe 中注入 rrweb 才能使其工作。 可用选项：`false`, `true`                                                                             |
 | recordAfter              | 'load'             | 如果 document 还没有加载完成，recorder 将会在指定的事件触发后开始录制。可用选项： `DOMContentLoaded`, `load`                                                                          |
-| inlineImages             | false              | 是否将图片内容记内联录制                                                                                                                                                              |
+| inlineImages             | false              | 自 2.0.0 起弃用。2.0 中仍受支持，但计划由未来的 `captureAssets` 资源录制 API 取代。                                                                                                   |
 | collectFonts             | false              | 是否记录页面中的字体文件                                                                                                                                                              |
 | userTriggeredOnInput     | false              | [什么是 `userTriggered`](https://github.com/rrweb-io/rrweb/pull/495)                                                                                                                  |
 | plugins                  | []                 | 加载插件以获得额外的录制功能. [什么是插件？](./docs/recipes/plugin.zh_CN.md)                                                                                                          |
@@ -380,7 +380,7 @@ replayer.destroy();
 | liveMode            | false         | 是否开启直播模式                                                                                                                                                                                     |
 | insertStyleRules    | []            | 可以传入多个 CSS rule string，用于自定义回放时 iframe 内的样式                                                                                                                                       |
 | triggerFocus        | true          | 回放时是否回放 focus 交互                                                                                                                                                                            |
-| UNSAFE_replayCanvas | false         | 回放时是否回放 canvas 内容，**开启后将会关闭沙盒策略，导致一定风险**                                                                                                                                 |
+| UNSAFE_replayCanvas | false         | 回放时是否回放 canvas 内容，**开启后会向回放 iframe 添加 `allow-scripts`，并退出沙盒的脚本执行保护。仅在你接受该风险的回放数据上使用。**                                                             |
 | pauseAnimation      | true          | 当播放器停止播放时，是否将 CSS 动画也停止播放                                                                                                                                                        |
 | mouseTail           | true          | 是否在回放时增加鼠标轨迹。传入 false 可关闭，传入对象可以定制轨迹持续时间、样式等，配置详见[类型](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
 | unpackFn            | -             | 数据解压缩函数，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                                         |
