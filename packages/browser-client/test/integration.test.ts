@@ -25,7 +25,14 @@ const TEST_API_BASE_URL = (
   import.meta.env.VITE_RRWEB_BROWSER_CLIENT_API_BASE_URL ||
   'http://localhost:8787'
 ).replace(/\/$/, '');
-const TEST_API_KEY = import.meta.env.VITE_TEST_API_KEY || '';
+const TEST_PUBLIC_API_KEY =
+  import.meta.env.VITE_TEST_PUBLIC_API_KEY ||
+  import.meta.env.VITE_TEST_API_KEY ||
+  '';
+const TEST_READ_API_KEY =
+  import.meta.env.VITE_TEST_READ_API_KEY ||
+  import.meta.env.VITE_TEST_API_KEY ||
+  '';
 
 function apiUrl(path: string): string {
   return `${TEST_API_BASE_URL}${path}`;
@@ -42,7 +49,7 @@ function defaultOptions(
   if (!options.serverUrl) {
     options.serverUrl = TEST_SERVER_URL;
   }
-  options.publicApiKey = TEST_API_KEY;
+  options.publicApiKey = TEST_PUBLIC_API_KEY;
 
   if (!options.meta) {
     options.meta = {
@@ -58,8 +65,15 @@ type RoundtripOptions = Partial<browserClientRecordOptions> & {
 };
 
 const roundtripOptions: RoundtripOptions[] = [
-  {},
   {
+    captureAssets: {
+      stylesheets: 'without-fetch',
+    },
+  },
+  {
+    captureAssets: {
+      stylesheets: 'without-fetch',
+    },
     disableWebsockets: true, // dummy
     serverUrl: postEventsUrl(TEST_SERVER_URL), // actually disable websockets
   },
@@ -91,7 +105,8 @@ async function pollUntil<T>(
   throw new Error(`Timed out after ${timeout}ms`);
 }
 
-const describeWithApi = TEST_API_KEY ? describe : describe.skip;
+const describeWithApi =
+  TEST_PUBLIC_API_KEY && TEST_READ_API_KEY ? describe : describe.skip;
 
 describeWithApi(
   '@rrweb/browser-client integration tests',
@@ -114,6 +129,7 @@ function emitFnName(event) {
   window.snapshots.push(event);
 }
 </script>
+<style>body { color: rgb(1, 2, 3); }</style>
 <script src="${testServerURL}/browser-client.umd.cjs" autostart async>
 ${JSON.stringify(defaultOptions(options))}
 </script>
@@ -223,7 +239,7 @@ ${JSON.stringify(defaultOptions(options))}
               apiUrl(`/recordings/${recordingId}/events`),
               {
                 headers: {
-                  Authorization: 'Bearer ' + TEST_API_KEY,
+                  Authorization: 'Bearer ' + TEST_READ_API_KEY,
                 },
               },
             );
@@ -232,11 +248,16 @@ ${JSON.stringify(defaultOptions(options))}
             }
             return res.json();
           },
-          (events) => events.length > 0,
+          (events) => events.some((event) => event.type === EventType.Asset),
           { timeout: 7000, interval: 200 },
         );
 
         expect(serverEvents.length).toBeGreaterThan(1);
+        expect(serverEvents).toContainEqual(
+          expect.objectContaining({
+            type: EventType.Asset,
+          }),
+        );
 
         serverEvents.forEach((e) => {
           // TODO: these should probably not be returned in the first place
@@ -254,7 +275,7 @@ ${JSON.stringify(defaultOptions(options))}
           async () => {
             const res = await fetch(apiUrl(`/recordings/${recordingId}`), {
               headers: {
-                Authorization: 'Bearer ' + TEST_API_KEY,
+                Authorization: 'Bearer ' + TEST_READ_API_KEY,
               },
             });
             if (!res.ok) {
@@ -364,7 +385,7 @@ ${JSON.stringify(defaultOptions(options))}
             apiUrl(`/replay?meta[sessionId]=${options.meta.sessionId}`),
             {
               headers: {
-                Authorization: 'Bearer ' + TEST_API_KEY,
+                Authorization: 'Bearer ' + TEST_READ_API_KEY,
               },
             },
           );

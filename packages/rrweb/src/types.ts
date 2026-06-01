@@ -10,6 +10,7 @@ import type { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
 import type { RRNode } from 'rrdom';
 import type { CanvasManager } from './record/observers/canvas/canvas-manager';
+import type AssetManager from './record/observers/asset-manager';
 import type { StylesheetManager } from './record/stylesheet-manager';
 import type {
   DataURLOptions,
@@ -17,6 +18,7 @@ import type {
   blockClass,
   canvasMutationCallback,
   customElementCallback,
+  captureAssetsParam,
   eventWithTime,
   fontCallback,
   hooksParam,
@@ -58,10 +60,9 @@ export type recordOptions<T> = {
   slimDOMOptions?: SlimDOMOptions | 'all' | true;
   ignoreCSSAttributes?: Set<string>;
   /**
-   * @deprecated Since 2.0.0. This option is still supported, but is planned to
-   * be superseded by future captureAssets asset recording APIs.
+   * @deprecated asset-branch compatibility for `captureAssets.stylesheets`
    */
-  inlineStylesheet?: boolean;
+  inlineStylesheet?: boolean | 'all';
   hooks?: hooksParam;
   packFn?: PackFn;
   sampling?: SamplingStrategy;
@@ -73,10 +74,14 @@ export type recordOptions<T> = {
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
   /**
-   * @deprecated Since 2.0.0. This option is still supported, but is planned to
-   * be superseded by future captureAssets asset recording APIs.
+   * @deprecated asset-branch compatibility for `captureAssets.images`
    */
   inlineImages?: boolean;
+  /**
+   * Upcoming asset-branch support; exposed as compatibility plumbing while
+   * recorder implementation is wired in.
+   */
+  captureAssets?: captureAssetsParam;
   plugins?: RecordPlugin[];
   // departed, please use sampling options
   mousemoveWait?: number;
@@ -103,7 +108,7 @@ export type observerParam = {
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
   keepIframeSrcFn: KeepIframeSrcFn;
-  inlineStylesheet: boolean;
+  inlineStylesheet: boolean | 'all';
   styleSheetRuleCb: styleSheetRuleCallback;
   styleDeclarationCb: styleDeclarationCallback;
   canvasMutationCb: canvasMutationCallback;
@@ -111,6 +116,7 @@ export type observerParam = {
   fontCb: fontCallback;
   sampling: SamplingStrategy;
   recordDOM: boolean;
+  captureAssets: captureAssetsParam;
   recordCanvas: boolean;
   inlineImages: boolean;
   userTriggeredOnInput: boolean;
@@ -124,6 +130,7 @@ export type observerParam = {
   shadowDomManager: ShadowDomManager;
   canvasManager: CanvasManager;
   processedNodeManager: ProcessedNodeManager;
+  assetManager: AssetManager;
   ignoreCSSAttributes: Set<string>;
   plugins: Array<{
     observer: (
@@ -148,6 +155,7 @@ export type MutationBufferParam = Pick<
   | 'maskTextFn'
   | 'maskInputFn'
   | 'keepIframeSrcFn'
+  | 'captureAssets'
   | 'recordCanvas'
   | 'inlineImages'
   | 'slimDOMOptions'
@@ -159,6 +167,7 @@ export type MutationBufferParam = Pick<
   | 'shadowDomManager'
   | 'canvasManager'
   | 'processedNodeManager'
+  | 'assetManager'
 >;
 
 export type ReplayPlugin = {
@@ -232,3 +241,7 @@ export type CrossOriginIframeMessageEvent =
   MessageEvent<CrossOriginIframeMessageEventContent>;
 
 export type ErrorHandler = (error: unknown) => void | boolean;
+
+export interface ProcessingStyleElement extends HTMLStyleElement {
+  __rrProcessingStylesheet?: true;
+}

@@ -16,6 +16,9 @@
       "path": "packages/rrweb-snapshot"
     },
     {
+      "path": "packages/browser-client"
+    },
+    {
       "path": "packages/types"
     },
     {

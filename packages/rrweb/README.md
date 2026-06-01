@@ -19,6 +19,8 @@ rrweb refers to 'record and replay the web', which is a tool for recording and r
 
 [**🍳 Recipes 🍳**](../../docs/recipes/index.md)
 
+[**Asset capture**](../../docs/recipes/assets.md) documents `captureAssets` for object URLs, origins, images, video, audio, and stylesheet asset events. The legacy `inlineImages` and `inlineStylesheet` record options remain available as compatibility inputs.
+
 ## Installation
 
 `rrweb` is kept mainly for backward compatibility. For new integrations, prefer package-specific entrypoints (`@rrweb/record` and `@rrweb/replay`) first, or use `@rrweb/all` as a convenience package.

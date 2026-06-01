@@ -11,15 +11,14 @@
       }
     </script>
     <script src="../dist/browser-client.umd.cjs">
-      // provide some config
       {
         "emit": "emitFn",
         "serverUrl": "https://api.rrweb.com/recordings/{recordingId}/events/ws",
-        "publicApiKey": document.location.search.split('publicApiKey=')[1],
+        "publicApiKey": "public_key_rr_...",
         "autostart": true,
-        "blockSelector": '.my-block',
+        "blockSelector": ".my-block",
         "meta": {
-          "visitor": 'x1234',
+          "visitor": "x1234"
         }
       }
     </script>

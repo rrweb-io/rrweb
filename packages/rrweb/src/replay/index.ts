@@ -70,6 +70,7 @@ import type {
   styleSheetRuleData,
   styleDeclarationData,
   adoptedStyleSheetData,
+  serializedNodeWithId,
   serializedElementNodeWithId,
 } from '@rrweb/types';
 import {
@@ -89,6 +90,7 @@ import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
+import AssetManager from './asset-manager';
 import { MediaManager } from './media';
 import { applyDialogToTopLevel, removeDialogFromTopLevel } from './dialog';
 
@@ -146,6 +148,7 @@ export class Replayer {
   private cache: BuildCache = createCache();
 
   private imageMap: Map<eventWithTime | string, HTMLImageElement> = new Map();
+  private assetManager: AssetManager;
   private canvasEventMap: Map<eventWithTime, canvasMutationParam> = new Map();
 
   private mirror: Mirror = createMirror();
@@ -206,6 +209,10 @@ export class Replayer {
       logger: console,
     };
     this.config = Object.assign({}, defaultConfig, config);
+    this.assetManager = new AssetManager({
+      liveMode: this.config.liveMode,
+      cache: this.cache,
+    });
 
     this.handleResize = this.handleResize.bind(this);
     this.getCastFn = this.getCastFn.bind(this);
@@ -658,6 +665,7 @@ export class Replayer {
         case EventType.Meta:
         case EventType.Plugin:
         case EventType.IncrementalSnapshot:
+        case EventType.Asset:
           break;
         default:
           break;
@@ -752,6 +760,11 @@ export class Replayer {
           }
         };
         break;
+      case EventType.Asset:
+        castFn = () => {
+          void this.assetManager.add(event);
+        };
+        break;
       default:
     }
     const wrappedCastFn = () => {
@@ -834,6 +847,10 @@ export class Replayer {
       }
     };
 
+    this.assetManager.replayerApproxTs = event.timestamp;
+    void this.preloadAllAssets(event);
+    this.prepareCapturedAssetNodes(event.data.node);
+
     /**
      * Normally rebuilding full snapshot should not be under virtual dom environment.
      * But if the order of data events has some issues, it might be possible.
@@ -852,6 +869,7 @@ export class Replayer {
       mirror: this.mirror,
       UNSAFE_allowUnprotectedRebuild: this.UNSAFE_replayCanvas,
     });
+    this.manageCapturedAssetAttributes(event.data.node, this.mirror);
     afterAppend(this.iframe.contentDocument, event.data.node.id);
 
     for (const { mutationInQueue, builtNode } of collectedIframes) {
@@ -965,6 +983,7 @@ export class Replayer {
       afterAppend,
       cache: this.cache,
     });
+    this.manageCapturedAssetAttributes(mutation.node, mirror as Mirror);
     afterAppend(iframeEl.contentDocument! as Document, mutation.node.id);
 
     for (const { mutationInQueue, builtNode } of collectedIframes) {
@@ -1048,6 +1067,96 @@ export class Replayer {
         }, this.config.loadTimeout);
       }
     }
+  }
+
+  private prepareCapturedAssetNodes(node: serializedNodeWithId) {
+    if (node.type !== NodeType.Document && node.type !== NodeType.Element) {
+      return;
+    }
+    if (node.type === NodeType.Element) {
+      const { attributes } = node;
+      const rel =
+        typeof attributes.rel === 'string' ? attributes.rel.toLowerCase() : '';
+      if (
+        node.tagName === 'link' &&
+        rel === 'stylesheet' &&
+        (attributes.rr_captured_href || attributes.rr_css_text)
+      ) {
+        node.tagName = 'style';
+      }
+    }
+    node.childNodes.forEach((childNode) =>
+      this.prepareCapturedAssetNodes(childNode),
+    );
+  }
+
+  private manageCapturedAssetAttributes(
+    serializedNode: serializedNodeWithId,
+    mirror: Mirror,
+  ) {
+    if (
+      serializedNode.type !== NodeType.Document &&
+      serializedNode.type !== NodeType.Element
+    ) {
+      return;
+    }
+    if (serializedNode.type === NodeType.Element) {
+      const node = mirror.getNode(serializedNode.id) as Element | null;
+      if (node) {
+        for (const name in serializedNode.attributes) {
+          const value = serializedNode.attributes[name];
+          if (!value || typeof value !== 'string') continue;
+          if (name.startsWith('rr_captured_')) {
+            void this.assetManager.manageAttribute(
+              node,
+              serializedNode.id,
+              name.substring('rr_captured_'.length),
+              value,
+              serializedNode,
+            );
+          } else if (name === 'rr_css_text') {
+            void this.assetManager.manageAttribute(
+              node,
+              serializedNode.id,
+              name,
+              value,
+              serializedNode,
+            );
+          }
+        }
+      }
+    }
+    serializedNode.childNodes.forEach((childNode) =>
+      this.manageCapturedAssetAttributes(childNode, mirror),
+    );
+  }
+
+  /**
+   * Process all asset events and preload them.
+   */
+  private async preloadAllAssets(
+    fullSnapshot: fullSnapshotEvent & { timestamp: number },
+  ): Promise<void[]> {
+    const promises: Promise<void>[] = [];
+    if (fullSnapshot.data.capturedAssetStatuses) {
+      fullSnapshot.data.capturedAssetStatuses.forEach((status) => {
+        if (this.assetManager.expectedAssets === null) {
+          this.assetManager.expectedAssets = new Set();
+        }
+        this.assetManager.expectedAssets.add(status.url);
+      });
+    }
+    for (const event of this.service.state.context.events) {
+      if (
+        event.type === EventType.Meta &&
+        event.timestamp > fullSnapshot.timestamp
+      )
+        break;
+      if (event.type === EventType.Asset) {
+        promises.push(this.assetManager.add(event));
+      }
+    }
+    return Promise.all(promises);
   }
 
   /**
@@ -1539,6 +1648,7 @@ export class Replayer {
       if (mutation.node.rootId && !mirror.getNode(mutation.node.rootId)) {
         return;
       }
+      this.prepareCapturedAssetNodes(mutation.node);
 
       const targetDoc = mutation.node.rootId
         ? mirror.getNode(mutation.node.rootId)
@@ -1573,6 +1683,7 @@ export class Replayer {
          */
         afterAppend,
       }) as Node | RRNode;
+      this.manageCapturedAssetAttributes(mutation.node, mirror as Mirror);
 
       // legacy data, we should not have -1 siblings any more
       if (mutation.previousId === -1 || mutation.nextId === -1) {
@@ -1846,6 +1957,27 @@ export class Replayer {
                 const tn = target.ownerDocument?.createTextNode(value);
                 if (tn) {
                   textarea.appendChild(tn as TNode);
+                }
+              } else if (
+                attributeName.startsWith('rr_captured_') ||
+                attributeName === 'rr_css_text'
+              ) {
+                const sn = mirror.getMeta(
+                  target as unknown as Node & RRNode,
+                ) as serializedElementNodeWithId | null;
+                if (sn) {
+                  Object.assign(sn.attributes, mutation.attributes);
+                  const serializedAttribute =
+                    attributeName === 'rr_css_text'
+                      ? attributeName
+                      : attributeName.substring('rr_captured_'.length);
+                  void this.assetManager.manageAttribute(
+                    target as Element,
+                    mutation.id,
+                    serializedAttribute,
+                    value,
+                    sn,
+                  );
                 }
               } else {
                 (target as Element | RRElement).setAttribute(

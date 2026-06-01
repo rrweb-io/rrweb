@@ -26,6 +26,7 @@ import type {
   documentTypeNode,
   textNode,
   elementNode,
+  captureAssetsParam,
 } from '@rrweb/types';
 import dom from '@rrweb/utils';
 
@@ -134,13 +135,20 @@ export function stringifyStylesheet(s: CSSStyleSheet): string | null {
       // an inline <style> element
       sheetHref = s.ownerNode.baseURI;
     }
-    const stringifiedRules = Array.from(rules, (rule: CSSRule) =>
-      stringifyRule(rule, sheetHref),
-    ).join('');
-    return fixBrowserCompatibilityIssuesInCSS(stringifiedRules);
+    return stringifyCssRules(rules, sheetHref);
   } catch (error) {
     return null;
   }
+}
+
+export function stringifyCssRules(
+  rules: CSSRuleList,
+  sheetHref: string | null,
+): string {
+  const stringifiedRules = Array.from(rules, (rule: CSSRule) =>
+    stringifyRule(rule, sheetHref),
+  ).join('');
+  return fixBrowserCompatibilityIssuesInCSS(stringifiedRules);
 }
 
 export function stringifyRule(rule: CSSRule, sheetHref: string | null): string {
@@ -292,6 +300,15 @@ export function maskInputValue({
 
 export function toLowerCase<T extends string>(str: T): Lowercase<T> {
   return str.toLowerCase() as unknown as Lowercase<T>;
+}
+
+export function lowerIfExists(
+  maybeAttr: string | number | boolean | undefined | null,
+): Lowercase<string> {
+  if (maybeAttr === undefined || maybeAttr === null) {
+    return '';
+  }
+  return toLowerCase(maybeAttr as string);
 }
 
 const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';
@@ -605,4 +622,143 @@ export function markCssSplits(
   style: HTMLStyleElement,
 ): string {
   return splitCssText(cssText, style).join('/* rr_split */');
+}
+
+export const CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
+  ['IMG', new Set(['src', 'srcset'])],
+  ['VIDEO', new Set(['src'])],
+  ['AUDIO', new Set(['src'])],
+  ['EMBED', new Set(['src'])],
+  ['SOURCE', new Set(['src'])],
+  ['TRACK', new Set(['src'])],
+  ['INPUT', new Set(['src'])],
+  ['OBJECT', new Set(['src'])],
+  ['BODY', new Set(['background'])],
+  ['TABLE', new Set(['background'])],
+  ['TD', new Set(['background'])],
+  ['TR', new Set(['background'])],
+  ['TH', new Set(['background'])],
+  ['TBODY', new Set(['background'])],
+  ['THEAD', new Set(['background'])],
+  ['image', new Set(['href'])],
+  ['feImage', new Set(['href'])],
+  ['cursor', new Set(['href'])],
+]);
+
+export function shouldCaptureAsset(
+  n: Element,
+  attribute: string,
+  value: string,
+  config: captureAssetsParam,
+): boolean {
+  let parentOfSource = '';
+  if (['SOURCE', 'TRACK'].includes(n.nodeName) && n.parentNode) {
+    parentOfSource = n.parentNode.nodeName;
+  }
+  if (
+    config.stylesheets !== false &&
+    n.nodeName === 'LINK' &&
+    attribute === 'href' &&
+    lowerIfExists((n as HTMLLinkElement).rel) === 'stylesheet'
+  ) {
+    const linkEl = n as HTMLLinkElement;
+    if (!linkEl.sheet) {
+      return false;
+    } else if (
+      config.stylesheets === true ||
+      !shouldIgnoreAsset(value, config)
+    ) {
+      return true;
+    } else if (config.stylesheets === 'without-fetch') {
+      try {
+        return linkEl.sheet.cssRules !== undefined;
+      } catch (e) {
+        return false;
+      }
+    }
+    return false;
+  } else if (
+    config.images !== undefined &&
+    ((n.nodeName === 'IMG' && ['src', 'srcset'].includes(attribute)) ||
+      (parentOfSource === 'PICTURE' && attribute === 'srcset'))
+  ) {
+    return config.images;
+  } else if (
+    config.video !== undefined &&
+    attribute === 'src' &&
+    [n.nodeName, parentOfSource].includes('VIDEO')
+  ) {
+    return config.video;
+  } else if (
+    config.audio !== undefined &&
+    attribute === 'src' &&
+    [n.nodeName, parentOfSource].includes('AUDIO')
+  ) {
+    return config.audio;
+  }
+  return (
+    isAttributeCapturable(n, attribute) && !shouldIgnoreAsset(value, config)
+  );
+}
+
+export function isAttributeCapturable(n: Element, attribute: string): boolean {
+  if (n.nodeName === 'IFRAME' && attribute === 'src') {
+    const iframe = n as HTMLIFrameElement;
+    if (iframe.contentDocument && iframe.contentDocument.contentType) {
+      return (
+        iframe.contentDocument.contentType.startsWith('image/') ||
+        iframe.contentDocument.contentType === 'application/pdf'
+      );
+    } else if (iframe.src) {
+      let iframePath;
+      try {
+        iframePath = new URL(iframe.src).pathname;
+      } catch (e) {
+        iframePath = iframe.src.split('?')[0];
+      }
+      return (
+        iframePath.endsWith('.pdf') ||
+        iframePath.endsWith('.jpeg') ||
+        iframePath.endsWith('.jpg') ||
+        iframePath.endsWith('.gif') ||
+        iframePath.endsWith('.png') ||
+        iframePath.endsWith('.webp')
+      );
+    }
+    return false;
+  }
+  const acceptedAttributesSet = CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS.get(
+    n.nodeName,
+  );
+  if (!acceptedAttributesSet) {
+    return false;
+  }
+  return acceptedAttributesSet.has(attribute);
+}
+
+export function shouldIgnoreAsset(
+  url: string,
+  config: captureAssetsParam,
+): boolean {
+  const originsToIgnore = ['data:'];
+  const urlIsBlob = url.startsWith(`blob:${window.location.origin}/`);
+
+  if (urlIsBlob) return !config.objectURLs;
+
+  for (const origin of originsToIgnore) {
+    if (url.startsWith(origin)) return true;
+  }
+  let urlOrigin;
+  try {
+    urlOrigin = new URL(url).origin;
+  } catch (e) {
+    return true;
+  }
+  const captureOrigins = config.origins;
+  if (typeof captureOrigins === 'boolean') {
+    return !captureOrigins;
+  } else if (Array.isArray(captureOrigins)) {
+    return !captureOrigins.includes(urlOrigin);
+  }
+  return true;
 }

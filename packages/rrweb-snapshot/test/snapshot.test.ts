@@ -2,12 +2,13 @@
  * @vitest-environment jsdom
  */
 import { JSDOM } from 'jsdom';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import snapshot, {
   _isBlockedElement,
   serializeNodeWithId,
 } from '../src/snapshot';
+import type { asset, captureAssetsParam } from '@rrweb/types';
 import { elementNode, serializedNodeWithId } from '../src/types';
 import { Mirror, absolutifyURLs } from '../src/utils';
 
@@ -250,6 +251,292 @@ describe('jsdom snapshot', () => {
     });
     expect(sn).toMatchObject({
       type: 0,
+    });
+  });
+});
+
+describe('onAssetDetected callback', () => {
+  const serializeAssetNode = (
+    node: Node,
+    onAssetDetected: (result: asset) => void,
+    captureAssets: captureAssetsParam = {
+      objectURLs: true,
+      origins: ['https://example.com'],
+    },
+    inlineImages = false,
+    inlineStylesheet: boolean | 'all' = true,
+  ): serializedNodeWithId | null => {
+    return serializeNodeWithId(node, {
+      doc: document,
+      mirror: new Mirror(),
+      blockClass: 'blockblock',
+      blockSelector: null,
+      maskTextClass: 'maskmask',
+      maskTextSelector: null,
+      skipChild: false,
+      inlineStylesheet,
+      maskTextFn: undefined,
+      maskInputFn: undefined,
+      slimDOMOptions: {},
+      newlyAddedElement: false,
+      inlineImages,
+      onAssetDetected,
+      captureAssets,
+    });
+  };
+
+  const render = (html: string): HTMLDivElement => {
+    document.body.innerHTML = html;
+    return document.querySelector('div')!;
+  };
+
+  const findElement = (
+    node: serializedNodeWithId,
+    tagName: string,
+  ): elementNode | undefined => {
+    if (node.type === 2 && node.tagName === tagName) {
+      return node as elementNode;
+    }
+    if ('childNodes' in node) {
+      for (const child of node.childNodes) {
+        const match = findElement(child, tagName);
+        if (match) return match;
+      }
+    }
+    return undefined;
+  };
+
+  it('emits rr_captured_src for captured image assets', () => {
+    const el = render(`<div>
+      <img src="https://example.com/image.png" />
+    </div>`);
+
+    const onAssetDetected = vi.fn();
+    const serialized = serializeAssetNode(el, onAssetDetected) as elementNode;
+    const img = findElement(serialized, 'img')!;
+
+    expect(onAssetDetected).toHaveBeenCalledWith({
+      element: el.querySelector('img'),
+      attr: 'src',
+      value: 'https://example.com/image.png',
+    });
+    expect(img.attributes).toMatchObject({
+      rr_captured_src: 'https://example.com/image.png',
+    });
+    expect(img.attributes.src).toBeUndefined();
+  });
+
+  it('emits rr_captured_srcset for captured srcset assets', () => {
+    const el = render(`<div>
+      <img srcset="https://example.com/team.jpg, https://example.com/team@2x.jpg 2x" />
+    </div>`);
+
+    const onAssetDetected = vi.fn();
+    const serialized = serializeAssetNode(el, onAssetDetected) as elementNode;
+    const img = findElement(serialized, 'img')!;
+
+    expect(onAssetDetected).toHaveBeenCalledWith({
+      element: el.querySelector('img'),
+      attr: 'srcset',
+      value: 'https://example.com/team.jpg, https://example.com/team@2x.jpg 2x',
+    });
+    expect(img.attributes).toMatchObject({
+      rr_captured_srcset:
+        'https://example.com/team.jpg, https://example.com/team@2x.jpg 2x',
+    });
+  });
+
+  it('does not emit captured assets for blocked nodes', () => {
+    const el = render(`<div>
+      <img class="blockblock" src="https://example.com/image.png" />
+    </div>`);
+
+    const onAssetDetected = vi.fn();
+    const serialized = serializeAssetNode(el, onAssetDetected) as elementNode;
+    const img = findElement(serialized, 'img')!;
+
+    expect(onAssetDetected).not.toHaveBeenCalled();
+    expect(img.attributes.rr_captured_src).toBeUndefined();
+    expect(img.attributes.src).toBeUndefined();
+  });
+
+  it('detects loaded stylesheet links as captured assets', () => {
+    const el = render(`<div>
+      <link rel="stylesheet" href="https://example.com/css/style.css" />
+    </div>`);
+    const link = el.querySelector('link')!;
+    Object.defineProperty(link, 'sheet', {
+      value: true,
+    });
+
+    const onAssetDetected = vi.fn();
+    const serialized = serializeAssetNode(el, onAssetDetected) as elementNode;
+    const serializedLink = findElement(serialized, 'link')!;
+
+    expect(onAssetDetected).toHaveBeenCalledWith({
+      element: link,
+      attr: 'href',
+      value: 'https://example.com/css/style.css',
+    });
+    expect(serializedLink.attributes).toMatchObject({
+      rr_captured_href: 'https://example.com/css/style.css',
+    });
+    expect(serializedLink.attributes._cssText).toBeUndefined();
+  });
+
+  it('detects inaccessible stylesheet links so record can report error asset status', () => {
+    const el = render(`<div>
+      <link rel="stylesheet" href="https://example.com/css/missing.css" />
+    </div>`);
+    const link = el.querySelector('link')!;
+    Object.defineProperty(link, 'sheet', {
+      value: {
+        get cssRules() {
+          throw new DOMException('cssRules inaccessible', 'SecurityError');
+        },
+      },
+    });
+
+    const onAssetDetected = vi.fn();
+    const serialized = serializeAssetNode(el, onAssetDetected, {
+      stylesheets: true,
+      origins: ['https://example.com'],
+    }) as elementNode;
+    const serializedLink = findElement(serialized, 'link')!;
+
+    // Snapshot's contract is detection only: it marks the stylesheet as a
+    // captured asset. Fetch failure and capturedAssetStatuses are owned by
+    // record's asset manager.
+    expect(onAssetDetected).toHaveBeenCalledWith({
+      element: link,
+      attr: 'href',
+      value: 'https://example.com/css/missing.css',
+    });
+    expect(onAssetDetected.mock.calls[0][0]).not.toHaveProperty('status');
+    expect(serializedLink.attributes).toMatchObject({
+      rr_captured_href: 'https://example.com/css/missing.css',
+    });
+    expect(serializedLink.attributes._cssText).toBeUndefined();
+  });
+
+  it('detects style elements as stylesheet assets', () => {
+    const el = render(`<div>
+      <style>body { background: pink; }</style>
+    </div>`);
+
+    const onAssetDetected = vi.fn();
+    const serialized = serializeAssetNode(el, onAssetDetected) as elementNode;
+    const style = findElement(serialized, 'style')!;
+
+    expect(onAssetDetected).toHaveBeenCalledWith({
+      element: el.querySelector('style'),
+      attr: 'css_text',
+      styleId: expect.any(Number),
+      value: 'http://localhost:3000/',
+    });
+    expect(style.attributes.rr_css_text).toContain('#rr_style_el:');
+    expect(style.attributes._cssText).toBeUndefined();
+  });
+
+  it('does not detect style element assets when stylesheet capture is disabled', () => {
+    const el = render(`<div>
+      <style>body { background: pink; }</style>
+    </div>`);
+
+    const onAssetDetected = vi.fn();
+    const serialized = serializeAssetNode(el, onAssetDetected, {
+      stylesheets: false,
+      origins: ['https://example.com'],
+    }) as elementNode;
+    const style = findElement(serialized, 'style')!;
+
+    expect(onAssetDetected).not.toHaveBeenCalled();
+    expect(style.attributes.rr_css_text).toBeUndefined();
+    expect(style.attributes._cssText).toBeUndefined();
+  });
+
+  it('does not detect style element assets when inlineStylesheet is disabled', () => {
+    const el = render(`<div>
+      <style>body { background: pink; }</style>
+    </div>`);
+
+    const onAssetDetected = vi.fn();
+    const serialized = serializeAssetNode(
+      el,
+      onAssetDetected,
+      {
+        origins: ['https://example.com'],
+      },
+      false,
+      false,
+    ) as elementNode;
+    const style = findElement(serialized, 'style')!;
+
+    expect(onAssetDetected).not.toHaveBeenCalled();
+    expect(style.attributes.rr_css_text).toBeUndefined();
+    expect(style.attributes._cssText).toBeUndefined();
+  });
+
+  it('detects inaccessible style elements so record can report refused asset status', () => {
+    const el = render(`<div>
+      <style>body { background: pink; }</style>
+    </div>`);
+    const styleEl = el.querySelector('style')!;
+    Object.defineProperty(styleEl, 'sheet', {
+      value: {
+        get cssRules() {
+          throw new DOMException('cssRules inaccessible', 'SecurityError');
+        },
+      },
+    });
+
+    const onAssetDetected = vi.fn();
+    const serialized = serializeAssetNode(el, onAssetDetected) as elementNode;
+    const style = findElement(serialized, 'style')!;
+
+    // Snapshot's contract is detection only: it marks css_text for capture and
+    // preserves the original element. Refused/error status is owned by record's
+    // asset manager through capturedAssetStatuses.
+    expect(onAssetDetected).toHaveBeenCalledWith({
+      element: styleEl,
+      attr: 'css_text',
+      styleId: expect.any(Number),
+      value: 'http://localhost:3000/',
+    });
+    expect(onAssetDetected.mock.calls[0][0]).not.toHaveProperty('status');
+    expect(style.attributes.rr_css_text).toContain('#rr_style_el:');
+    expect(style.attributes._cssText).toBeUndefined();
+  });
+
+  it('detects media source assets when enabled', () => {
+    const el = render(`<div>
+      <video><source src="https://example.com/show.mp4" /></video>
+      <audio><source src="https://example.com/sound.mp3" /></audio>
+    </div>`);
+
+    const onAssetDetected = vi.fn();
+    const serialized = serializeAssetNode(el, onAssetDetected, {
+      video: true,
+      audio: true,
+    }) as elementNode;
+    const video = findElement(serialized, 'video')!;
+    const audio = findElement(serialized, 'audio')!;
+
+    expect(onAssetDetected).toHaveBeenCalledWith({
+      element: el.querySelector('video source'),
+      attr: 'src',
+      value: 'https://example.com/show.mp4',
+    });
+    expect(onAssetDetected).toHaveBeenCalledWith({
+      element: el.querySelector('audio source'),
+      attr: 'src',
+      value: 'https://example.com/sound.mp3',
+    });
+    expect((video.childNodes[0] as elementNode).attributes).toMatchObject({
+      rr_captured_src: 'https://example.com/show.mp4',
+    });
+    expect((audio.childNodes[0] as elementNode).attributes).toMatchObject({
+      rr_captured_src: 'https://example.com/sound.mp3',
     });
   });
 });
