@@ -1,0 +1,27 @@
+{
+  "mode": "pre",
+  "tag": "next",
+  "initialVersions": {
+    "@rrweb/all": "2.0.0",
+    "@rrweb/browser-client": "2.0.0",
+    "@rrweb/packer": "2.0.0",
+    "@rrweb/rrweb-plugin-canvas-webrtc-record": "2.0.0",
+    "@rrweb/rrweb-plugin-canvas-webrtc-replay": "2.0.0",
+    "@rrweb/rrweb-plugin-console-record": "2.0.0",
+    "@rrweb/rrweb-plugin-console-replay": "2.0.0",
+    "@rrweb/rrweb-plugin-sequential-id-record": "2.0.0",
+    "@rrweb/rrweb-plugin-sequential-id-replay": "2.0.0",
+    "@rrweb/record": "2.0.0",
+    "@rrweb/replay": "2.0.0",
+    "rrdom": "2.0.0",
+    "rrdom-nodejs": "2.0.0",
+    "rrvideo": "2.0.0",
+    "rrweb": "2.0.0",
+    "rrweb-player": "2.0.0",
+    "rrweb-snapshot": "2.0.0",
+    "@rrweb/types": "2.0.0",
+    "@rrweb/utils": "2.0.0",
+    "@rrweb/web-extension": "2.0.0"
+  },
+  "changesets": []
+}
