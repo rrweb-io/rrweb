@@ -51,11 +51,14 @@ rrwebBrowserClient.start({
 - `meta`: custom recording metadata sent before recorded events. Built-in diagnostics such as `recordVersion`, `recordCommitHash`, `jsSource`, and `jsEntrypoint` are added automatically after custom metadata. See [Application Metadata](https://rrweb.com/docs/cloud/application-meta).
 - `jsSource`: optional source identifier for programmatic loaders. URL values are recorded without query strings or hashes.
 - `jsEntrypoint`: optional entrypoint label. Defaults to `programmatic` for direct `start()` calls and `script-tag` for script-tag autostart.
+- `captureAssets`: optional rrweb asset capture configuration. Stylesheet capture defaults to `captureAssets.stylesheets: 'without-fetch'`, so replay can include the CSS needed for the recorded page without fetching stylesheets during recording. Pass your own `captureAssets` object to customize supported rrweb asset capture options.
 - rrweb record options: other options are passed through to `record()` from rrweb, such as masking, blocking, sampling, and DOM capture options. See the [rrweb recording docs](https://rrweb.com/docs/packages/record/readme).
 
 ### Stylesheet Capture
 
-`inlineStylesheet` is currently used for stylesheet capture compatibility. Once the `captureAssets` recording API lands from the assets branch, `captureAssets.stylesheets` should replace that compatibility path.
+The browser client enables stylesheet capture by default through `captureAssets.stylesheets`. This records linked stylesheet assets for replay without requiring each caller to configure asset capture manually.
+
+`inlineStylesheet` remains available as a legacy rrweb compatibility option, but new ESM/npm integrations should prefer `captureAssets`.
 
 ## Recording Helpers
 
@@ -79,5 +82,9 @@ Copy `.env.example` to `.env` in this package when running local integration tes
 ```bash
 VITE_RRWEB_BROWSER_CLIENT_SERVER_URL=http://localhost:8787/recordings/{recordingId}/events/ws
 VITE_RRWEB_BROWSER_CLIENT_API_BASE_URL=http://localhost:8787
+VITE_TEST_PUBLIC_API_KEY=public_key_rr_XXXX
+VITE_TEST_READ_API_KEY=ak_XXXX
+
+# Backward-compatible fallback for tests that still read VITE_TEST_API_KEY.
 VITE_TEST_API_KEY=public_key_rr_XXXX
 ```
