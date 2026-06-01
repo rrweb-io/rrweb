@@ -11,9 +11,9 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    permissions:                                                         
-      contents: write                                                    
-      pull-requests: write                                               
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -27,6 +27,9 @@ jobs:
         run: yarn install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
+
+      - name: Limit Changesets GitHub changelog batch size
+        run: node .github/scripts/patch-changesets-github-info.cjs
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
