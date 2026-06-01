@@ -17,6 +17,7 @@ import type {
   blockClass,
   canvasMutationCallback,
   customElementCallback,
+  captureAssetsParam,
   eventWithTime,
   fontCallback,
   hooksParam,
@@ -58,10 +59,9 @@ export type recordOptions<T> = {
   slimDOMOptions?: SlimDOMOptions | 'all' | true;
   ignoreCSSAttributes?: Set<string>;
   /**
-   * @deprecated Since 2.0.0. This option is still supported, but is planned to
-   * be superseded by future captureAssets asset recording APIs.
+   * @deprecated asset-branch compatibility for `captureAssets.stylesheets`
    */
-  inlineStylesheet?: boolean;
+  inlineStylesheet?: boolean | 'all';
   hooks?: hooksParam;
   packFn?: PackFn;
   sampling?: SamplingStrategy;
@@ -73,10 +73,14 @@ export type recordOptions<T> = {
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
   /**
-   * @deprecated Since 2.0.0. This option is still supported, but is planned to
-   * be superseded by future captureAssets asset recording APIs.
+   * @deprecated asset-branch compatibility for `captureAssets.images`
    */
   inlineImages?: boolean;
+  /**
+   * Upcoming asset-branch support; exposed as compatibility plumbing while
+   * recorder implementation is wired in.
+   */
+  captureAssets?: captureAssetsParam;
   plugins?: RecordPlugin[];
   // departed, please use sampling options
   mousemoveWait?: number;
@@ -103,7 +107,7 @@ export type observerParam = {
   maskInputFn?: MaskInputFn;
   maskTextFn?: MaskTextFn;
   keepIframeSrcFn: KeepIframeSrcFn;
-  inlineStylesheet: boolean;
+  inlineStylesheet: boolean | 'all';
   styleSheetRuleCb: styleSheetRuleCallback;
   styleDeclarationCb: styleDeclarationCallback;
   canvasMutationCb: canvasMutationCallback;
