@@ -1,4 +1,5 @@
 import {
+  absolutifyURLs,
   serializeNodeWithId,
   transformAttribute,
   IGNORED_NODE,
@@ -19,6 +20,9 @@ import type {
   removedNodeMutation,
   addedNodeMutation,
   Optional,
+  asset,
+  attributeMutation,
+  serializedElementNodeWithId,
 } from '@rrweb/types';
 import {
   isBlocked,
@@ -31,8 +35,10 @@ import {
   inDom,
   getShadowHost,
   closestElementOfNode,
+  nowTimestamp,
 } from '../utils';
 import dom from '@rrweb/utils';
+import { isProcessingStyleElement } from './observers/asset-manager';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -183,6 +189,7 @@ export default class MutationBuffer {
   private keepIframeSrcFn: observerParam['keepIframeSrcFn'];
   private recordCanvas: observerParam['recordCanvas'];
   private inlineImages: observerParam['inlineImages'];
+  private captureAssets: observerParam['captureAssets'];
   private slimDOMOptions: observerParam['slimDOMOptions'];
   private dataURLOptions: observerParam['dataURLOptions'];
   private doc: observerParam['doc'];
@@ -192,6 +199,7 @@ export default class MutationBuffer {
   private shadowDomManager: observerParam['shadowDomManager'];
   private canvasManager: observerParam['canvasManager'];
   private processedNodeManager: observerParam['processedNodeManager'];
+  private assetManager: observerParam['assetManager'];
   private unattachedDoc: HTMLDocument;
 
   public init(options: MutationBufferParam) {
@@ -207,6 +215,7 @@ export default class MutationBuffer {
         'maskTextFn',
         'maskInputFn',
         'keepIframeSrcFn',
+        'captureAssets',
         'recordCanvas',
         'inlineImages',
         'slimDOMOptions',
@@ -218,6 +227,7 @@ export default class MutationBuffer {
         'shadowDomManager',
         'canvasManager',
         'processedNodeManager',
+        'assetManager',
       ] as const
     ).forEach((key) => {
       // just a type trick, the runtime result is correct
@@ -265,6 +275,8 @@ export default class MutationBuffer {
     if (this.frozen || this.locked) {
       return;
     }
+
+    const now = nowTimestamp();
 
     // delay any modification of the mirror until this function
     // so that the mirror for takeFullSnapshot doesn't get mutated while it's event is being processed
@@ -327,6 +339,10 @@ export default class MutationBuffer {
         maskInputFn: this.maskInputFn,
         slimDOMOptions: this.slimDOMOptions,
         dataURLOptions: this.dataURLOptions,
+        captureAssets: {
+          ...this.captureAssets,
+          _fromMutation: true,
+        },
         recordCanvas: this.recordCanvas,
         inlineImages: this.inlineImages,
         onSerialize: (currentN) => {
@@ -349,8 +365,12 @@ export default class MutationBuffer {
         },
         onStylesheetLoad: (link, childSn) => {
           this.stylesheetManager.attachLinkElement(link, childSn);
+          this.emitCapturedStylesheetAttributes(childSn);
         },
         cssCaptured,
+        onAssetDetected: (asset: asset) => {
+          this.assetManager.capture(asset, now);
+        },
       });
       if (sn) {
         adds.push({
@@ -453,13 +473,22 @@ export default class MutationBuffer {
         .map((text) => {
           const n = text.node;
           const parent = dom.parentNode(n);
-          if (parent && (parent as Element).tagName === 'TEXTAREA') {
-            // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
-            this.genTextAreaValueMutation(parent as HTMLTextAreaElement);
+          let value = text.value;
+          if (parent) {
+            const parentEl = parent as Element;
+            if (parentEl.tagName === 'TEXTAREA') {
+              // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
+              this.genTextAreaValueMutation(parent as HTMLTextAreaElement);
+            } else if (parentEl.tagName === 'STYLE') {
+              if (isProcessingStyleElement(parentEl)) {
+                return { id: -1, value: null };
+              }
+              value = absolutifyURLs(value, this.doc.baseURI);
+            }
           }
           return {
             id: this.mirror.getId(n),
-            value: text.value,
+            value,
           };
         })
         // no need to include them on added elements, as they have just been serialized with up to date attribubtes
@@ -545,6 +574,30 @@ export default class MutationBuffer {
       value,
       maskInputFn: this.maskInputFn,
     });
+  };
+
+  private emitCapturedStylesheetAttributes = (
+    childSn: serializedElementNodeWithId,
+  ) => {
+    const capturedAttributes: attributeMutation['attributes'] =
+      Object.fromEntries(
+        Object.entries(childSn.attributes).filter(([name]) =>
+          name.startsWith('rr_captured_'),
+        ),
+      ) as attributeMutation['attributes'];
+    if (Object.keys(capturedAttributes).length) {
+      this.mutationCb({
+        adds: [],
+        removes: [],
+        texts: [],
+        attributes: [
+          {
+            id: childSn.id,
+            attributes: capturedAttributes,
+          },
+        ],
+      });
+    }
   };
 
   private processMutation = (m: mutationRecord) => {
@@ -636,13 +689,30 @@ export default class MutationBuffer {
         }
 
         if (!ignoreAttribute(target.tagName, attributeName, value)) {
-          // overwrite attribute if the mutations was triggered in same time
-          item.attributes[attributeName] = transformAttribute(
+          let transformedValue = transformAttribute(
             this.doc,
             toLowerCase(target.tagName),
             toLowerCase(attributeName),
             value,
           );
+          if (
+            transformedValue &&
+            this.assetManager.shouldCapture(
+              target,
+              attributeName,
+              transformedValue,
+              this.captureAssets,
+            )
+          ) {
+            this.assetManager.capture({
+              element: target,
+              attr: attributeName,
+              value: transformedValue,
+            });
+            attributeName = `rr_captured_${attributeName}`;
+          }
+          // overwrite attribute if the mutations was triggered in same time
+          item.attributes[attributeName] = transformedValue;
           if (attributeName === 'style') {
             if (!this.unattachedDoc) {
               try {
@@ -702,6 +772,9 @@ export default class MutationBuffer {
           // children would be ignored in genAdds as they aren't in the mirror
           this.genTextAreaValueMutation(m.target as HTMLTextAreaElement);
           return; // any removedNodes won't have been in mirror either
+        }
+        if (isProcessingStyleElement(m.target as HTMLElement)) {
+          return;
         }
 
         m.addedNodes.forEach((n) => this.genAdds(n, m.target));

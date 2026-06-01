@@ -10,6 +10,7 @@ import type { ShadowDomManager } from './record/shadow-dom-manager';
 import type { Replayer } from './replay';
 import type { RRNode } from 'rrdom';
 import type { CanvasManager } from './record/observers/canvas/canvas-manager';
+import type AssetManager from './record/observers/asset-manager';
 import type { StylesheetManager } from './record/stylesheet-manager';
 import type {
   DataURLOptions,
@@ -115,6 +116,7 @@ export type observerParam = {
   fontCb: fontCallback;
   sampling: SamplingStrategy;
   recordDOM: boolean;
+  captureAssets: captureAssetsParam;
   recordCanvas: boolean;
   inlineImages: boolean;
   userTriggeredOnInput: boolean;
@@ -128,6 +130,7 @@ export type observerParam = {
   shadowDomManager: ShadowDomManager;
   canvasManager: CanvasManager;
   processedNodeManager: ProcessedNodeManager;
+  assetManager: AssetManager;
   ignoreCSSAttributes: Set<string>;
   plugins: Array<{
     observer: (
@@ -152,6 +155,7 @@ export type MutationBufferParam = Pick<
   | 'maskTextFn'
   | 'maskInputFn'
   | 'keepIframeSrcFn'
+  | 'captureAssets'
   | 'recordCanvas'
   | 'inlineImages'
   | 'slimDOMOptions'
@@ -163,6 +167,7 @@ export type MutationBufferParam = Pick<
   | 'shadowDomManager'
   | 'canvasManager'
   | 'processedNodeManager'
+  | 'assetManager'
 >;
 
 export type ReplayPlugin = {
@@ -236,3 +241,7 @@ export type CrossOriginIframeMessageEvent =
   MessageEvent<CrossOriginIframeMessageEventContent>;
 
 export type ErrorHandler = (error: unknown) => void | boolean;
+
+export interface ProcessingStyleElement extends HTMLStyleElement {
+  __rrProcessingStylesheet?: true;
+}
