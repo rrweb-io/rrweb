@@ -11,6 +11,10 @@
     "package.json"
   ],
   "types": "build/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb.git"
+  },
   "scripts": {
     "install": "playwright install",
     "build": "tsc",
