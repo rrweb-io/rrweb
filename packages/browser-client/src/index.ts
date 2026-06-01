@@ -287,10 +287,12 @@ export function start(
   if (recordOptions.maskAllInputs === undefined) {
     recordOptions.maskAllInputs = true; // default to more privacy
   }
-  // TODO: switch this back to captureAssets.stylesheets once rrweb pulls in
-  // the captureAssets recording API from the assets branch.
-  if (recordOptions.inlineStylesheet === undefined) {
-    recordOptions.inlineStylesheet = true;
+  recordOptions.captureAssets = { ...recordOptions.captureAssets };
+  if (
+    recordOptions.captureAssets.stylesheets === undefined &&
+    recordOptions.inlineStylesheet === undefined
+  ) {
+    recordOptions.captureAssets.stylesheets = 'without-fetch';
   }
 
   const configEmit = recordOptions.emit;

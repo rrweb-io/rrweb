@@ -219,6 +219,62 @@ describe('@rrweb/browser-client load diagnostics', () => {
     );
   });
 
+  it('defaults stylesheet asset capture without legacy inlineStylesheet', async () => {
+    const client = await importFreshClient();
+
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      autostart: false,
+      emit: () => undefined,
+    });
+
+    expect(mockState.lastRecordOptions?.captureAssets).toMatchObject({
+      stylesheets: 'without-fetch',
+    });
+    expect(mockState.lastRecordOptions).not.toHaveProperty('inlineStylesheet');
+  });
+
+  it('preserves caller-provided asset capture options', async () => {
+    const client = await importFreshClient();
+    const captureAssets = {
+      stylesheets: true,
+      video: false,
+    };
+
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      autostart: false,
+      emit: () => undefined,
+      captureAssets,
+    });
+
+    expect(mockState.lastRecordOptions?.captureAssets).toMatchObject({
+      stylesheets: true,
+      video: false,
+    });
+    expect(mockState.lastRecordOptions?.captureAssets).not.toBe(captureAssets);
+  });
+
+  it('lets legacy inlineStylesheet options map inside rrweb', async () => {
+    const client = await importFreshClient();
+
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      autostart: false,
+      emit: () => undefined,
+      inlineStylesheet: false,
+    });
+
+    expect(mockState.lastRecordOptions?.captureAssets).toEqual({});
+    expect(mockState.lastRecordOptions?.inlineStylesheet).toBe(false);
+  });
+
   it('sanitizes explicit programmatic jsSource and strips diagnostics before record()', async () => {
     const client = await importFreshClient();
 
