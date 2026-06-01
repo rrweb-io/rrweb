@@ -391,7 +391,7 @@ function serializeNode(
     blockClass: string | RegExp;
     blockSelector: string | null;
     needsMask: boolean;
-    inlineStylesheet: boolean;
+    inlineStylesheet: boolean | 'all';
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
@@ -542,7 +542,7 @@ function serializeElementNode(
     doc: Document;
     blockClass: string | RegExp;
     blockSelector: string | null;
-    inlineStylesheet: boolean;
+    inlineStylesheet: boolean | 'all';
     maskInputOptions: MaskInputOptions;
     maskInputFn: MaskInputFn | undefined;
     dataURLOptions?: DataURLOptions;
@@ -929,7 +929,7 @@ export function serializeNodeWithId(
     maskTextClass: string | RegExp;
     maskTextSelector: string | null;
     skipChild: boolean;
-    inlineStylesheet: boolean;
+    inlineStylesheet: boolean | 'all';
     newlyAddedElement?: boolean;
     maskInputOptions?: MaskInputOptions;
     needsMask?: boolean;
@@ -1242,7 +1242,7 @@ function snapshot(
     blockSelector?: string | null;
     maskTextClass?: string | RegExp;
     maskTextSelector?: string | null;
-    inlineStylesheet?: boolean;
+    inlineStylesheet?: boolean | 'all';
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
     maskInputFn?: MaskInputFn;
