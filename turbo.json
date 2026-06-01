@@ -7,6 +7,7 @@
     "vite.config.default.ts",
     "tsconfig.json"
   ],
+  "globalEnv": ["RRWEB_COMMIT_HASH", "GITHUB_SHA"],
   "globalPassThroughEnv": [
     "PUPPETEER_EXECUTABLE_PATH",
     "PUPPETEER_HEADLESS",
@@ -15,6 +16,7 @@
   "tasks": {
     "prepublish": {
       "dependsOn": ["^prepublish", "//#references:update"],
+      "env": ["RRWEB_COMMIT_HASH", "GITHUB_SHA"],
       "outputs": [
         "lib/**",
         "es/**",
