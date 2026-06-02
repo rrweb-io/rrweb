@@ -144,12 +144,12 @@ rrvideo 配置文件可参考[示例](./rrvideo.config.example.json)。
   <tr>
     <td align="center">
       <a href="http://www.smartx.com/" target="_blank">
-        <img width="195px" src="https://www.rrweb.io/logos/smartx.png">
+        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/master/static/logos/smartx.png" alt="SmartX">
       </a>
     </td>
     <td align="center">
       <a href="https://posthog.com?utm_source=rrweb&utm_medium=sponsorship&utm_campaign=open-source-sponsorship" target="_blank">
-        <img width="195px" src="https://www.rrweb.io/logos/posthog.png">
+        <img width="195px" src="https://rrweb.com/posthog.png" alt="PostHog">
       </a>
     </td>
     <td align="center">
@@ -163,7 +163,39 @@ rrvideo 配置文件可参考[示例](./rrvideo.config.example.json)。
       </a>
     </td>
   </tr>
-    <tr>
+  <tr>
+    <td align="center">
+      <a href="https://sentry.io" target="_blank">
+        <img width="195px" src="https://rrweb.com/sentry.png" alt="Sentry">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://www.pendo.io" target="_blank">
+        <img width="195px" src="https://rrweb.com/pendo.png" alt="Pendo">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://mixpanel.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/mixpanel.png" alt="Mixpanel">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://www.datadoghq.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/datadog.png" alt="Datadog">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://amplitude.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/amplitude.png" alt="Amplitude">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://newrelic.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/new%20relic.png" alt="New Relic">
+      </a>
+    </td>
     <td align="center">
       <a href="https://cux.io" target="_blank">
         <img style="padding: 8px" alt="The first ever UX automation tool" width="195px" src="https://cux.io/cux-logo.svg">
@@ -174,6 +206,8 @@ rrvideo 配置文件可参考[示例](./rrvideo.config.example.json)。
         <img style="padding: 8px" alt="Remote Access & Co-Browsing" width="195px" src="https://remsupp.com/images/logo.png">
       </a>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <a href="https://highlight.io" target="_blank">
         <img style="padding: 8px" alt="The open source, fullstack Monitoring Platform." width="195px" src="https://github.com/highlight/highlight/raw/main/highlight.io/public/images/logo.png">
@@ -181,11 +215,9 @@ rrvideo 配置文件可参考[示例](./rrvideo.config.example.json)。
     </td>
     <td align="center">
       <a href="https://analyzee.io" target="_blank">
-        <img style="padding: 8px" alt="Comprehensive data analytics platform that empowers businesses to gain valuable insights and make data-driven decisions." width="195px" src="https://cdn.analyzee.io/assets/analyzee-logo.png">
+        <img style="padding: 8px" alt="Comprehensive data analytics platform that empowers businesses to gain valuable insights and make data-driven decisions." width="195px" src="https://analyzee.io/img/analyzee-main-logo.webp">
       </a>
     </td>
-  </tr>
-  <tr>
     <td align="center">
       <a href="https://requestly.io" target="_blank">
         <img style="padding: 8px" alt="Intercept, Modify, Record & Replay HTTP Requests." width="195px" src="https://github.com/requestly/requestly/assets/16779465/652552db-c867-44cb-9bb5-94a2026e04ca">
@@ -196,6 +228,8 @@ rrvideo 配置文件可参考[示例](./rrvideo.config.example.json)。
         <img style="padding: 8px" alt="In-app bug reporting & customer feedback platform." width="195px" src="https://assets-global.website-files.com/6506f3f29c68b1724807619d/6506f56010237164c6306591_GleapLogo.svg">
       </a>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <a href="https://uxwizz.com" target="_blank">
         <img style="padding: 8px" alt="Self-hosted website analytics with heatmaps and session recordings." width="195px" src="https://github.com/UXWizz/public-files/raw/main/assets/logo.png">
