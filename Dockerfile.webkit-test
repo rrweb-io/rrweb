@@ -3,5 +3,4 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 WORKDIR /work
 COPY . .
 RUN yarn install --ignore-scripts
-WORKDIR /work/packages/rrweb-snapshot
-CMD ["yarn", "vitest", "run", "test/webkit-monkey-patched.test.ts"]
+WORKDIR /work

@@ -94,6 +94,12 @@ jobs:
         run: npx playwright install webkit && npx playwright install-deps webkit
         working-directory: packages/rrweb-snapshot
 
-      - name: Run WebKit tests
-        run: yarn test:webkit
-        working-directory: packages/rrweb-snapshot
+      - name: Run rrweb-snapshot WebKit tests
+        run: BROWSER=webkit yarn workspace rrweb-snapshot vitest run --config vitest.config.webkit.ts
+
+      - name: Build rrweb
+        run: yarn build
+        working-directory: packages/rrweb
+
+      - name: Run rrweb WebKit tests
+        run: BROWSER=webkit yarn workspace rrweb vitest run --config vitest.config.webkit.ts

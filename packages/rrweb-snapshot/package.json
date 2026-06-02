@@ -7,7 +7,7 @@
     "prepack": "npm run build",
     "retest": "vitest run",
     "test": "yarn build && vitest run",
-    "test:webkit": "yarn build && vitest run test/webkit-monkey-patched.test.ts",
+    "test:webkit": "yarn build && vitest run --config vitest.config.webkit.ts",
     "test:watch": "vitest watch",
     "retest:update": "vitest run --update",
     "test:update": "yarn build && vitest run --update",

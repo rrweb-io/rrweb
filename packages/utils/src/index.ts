@@ -65,25 +65,25 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
     key in testableAccessors ? testableAccessors[key] : undefined;
   const isUntaintedAccessors = Boolean(
     accessorNames &&
-      // @ts-expect-error 2345
-      accessorNames.every((accessor: keyof typeof defaultPrototype) =>
-        Boolean(
-          Object.getOwnPropertyDescriptor(defaultPrototype, accessor)
-            ?.get?.toString()
-            .includes('[native code]'),
-        ),
+    // @ts-expect-error 2345
+    accessorNames.every((accessor: keyof typeof defaultPrototype) =>
+      Boolean(
+        Object.getOwnPropertyDescriptor(defaultPrototype, accessor)
+          ?.get?.toString()
+          .includes('[native code]'),
       ),
+    ),
   );
 
   const methodNames = key in testableMethods ? testableMethods[key] : undefined;
   const isUntaintedMethods = Boolean(
     methodNames &&
-      methodNames.every(
-        // @ts-expect-error 2345
-        (method: keyof typeof defaultPrototype) =>
-          typeof defaultPrototype[method] === 'function' &&
-          defaultPrototype[method]?.toString().includes('[native code]'),
-      ),
+    methodNames.every(
+      // @ts-expect-error 2345
+      (method: keyof typeof defaultPrototype) =>
+        typeof defaultPrototype[method] === 'function' &&
+        defaultPrototype[method]?.toString().includes('[native code]'),
+    ),
   );
 
   if (isUntaintedAccessors && isUntaintedMethods && !isAngularZonePresent()) {

@@ -1,10 +1,12 @@
 /**
- * WebKit (Safari engine) test for monkey-patched DOM methods.
+ * WebKit (Safari engine) test for monkey-patched MutationObserver.
  *
- * Puppeteer/Chromium tests don't cover Safari-specific behaviour around
- * Object.getOwnPropertyDescriptor on built-in prototypes.  Run with:
+ * When a framework hijacks MutationObserver before rrweb loads, the recorder
+ * must fall back to an iframe to obtain the real native constructor.
+ * This test verifies that DOM mutations are still captured as IncrementalSnapshot
+ * events (source: MutationData) in WebKit under these conditions.
  *
- *   yarn test:webkit
+ * Run with:  yarn test:webkit  (in packages/rrweb)
  *
  * Requires the playwright WebKit browser to be installed:
  *   npx playwright install webkit
@@ -13,25 +15,26 @@ import * as fs from 'fs';
 import * as http from 'http';
 import * as path from 'path';
 import * as url from 'url';
-import { webkit, Browser, Page } from 'playwright';
+import { chromium, webkit, Browser, Page } from 'playwright';
+const browserType = process.env.BROWSER === 'webkit' ? webkit : chromium;
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { EventType, IncrementalSource, eventWithTime } from '@rrweb/types';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 
-function startServer(defaultPort = 3035): Promise<http.Server> {
+function startServer(defaultPort = 3036): Promise<http.Server> {
   return new Promise((resolve) => {
     const mimeType: Record<string, string> = {
       '.html': 'text/html',
       '.js': 'text/javascript',
       '.css': 'text/css',
-      '.png': 'image/png',
     };
     const s = http.createServer((req, res) => {
       const parsedUrl = url.parse(req.url!);
       const sanitizePath = path
         .normalize(parsedUrl.pathname!)
         .replace(/^(\.\.[\/\\])+/, '');
-      const pathname = path.join(__dirname, sanitizePath);
+      const pathname = path.join(__dirname, '..', sanitizePath);
       try {
         const data = fs.readFileSync(pathname);
         const ext = path.parse(pathname).ext;
@@ -66,7 +69,7 @@ async function waitForRAF(page: Page): Promise<void> {
   );
 }
 
-describe('WebKit: monkey-patched DOM methods', () => {
+describe('WebKit: monkey-patched MutationObserver', () => {
   vi.setConfig({ testTimeout: 30_000 });
 
   let server: http.Server;
@@ -77,9 +80,9 @@ describe('WebKit: monkey-patched DOM methods', () => {
   beforeAll(async () => {
     server = await startServer();
     serverURL = getServerURL(server);
-    browser = await webkit.launch();
+    browser = await browserType.launch();
     code = fs.readFileSync(
-      path.resolve(__dirname, '../dist/rrweb-snapshot.umd.cjs'),
+      path.resolve(__dirname, '../../dist/rrweb.umd.cjs'),
       'utf-8',
     );
   });
@@ -89,37 +92,56 @@ describe('WebKit: monkey-patched DOM methods', () => {
     await server.close();
   });
 
-  it('should snapshot without error when childNodes, contains, getRootNode and MutationObserver are monkey-patched', async () => {
+  it('should record DOM mutations when MutationObserver is monkey-patched', async () => {
     const page = await browser.newPage();
     page.on('console', (msg) => console.log('[webkit]', msg.text()));
     page.on('pageerror', (err) => {
       throw new Error(`Uncaught page error: ${err.message}`);
     });
 
-    await page.goto(`${serverURL}/html/monkey-patched-elements.html`, {
-      waitUntil: 'load',
-    });
+    await page.goto(
+      `${serverURL}/html/monkey-patched-mutation.html`,
+      { waitUntil: 'load' },
+    );
     await waitForRAF(page);
 
-    const snapshotJSON = await page.evaluate(`
+    // Verify MutationObserver is actually patched in this engine.
+    const patchActive = await page.evaluate(`
+      (() => {
+        try { new MutationObserver(() => {}); return false; }
+        catch(e) { return e.message.includes('hijacked'); }
+      })()
+    `);
+    expect(patchActive).toBe(true);
+
+    // Store events in window so they can be retrieved synchronously via evaluate.
+    await page.evaluate(`
       ${code};
-      JSON.stringify(rrwebSnapshot.snapshot(document), null, 2);
+      window.__rrwebEvents = [];
+      rrweb.record({ emit: (e) => window.__rrwebEvents.push(e) });
+    `);
+    await waitForRAF(page);
+
+    // Trigger a DOM mutation.
+    await page.evaluate(`
+      const li = document.createElement('li');
+      li.textContent = 'b';
+      document.getElementById('list').appendChild(li);
     `);
 
-    expect(typeof snapshotJSON).toBe('string');
-    const snap = JSON.parse(snapshotJSON as string);
-    expect(snap).not.toBeNull();
+    await waitForRAF(page);
 
-    // The ul > li structure must have been traversed successfully via the
-    // reverse-monkey-patched childNodes accessor.  If the fix doesn't work in
-    // WebKit, snapshot() will throw or return a tree with missing li nodes.
-    const raw = snapshotJSON as string;
-    expect(raw).toContain('"tagName": "ul"');
-    expect(raw).toContain('"tagName": "li"');
-    // All four list items must appear
-    for (const letter of ['a', 'b', 'c', 'd']) {
-      expect(raw).toContain(`"textContent": "${letter}"`);
-    }
+    const events = await page.evaluate(
+      `JSON.parse(JSON.stringify(window.__rrwebEvents))`,
+    ) as eventWithTime[];
+
+    const mutationEvents = events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        (e.data as { source: number }).source === IncrementalSource.Mutation,
+    );
+
+    expect(mutationEvents.length).toBeGreaterThan(0);
 
     await page.close();
   });

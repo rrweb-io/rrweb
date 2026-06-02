@@ -32,6 +32,43 @@ clear and has sufficient instructions to be able to reproduce the issue.
 - Run a cobrowsing/mirroring session locally: (in `/packages/rrweb`) `yarn live-stream`
 - Build individual packages: `yarn build` or `yarn dev`
 - Test: `yarn test` or `yarn test:watch`
+- WebKit (Safari engine) tests: `yarn test:webkit` (in `/packages/rrweb-snapshot`)
+
+### WebKit tests
+
+`test/webkit-monkey-patched.test.ts` is excluded from the regular `yarn test` run because it requires a Playwright WebKit browser binary. It is run separately via `yarn test:webkit` in `packages/rrweb-snapshot`.
+
+**macOS** — install the browser once, then run directly:
+
+```sh
+npx playwright install webkit
+yarn test:webkit
+```
+
+**Linux** — system library dependencies vary by distro. The most reliable approach is Docker (requires Docker to be installed):
+
+```sh
+# first time, or after changing rrweb-snapshot source: build the dist then the image
+cd packages/rrweb-snapshot && yarn build && cd ../..
+docker build -t rrweb-webkit-test -f Dockerfile.webkit-test .
+
+# run rrweb-snapshot webkit tests
+docker run --rm -e BROWSER=webkit rrweb-webkit-test \
+  yarn workspace rrweb-snapshot vitest run --config vitest.config.webkit.ts
+
+# run rrweb webkit tests
+docker run --rm -e BROWSER=webkit rrweb-webkit-test \
+  yarn workspace rrweb vitest run --config vitest.config.webkit.ts
+
+# iterate on test file and/or dist without rebuilding the image
+# (run `yarn build` in the relevant package first if you changed source)
+docker run --rm -e BROWSER=webkit \
+  --mount type=bind,src=/absolute/path/to/rrweb/packages/rrweb-snapshot/dist/rrweb-snapshot.umd.cjs,dst=/work/packages/rrweb-snapshot/dist/rrweb-snapshot.umd.cjs \
+  --mount type=bind,src=/absolute/path/to/rrweb/packages/rrweb-snapshot/test/monkey-patched.test.ts,dst=/work/packages/rrweb-snapshot/test/monkey-patched.test.ts \
+  rrweb-webkit-test bash -c 'yarn workspace rrweb-snapshot vitest run --config vitest.config.webkit.ts'
+```
+
+The image is based on `mcr.microsoft.com/playwright:v1.60.0-jammy` which has all required system libraries pre-installed. The same image can be used to run webkit tests from any package in the monorepo by changing the `yarn workspace` command. Rebuild the image after updating the `playwright` package version or adding new test files.
 - Lint: `yarn lint`
 - Rewrite files with prettier: `yarn format` or `yarn format:head`
 
