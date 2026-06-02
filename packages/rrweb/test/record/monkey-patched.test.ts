@@ -118,7 +118,8 @@ describe('WebKit: monkey-patched MutationObserver', () => {
     await page.evaluate(`
       ${code};
       window.__rrwebEvents = [];
-      rrweb.record({ emit: (e) => window.__rrwebEvents.push(e) });
+      window.__rrwebStop = rrweb.record({ emit: (e) => window.__rrwebEvents.push(e) });
+      console.log('[rrweb] record started, stop fn:', typeof window.__rrwebStop);
     `);
     await waitForRAF(page);
 
@@ -127,13 +128,17 @@ describe('WebKit: monkey-patched MutationObserver', () => {
       const li = document.createElement('li');
       li.textContent = 'b';
       document.getElementById('list').appendChild(li);
+      console.log('[rrweb] mutation triggered, events so far:', window.__rrwebEvents.length);
     `);
 
+    await waitForRAF(page);
+    await waitForRAF(page);
     await waitForRAF(page);
 
     const events = await page.evaluate(
       `JSON.parse(JSON.stringify(window.__rrwebEvents))`,
     ) as eventWithTime[];
+    console.log('[test] total events:', events.length, events.map((e: eventWithTime) => e.type));
 
     const mutationEvents = events.filter(
       (e) =>

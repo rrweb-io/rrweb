@@ -81,12 +81,13 @@ function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
 export function initMutationObserver(
   options: MutationBufferParam,
   rootEl: Node,
-): MutationObserver {
+): [MutationObserver, () => void] {
   const mutationBuffer = new MutationBuffer();
   mutationBuffers.push(mutationBuffer);
   // see mutation.ts for details
   mutationBuffer.init(options);
-  const observer = new (mutationObserverCtor() as new (
+  const [ObserverCtor, iframeCleanup] = mutationObserverCtor();
+  const observer = new (ObserverCtor as new (
     callback: MutationCallback,
   ) => MutationObserver)(
     callbackWrapper(mutationBuffer.processMutations.bind(mutationBuffer)),
@@ -99,7 +100,7 @@ export function initMutationObserver(
     childList: true,
     subtree: true,
   });
-  return observer;
+  return [observer, iframeCleanup];
 }
 
 function initMoveObserver({
@@ -1308,8 +1309,10 @@ export function initObservers(
 
   mergeHooks(o, hooks);
   let mutationObserver: MutationObserver | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  let cleanupMutationIframe: () => void = () => {};
   if (o.recordDOM) {
-    mutationObserver = initMutationObserver(o, o.doc);
+    [mutationObserver, cleanupMutationIframe] = initMutationObserver(o, o.doc);
   }
   const mousemoveHandler = initMoveObserver(o);
   const mouseInteractionHandler = initMouseInteractionObserver(o);
@@ -1352,6 +1355,7 @@ export function initObservers(
   return callbackWrapper(() => {
     mutationBuffers.forEach((b) => b.reset());
     mutationObserver?.disconnect();
+    cleanupMutationIframe();
     mousemoveHandler();
     mouseInteractionHandler();
     scrollHandler();
