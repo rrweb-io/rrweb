@@ -99,10 +99,9 @@ describe('WebKit: monkey-patched MutationObserver', () => {
       throw new Error(`Uncaught page error: ${err.message}`);
     });
 
-    await page.goto(
-      `${serverURL}/html/monkey-patched-mutation.html`,
-      { waitUntil: 'load' },
-    );
+    await page.goto(`${serverURL}/html/monkey-patched-mutation.html`, {
+      waitUntil: 'load',
+    });
     await waitForRAF(page);
 
     // Verify MutationObserver is actually patched in this engine.
@@ -135,10 +134,14 @@ describe('WebKit: monkey-patched MutationObserver', () => {
     await waitForRAF(page);
     await waitForRAF(page);
 
-    const events = await page.evaluate(
+    const events = (await page.evaluate(
       `JSON.parse(JSON.stringify(window.__rrwebEvents))`,
-    ) as eventWithTime[];
-    console.log('[test] total events:', events.length, events.map((e: eventWithTime) => e.type));
+    )) as eventWithTime[];
+    console.log(
+      '[test] total events:',
+      events.length,
+      events.map((e: eventWithTime) => e.type),
+    );
 
     const mutationEvents = events.filter(
       (e) =>

@@ -69,6 +69,7 @@ docker run --rm -e BROWSER=webkit \
 ```
 
 The image is based on `mcr.microsoft.com/playwright:v1.60.0-jammy` which has all required system libraries pre-installed. The same image can be used to run webkit tests from any package in the monorepo by changing the `yarn workspace` command. Rebuild the image after updating the `playwright` package version or adding new test files.
+
 - Lint: `yarn lint`
 - Rewrite files with prettier: `yarn format` or `yarn format:head`
 
