@@ -73,7 +73,7 @@
     "ignore-styles": "^5.0.1",
     "inquirer": "^9.0.0",
     "jest-image-snapshot": "^6.2.0",
-    "playwright": "^1.44.0",
+    "playwright": "^1.60.0",
     "puppeteer": "^20.9.0",
     "simple-peer-light": "^9.10.0",
     "ts-node": "^10.9.1",

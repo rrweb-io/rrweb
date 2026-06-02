@@ -62,7 +62,7 @@
     "@types/jsdom": "^20.0.0",
     "@types/node": "^18.15.11",
     "@types/puppeteer": "^5.4.4",
-    "playwright": "^1.44.0",
+    "playwright": "^1.60.0",
     "puppeteer": "^17.1.3",
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",
