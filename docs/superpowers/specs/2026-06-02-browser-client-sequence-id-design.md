@@ -4,7 +4,7 @@
 
 `@rrweb/browser-client` records rrweb events and sends them to an rrweb Cloud-compatible API over WebSocket, with HTTP POST fallback for buffered or oversized events. It stores the active recording ID in `sessionStorage` using `rrweb-browser-client-recording-id`, so a recording can continue across same-tab page navigations.
 
-rrweb already has `@rrweb/rrweb-plugin-sequential-id-record`, but the current record plugin always starts at `1` and only processes events emitted through rrweb's `record()` pipeline. The browser client also creates events itself, including `recording-meta`, queued custom events, and close events. Those events need the same top-level ordering field if Cloud ingestion, Tinybird chunk manifests, and cursor pagination are going to rely on it.
+rrweb already has `@rrweb/rrweb-plugin-sequential-id-record`, but the current record plugin always starts at `1` and only processes events emitted through rrweb's `record()` pipeline. The browser client also creates events itself, including `recording-meta`, queued custom events, and close events. Those events need the same top-level ordering field if Cloud ingestion and cursor pagination are going to rely on it.
 
 ## Goals
 
