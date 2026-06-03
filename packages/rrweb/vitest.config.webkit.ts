@@ -7,7 +7,7 @@ export default mergeConfig(
   defineProject({
     test: {
       globals: true,
-      exclude: ['test/monkey-patched.test.ts'],
+      include: ['test/record/monkey-patched.test.ts'],
     },
   }),
 );
