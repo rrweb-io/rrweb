@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { eventWithTime } from '@rrweb/types';
+import { EventType } from '@rrweb/types';
 import { getRecordSequentialIdPlugin } from '../src/index';
 
 function event(sequenceId?: unknown): eventWithTime & { sequenceId?: unknown } {
   const e: eventWithTime & { sequenceId?: unknown } = {
     timestamp: 1,
-    type: 5,
+    type: EventType.Custom,
     data: {
       tag: 'test',
       payload: {},
@@ -18,7 +19,14 @@ function event(sequenceId?: unknown): eventWithTime & { sequenceId?: unknown } {
 }
 
 describe('getRecordSequentialIdPlugin', () => {
-  it('keeps default behavior of assigning 1 then 2', () => {
+  it('keeps default behavior of assigning _sid 1 then 2', () => {
+    const plugin = getRecordSequentialIdPlugin();
+
+    expect(plugin.eventProcessor?.(event())).toMatchObject({ _sid: 1 });
+    expect(plugin.eventProcessor?.(event())).toMatchObject({ _sid: 2 });
+  });
+
+  it('keeps custom key behavior of assigning 1 then 2', () => {
     const plugin = getRecordSequentialIdPlugin({ key: 'sequenceId' });
 
     expect(plugin.eventProcessor?.(event())).toMatchObject({ sequenceId: 1 });
