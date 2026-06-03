@@ -672,9 +672,7 @@ export const addCustomEvent = <T>(tag: string, payload: T) => {
       );
       return;
     }
-    buffer.add(
-      JSON.stringify(ensureSequenceId(customEvent, state)),
-    );
+    buffer.add(JSON.stringify(ensureSequenceId(customEvent, state)));
   }
 };
 

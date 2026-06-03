@@ -28,6 +28,7 @@
 ### Task 1: Add Sequential ID Plugin Tests
 
 **Files:**
+
 - Create: `packages/plugins/rrweb-plugin-sequential-id-record/test/index.test.ts`
 - Create: `packages/plugins/rrweb-plugin-sequential-id-record/vitest.config.ts`
 - Modify: `packages/plugins/rrweb-plugin-sequential-id-record/package.json`
@@ -184,6 +185,7 @@ git commit -m "test: cover sequential id plugin options"
 ### Task 2: Implement Sequential ID Plugin Options
 
 **Files:**
+
 - Modify: `packages/plugins/rrweb-plugin-sequential-id-record/src/index.ts`
 - Test: `packages/plugins/rrweb-plugin-sequential-id-record/test/index.test.ts`
 
@@ -266,6 +268,7 @@ git commit -m "feat: add sequential id plugin start options"
 ### Task 3: Add Browser Client Sequence Tests
 
 **Files:**
+
 - Create: `packages/browser-client/test/sequence-id.test.ts`
 
 - [ ] **Step 1: Write failing happy-dom tests**
@@ -649,6 +652,7 @@ git commit -m "test: cover browser client sequence ids"
 ### Task 4: Implement Browser Client Sequence State
 
 **Files:**
+
 - Modify: `packages/browser-client/package.json`
 - Modify: `packages/browser-client/tsconfig.json`
 - Modify: `packages/browser-client/src/index.ts`
@@ -738,7 +742,9 @@ function isValidSequenceId(value: unknown): value is number {
 
 function readSequenceId(recordingId: string): number {
   try {
-    const value = Number(sessionStorage.getItem(sequenceStorageName(recordingId)));
+    const value = Number(
+      sessionStorage.getItem(sequenceStorageName(recordingId)),
+    );
     return Number.isInteger(value) && value >= 0 ? value : 0;
   } catch {
     return 0;
@@ -949,6 +955,7 @@ git commit -m "feat: add browser client sequence ids"
 ### Task 5: Cover Custom Events, Close Events, and Reset Semantics
 
 **Files:**
+
 - Modify: `packages/browser-client/src/index.ts`
 - Test: `packages/browser-client/test/sequence-id.test.ts`
 
@@ -1040,6 +1047,7 @@ git commit -m "fix: sequence browser client custom events"
 ### Task 6: Update Integration Assertions
 
 **Files:**
+
 - Modify: `packages/browser-client/test/integration.test.ts`
 
 - [ ] **Step 1: Add a helper for increasing sequence IDs**
@@ -1126,6 +1134,7 @@ git commit -m "test: assert browser client sequence ids"
 ### Task 7: Add Release Metadata and Documentation
 
 **Files:**
+
 - Create: `.changeset/browser-client-sequence-id.md`
 - Modify: `packages/browser-client/README.md`
 - Modify: `packages/plugins/rrweb-plugin-sequential-id-record/README.md`
@@ -1136,8 +1145,8 @@ Create `.changeset/browser-client-sequence-id.md`.
 
 ```md
 ---
-"@rrweb/browser-client": patch
-"@rrweb/rrweb-plugin-sequential-id-record": patch
+'@rrweb/browser-client': patch
+'@rrweb/rrweb-plugin-sequential-id-record': patch
 ---
 
 Add browser-client `sequenceId` assignment for Cloud-bound events and allow the sequential-id record plugin to resume from a provided starting ID.
@@ -1188,6 +1197,7 @@ git commit -m "docs: document browser client sequence ids"
 ### Task 8: Final Verification
 
 **Files:**
+
 - Verify all touched implementation, test, package, docs, and changeset files.
 
 - [ ] **Step 1: Run plugin verification**
