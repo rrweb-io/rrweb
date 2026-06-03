@@ -767,7 +767,7 @@
 - Record and replay drag events.
 - Add options to mask texts (#540).
 
-### Fixes
+### Patch Changes
 
 - Get the original MutationObserver when Angular patched it.
 - Fix RangeError: Maximum call stack size exceeded (#479).
