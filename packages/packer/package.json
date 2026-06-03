@@ -1,6 +1,6 @@
 {
   "name": "@newrelic/rrweb-packer",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "publishConfig": {
     "access": "public"
   },
@@ -72,14 +72,14 @@
     "LICENSE"
   ],
   "devDependencies": {
-    "vite": "^5.3.1",
+    "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1",
     "vitest": "^1.4.0",
     "typescript": "^5.4.5"
   },
   "dependencies": {
     "fflate": "^0.4.4",
-    "@newrelic/rrweb-types": "^1.0.1"
+    "@newrelic/rrweb-types": "^1.1.1"
   },
   "browserslist": [
     "supports es6-class"

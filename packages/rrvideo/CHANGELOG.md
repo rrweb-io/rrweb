@@ -1,5 +1,23 @@
 # rrvideo
 
+## 1.1.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @newrelic/rrweb-player@1.1.1
+
+## 1.1.0
+
+### Patch Changes
+
+- [#1762](https://github.com/rrweb-io/rrweb/pull/1762) [`22bc4c3`](https://github.com/newrelic-forks/rrweb/commit/22bc4c334e88f0b8ee5488d9e1e95cd8093a15c8) Thanks [@Juice10](https://github.com/Juice10)! - Adjust replay timeout to be based on video duration plus a 2-minute buffer instead of a fixed 2-minute timeout. This prevents timeout errors for longer recordings.
+
+- [#1762](https://github.com/rrweb-io/rrweb/pull/1762) [`22bc4c3`](https://github.com/newrelic-forks/rrweb/commit/22bc4c334e88f0b8ee5488d9e1e95cd8093a15c8) Thanks [@Juice10](https://github.com/Juice10)! - Add better logging on playback and fix the use of rrweb-player so it doesn't stall and fail playback
+
+- Updated dependencies [[`33e01f5`](https://github.com/newrelic-forks/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0)]:
+  - @newrelic/rrweb-player@1.1.0
+
 ## 1.0.1
 
 ### Patch Changes

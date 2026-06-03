@@ -58,6 +58,7 @@ declare module '$env/static/private' {
 	export const MallocNanoZone: string;
 	export const npm_package_devDependencies_svelte_preprocess: string;
 	export const npm_config_registry: string;
+	export const ENABLE_IDE_INTEGRATION: string;
 	export const npm_package_dependencies_import_meta_resolve: string;
 	export const npm_package_repository_url: string;
 	export const npm_config__datanerd_registry: string;
@@ -73,15 +74,14 @@ declare module '$env/static/private' {
 	export const npm_package_exports___import: string;
 	export const npm_package_repository_directory: string;
 	export const npm_config___artifacts_datanerd_us_artifactory_api_npm_newrelic_js_local__email: string;
+	export const CLAUDE_CODE_SSE_PORT: string;
 	export const SSH_AUTH_SOCK: string;
-	export const VSCODE_PROFILE_INITIALIZED: string;
 	export const __CF_USER_TEXT_ENCODING: string;
 	export const npm_package_bin_svelte_kit: string;
 	export const npm_execpath: string;
 	export const npm_package_devDependencies__types_sade: string;
 	export const npm_package_peerDependencies__sveltejs_vite_plugin_svelte: string;
 	export const npm_package_devDependencies_svelte: string;
-	export const YARN_IGNORE_PATH: string;
 	export const npm_config___artifacts_datanerd_us_artifactory_api_npm_newrelic_js_local__username: string;
 	export const PATH: string;
 	export const npm_config_argv: string;
@@ -139,7 +139,6 @@ declare module '$env/static/private' {
 	export const npm_lifecycle_script: string;
 	export const npm_package_peerDependencies_svelte: string;
 	export const VSCODE_GIT_IPC_HANDLE: string;
-	export const npm_config_ignore_path: string;
 	export const npm_package_devDependencies__types_set_cookie_parser: string;
 	export const BUN_INSTALL: string;
 	export const NVM_BIN: string;
@@ -158,6 +157,7 @@ declare module '$env/static/private' {
 	export const npm_package_files_1: string;
 	export const npm_package_devDependencies_dts_buddy: string;
 	export const npm_package_files_0: string;
+	export const GIT_PAGER: string;
 	export const npm_package_dependencies_mrmime: string;
 	export const npm_package_dependencies_kleur: string;
 	export const npm_config_init_version: string;
@@ -234,6 +234,7 @@ declare module '$env/dynamic/private' {
 		MallocNanoZone: string;
 		npm_package_devDependencies_svelte_preprocess: string;
 		npm_config_registry: string;
+		ENABLE_IDE_INTEGRATION: string;
 		npm_package_dependencies_import_meta_resolve: string;
 		npm_package_repository_url: string;
 		npm_config__datanerd_registry: string;
@@ -249,15 +250,14 @@ declare module '$env/dynamic/private' {
 		npm_package_exports___import: string;
 		npm_package_repository_directory: string;
 		npm_config___artifacts_datanerd_us_artifactory_api_npm_newrelic_js_local__email: string;
+		CLAUDE_CODE_SSE_PORT: string;
 		SSH_AUTH_SOCK: string;
-		VSCODE_PROFILE_INITIALIZED: string;
 		__CF_USER_TEXT_ENCODING: string;
 		npm_package_bin_svelte_kit: string;
 		npm_execpath: string;
 		npm_package_devDependencies__types_sade: string;
 		npm_package_peerDependencies__sveltejs_vite_plugin_svelte: string;
 		npm_package_devDependencies_svelte: string;
-		YARN_IGNORE_PATH: string;
 		npm_config___artifacts_datanerd_us_artifactory_api_npm_newrelic_js_local__username: string;
 		PATH: string;
 		npm_config_argv: string;
@@ -315,7 +315,6 @@ declare module '$env/dynamic/private' {
 		npm_lifecycle_script: string;
 		npm_package_peerDependencies_svelte: string;
 		VSCODE_GIT_IPC_HANDLE: string;
-		npm_config_ignore_path: string;
 		npm_package_devDependencies__types_set_cookie_parser: string;
 		BUN_INSTALL: string;
 		NVM_BIN: string;
@@ -334,6 +333,7 @@ declare module '$env/dynamic/private' {
 		npm_package_files_1: string;
 		npm_package_devDependencies_dts_buddy: string;
 		npm_package_files_0: string;
+		GIT_PAGER: string;
 		npm_package_dependencies_mrmime: string;
 		npm_package_dependencies_kleur: string;
 		npm_config_init_version: string;

@@ -190,10 +190,7 @@ export function transformAttribute(
   } else if (name === 'xlink:href' && value[0] !== '#') {
     // xlink:href starts with # is an id pointer
     return absoluteToDoc(doc, value);
-  } else if (
-    name === 'background' &&
-    (tagName === 'table' || tagName === 'td' || tagName === 'th')
-  ) {
+  } else if (name === 'background' && ['table', 'td', 'th'].includes(tagName)) {
     return absoluteToDoc(doc, value);
   } else if (name === 'srcset') {
     return getAbsoluteSrcsetString(doc, value);
@@ -212,7 +209,7 @@ export function ignoreAttribute(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _value: unknown,
 ): boolean {
-  return (tagName === 'video' || tagName === 'audio') && name === 'autoplay';
+  return ['video', 'audio'].includes(tagName) && name === 'autoplay';
 }
 
 export function _isBlockedElement(
@@ -616,7 +613,7 @@ function serializeElementNode(
     }
   }
   // form fields
-  if (tagName === 'input' || tagName === 'textarea' || tagName === 'select') {
+  if (['input', 'textarea', 'select'].includes(tagName)) {
     const value = (n as HTMLInputElement | HTMLTextAreaElement).value;
     const checked = (n as HTMLInputElement).checked;
     if (
@@ -691,41 +688,80 @@ function serializeElementNode(
   }
   // save image offline
   if (tagName === 'img' && inlineImages) {
-    if (!canvasService) {
-      canvasService = doc.createElement('canvas');
-      canvasCtx = canvasService.getContext('2d');
-    }
     const image = n as HTMLImageElement;
-    const imageSrc: string =
-      image.currentSrc || image.getAttribute('src') || '<unknown-src>';
-    const priorCrossOrigin = image.crossOrigin;
-    const recordInlineImage = () => {
-      image.removeEventListener('load', recordInlineImage);
+
+    const copyImageToDataURL = (img: HTMLImageElement) : { dataURL?: string; isSecurityError?: boolean; err?: Error; } => {
       try {
-        canvasService!.width = image.naturalWidth;
-        canvasService!.height = image.naturalHeight;
-        canvasCtx!.drawImage(image, 0, 0);
-        attributes.rr_dataURL = canvasService!.toDataURL(
-          dataURLOptions.type,
-          dataURLOptions.quality,
-        );
-      } catch (err) {
-        if (image.crossOrigin !== 'anonymous') {
-          image.crossOrigin = 'anonymous';
-          if (image.complete && image.naturalWidth !== 0)
-            recordInlineImage(); // too early due to image reload
-          else image.addEventListener('load', recordInlineImage);
-          return;
-        } else {
-          console.warn(
-            `Cannot inline img src=${imageSrc}! Error: ${err as string}`,
-          );
+        if (!canvasService) {
+          canvasService = doc.createElement('canvas');
+          canvasCtx = canvasService.getContext('2d');
+        }
+
+        canvasService.width = img.naturalWidth;
+        canvasService.height = img.naturalHeight;
+        canvasCtx!.drawImage(img, 0, 0);
+        return {
+          dataURL: canvasService.toDataURL(
+            dataURLOptions.type,
+            dataURLOptions.quality,
+          )
+        };
+      } catch(err) {
+        const isSecurityError = err instanceof DOMException && err.name === 'SecurityError';
+        if (isSecurityError) {
+          // A tainted canvas cannot be untainted; discard it so the next call gets a fresh one.
+          canvasService = null;
+          canvasCtx = null;
+        }
+        return {
+          isSecurityError,
+          err: err instanceof Error ? err : new Error(String(err)),
         }
       }
-      if (image.crossOrigin === 'anonymous') {
-        priorCrossOrigin
-          ? (attributes.crossOrigin = priorCrossOrigin)
-          : image.removeAttribute('crossorigin');
+    }
+
+    // Try with a transient CORS-enabled image (doesn't modify live DOM)
+    const tryWithCorsImage = (imgSrc: string | undefined | null) => {
+      if (!imgSrc) {
+        console.warn('Unknown image src, cannot retry with CORS image.');
+        return;
+      }
+      const corsImage = new Image();
+      corsImage.crossOrigin = 'anonymous';
+      corsImage.onload = () => {
+        const result = copyImageToDataURL(corsImage);
+        if (typeof result.dataURL === 'string') {
+          attributes.rr_dataURL = result.dataURL;
+        } else {
+          console.warn(
+            `Cannot inline img src=${imgSrc}! Canvas still tainted after CORS retry.`,
+          );
+        }
+      };
+      corsImage.onerror = () => {
+        console.warn(`Cannot inline img src="${imgSrc}"! CORS request failed.`);
+      };
+      corsImage.src = imgSrc;
+    };
+
+    const recordInlineImage = () => {
+      image.removeEventListener('load', recordInlineImage);
+      const imageSrc = image.currentSrc || image.getAttribute('src');
+
+      if (imageSrc?.startsWith('data:')) {
+        attributes.rr_dataURL = imageSrc;
+      } else {
+        const result = copyImageToDataURL(image);
+        if (typeof result.dataURL === 'string') {
+          attributes.rr_dataURL = result.dataURL
+        } else if (result.isSecurityError && image.crossOrigin !== 'anonymous') {
+          // Canvas is tainted by a cross-origin image loaded without CORS.
+          // Re-fetch via a detached Image with crossOrigin='anonymous' so the
+          // original DOM element is never mutated.
+          tryWithCorsImage(imageSrc);
+        } else if (result.err) {
+          console.warn(`Cannot inline img src=${imageSrc ?? '<unknown-src>'}! Error:`, result.err);
+        }
       }
     };
     // The image content may not have finished loading yet.
@@ -733,7 +769,7 @@ function serializeElementNode(
     else image.addEventListener('load', recordInlineImage);
   }
   // media elements
-  if (tagName === 'audio' || tagName === 'video') {
+  if (['audio', 'video'].includes(tagName)) {
     const mediaAttributes = attributes as mediaAttributes;
     mediaAttributes.rr_mediaState = (n as HTMLMediaElement).paused
       ? 'paused'
@@ -803,6 +839,32 @@ function lowerIfExists(
   } else {
     return (maybeAttr as string).toLowerCase();
   }
+}
+
+export function slimDOMDefaults(
+  _slimDOMOptions: SlimDOMOptions | 'all' | true | false | undefined,
+) {
+  if (_slimDOMOptions === true || _slimDOMOptions === 'all') {
+    // if true: set of sensible options that should not throw away any information
+    return {
+      script: true,
+      comment: true,
+      headFavicon: true,
+      headWhitespace: true,
+      headMetaSocial: true,
+      headMetaRobots: true,
+      headMetaHttpEquiv: true,
+      headMetaVerification: true,
+      // the following are off for slimDOMOptions === true,
+      // as they destroy some (hidden) info:
+      headMetaAuthorship: _slimDOMOptions === 'all',
+      headMetaDescKeywords: _slimDOMOptions === 'all',
+      headTitleMutations: _slimDOMOptions === 'all',
+    };
+  } else if (_slimDOMOptions) {
+    return _slimDOMOptions;
+  }
+  return {};
 }
 
 function slimDOMExcluded(
@@ -1289,24 +1351,8 @@ function snapshot(
           password: true,
         }
       : maskAllInputs;
-  const slimDOMOptions: SlimDOMOptions =
-    slimDOM === true || slimDOM === 'all'
-      ? // if true: set of sensible options that should not throw away any information
-        {
-          script: true,
-          comment: true,
-          headFavicon: true,
-          headWhitespace: true,
-          headMetaDescKeywords: slimDOM === 'all', // destructive
-          headMetaSocial: true,
-          headMetaRobots: true,
-          headMetaHttpEquiv: true,
-          headMetaAuthorship: true,
-          headMetaVerification: true,
-        }
-      : slimDOM === false
-      ? {}
-      : slimDOM;
+  const slimDOMOptions = slimDOMDefaults(slimDOM);
+
   return serializeNodeWithId(n, {
     doc: n,
     mirror,

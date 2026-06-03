@@ -2,13 +2,13 @@
  * @vitest-environment jsdom
  */
 import { JSDOM } from 'jsdom';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import snapshot, {
   _isBlockedElement,
   serializeNodeWithId,
 } from '../src/snapshot';
-import { elementNode, serializedNodeWithId } from '../src/types';
+import { elementNode, serializedNodeWithId } from '@newrelic/rrweb-types';
 import { Mirror, absolutifyURLs } from '../src/utils';
 
 const serializeNode = (node: Node): serializedNodeWithId | null => {
@@ -227,6 +227,115 @@ describe('form', () => {
       },
     });
     expect(sel?.childNodes).toEqual([]); // shouldn't be stored in childNodes while in transit
+  });
+});
+
+describe('inlineImages', () => {
+  it('resets the canvas singleton after a SecurityError so subsequent images can be inlined', () => {
+    // Track canvas instances in creation order so we can identify the tainted one by reference.
+    const canvasInstances: HTMLCanvasElement[] = [];
+    const createElementOrig = document.createElement.bind(document);
+    const createElementSpy = vi
+      .spyOn(document, 'createElement')
+      .mockImplementation((tagName: string) => {
+        const el = createElementOrig(tagName);
+        if (tagName === 'canvas')
+          canvasInstances.push(el as HTMLCanvasElement);
+        return el;
+      });
+
+    // The first canvas created is the "tainted" singleton — its toDataURL always throws.
+    // Any canvas created after the singleton is reset (canvasInstances[1], etc.) returns a
+    // valid data URL, so we can tell whether the singleton was actually replaced.
+    const toDataURLSpy = vi
+      .spyOn(HTMLCanvasElement.prototype, 'toDataURL')
+      .mockImplementation(function (this: HTMLCanvasElement) {
+        if (this === canvasInstances[0]) {
+          throw new DOMException('Tainted canvas', 'SecurityError');
+        }
+        return 'data:image/png;base64,fakedata==';
+      });
+
+    const getContextSpy = vi
+      .spyOn(HTMLCanvasElement.prototype, 'getContext')
+      .mockReturnValue(
+        { drawImage: vi.fn() } as unknown as CanvasRenderingContext2D,
+      );
+
+    const opts = {
+      doc: document,
+      blockClass: 'blockblock',
+      blockSelector: null,
+      maskTextClass: 'maskmask',
+      maskTextSelector: null,
+      skipChild: false,
+      inlineStylesheet: true,
+      maskTextFn: undefined,
+      maskInputFn: undefined,
+      slimDOMOptions: {},
+      inlineImages: true,
+    };
+
+    // First image: creates canvasInstances[0] and immediately taints it via SecurityError.
+    const crossOriginImg = document.createElement('img');
+    crossOriginImg.setAttribute(
+      'src',
+      'https://cross-origin.example.com/image1.png',
+    );
+    serializeNodeWithId(crossOriginImg, { ...opts, mirror: new Mirror() });
+    crossOriginImg.dispatchEvent(new Event('load'));
+
+    // Second image: with the fix, canvasService is null so canvasInstances[1] is created and
+    // toDataURL succeeds. Without the fix, canvasInstances[0] is reused and throws again.
+    const sameOriginImg = document.createElement('img');
+    sameOriginImg.setAttribute('src', '/local-image.png');
+    const serialized2 = serializeNodeWithId(sameOriginImg, {
+      ...opts,
+      mirror: new Mirror(),
+    });
+    sameOriginImg.dispatchEvent(new Event('load'));
+
+    expect((serialized2 as elementNode)?.attributes.rr_dataURL).toBe(
+      'data:image/png;base64,fakedata==',
+    );
+
+    toDataURLSpy.mockRestore();
+    getContextSpy.mockRestore();
+    createElementSpy.mockRestore();
+  });
+
+  it('uses image src directly when it is already a data URL', () => {
+    const dataURL =
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+    const img = document.createElement('img');
+    img.setAttribute('src', dataURL);
+
+    // Spy after creating the img so only calls made during serialization are
+    // tracked. createElement('canvas') is the entry point for the canvas path.
+    const createElement = vi.spyOn(document, 'createElement');
+
+    const serialized = serializeNodeWithId(img, {
+      doc: document,
+      mirror: new Mirror(),
+      blockClass: 'blockblock',
+      blockSelector: null,
+      maskTextClass: 'maskmask',
+      maskTextSelector: null,
+      skipChild: false,
+      inlineStylesheet: true,
+      maskTextFn: undefined,
+      maskInputFn: undefined,
+      slimDOMOptions: {},
+      inlineImages: true,
+    });
+
+    // jsdom does not decode images (naturalWidth === 0), so the load listener
+    // is registered rather than called synchronously; fire it manually.
+    img.dispatchEvent(new Event('load'));
+
+    expect(createElement).not.toHaveBeenCalledWith('canvas');
+    expect((serialized as elementNode)?.attributes.rr_dataURL).toBe(dataURL);
+    createElement.mockRestore();
   });
 });
 

@@ -1,0 +1,40 @@
+# This composite action finds, collects, and provides as outputs information
+# about a pull request that is currently opened for the branch targeted by
+# the workflow run ($GITHUB_REF). If no pull request is found, the action will
+# throw an error.
+
+name: 'Find Branch Pull Request'
+
+inputs:
+  pr_number:
+    description: "Pull request number to place the comment on."
+    required: true
+  comment:
+    description: "The comment to place on the pull request."
+    required: true
+  comment_tag:
+    description: "The tag to place in the comment to support updating of comments."
+    required: false
+  token:
+    description: "The github token to use for interacting with the repository."
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install dependencies
+      run: npm install --silent --no-progress --prefix $GITHUB_ACTION_PATH/..
+      shell: bash
+    - name: Run action script
+      id: action-script
+      run: |
+        node $GITHUB_ACTION_PATH/index.js \
+          --github-token ${{ inputs.token }} \
+          --pr-number ${{ inputs.pr_number }} \
+          --comment '''
+            ${{ inputs.comment }}
+          ''' \
+          --comment-tag '''
+            ${{ inputs.comment_tag }}
+          '''
+      shell: bash

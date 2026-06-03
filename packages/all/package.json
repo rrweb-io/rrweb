@@ -1,6 +1,6 @@
 {
   "name": "@newrelic/rrweb-all",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "publishConfig": {
     "access": "public"
   },
@@ -44,6 +44,7 @@
     }
   },
   "files": [
+    "umd",
     "build",
     "dist",
     "package.json",
@@ -51,15 +52,15 @@
   ],
   "devDependencies": {
     "puppeteer": "^20.9.0",
-    "vite": "^5.3.1",
+    "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1",
     "vitest": "^1.4.0",
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@newrelic/rrweb-types": "^1.0.1",
-    "@newrelic/rrweb-packer": "^1.0.1",
-    "@newrelic/rrweb": "^1.0.1"
+    "@newrelic/rrweb-types": "^1.1.1",
+    "@newrelic/rrweb-packer": "^1.1.1",
+    "@newrelic/rrweb": "^1.1.1"
   },
   "browserslist": [
     "supports es6-class"

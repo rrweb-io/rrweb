@@ -1,5 +1,21 @@
 # rrweb-snapshot
 
+## 1.1.1
+
+### Patch Changes
+
+- [#13](https://github.com/newrelic-forks/rrweb/pull/13) [`c64f665`](https://github.com/newrelic-forks/rrweb/commit/c64f6652c6647e6d2541ee35efc5e76ba6758828) Thanks [@ptang-nr](https://github.com/ptang-nr)! - Update rrweb handling of inlining images.
+  Patch image inlining so that images are unaltered in the DOM and prevents images from breaking when server doesn't support CORS.
+  Reset tainted canvas after encountering a CORS error to prevent subsequent fixable images from being un-inlined.
+
+## 1.1.0
+
+### Patch Changes
+
+- [#1762](https://github.com/rrweb-io/rrweb/pull/1762) [`22bc4c3`](https://github.com/newrelic-forks/rrweb/commit/22bc4c334e88f0b8ee5488d9e1e95cd8093a15c8) Thanks [@Juice10](https://github.com/Juice10)! - Drop base64 inlined worker source from all bundles
+
+- [#1704](https://github.com/rrweb-io/rrweb/pull/1704) [`33e01f5`](https://github.com/newrelic-forks/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Provide a /umd/ output folder alongside the /dist/ one so that we can serve UMD (Universal Module Definition) files with a .js extension, without upsetting expectations set by package.json that all .js files in /dist/ are modules
+
 ## 1.0.1
 
 ### Patch Changes

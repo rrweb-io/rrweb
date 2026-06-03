@@ -1,0 +1,10 @@
+{
+  "name": "@newrelic-forks/rrweb.actions",
+  "description": "A collection of github actions for NR's rrweb fork.",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@actions/github": "^9.0.0",
+    "yargs": "^18.0.0"
+  }
+}

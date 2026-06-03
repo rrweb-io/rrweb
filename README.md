@@ -1,12 +1,12 @@
-<p align="center">
-  <img width="100px" height="100px" src="https://www.rrweb.io/favicon.png">
+<p style="text-align: center;">
+  <img width="100px" height="100px" src="https://www.rrweb.io/favicon.png" alt="rrweb logo" />
 </p>
 
 # rrweb
 
 rrweb refers to 'record and replay the web', which is a tool for recording and replaying users' interactions on the web.
 
-This is a fork of rrweb meant to power New Relic experiences for session replay.
+This is a fork of [rrweb](https://github.com/rrweb-io/rrweb) meant to power New Relic experiences for session replay.  The original rrweb project is licensed under the [MIT license](./LICENSE-original). All original modifications and new content are licensed under the new [Apache license](./LICENSE).
 
 ## Project Structure
 

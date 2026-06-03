@@ -19,7 +19,7 @@ jobs:
       run-tests: ${{ steps.evaluate.outputs.run-tests }}
     steps:
       - name: Checkout Repo (shallow for diff)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
         with:
           fetch-depth: 2
       - name: Evaluate commit for skipping tests
@@ -49,22 +49,26 @@ jobs:
         run: 'echo "Run tests decision: ${{ steps.evaluate.outputs.run-tests }}"'
 
   changeset-guard:
-    name: Changeset Guard
+    name: Changeset Guard & Status
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
+
       - name: Detect changed files
         id: diff
         run: |
-          git fetch origin master --depth=1 || true
           CHANGED=$(git diff --name-only origin/master...HEAD)
           echo "changed<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGED" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Check for changeset file
         id: has_changeset
         run: |
@@ -73,7 +77,9 @@ jobs:
           else
             echo "present=false" >> $GITHUB_OUTPUT
           fi
+
       - name: Enforce changeset
+        id: enforce_changeset
         run: |
           # Fail if no changeset AND workspace code or package.json changed AND no skip label present
           SKIP_LABEL=$(jq -r '.pull_request.labels[].name? // empty' "$GITHUB_EVENT_PATH" | grep -E '^skip-changeset$' || true)
@@ -93,27 +99,69 @@ jobs:
           else
             echo "Changeset file detected; proceeding.";
           fi
-  pr-tests:
-    name: Tests
-    needs: [determine-test-need]
-    if: github.event_name == 'pull_request' || (github.ref == 'refs/heads/master' && needs.determine-test-need.outputs.run-tests == 'true')
-    permissions:
-      contents: read
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-        with:
-          # This makes Actions fetch all Git history so that Changesets can generate changelogs with the correct commits
-          fetch-depth: 0
 
       - name: Setup Node.js lts/*
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: lts/*
           cache: 'yarn'
 
       - name: Install Dependencies
+        timeout-minutes: 5
+        run: yarn install --frozen-lockfile
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+
+      - name: Run Changeset Status
+        id: changeset_status
+        timeout-minutes: 5
+        run: |
+          echo "output<<EOF" >> $GITHUB_OUTPUT
+          yarn run changeset status --verbose --since origin/master 2>&1 | tee -a $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Comment PR with Changeset Status
+        uses: ./.github/actions/comment-pull-request
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pr_number: ${{ github.event.number }}
+          comment: |
+            ## 📦 Changeset Status
+
+            ```
+            ${{ steps.changeset_status.outputs.output }}
+            ```
+          comment_tag: <!-- changeset_status_check -->
+
+      - name: Fail if enforcement failed
+        if: steps.enforce_changeset.outcome == 'failure'
+        run: exit 1
+  pr-tests:
+    name: Tests
+    needs: [determine-test-need]
+    if: |
+      always() && (
+        github.event_name == 'pull_request' ||
+        (github.ref == 'refs/heads/master' && needs.determine-test-need.outputs.run-tests == 'true')
+      )
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v5
+        with:
+          # This makes Actions fetch all Git history so that Changesets can generate changelogs with the correct commits
+          fetch-depth: 0
+
+      - name: Setup Node.js lts/*
+        uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        timeout-minutes: 5
         run: yarn install --frozen-lockfile
         env:
           PUPPETEER_DOWNLOAD_BASE_URL: 'https://storage.googleapis.com/chrome-for-testing-public'
@@ -121,22 +169,17 @@ jobs:
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
 
+      - name: Install Playwright browsers
+        run: |
+          cd packages/rrvideo && yarn playwright install chromium
+          cd ../rrweb && yarn playwright install --with-deps webkit
+
       - name: Check types
         run: yarn check-types
 
       - name: Run tests
         # run: PUPPETEER_EXECUTABLE_PATH=${{ steps.setup-chrome.outputs.chrome-path }} PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
         run: PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
-
-      - name: Check bundle sizes
-        uses: preactjs/compressed-size-action@v2
-        with:
-          install-script: 'yarn install --frozen-lockfile'
-          build-script: 'build:all'
-          compression: 'none'
-          pattern: '**/dist/*.{js,cjs,mjs,css}'
-        env:
-          PUPPETEER_SKIP_DOWNLOAD: true
 
       - name: Upload diff images to GitHub
         uses: actions/upload-artifact@v4

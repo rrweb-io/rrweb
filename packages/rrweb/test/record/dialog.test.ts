@@ -43,7 +43,7 @@ const attributeMutationFactory = (
 };
 
 describe('dialog', () => {
-  vi.setConfig({ testTimeout: 100_000 });
+  vi.setConfig({ testTimeout: 100_000, hookTimeout: 100_000 });
   let code: ISuite['code'];
   let page: ISuite['page'];
   let browser: ISuite['browser'];
@@ -61,12 +61,22 @@ describe('dialog', () => {
   });
 
   afterEach(async () => {
-    await page.close();
+    if (page && !page.isClosed()) {
+      await page.close();
+    }
   });
 
   afterAll(async () => {
-    await server.close();
-    await browser.close();
+    try {
+      if (server) {
+        await server.close();
+      }
+      if (browser) {
+        await browser.close();
+      }
+    } catch (error) {
+      // Ignore cleanup errors
+    }
   });
 
   beforeEach(async () => {

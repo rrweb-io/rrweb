@@ -87,7 +87,7 @@ const setup = function (
 };
 
 describe('record webgl', function (this: ISuite) {
-  vi.setConfig({ testTimeout: 100_000 });
+  vi.setConfig({ testTimeout: 100_000, hookTimeout: 100_000 });
 
   const ctx: ISuite = setup.call(
     this,

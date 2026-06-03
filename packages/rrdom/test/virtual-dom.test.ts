@@ -50,7 +50,7 @@ function walk(node, mirror, blankSpace) {
 `;
 
 describe('RRDocument for browser environment', () => {
-  vi.setConfig({ testTimeout: 60_000 });
+  vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
   let mirror: Mirror;
   beforeEach(() => {
     mirror = new Mirror();
@@ -251,7 +251,9 @@ describe('RRDocument for browser environment', () => {
       );
     });
     afterAll(async () => {
-      await browser.close();
+      if (browser) {
+        await browser.close();
+      }
     });
 
     beforeEach(async () => {

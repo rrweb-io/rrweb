@@ -1,6 +1,6 @@
 {
   "name": "@newrelic/rrweb-utils",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "publishConfig": {
     "access": "public"
   },
@@ -42,12 +42,13 @@
     }
   },
   "files": [
+    "umd",
     "dist",
     "package.json",
     "LICENSE"
   ],
   "devDependencies": {
-    "vite": "^5.2.8",
+    "vite": "^6.0.1",
     "vite-plugin-dts": "^3.8.1"
   },
   "dependencies": {}

@@ -18,7 +18,7 @@ import { eventWithTime, NodeType, EventType } from '@newrelic/rrweb-types';
 import { visitSnapshot } from '@newrelic/rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
-  vi.setConfig({ testTimeout: 10_000 });
+  vi.setConfig({ testTimeout: 100_000, hookTimeout: 100_000 });
 
   const getHtml = (
     fileName: string,
@@ -55,8 +55,16 @@ describe('record integration tests', function (this: ISuite) {
   });
 
   afterAll(async () => {
-    await browser.close();
-    server.close();
+    try {
+      if (browser) {
+        await browser.close();
+      }
+      if (server) {
+        server.close();
+      }
+    } catch (error) {
+      // Ignore cleanup errors
+    }
   });
 
   it('can record clicks', async () => {

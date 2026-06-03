@@ -1,5 +1,17 @@
 # @rrweb/utils
 
+## 1.1.1
+
+## 1.1.0
+
+### Patch Changes
+
+- [#8](https://github.com/newrelic-forks/rrweb/pull/8) [`52da172`](https://github.com/newrelic-forks/rrweb/commit/52da1729040a5a086920879b782ff641bce636bf) Thanks [@ptang-nr](https://github.com/ptang-nr)! - load unpatched versions of things from Angular zone when present (non-Safari browsers only)
+
+- [#1704](https://github.com/rrweb-io/rrweb/pull/1704) [`33e01f5`](https://github.com/newrelic-forks/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Provide a /umd/ output folder alongside the /dist/ one so that we can serve UMD (Universal Module Definition) files with a .js extension, without upsetting expectations set by package.json that all .js files in /dist/ are modules
+
+- [#1763](https://github.com/rrweb-io/rrweb/pull/1763) [`6388fb5`](https://github.com/newrelic-forks/rrweb/commit/6388fb5a468e1a860ab8bb5c6826c811dcc3100c) Thanks [@wfk007](https://github.com/wfk007)! - fix: wujie monkeypatches ownerDocument
+
 ## 1.0.1
 
 ### Patch Changes

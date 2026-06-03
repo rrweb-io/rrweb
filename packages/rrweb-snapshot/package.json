@@ -1,6 +1,6 @@
 {
   "name": "@newrelic/rrweb-snapshot",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",
@@ -44,6 +44,7 @@
     }
   },
   "files": [
+    "umd",
     "dist",
     "package.json",
     "LICENSE"
@@ -58,8 +59,8 @@
   },
   "homepage": "https://github.com/newrelic-forks/rrweb/tree/master/packages/rrweb-snapshot#readme",
   "devDependencies": {
-    "@newrelic/rrweb-types": "^1.0.1",
-    "@newrelic/rrweb-utils": "^1.0.1",
+    "@newrelic/rrweb-types": "^1.1.1",
+    "@newrelic/rrweb-utils": "^1.1.1",
     "@types/jsdom": "^20.0.0",
     "@types/node": "^18.15.11",
     "@types/puppeteer": "^5.4.4",
@@ -67,7 +68,7 @@
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",
     "typescript": "^5.4.5",
-    "vite": "^5.3.1",
+    "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1",
     "vitest": "^1.4.0"
   },

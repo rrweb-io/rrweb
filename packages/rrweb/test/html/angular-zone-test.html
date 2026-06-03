@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Angular Zone.js Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    #app {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Angular Zone.js Test Page</h1>
+  <p>This page simulates an Angular application environment with Zone.js.</p>
+
+  <div id="app">
+    <p>Initial content</p>
+  </div>
+
+  <!-- Load Zone.js from CDN to simulate Angular environment -->
+  <script>
+    // Check if we should skip Zone loading (for specific test cases)
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldLoadZone = urlParams.get('noZone') !== 'true';
+
+    if (shouldLoadZone) {
+      // Load Zone.js synchronously
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/zone.js@0.14.4/bundles/zone.umd.js';
+      script.async = false;
+      document.currentScript.parentNode.insertBefore(script, document.currentScript);
+
+      // Wait for Zone to load
+      script.onload = function() {
+        console.log('Zone.js loaded successfully');
+        console.log('Zone version:', Zone.current.name);
+
+        // Verify that Zone has patched some native APIs
+        const isPatched = Node.prototype.hasOwnProperty('appendChild') ||
+                         typeof Zone.__symbol__ === 'function';
+
+        if (isPatched || typeof Zone !== 'undefined') {
+          console.log('Zone.js is active and has patched native APIs');
+        }
+
+        // Make Zone symbols available for debugging
+        if (typeof Zone !== 'undefined' && Zone.__symbol__) {
+          window.__zoneSymbol = Zone.__symbol__.bind(Zone);
+          console.log('Zone.__symbol__ available as window.__zoneSymbol');
+        }
+      };
+
+      script.onerror = function() {
+        console.error('Failed to load Zone.js');
+      };
+    } else {
+      console.log('Zone.js loading skipped (noZone=true)');
+    }
+  </script>
+
+  <script>
+    // Simulate some Angular-like behavior
+    window.addEventListener('load', function() {
+      console.log('Page loaded');
+
+      // Log whether Zone is present
+      if (typeof Zone !== 'undefined') {
+        console.log('Running in Zone:', Zone.current.name);
+      } else {
+        console.log('Zone.js not present');
+      }
+    });
+
+    // Helper function to simulate Angular component rendering
+    window.renderComponent = function(componentHtml) {
+      const appRoot = document.getElementById('app');
+      if (appRoot) {
+        appRoot.innerHTML = componentHtml;
+      }
+    };
+
+    // Helper function to check if we're using untainted prototypes
+    window.checkPrototypes = function() {
+      const results = {
+        Node_childNodes: false,
+        Node_contains: false,
+        Element_querySelector: false,
+      };
+
+      // Check if getters are native or patched
+      const childNodesDesc = Object.getOwnPropertyDescriptor(Node.prototype, 'childNodes');
+      if (childNodesDesc && childNodesDesc.get) {
+        results.Node_childNodes = childNodesDesc.get.toString().includes('[native code]');
+      }
+
+      const containsMethod = Node.prototype.contains;
+      if (containsMethod) {
+        results.Node_contains = containsMethod.toString().includes('[native code]');
+      }
+
+      const querySelectorMethod = Element.prototype.querySelector;
+      if (querySelectorMethod) {
+        results.Element_querySelector = querySelectorMethod.toString().includes('[native code]');
+      }
+
+      console.log('Prototype check results:', results);
+      return results;
+    };
+  </script>
+</body>
+</html>

@@ -1,2 +1,8 @@
 /.yarn/releases/** binary
 /.yarn/plugins/** binary
+
+# Git attributes for merge conflict resolution
+# Files where we should keep our version
+# Add git config merge.ours.driver true
+LICENSE merge=ours
+README.md merge=ours

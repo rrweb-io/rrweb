@@ -134,8 +134,8 @@ const setup = function (
   return ctx;
 };
 
-describe('cross origin iframes', function (this: ISuite) {
-  vi.setConfig({ testTimeout: 100_000 });
+  describe('cross origin iframes', () => {
+    vi.setConfig({ testTimeout: 100_000, hookTimeout: 100_000 });
 
   describe('form.html', function (this: ISuite) {
     const ctx: ISuite = setup.call(
@@ -492,7 +492,7 @@ describe('cross origin iframes', function (this: ISuite) {
   });
 
   describe('audio.html', function (this: ISuite) {
-    vi.setConfig({ testTimeout: 100_000 });
+    vi.setConfig({ testTimeout: 100_000, hookTimeout: 100_000 });
 
     const ctx: ISuite = setup.call(
       this,
@@ -581,7 +581,7 @@ describe('cross origin iframes', function (this: ISuite) {
 });
 
 describe('same origin iframes', function (this: ISuite) {
-  vi.setConfig({ testTimeout: 100_000 });
+  vi.setConfig({ testTimeout: 100_000, hookTimeout: 100_000 });
 
   const ctx: ISuite = setup.call(
     this,
