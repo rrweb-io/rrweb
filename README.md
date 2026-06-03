@@ -247,4 +247,16 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
       </a>
     </td>
   </tr>
+  <tr>
+    <td align="center">
+      <a href="https://tracelane.cubenest.in" target="_blank">
+        <img style="padding: 8px" alt="Embeds self-contained rrweb replays in E2E test-failure reports" width="195px" src="https://raw.githubusercontent.com/Cubenest/rrweb-stack/main/assets/brand/sub-tracelane.svg">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://peek.cubenest.in" target="_blank">
+        <img style="padding: 8px" alt="Feeds authenticated browser context to AI coding agents via MCP" width="195px" src="https://raw.githubusercontent.com/Cubenest/rrweb-stack/main/assets/brand/sub-peek.svg">
+      </a>
+    </td>
+  </tr>
 </table>
