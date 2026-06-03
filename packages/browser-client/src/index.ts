@@ -99,6 +99,9 @@ function scriptSourceFromElement(
 }
 
 export function stop(resetRecordingId: boolean) {
+  if (resetRecordingId) {
+    invalidateActiveStart();
+  }
   // reset all state so that start() can start afresh
   if (rrwebStopFn !== undefined) {
     rrwebStopFn();
@@ -144,6 +147,12 @@ export function stop(resetRecordingId: boolean) {
 
 function removeRecordingId(): void {
   sessionStorage.removeItem(sessionStorageName);
+}
+
+function invalidateActiveStart(): void {
+  delete (window as unknown as Record<string, unknown>)[
+    browserClientStartTokenName
+  ];
 }
 
 function getSetVisitorId() {
@@ -256,12 +265,16 @@ function ensureSequenceId(
   state: SequenceState,
 ): eventWithTime & { sequenceId: number } {
   const eventWithSequence = event as eventWithSequenceId;
-  if (isValidSequenceId(eventWithSequence.sequenceId)) {
-    state.sequenceId = Math.max(state.sequenceId, eventWithSequence.sequenceId);
-  } else {
-    state.sequenceId += 1;
-    eventWithSequence.sequenceId = state.sequenceId;
+  if (
+    isValidSequenceId(eventWithSequence.sequenceId) &&
+    eventWithSequence.sequenceId > state.sequenceId
+  ) {
+    state.sequenceId = eventWithSequence.sequenceId;
+    persistSequenceId(state);
+    return eventWithSequence as eventWithTime & { sequenceId: number };
   }
+  state.sequenceId += 1;
+  eventWithSequence.sequenceId = state.sequenceId;
   persistSequenceId(state);
   return eventWithSequence as eventWithTime & { sequenceId: number };
 }

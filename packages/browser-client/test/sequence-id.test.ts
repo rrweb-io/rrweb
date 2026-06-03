@@ -244,6 +244,32 @@ describe('@rrweb/browser-client sequenceId', () => {
     expect(sessionStorage.getItem(sequenceKey())).toBe('2');
   });
 
+  it('overwrites stale user plugin sequence ids during final normalization', async () => {
+    const client = await importFreshClient();
+    const emittedEvents: Array<Record<string, unknown>> = [];
+    const staleSequencePlugin: RecordPlugin = {
+      name: 'test/stale-sequence-id',
+      eventProcessor(event) {
+        Object.assign(event, { sequenceId: 1 });
+        return event;
+      },
+    };
+
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      autostart: false,
+      emit: (event) => emittedEvents.push(event as Record<string, unknown>),
+      plugins: [staleSequencePlugin],
+    });
+
+    expect(bufferEvents()[0]).toMatchObject({ sequenceId: 1 });
+    expect(emittedEvents[0]).toMatchObject({ sequenceId: 2 });
+    expect(sentEvents()[0]).toMatchObject({ sequenceId: 2 });
+    expect(sessionStorage.getItem(sequenceKey())).toBe('2');
+  });
+
   it('continues from stored sequence state on resume', async () => {
     const client = await importFreshClient();
     sessionStorage.setItem('rrweb-browser-client-recording-id', 'recording-1');
@@ -321,6 +347,44 @@ describe('@rrweb/browser-client sequenceId', () => {
       },
     });
     expect(sessionStorage.getItem(key)).toBeNull();
+  });
+
+  it('does not record after permanent stop cancels a hidden delayed start', async () => {
+    setDocumentHidden(true);
+    const client = await importFreshClient();
+
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      autostart: false,
+      emit: () => undefined,
+    });
+    client.stop(true);
+
+    setDocumentHidden(false);
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    expect(mockState.recordCalls).toHaveLength(0);
+  });
+
+  it('does not restart recording after permanent stop cancels a frozen start', async () => {
+    const client = await importFreshClient();
+
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      autostart: false,
+      emit: () => undefined,
+    });
+    document.dispatchEvent(new Event('freeze'));
+    client.stop(true);
+
+    setDocumentHidden(false);
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    expect(mockState.recordCalls).toHaveLength(1);
   });
 
   it('builds the plugin from latest state after delayed visible start', async () => {
