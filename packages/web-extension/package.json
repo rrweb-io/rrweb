@@ -15,11 +15,12 @@
     "pack:firefox": "cross-env TARGET_BROWSER=firefox ZIP=true vite build",
     "check-types": "tsc -noEmit",
     "build": "npm run pack:chrome && npm run pack:firefox",
-    "prepublish": "yarn build"
+    "prepublish": "npm run build"
   },
   "devDependencies": {
     "@rrweb/types": "^2.0.0-alpha.20",
     "@types/chrome": "^0.0.287",
+    "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.6",
     "@types/semver": "^7.5.8",
     "@types/webextension-polyfill": "^0.9.1",

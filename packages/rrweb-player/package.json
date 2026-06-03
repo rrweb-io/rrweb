@@ -10,7 +10,7 @@
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "eslint-plugin-svelte": "^2.37.0",
-    "prettier-plugin-svelte": "^3.1.2",
+    "prettier-plugin-svelte": "~3.2.0",
     "svelte": "^4.2.14",
     "svelte-check": "^3.4.3",
     "svelte-preprocess": "^5.0.3",
@@ -26,11 +26,11 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build",
-    "prepublishOnly": "yarn build",
+    "prepublishOnly": "npm run build",
     "start": "vite",
     "check-types": "svelte-check --tsconfig ./tsconfig.json",
-    "prepublish": "yarn build",
-    "lint": "yarn eslint src/**/*.ts"
+    "prepublish": "npm run build",
+    "lint": "eslint src/**/*.ts"
   },
   "description": "rrweb's replayer UI",
   "main": "./dist/rrweb-player.umd.cjs",
