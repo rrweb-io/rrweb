@@ -666,10 +666,14 @@ export const addCustomEvent = <T>(tag: string, payload: T) => {
     };
     // let websocket buffer handle it
     const state = getSetSequenceState();
+    if (!state) {
+      console.error(
+        '@rrweb/browser-client: Unable to addCustomEvent(); sessionStorage unavailable',
+      );
+      return;
+    }
     buffer.add(
-      JSON.stringify(
-        state ? ensureSequenceId(customEvent, state) : customEvent,
-      ),
+      JSON.stringify(ensureSequenceId(customEvent, state)),
     );
   }
 };

@@ -326,6 +326,28 @@ describe('@rrweb/browser-client sequenceId', () => {
     expect(sessionStorage.getItem(sequenceKey())).toBe('1');
   });
 
+  it('does not buffer fallback custom events without sequence state', async () => {
+    const client = await importFreshClient();
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    const getItem = vi
+      .spyOn(Storage.prototype, 'getItem')
+      .mockImplementation(() => {
+        throw new Error('sessionStorage unavailable');
+      });
+
+    client.addCustomEvent('pre-start', { ok: true });
+
+    expect(bufferEvents()).toEqual([]);
+    expect(consoleError).toHaveBeenCalledWith(
+      '@rrweb/browser-client: Unable to addCustomEvent(); sessionStorage unavailable',
+    );
+
+    getItem.mockRestore();
+    consoleError.mockRestore();
+  });
+
   it('assigns ids to close events and clears state on permanent stop', async () => {
     const client = await importFreshClient();
 
