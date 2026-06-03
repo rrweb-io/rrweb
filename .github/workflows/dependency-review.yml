@@ -1,0 +1,28 @@
+name: 'Dependency Review'
+
+on:
+  pull_request:
+  merge_group:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: 'Dependency Review'
+        uses: actions/dependency-review-action@05fe4576374b728f0c523d6a13d64c25081e0803 # v4.8.3
+        with:
+          allow-licenses: >-
+            Apache-2.0, MIT, ISC, BSD-2-Clause, BSD-3-Clause, 0BSD,
+            BlueOak-1.0.0, Unlicense, CC0-1.0,
+            CC-BY-4.0,
+            Artistic-2.0
+          allow-dependencies-licenses: >-
+            pkg:githubactions/grafana/shared-workflows/actions/lint-pr-title
