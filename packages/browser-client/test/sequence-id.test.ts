@@ -95,6 +95,9 @@ vi.mock('@rrweb/record', () => {
 vi.mock('websocket-ts', () => {
   class ArrayQueue {
     items: string[] = [];
+    constructor() {
+      mockState.buffers.push(this);
+    }
     add(value: string) {
       mockState.operations.push('buffer:add');
       this.items.push(value);
@@ -126,7 +129,9 @@ vi.mock('websocket-ts', () => {
   class WebsocketBuilder {
     constructor(private readonly url: string) {}
     withBuffer(buffer: QueueLike) {
-      mockState.buffers.push(buffer);
+      if (!mockState.buffers.includes(buffer)) {
+        mockState.buffers.push(buffer);
+      }
       return this;
     }
     withBackoff() {
