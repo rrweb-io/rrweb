@@ -83,6 +83,10 @@ Use this only for compatibility with non-module environments; modern browsers
 support the ESM method above.
 
 ```html
+<link
+  rel="stylesheet"
+  href="https://cdn.rrweb.com/replay/current/dist/style.css"
+/>
 <script src="https://cdn.rrweb.com/record/current/dist/record.umd.cjs"></script>
 <script src="https://cdn.rrweb.com/replay/current/dist/replay.umd.cjs"></script>
 ```
