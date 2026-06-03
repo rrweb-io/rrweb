@@ -4,4 +4,4 @@ rrweb is released as a monorepo. Package-specific changelogs are maintained by C
 
 For current release notes, see the package changelog next to each package or the GitHub releases page:
 
-https://github.com/rrweb-io/rrweb/releases
+[Release notes](https://github.com/rrweb-io/rrweb/releases)
