@@ -1,0 +1,16 @@
+name: 'Validate Semantic Pull Request'
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+permissions: {}
+
+jobs:
+  lint-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - id: lint-pr-title
+        uses: grafana/shared-workflows/actions/lint-pr-title@dc556a9221f731438679e3a7b30dcd9dccec4c8b
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
