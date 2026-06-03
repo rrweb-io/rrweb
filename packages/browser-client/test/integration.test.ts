@@ -91,6 +91,16 @@ async function pollUntil<T>(
   throw new Error(`Timed out after ${timeout}ms`);
 }
 
+function expectIncreasingSequenceIds(events: Array<Record<string, unknown>>) {
+  let previous = 0;
+  for (const event of events) {
+    expect(event.sequenceId).toEqual(expect.any(Number));
+    expect(Number.isInteger(event.sequenceId)).toBe(true);
+    expect(event.sequenceId as number).toBeGreaterThan(previous);
+    previous = event.sequenceId as number;
+  }
+}
+
 const describeWithApi = TEST_API_KEY ? describe : describe.skip;
 
 describeWithApi(
@@ -237,6 +247,9 @@ ${JSON.stringify(defaultOptions(options))}
         );
 
         expect(serverEvents.length).toBeGreaterThan(1);
+        expectIncreasingSequenceIds(
+          serverEvents as Array<Record<string, unknown>>,
+        );
 
         serverEvents.forEach((e) => {
           // TODO: these should probably not be returned in the first place
@@ -380,11 +393,19 @@ ${JSON.stringify(defaultOptions(options))}
       expect(serverEvents.length).toBeGreaterThan(eventsFromFirst);
 
       const customEvents = [];
-      const recordingIds = new Set();
+      const recordingIds = new Set<string>();
       serverEvents.forEach((e) => {
-        if ('recordingId' in e) {
+        if ('recordingId' in e && typeof e.recordingId === 'string') {
           recordingIds.add(e.recordingId);
         }
+      });
+      for (const id of recordingIds) {
+        const eventsForRecording = serverEvents.filter(
+          (event) => event.recordingId === id,
+        ) as Array<Record<string, unknown>>;
+        expectIncreasingSequenceIds(eventsForRecording);
+      }
+      serverEvents.forEach((e) => {
         if (e.type === EventType.Custom) {
           customEvents.push(e);
         }
