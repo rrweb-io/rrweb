@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/record",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "publishConfig": {
     "access": "public"
   },
@@ -57,9 +57,9 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0",
-    "rrweb": "^2.0.0",
-    "@rrweb/utils": "^2.0.0"
+    "@rrweb/types": "^2.0.1",
+    "rrweb": "^2.0.1",
+    "@rrweb/utils": "^2.0.1"
   },
   "browserslist": [
     "supports es6-class"

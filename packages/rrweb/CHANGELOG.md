@@ -1,5 +1,17 @@
 # rrweb
 
+## 2.0.1
+
+### Patch Changes
+
+- [#1854](https://github.com/rrweb-io/rrweb/pull/1854) [`5f52d63`](https://github.com/rrweb-io/rrweb/commit/5f52d63636b3246bd5b6ba99a93cba41c5d981cb) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fix broken MutationObserver in Webkit/Safari when a webpage has been monkey patched by a 3rd party library
+
+- Updated dependencies [[`5f52d63`](https://github.com/rrweb-io/rrweb/commit/5f52d63636b3246bd5b6ba99a93cba41c5d981cb)]:
+  - rrweb-snapshot@2.0.1
+  - @rrweb/utils@2.0.1
+  - rrdom@2.0.1
+  - @rrweb/types@2.0.1
+
 ## 2.0.0
 
 ### Major Changes
