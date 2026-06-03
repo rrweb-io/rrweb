@@ -162,7 +162,7 @@ jobs:
 
       - name: Install Dependencies
         timeout-minutes: 5
-        run: yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile --ignore-scripts
         env:
           PUPPETEER_DOWNLOAD_BASE_URL: 'https://storage.googleapis.com/chrome-for-testing-public'
 
