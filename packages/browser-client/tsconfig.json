@@ -1,8 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": [
-    "src"
-  ],
+  "include": ["src"],
   "compilerOptions": {
     "rootDir": "src",
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
@@ -10,6 +8,9 @@
   "references": [
     {
       "path": "../record"
+    },
+    {
+      "path": "../plugins/rrweb-plugin-sequential-id-record"
     },
     {
       "path": "../types"

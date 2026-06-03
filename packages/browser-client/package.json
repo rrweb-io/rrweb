@@ -65,6 +65,7 @@
   },
   "dependencies": {
     "@rrweb/record": "^2.0.0",
+    "@rrweb/rrweb-plugin-sequential-id-record": "^2.0.0",
     "@rrweb/types": "^2.0.0",
     "@rrweb/utils": "^2.0.0",
     "rrweb": "^2.0.0",
