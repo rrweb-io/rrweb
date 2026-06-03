@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/types",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.1",
   "publishConfig": {
     "access": "public"
   },
@@ -42,11 +42,12 @@
     }
   },
   "files": [
+    "umd",
     "dist",
     "package.json"
   ],
   "devDependencies": {
-    "vite": "^5.3.1",
+    "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1"
   },
   "browserslist": [

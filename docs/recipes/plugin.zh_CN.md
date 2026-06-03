@@ -40,6 +40,8 @@ export type ReplayPlugin = {
 #### 录制侧插件
 
 ```ts
+import { record } from '@rrweb/record';
+
 const exampleRecordPlugin: RecordPlugin<{ foo: string }> = {
   name: 'my-scope/example@1',
   observer(cb, options) {
@@ -56,7 +58,7 @@ const exampleRecordPlugin: RecordPlugin<{ foo: string }> = {
   },
 };
 
-rrweb.record({
+record({
   emit: emit(event) {},
   plugins: [exampleRecordPlugin],
 });
@@ -81,6 +83,8 @@ rrweb.record({
 #### 回放侧插件
 
 ```ts
+import { Replayer } from '@rrweb/replay';
+
 const exampleReplayPlugin: ReplayPlugin = {
   handler(event, isSync, context) {
     if (event.type === EventType.Plugin) {
@@ -92,7 +96,7 @@ const exampleReplayPlugin: ReplayPlugin = {
   },
 };
 
-const replayer = new rrweb.Replayer(events, {
+const replayer = new Replayer(events, {
   plugins: [exampleReplayPlugin],
 });
 ```

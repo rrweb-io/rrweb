@@ -7,6 +7,7 @@ import {
   extractFileExtension,
   fixSafariColons,
   isNodeMetaEqual,
+  stringifyStylesheet,
 } from '../src/utils';
 import { NodeType } from '@rrweb/types';
 import type { serializedNode, serializedNodeWithId } from '@rrweb/types';
@@ -278,6 +279,51 @@ describe('utils', () => {
 
       const out3 = fixSafariColons('[data-aa\\:other] { color: red; }');
       expect(out3).toEqual('[data-aa\\:other] { color: red; }');
+    });
+  });
+
+  describe('stringifyStylesheet', () => {
+    it('returns null if rules are missing', () => {
+      const mockSheet = {
+        rules: null,
+        cssRules: null,
+      } as unknown as CSSStyleSheet;
+      expect(stringifyStylesheet(mockSheet)).toBeNull();
+    });
+
+    it('stringifies rules using .cssRules if .rules is missing', () => {
+      const mockRule1 = { cssText: 'div { margin: 0; }' } as CSSRule;
+      const mockSheet = {
+        cssRules: [mockRule1],
+        href: 'https://example.com/main.css',
+      } as unknown as CSSStyleSheet;
+      expect(stringifyStylesheet(mockSheet)).toBe('div { margin: 0; }');
+    });
+
+    it('uses ownerNode.baseURI for inline styles', () => {
+      const mockFontFaceRule = {
+        cssText: `
+          @font-face {
+            font-family: 'MockFont';
+            src: url('../fonts/mockfont.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+          }
+        `,
+      } as CSSRule;
+      const mockOwnerNode = {
+        baseURI: 'https://example.com/fonts/',
+      } as unknown as Node;
+      const mockSheet = {
+        cssRules: [mockFontFaceRule],
+        href: null,
+        ownerNode: mockOwnerNode,
+      } as unknown as CSSStyleSheet;
+      expect(
+        stringifyStylesheet(mockSheet)?.replace(/\s+/g, ' ').trim(),
+      ).toEqual(
+        "@font-face { font-family: 'MockFont'; src: url('https://example.com/fonts/mockfont.woff2') format('woff2'); font-weight: normal; font-style: normal; }",
+      );
     });
   });
 });

@@ -6,43 +6,99 @@
 
 ## Installation
 
-### Direct `<script>` include
+| Goal                            | Recommended package(s)            |
+| ------------------------------- | --------------------------------- |
+| Most projects (record + replay) | `@rrweb/record` + `@rrweb/replay` |
+| Single-package convenience      | `@rrweb/all`                      |
+| Legacy compatibility only       | `rrweb`                           |
 
-You are recommended to install rrweb via jsdelivr's CDN service:
+In most production setups, recorder and replayer are deployed to different pages/apps. Use `@rrweb/record` on recorded pages and `@rrweb/replay` (or `rrweb-player`) on replay pages. Use `@rrweb/all` when you intentionally want one package for convenience (for example demos, tooling, or simplified setups).
+
+### 1) Bundler / npm (Recommended)
+
+```shell
+npm install @rrweb/record @rrweb/replay
+```
+
+```js
+import { record } from '@rrweb/record';
+import { Replayer } from '@rrweb/replay';
+import '@rrweb/replay/dist/style.css';
+```
+
+Use `@rrweb/all` as a convenience package if you want a single import:
+
+```shell
+npm install @rrweb/all
+```
+
+```js
+import { record, Replayer } from '@rrweb/all';
+import '@rrweb/all/dist/style.css';
+```
+
+`require(...)` / CommonJS remains available for compatibility via each package's `exports`/`main`, but ESM imports are the primary path for 2.x.
+
+### 2) Browser Without Bundler (No-Build)
+
+Use browser ESM assets from a CDN:
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
+  href="https://cdn.rrweb.com/replay/current/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.umd.min.cjs"></script>
+<script type="module">
+  import { record } from 'https://cdn.rrweb.com/record/current/dist/record.js';
+  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.js';
+
+  record({
+    emit(event) {
+      console.log(event);
+    },
+  });
+</script>
 ```
 
-Also, you can link to a specific version number that you can update manually:
+Use `current` for the latest stable release, or pin an exact version such as
+`https://cdn.rrweb.com/record/2.0.0/dist/record.js` and
+`https://cdn.rrweb.com/replay/2.0.0/dist/replay.js` for immutable
+production URLs.
+
+`rrweb-player` is also available as a browser ESM asset:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.14/dist/rrweb.umd.min.cjs"></script>
+<link
+  rel="stylesheet"
+  href="https://cdn.rrweb.com/rrweb-player/current/style.css"
+/>
+<script type="module">
+  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.js';
+</script>
 ```
 
-#### Only include the recorder code
+### 3) Legacy Direct `<script>` Include (UMD Fallback)
 
-rrweb's code includes both the record and the replay parts. Most of the time you only need to include the record part into your targeted web Apps.
-This also can be done by using the `@rrweb/record` package and the CDN service:
+Use this only for compatibility with non-module environments.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@rrweb/record@latest/dist/record.umd.min.cjs"></script>
+<script src="https://cdn.rrweb.com/record/current/dist/record.umd.cjs"></script>
+<script src="https://cdn.rrweb.com/replay/current/dist/replay.umd.cjs"></script>
 ```
+
+The UMD builds expose `rrwebRecord` and `rrwebReplay` globals. Prefer the ESM
+CDN assets for modern browsers.
 
 #### Other packages
 
-Besides the `rrweb` and `@rrweb/record` packages, rrweb also provides other packages for different usage.
+Besides the `@rrweb/record` and `@rrweb/replay` packages, rrweb also provides other packages for different usage.
 
 - [rrweb](packages/rrweb): The core package of rrweb, including record and replay functions.
 - [rrweb-player](packages/rrweb-player): A GUI for rrweb, providing a timeline and buttons for things like pause, fast-forward, and speedup.
 - [rrweb-snapshot](packages/rrweb-snapshot): Handles snapshot and rebuilding features, converting the DOM and its state into a serializable data structure.
 - [rrdom](packages/rrdom): A virtual dom package rrweb.
 - [rrdom-nodejs](packages/rrdom-nodejs): The Node.js version of rrdom for server-side DOM operations.
-- [@rrweb/all](packages/all): A package that includes `rrweb` and `@rrweb/packer` for easy install.
+- [@rrweb/all](packages/all): A convenience package that includes `rrweb` and `@rrweb/packer`.
 - [@rrweb/record](packages/record): A package for recording rrweb sessions.
 - [@rrweb/replay](packages/replay): A package for replaying rrweb sessions.
 - [@rrweb/packer](packages/packer): A package for packing and unpacking rrweb data.
@@ -59,14 +115,6 @@ Besides the `rrweb` and `@rrweb/record` packages, rrweb also provides other pack
 - [@rrweb/rrweb-plugin-network-record](packages/plugins/rrweb-plugin-network-record): A plugin for recording network requests (xhr/fetch).
 - [@rrweb/rrweb-plugin-network-replay](packages/plugins/rrweb-plugin-network-replay): A plugin for replaying network requests (xhr/fetch).
 
-### NPM
-
-```shell
-npm install --save rrweb
-```
-
-rrweb provides both commonJS and ES modules bundles, which are easy to use with the popular bundlers.
-
 ### Compatibility Note
 
 rrweb does **not** support IE11 and below because it uses the `MutationObserver` API which was supported by [these browsers](https://caniuse.com/#feat=mutationobserver).
@@ -75,10 +123,14 @@ rrweb does **not** support IE11 and below because it uses the `MutationObserver`
 
 ### Record
 
-The following sample code will use the variable `rrweb` which is the default exporter of this library.
+Use `record` from `@rrweb/record` in modern setups:
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+```
+
+```js
+record({
   emit(event) {
     // store the event in any way you like
   },
@@ -90,7 +142,7 @@ During recording, the recorder will emit when there is some event incurred, all 
 The `record` method returns a function which can be called to stop events from firing:
 
 ```js
-let stopFn = rrweb.record({
+let stopFn = record({
   emit(event) {
     if (events.length > 100) {
       // stop after 100 events
@@ -103,9 +155,12 @@ let stopFn = rrweb.record({
 A more real-world usage may look like this:
 
 ```js
+const publicApiKey = 'your-public-api-key-here';
+const recordingId = crypto.randomUUID();
+
 let events = [];
 
-rrweb.record({
+record({
   emit(event) {
     // push event into the events array
     events.push(event);
@@ -116,9 +171,10 @@ rrweb.record({
 function save() {
   const body = JSON.stringify({ events });
   events = [];
-  fetch('http://YOUR_BACKEND_API', {
+  fetch(`https://api.rrweb.com/recordings/${recordingId}/events`, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${publicApiKey}`,
       'Content-Type': 'application/json',
     },
     body,
@@ -131,7 +187,7 @@ setInterval(save, 10 * 1000);
 
 #### Options
 
-The parameter of `rrweb.record` accepts the following options.
+The `record` function accepts the following options.
 
 | key                      | default            | description                                                                                                                                                                                   |
 | ------------------------ | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -151,14 +207,14 @@ The parameter of `rrweb.record` accepts the following options.
 | maskTextFn               | -                  | customize mask text content recording logic                                                                                                                                                   |
 | slimDOMOptions           | {}                 | remove unnecessary parts of the DOM <br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L97-L108)  |
 | dataURLOptions           | {}                 | Canvas image format and quality ,This parameter will be passed to the OffscreenCanvas.convertToBlob(),Using this parameter effectively reduces the size of the recorded data                  |
-| inlineStylesheet         | true               | whether to inline the stylesheet in the events                                                                                                                                                |
+| inlineStylesheet         | true               | Deprecated since 2.0.0. Still supported, but planned to be superseded by future `captureAssets` asset recording APIs.                                                                         |
 | hooks                    | {}                 | hooks for events<br />refer to the [list](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                                                  |
 | packFn                   | -                  | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                |
 | sampling                 | -                  | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                |
 | recordCanvas             | false              | Whether to record the canvas element. Available options:<br/>`false`, <br/>`true`                                                                                                             |
 | recordCrossOriginIframes | false              | Whether to record cross origin iframes. rrweb has to be injected in each child iframe for this to work. Available options:<br/>`false`, <br/>`true`                                           |
 | recordAfter              | 'load'             | If the document is not ready, then the recorder will start recording after the specified event is fired. Available options: `DOMContentLoaded`, `load`                                        |
-| inlineImages             | false              | whether to record the image content                                                                                                                                                           |
+| inlineImages             | false              | Deprecated since 2.0.0. Still supported, but planned to be superseded by future `captureAssets` asset recording APIs.                                                                         |
 | collectFonts             | false              | whether to collect fonts in the website                                                                                                                                                       |
 | userTriggeredOnInput     | false              | whether to add `userTriggered` on input events that indicates if this event was triggered directly by the user or not. [What is `userTriggered`?](https://github.com/rrweb-io/rrweb/pull/495) |
 | plugins                  | []                 | load plugins to provide extended record functions. [What is plugins?](./docs/recipes/plugin.md)                                                                                               |
@@ -181,10 +237,13 @@ By default, all the emitted events are required to replay a session and if you d
 **Most of the time you do not need to configure this**. But if you want to do something like capturing just the last N events from when an error has occurred, here is an example:
 
 ```js
+const publicApiKey = 'your-public-api-key-here';
+const recordingId = crypto.randomUUID();
+
 // We use a two-dimensional array to store multiple events array
 const eventsMatrix = [[]];
 
-rrweb.record({
+record({
   emit(event, isCheckout) {
     // isCheckout is a flag to tell you the events has been checkout
     if (isCheckout) {
@@ -201,9 +260,10 @@ window.onerror = function () {
   const len = eventsMatrix.length;
   const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
   const body = JSON.stringify({ events });
-  fetch('http://YOUR_BACKEND_API', {
+  fetch(`https://api.rrweb.com/recordings/${recordingId}/events`, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${publicApiKey}`,
       'Content-Type': 'application/json',
     },
     body,
@@ -216,10 +276,13 @@ Due to the incremental-snapshot-chain mechanism rrweb used, we can not capture t
 Similarly, you can also configure `checkoutEveryNms` to capture the last N minutes events:
 
 ```js
+const publicApiKey = 'your-public-api-key-here';
+const recordingId = crypto.randomUUID();
+
 // We use a two-dimensional array to store multiple events array
 const eventsMatrix = [[]];
 
-rrweb.record({
+record({
   emit(event, isCheckout) {
     // isCheckout is a flag to tell you the events has been checkout
     if (isCheckout) {
@@ -236,9 +299,10 @@ window.onerror = function () {
   const len = eventsMatrix.length;
   const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
   const body = JSON.stringify({ events });
-  fetch('http://YOUR_BACKEND_API', {
+  fetch(`https://api.rrweb.com/recordings/${recordingId}/events`, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${publicApiKey}`,
       'Content-Type': 'application/json',
     },
     body,
@@ -250,28 +314,34 @@ With the sample code above, you will finally get the last 5 to 10 minutes of eve
 
 ### Replay
 
-You need to include the style sheet before replay:
+For bundler usage, include the style sheet in your app entry:
+
+```js
+import '@rrweb/replay/dist/style.css';
+```
+
+For browser/no-build usage, include the style sheet and import the replayer from
+the CDN:
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
+  href="https://cdn.rrweb.com/replay/current/dist/style.css"
 />
-```
+<script type="module">
+  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.js';
 
-And then initialize the replayer with the following code:
+  const events = YOUR_EVENTS;
 
-```js
-const events = YOUR_EVENTS;
-
-const replayer = new rrweb.Replayer(events);
-replayer.play();
+  const replayer = new Replayer(events);
+  replayer.play();
+</script>
 ```
 
 #### Control the replayer by API
 
 ```js
-const replayer = new rrweb.Replayer(events);
+const replayer = new Replayer(events);
 
 // play
 replayer.play();
@@ -306,7 +376,7 @@ The replayer accepts options as its constructor's second parameter, and it has t
 | liveMode                | false         | whether to enable live mode                                                                                                                                                                                                    |
 | insertStyleRules        | []            | accepts multiple CSS rule string, which will be injected into the replay iframe                                                                                                                                                |
 | triggerFocus            | true          | whether to trigger focus during replay                                                                                                                                                                                         |
-| UNSAFE_replayCanvas     | false         | whether to replay the canvas element. **Enable this will remove the sandbox, which is unsafe.**                                                                                                                                |
+| UNSAFE_replayCanvas     | false         | whether to replay the canvas element. **Enabling this adds `allow-scripts` to the replay iframe and opts out of the sandbox script-execution protection, which is unsafe.**                                                    |
 | pauseAnimation          | true          | whether to pause CSS animation when the replayer is paused                                                                                                                                                                     |
 | mouseTail               | true          | whether to show mouse tail during replay. Set to false to disable mouse tail. A complete config can be found in this [type](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
 | unpackFn                | -             | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                                                 |
@@ -317,29 +387,41 @@ The replayer accepts options as its constructor's second parameter, and it has t
 
 #### Use rrweb-player
 
-Since rrweb's replayer ([@rrweb/replay](packages/replay/)) only provides a basic UI, you can choose [rrweb-player](packages/rrweb-player/) which is based on rrweb's public APIs but has a feature-rich replayer UI.
+Since `Replayer` from [@rrweb/replay](packages/replay/) only provides a basic UI, you can choose [rrweb-player](packages/rrweb-player/), which is based on rrweb's public APIs and provides a feature-rich replayer UI.
 
 ##### Installation
 
-rrweb-player can also be included with `<script>`：
-
-```html
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"
-/>
-<script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/index.js"></script>
-```
-
-Or installed by using NPM：
+Bundler / npm (recommended):
 
 ```shell
-npm install --save rrweb-player
+npm install rrweb-player
 ```
 
 ```js
 import rrwebPlayer from 'rrweb-player';
 import 'rrweb-player/dist/style.css';
+```
+
+Browser without bundler (ESM):
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.rrweb.com/rrweb-player/current/style.css"
+/>
+<script type="module">
+  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.js';
+</script>
+```
+
+Legacy direct `<script>` include (UMD fallback):
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.rrweb.com/rrweb-player/current/style.css"
+/>
+<script src="https://cdn.rrweb.com/rrweb-player/current/rrweb-player.umd.cjs"></script>
 ```
 
 ##### Usage
@@ -365,15 +447,15 @@ new rrwebPlayer({
 | speedOption    | [1, 2, 4, 8] | speed options in UI                                                  |
 | showController | true         | whether to show the controller UI                                    |
 | tags           | {}           | customize the custom events style with a key-value map               |
-| ...            | -            | all the rrweb Replayer options will be bypassed                      |
+| ...            | -            | all other Replayer options are forwarded                             |
 
 #### Events
 
-Developers may want to extend the rrweb's replayer or respond to its events. Such as giving notification when the replayer starts to skip inactive time.
-So rrweb expose a public API `on` which allow developers to listen to the events and customize the reactions, and it has the following events:
+Developers may want to extend the replayer or respond to its events, for example to notify users when inactive time starts being skipped.
+`Replayer` exposes a public API `on` that lets developers listen for events and customize behavior:
 
 ```js
-const replayer = new rrweb.Replayer(events);
+const replayer = new Replayer(events);
 replayer.on(EVENT_NAME, (payload) => {
   ...
 })
@@ -414,13 +496,13 @@ You can also play with rrweb by using the REPL testing tool which does not need 
 Run `yarn repl` to launch a browser and ask for a URL you want to test on the CLI:
 
 ```
-Enter the url you want to record, e.g https://react-redux.realworld.io:
+Enter the url you want to record, e.g https://example.com:
 ```
 
 Waiting for the browser to open the specified page and print the following messages on the CLI:
 
 ```
-Enter the url you want to record, e.g https://react-redux.realworld.io: https://github.com
+Enter the url you want to record, e.g https://example.com: https://github.com
 Going to open https://github.com...
 Ready to record. You can do any interaction on the page.
 Once you want to finish the recording, enter 'y' to start replay:

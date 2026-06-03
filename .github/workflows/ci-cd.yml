@@ -1,6 +1,12 @@
 name: Tests
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - '**/*.md'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -25,24 +31,32 @@ jobs:
 
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
 
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
+
+      - name: Install Playwright browsers
+        run: cd packages/rrvideo && yarn playwright install chromium
+
+      - name: Read Puppeteer browser revision
+        id: puppeteer-browser
+        run: |
+          revision=$(node -p "require('./.puppeteerrc.cjs').browserRevision")
+          echo "revision=${revision}" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Chrome
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: ${{ steps.puppeteer-browser.outputs.revision }}
 
       - name: Check types
         run: yarn check-types
 
       - name: Run tests
-        # run: PUPPETEER_EXECUTABLE_PATH=${{ steps.setup-chrome.outputs.chrome-path }} PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
-        run: PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
-
-      - name: Check bundle sizes
-        uses: preactjs/compressed-size-action@v2
-        with:
-          install-script: "yarn install --frozen-lockfile"
-          build-script: "build:all"
-          compression: "none"
-          pattern: "**/dist/*.{js,cjs,mjs,css}"
+        run: PUPPETEER_EXECUTABLE_PATH=${{ steps.setup-chrome.outputs.chrome-path }} PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
 
       - name: Upload diff images to GitHub
         uses: actions/upload-artifact@v4
@@ -51,3 +65,41 @@ jobs:
           name: image-diff
           path: packages/**/__image_snapshots__/__diff_output__/*.png
           if-no-files-found: ignore
+
+  webkit:
+    name: WebKit (Safari engine) tests
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js lts/*
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
+
+      - name: Build rrweb-snapshot
+        run: yarn build
+        working-directory: packages/rrweb-snapshot
+
+      - name: Install Playwright WebKit browser
+        run: npx playwright install webkit && npx playwright install-deps webkit
+        working-directory: packages/rrweb-snapshot
+
+      - name: Run rrweb-snapshot WebKit tests
+        run: BROWSER=webkit yarn workspace rrweb-snapshot vitest run --config vitest.config.webkit.ts
+
+      - name: Build rrweb
+        run: yarn build
+        working-directory: packages/rrweb
+
+      - name: Run rrweb WebKit tests
+        run: BROWSER=webkit yarn workspace rrweb vitest run --config vitest.config.webkit.ts
