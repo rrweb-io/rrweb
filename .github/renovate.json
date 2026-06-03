@@ -1,0 +1,42 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "schedule": ["before 5am on Monday", "before 5am on Wednesday", "before 5am on Friday"],
+  "semanticCommits": "enabled",
+  "separateMajorMinor": true,
+  "separateMultipleMajor": true,
+  "prHourlyLimit": 2,
+  "prConcurrentLimit": 10,
+  "minimumReleaseAge": "7 days",
+  "internalChecksFilter": "strict",
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"],
+    "prPriority": 10
+  },
+  "packageRules": [
+    {
+      "description": "Group npm dependencies",
+      "matchManagers": ["npm"],
+      "groupName": "npm-dependencies"
+    },
+    {
+      "description": "Group GitHub Actions dependencies",
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions"
+    },
+    {
+      "description": "Group npm patch updates",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["patch"],
+      "groupName": "npm patch updates"
+    },
+    {
+      "description": "Group GitHub Actions patch updates",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["patch"],
+      "groupName": "github-actions patch updates"
+    }
+  ]
+}
