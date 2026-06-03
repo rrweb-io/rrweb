@@ -775,7 +775,7 @@
 - Don't perform newly added actions if the player is paused (#539).
 - Fix inaccurate mouse position (#522).
 
-### Breaking Changes
+### Major Changes
 
 - Deprecated the usage of `rrweb.mirror`. Please use `record.mirror` and `replayer.getMirror()` instead.
 - Deprecated built-in console recording and replay options. See the plugin API in the [console recipe](../../docs/recipes/console.md).
