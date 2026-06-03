@@ -758,7 +758,7 @@
 
 ## 1.0.0
 
-### Features & Improvements
+### Minor Changes
 
 - Support recording same-origin non-sandboxed iframes.
 - Support recording open-mode shadow DOM.
