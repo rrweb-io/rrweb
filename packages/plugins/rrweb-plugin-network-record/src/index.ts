@@ -66,16 +66,7 @@ const defaultNetworkOptions: NetworkRecordOptions = {
 };
 
 type Headers = Record<string, string>;
-type Body =
-  | string
-  | Document
-  | Blob
-  | ArrayBufferView
-  | ArrayBuffer
-  | FormData
-  | URLSearchParams
-  | ReadableStream<Uint8Array>
-  | null;
+type Body = string | null;
 
 type NetworkRequest = Omit<
   PerformanceEntry,
@@ -147,6 +138,13 @@ function initPerformanceObserver(
     });
   }
   const observer = new win.PerformanceObserver((entries) => {
+    const shouldRecordViaPerformanceObserver = (
+      entry: ObservedPerformanceEntry,
+    ) =>
+      options.recordBody || options.recordHeaders
+        ? entry.initiatorType !== 'xmlhttprequest' &&
+          entry.initiatorType !== 'fetch'
+        : true;
     const performanceEntries = entries
       .getEntries()
       .filter(
@@ -156,8 +154,7 @@ function initPerformanceObserver(
             options.initiatorTypes.includes(
               entry.initiatorType as InitiatorType,
             ) &&
-            entry.initiatorType !== 'xmlhttprequest' &&
-            entry.initiatorType !== 'fetch'),
+            shouldRecordViaPerformanceObserver(entry)),
       );
     cb({
       requests: performanceEntries.map((entry) => ({
@@ -191,6 +188,7 @@ function shouldRecordBody(
   type: 'request' | 'response',
   recordBody: NetworkRecordOptions['recordBody'],
   headers: Headers,
+  url?: string | URL | RequestInfo,
 ) {
   function matchesContentType(contentTypes: string[]) {
     const contentTypeHeader = Object.keys(headers).find(
@@ -199,12 +197,125 @@ function shouldRecordBody(
     const contentType = contentTypeHeader && headers[contentTypeHeader];
     return contentTypes.some((ct) => contentType?.includes(ct));
   }
+  if (isBlobUrl(url)) return false;
   if (!recordBody) return false;
   if (typeof recordBody === 'boolean') return true;
   if (Array.isArray(recordBody)) return matchesContentType(recordBody);
   const recordBodyType = recordBody[type];
   if (typeof recordBodyType === 'boolean') return recordBodyType;
   return matchesContentType(recordBodyType);
+}
+
+function isRequest(value: unknown): value is Request {
+  if (typeof Request === 'undefined') {
+    return false;
+  }
+  if (value instanceof Request) {
+    return true;
+  }
+  try {
+    return Object.prototype.toString.call(value) === '[object Request]';
+  } catch {
+    return false;
+  }
+}
+
+function isBlobUrl(url?: string | URL | RequestInfo) {
+  try {
+    if (typeof url === 'string') {
+      return url.startsWith('blob:');
+    }
+    if (url instanceof URL) {
+      return url.protocol === 'blob:';
+    }
+    if (isRequest(url)) {
+      return isBlobUrl(url.url);
+    }
+  } catch {
+    //
+  }
+  return false;
+}
+
+function isReadableStreamBody(
+  body: unknown,
+): body is ReadableStream<Uint8Array> {
+  return (
+    typeof body === 'object' &&
+    body !== null &&
+    typeof (body as ReadableStream<Uint8Array>).getReader === 'function' &&
+    typeof (body as ReadableStream<Uint8Array>).tee === 'function'
+  );
+}
+
+function stringifyFormData(body: FormData) {
+  const searchParams = new URLSearchParams();
+  body.forEach((value, key) => {
+    searchParams.append(
+      key,
+      typeof File !== 'undefined' && value instanceof File
+        ? value.name
+        : String(value),
+    );
+  });
+  return searchParams.toString();
+}
+
+function readXhrBody(
+  body: Document | XMLHttpRequestBodyInit | unknown | null | undefined,
+): Body {
+  if (body === undefined || body === null) {
+    return null;
+  }
+  if (typeof body === 'string') {
+    return body;
+  }
+  if (body instanceof URLSearchParams) {
+    return body.toString();
+  }
+  if (typeof FormData !== 'undefined' && body instanceof FormData) {
+    return stringifyFormData(body);
+  }
+  if (typeof Document !== 'undefined' && body instanceof Document) {
+    return body.textContent;
+  }
+  if (typeof Blob !== 'undefined' && body instanceof Blob) {
+    return `[rrweb/network] Cannot synchronously read body of type ${body.constructor.name}`;
+  }
+  if (
+    body instanceof ArrayBuffer ||
+    ArrayBuffer.isView(body as ArrayBufferView)
+  ) {
+    return `[rrweb/network] Cannot read binary body`;
+  }
+  try {
+    return JSON.stringify(body);
+  } catch {
+    return `[rrweb/network] Failed to stringify body`;
+  }
+}
+
+async function readFetchBody(requestOrResponse: Request | Response) {
+  return new Promise<Body>((resolve) => {
+    const timeout = setTimeout(
+      () => resolve('[rrweb/network] Timeout while reading body'),
+      500,
+    );
+    try {
+      requestOrResponse
+        .clone()
+        .text()
+        .then(
+          (text) => resolve(text),
+          (error: unknown) =>
+            resolve(`[rrweb/network] Failed to read body: ${String(error)}`),
+        )
+        .finally(() => clearTimeout(timeout));
+    } catch {
+      clearTimeout(timeout);
+      resolve('[rrweb/network] Failed to read body');
+    }
+  });
 }
 
 async function getRequestPerformanceEntry(
@@ -261,109 +372,100 @@ function initXhrObserver(
     'response',
     options.recordHeaders,
   );
-  const restorePatch = patch(
-    win.XMLHttpRequest.prototype,
-    'open',
-    // @ts-expect-error // fix types
-    (originalOpen: typeof XMLHttpRequest.prototype.open) => {
-      return function (
-        this: XMLHttpRequest,
-        method: string,
-        url: string | URL,
-        async = true,
-        username?: string | null,
-        password?: string | null,
-      ) {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const xhr = this;
-        const req = new Request(url);
-        const networkRequest: Partial<NetworkRequest> = {};
-        let after: number | undefined;
-        let before: number | undefined;
-        const requestHeaders: Headers = {};
-        const originalSetRequestHeader = xhr.setRequestHeader.bind(xhr);
-        xhr.setRequestHeader = (header: string, value: string) => {
-          requestHeaders[header] = value;
-          return originalSetRequestHeader(header, value);
-        };
-        if (recordRequestHeaders) {
-          networkRequest.requestHeaders = requestHeaders;
+  const restorePatch = patch(win.XMLHttpRequest.prototype, 'open', ((
+    originalOpen: typeof XMLHttpRequest.prototype.open,
+  ) => {
+    return function (
+      this: XMLHttpRequest,
+      method: string,
+      url: string | URL,
+      async = true,
+      username?: string | null,
+      password?: string | null,
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const xhr = this;
+      const req = new Request(url);
+      const networkRequest: Partial<NetworkRequest> = {};
+      let after: number | undefined;
+      let before: number | undefined;
+      const requestHeaders: Headers = {};
+      const originalSetRequestHeader = xhr.setRequestHeader.bind(xhr);
+      xhr.setRequestHeader = (header: string, value: string) => {
+        requestHeaders[header] = value;
+        return originalSetRequestHeader(header, value);
+      };
+      if (recordRequestHeaders) {
+        networkRequest.requestHeaders = requestHeaders;
+      }
+      const originalSend = xhr.send.bind(xhr);
+      xhr.send = (body) => {
+        if (
+          shouldRecordBody('request', options.recordBody, requestHeaders, url)
+        ) {
+          networkRequest.requestBody = readXhrBody(body);
         }
-        const originalSend = xhr.send.bind(xhr);
-        xhr.send = (body) => {
-          if (shouldRecordBody('request', options.recordBody, requestHeaders)) {
-            if (body === undefined || body === null) {
-              networkRequest.requestBody = null;
-            } else {
-              networkRequest.requestBody = body;
-            }
+        after = win.performance.now();
+        return originalSend(body);
+      };
+      xhr.addEventListener('readystatechange', () => {
+        if (xhr.readyState !== xhr.DONE) {
+          return;
+        }
+        before = win.performance.now();
+        const responseHeaders: Headers = {};
+        const rawHeaders = xhr.getAllResponseHeaders();
+        const headers = rawHeaders.trim().split(/[\r\n]+/);
+        headers.forEach((line) => {
+          const parts = line.split(': ');
+          const header = parts.shift();
+          const value = parts.join(': ');
+          if (header) {
+            responseHeaders[header] = value;
           }
-          after = win.performance.now();
-          return originalSend(body);
-        };
-        xhr.addEventListener('readystatechange', () => {
-          if (xhr.readyState !== xhr.DONE) {
-            return;
-          }
-          before = win.performance.now();
-          const responseHeaders: Headers = {};
-          const rawHeaders = xhr.getAllResponseHeaders();
-          const headers = rawHeaders.trim().split(/[\r\n]+/);
-          headers.forEach((line) => {
-            const parts = line.split(': ');
-            const header = parts.shift();
-            const value = parts.join(': ');
-            if (header) {
-              responseHeaders[header] = value;
-            }
-          });
-          if (recordResponseHeaders) {
-            networkRequest.responseHeaders = responseHeaders;
-          }
-          if (
-            shouldRecordBody('response', options.recordBody, responseHeaders)
-          ) {
-            if (xhr.response === undefined || xhr.response === null) {
-              networkRequest.responseBody = null;
-            } else {
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              networkRequest.responseBody = xhr.response;
-            }
-          }
-          getRequestPerformanceEntry(
-            win,
-            'xmlhttprequest',
-            req.url,
-            after,
-            before,
-          )
-            .then((entry) => {
-              if (!entry) {
-                // https://github.com/rrweb-io/rrweb/pull/1105#issuecomment-1953808336
-                const requests = prepareRequestWithoutPerformance(
-                  req,
-                  networkRequest,
-                );
-                cb({ requests });
-                return;
-              }
-
-              const requests = prepareRequest(
-                entry,
-                req.method,
-                xhr.status,
+        });
+        if (recordResponseHeaders) {
+          networkRequest.responseHeaders = responseHeaders;
+        }
+        if (
+          shouldRecordBody('response', options.recordBody, responseHeaders, url)
+        ) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          networkRequest.responseBody = readXhrBody(xhr.response);
+        }
+        getRequestPerformanceEntry(
+          win,
+          'xmlhttprequest',
+          req.url,
+          after,
+          before,
+        )
+          .then((entry) => {
+            if (!entry) {
+              // https://github.com/rrweb-io/rrweb/pull/1105#issuecomment-1953808336
+              const requests = prepareRequestWithoutPerformance(
+                req,
                 networkRequest,
               );
               cb({ requests });
-            })
-            .catch(() => {
-              //
-            });
-        });
-        originalOpen.call(xhr, method, url, async, username, password);
-      };
-    },
-  );
+              return;
+            }
+
+            const requests = prepareRequest(
+              entry,
+              method,
+              xhr.status,
+              networkRequest,
+            );
+            cb({ requests });
+          })
+          .catch(() => {
+            //
+          });
+      });
+      originalOpen.call(xhr, method, url, async, username, password);
+    };
+  }) as (...args: unknown[]) => unknown);
   return () => {
     restorePatch();
   };
@@ -387,8 +489,7 @@ function initFetchObserver(
     'response',
     options.recordHeaders,
   );
-  // @ts-expect-error // fix types
-  const restorePatch = patch(win, 'fetch', (originalFetch: typeof fetch) => {
+  const restorePatch = patch(win, 'fetch', ((originalFetch: typeof fetch) => {
     return async function (
       url: URL | RequestInfo,
       init?: RequestInit | undefined,
@@ -406,15 +507,16 @@ function initFetchObserver(
         if (recordRequestHeaders) {
           networkRequest.requestHeaders = requestHeaders;
         }
-        if (shouldRecordBody('request', options.recordBody, requestHeaders)) {
-          if (req.body === undefined || req.body === null) {
-            networkRequest.requestBody = null;
-          } else {
-            networkRequest.requestBody = req.body;
-          }
+        if (
+          !isReadableStreamBody(init?.body) &&
+          shouldRecordBody('request', options.recordBody, requestHeaders, url)
+        ) {
+          networkRequest.requestBody = await readFetchBody(req);
         }
         after = win.performance.now();
-        res = await originalFetch(req);
+        res = isRequest(url)
+          ? await originalFetch(req)
+          : await originalFetch(url, init);
         before = win.performance.now();
         const responseHeaders: Headers = {};
         res.headers.forEach((value, header) => {
@@ -423,18 +525,10 @@ function initFetchObserver(
         if (recordResponseHeaders) {
           networkRequest.responseHeaders = responseHeaders;
         }
-        if (shouldRecordBody('response', options.recordBody, responseHeaders)) {
-          let body: string | undefined;
-          try {
-            body = await res.clone().text();
-          } catch {
-            //
-          }
-          if (res.body === undefined || res.body === null) {
-            networkRequest.responseBody = null;
-          } else {
-            networkRequest.responseBody = body;
-          }
+        if (
+          shouldRecordBody('response', options.recordBody, responseHeaders, url)
+        ) {
+          networkRequest.responseBody = await readFetchBody(res);
         }
         return res;
       } finally {
@@ -463,7 +557,7 @@ function initFetchObserver(
           });
       }
     };
-  });
+  }) as (...args: unknown[]) => unknown);
   return () => {
     restorePatch();
   };
@@ -495,8 +589,16 @@ function initNetworkObserver(
     }
   };
   const performanceObserver = initPerformanceObserver(cb, win, networkOptions);
-  const xhrObserver = initXhrObserver(cb, win, networkOptions);
-  const fetchObserver = initFetchObserver(cb, win, networkOptions);
+  let xhrObserver: listenerHandler = () => {
+    //
+  };
+  let fetchObserver: listenerHandler = () => {
+    //
+  };
+  if (networkOptions.recordHeaders || networkOptions.recordBody) {
+    xhrObserver = initXhrObserver(cb, win, networkOptions);
+    fetchObserver = initFetchObserver(cb, win, networkOptions);
+  }
   return () => {
     performanceObserver();
     xhrObserver();
@@ -562,7 +664,6 @@ export const getRecordNetworkPlugin: (
   options?: NetworkRecordOptions,
 ) => RecordPlugin = (options) => ({
   name: PLUGIN_NAME,
-  // @ts-expect-error // fix types
-  observer: initNetworkObserver,
+  observer: initNetworkObserver as RecordPlugin['observer'],
   options: options,
 });

@@ -8,7 +8,10 @@
   },
   "references": [
     {
-      "path": "../../rrweb"
+      "path": "../../types"
+    },
+    {
+      "path": "../rrweb-plugin-network-record"
     }
   ]
 }

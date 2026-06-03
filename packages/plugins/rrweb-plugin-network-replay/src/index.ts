@@ -2,7 +2,10 @@ import type { eventWithTime } from '@rrweb/types';
 import { EventType } from '@rrweb/types';
 import { PLUGIN_NAME } from '@rrweb/rrweb-plugin-network-record';
 import type { NetworkData } from '@rrweb/rrweb-plugin-network-record';
-import type { ReplayPlugin } from 'rrweb';
+
+type ReplayPlugin = {
+  handler?: (event: eventWithTime, isSync: boolean, context: unknown) => void;
+};
 
 export type OnNetworkData = (data: NetworkData) => void;
 

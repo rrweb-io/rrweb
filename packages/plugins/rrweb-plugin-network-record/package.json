@@ -25,6 +25,8 @@
   ],
   "scripts": {
     "dev": "vite build --watch",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
     "build": "yarn turbo run prepublish",
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build"
@@ -43,10 +45,13 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
+    "@rrweb/types": "^2.0.0-alpha.18",
+    "@rrweb/utils": "^2.0.0-alpha.18",
     "rrweb": "^2.0.0-alpha.18",
     "typescript": "^5.4.5",
     "vite": "^5.3.1",
-    "vite-plugin-dts": "^3.9.1"
+    "vite-plugin-dts": "^3.9.1",
+    "vitest": "^1.4.0"
   },
   "peerDependencies": {
     "rrweb": "^2.0.0-alpha.18",
