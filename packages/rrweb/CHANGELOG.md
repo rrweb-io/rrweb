@@ -755,3 +755,27 @@
   - rrweb-snapshot@2.0.0-alpha.5
   - rrdom@2.0.0-alpha.5
   - @rrweb/types@2.0.0-alpha.5
+
+## 1.0.0
+
+### Minor Changes
+
+- Support recording same-origin non-sandboxed iframes.
+- Support recording open-mode shadow DOM.
+- Implement the plugin API.
+- Export `record.takeFullSnapshot` as a public API.
+- Record and replay drag events.
+- Add options to mask texts (#540).
+
+### Patch Changes
+
+- Get the original MutationObserver when Angular patched it.
+- Fix RangeError: Maximum call stack size exceeded (#479).
+- Fix the linked-list implementation in the recorder.
+- Don't perform newly added actions if the player is paused (#539).
+- Fix inaccurate mouse position (#522).
+
+### Major Changes
+
+- Deprecated the usage of `rrweb.mirror`. Please use `record.mirror` and `replayer.getMirror()` instead.
+- Deprecated built-in console recording and replay options. See the plugin API in the [console recipe](../../docs/recipes/console.md).
