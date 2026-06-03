@@ -23,6 +23,7 @@ type MockState = {
   websockets: WebsocketLike[];
   hidden: boolean;
   pluginOptions: Array<Record<string, unknown>>;
+  operations: string[];
 };
 
 const mockState = vi.hoisted(
@@ -32,6 +33,7 @@ const mockState = vi.hoisted(
     websockets: [],
     hidden: false,
     pluginOptions: [],
+    operations: [],
   }),
 );
 
@@ -42,6 +44,7 @@ vi.mock('@rrweb/rrweb-plugin-sequential-id-record', () => {
 
   return {
     getRecordSequentialIdPlugin: vi.fn((options: Record<string, unknown>) => {
+      mockState.operations.push('plugin:create');
       mockState.pluginOptions.push(options);
       let id = Number(options.startId) || 0;
       const plugin: RecordPlugin = {
@@ -93,6 +96,7 @@ vi.mock('websocket-ts', () => {
   class ArrayQueue {
     items: string[] = [];
     add(value: string) {
+      mockState.operations.push('buffer:add');
       this.items.push(value);
     }
     clear() {
@@ -166,6 +170,7 @@ async function importFreshClient() {
   mockState.recordCalls = [];
   mockState.websockets = [];
   mockState.pluginOptions = [];
+  mockState.operations = [];
   return await import('../src/index');
 }
 
@@ -216,7 +221,15 @@ describe('@rrweb/browser-client sequenceId', () => {
       emit: () => undefined,
     });
 
-    expect(bufferEvents()[0]).toMatchObject({ sequenceId: 1 });
+    expect(bufferEvents()[0]).toMatchObject({
+      type: EventType.Custom,
+      data: { tag: 'recording-meta' },
+      sequenceId: 1,
+    });
+    expect(mockState.operations.slice(0, 2)).toEqual([
+      'buffer:add',
+      'plugin:create',
+    ]);
     expect(mockState.pluginOptions[0]).toMatchObject({
       key: 'sequenceId',
       startId: 1,
