@@ -23,7 +23,7 @@
     "type": "git",
     "url": "git+https://github.com/newrelic-forks/rrweb.git"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/rrweb-types.umd.cjs",
   "module": "./dist/rrweb-types.js",
@@ -43,7 +43,8 @@
   },
   "files": [
     "dist",
-    "package.json"
+    "package.json",
+    "LICENSE"
   ],
   "devDependencies": {
     "vite": "^5.3.1",

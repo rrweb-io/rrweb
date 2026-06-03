@@ -52,7 +52,8 @@
   },
   "files": [
     "dist",
-    "package.json"
+    "package.json",
+    "LICENSE"
   ],
   "type": "module",
   "repository": {
@@ -66,7 +67,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/newrelic-forks/rrweb/issues"
   },

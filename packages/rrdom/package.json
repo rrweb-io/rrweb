@@ -5,7 +5,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/rrdom.cjs",
   "module": "./dist/rrdom.js",
@@ -25,7 +25,8 @@
   },
   "files": [
     "dist",
-    "package.json"
+    "package.json",
+    "LICENSE"
   ],
   "repository": {
     "type": "git",

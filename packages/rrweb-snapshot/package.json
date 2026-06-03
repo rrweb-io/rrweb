@@ -45,13 +45,14 @@
   },
   "files": [
     "dist",
-    "package.json"
+    "package.json",
+    "LICENSE"
   ],
   "publishConfig": {
     "access": "public"
   },
   "author": "yanzhen@smartx.com",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/newrelic-forks/rrweb/issues"
   },
