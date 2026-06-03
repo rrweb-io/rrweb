@@ -15,59 +15,13 @@ import * as fs from 'fs';
 import * as http from 'http';
 import * as path from 'path';
 import * as url from 'url';
-import { chromium, webkit, Browser, Page } from 'playwright';
+import { chromium, webkit, Browser } from 'playwright';
 const browserType = process.env.BROWSER === 'webkit' ? webkit : chromium;
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { EventType, IncrementalSource, eventWithTime } from '@rrweb/types';
+import { getServerURL, startServer, waitForRAF } from '../utils';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-
-function startServer(defaultPort = 3036): Promise<http.Server> {
-  return new Promise((resolve) => {
-    const mimeType: Record<string, string> = {
-      '.html': 'text/html',
-      '.js': 'text/javascript',
-      '.css': 'text/css',
-    };
-    const s = http.createServer((req, res) => {
-      const parsedUrl = url.parse(req.url!);
-      const sanitizePath = path
-        .normalize(parsedUrl.pathname!)
-        .replace(/^(\.\.[\/\\])+/, '');
-      const pathname = path.join(__dirname, '..', sanitizePath);
-      try {
-        const data = fs.readFileSync(pathname);
-        const ext = path.parse(pathname).ext;
-        res.setHeader('Content-type', mimeType[ext] || 'text/plain');
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.end(data);
-      } catch {
-        res.end();
-      }
-    });
-    s.listen(defaultPort)
-      .on('listening', () => resolve(s))
-      .on('error', () => {
-        s.listen().on('listening', () => resolve(s));
-      });
-  });
-}
-
-function getServerURL(server: http.Server): string {
-  const address = server.address();
-  return address && typeof address !== 'string'
-    ? `http://localhost:${address.port}`
-    : String(address);
-}
-
-async function waitForRAF(page: Page): Promise<void> {
-  await page.evaluate(
-    () =>
-      new Promise<void>((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-      }),
-  );
-}
 
 describe('WebKit: monkey-patched MutationObserver', () => {
   vi.setConfig({ testTimeout: 30_000 });
