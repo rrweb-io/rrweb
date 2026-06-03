@@ -108,7 +108,7 @@ jobs:
 
       - name: Install Dependencies
         timeout-minutes: 5
-        run: yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile --ignore-scripts
         env:
           PUPPETEER_SKIP_DOWNLOAD: 'true'
 
