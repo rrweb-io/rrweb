@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 describe('@rrweb/all package css', () => {
   it('exports and builds replay style.css', () => {
+    const stylePath = path.resolve(__dirname, '../dist/style.css');
     const packageJson = JSON.parse(
       fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf-8'),
     );
@@ -12,7 +13,8 @@ describe('@rrweb/all package css', () => {
       'utf-8',
     );
 
+    expect(fs.existsSync(stylePath)).toBe(true);
     expect(packageJson.exports['./dist/style.css']).toBe('./dist/style.css');
-    expect(entry).toContain("import 'rrweb/dist/style.css';");
+    expect(entry).toMatch(/import\s+['"]rrweb\/dist\/style\.css['"]/);
   });
 });
