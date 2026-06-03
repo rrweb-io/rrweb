@@ -36,10 +36,7 @@ For API details and examples, see the [guide](../../guide.md).
 ### 2) Browser Without Bundler (ESM)
 
 ```html
-<link
-  rel="stylesheet"
-  href="https://cdn.rrweb.com/all/current/style.css"
-/>
+<link rel="stylesheet" href="https://cdn.rrweb.com/all/current/style.css" />
 <script type="module">
   import {
     record,
@@ -61,10 +58,7 @@ shape and catalog.
 Use this only for compatibility with non-module environments.
 
 ```html
-<link
-  rel="stylesheet"
-  href="https://cdn.rrweb.com/all/current/style.css"
-/>
+<link rel="stylesheet" href="https://cdn.rrweb.com/all/current/style.css" />
 <script src="https://cdn.rrweb.com/all/current/all.umd.cjs"></script>
 ```
 
