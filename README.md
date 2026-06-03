@@ -7,7 +7,7 @@
 
 # rrweb
 
-**[The rrweb documentary (in Chinese, with English subtitles)](https://www.bilibili.com/video/BV1wL4y1B7wN?share_source=copy_web)**
+**[(new!) rrweb cloud - hosted rrweb backend now available](https://rrweb.com/)**
 
 [![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-siwoc6hx-uWay3s2wyG8t5GpZVb8rWg)
 [![Twitter Follow](https://img.shields.io/badge/twitter-@rrweb__io-teal.svg?logo=twitter)](https://twitter.com/rrweb_io)
@@ -18,15 +18,13 @@
 
 [中文文档](./README.zh_CN.md)
 
-> I have joined Github Sponsors and highly appreciate your sponsorship.
-
 rrweb refers to 'record and replay the web', which is a tool for recording and replaying users' interactions on the web.
 
 ## Guide
 
-[**📚 Read the rrweb guide here. 📚**](./guide.md)
+[**📚 Read the rrweb guide here. 📚**](https://rrweb.com/docs/guide)
 
-[**🍳 Recipes 🍳**](./docs/recipes/index.md)
+[**🍳 Recipes 🍳**](https://rrweb.com/docs/recipes/)
 
 [**📺 Presentation:** Hacking the browser to digital twin your users 📺](https://youtu.be/cWxpp9HwLYw)
 
@@ -40,8 +38,8 @@ rrweb is mainly composed of 3 parts:
 
 ## Roadmap
 
-- storage engine: do deduplication on a large number of rrweb sessions
-- compact mutation data in common patterns
+- ✅ [storage engine: do deduplication on a large number of rrweb sessions](https://rrweb.com)
+- Token efficient AI session replay format (in progress)
 - provide plugins via the new plugin API, including:
   - XHR plugin
   - fetch plugin
@@ -132,25 +130,14 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
 <table>
   <tr>
     <td align="center">
-      <a href="https://github.com/Yuyz0112">
+      <a href="https://github.com/juice10">
         <img
-          src="https://avatars.githubusercontent.com/u/13651389?s=100"
+          src="https://avatars.githubusercontent.com/u/4106?s=100"
           width="100px;"
-          alt=""
+          alt="Justin Halsall"
         />
-        <br /><sub><b>Yuyz0112</b></sub>
-        <br /><br />
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://github.com/YunFeng0817">
-        <img
-          src="https://avatars.githubusercontent.com/u/27533910?s=100"
-          width="100px;"
-          alt=""
-        />
-        <br /><sub><b>Yun Feng</b></sub>
-        <br /><br />
+        <br /><sub><b>Juice10</b></sub>
+        <br /><sub>open for rrweb consulting</sub>
       </a>
     </td>
     <td align="center">
@@ -165,14 +152,14 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
       </a>
     </td>
     <td align="center">
-      <a href="https://github.com/juice10">
+      <a href="https://github.com/YunFeng0817">
         <img
-          src="https://avatars.githubusercontent.com/u/4106?s=100"
+          src="https://avatars.githubusercontent.com/u/27533910?s=100"
           width="100px;"
           alt=""
         />
-        <br /><sub><b>Juice10</b></sub>
-        <br /><sub>open for rrweb consulting</sub>
+        <br /><sub><b>Yun Feng</b></sub>
+        <br /><br />
       </a>
     </td>
   </tr>
