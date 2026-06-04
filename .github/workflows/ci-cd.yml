@@ -170,7 +170,7 @@ jobs:
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
 
       - name: Install Playwright browsers
-        timeout-minutes: 10
+        timeout-minutes: 5
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
