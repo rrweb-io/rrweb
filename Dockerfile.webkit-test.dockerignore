@@ -1,0 +1,9 @@
+**/node_modules
+**/umd
+**/lib
+**/dist-post
+**/dist-pre
+**/__image_snapshots__
+**/*.png
+**/*.webp
+.git

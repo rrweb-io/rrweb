@@ -12,9 +12,9 @@
 [![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-siwoc6hx-uWay3s2wyG8t5GpZVb8rWg)
 [![Twitter Follow](https://img.shields.io/badge/twitter-@rrweb__io-teal.svg?logo=twitter)](https://twitter.com/rrweb_io)
 [![Reddit](https://img.shields.io/badge/reddit-r/rrweb-teal.svg?logo=reddit)](https://www.reddit.com/r/rrweb)
-![recorder gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@rrweb/record@latest/umd/record.min.js?compression=gzip&label=recorder%20gzip%20size&max=200000&softmax=100000)
-![replayer gzip size](https://img.badgesize.io/https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/umd/replay.min.js?compression=gzip&label=replayer%20gzip%20size&max=200000&softmax=100000)
-[![](https://data.jsdelivr.com/v1/package/npm/rrweb/badge)](https://www.jsdelivr.com/package/npm/rrweb)
+![record bundle size](https://img.shields.io/bundlejs/size/%40rrweb/record)
+![replay bundle size](https://img.shields.io/bundlejs/size/%40rrweb/replay)
+[![CDN catalog](https://img.shields.io/badge/CDN-catalog-teal)](https://cdn.rrweb.com/catalog.json)
 
 [中文文档](./README.zh_CN.md)
 
@@ -184,12 +184,12 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
   <tr>
     <td align="center">
       <a href="http://www.smartx.com/" target="_blank">
-        <img width="195px" src="https://www.rrweb.io/logos/smartx.png">
+        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/master/static/logos/smartx.png" alt="SmartX">
       </a>
     </td>
     <td align="center">
       <a href="https://posthog.com?utm_source=rrweb&utm_medium=sponsorship&utm_campaign=open-source-sponsorship" target="_blank">
-        <img width="195px" src="https://www.rrweb.io/logos/posthog.png">
+        <img width="195px" src="https://rrweb.com/posthog.png" alt="PostHog">
       </a>
     </td>
     <td align="center">
@@ -203,7 +203,39 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
       </a>
     </td>
   </tr>
-    <tr>
+  <tr>
+    <td align="center">
+      <a href="https://sentry.io" target="_blank">
+        <img width="195px" src="https://rrweb.com/sentry.png" alt="Sentry">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://www.pendo.io" target="_blank">
+        <img width="195px" src="https://rrweb.com/pendo.png" alt="Pendo">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://mixpanel.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/mixpanel.png" alt="Mixpanel">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://www.datadoghq.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/datadog.png" alt="Datadog">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://amplitude.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/amplitude.png" alt="Amplitude">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://newrelic.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/new%20relic.png" alt="New Relic">
+      </a>
+    </td>
     <td align="center">
       <a href="https://cux.io" target="_blank">
         <img style="padding: 8px" alt="The first ever UX automation tool" width="195px" src="https://cux.io/cux-logo.svg">
@@ -214,6 +246,8 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
         <img style="padding: 8px" alt="Remote Access & Co-Browsing" width="195px" src="https://remsupp.com/images/logo.png">
       </a>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <a href="https://highlight.io" target="_blank">
         <img style="padding: 8px" alt="The open source, fullstack Monitoring Platform." width="195px" src="https://github.com/highlight/highlight/raw/main/highlight.io/public/images/logo.png">
@@ -221,11 +255,9 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
     </td>
     <td align="center">
       <a href="https://analyzee.io" target="_blank">
-        <img style="padding: 8px" alt="Comprehensive data analytics platform that empowers businesses to gain valuable insights and make data-driven decisions." width="195px" src="https://cdn.analyzee.io/assets/analyzee-logo.png">
+        <img style="padding: 8px" alt="Comprehensive data analytics platform that empowers businesses to gain valuable insights and make data-driven decisions." width="195px" src="https://analyzee.io/img/analyzee-main-logo.webp">
       </a>
     </td>
-  </tr>
-  <tr>
     <td align="center">
       <a href="https://requestly.io" target="_blank">
         <img style="padding: 8px" alt="Intercept, Modify, Record & Replay HTTP Requests." width="195px" src="https://github.com/requestly/requestly/assets/16779465/652552db-c867-44cb-9bb5-94a2026e04ca">
@@ -236,6 +268,8 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
         <img style="padding: 8px" alt="In-app bug reporting & customer feedback platform." width="195px" src="https://assets-global.website-files.com/6506f3f29c68b1724807619d/6506f56010237164c6306591_GleapLogo.svg">
       </a>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <a href="https://uxwizz.com" target="_blank">
         <img style="padding: 8px" alt="Self-hosted website analytics with heatmaps and session recordings." width="195px" src="https://github.com/UXWizz/public-files/raw/main/assets/logo.png">

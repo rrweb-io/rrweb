@@ -1,26 +1,7 @@
 # Changelog
 
-## v1.0.0
+rrweb is released as a monorepo. Package-specific changelogs are maintained by Changesets and are the source of truth.
 
-### Featrues & Improvements
+For current release notes, see the package changelog next to each package or the GitHub releases page:
 
-- Support record same-origin non-sandboxed iframe.
-- Support record open-mode shadow DOM.
-- Implement the plugin API.
-- Export `record.takeFullSnapshot` as a public API
-- Record and replay drag events.
-- Add options to mask texts (#540).
-
-### Fixes
-
-- Get the original MutationObserver when Angular patched it.
-- Fix RangeError: Maximum call stack size exceeded (#479).
-- Fix the linked-list implementation in the recorder.
-- Don't perform newly added actions if the player is paused (#539).
-- Fix inaccurate mouse position (#522)
-
-### Breaking Changes
-
-- Deprecated the usage of `rrweb.mirror`. Please use `record.mirror` and `replayer.getMirror()` instead.
-- Deprecated the record option `recordLog `. See the new plugin API [here](./docs/recipes/console.md).
-- Deprecated the replay option ` `. See the new plugin API [here](./docs/recipes/console.md).
+[Release notes](https://github.com/rrweb-io/rrweb/releases)
