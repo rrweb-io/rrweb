@@ -9,26 +9,26 @@ The package web-extension provides a browser extension for recording and replayi
 ## Installation
 
 ```
-yarn install
+npm install
 ```
 
 ## Build
 
 ```bash
 # build for chrome
-yarn build:chrome
+npm run build:chrome
 
 # build for firefox
-yarn build:firefox
+npm run build:firefox
 ```
 
 ## Development
 
 ```bash
 # start a development chrome browser
-yarn dev:chrome
+npm run dev:chrome
 # start a development firefox browser
-yarn dev:firefox
+npm run dev:firefox
 ```
 
 ## Sponsors

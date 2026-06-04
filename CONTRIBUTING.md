@@ -26,14 +26,14 @@ clear and has sufficient instructions to be able to reproduce the issue.
 
 ## Run locally
 
-- Install dependencies: `yarn`
-- Build all packages: (in `/`) `yarn build:all` or `yarn dev`
-- Run recorder on a website: (in `/packages/rrweb`) `yarn repl`
-- Run a cobrowsing/mirroring session locally: (in `/packages/rrweb`) `yarn live-stream`
-- Build individual packages: `yarn build` or `yarn dev`
-- Test: `yarn test` or `yarn test:watch`
-- Lint: `yarn lint`
-- Rewrite files with prettier: `yarn format` or `yarn format:head`
+- Install dependencies: `npm install`
+- Build all packages: (in `/`) `npm run build:all` or `npm run dev`
+- Run recorder on a website: (in `/packages/rrweb`) `npm run repl`
+- Run a cobrowsing/mirroring session locally: (in `/packages/rrweb`) `npm run live-stream`
+- Build individual packages: `npm run build` or `npm run dev`
+- Test: `npm test` or `npm run test:watch`
+- Lint: `npm run lint`
+- Rewrite files with prettier: `npm run format` or `npm run format:head`
 
 ## Coding style
 

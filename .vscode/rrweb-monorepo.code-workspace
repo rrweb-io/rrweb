@@ -80,7 +80,7 @@
   ],
   "settings": {
     "vitest.workspaceConfig": "../vitest.workspace.ts",
-    "vitest.commandLine": "yarn vitest",
+    "vitest.commandLine": "npx vitest",
     "jest.disabledWorkspaceFolders": [
       " rrweb monorepo",
       "rrweb (package)",
