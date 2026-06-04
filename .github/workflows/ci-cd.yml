@@ -146,7 +146,7 @@ jobs:
       )
     permissions:
       contents: read
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v5
