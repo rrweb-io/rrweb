@@ -3,7 +3,7 @@
   "private": true,
   "version": "2.0.1",
   "description": "The web extension of rrweb which helps to run rrweb on any website out of box",
-  "author": "rrweb-io",
+  "author": "rrweb Core Team <maintainers@rrweb.com>",
   "license": "MIT",
   "type": "module",
   "scripts": {
