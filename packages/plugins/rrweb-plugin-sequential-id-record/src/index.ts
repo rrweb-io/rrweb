@@ -1,4 +1,4 @@
-import type { RecordPlugin } from '@rrweb/types';
+import type { RecordPlugin } from '@grafana/rrweb-types';
 
 export type SequentialIdOptions = {
   key: string;
@@ -8,7 +8,7 @@ const defaultOptions: SequentialIdOptions = {
   key: '_sid',
 };
 
-export const PLUGIN_NAME = 'rrweb/sequential-id@1';
+export const PLUGIN_NAME = '@grafana/rrweb/sequential-id@1';
 
 export const getRecordSequentialIdPlugin: (
   options?: Partial<SequentialIdOptions>,

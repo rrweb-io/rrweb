@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { NodeType as RRNodeType } from '@rrweb/types';
+import { NodeType as RRNodeType } from '@grafana/rrweb-types';
 import {
   BaseRRDocument,
   BaseRRDocumentType,

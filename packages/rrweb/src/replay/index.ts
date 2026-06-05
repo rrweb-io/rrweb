@@ -8,7 +8,7 @@ import {
   Mirror,
   createMirror,
   toLowerCase,
-} from 'rrweb-snapshot';
+} from '@grafana/rrweb-snapshot';
 import {
   RRDocument,
   createOrGetNode,
@@ -16,7 +16,7 @@ import {
   buildFromDom,
   diff,
   getDefaultSN,
-} from 'rrdom';
+} from '@grafana/rrdom';
 import type {
   RRNode,
   RRElement,
@@ -26,7 +26,7 @@ import type {
   RRCanvasElement,
   ReplayerHandler,
   Mirror as RRDOMMirror,
-} from 'rrdom';
+} from '@grafana/rrdom';
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
@@ -43,7 +43,7 @@ import {
   IncrementalSource,
   MouseInteractions,
   ReplayerEvents,
-} from '@rrweb/types';
+} from '@grafana/rrweb-types';
 import type {
   attributes,
   fullSnapshotEvent,
@@ -71,7 +71,7 @@ import type {
   styleDeclarationData,
   adoptedStyleSheetData,
   serializedElementNodeWithId,
-} from '@rrweb/types';
+} from '@grafana/rrweb-types';
 import {
   polyfill,
   queueToResolveTrees,

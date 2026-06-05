@@ -3,9 +3,9 @@ import type { Plugin } from 'vite';
 import config from '../../vite.config.default';
 
 const sourceEntryByPackageName = new Map([
-  ['rrweb', path.resolve(__dirname, '../rrweb/src/entries/record.ts')],
-  ['rrweb-snapshot', path.resolve(__dirname, '../rrweb-snapshot/src/index.ts')],
-  ['rrdom', path.resolve(__dirname, '../rrdom/src/index.ts')],
+  ['@grafana/rrweb', path.resolve(__dirname, '../rrweb/src/entries/record.ts')],
+  ['@grafana/rrweb-snapshot', path.resolve(__dirname, '../rrweb-snapshot/src/index.ts')],
+  ['@grafana/rrdom', path.resolve(__dirname, '../rrdom/src/index.ts')],
 ]);
 
 function resolveLocalSourceEntries(): Plugin {

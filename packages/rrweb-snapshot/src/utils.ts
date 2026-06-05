@@ -17,7 +17,7 @@ import type {
   nodeMetaMap,
 } from './types';
 
-import { NodeType } from '@rrweb/types';
+import { NodeType } from '@grafana/rrweb-types';
 import type {
   IMirror,
   serializedNodeWithId,
@@ -26,8 +26,8 @@ import type {
   documentTypeNode,
   textNode,
   elementNode,
-} from '@rrweb/types';
-import dom from '@rrweb/utils';
+} from '@grafana/rrweb-types';
+import dom from '@grafana/rrweb-utils';
 
 export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;

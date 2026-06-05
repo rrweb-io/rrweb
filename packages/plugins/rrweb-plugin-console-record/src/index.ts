@@ -1,5 +1,5 @@
-import type { listenerHandler, RecordPlugin, IWindow } from '@rrweb/types';
-import { patch } from '@rrweb/utils';
+import type { listenerHandler, RecordPlugin, IWindow } from '@grafana/rrweb-types';
+import { patch } from '@grafana/rrweb-utils';
 import { ErrorStackParser, StackFrame } from './error-stack-parser';
 import { stringify } from './stringify';
 
@@ -240,7 +240,7 @@ function initLogObserver(
   }
 }
 
-export const PLUGIN_NAME = 'rrweb/console@1';
+export const PLUGIN_NAME = '@grafana/rrweb/console@1';
 
 export const getRecordConsolePlugin: (
   options?: LogRecordOptions,

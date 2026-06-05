@@ -1,4 +1,4 @@
-export * from 'rrweb';
-export * from '@rrweb/packer';
-// export * from '@rrweb/rrweb-plugin-console-record';
-// export * from '@rrweb/rrweb-plugin-console-replay';
+export * from '@grafana/rrweb';
+export * from '@grafana/rrweb-packer';
+// export * from '@grafana/rrweb-plugin-console-record';
+// export * from '@grafana/rrweb-plugin-console-replay';

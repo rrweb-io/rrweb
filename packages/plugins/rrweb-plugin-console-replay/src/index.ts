@@ -2,10 +2,10 @@ import {
   type LogLevel,
   type LogData,
   PLUGIN_NAME,
-} from '@rrweb/rrweb-plugin-console-record';
-import type { eventWithTime } from '@rrweb/types';
-import { EventType, IncrementalSource } from '@rrweb/types';
-import type { ReplayPlugin, Replayer } from 'rrweb';
+} from '@grafana/rrweb-plugin-console-record';
+import type { eventWithTime } from '@grafana/rrweb-types';
+import { EventType, IncrementalSource } from '@grafana/rrweb-types';
+import type { ReplayPlugin, Replayer } from '@grafana/rrweb';
 
 /**
  * define an interface to replay log records

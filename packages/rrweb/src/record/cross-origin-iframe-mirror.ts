@@ -1,4 +1,4 @@
-import type { ICrossOriginIframeMirror } from '@rrweb/types';
+import type { ICrossOriginIframeMirror } from '@grafana/rrweb-types';
 export default class CrossOriginIframeMirror
   implements ICrossOriginIframeMirror
 {

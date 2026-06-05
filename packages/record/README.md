@@ -1,4 +1,4 @@
-# @rrweb/record
+# @grafana/rrweb-record
 
 This package contains all the record related code in rrweb.
 See the [guide](../../guide.md) for more info on rrweb.
@@ -8,11 +8,11 @@ See the [guide](../../guide.md) for more info on rrweb.
 ### 1) Bundler / npm (Recommended)
 
 ```bash
-npm install @rrweb/record
+npm install @grafana/rrweb-record
 ```
 
 ```js
-import { record } from '@rrweb/record';
+import { record } from '@grafana/rrweb-record';
 ```
 
 ### 2) Browser Without Bundler (ESM + import maps)
@@ -21,12 +21,12 @@ import { record } from '@rrweb/record';
 <script type="importmap">
   {
     "imports": {
-      "@rrweb/record": "https://cdn.jsdelivr.net/npm/@rrweb/record@latest/+esm"
+      "@grafana/rrweb-record": "https://cdn.jsdelivr.net/npm/@grafana/rrweb-record@latest/+esm"
     }
   }
 </script>
 <script type="module">
-  import { record } from '@rrweb/record';
+  import { record } from '@grafana/rrweb-record';
 </script>
 ```
 
@@ -35,7 +35,7 @@ import { record } from '@rrweb/record';
 Use this only for compatibility with non-module environments.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@rrweb/record@latest/umd/record.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@grafana/rrweb-record@latest/umd/record.min.js"></script>
 ```
 
 The legacy UMD global is `rrwebRecord`.
@@ -43,7 +43,7 @@ The legacy UMD global is `rrwebRecord`.
 ## Usage
 
 ```js
-import { record } from '@rrweb/record';
+import { record } from '@grafana/rrweb-record';
 
 record({
   emit(event) {

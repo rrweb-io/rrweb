@@ -1,6 +1,6 @@
-import type { SequentialIdOptions } from '@rrweb/rrweb-plugin-sequential-id-record';
-import type { ReplayPlugin } from 'rrweb';
-import type { eventWithTime } from '@rrweb/types';
+import type { SequentialIdOptions } from '@grafana/rrweb-plugin-sequential-id-record';
+import type { ReplayPlugin } from '@grafana/rrweb';
+import type { eventWithTime } from '@grafana/rrweb-types';
 
 type Options = SequentialIdOptions & {
   warnOnMissingId: boolean;

@@ -1,4 +1,4 @@
-import type { eventWithTime } from '@rrweb/types';
+import type { eventWithTime } from '@grafana/rrweb-types';
 
 export type eventWithTimeAndPacker = eventWithTime & {
   v: string;

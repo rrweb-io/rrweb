@@ -3,10 +3,10 @@ import type {
   RecordPlugin,
   ICrossOriginIframeMirror,
   IMirror,
-} from '@rrweb/types';
+} from '@grafana/rrweb-types';
 import type { WebRTCDataChannel } from './types';
 
-export const PLUGIN_NAME = 'rrweb/canvas-webrtc@1';
+export const PLUGIN_NAME = '@grafana/rrweb/canvas-webrtc@1';
 
 export type CrossOriginIframeMessageEventContent = {
   type: 'rrweb-canvas-webrtc';

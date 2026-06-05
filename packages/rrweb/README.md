@@ -21,42 +21,42 @@ rrweb refers to 'record and replay the web', which is a tool for recording and r
 
 ## Installation
 
-`rrweb` is kept mainly for backward compatibility. For new integrations, prefer package-specific entrypoints (`@rrweb/record` and `@rrweb/replay`) first, or use `@rrweb/all` as a convenience package.
+`rrweb` is kept mainly for backward compatibility. For new integrations, prefer package-specific entrypoints (`@grafana/rrweb-record` and `@grafana/rrweb-replay`) first, or use `@grafana/rrweb-all` as a convenience package.
 
 ### 1) Bundler / npm (Recommended)
 
 For new projects:
 
 ```shell
-npm install @rrweb/record @rrweb/replay
+npm install @grafana/rrweb-record @grafana/rrweb-replay
 ```
 
 ```js
-import { record } from '@rrweb/record';
-import { Replayer } from '@rrweb/replay';
-import '@rrweb/replay/dist/style.css';
+import { record } from '@grafana/rrweb-record';
+import { Replayer } from '@grafana/rrweb-replay';
+import '@grafana/rrweb-replay/dist/style.css';
 ```
 
 Convenience single-package option:
 
 ```shell
-npm install @rrweb/all
+npm install @grafana/rrweb-all
 ```
 
 ```js
-import { record, Replayer, pack, unpack } from '@rrweb/all';
-import '@rrweb/all/dist/style.css';
+import { record, Replayer, pack, unpack } from '@grafana/rrweb-all';
+import '@grafana/rrweb-all/dist/style.css';
 ```
 
 Legacy compatibility package:
 
 ```shell
-npm install rrweb
+npm install @grafana/rrweb
 ```
 
 ```js
-import { record, Replayer } from 'rrweb';
-import 'rrweb/dist/style.css';
+import { record, Replayer } from '@grafana/rrweb';
+import '@grafana/rrweb/dist/style.css';
 ```
 
 ### 2) Browser Without Bundler (ESM + import maps)
@@ -64,19 +64,19 @@ import 'rrweb/dist/style.css';
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
+  href="https://cdn.jsdelivr.net/npm/@grafana/rrweb-replay@latest/dist/style.css"
 />
 <script type="importmap">
   {
     "imports": {
-      "@rrweb/record": "https://cdn.jsdelivr.net/npm/@rrweb/record@latest/+esm",
-      "@rrweb/replay": "https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/+esm"
+      "@grafana/rrweb-record": "https://cdn.jsdelivr.net/npm/@grafana/rrweb-record@latest/+esm",
+      "@grafana/rrweb-replay": "https://cdn.jsdelivr.net/npm/@grafana/rrweb-replay@latest/+esm"
     }
   }
 </script>
 <script type="module">
-  import { record } from '@rrweb/record';
-  import { Replayer } from '@rrweb/replay';
+  import { record } from '@grafana/rrweb-record';
+  import { Replayer } from '@grafana/rrweb-replay';
 </script>
 ```
 
@@ -87,9 +87,9 @@ Use this only for compatibility with non-module environments; modern browsers su
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
+  href="https://cdn.jsdelivr.net/npm/@grafana/rrweb@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/umd/rrweb.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@grafana/rrweb@latest/umd/rrweb.min.js"></script>
 ```
 
 ## Project Structure

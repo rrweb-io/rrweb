@@ -3,8 +3,8 @@ import {
   type playerConfig,
   type PlayerMachineState,
   type SpeedMachineState,
-} from 'rrweb';
-import 'rrweb/dist/style.css';
+} from '@grafana/rrweb';
+import '@grafana/rrweb/dist/style.css';
 
 export {
   Replayer,

@@ -1,34 +1,34 @@
-# @rrweb/all
+# @grafana/rrweb-all
 
 Convenience package that includes a bundle of rrweb packages.
-For most new integrations, prefer `@rrweb/record` + `@rrweb/replay` first, and use `@rrweb/all` when you want a single-package setup.
+For most new integrations, prefer `@grafana/rrweb-record` + `@grafana/rrweb-replay` first, and use `@grafana/rrweb-all` when you want a single-package setup.
 
 | Use case                                            | Package choice                    |
 | --------------------------------------------------- | --------------------------------- |
-| Most new apps (explicit record/replay dependencies) | `@rrweb/record` + `@rrweb/replay` |
-| Quick setup with one import                         | `@rrweb/all`                      |
+| Most new apps (explicit record/replay dependencies) | `@grafana/rrweb-record` + `@grafana/rrweb-replay` |
+| Quick setup with one import                         | `@grafana/rrweb-all`                      |
 | Legacy compatibility                                | `rrweb`                           |
 
-In most production setups, recorder and replayer are deployed to different pages/apps. Use `@rrweb/record` on recorded pages and `@rrweb/replay` (or `rrweb-player`) on replay pages. Use `@rrweb/all` when you intentionally want one package for convenience (for example demos, tooling, or simplified setups).
+In most production setups, recorder and replayer are deployed to different pages/apps. Use `@grafana/rrweb-record` on recorded pages and `@grafana/rrweb-replay` (or `@grafana/rrweb-player`) on replay pages. Use `@grafana/rrweb-all` when you intentionally want one package for convenience (for example demos, tooling, or simplified setups).
 
 Includes the following packages:
 
 - [rrweb](../rrweb)
-- [@rrweb/record](../record)
-- [@rrweb/replay](../replay)
-- [@rrweb/packer](../packer)
+- [@grafana/rrweb-record](../record)
+- [@grafana/rrweb-replay](../replay)
+- [@grafana/rrweb-packer](../packer)
 
 ## Installation
 
 ### 1) Bundler / npm
 
 ```bash
-npm install @rrweb/all
+npm install @grafana/rrweb-all
 ```
 
 ```js
-import { record, Replayer, pack, unpack } from '@rrweb/all';
-import '@rrweb/all/dist/style.css';
+import { record, Replayer, pack, unpack } from '@grafana/rrweb-all';
+import '@grafana/rrweb-all/dist/style.css';
 ```
 
 For API details and examples, see the [guide](../../guide.md).
@@ -38,17 +38,17 @@ For API details and examples, see the [guide](../../guide.md).
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@rrweb/all@latest/dist/style.css"
+  href="https://cdn.jsdelivr.net/npm/@grafana/rrweb-all@latest/dist/style.css"
 />
 <script type="importmap">
   {
     "imports": {
-      "@rrweb/all": "https://cdn.jsdelivr.net/npm/@rrweb/all@latest/+esm"
+      "@grafana/rrweb-all": "https://cdn.jsdelivr.net/npm/@grafana/rrweb-all@latest/+esm"
     }
   }
 </script>
 <script type="module">
-  import { record, Replayer, pack, unpack } from '@rrweb/all';
+  import { record, Replayer, pack, unpack } from '@grafana/rrweb-all';
 </script>
 ```
 
@@ -57,7 +57,7 @@ For API details and examples, see the [guide](../../guide.md).
 Use this only for compatibility with non-module environments.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@rrweb/all@latest/umd/all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@grafana/rrweb-all@latest/umd/all.min.js"></script>
 ```
 
 The legacy UMD global is `rrweb`, so you will need to prefix the example APIs, e.g. `rrweb.record`, `new rrweb.Replayer(...)`, `rrweb.pack`, and `rrweb.unpack`, rather than using these functions directly.

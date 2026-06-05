@@ -1,5 +1,5 @@
-import { EventType, IncrementalSource } from '@rrweb/types';
-import type { eventWithTime } from '@rrweb/types';
+import { EventType, IncrementalSource } from '@grafana/rrweb-types';
+import type { eventWithTime } from '@grafana/rrweb-types';
 
 const now = Date.now();
 

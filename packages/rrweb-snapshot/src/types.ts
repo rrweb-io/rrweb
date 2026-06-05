@@ -1,4 +1,4 @@
-import type { serializedNodeWithId } from '@rrweb/types';
+import type { serializedNodeWithId } from '@grafana/rrweb-types';
 
 export type tagMap = {
   [key: string]: string;

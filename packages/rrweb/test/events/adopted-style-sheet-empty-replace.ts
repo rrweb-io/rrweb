@@ -1,5 +1,5 @@
-import { EventType, IncrementalSource } from '@rrweb/types';
-import type { eventWithTime } from '@rrweb/types';
+import { EventType, IncrementalSource } from '@grafana/rrweb-types';
+import type { eventWithTime } from '@grafana/rrweb-types';
 
 /**
  * Test events for validating that empty string replace/replaceSync clears stylesheets.

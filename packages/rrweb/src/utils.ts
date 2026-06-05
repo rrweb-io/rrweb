@@ -9,11 +9,11 @@ import type {
   DeprecatedMirror,
   textMutation,
   IMirror,
-} from '@rrweb/types';
-import type { Mirror, SlimDOMOptions } from 'rrweb-snapshot';
-import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
-import { RRNode, RRIFrameElement, BaseRRNode } from 'rrdom';
-import dom from '@rrweb/utils';
+} from '@grafana/rrweb-types';
+import type { Mirror, SlimDOMOptions } from '@grafana/rrweb-snapshot';
+import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from '@grafana/rrweb-snapshot';
+import { RRNode, RRIFrameElement, BaseRRNode } from '@grafana/rrdom';
+import dom from '@grafana/rrweb-utils';
 
 export function on(
   type: string,

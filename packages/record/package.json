@@ -1,12 +1,12 @@
 {
-  "name": "@rrweb/record",
-  "version": "2.0.0-alpha.20",
+  "name": "@grafana/rrweb-record",
+  "version": "2.0.0-alpha.20.grafana.0",
   "publishConfig": {
     "access": "public"
   },
   "keywords": [
     "rrweb",
-    "@rrweb/record"
+    "@grafana/rrweb-record"
   ],
   "scripts": {
     "dev": "vite build --watch",
@@ -28,19 +28,19 @@
   },
   "license": "MIT",
   "type": "module",
-  "main": "./dist/record.cjs",
-  "module": "./dist/record.js",
-  "unpkg": "./dist/record.umd.cjs",
+  "main": "./dist/rrweb-record.cjs",
+  "module": "./dist/rrweb-record.js",
+  "unpkg": "./dist/rrweb-record.umd.cjs",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": {
         "types": "./dist/index.d.ts",
-        "default": "./dist/record.js"
+        "default": "./dist/rrweb-record.js"
       },
       "require": {
         "types": "./dist/index.d.cts",
-        "default": "./dist/record.cjs"
+        "default": "./dist/rrweb-record.cjs"
       }
     }
   },
@@ -57,9 +57,9 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.20",
-    "rrweb": "^2.0.0-alpha.20",
-    "@rrweb/utils": "^2.0.0-alpha.20"
+    "@grafana/rrweb-types": "^2.0.0-alpha.20.grafana.0",
+    "@grafana/rrweb": "^2.0.0-alpha.20.grafana.0",
+    "@grafana/rrweb-utils": "^2.0.0-alpha.20.grafana.0"
   },
   "browserslist": [
     "supports es6-class"

@@ -1,14 +1,14 @@
-import type { Mirror } from 'rrweb-snapshot';
-import { genId } from 'rrweb-snapshot';
+import type { Mirror } from '@grafana/rrweb-snapshot';
+import { genId } from '@grafana/rrweb-snapshot';
 import type { CrossOriginIframeMessageEvent } from '../types';
 import CrossOriginIframeMirror from './cross-origin-iframe-mirror';
-import { EventType, NodeType, IncrementalSource } from '@rrweb/types';
+import { EventType, NodeType, IncrementalSource } from '@grafana/rrweb-types';
 import type {
   eventWithTime,
   eventWithoutTime,
   serializedNodeWithId,
   mutationCallBack,
-} from '@rrweb/types';
+} from '@grafana/rrweb-types';
 import type { StylesheetManager } from './stylesheet-manager';
 
 export class IframeManager {
@@ -98,7 +98,7 @@ export class IframeManager {
   private handleMessage(message: MessageEvent | CrossOriginIframeMessageEvent) {
     const crossOriginMessageEvent = message as CrossOriginIframeMessageEvent;
     if (
-      crossOriginMessageEvent.data.type !== 'rrweb' ||
+      crossOriginMessageEvent.data.type !== '@grafana/rrweb' ||
       // To filter out the rrweb messages which are forwarded by some sites.
       crossOriginMessageEvent.origin !== crossOriginMessageEvent.data.origin
     )

@@ -1,4 +1,4 @@
-# @rrweb/replay
+# @grafana/rrweb-replay
 
 This package contains all the necessary code to replay recorded events.
 See the [guide](../../guide.md) for more info on rrweb.
@@ -8,12 +8,12 @@ See the [guide](../../guide.md) for more info on rrweb.
 ### 1) Bundler / npm (Recommended)
 
 ```bash
-npm install @rrweb/replay
+npm install @grafana/rrweb-replay
 ```
 
 ```js
-import { Replayer } from '@rrweb/replay';
-import '@rrweb/replay/dist/style.css';
+import { Replayer } from '@grafana/rrweb-replay';
+import '@grafana/rrweb-replay/dist/style.css';
 ```
 
 ### 2) Browser Without Bundler (ESM + import maps)
@@ -21,17 +21,17 @@ import '@rrweb/replay/dist/style.css';
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
+  href="https://cdn.jsdelivr.net/npm/@grafana/rrweb-replay@latest/dist/style.css"
 />
 <script type="importmap">
   {
     "imports": {
-      "@rrweb/replay": "https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/+esm"
+      "@grafana/rrweb-replay": "https://cdn.jsdelivr.net/npm/@grafana/rrweb-replay@latest/+esm"
     }
   }
 </script>
 <script type="module">
-  import { Replayer } from '@rrweb/replay';
+  import { Replayer } from '@grafana/rrweb-replay';
 </script>
 ```
 
@@ -42,9 +42,9 @@ Use this only for compatibility with non-module environments.
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
+  href="https://cdn.jsdelivr.net/npm/@grafana/rrweb-replay@latest/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/umd/replay.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@grafana/rrweb-replay@latest/umd/replay.min.js"></script>
 ```
 
 The legacy UMD global is `rrwebReplay`.
@@ -52,8 +52,8 @@ The legacy UMD global is `rrwebReplay`.
 ## Usage
 
 ```js
-import { Replayer } from '@rrweb/replay';
-import '@rrweb/replay/dist/style.css';
+import { Replayer } from '@grafana/rrweb-replay';
+import '@grafana/rrweb-replay/dist/style.css';
 
 const replayer = new Replayer(events, {
   // options

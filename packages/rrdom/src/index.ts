@@ -1,6 +1,6 @@
-import { createMirror as createNodeMirror } from 'rrweb-snapshot';
-import type { Mirror as NodeMirror } from 'rrweb-snapshot';
-import { NodeType as RRNodeType } from '@rrweb/types';
+import { createMirror as createNodeMirror } from '@grafana/rrweb-snapshot';
+import type { Mirror as NodeMirror } from '@grafana/rrweb-snapshot';
+import { NodeType as RRNodeType } from '@grafana/rrweb-types';
 import type {
   IMirror,
   serializedNodeWithId,
@@ -10,7 +10,7 @@ import type {
   scrollData,
   styleSheetRuleData,
   styleDeclarationData,
-} from '@rrweb/types';
+} from '@grafana/rrweb-types';
 import {
   BaseRRNode as RRNode,
   BaseRRCDATASection,

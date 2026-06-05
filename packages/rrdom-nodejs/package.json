@@ -1,6 +1,9 @@
 {
-  "name": "rrdom-nodejs",
-  "version": "2.0.0-alpha.20",
+  "name": "@grafana/rrdom-nodejs",
+  "version": "2.0.0-alpha.20.grafana.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "vite build --watch",
     "build": "turbo run prepublish",
@@ -56,7 +59,7 @@
     "cssom": "^0.5.0",
     "cssstyle": "^2.3.0",
     "nwsapi": "2.2.0",
-    "rrdom": "^2.0.0-alpha.20",
-    "@rrweb/types": "^2.0.0-alpha.20"
+    "@grafana/rrdom": "^2.0.0-alpha.20.grafana.0",
+    "@grafana/rrweb-types": "^2.0.0-alpha.20.grafana.0"
   }
 }

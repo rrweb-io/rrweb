@@ -9,8 +9,8 @@ import {
   isNodeMetaEqual,
   stringifyStylesheet,
 } from '../src/utils';
-import { NodeType } from '@rrweb/types';
-import type { serializedNode, serializedNodeWithId } from '@rrweb/types';
+import { NodeType } from '@grafana/rrweb-types';
+import type { serializedNode, serializedNodeWithId } from '@grafana/rrweb-types';
 
 describe('utils', () => {
   describe('isNodeMetaEqual()', () => {

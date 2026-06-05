@@ -11,14 +11,14 @@ import type {
   eventWithTime,
   listenerHandler,
   mutationData,
-} from '@rrweb/types';
-import { unpack } from '@rrweb/packer';
+} from '@grafana/rrweb-types';
+import { unpack } from '@grafana/rrweb-packer';
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
-import type { recordOptions } from 'rrweb';
-import type {} from '@rrweb/types';
-import { EventType } from '@rrweb/types';
+import type { recordOptions } from '@grafana/rrweb';
+import type {} from '@grafana/rrweb-types';
+import { EventType } from '@grafana/rrweb-types';
 import {
   assertSnapshot,
   getServerURL,
@@ -57,7 +57,7 @@ async function injectRecordScript(
   options?: ExtraOptions,
 ) {
   await frame.addScriptTag({
-    path: path.resolve(__dirname, '../dist/all.umd.cjs'),
+    path: path.resolve(__dirname, '../dist/rrweb-all.umd.cjs'),
   });
   options = options || {};
   await frame.evaluate((options) => {

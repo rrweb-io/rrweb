@@ -34,7 +34,7 @@ import styleDeclarationMissingRuleEvents from './events/style-declaration-missin
 import documentReplacementEvents from './events/document-replacement';
 import hoverInIframeShadowDom from './events/iframe-shadowdom-hover';
 import customElementDefineClass from './events/custom-element-define-class';
-import { ReplayerEvents } from '@rrweb/types';
+import { ReplayerEvents } from '@grafana/rrweb-types';
 
 interface ISuite {
   code: string;

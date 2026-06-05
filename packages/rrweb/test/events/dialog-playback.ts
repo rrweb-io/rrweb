@@ -1,4 +1,4 @@
-import { eventWithTime, IncrementalSource } from '@rrweb/types';
+import { eventWithTime, IncrementalSource } from '@grafana/rrweb-types';
 
 const startTime = 1900000000;
 export const closedFullSnapshotTime = 132;
