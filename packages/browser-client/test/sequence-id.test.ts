@@ -371,6 +371,27 @@ describe('@rrweb/browser-client sequenceId', () => {
     expect(sessionStorage.getItem(key)).toBeNull();
   });
 
+  it('does not throw on permanent stop when recording id cleanup storage fails', async () => {
+    const client = await importFreshClient();
+
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      autostart: false,
+      emit: () => undefined,
+    });
+    const removeItem = vi
+      .spyOn(Storage.prototype, 'removeItem')
+      .mockImplementation(() => {
+        throw new Error('sessionStorage unavailable');
+      });
+
+    expect(() => client.stop(true)).not.toThrow();
+
+    removeItem.mockRestore();
+  });
+
   it('does not record after permanent stop cancels a hidden delayed start', async () => {
     setDocumentHidden(true);
     const client = await importFreshClient();

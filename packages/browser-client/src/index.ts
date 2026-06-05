@@ -146,7 +146,11 @@ export function stop(resetRecordingId: boolean) {
 }
 
 function removeRecordingId(): void {
-  sessionStorage.removeItem(sessionStorageName);
+  try {
+    sessionStorage.removeItem(sessionStorageName);
+  } catch {
+    // Best-effort cleanup only.
+  }
 }
 
 function invalidateActiveStart(): void {
