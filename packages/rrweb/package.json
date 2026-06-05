@@ -30,6 +30,9 @@
     "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
   },
   "keywords": [
+    "devtools",
+    "product-analytics",
+    "real-user-monitoring",
     "rrweb"
   ],
   "main": "./dist/rrweb.umd.cjs",

@@ -5,6 +5,9 @@
     "access": "public"
   },
   "keywords": [
+    "devtools",
+    "product-analytics",
+    "real-user-monitoring",
     "rrweb",
     "@rrweb/all"
   ],

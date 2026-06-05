@@ -11,6 +11,9 @@
     "lint": "yarn eslint src/**/*.ts"
   },
   "keywords": [
+    "devtools",
+    "product-analytics",
+    "real-user-monitoring",
     "rrweb",
     "rrdom-nodejs"
   ],

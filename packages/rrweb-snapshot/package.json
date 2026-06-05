@@ -24,6 +24,9 @@
     "url": "git+https://github.com/rrweb-io/rrweb.git"
   },
   "keywords": [
+    "devtools",
+    "product-analytics",
+    "real-user-monitoring",
     "rrweb",
     "snapshot",
     "DOM"
