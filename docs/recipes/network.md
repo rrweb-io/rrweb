@@ -25,9 +25,11 @@ You can also customize the behavior of logger like this:
 import { record } from '@rrweb/record';
 import { getRecordNetworkPlugin } from '@rrweb/rrweb-plugin-network-record';
 
+const recordingId = crypto.randomUUID();
+
 record({
   emit: function emit(event) {
-    fetch('https://api.rrweb.com/events', {
+    fetch(`https://api.rrweb.com/recordings/${recordingId}/events`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
