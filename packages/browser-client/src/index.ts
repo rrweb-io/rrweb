@@ -156,14 +156,17 @@ function removeRecordingId(): void {
 
 function invalidateActiveStart(): void {
   const recordingId = getCurrentRecordingId();
-  const tokenNames = recordingId
-    ? [browserClientStartTokenName(recordingId)]
-    : Array.from(activeStartTokenNames);
   const windowState = window as unknown as Record<string, unknown>;
-  for (const tokenName of tokenNames) {
+  if (recordingId) {
+    const tokenName = browserClientStartTokenName(recordingId);
     delete windowState[tokenName];
     activeStartTokenNames.delete(tokenName);
+    return;
   }
+  activeStartTokenNames.forEach((tokenName) => {
+    delete windowState[tokenName];
+    activeStartTokenNames.delete(tokenName);
+  });
 }
 
 function getSetVisitorId() {
