@@ -1,6 +1,5 @@
 # network recorder and replayer
 
-Starting from v2.0.0, we add the plugin to record network output.
 This feature aims to provide developers with more information about the bug scene. There are some options for recording and replaying network output.
 
 ### Enable recording network
@@ -8,10 +7,10 @@ This feature aims to provide developers with more information about the bug scen
 You can enable using default option like this:
 
 ```js
-import rrweb from 'rrweb';
+import { record } from '@rrweb/record';
 import { getRecordNetworkPlugin } from '@rrweb/rrweb-plugin-network-record';
 
-rrweb.record({
+record({
   emit: function emit(event) {
     events.push(event);
   },
@@ -23,12 +22,12 @@ rrweb.record({
 You can also customize the behavior of logger like this:
 
 ```js
-import rrweb from 'rrweb';
+import { record } from '@rrweb/record';
 import { getRecordNetworkPlugin } from '@rrweb/rrweb-plugin-network-record';
 
-rrweb.record({
+record({
   emit: function emit(event) {
-    fetch('https://api.my-server.com/events', {
+    fetch('https://api.rrweb.com/events', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -45,7 +44,7 @@ rrweb.record({
       // mask/block recording event for request
       transformRequestFn: (request) => {
         // request.name is url
-        if (request.name.includes('rrweb-collector-api.com')) return; // skip request
+        if (request.name.includes('api.rrweb.com')) return; // skip request
         delete request.requestHeaders?.Authorization; // remove sensitive data
         request.responseBody = maskTextFn(request.responseBody);
         return request;
@@ -68,7 +67,7 @@ All options are described below:
 | transformRequestFn    | `(request) => request`                 | Transform recording event for request to block (skip) or mask/transform request (e.g. to hide sensitive data)                                                                                       |
 | recordHeaders         | `false`                                | Record the request & response headers for `fetch` and `xmlhttprequest` requests                                                                                                                     |
 | recordBody            | `false`                                | Record the request & response bodies for `fetch` and `xmlhttprequest` requests                                                                                                                      |
-| recordInitialRequests | `false`                                | Record an event for all requests prior to rrweb.record() being called                                                                                                                               |
+| recordInitialRequests | `false`                                | Record an event for all requests prior to `record()` being called                                                                                                                                   |
 
 ## replay network
 

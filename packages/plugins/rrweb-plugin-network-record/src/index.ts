@@ -1,39 +1,24 @@
-import type { listenerHandler, RecordPlugin, IWindow } from '@rrweb/types';
+import type {
+  listenerHandler,
+  RecordPlugin,
+  IWindow,
+  NetworkBody,
+  NetworkData,
+  NetworkHeaders,
+  NetworkInitiatorType,
+  NetworkRecordOptions,
+  NetworkRequest,
+} from '@rrweb/types';
 import { patch } from '@rrweb/utils';
 
-export type InitiatorType =
-  | 'audio'
-  | 'beacon'
-  | 'body'
-  | 'css'
-  | 'early-hint'
-  | 'embed'
-  | 'fetch'
-  | 'frame'
-  | 'iframe'
-  | 'icon'
-  | 'image'
-  | 'img'
-  | 'input'
-  | 'link'
-  | 'navigation'
-  | 'object'
-  | 'ping'
-  | 'script'
-  | 'track'
-  | 'video'
-  | 'xmlhttprequest';
-
-type NetworkRecordOptions = {
-  initiatorTypes?: InitiatorType[];
-  transformRequestFn?: (request: NetworkRequest) => NetworkRequest | undefined;
-  recordHeaders?: boolean | { request: boolean; response: boolean };
-  recordBody?:
-    | boolean
-    | string[]
-    | { request: boolean | string[]; response: boolean | string[] };
-  recordInitialRequests?: boolean;
-};
+export type {
+  NetworkBody,
+  NetworkData,
+  NetworkHeaders,
+  NetworkInitiatorType,
+  NetworkRecordOptions,
+  NetworkRequest,
+} from '@rrweb/types';
 
 const defaultNetworkOptions: NetworkRecordOptions = {
   initiatorTypes: [
@@ -65,33 +50,6 @@ const defaultNetworkOptions: NetworkRecordOptions = {
   recordInitialRequests: false,
 };
 
-type Headers = Record<string, string>;
-type Body = string | null;
-
-type NetworkRequest = Omit<
-  PerformanceEntry,
-  'toJSON' | 'startTime' | 'endTime' | 'duration' | 'entryType'
-> & {
-  method?: string;
-  initiatorType?: InitiatorType;
-  status?: number;
-  startTime?: number;
-  endTime?: number;
-  duration?: number;
-  entryType?: string;
-  requestHeaders?: Headers;
-  requestBody?: Body;
-  responseHeaders?: Headers;
-  responseBody?: Body;
-  // was this captured before fetch/xhr could have been wrapped
-  isInitial?: boolean;
-};
-
-export type NetworkData = {
-  requests: NetworkRequest[];
-  isInitial?: boolean;
-};
-
 type networkCallback = (data: NetworkData) => void;
 
 const isNavigationTiming = (
@@ -121,12 +79,12 @@ function initPerformanceObserver(
           isNavigationTiming(entry) ||
           (isResourceTiming(entry) &&
             options.initiatorTypes.includes(
-              entry.initiatorType as InitiatorType,
+              entry.initiatorType as NetworkInitiatorType,
             )),
       );
     cb({
       requests: initialPerformanceEntries.map((entry) => ({
-        initiatorType: entry.initiatorType as InitiatorType,
+        initiatorType: entry.initiatorType as NetworkInitiatorType,
         duration: entry.duration,
         entryType: entry.entryType,
         name: entry.name,
@@ -152,13 +110,13 @@ function initPerformanceObserver(
           isNavigationTiming(entry) ||
           (isResourceTiming(entry) &&
             options.initiatorTypes.includes(
-              entry.initiatorType as InitiatorType,
+              entry.initiatorType as NetworkInitiatorType,
             ) &&
             shouldRecordViaPerformanceObserver(entry)),
       );
     cb({
       requests: performanceEntries.map((entry) => ({
-        initiatorType: entry.initiatorType as InitiatorType,
+        initiatorType: entry.initiatorType as NetworkInitiatorType,
         status: 'responseStatus' in entry ? entry.responseStatus : undefined,
         startTime: Math.round(entry.startTime),
         endTime: Math.round(entry.responseEnd),
@@ -187,7 +145,7 @@ function shouldRecordHeaders(
 function shouldRecordBody(
   type: 'request' | 'response',
   recordBody: NetworkRecordOptions['recordBody'],
-  headers: Headers,
+  headers: NetworkHeaders,
   url?: string | URL | RequestInfo,
 ) {
   function matchesContentType(contentTypes: string[]) {
@@ -263,7 +221,7 @@ function stringifyFormData(body: FormData) {
 
 function readXhrBody(
   body: Document | XMLHttpRequestBodyInit | unknown | null | undefined,
-): Body {
+): NetworkBody {
   if (body === undefined || body === null) {
     return null;
   }
@@ -296,7 +254,7 @@ function readXhrBody(
 }
 
 async function readFetchBody(requestOrResponse: Request | Response) {
-  return new Promise<Body>((resolve) => {
+  return new Promise<NetworkBody>((resolve) => {
     const timeout = setTimeout(
       () => resolve('[rrweb/network] Timeout while reading body'),
       500,
@@ -389,7 +347,7 @@ function initXhrObserver(
       const networkRequest: Partial<NetworkRequest> = {};
       let after: number | undefined;
       let before: number | undefined;
-      const requestHeaders: Headers = {};
+      const requestHeaders: NetworkHeaders = {};
       const originalSetRequestHeader = xhr.setRequestHeader.bind(xhr);
       xhr.setRequestHeader = (header: string, value: string) => {
         requestHeaders[header] = value;
@@ -413,7 +371,7 @@ function initXhrObserver(
           return;
         }
         before = win.performance.now();
-        const responseHeaders: Headers = {};
+        const responseHeaders: NetworkHeaders = {};
         const rawHeaders = xhr.getAllResponseHeaders();
         const headers = rawHeaders.trim().split(/[\r\n]+/);
         headers.forEach((line) => {
@@ -500,7 +458,7 @@ function initFetchObserver(
       let after: number | undefined;
       let before: number | undefined;
       try {
-        const requestHeaders: Headers = {};
+        const requestHeaders: NetworkHeaders = {};
         req.headers.forEach((value, header) => {
           requestHeaders[header] = value;
         });
@@ -518,7 +476,7 @@ function initFetchObserver(
           ? await originalFetch(req)
           : await originalFetch(url, init);
         before = win.performance.now();
-        const responseHeaders: Headers = {};
+        const responseHeaders: NetworkHeaders = {};
         res.headers.forEach((value, header) => {
           responseHeaders[header] = value;
         });
@@ -614,7 +572,7 @@ function prepareRequest(
 ): NetworkRequest[] {
   const request: NetworkRequest = {
     method,
-    initiatorType: entry.initiatorType as InitiatorType,
+    initiatorType: entry.initiatorType as NetworkInitiatorType,
     duration: entry.duration,
     entryType: entry.entryType,
     name: entry.name,

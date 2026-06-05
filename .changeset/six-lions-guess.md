@@ -1,6 +1,7 @@
 ---
-"@rrweb/rrweb-plugin-network-record": patch
-"@rrweb/rrweb-plugin-network-replay": patch
+"@rrweb/rrweb-plugin-network-record": minor
+"@rrweb/rrweb-plugin-network-replay": minor
+"@rrweb/types": minor
 ---
 
-network-plugin
+Add the network-plugin
