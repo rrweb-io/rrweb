@@ -66,6 +66,26 @@ type ObservedPerformanceEntry = (
   responseStatus?: number;
 };
 
+function getPerformanceEntryInitiatorType(
+  entry: ObservedPerformanceEntry,
+): NetworkInitiatorType {
+  return isNavigationTiming(entry)
+    ? 'navigation'
+    : (entry.initiatorType as NetworkInitiatorType);
+}
+
+function shouldRecordPerformanceEntry(
+  entry: PerformanceEntry,
+  options: Required<NetworkRecordOptions>,
+): entry is ObservedPerformanceEntry {
+  return (
+    (isNavigationTiming(entry) || isResourceTiming(entry)) &&
+    options.initiatorTypes.includes(
+      getPerformanceEntryInitiatorType(entry as ObservedPerformanceEntry),
+    )
+  );
+}
+
 function initPerformanceObserver(
   cb: networkCallback,
   win: IWindow,
@@ -74,17 +94,12 @@ function initPerformanceObserver(
   if (options.recordInitialRequests) {
     const initialPerformanceEntries = win.performance
       .getEntries()
-      .filter(
-        (entry): entry is ObservedPerformanceEntry =>
-          isNavigationTiming(entry) ||
-          (isResourceTiming(entry) &&
-            options.initiatorTypes.includes(
-              entry.initiatorType as NetworkInitiatorType,
-            )),
+      .filter((entry): entry is ObservedPerformanceEntry =>
+        shouldRecordPerformanceEntry(entry, options),
       );
     cb({
       requests: initialPerformanceEntries.map((entry) => ({
-        initiatorType: entry.initiatorType as NetworkInitiatorType,
+        initiatorType: getPerformanceEntryInitiatorType(entry),
         duration: entry.duration,
         entryType: entry.entryType,
         name: entry.name,
@@ -107,16 +122,12 @@ function initPerformanceObserver(
       .getEntries()
       .filter(
         (entry): entry is ObservedPerformanceEntry =>
-          isNavigationTiming(entry) ||
-          (isResourceTiming(entry) &&
-            options.initiatorTypes.includes(
-              entry.initiatorType as NetworkInitiatorType,
-            ) &&
-            shouldRecordViaPerformanceObserver(entry)),
+          shouldRecordPerformanceEntry(entry, options) &&
+          shouldRecordViaPerformanceObserver(entry),
       );
     cb({
       requests: performanceEntries.map((entry) => ({
-        initiatorType: entry.initiatorType as NetworkInitiatorType,
+        initiatorType: getPerformanceEntryInitiatorType(entry),
         status: 'responseStatus' in entry ? entry.responseStatus : undefined,
         startTime: Math.round(entry.startTime),
         endTime: Math.round(entry.responseEnd),
@@ -343,7 +354,7 @@ function initXhrObserver(
     ) {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const xhr = this;
-      const req = new Request(url);
+      const req = new Request(url, { method });
       const networkRequest: Partial<NetworkRequest> = {};
       let after: number | undefined;
       let before: number | undefined;

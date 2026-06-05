@@ -5,7 +5,7 @@ See the [guide](../../../guide.md) for more info on rrweb.
 
 ## Sponsors
 
-[Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.
+[Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on GitHub with a link to your site.
 
 ### Gold Sponsors 🥇
 

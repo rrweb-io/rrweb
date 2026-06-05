@@ -21,6 +21,7 @@
   },
   "files": [
     "dist",
+    "umd",
     "package.json"
   ],
   "scripts": {

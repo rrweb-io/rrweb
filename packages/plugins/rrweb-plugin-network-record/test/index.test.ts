@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getRecordNetworkPlugin } from '../src';
 import type { NetworkData } from '../src';
 
@@ -42,6 +42,22 @@ function createPerformanceEntry(
   } as PerformanceResourceTiming;
 }
 
+function createNavigationEntry(url: string): PerformanceNavigationTiming {
+  return {
+    name: url,
+    entryType: 'navigation',
+    initiatorType: 'navigation',
+    startTime: 0,
+    responseEnd: 1,
+    duration: 1,
+    toJSON: () => ({
+      name: url,
+      entryType: 'navigation',
+      initiatorType: 'navigation',
+    }),
+  } as PerformanceNavigationTiming;
+}
+
 async function flushMicrotasks() {
   for (let i = 0; i < 5; i++) {
     await Promise.resolve();
@@ -51,9 +67,11 @@ async function flushMicrotasks() {
 function createMockWindow({
   fetchImpl = async () => new Response('ok'),
   entries = [],
+  initialEntries = [],
 }: {
   fetchImpl?: typeof fetch;
   entries?: PerformanceResourceTiming[];
+  initialEntries?: PerformanceEntry[];
 } = {}): MockWindow {
   let now = 0;
   class MockXMLHttpRequest {
@@ -103,7 +121,7 @@ function createMockWindow({
   return {
     performance: {
       now: () => now++,
-      getEntries: () => [],
+      getEntries: () => initialEntries,
       getEntriesByName: (url: string) =>
         entries.filter((entry) => entry.name === url),
     },
@@ -115,6 +133,10 @@ function createMockWindow({
 }
 
 describe('rrweb-plugin-network-record', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('records the XHR method passed to open()', async () => {
     const url = 'https://example.com/api';
     const events: NetworkData[] = [];
@@ -139,6 +161,51 @@ describe('rrweb-plugin-network-record', () => {
     cleanup();
 
     expect(events[0].requests[0].method).toBe('POST');
+  });
+
+  it('records the XHR method when performance timing data is unavailable', async () => {
+    vi.useFakeTimers();
+    const url = 'https://example.com/api';
+    const events: NetworkData[] = [];
+    const win = createMockWindow();
+    const plugin = getRecordNetworkPlugin({
+      recordBody: true,
+      initiatorTypes: ['xmlhttprequest'],
+    });
+    const cleanup = plugin.observer(
+      (data: NetworkData) => events.push(data),
+      win,
+      plugin.options,
+    );
+
+    const xhr = new win.XMLHttpRequest();
+    xhr.open('POST', url);
+    xhr.send('{"ok":true}');
+    (xhr as unknown as { complete: () => void }).complete();
+    await vi.runAllTimersAsync();
+    await flushMicrotasks();
+    cleanup();
+
+    expect(events[0].requests[0].method).toBe('POST');
+  });
+
+  it('filters initial navigation entries by initiatorTypes', () => {
+    const events: NetworkData[] = [];
+    const win = createMockWindow({
+      initialEntries: [createNavigationEntry('https://example.com/page')],
+    });
+    const plugin = getRecordNetworkPlugin({
+      recordInitialRequests: true,
+      initiatorTypes: ['fetch'],
+    });
+    const cleanup = plugin.observer(
+      (data: NetworkData) => events.push(data),
+      win,
+      plugin.options,
+    );
+    cleanup();
+
+    expect(events[0]).toEqual({ requests: [], isInitial: true });
   });
 
   it('records fetch request bodies as serializable text', async () => {
