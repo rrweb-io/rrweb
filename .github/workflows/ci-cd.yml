@@ -186,8 +186,8 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          cd packages/rrvideo && yarn playwright install --with-deps chromium
-          cd ../rrweb && yarn playwright install --with-deps webkit
+          npx playwright install --with-deps chromium
+          npx playwright install --with-deps webkit
 
       - name: Check types
         run: yarn check-types
