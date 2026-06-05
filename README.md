@@ -7,7 +7,7 @@
 
 # rrweb
 
-**[(new!) rrweb cloud - hosted rrweb backend now available](https://rrweb.com/)**
+**[(new!) rrweb cloud - hosted rrweb backend is now available](https://rrweb.com/)**
 
 [![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-siwoc6hx-uWay3s2wyG8t5GpZVb8rWg)
 [![Twitter Follow](https://img.shields.io/badge/twitter-@rrweb__io-teal.svg?logo=twitter)](https://twitter.com/rrweb_io)
