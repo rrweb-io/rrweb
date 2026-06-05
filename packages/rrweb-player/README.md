@@ -1,7 +1,3 @@
-_Looking for a Vue.js version? Go here --> [@preflight-hq/rrweb-player-vue](https://github.com/Preflight-HQ/rrweb-player-vue)_
-
----
-
 # rrweb-player
 
 Since rrweb's replayer only provides a basic UI, you can choose rrweb-replayer which is based on rrweb's public APIs but has a feature-rich replayer UI.
@@ -23,24 +19,22 @@ import rrwebPlayer from 'rrweb-player';
 import 'rrweb-player/dist/style.css';
 ```
 
-### 2) Browser Without Bundler (ESM + import maps)
+### 2) Browser Without Bundler (ESM)
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"
+  href="https://cdn.rrweb.com/rrweb-player/current/style.css"
 />
-<script type="importmap">
-  {
-    "imports": {
-      "rrweb-player": "https://cdn.jsdelivr.net/npm/rrweb-player@latest/+esm"
-    }
-  }
-</script>
 <script type="module">
-  import rrwebPlayer from 'rrweb-player';
+  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.js';
 </script>
 ```
+
+Use `current` for the latest stable release, or pin an exact version such as
+`https://cdn.rrweb.com/rrweb-player/2.0.0/rrweb-player.js` for immutable
+production URLs. See the [CDN assets docs](https://rrweb.com/docs/cloud/cdn-assets)
+for the full URL shape and catalog.
 
 ### 3) Legacy Direct `<script>` Include (UMD fallback)
 
@@ -49,9 +43,9 @@ Use this only for compatibility with non-module environments.
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"
+  href="https://cdn.rrweb.com/rrweb-player/current/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/umd/rrweb-player.min.js"></script>
+<script src="https://cdn.rrweb.com/rrweb-player/current/rrweb-player.umd.cjs"></script>
 ```
 
 ## Usage
@@ -269,12 +263,12 @@ playRange(
   <tr>
     <td align="center">
       <a href="http://www.smartx.com/" target="_blank">
-        <img width="195px" src="https://www.rrweb.io/logos/smartx.png">
+        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/master/static/logos/smartx.png" alt="SmartX">
       </a>
     </td>
     <td align="center">
       <a href="https://posthog.com?utm_source=rrweb&utm_medium=sponsorship&utm_campaign=open-source-sponsorship" target="_blank">
-        <img width="195px" src="https://www.rrweb.io/logos/posthog.png">
+        <img width="195px" src="https://rrweb.com/posthog.png" alt="PostHog">
       </a>
     </td>
     <td align="center">
@@ -288,7 +282,39 @@ playRange(
       </a>
     </td>
   </tr>
-    <tr>
+  <tr>
+    <td align="center">
+      <a href="https://sentry.io" target="_blank">
+        <img width="195px" src="https://rrweb.com/sentry.png" alt="Sentry">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://www.pendo.io" target="_blank">
+        <img width="195px" src="https://rrweb.com/pendo.png" alt="Pendo">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://mixpanel.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/mixpanel.png" alt="Mixpanel">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://www.datadoghq.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/datadog.png" alt="Datadog">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://amplitude.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/amplitude.png" alt="Amplitude">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://newrelic.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/new%20relic.png" alt="New Relic">
+      </a>
+    </td>
     <td align="center">
       <a href="https://cux.io" target="_blank">
         <img style="padding: 8px" alt="The first ever UX automation tool" width="195px" src="https://cux.io/cux-logo.svg">
@@ -299,6 +325,8 @@ playRange(
         <img style="padding: 8px" alt="Remote Access & Co-Browsing" width="195px" src="https://remsupp.com/images/logo.png">
       </a>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <a href="https://highlight.io" target="_blank">
         <img style="padding: 8px" alt="The open source, fullstack Monitoring Platform." width="195px" src="https://github.com/highlight/highlight/raw/main/highlight.io/public/images/logo.png">
@@ -306,11 +334,9 @@ playRange(
     </td>
     <td align="center">
       <a href="https://analyzee.io" target="_blank">
-        <img style="padding: 8px" alt="Comprehensive data analytics platform that empowers businesses to gain valuable insights and make data-driven decisions." width="195px" src="https://cdn.analyzee.io/assets/analyzee-logo.png">
+        <img style="padding: 8px" alt="Comprehensive data analytics platform that empowers businesses to gain valuable insights and make data-driven decisions." width="195px" src="https://analyzee.io/img/analyzee-main-logo.webp">
       </a>
     </td>
-  </tr>
-  <tr>
     <td align="center">
       <a href="https://requestly.io" target="_blank">
         <img style="padding: 8px" alt="Intercept, Modify, Record & Replay HTTP Requests." width="195px" src="https://github.com/requestly/requestly/assets/16779465/652552db-c867-44cb-9bb5-94a2026e04ca">
@@ -321,6 +347,8 @@ playRange(
         <img style="padding: 8px" alt="In-app bug reporting & customer feedback platform." width="195px" src="https://assets-global.website-files.com/6506f3f29c68b1724807619d/6506f56010237164c6306591_GleapLogo.svg">
       </a>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <a href="https://uxwizz.com" target="_blank">
         <img style="padding: 8px" alt="Self-hosted website analytics with heatmaps and session recordings." width="195px" src="https://github.com/UXWizz/public-files/raw/main/assets/logo.png">
