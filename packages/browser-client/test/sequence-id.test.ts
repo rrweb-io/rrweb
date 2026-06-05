@@ -12,6 +12,7 @@ type QueueLike = {
 };
 
 type WebsocketLike = {
+  url?: string;
   send: ReturnType<typeof vi.fn>;
   close: ReturnType<typeof vi.fn>;
   addEventListener: ReturnType<typeof vi.fn>;
@@ -139,6 +140,7 @@ vi.mock('websocket-ts', () => {
     }
     build() {
       const ws = new Websocket();
+      ws.url = this.url;
       mockState.websockets.push(ws);
       return ws;
     }
@@ -451,6 +453,34 @@ describe('@rrweb/browser-client sequenceId', () => {
     ).toBe(false);
   });
 
+  it('does not record after permanent stop cancels a hidden delayed start when recording id lookup fails', async () => {
+    setDocumentHidden(true);
+    const client = await importFreshClient();
+
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      autostart: false,
+      emit: () => undefined,
+    });
+    const getItem = vi
+      .spyOn(Storage.prototype, 'getItem')
+      .mockImplementation(() => {
+        throw new Error('sessionStorage unavailable');
+      });
+
+    try {
+      client.stop(true);
+      setDocumentHidden(false);
+      document.dispatchEvent(new Event('visibilitychange'));
+    } finally {
+      getItem.mockRestore();
+    }
+
+    expect(mockState.recordCalls).toHaveLength(0);
+  });
+
   it('invalidates delayed starts only for the matching recording id', async () => {
     setDocumentHidden(true);
     const client = await importFreshClient();
@@ -490,6 +520,7 @@ describe('@rrweb/browser-client sequenceId', () => {
     ).toBe(false);
     expect(mockState.recordCalls).toHaveLength(1);
     expect(mockState.pluginOptions[0]).toMatchObject({ startId: 1 });
+    expect(mockState.websockets[0].url).toContain('/recordings/recording-1/');
     expect(sentEvents()[0]).toMatchObject({ sequenceId: 2 });
   });
 

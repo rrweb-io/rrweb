@@ -74,6 +74,7 @@ let ws: Websocket | undefined;
 let wsConnectionPaused = false;
 
 const buffer: ArrayQueue<string> = new ArrayQueue();
+const activeStartTokenNames = new Set<string>();
 let rrwebStopFn: listenerHandler | undefined;
 
 function isServerMessage(value: unknown): value is ServerMessage {
@@ -155,10 +156,14 @@ function removeRecordingId(): void {
 
 function invalidateActiveStart(): void {
   const recordingId = getCurrentRecordingId();
-  if (!recordingId) return;
-  delete (window as unknown as Record<string, unknown>)[
-    browserClientStartTokenName(recordingId)
-  ];
+  const tokenNames = recordingId
+    ? [browserClientStartTokenName(recordingId)]
+    : Array.from(activeStartTokenNames);
+  const windowState = window as unknown as Record<string, unknown>;
+  for (const tokenName of tokenNames) {
+    delete windowState[tokenName];
+    activeStartTokenNames.delete(tokenName);
+  }
 }
 
 function getSetVisitorId() {
@@ -472,6 +477,7 @@ export function start(
   const windowState = window as unknown as Record<string, unknown>;
   const startTokenName = browserClientStartTokenName(recordingId);
   windowState[startTokenName] = startToken;
+  activeStartTokenNames.add(startTokenName);
 
   const isActiveStart = () => windowState[startTokenName] === startToken;
 
