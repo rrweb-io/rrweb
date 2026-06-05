@@ -189,6 +189,18 @@ function sequenceKey() {
   return `rrweb-browser-client-sequence-id:${recordingId()}`;
 }
 
+function startTokenKey(id: string) {
+  return `__rrweb_browser_client_start_token__:${id}`;
+}
+
+function clearStartTokens() {
+  for (const key of Object.getOwnPropertyNames(window)) {
+    if (key.startsWith('__rrweb_browser_client_start_token__:')) {
+      delete (window as unknown as Record<string, unknown>)[key];
+    }
+  }
+}
+
 function bufferEvents() {
   return mockState.buffers.flatMap((buffer) =>
     buffer.items.map((item) => JSON.parse(item) as Record<string, unknown>),
@@ -206,6 +218,7 @@ function sentEvents() {
 beforeEach(() => {
   sessionStorage.clear();
   document.body.innerHTML = '';
+  clearStartTokens();
   setDocumentHidden(false);
   window.history.replaceState({}, '', 'http://localhost/');
 });
@@ -409,6 +422,75 @@ describe('@rrweb/browser-client sequenceId', () => {
     document.dispatchEvent(new Event('visibilitychange'));
 
     expect(mockState.recordCalls).toHaveLength(0);
+  });
+
+  it('stores delayed start tokens under recording-scoped window keys', async () => {
+    setDocumentHidden(true);
+    const client = await importFreshClient();
+    sessionStorage.setItem('rrweb-browser-client-recording-id', 'recording-1');
+
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      autostart: false,
+      emit: () => undefined,
+    });
+
+    expect(
+      Object.prototype.hasOwnProperty.call(
+        window,
+        startTokenKey('recording-1'),
+      ),
+    ).toBe(true);
+    expect(
+      Object.prototype.hasOwnProperty.call(
+        window,
+        '__rrweb_browser_client_start_token__',
+      ),
+    ).toBe(false);
+  });
+
+  it('invalidates delayed starts only for the matching recording id', async () => {
+    setDocumentHidden(true);
+    const client = await importFreshClient();
+    sessionStorage.setItem('rrweb-browser-client-recording-id', 'recording-1');
+
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      autostart: false,
+      emit: () => undefined,
+    });
+    sessionStorage.setItem('rrweb-browser-client-recording-id', 'recording-2');
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      autostart: false,
+      emit: () => undefined,
+    });
+
+    client.stop(true);
+    setDocumentHidden(false);
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    expect(
+      Object.prototype.hasOwnProperty.call(
+        window,
+        startTokenKey('recording-1'),
+      ),
+    ).toBe(true);
+    expect(
+      Object.prototype.hasOwnProperty.call(
+        window,
+        startTokenKey('recording-2'),
+      ),
+    ).toBe(false);
+    expect(mockState.recordCalls).toHaveLength(1);
+    expect(mockState.pluginOptions[0]).toMatchObject({ startId: 1 });
+    expect(sentEvents()[0]).toMatchObject({ sequenceId: 2 });
   });
 
   it('does not restart recording after permanent stop cancels a frozen start', async () => {

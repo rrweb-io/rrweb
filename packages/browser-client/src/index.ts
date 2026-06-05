@@ -66,7 +66,7 @@ let defaultClientConfig: clientConfig = {
 };
 const sessionStorageName = 'rrweb-browser-client-recording-id';
 const sequenceStoragePrefix = 'rrweb-browser-client-sequence-id:';
-const browserClientStartTokenName = '__rrweb_browser_client_start_token__';
+const browserClientStartTokenPrefix = '__rrweb_browser_client_start_token__:';
 const wsLimit = 10e5; // this is approximate and depends on the browser, also on how unicode is encoded (we are comparing against the length of a javascript string)
 let sequenceState: SequenceState | undefined;
 
@@ -154,8 +154,10 @@ function removeRecordingId(): void {
 }
 
 function invalidateActiveStart(): void {
+  const recordingId = getCurrentRecordingId();
+  if (!recordingId) return;
   delete (window as unknown as Record<string, unknown>)[
-    browserClientStartTokenName
+    browserClientStartTokenName(recordingId)
   ];
 }
 
@@ -206,6 +208,10 @@ function getSetRecordingId(): string | null {
 
 function sequenceStorageName(recordingId: string): string {
   return `${sequenceStoragePrefix}${recordingId}`;
+}
+
+function browserClientStartTokenName(recordingId: string): string {
+  return `${browserClientStartTokenPrefix}${recordingId}`;
 }
 
 function isValidSequenceId(value: unknown): value is number {
@@ -464,10 +470,10 @@ export function start(
   const activeSequenceState = getSequenceState(recordingId);
   const startToken = Symbol('rrweb-browser-client-start');
   const windowState = window as unknown as Record<string, unknown>;
-  windowState[browserClientStartTokenName] = startToken;
+  const startTokenName = browserClientStartTokenName(recordingId);
+  windowState[startTokenName] = startToken;
 
-  const isActiveStart = () =>
-    windowState[browserClientStartTokenName] === startToken;
+  const isActiveStart = () => windowState[startTokenName] === startToken;
 
   const initialPayload: nameValues = {
     domain: document.location.hostname || document.location.href.split('?')[0], // latter is for debugging (e.g. a file:// url)
