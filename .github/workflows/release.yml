@@ -37,7 +37,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile --ignore-scripts
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
 
