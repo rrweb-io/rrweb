@@ -100,15 +100,15 @@ jobs:
             echo "Changeset file detected; proceeding.";
           fi
 
-      - name: Setup Node.js lts/*
+      - name: Setup Node.js 24.15
         uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: '24.15'
           cache: 'yarn'
 
       - name: Install Dependencies
         timeout-minutes: 5
-        run: yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile --ignore-scripts
         env:
           PUPPETEER_SKIP_DOWNLOAD: 'true'
 
@@ -154,32 +154,46 @@ jobs:
           # This makes Actions fetch all Git history so that Changesets can generate changelogs with the correct commits
           fetch-depth: 0
 
-      - name: Setup Node.js lts/*
+      - name: Setup Node.js 24.15
         uses: actions/setup-node@v5
         with:
-          node-version: lts/*
+          node-version: '24.15'
           cache: 'yarn'
 
       - name: Install Dependencies
         timeout-minutes: 5
-        run: yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile --ignore-scripts
         env:
-          PUPPETEER_DOWNLOAD_BASE_URL: 'https://storage.googleapis.com/chrome-for-testing-public'
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
 
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
 
-      - name: Install Playwright browsers
+      - name: Read Puppeteer browser revision
+        id: puppeteer-browser
         run: |
-          cd packages/rrvideo && yarn playwright install chromium
-          cd ../rrweb && yarn playwright install --with-deps webkit
+          revision=$(node -p "require('./.puppeteerrc.cjs').browserRevision")
+          echo "revision=${revision}" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Chrome
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: ${{ steps.puppeteer-browser.outputs.revision }}
+
+      - name: Install Playwright browsers
+        timeout-minutes: 5
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          cd packages/rrvideo && npx playwright install --with-deps chromium
+          cd ../rrweb && npx playwright install --with-deps webkit
 
       - name: Check types
         run: yarn check-types
 
       - name: Run tests
-        # run: PUPPETEER_EXECUTABLE_PATH=${{ steps.setup-chrome.outputs.chrome-path }} PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
-        run: PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
+        run: PUPPETEER_EXECUTABLE_PATH=${{ steps.setup-chrome.outputs.chrome-path }} PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" yarn test
 
       - name: Upload diff images to GitHub
         uses: actions/upload-artifact@v4

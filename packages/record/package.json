@@ -25,7 +25,7 @@
     "type": "git",
     "url": "git+https://github.com/newrelic-forks/rrweb.git"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/record.cjs",
   "module": "./dist/record.js",
@@ -46,7 +46,8 @@
   "files": [
     "umd",
     "dist",
-    "package.json"
+    "package.json",
+    "LICENSE"
   ],
   "devDependencies": {
     "puppeteer": "^20.9.0",
