@@ -31,6 +31,7 @@
   "main": "./dist/utils.umd.cjs",
   "module": "./dist/utils.js",
   "unpkg": "./dist/utils.umd.cjs",
+  "jsdelivr": "./umd/utils.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {

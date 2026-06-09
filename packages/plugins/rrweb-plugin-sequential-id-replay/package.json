@@ -6,6 +6,7 @@
   "main": "./dist/rrweb-plugin-sequential-id-replay.umd.cjs",
   "module": "./dist/rrweb-plugin-sequential-id-replay.js",
   "unpkg": "./dist/rrweb-plugin-sequential-id-replay.umd.cjs",
+  "jsdelivr": "./umd/rrweb-plugin-sequential-id-replay.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {

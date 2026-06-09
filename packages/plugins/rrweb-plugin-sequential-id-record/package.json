@@ -6,6 +6,7 @@
   "main": "./dist/rrweb-plugin-sequential-id-record.umd.cjs",
   "module": "./dist/rrweb-plugin-sequential-id-record.js",
   "unpkg": "./dist/rrweb-plugin-sequential-id-record.umd.cjs",
+  "jsdelivr": "./umd/rrweb-plugin-sequential-id-record.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {

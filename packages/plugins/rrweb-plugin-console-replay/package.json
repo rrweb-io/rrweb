@@ -6,6 +6,7 @@
   "main": "./dist/rrweb-plugin-console-replay.umd.cjs",
   "module": "./dist/rrweb-plugin-console-replay.js",
   "unpkg": "./dist/rrweb-plugin-console-replay.umd.cjs",
+  "jsdelivr": "./umd/rrweb-plugin-console-replay.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {

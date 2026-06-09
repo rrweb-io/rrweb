@@ -6,6 +6,7 @@
   "main": "./dist/rrweb-plugin-canvas-webrtc-replay.umd.cjs",
   "module": "./dist/rrweb-plugin-canvas-webrtc-replay.js",
   "unpkg": "./dist/rrweb-plugin-canvas-webrtc-replay.umd.cjs",
+  "jsdelivr": "./umd/rrweb-plugin-canvas-webrtc-replay.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
