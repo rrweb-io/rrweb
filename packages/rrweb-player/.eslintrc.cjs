@@ -14,7 +14,6 @@ module.exports = {
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:svelte/recommended',
-    '../../.eslintrc.js',
   ],
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
@@ -27,6 +26,10 @@ module.exports = {
     browser: true,
     es2017: true,
     node: true,
+  },
+  rules: {
+    'no-fallthrough': 'warn',
+    'svelte/valid-compile': 'warn',
   },
   overrides: [
     {

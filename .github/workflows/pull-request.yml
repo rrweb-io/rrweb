@@ -1,0 +1,53 @@
+name: Pull Request
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    permissions:
+      contents: read
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Upgrade npm
+        run: npm install -g npm@11
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Install browsers
+        run: |
+          for install in $(find . -path '*/puppeteer/install.js' -not -path '*/puppeteer/node_modules/*'); do
+            echo "Running $install"
+            node "$install"
+          done
+          npx playwright install --with-deps chromium
+
+      - name: Build
+        run: npm run build:all
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run check-types
+
+      - name: Unit tests
+        run: npm test
+        env:
+          PUPPETEER_HEADLESS: 'true'

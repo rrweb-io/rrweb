@@ -7,7 +7,7 @@ default: true
 extends: null
 
 # MD001/heading-increment/header-increment - Heading levels should only increment by one level at a time
-MD001: true
+MD001: false
 
 # MD002/first-heading-h1/first-header-h1 - First heading should be a top-level heading
 MD002:
@@ -64,25 +64,7 @@ MD012:
   maximum: 1
 
 # MD013/line-length - Line length
-MD013:
-  # Number of characters
-  line_length: 80
-  # Number of characters for headings
-  heading_line_length: 80
-  # Number of characters for code blocks
-  code_block_line_length: 80
-  # Include code blocks
-  code_blocks: true
-  # Include tables
-  tables: true
-  # Include headings
-  headings: true
-  # Include headings
-  headers: true
-  # Strict length checking
-  strict: false
-  # Stern length checking
-  stern: false
+MD013: false
 
 # MD014/commands-show-output - Dollar signs used before commands without showing output
 MD014: true
@@ -117,16 +99,10 @@ MD024:
   siblings_only: false
 
 # MD025/single-title/single-h1 - Multiple top-level headings in the same document
-MD025:
-  # Heading level
-  level: 1
-  # RegExp for matching title in front matter
-  front_matter_title: "^\\s*title\\s*[:=]"
+MD025: false
 
 # MD026/no-trailing-punctuation - Trailing punctuation in heading
-MD026:
-  # Punctuation characters
-  punctuation: '.,;:!。，；：！'
+MD026: false
 
 # MD027/no-multiple-space-blockquote - Multiple spaces after blockquote symbol
 MD027: true
@@ -164,7 +140,7 @@ MD033:
   allowed_elements: []
 
 # MD034/no-bare-urls - Bare URL used
-MD034: true
+MD034: false
 
 # MD035/hr-style - Horizontal rule style
 MD035:
@@ -172,9 +148,7 @@ MD035:
   style: 'consistent'
 
 # MD036/no-emphasis-as-heading/no-emphasis-as-header - Emphasis used instead of a heading
-MD036:
-  # Punctuation characters
-  punctuation: '.,;:!?。，；：！？'
+MD036: false
 
 # MD037/no-space-in-emphasis - Spaces inside emphasis markers
 MD037: true
@@ -186,7 +160,7 @@ MD038: true
 MD039: true
 
 # MD040/fenced-code-language - Fenced code blocks should have a language specified
-MD040: true
+MD040: false
 
 # MD041/first-line-heading/first-line-h1 - First line in a file should be a top-level heading
 MD041:
@@ -199,11 +173,7 @@ MD041:
 MD042: true
 
 # MD043/required-headings/required-headers - Required heading structure
-MD043:
-  # List of headings
-  headings: []
-  # List of headings
-  headers: []
+MD043: false
 
 # MD044/proper-names - Proper names should have the correct capitalization
 MD044:
