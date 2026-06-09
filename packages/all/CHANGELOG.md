@@ -1,5 +1,16 @@
 # @rrweb/all
 
+## 2.0.1
+
+### Patch Changes
+
+- [#1857](https://github.com/rrweb-io/rrweb/pull/1857) [`201a528`](https://github.com/rrweb-io/rrweb/commit/201a528f7180272b1007a749b14e2ee8565c50ac) Thanks [@Juice10](https://github.com/Juice10)! - Ship `dist/style.css` from `@rrweb/all` by importing rrweb's replay styles in the bundle entry and exporting the CSS subpath.
+
+- Updated dependencies [[`5f52d63`](https://github.com/rrweb-io/rrweb/commit/5f52d63636b3246bd5b6ba99a93cba41c5d981cb)]:
+  - rrweb@2.0.1
+  - @rrweb/types@2.0.1
+  - @rrweb/packer@2.0.1
+
 ## 2.0.0
 
 ### Major Changes

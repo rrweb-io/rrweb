@@ -1,12 +1,13 @@
 {
   "name": "rrweb-snapshot",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",
     "prepack": "npm run build",
     "retest": "vitest run",
     "test": "yarn build && vitest run",
+    "test:webkit": "yarn build && vitest run --config vitest.config.webkit.ts",
     "test:watch": "vitest watch",
     "retest:update": "vitest run --update",
     "test:update": "yarn build && vitest run --update",
@@ -23,6 +24,9 @@
     "url": "git+https://github.com/rrweb-io/rrweb.git"
   },
   "keywords": [
+    "devtools",
+    "product-analytics",
+    "real-user-monitoring",
     "rrweb",
     "snapshot",
     "DOM"
@@ -30,6 +34,7 @@
   "main": "./dist/rrweb-snapshot.umd.cjs",
   "module": "./dist/rrweb-snapshot.js",
   "unpkg": "./dist/rrweb-snapshot.umd.cjs",
+  "jsdelivr": "./umd/rrweb-snapshot.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -49,18 +54,19 @@
     "package.json"
   ],
   "sideEffects": false,
-  "author": "yanzhen@smartx.com",
+  "author": "rrweb Core Team <maintainers@rrweb.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
   "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot#readme",
   "devDependencies": {
-    "@rrweb/types": "^2.0.0",
-    "@rrweb/utils": "^2.0.0",
+    "@rrweb/types": "^2.0.1",
+    "@rrweb/utils": "^2.0.1",
     "@types/jsdom": "^20.0.0",
     "@types/node": "^18.15.11",
     "@types/puppeteer": "^5.4.4",
+    "playwright": "^1.60.0",
     "puppeteer": "^17.1.3",
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",

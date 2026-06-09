@@ -49,6 +49,12 @@ describe('absolute url to stylesheet', () => {
     );
   });
 
+  it('can handle hashes', () => {
+    expect(absolutifyURLs('url("../a.jpg#c/d")', href + '#e/f')).toEqual(
+      `url("http://localhost/a.jpg#c/d")`,
+    );
+  });
+
   it('can handle absolute path', () => {
     expect(absolutifyURLs('url("/a.jpg")', href)).toEqual(
       `url("http://localhost/a.jpg")`,

@@ -41,23 +41,16 @@ import '@rrweb/all/dist/style.css';
 
 ### 2) Browser Without Bundler (No-Build)
 
-Use ES modules and import maps with jsDelivr `+esm`:
+Use browser ESM assets from a CDN:
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
+  href="https://cdn.rrweb.com/replay/current/dist/style.css"
 />
-<script type="importmap">
-  {
-    "imports": {
-      "@rrweb/record": "https://cdn.jsdelivr.net/npm/@rrweb/record@latest/+esm",
-      "@rrweb/replay": "https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/+esm"
-    }
-  }
-</script>
 <script type="module">
-  import { record } from '@rrweb/record';
+  import { record } from 'https://cdn.rrweb.com/record/current/dist/record.js';
+  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.js';
 
   record({
     emit(event) {
@@ -67,22 +60,20 @@ Use ES modules and import maps with jsDelivr `+esm`:
 </script>
 ```
 
-Or use `@rrweb/all` as a convenience browser ESM import:
+Use `current` for the latest stable release, or pin an exact version such as
+`https://cdn.rrweb.com/record/2.0.0/dist/record.js` and
+`https://cdn.rrweb.com/replay/2.0.0/dist/replay.js` for immutable
+production URLs.
+
+`rrweb-player` is also available as a browser ESM asset:
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@rrweb/all@latest/dist/style.css"
+  href="https://cdn.rrweb.com/rrweb-player/current/style.css"
 />
-<script type="importmap">
-  {
-    "imports": {
-      "@rrweb/all": "https://cdn.jsdelivr.net/npm/@rrweb/all@latest/+esm"
-    }
-  }
-</script>
 <script type="module">
-  import { record, Replayer } from '@rrweb/all';
+  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.js';
 </script>
 ```
 
@@ -91,23 +82,12 @@ Or use `@rrweb/all` as a convenience browser ESM import:
 Use this only for compatibility with non-module environments.
 
 ```html
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.20/dist/style.css"
-/>
-<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.20/umd/rrweb.min.js"></script>
+<script src="https://cdn.rrweb.com/record/current/dist/record.umd.cjs"></script>
+<script src="https://cdn.rrweb.com/replay/current/dist/replay.umd.cjs"></script>
 ```
 
-The UMD build exposes global `rrweb`.
-
-Legacy single-purpose UMD bundles:
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/@rrweb/record@2.0.0-alpha.20/umd/record.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@rrweb/replay@2.0.0-alpha.20/umd/replay.min.js"></script>
-```
-
-The UMD globals are `rrwebRecord` and `rrwebReplay`.
+The UMD builds expose `rrwebRecord` and `rrwebReplay` globals. Prefer the ESM
+CDN assets for modern browsers.
 
 #### Other packages
 
@@ -132,6 +112,8 @@ Besides the `@rrweb/record` and `@rrweb/replay` packages, rrweb also provides ot
 - [@rrweb/rrweb-plugin-sequential-id-replay](packages/plugins/rrweb-plugin-sequential-id-replay): A plugin for replaying sequential IDs.
 - [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record): A plugin for stream `<canvas>` via WebRTC.
 - [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay): A plugin for playing streamed `<canvas>` via WebRTC.
+- [@rrweb/rrweb-plugin-network-record](packages/plugins/rrweb-plugin-network-record): A plugin for recording network requests (xhr/fetch).
+- [@rrweb/rrweb-plugin-network-replay](packages/plugins/rrweb-plugin-network-replay): A plugin for replaying network requests (xhr/fetch).
 
 ### Compatibility Note
 
@@ -173,6 +155,9 @@ let stopFn = record({
 A more real-world usage may look like this:
 
 ```js
+const publicApiKey = 'your-public-api-key-here';
+const recordingId = crypto.randomUUID();
+
 let events = [];
 
 record({
@@ -186,9 +171,10 @@ record({
 function save() {
   const body = JSON.stringify({ events });
   events = [];
-  fetch('http://YOUR_BACKEND_API', {
+  fetch(`https://api.rrweb.com/recordings/${recordingId}/events`, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${publicApiKey}`,
       'Content-Type': 'application/json',
     },
     body,
@@ -252,6 +238,9 @@ By default, all the emitted events are required to replay a session and if you d
 **Most of the time you do not need to configure this**. But if you want to do something like capturing just the last N events from when an error has occurred, here is an example:
 
 ```js
+const publicApiKey = 'your-public-api-key-here';
+const recordingId = crypto.randomUUID();
+
 // We use a two-dimensional array to store multiple events array
 const eventsMatrix = [[]];
 
@@ -272,9 +261,10 @@ window.onerror = function () {
   const len = eventsMatrix.length;
   const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
   const body = JSON.stringify({ events });
-  fetch('http://YOUR_BACKEND_API', {
+  fetch(`https://api.rrweb.com/recordings/${recordingId}/events`, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${publicApiKey}`,
       'Content-Type': 'application/json',
     },
     body,
@@ -287,6 +277,9 @@ Due to the incremental-snapshot-chain mechanism rrweb used, we can not capture t
 Similarly, you can also configure `checkoutEveryNms` to capture the last N minutes events:
 
 ```js
+const publicApiKey = 'your-public-api-key-here';
+const recordingId = crypto.randomUUID();
+
 // We use a two-dimensional array to store multiple events array
 const eventsMatrix = [[]];
 
@@ -307,9 +300,10 @@ window.onerror = function () {
   const len = eventsMatrix.length;
   const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
   const body = JSON.stringify({ events });
-  fetch('http://YOUR_BACKEND_API', {
+  fetch(`https://api.rrweb.com/recordings/${recordingId}/events`, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${publicApiKey}`,
       'Content-Type': 'application/json',
     },
     body,
@@ -327,24 +321,22 @@ For bundler usage, include the style sheet in your app entry:
 import '@rrweb/replay/dist/style.css';
 ```
 
-For browser/no-build usage, include the style sheet in HTML:
+For browser/no-build usage, include the style sheet and import the replayer from
+the CDN:
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
+  href="https://cdn.rrweb.com/replay/current/dist/style.css"
 />
-```
+<script type="module">
+  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.js';
 
-And then initialize the replayer:
+  const events = YOUR_EVENTS;
 
-```js
-import { Replayer } from '@rrweb/replay';
-
-const events = YOUR_EVENTS;
-
-const replayer = new Replayer(events);
-replayer.play();
+  const replayer = new Replayer(events);
+  replayer.play();
+</script>
 ```
 
 #### Control the replayer by API
@@ -411,22 +403,15 @@ import rrwebPlayer from 'rrweb-player';
 import 'rrweb-player/dist/style.css';
 ```
 
-Browser without bundler (ESM + import maps):
+Browser without bundler (ESM):
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"
+  href="https://cdn.rrweb.com/rrweb-player/current/style.css"
 />
-<script type="importmap">
-  {
-    "imports": {
-      "rrweb-player": "https://cdn.jsdelivr.net/npm/rrweb-player@latest/+esm"
-    }
-  }
-</script>
 <script type="module">
-  import rrwebPlayer from 'rrweb-player';
+  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.js';
 </script>
 ```
 
@@ -435,9 +420,9 @@ Legacy direct `<script>` include (UMD fallback):
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb-player@2.0.0-alpha.20/dist/style.css"
+  href="https://cdn.rrweb.com/rrweb-player/current/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb-player@2.0.0-alpha.20/umd/rrweb-player.min.js"></script>
+<script src="https://cdn.rrweb.com/rrweb-player/current/rrweb-player.umd.cjs"></script>
 ```
 
 ##### Usage
@@ -512,13 +497,13 @@ You can also play with rrweb by using the REPL testing tool which does not need 
 Run `yarn repl` to launch a browser and ask for a URL you want to test on the CLI:
 
 ```
-Enter the url you want to record, e.g https://react-redux.realworld.io:
+Enter the url you want to record, e.g https://example.com:
 ```
 
 Waiting for the browser to open the specified page and print the following messages on the CLI:
 
 ```
-Enter the url you want to record, e.g https://react-redux.realworld.io: https://github.com
+Enter the url you want to record, e.g https://example.com: https://github.com
 Going to open https://github.com...
 Ready to record. You can do any interaction on the page.
 Once you want to finish the recording, enter 'y' to start replay:

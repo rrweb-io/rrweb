@@ -497,6 +497,9 @@ export class Replayer {
    * Get the actual time offset the player is at now compared to the first event.
    */
   public getCurrentTime(): number {
+    if (this.config.liveMode) {
+      this.timer.updateLiveTime();
+    }
     return this.timer.timeOffset + this.getTimeOffset();
   }
 

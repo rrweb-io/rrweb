@@ -125,6 +125,67 @@ export type captureAssetsParam = Partial<{
    */
   _fromMutation: true;
 }>;
+export type NetworkInitiatorType =
+  | 'audio'
+  | 'beacon'
+  | 'body'
+  | 'css'
+  | 'early-hint'
+  | 'embed'
+  | 'fetch'
+  | 'frame'
+  | 'iframe'
+  | 'icon'
+  | 'image'
+  | 'img'
+  | 'input'
+  | 'link'
+  | 'navigation'
+  | 'object'
+  | 'ping'
+  | 'script'
+  | 'track'
+  | 'video'
+  | 'xmlhttprequest';
+
+export type NetworkHeaders = Record<string, string>;
+export type NetworkBody = string | null;
+
+export type NetworkRequest = Omit<
+  PerformanceEntry,
+  'toJSON' | 'startTime' | 'endTime' | 'duration' | 'entryType'
+> & {
+  method?: string;
+  initiatorType?: NetworkInitiatorType;
+  status?: number;
+  startTime?: number;
+  endTime?: number;
+  duration?: number;
+  entryType?: string;
+  requestHeaders?: NetworkHeaders;
+  requestBody?: NetworkBody;
+  responseHeaders?: NetworkHeaders;
+  responseBody?: NetworkBody;
+  isInitial?: boolean;
+};
+
+export type NetworkData = {
+  requests: NetworkRequest[];
+  isInitial?: boolean;
+};
+
+export type NetworkRecordOptions = {
+  initiatorTypes?: NetworkInitiatorType[];
+  transformRequestFn?: (request: NetworkRequest) => NetworkRequest | undefined;
+  recordHeaders?: boolean | { request: boolean; response: boolean };
+  recordBody?:
+    | boolean
+    | string[]
+    | { request: boolean | string[]; response: boolean | string[] };
+  recordInitialRequests?: boolean;
+};
+
+export type NetworkEvent = pluginEvent<NetworkData>;
 
 export type assetEvent = {
   type: EventType.Asset;
