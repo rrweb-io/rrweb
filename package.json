@@ -6,9 +6,12 @@
     "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
   },
   "keywords": [
+    "devtools",
+    "product-analytics",
+    "real-user-monitoring",
     "rrweb"
   ],
-  "author": "yanzhen@smartx.com",
+  "author": "rrweb Core Team <maintainers@rrweb.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"

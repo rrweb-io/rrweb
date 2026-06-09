@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/rrweb-plugin-canvas-webrtc-record",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-canvas-webrtc-record.umd.cjs",
@@ -35,21 +35,24 @@
     "url": "git+https://github.com/rrweb-io/rrweb.git"
   },
   "keywords": [
+    "devtools",
+    "product-analytics",
+    "real-user-monitoring",
     "rrweb"
   ],
-  "author": "justin@recordonce.com",
+  "author": "rrweb Core Team <maintainers@rrweb.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
-    "rrweb": "^2.0.0",
+    "rrweb": "^2.0.1",
     "typescript": "^5.4.5",
     "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1"
   },
   "peerDependencies": {
-    "rrweb": "^2.0.0"
+    "rrweb": "^2.0.1"
   }
 }

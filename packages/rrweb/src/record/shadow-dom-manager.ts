@@ -53,7 +53,7 @@ export class ShadowDomManager {
     if (!isNativeShadowDom(shadowRoot)) return;
     if (this.shadowDoms.has(shadowRoot)) return;
     this.shadowDoms.add(shadowRoot);
-    const observer = initMutationObserver(
+    const [observer] = initMutationObserver(
       {
         ...this.bypassOptions,
         doc,

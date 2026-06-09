@@ -1,10 +1,13 @@
 {
   "name": "@rrweb/all",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "publishConfig": {
     "access": "public"
   },
   "keywords": [
+    "devtools",
+    "product-analytics",
+    "real-user-monitoring",
     "rrweb",
     "@rrweb/all"
   ],
@@ -41,7 +44,8 @@
         "types": "./dist/index.d.cts",
         "default": "./dist/all.cjs"
       }
-    }
+    },
+    "./dist/style.css": "./dist/style.css"
   },
   "files": [
     "umd",
@@ -57,9 +61,9 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0",
-    "@rrweb/packer": "^2.0.0",
-    "rrweb": "^2.0.0"
+    "@rrweb/types": "^2.0.1",
+    "@rrweb/packer": "^2.0.1",
+    "rrweb": "^2.0.1"
   },
   "browserslist": [
     "supports es6-class"

@@ -1,10 +1,13 @@
 {
   "name": "@rrweb/browser-client",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "publishConfig": {
     "access": "public"
   },
   "keywords": [
+    "devtools",
+    "product-analytics",
+    "real-user-monitoring",
     "rrweb",
     "@rrweb/browser-client",
     "websocket"
@@ -64,10 +67,10 @@
     "vitest": "^1.4.0"
   },
   "dependencies": {
-    "@rrweb/record": "^2.0.0",
-    "@rrweb/types": "^2.0.0",
-    "@rrweb/utils": "^2.0.0",
-    "rrweb": "^2.0.0",
+    "@rrweb/record": "^2.0.1",
+    "@rrweb/types": "^2.0.1",
+    "@rrweb/utils": "^2.0.1",
+    "rrweb": "^2.0.1",
     "websocket-ts": "^2.2.1"
   },
   "browserslist": [

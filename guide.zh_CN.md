@@ -37,25 +37,18 @@ import '@rrweb/all/dist/style.css';
 
 `require(...)` / CommonJS 仍可作为兼容方案使用（由各包的 `exports`/`main` 提供），但 2.x 的主路径是 ESM。
 
-### 2) 无 Bundler 的浏览器场景（推荐 no-build）
+### 2) 无 Bundler 的浏览器场景（no-build）
 
-推荐使用 ES modules + import map + jsDelivr `+esm`：
+推荐使用 CDN 提供的浏览器 ESM 资源：
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
+  href="https://cdn.rrweb.com/replay/current/dist/style.css"
 />
-<script type="importmap">
-  {
-    "imports": {
-      "@rrweb/record": "https://cdn.jsdelivr.net/npm/@rrweb/record@latest/+esm",
-      "@rrweb/replay": "https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/+esm"
-    }
-  }
-</script>
 <script type="module">
-  import { record } from '@rrweb/record';
+  import { record } from 'https://cdn.rrweb.com/record/current/dist/record.js';
+  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.js';
 
   record({
     emit(event) {
@@ -65,22 +58,19 @@ import '@rrweb/all/dist/style.css';
 </script>
 ```
 
-也可以通过 `@rrweb/all` 便捷引入：
+`current` 指向最新稳定版本；生产环境也可以固定到不可变的精确版本，例如
+`https://cdn.rrweb.com/record/2.0.0/dist/record.js` 和
+`https://cdn.rrweb.com/replay/2.0.0/dist/replay.js`。
+
+`rrweb-player` 也提供浏览器 ESM 资源：
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@rrweb/all@latest/dist/style.css"
+  href="https://cdn.rrweb.com/rrweb-player/current/style.css"
 />
-<script type="importmap">
-  {
-    "imports": {
-      "@rrweb/all": "https://cdn.jsdelivr.net/npm/@rrweb/all@latest/+esm"
-    }
-  }
-</script>
 <script type="module">
-  import { record, Replayer } from '@rrweb/all';
+  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.js';
 </script>
 ```
 
@@ -89,23 +79,11 @@ import '@rrweb/all/dist/style.css';
 仅在不支持 ESM 的兼容场景中建议使用。
 
 ```html
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.20/dist/style.css"
-/>
-<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.20/umd/rrweb.min.js"></script>
+<script src="https://cdn.rrweb.com/record/current/dist/record.umd.cjs"></script>
+<script src="https://cdn.rrweb.com/replay/current/dist/replay.umd.cjs"></script>
 ```
 
-该 UMD 构建会暴露全局变量 `rrweb`。
-
-仅录制 / 仅回放的 UMD 兼容包：
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/@rrweb/record@2.0.0-alpha.20/umd/record.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@rrweb/replay@2.0.0-alpha.20/umd/replay.min.js"></script>
-```
-
-对应全局变量分别是 `rrwebRecord` 和 `rrwebReplay`。
+这些 UMD 构建会暴露全局变量 `rrwebRecord` 和 `rrwebReplay`。现代浏览器推荐优先使用 CDN ESM 资源。
 
 #### 其他包
 
@@ -130,6 +108,8 @@ import '@rrweb/all/dist/style.css';
 - [@rrweb/rrweb-plugin-sequential-id-replay](packages/plugins/rrweb-plugin-sequential-id-replay)：一个用于回放顺序 ID 的插件。
 - [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record)：一个用于通过 WebRTC 流式传输 `<canvas>` 的插件。
 - [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay)：一个用于通过 WebRTC 播放流式 `<canvas>` 的插件。
+- [@rrweb/rrweb-plugin-network-record](packages/plugins/rrweb-plugin-network-record)：一个用于记录网络请求的插件 (xhr/fetch)。
+- [@rrweb/rrweb-plugin-network-replay](packages/plugins/rrweb-plugin-network-replay)：一个用于回放网络请求的插件 (xhr/fetch)。
 
 ### 兼容性
 
@@ -171,6 +151,9 @@ let stopFn = record({
 一个更接近实际真实使用场景的示例如下：
 
 ```js
+const publicApiKey = 'your-public-api-key-here';
+const recordingId = crypto.randomUUID();
+
 let events = [];
 
 record({
@@ -184,9 +167,10 @@ record({
 function save() {
   const body = JSON.stringify({ events });
   events = [];
-  fetch('http://YOUR_BACKEND_API', {
+  fetch(`https://api.rrweb.com/recordings/${recordingId}/events`, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${publicApiKey}`,
       'Content-Type': 'application/json',
     },
     body,
@@ -248,6 +232,9 @@ setInterval(save, 10 * 1000);
 **多数时候你不必这样配置**。但比如在页面错误发生时，你只想捕获最近的几次 event ，这里有一个例子：
 
 ```js
+const publicApiKey = 'your-public-api-key-here';
+const recordingId = crypto.randomUUID();
+
 // 使用二维数组来存放多个 event 数组
 const eventsMatrix = [[]];
 
@@ -268,9 +255,10 @@ window.onerror = function () {
   const len = eventsMatrix.length;
   const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
   const body = JSON.stringify({ events });
-  fetch('http://YOUR_BACKEND_API', {
+  fetch(`https://api.rrweb.com/recordings/${recordingId}/events`, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${publicApiKey}`,
       'Content-Type': 'application/json',
     },
     body,
@@ -283,6 +271,9 @@ window.onerror = function () {
 类似的，你可以通过配置 `checkoutEveryNms` 来捕获最近指定时间的 event :
 
 ```js
+const publicApiKey = 'your-public-api-key-here';
+const recordingId = crypto.randomUUID();
+
 // 使用二维数组来存放多个 event 数组
 const eventsMatrix = [[]];
 
@@ -303,9 +294,10 @@ window.onerror = function () {
   const len = eventsMatrix.length;
   const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
   const body = JSON.stringify({ events });
-  fetch('http://YOUR_BACKEND_API', {
+  fetch(`https://api.rrweb.com/recordings/${recordingId}/events`, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${publicApiKey}`,
       'Content-Type': 'application/json',
     },
     body,
@@ -323,24 +315,21 @@ window.onerror = function () {
 import '@rrweb/replay/dist/style.css';
 ```
 
-在浏览器 no-build 场景下，也可以在 HTML 中引入 CSS：
+在浏览器 no-build 场景下，可以引入 CSS 并从 CDN 导入 replayer：
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
+  href="https://cdn.rrweb.com/replay/current/dist/style.css"
 />
-```
+<script type="module">
+  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.js';
 
-然后通过以下 JS 代码初始化 replayer：
+  const events = YOUR_EVENTS;
 
-```js
-import { Replayer } from '@rrweb/replay';
-
-const events = YOUR_EVENTS;
-
-const replayer = new Replayer(events);
-replayer.play();
+  const replayer = new Replayer(events);
+  replayer.play();
+</script>
 ```
 
 #### 使用 API 控制回放
@@ -405,22 +394,15 @@ import rrwebPlayer from 'rrweb-player';
 import 'rrweb-player/dist/style.css';
 ```
 
-无 bundler 的浏览器场景（ESM + import maps）：
+无 bundler 的浏览器场景（ESM）：
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"
+  href="https://cdn.rrweb.com/rrweb-player/current/style.css"
 />
-<script type="importmap">
-  {
-    "imports": {
-      "rrweb-player": "https://cdn.jsdelivr.net/npm/rrweb-player@latest/+esm"
-    }
-  }
-</script>
 <script type="module">
-  import rrwebPlayer from 'rrweb-player';
+  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.js';
 </script>
 ```
 
@@ -429,9 +411,9 @@ Legacy 直接 `<script>` 引入（UMD 兼容）：
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb-player@2.0.0-alpha.20/dist/style.css"
+  href="https://cdn.rrweb.com/rrweb-player/current/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb-player@2.0.0-alpha.20/umd/rrweb-player.min.js"></script>
+<script src="https://cdn.rrweb.com/rrweb-player/current/rrweb-player.umd.cjs"></script>
 ```
 
 ##### 使用
@@ -507,13 +489,13 @@ replayer.on(EVENT_NAME, (payload) => {
 运行 `yarn repl`，将会启动浏览器并在命令行要求输入一个测试的 url：
 
 ```
-Enter the url you want to record, e.g https://react-redux.realworld.io:
+Enter the url you want to record, e.g https://example.com:
 ```
 
 输入后等待浏览器打开指定页面，并在命令行中出现以下提示信息：
 
 ```
-Enter the url you want to record, e.g https://react-redux.realworld.io: https://github.com
+Enter the url you want to record, e.g https://example.com: https://github.com
 Going to open https://github.com...
 Ready to record. You can do any interaction on the page.
 Once you want to finish the recording, enter 'y' to start replay:
