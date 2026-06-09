@@ -1,5 +1,19 @@
 # @rrweb/packer
 
+## 1.1.2
+
+### Patch Changes
+
+- [#15](https://github.com/newrelic-forks/rrweb/pull/15) [`b3fa8ed`](https://github.com/newrelic-forks/rrweb/commit/b3fa8ed753b380b0edec957a942cf5141ddfce1c) Thanks [@metal-messiah](https://github.com/metal-messiah)! - Add LICENSE file to all packages and update license to Apache-2.0
+
+  - Include LICENSE file (Apache-2.0) in all published packages
+  - Update license field in package.json from MIT to Apache-2.0
+  - Ensures license-checking tools can find license information
+  - Maintains consistency across all @newrelic/rrweb-\* packages
+
+- Updated dependencies [[`b3fa8ed`](https://github.com/newrelic-forks/rrweb/commit/b3fa8ed753b380b0edec957a942cf5141ddfce1c)]:
+  - @newrelic/rrweb-types@1.1.2
+
 ## 1.1.1
 
 ### Patch Changes
