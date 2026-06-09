@@ -6,6 +6,7 @@
   "main": "./dist/rrweb-plugin-network-record.umd.cjs",
   "module": "./dist/rrweb-plugin-network-record.js",
   "unpkg": "./dist/rrweb-plugin-network-record.umd.cjs",
+  "jsdelivr": "./umd/rrweb-plugin-network-record.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -20,8 +21,8 @@
     }
   },
   "files": [
-    "dist",
     "umd",
+    "dist",
     "package.json"
   ],
   "scripts": {
