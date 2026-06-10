@@ -57,6 +57,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     needs: [authorize]
+    environment: npm-release
     permissions:
       id-token: write # Required for OIDC
       contents: write
