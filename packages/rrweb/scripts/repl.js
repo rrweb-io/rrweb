@@ -20,9 +20,42 @@ function getCode() {
 void (async () => {
   const code = getCode();
   let events = [];
+  let injectionInProgress = false;
 
   async function injectRecording(frame) {
+    // 防止并发注入
+    if (injectionInProgress) {
+      return;
+    }
+
     try {
+      injectionInProgress = true;
+
+      // 检查 frame 是否仍然有效
+      if (frame.isDetached()) {
+        console.log('Frame is detached, skipping injection');
+        return;
+      }
+
+      // 等待页面稳定
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // 再次检查 frame 状态
+      if (frame.isDetached()) {
+        console.log('Frame became detached while waiting, skipping injection');
+        return;
+      }
+
+      // 检查是否已经注入过
+      const alreadyInjected = await frame.evaluate(() => {
+        return window.__IS_RECORDING__ === true;
+      }).catch(() => false);
+
+      if (alreadyInjected) {
+        console.log('Recording script already injected');
+        return;
+      }
+
       await frame.evaluate((rrwebCode) => {
         const win = window;
         if (win.__IS_RECORDING__) return;
@@ -38,27 +71,45 @@ void (async () => {
               document.head.append(s);
             } else {
               requestAnimationFrame(() => {
-                document.head.append(s);
+                if (document.head) {
+                  document.head.append(s);
+                }
               });
             }
           }
           loadScript(rrwebCode);
 
           win.events = [];
-          rrweb.record({
-            emit: (event) => {
-              win.events.push(event);
-              win._replLog(event);
-            },
-            plugins: [],
-            recordCanvas: true,
-            recordCrossOriginIframes: true,
-            collectFonts: true,
-          });
+          // 添加全局错误处理
+          try {
+            rrweb.record({
+              emit: (event) => {
+                win.events.push(event);
+                if (win._replLog) {
+                  win._replLog(event);
+                }
+              },
+              plugins: [],
+              recordCanvas: true,
+              recordCrossOriginIframes: true,
+              collectFonts: true,
+            });
+            console.log('rrweb recording started successfully');
+          } catch (e) {
+            console.error('Failed to start rrweb recording:', e);
+          }
         })();
       }, code);
+
+      console.log('Recording script injected successfully');
     } catch (e) {
-      console.error('failed to inject recording script:', e);
+      // 只在非上下文销毁错误时输出错误信息
+      if (!e.message.includes('Execution context was destroyed') &&
+          !e.message.includes('detached frame')) {
+        console.error('Failed to inject recording script:', e.message);
+      }
+    } finally {
+      injectionInProgress = false;
     }
   }
 
@@ -153,6 +204,8 @@ void (async () => {
         '--start-maximized',
         '--ignore-certificate-errors',
         '--no-sandbox',
+        '--disable-web-security',
+        '--disable-features=VizDisplayCompositor'
       ],
     });
     const page = await browser.newPage();
@@ -161,14 +214,35 @@ void (async () => {
       events.push(event);
     });
 
-    page.on('framenavigated', async (frame) => {
-      await injectRecording(frame);
+    // 使用去抖动的注入函数
+    let injectionTimeout;
+    const debouncedInject = (frame) => {
+      clearTimeout(injectionTimeout);
+      injectionTimeout = setTimeout(() => {
+        injectRecording(frame);
+      }, 500);
+    };
+
+    page.on('framenavigated', debouncedInject);
+
+    // 监听页面加载完成事件
+    page.on('load', () => {
+      setTimeout(() => {
+        injectRecording(page.mainFrame());
+      }, 1000);
     });
 
-    await page.goto(url, {
-      waitUntil: 'domcontentloaded',
-      timeout: 300000,
-    });
+    try {
+      await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: 300000,
+      });
+
+      // 初始注入
+      await injectRecording(page.mainFrame());
+    } catch (e) {
+      console.error('Failed to navigate to URL:', e.message);
+    }
 
     emitter.once('done', async (shouldReplay) => {
       const pages = await browser.pages();
