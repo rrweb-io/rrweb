@@ -92,14 +92,21 @@ export function initMutationObserver(
   ) => MutationObserver)(
     callbackWrapper(mutationBuffer.processMutations.bind(mutationBuffer)),
   );
-  observer.observe(rootEl, {
+  const mutationObserverInit: MutationObserverInit = {
     attributes: true,
     attributeOldValue: true,
     characterData: true,
     characterDataOldValue: true,
     childList: true,
     subtree: true,
-  });
+  };
+  // When attributeFilter is provided, delegate filtering to the browser's
+  // native MutationObserver. Unlisted attributes never fire the JS callback,
+  // eliminating CPU overhead from high-frequency style animations.
+  if (options.attributeFilter) {
+    mutationObserverInit.attributeFilter = options.attributeFilter;
+  }
+  observer.observe(rootEl, mutationObserverInit);
   return [observer, iframeCleanup];
 }
 
