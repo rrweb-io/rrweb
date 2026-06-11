@@ -22,10 +22,14 @@ record({
   plugins: [
     getRecordSequentialIdPlugin({
       key: '_sid', // default value
+      startId: 0, // next generated id will be startId + 1
+      preserveExisting: false, // keep current overwrite behavior by default
     }),
   ],
 });
 ```
+
+Use `startId` when recording resumes from a known last ID. Set `preserveExisting` to `true` if another event processor may already provide a valid positive integer at the configured key.
 
 ## Sponsors
 
