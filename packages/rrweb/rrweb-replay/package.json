@@ -1,0 +1,4 @@
+{
+  "main": "../dist/rrweb-replay.cjs",
+  "types": "../dist/rrweb-replay.d.ts"
+}

@@ -5,19 +5,21 @@ You may need to record some custom events along with the rrweb events, and let t
 After starting the recording, we can call the `record.addCustomEvent` API to add a custom event.
 
 ```js
+import { record } from '@rrweb/record';
+
 // start recording
-rrweb.record({
+record({
   emit(event) {
     ...
   }
 })
 
 // record some custom events at any time
-rrweb.record.addCustomEvent('submit-form', {
+record.addCustomEvent('submit-form', {
   name: 'Adam',
   age: 18
 })
-rrweb.record.addCustomEvent('some-error', {
+record.addCustomEvent('some-error', {
   error
 })
 ```
@@ -29,7 +31,9 @@ During the replay, we can add an event listener to custom events, or configure t
 **Listen to custom events**
 
 ```js
-const replayer = new rrweb.Replayer(events);
+import { Replayer } from '@rrweb/replay';
+
+const replayer = new Replayer(events);
 
 replayer.on('custom-event', (event) => {
   console.log(event.tag, event.payload);

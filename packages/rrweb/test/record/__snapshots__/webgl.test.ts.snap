@@ -1,6 +1,6 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`record webgl recordCanvas FPS should record snapshots 1`] = `
+exports[`record webgl > recordCanvas FPS > should record snapshots 1`] = `
 "[
   {
     \\"type\\": 4,
@@ -32,7 +32,23 @@ exports[`record webgl recordCanvas FPS should record snapshots 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [],
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"text/javascript\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 6
+                      }
+                    ],
+                    \\"id\\": 5
+                  }
+                ],
                 \\"id\\": 4
               },
               {
@@ -43,7 +59,7 @@ exports[`record webgl recordCanvas FPS should record snapshots 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 6
+                    \\"id\\": 8
                   },
                   {
                     \\"type\\": 2,
@@ -52,15 +68,15 @@ exports[`record webgl recordCanvas FPS should record snapshots 1`] = `
                       \\"id\\": \\"canvas\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 7
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 8
+                    \\"id\\": 10
                   }
                 ],
-                \\"id\\": 5
+                \\"id\\": 7
               }
             ],
             \\"id\\": 3
@@ -72,94 +88,12 @@ exports[`record webgl recordCanvas FPS should record snapshots 1`] = `
         \\"left\\": 0,
         \\"top\\": 0
       }
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 9,
-      \\"id\\": 7,
-      \\"type\\": 0,
-      \\"commands\\": [
-        {
-          \\"property\\": \\"clearRect\\",
-          \\"args\\": [
-            0,
-            0,
-            300,
-            150
-          ]
-        },
-        {
-          \\"property\\": \\"drawImage\\",
-          \\"args\\": [
-            {
-              \\"rr_type\\": \\"ImageBitmap\\",
-              \\"args\\": [
-                {
-                  \\"rr_type\\": \\"Blob\\",
-                  \\"data\\": [
-                    {
-                      \\"rr_type\\": \\"ArrayBuffer\\",
-                      \\"base64\\": \\"base64-0\\"
-                    }
-                  ],
-                  \\"type\\": \\"image/png\\"
-                }
-              ]
-            },
-            0,
-            0
-          ]
-        }
-      ]
-    }
-  },
-  {
-    \\"type\\": 3,
-    \\"data\\": {
-      \\"source\\": 9,
-      \\"id\\": 7,
-      \\"type\\": 0,
-      \\"commands\\": [
-        {
-          \\"property\\": \\"clearRect\\",
-          \\"args\\": [
-            0,
-            0,
-            300,
-            150
-          ]
-        },
-        {
-          \\"property\\": \\"drawImage\\",
-          \\"args\\": [
-            {
-              \\"rr_type\\": \\"ImageBitmap\\",
-              \\"args\\": [
-                {
-                  \\"rr_type\\": \\"Blob\\",
-                  \\"data\\": [
-                    {
-                      \\"rr_type\\": \\"ArrayBuffer\\",
-                      \\"base64\\": \\"base64-1\\"
-                    }
-                  ],
-                  \\"type\\": \\"image/png\\"
-                }
-              ]
-            },
-            0,
-            0
-          ]
-        }
-      ]
     }
   }
 ]"
 `;
 
-exports[`record webgl should batch events by RAF 1`] = `
+exports[`record webgl > should batch events by RAF 1`] = `
 "[
   {
     \\"type\\": 4,
@@ -191,7 +125,23 @@ exports[`record webgl should batch events by RAF 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [],
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"text/javascript\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 6
+                      }
+                    ],
+                    \\"id\\": 5
+                  }
+                ],
                 \\"id\\": 4
               },
               {
@@ -202,7 +152,7 @@ exports[`record webgl should batch events by RAF 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 6
+                    \\"id\\": 8
                   },
                   {
                     \\"type\\": 2,
@@ -211,15 +161,15 @@ exports[`record webgl should batch events by RAF 1`] = `
                       \\"id\\": \\"canvas\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 7
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 8
+                    \\"id\\": 10
                   }
                 ],
-                \\"id\\": 5
+                \\"id\\": 7
               }
             ],
             \\"id\\": 3
@@ -237,7 +187,7 @@ exports[`record webgl should batch events by RAF 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 9,
-      \\"id\\": 7,
+      \\"id\\": 9,
       \\"type\\": 1,
       \\"commands\\": [
         {
@@ -260,7 +210,7 @@ exports[`record webgl should batch events by RAF 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 9,
-      \\"id\\": 7,
+      \\"id\\": 9,
       \\"type\\": 1,
       \\"commands\\": [
         {
@@ -289,7 +239,7 @@ exports[`record webgl should batch events by RAF 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 9,
-      \\"id\\": 7,
+      \\"id\\": 9,
       \\"type\\": 1,
       \\"commands\\": [
         {
@@ -304,7 +254,7 @@ exports[`record webgl should batch events by RAF 1`] = `
 ]"
 `;
 
-exports[`record webgl will record changes to a canvas element 1`] = `
+exports[`record webgl > will record changes to a canvas element 1`] = `
 "[
   {
     \\"type\\": 4,
@@ -336,7 +286,23 @@ exports[`record webgl will record changes to a canvas element 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [],
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"text/javascript\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 6
+                      }
+                    ],
+                    \\"id\\": 5
+                  }
+                ],
                 \\"id\\": 4
               },
               {
@@ -347,7 +313,7 @@ exports[`record webgl will record changes to a canvas element 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 6
+                    \\"id\\": 8
                   },
                   {
                     \\"type\\": 2,
@@ -356,15 +322,15 @@ exports[`record webgl will record changes to a canvas element 1`] = `
                       \\"id\\": \\"canvas\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 7
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 8
+                    \\"id\\": 10
                   }
                 ],
-                \\"id\\": 5
+                \\"id\\": 7
               }
             ],
             \\"id\\": 3
@@ -382,7 +348,7 @@ exports[`record webgl will record changes to a canvas element 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 9,
-      \\"id\\": 7,
+      \\"id\\": 9,
       \\"type\\": 1,
       \\"commands\\": [
         {
@@ -397,7 +363,7 @@ exports[`record webgl will record changes to a canvas element 1`] = `
 ]"
 `;
 
-exports[`record webgl will record changes to a canvas element before the canvas gets added (webgl2) 1`] = `
+exports[`record webgl > will record changes to a canvas element before the canvas gets added (webgl2) 1`] = `
 "[
   {
     \\"type\\": 4,
@@ -429,7 +395,23 @@ exports[`record webgl will record changes to a canvas element before the canvas 
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [],
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"text/javascript\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 6
+                      }
+                    ],
+                    \\"id\\": 5
+                  }
+                ],
                 \\"id\\": 4
               },
               {
@@ -440,7 +422,7 @@ exports[`record webgl will record changes to a canvas element before the canvas 
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 6
+                    \\"id\\": 8
                   },
                   {
                     \\"type\\": 2,
@@ -449,15 +431,15 @@ exports[`record webgl will record changes to a canvas element before the canvas 
                       \\"id\\": \\"canvas\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 7
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 8
+                    \\"id\\": 10
                   }
                 ],
-                \\"id\\": 5
+                \\"id\\": 7
               }
             ],
             \\"id\\": 3
@@ -480,14 +462,14 @@ exports[`record webgl will record changes to a canvas element before the canvas 
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 5,
+          \\"parentId\\": 7,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"canvas\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 9
+            \\"id\\": 11
           }
         }
       ]
@@ -497,7 +479,7 @@ exports[`record webgl will record changes to a canvas element before the canvas 
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 9,
-      \\"id\\": 9,
+      \\"id\\": 11,
       \\"type\\": 2,
       \\"commands\\": [
         {
@@ -525,7 +507,7 @@ exports[`record webgl will record changes to a canvas element before the canvas 
 ]"
 `;
 
-exports[`record webgl will record changes to a canvas element before the canvas gets added 1`] = `
+exports[`record webgl > will record changes to a canvas element before the canvas gets added 1`] = `
 "[
   {
     \\"type\\": 4,
@@ -557,7 +539,23 @@ exports[`record webgl will record changes to a canvas element before the canvas 
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [],
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"text/javascript\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 6
+                      }
+                    ],
+                    \\"id\\": 5
+                  }
+                ],
                 \\"id\\": 4
               },
               {
@@ -568,7 +566,7 @@ exports[`record webgl will record changes to a canvas element before the canvas 
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 6
+                    \\"id\\": 8
                   },
                   {
                     \\"type\\": 2,
@@ -577,15 +575,15 @@ exports[`record webgl will record changes to a canvas element before the canvas 
                       \\"id\\": \\"canvas\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 7
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 8
+                    \\"id\\": 10
                   }
                 ],
-                \\"id\\": 5
+                \\"id\\": 7
               }
             ],
             \\"id\\": 3
@@ -608,14 +606,14 @@ exports[`record webgl will record changes to a canvas element before the canvas 
       \\"removes\\": [],
       \\"adds\\": [
         {
-          \\"parentId\\": 5,
+          \\"parentId\\": 7,
           \\"nextId\\": null,
           \\"node\\": {
             \\"type\\": 2,
             \\"tagName\\": \\"canvas\\",
             \\"attributes\\": {},
             \\"childNodes\\": [],
-            \\"id\\": 9
+            \\"id\\": 11
           }
         }
       ]
@@ -625,7 +623,7 @@ exports[`record webgl will record changes to a canvas element before the canvas 
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 9,
-      \\"id\\": 9,
+      \\"id\\": 11,
       \\"type\\": 1,
       \\"commands\\": [
         {
@@ -653,7 +651,7 @@ exports[`record webgl will record changes to a canvas element before the canvas 
 ]"
 `;
 
-exports[`record webgl will record changes to a webgl2 canvas element 1`] = `
+exports[`record webgl > will record changes to a webgl2 canvas element 1`] = `
 "[
   {
     \\"type\\": 4,
@@ -685,7 +683,23 @@ exports[`record webgl will record changes to a webgl2 canvas element 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [],
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"text/javascript\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 6
+                      }
+                    ],
+                    \\"id\\": 5
+                  }
+                ],
                 \\"id\\": 4
               },
               {
@@ -696,7 +710,7 @@ exports[`record webgl will record changes to a webgl2 canvas element 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 6
+                    \\"id\\": 8
                   },
                   {
                     \\"type\\": 2,
@@ -705,15 +719,15 @@ exports[`record webgl will record changes to a webgl2 canvas element 1`] = `
                       \\"id\\": \\"canvas\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 7
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 8
+                    \\"id\\": 10
                   }
                 ],
-                \\"id\\": 5
+                \\"id\\": 7
               }
             ],
             \\"id\\": 3
@@ -731,7 +745,7 @@ exports[`record webgl will record changes to a webgl2 canvas element 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 9,
-      \\"id\\": 7,
+      \\"id\\": 9,
       \\"type\\": 2,
       \\"commands\\": [
         {
@@ -746,7 +760,7 @@ exports[`record webgl will record changes to a webgl2 canvas element 1`] = `
 ]"
 `;
 
-exports[`record webgl will record webgl variables 1`] = `
+exports[`record webgl > will record webgl variables 1`] = `
 "[
   {
     \\"type\\": 4,
@@ -778,7 +792,23 @@ exports[`record webgl will record webgl variables 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [],
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"text/javascript\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 6
+                      }
+                    ],
+                    \\"id\\": 5
+                  }
+                ],
                 \\"id\\": 4
               },
               {
@@ -789,7 +819,7 @@ exports[`record webgl will record webgl variables 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 6
+                    \\"id\\": 8
                   },
                   {
                     \\"type\\": 2,
@@ -798,15 +828,15 @@ exports[`record webgl will record webgl variables 1`] = `
                       \\"id\\": \\"canvas\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 7
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 8
+                    \\"id\\": 10
                   }
                 ],
-                \\"id\\": 5
+                \\"id\\": 7
               }
             ],
             \\"id\\": 3
@@ -824,7 +854,7 @@ exports[`record webgl will record webgl variables 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 9,
-      \\"id\\": 7,
+      \\"id\\": 9,
       \\"type\\": 1,
       \\"commands\\": [
         {
@@ -859,7 +889,7 @@ exports[`record webgl will record webgl variables 1`] = `
 ]"
 `;
 
-exports[`record webgl will record webgl variables in reverse order 1`] = `
+exports[`record webgl > will record webgl variables in reverse order 1`] = `
 "[
   {
     \\"type\\": 4,
@@ -891,7 +921,23 @@ exports[`record webgl will record webgl variables in reverse order 1`] = `
                 \\"type\\": 2,
                 \\"tagName\\": \\"head\\",
                 \\"attributes\\": {},
-                \\"childNodes\\": [],
+                \\"childNodes\\": [
+                  {
+                    \\"type\\": 2,
+                    \\"tagName\\": \\"script\\",
+                    \\"attributes\\": {
+                      \\"type\\": \\"text/javascript\\"
+                    },
+                    \\"childNodes\\": [
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
+                        \\"id\\": 6
+                      }
+                    ],
+                    \\"id\\": 5
+                  }
+                ],
                 \\"id\\": 4
               },
               {
@@ -902,7 +948,7 @@ exports[`record webgl will record webgl variables in reverse order 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n          \\",
-                    \\"id\\": 6
+                    \\"id\\": 8
                   },
                   {
                     \\"type\\": 2,
@@ -911,15 +957,15 @@ exports[`record webgl will record webgl variables in reverse order 1`] = `
                       \\"id\\": \\"canvas\\"
                     },
                     \\"childNodes\\": [],
-                    \\"id\\": 7
+                    \\"id\\": 9
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n        \\\\n      \\\\n    \\",
-                    \\"id\\": 8
+                    \\"id\\": 10
                   }
                 ],
-                \\"id\\": 5
+                \\"id\\": 7
               }
             ],
             \\"id\\": 3
@@ -937,7 +983,7 @@ exports[`record webgl will record webgl variables in reverse order 1`] = `
     \\"type\\": 3,
     \\"data\\": {
       \\"source\\": 9,
-      \\"id\\": 7,
+      \\"id\\": 9,
       \\"type\\": 1,
       \\"commands\\": [
         {

@@ -17,45 +17,28 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const emitter = new EventEmitter();
-const code = fs.readFileSync(path.join(__dirname, '../dist/rrweb.js'), 'utf8');
-const pluginCode = fs.readFileSync(
-  path.join(__dirname, '../dist/plugins/canvas-webrtc-record.js'),
-  'utf8',
-);
 
-async function injectRecording(frame) {
-  await frame.evaluate(
-    (rrwebCode, pluginCode) => {
+async function injectRecording(frame, serverURL) {
+  try {
+    await frame.addScriptTag({ url: `${serverURL}/rrweb.umd.cjs` });
+    await frame.addScriptTag({
+      url: `${serverURL}/plugins/rrweb-plugin-canvas-webrtc-record.js`,
+    });
+    await frame.evaluate(() => {
       const win = window;
       if (win.__IS_RECORDING__) return;
       win.__IS_RECORDING__ = true;
 
       (async () => {
-        function loadScript(code) {
-          const s = document.createElement('script');
-          s.type = 'text/javascript';
-          s.innerHTML = code;
-          if (document.head) {
-            document.head.append(s);
-          } else {
-            requestAnimationFrame(() => {
-              document.head.append(s);
-            });
-          }
-        }
-        loadScript(rrwebCode);
-        loadScript(pluginCode);
-
         win.events = [];
         window.record = win.rrweb.record;
-        window.plugin = new rrwebCanvasWebRTCRecord.RRWebPluginCanvasWebRTCRecord(
-          {
+        window.plugin =
+          new rrwebPluginCanvasWebRTCRecord.RRWebPluginCanvasWebRTCRecord({
             signalSendCallback: (msg) => {
               // [record#callback] provides canvas id, stream, and webrtc sdpOffer signal & connect message
               _signal(msg);
             },
-          },
-        );
+          });
 
         window.record({
           emit: (event) => {
@@ -69,13 +52,14 @@ async function injectRecording(frame) {
           inlineImages: true,
         });
       })();
-    },
-    code,
-    pluginCode,
-  );
+    });
+  } catch (e) {
+    console.error('failed to inject script, error:', e);
+  }
 }
 
 async function startReplay(page, serverURL, recordedPage) {
+  page.on('console', (msg) => console.log('REPLAY PAGE LOG:', msg.text()));
   await recordedPage.exposeFunction('_signal', async (signal) => {
     await page.evaluate((signal) => {
       // [replay#signalReceive] setups up peer and starts creating counter offer
@@ -96,22 +80,23 @@ async function startReplay(page, serverURL, recordedPage) {
     }, id);
   });
 
-  await page.addScriptTag({ url: `${serverURL}/rrweb.js` });
+  await page.addScriptTag({ url: `${serverURL}/rrweb.umd.cjs` });
   await page.addScriptTag({
-    url: `${serverURL}/plugins/canvas-webrtc-replay.js`,
+    url: `${serverURL}/plugins/rrweb-plugin-canvas-webrtc-replay.js`,
   });
 
   return page.evaluate(() => {
-    window.plugin = new rrwebCanvasWebRTCReplay.RRWebPluginCanvasWebRTCReplay({
-      canvasFoundCallback(canvas, context) {
-        console.log('canvas', canvas, context);
-        // [replay#onBuild] gets id of canvas element and sends to recorded page
-        _canvas(context.id);
-      },
-      signalSendCallback(data) {
-        _signal(JSON.stringify(data));
-      },
-    });
+    window.plugin =
+      new rrwebPluginCanvasWebRTCReplay.RRWebPluginCanvasWebRTCReplay({
+        canvasFoundCallback(canvas, context) {
+          console.log('canvas', canvas, context);
+          // [replay#onBuild] gets id of canvas element and sends to recorded page
+          _canvas(context.id);
+        },
+        signalSendCallback(data) {
+          _signal(JSON.stringify(data));
+        },
+      });
 
     window.replayer = new rrweb.Replayer([], {
       UNSAFE_replayCanvas: true,
@@ -193,7 +178,7 @@ void (async () => {
     await replayerPage.goto('about:blank');
 
     await replayerPage.addStyleTag({
-      path: path.resolve(__dirname, '../dist/rrweb.css'),
+      path: path.resolve(__dirname, '../dist/style.css'),
     });
 
     const recordingBrowser = await puppeteer.launch({

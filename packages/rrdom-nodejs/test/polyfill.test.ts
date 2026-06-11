@@ -1,5 +1,6 @@
+import { describe, it, expect, vi } from 'vitest';
 import { compare } from 'compare-versions';
-import { RRDocument, RRNode } from '../src/document-nodejs';
+import { RRDocument } from '../src/document-nodejs';
 import {
   polyfillPerformance,
   polyfillRAF,
@@ -8,6 +9,7 @@ import {
   polyfillDocument,
 } from '../src/polyfill';
 import { performance as nativePerformance } from 'perf_hooks';
+import { BaseRRNode } from 'rrdom';
 
 describe('polyfill for nodejs', () => {
   it('should polyfill performance api', () => {
@@ -26,7 +28,7 @@ describe('polyfill for nodejs', () => {
       polyfillPerformance();
       expect(global.performance).toBe(originalPerformance);
     }
-    const fakePerformance = jest.fn() as unknown as Performance;
+    const fakePerformance = vi.fn() as unknown as Performance;
     global.performance = fakePerformance;
     polyfillPerformance();
     expect(global.performance).toEqual(fakePerformance);
@@ -41,7 +43,7 @@ describe('polyfill for nodejs', () => {
     expect(requestAnimationFrame).toBeDefined();
     expect(cancelAnimationFrame).toBeDefined();
 
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     const AnimationTime = 1_000; // target animation time(unit: ms)
     const startTime = Date.now();
     let frameCount = 0;
@@ -57,7 +59,7 @@ describe('polyfill for nodejs', () => {
     };
     requestAnimationFrame(rafCallback1);
     // Fast-forward until all timers have been executed
-    jest.runAllTimers();
+    vi.runAllTimers();
 
     let rafHandle;
     const rafCallback2 = () => {
@@ -67,16 +69,16 @@ describe('polyfill for nodejs', () => {
 
     // If this function doesn't work, recursive function will never end.
     cancelAnimationFrame(rafHandle);
-    jest.runAllTimers();
-    jest.useRealTimers();
+    vi.runAllTimers();
+    vi.useRealTimers();
   });
 
   it('should not polyfill requestAnimationFrame if it already exists', () => {
     const fakeRequestAnimationFrame =
-      jest.fn() as unknown as typeof global.requestAnimationFrame;
+      vi.fn() as unknown as typeof global.requestAnimationFrame;
     global.requestAnimationFrame = fakeRequestAnimationFrame;
     const fakeCancelAnimationFrame =
-      jest.fn() as unknown as typeof global.cancelAnimationFrame;
+      vi.fn() as unknown as typeof global.cancelAnimationFrame;
     global.cancelAnimationFrame = fakeCancelAnimationFrame;
     polyfillRAF();
     expect(global.requestAnimationFrame).toBe(fakeRequestAnimationFrame);
@@ -93,7 +95,7 @@ describe('polyfill for nodejs', () => {
   });
 
   it('should not polyfill Event type if it already exists', () => {
-    const fakeEvent = jest.fn() as unknown as typeof global.Event;
+    const fakeEvent = vi.fn() as unknown as typeof global.Event;
     global.Event = fakeEvent;
     polyfillEvent();
     expect(global.Event).toBe(fakeEvent);
@@ -104,11 +106,11 @@ describe('polyfill for nodejs', () => {
     polyfillNode();
     expect(global.Node).toBeDefined();
     expect(Node).toBeDefined();
-    expect(Node).toEqual(RRNode);
+    expect(Node).toEqual(BaseRRNode);
   });
 
   it('should not polyfill Node type if it already exists', () => {
-    const fakeNode = jest.fn() as unknown as typeof global.Node;
+    const fakeNode = vi.fn() as unknown as typeof global.Node;
     global.Node = fakeNode;
     polyfillNode();
     expect(global.Node).toBe(fakeNode);
@@ -123,7 +125,7 @@ describe('polyfill for nodejs', () => {
   });
 
   it('should not polyfill document object if it already exists', () => {
-    const fakeDocument = jest.fn() as unknown as typeof global.document;
+    const fakeDocument = vi.fn() as unknown as typeof global.document;
     global.document = fakeDocument;
     polyfillDocument();
     expect(global.document).toBe(fakeDocument);

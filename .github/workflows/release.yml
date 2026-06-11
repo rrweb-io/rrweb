@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - next
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -11,6 +12,10 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -22,6 +27,11 @@ jobs:
 
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
+
+      - name: Limit Changesets GitHub changelog batch size
+        run: node .github/scripts/patch-changesets-github-info.cjs
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
@@ -31,9 +41,29 @@ jobs:
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # - name: Send a Slack notification if a publish happens
-      #   if: steps.changesets.outputs.published == 'true'
-      #   # You can do something when a publish happens.
-      #   run: my-slack-bot send-notification --message "A new version of ${GITHUB_REPOSITORY} was published!"
+      - name: Build Chrome Extension
+        if: steps.changesets.outputs.published == 'true'
+        run: NODE_OPTIONS='--max-old-space-size=4096' DISABLE_WORKER_INLINING=true yarn turbo run prepublish --filter=@rrweb/web-extension
+
+      - name: Publish Chrome Extension
+        uses: mnao305/chrome-extension-upload@v5.0.0
+        if: steps.changesets.outputs.published == 'true' && github.ref == 'refs/heads/master'
+        with:
+          extension-id: 'pdaldeopoccdhlkabbkcjmecmmoninhe'
+          file-path: ./packages/web-extension/dist/chrome.zip
+          client-id: ${{ secrets.CWS_CLIENT_ID }}
+          client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
+          publish: true
+
+      - name: Publish Next Chrome Extension
+        uses: mnao305/chrome-extension-upload@v5.0.0
+        if: steps.changesets.outputs.published == 'true' && github.ref == 'refs/heads/next'
+        with:
+          extension-id: ${{ secrets.NEXT_CWS_EXTENSION_ID }}
+          file-path: ./packages/web-extension/dist/chrome.zip
+          client-id: ${{ secrets.NEXT_CWS_CLIENT_ID }}
+          client-secret: ${{ secrets.NEXT_CWS_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.NEXT_CWS_REFRESH_TOKEN }}
+          publish: true

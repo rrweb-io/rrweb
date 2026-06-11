@@ -19,6 +19,18 @@
       "path": "packages/types"
     },
     {
+      "path": "packages/plugins/rrweb-plugin-console-replay"
+    },
+    {
+      "path": "packages/plugins/rrweb-plugin-console-record"
+    },
+    {
+      "path": "packages/plugins/rrweb-plugin-network-record"
+    },
+    {
+      "path": "packages/plugins/rrweb-plugin-network-replay"
+    },
+    {
       "path": "packages/rrvideo"
     },
     {

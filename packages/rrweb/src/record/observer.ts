@@ -1,5 +1,5 @@
 import {
-  MaskInputOptions,
+  type MaskInputOptions,
   maskInputValue,
   Mirror,
   getInputType,
@@ -15,18 +15,22 @@ import {
   getWindowWidth,
   isBlocked,
   legacy_isTouchEvent,
-  patch,
   StyleSheetMirror,
   nowTimestamp,
 } from '../utils';
+import { patch } from '@rrweb/utils';
 import type { observerParam, MutationBufferParam } from '../types';
 import {
+  IncrementalSource,
+  MouseInteractions,
+  PointerTypes,
+  MediaInteractions,
+} from '@rrweb/types';
+import type {
   mutationCallBack,
   mousemoveCallBack,
   mousePosition,
   mouseInteractionCallBack,
-  MouseInteractions,
-  PointerTypes,
   listenerHandler,
   scrollCallback,
   styleSheetRuleCallback,
@@ -34,11 +38,9 @@ import {
   inputValue,
   inputCallback,
   hookResetter,
-  IncrementalSource,
   hooksParam,
   Arguments,
   mediaInteractionCallback,
-  MediaInteractions,
   canvasMutationCallback,
   fontCallback,
   fontParam,
@@ -46,18 +48,11 @@ import {
   IWindow,
   SelectionRange,
   selectionCallback,
+  customElementCallback,
 } from '@rrweb/types';
 import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
-
-type WindowWithStoredMutationObserver = IWindow & {
-  __rrMutationObserver?: MutationObserver;
-};
-type WindowWithAngularZone = IWindow & {
-  Zone?: {
-    __symbol__?: (key: string) => string;
-  };
-};
+import dom, { mutationObserverCtor } from '@rrweb/utils';
 
 export const mutationBuffers: MutationBuffer[] = [];
 
@@ -86,36 +81,13 @@ function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
 export function initMutationObserver(
   options: MutationBufferParam,
   rootEl: Node,
-): MutationObserver {
+): [MutationObserver, () => void] {
   const mutationBuffer = new MutationBuffer();
   mutationBuffers.push(mutationBuffer);
   // see mutation.ts for details
   mutationBuffer.init(options);
-  let mutationObserverCtor =
-    window.MutationObserver ||
-    /**
-     * Some websites may disable MutationObserver by removing it from the window object.
-     * If someone is using rrweb to build a browser extention or things like it, they
-     * could not change the website's code but can have an opportunity to inject some
-     * code before the website executing its JS logic.
-     * Then they can do this to store the native MutationObserver:
-     * window.__rrMutationObserver = MutationObserver
-     */
-    (window as WindowWithStoredMutationObserver).__rrMutationObserver;
-  const angularZoneSymbol = (
-    window as WindowWithAngularZone
-  )?.Zone?.__symbol__?.('MutationObserver');
-  if (
-    angularZoneSymbol &&
-    (window as unknown as Record<string, typeof MutationObserver>)[
-      angularZoneSymbol
-    ]
-  ) {
-    mutationObserverCtor = (
-      window as unknown as Record<string, typeof MutationObserver>
-    )[angularZoneSymbol];
-  }
-  const observer = new (mutationObserverCtor as new (
+  const [ObserverCtor, iframeCleanup] = mutationObserverCtor();
+  const observer = new (ObserverCtor as new (
     callback: MutationCallback,
   ) => MutationObserver)(
     callbackWrapper(mutationBuffer.processMutations.bind(mutationBuffer)),
@@ -128,7 +100,7 @@ export function initMutationObserver(
     childList: true,
     subtree: true,
   });
-  return observer;
+  return [observer, iframeCleanup];
 }
 
 function initMoveObserver({
@@ -405,15 +377,6 @@ function initViewportResizeObserver(
   return on('resize', updateDimension, win);
 }
 
-function wrapEventWithUserTriggeredFlag(
-  v: inputValue,
-  enable: boolean,
-): inputValue {
-  const value = { ...v };
-  if (!enable) delete value.userTriggered;
-  return value;
-}
-
 export const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
 const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
 function initInputObserver({
@@ -439,7 +402,7 @@ function initInputObserver({
      * We can treat this change as a value change of the select element the current target belongs to.
      */
     if (target && tagName === 'OPTION') {
-      target = target.parentElement;
+      target = dom.parentElement(target);
     }
     if (
       !target ||
@@ -477,10 +440,9 @@ function initInputObserver({
     }
     cbWithDedup(
       target,
-      callbackWrapper(wrapEventWithUserTriggeredFlag)(
-        { text, isChecked, userTriggered },
-        userTriggeredOnInput,
-      ),
+      userTriggeredOnInput
+        ? { text, isChecked, userTriggered }
+        : { text, isChecked },
     );
     // if a radio was checked
     // the other radios with the same name attribute will be unchecked.
@@ -490,16 +452,12 @@ function initInputObserver({
         .querySelectorAll(`input[type="radio"][name="${name}"]`)
         .forEach((el) => {
           if (el !== target) {
+            const text = (el as HTMLInputElement).value;
             cbWithDedup(
               el,
-              callbackWrapper(wrapEventWithUserTriggeredFlag)(
-                {
-                  text: (el as HTMLInputElement).value,
-                  isChecked: !isChecked,
-                  userTriggered: false,
-                },
-                userTriggeredOnInput,
-              ),
+              userTriggeredOnInput
+                ? { text, isChecked: !isChecked, userTriggered: false }
+                : { text, isChecked: !isChecked },
             );
           }
         });
@@ -598,6 +556,7 @@ function getNestedCSSRulePositions(rule: CSSRule): number[] {
       );
       const index = rules.indexOf(childRule);
       pos.unshift(index);
+      return recurse(childRule.parentRule, pos);
     } else if (childRule.parentStyleSheet) {
       const rules = Array.from(childRule.parentStyleSheet.cssRules);
       const index = rules.indexOf(childRule);
@@ -670,6 +629,17 @@ function initStyleSheetObserver(
     ),
   });
 
+  // Support for deprecated addRule method
+  win.CSSStyleSheet.prototype.addRule = function (
+    this: CSSStyleSheet,
+    selector: string,
+    styleBlock: string,
+    index: number = this.cssRules.length,
+  ) {
+    const rule = `${selector} { ${styleBlock} }`;
+    return win.CSSStyleSheet.prototype.insertRule.apply(this, [rule, index]);
+  };
+
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const deleteRule = win.CSSStyleSheet.prototype.deleteRule;
   win.CSSStyleSheet.prototype.deleteRule = new Proxy(deleteRule, {
@@ -698,6 +668,14 @@ function initStyleSheetObserver(
       },
     ),
   });
+
+  // Support for deprecated removeRule method
+  win.CSSStyleSheet.prototype.removeRule = function (
+    this: CSSStyleSheet,
+    index: number,
+  ) {
+    return win.CSSStyleSheet.prototype.deleteRule.apply(this, [index]);
+  };
 
   let replace: (text: string) => Promise<CSSStyleSheet>;
 
@@ -894,16 +872,18 @@ export function initAdoptedStyleSheetObserver(
   // host of adoptedStyleSheets is outermost document or IFrame's document
   if (host.nodeName === '#document') hostId = mirror.getId(host);
   // The host is a ShadowRoot.
-  else hostId = mirror.getId((host as ShadowRoot).host);
+  else hostId = mirror.getId(dom.host(host as ShadowRoot));
 
   const patchTarget =
     host.nodeName === '#document'
       ? (host as Document).defaultView?.Document
       : host.ownerDocument?.defaultView?.ShadowRoot;
-  const originalPropertyDescriptor = Object.getOwnPropertyDescriptor(
-    patchTarget?.prototype,
-    'adoptedStyleSheets',
-  );
+  const originalPropertyDescriptor = patchTarget?.prototype
+    ? Object.getOwnPropertyDescriptor(
+        patchTarget?.prototype,
+        'adoptedStyleSheets',
+      )
+    : undefined;
   if (
     hostId === null ||
     hostId === -1 ||
@@ -1053,7 +1033,7 @@ function initMediaInteractionObserver({
         ) {
           return;
         }
-        const { currentTime, volume, muted, playbackRate } =
+        const { currentTime, volume, muted, playbackRate, loop } =
           target as HTMLMediaElement;
         mediaInteractionCb({
           type,
@@ -1062,6 +1042,7 @@ function initMediaInteractionObserver({
           volume,
           muted,
           playbackRate,
+          loop,
         });
       }),
       sampling.media || 500,
@@ -1181,6 +1162,44 @@ function initSelectionObserver(param: observerParam): listenerHandler {
   return on('selectionchange', updateSelection);
 }
 
+function initCustomElementObserver({
+  doc,
+  customElementCb,
+}: observerParam): listenerHandler {
+  const win = doc.defaultView as IWindow;
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  if (!win || !win.customElements) return () => {};
+  const restoreHandler = patch(
+    win.customElements,
+    'define',
+    function (
+      original: (
+        name: string,
+        constructor: CustomElementConstructor,
+        options?: ElementDefinitionOptions,
+      ) => void,
+    ) {
+      return function (
+        name: string,
+        constructor: CustomElementConstructor,
+        options?: ElementDefinitionOptions,
+      ) {
+        try {
+          customElementCb({
+            define: {
+              name,
+            },
+          });
+        } catch (e) {
+          console.warn(`Custom element callback failed for ${name}`);
+        }
+        return original.apply(this, [name, constructor, options]);
+      };
+    },
+  );
+  return restoreHandler;
+}
+
 function mergeHooks(o: observerParam, hooks: hooksParam) {
   const {
     mutationCb,
@@ -1195,6 +1214,7 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     canvasMutationCb,
     fontCb,
     selectionCb,
+    customElementCb,
   } = o;
   o.mutationCb = (...p: Arguments<mutationCallBack>) => {
     if (hooks.mutation) {
@@ -1268,6 +1288,12 @@ function mergeHooks(o: observerParam, hooks: hooksParam) {
     }
     selectionCb(...p);
   };
+  o.customElementCb = (...c: Arguments<customElementCallback>) => {
+    if (hooks.customElement) {
+      hooks.customElement(...c);
+    }
+    customElementCb(...c);
+  };
 }
 
 export function initObservers(
@@ -1282,7 +1308,12 @@ export function initObservers(
   }
 
   mergeHooks(o, hooks);
-  const mutationObserver = initMutationObserver(o, o.doc);
+  let mutationObserver: MutationObserver | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  let cleanupMutationIframe: () => void = () => {};
+  if (o.recordDOM) {
+    [mutationObserver, cleanupMutationIframe] = initMutationObserver(o, o.doc);
+  }
   const mousemoveHandler = initMoveObserver(o);
   const mouseInteractionHandler = initMouseInteractionObserver(o);
   const scrollHandler = initScrollObserver(o);
@@ -1292,17 +1323,26 @@ export function initObservers(
   const inputHandler = initInputObserver(o);
   const mediaInteractionHandler = initMediaInteractionObserver(o);
 
-  const styleSheetObserver = initStyleSheetObserver(o, { win: currentWindow });
-  const adoptedStyleSheetObserver = initAdoptedStyleSheetObserver(o, o.doc);
-  const styleDeclarationObserver = initStyleDeclarationObserver(o, {
-    win: currentWindow,
-  });
-  const fontObserver = o.collectFonts
-    ? initFontObserver(o)
-    : () => {
-        //
-      };
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  let styleSheetObserver = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  let adoptedStyleSheetObserver = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  let styleDeclarationObserver = () => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  let fontObserver = () => {};
+  if (o.recordDOM) {
+    styleSheetObserver = initStyleSheetObserver(o, { win: currentWindow });
+    adoptedStyleSheetObserver = initAdoptedStyleSheetObserver(o, o.doc);
+    styleDeclarationObserver = initStyleDeclarationObserver(o, {
+      win: currentWindow,
+    });
+    if (o.collectFonts) {
+      fontObserver = initFontObserver(o);
+    }
+  }
   const selectionObserver = initSelectionObserver(o);
+  const customElementObserver = initCustomElementObserver(o);
 
   // plugins
   const pluginHandlers: listenerHandler[] = [];
@@ -1314,7 +1354,8 @@ export function initObservers(
 
   return callbackWrapper(() => {
     mutationBuffers.forEach((b) => b.reset());
-    mutationObserver.disconnect();
+    mutationObserver?.disconnect();
+    cleanupMutationIframe();
     mousemoveHandler();
     mouseInteractionHandler();
     scrollHandler();
@@ -1326,6 +1367,7 @@ export function initObservers(
     styleDeclarationObserver();
     fontObserver();
     selectionObserver();
+    customElementObserver();
     pluginHandlers.forEach((h) => h());
   });
 }

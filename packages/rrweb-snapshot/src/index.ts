@@ -2,6 +2,7 @@ import snapshot, {
   serializeNodeWithId,
   transformAttribute,
   ignoreAttribute,
+  slimDOMDefaults,
   visitSnapshot,
   cleanupSnapshot,
   needMaskingText,
@@ -11,21 +12,28 @@ import snapshot, {
 } from './snapshot';
 import rebuild, {
   buildNodeWithSN,
-  addHoverClass,
+  adaptCssForReplay,
   createCache,
+  createSandboxedIframe,
+  rebuildIntoSandboxedIframe,
 } from './rebuild';
 export * from './types';
+// Legacy broad export kept for compatibility. New internal imports should
+// prefer snapshot-utils.ts / rebuild-utils.ts domain entrypoints.
 export * from './utils';
 
 export {
   snapshot,
   serializeNodeWithId,
   rebuild,
+  createSandboxedIframe,
+  rebuildIntoSandboxedIframe,
   buildNodeWithSN,
-  addHoverClass,
+  adaptCssForReplay,
   createCache,
   transformAttribute,
   ignoreAttribute,
+  slimDOMDefaults,
   visitSnapshot,
   cleanupSnapshot,
   needMaskingText,

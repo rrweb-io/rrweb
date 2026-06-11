@@ -20,6 +20,7 @@
       </label>
       <label for="textarea">
         <textarea name="" id="" cols="30" rows="10"></textarea>
+        <textarea name="" id="" cols="30" rows="10">-1</textarea>
       </label>
       <label for="select">
         <select name="" id="">
@@ -36,7 +37,8 @@
     document.querySelector('input[type="text"]').value = '1';
     document.querySelector('input[type="radio"]').checked = true;
     document.querySelector('input[type="checkbox"]').checked = true;
-    document.querySelector('textarea').value = '1234';
+    document.querySelector('textarea:empty').value = '1234';
+    document.querySelector('textarea:not(:empty)').value = '1234';
     document.querySelector('select').value = '2';
   </script>
 </html>

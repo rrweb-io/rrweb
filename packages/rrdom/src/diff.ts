@@ -1,11 +1,9 @@
-import {
-  NodeType as RRNodeType,
-  Mirror as NodeMirror,
-  elementNode,
-} from 'rrweb-snapshot';
+import { type Mirror as NodeMirror } from 'rrweb-snapshot';
+import { NodeType as RRNodeType } from '@rrweb/types';
 import type {
   canvasMutationData,
   canvasEventWithTime,
+  elementNode,
   inputData,
   scrollData,
   styleDeclarationData,
@@ -21,6 +19,7 @@ import type {
 } from './document';
 import type {
   RRCanvasElement,
+  RRDialogElement,
   RRElement,
   RRIFrameElement,
   RRMediaElement,
@@ -118,7 +117,7 @@ export function diff(
 
   diffChildren(oldTree, newTree, replayer, rrnodeMirror);
 
-  diffAfterUpdatingChildren(oldTree, newTree, replayer, rrnodeMirror);
+  diffAfterUpdatingChildren(oldTree, newTree, replayer);
 }
 
 /**
@@ -194,6 +193,15 @@ function diffBeforeUpdatingChildren(
           rrnodeMirror,
         );
       }
+      /**
+       * Attributes and styles of the old element need to be updated before updating its children because of an edge case:
+       * `applyScroll` may fail in `diffAfterUpdatingChildren` when the height of a node when `applyScroll` is called may be incorrect if
+       * 1. its parent node contains styles that affects the targeted node's height
+       * 2. the CSS selector is targeting an attribute of the parent node
+       * by running `diffProps` on the parent node before `diffChildren` is called,
+       * we can ensure that the correct attributes (and therefore styles) have applied to parent nodes
+       */
+      diffProps(oldElement, newRRElement, rrnodeMirror);
       break;
     }
   }
@@ -207,7 +215,6 @@ function diffAfterUpdatingChildren(
   oldTree: Node,
   newTree: IRRNode,
   replayer: ReplayerHandler,
-  rrnodeMirror: Mirror,
 ) {
   switch (newTree.RRNodeType) {
     case RRNodeType.Document: {
@@ -218,7 +225,6 @@ function diffAfterUpdatingChildren(
     case RRNodeType.Element: {
       const oldElement = oldTree as HTMLElement;
       const newRRElement = newTree as RRElement;
-      diffProps(oldElement, newRRElement, rrnodeMirror);
       newRRElement.scrollData &&
         replayer.applyScroll(newRRElement.scrollData, true);
       /**
@@ -230,7 +236,7 @@ function diffAfterUpdatingChildren(
         case 'AUDIO':
         case 'VIDEO': {
           const oldMediaElement = oldTree as HTMLMediaElement;
-          const newMediaRRElement = newRRElement as RRMediaElement;
+          const newMediaRRElement = newRRElement as unknown as RRMediaElement;
           if (newMediaRRElement.paused !== undefined)
             newMediaRRElement.paused
               ? void oldMediaElement.pause()
@@ -243,6 +249,8 @@ function diffAfterUpdatingChildren(
             oldMediaElement.currentTime = newMediaRRElement.currentTime;
           if (newMediaRRElement.playbackRate !== undefined)
             oldMediaElement.playbackRate = newMediaRRElement.playbackRate;
+          if (newMediaRRElement.loop !== undefined)
+            oldMediaElement.loop = newMediaRRElement.loop;
           break;
         }
         case 'CANVAS': {
@@ -274,6 +282,29 @@ function diffAfterUpdatingChildren(
             (newTree as RRStyleElement).rules.forEach((data) =>
               replayer.applyStyleSheetMutation(data, styleSheet),
             );
+          break;
+        }
+        case 'DIALOG': {
+          const dialog = oldElement as HTMLDialogElement;
+          const rrDialog = newRRElement as unknown as RRDialogElement;
+          const wasOpen = dialog.open;
+          const wasModal = dialog.matches('dialog:modal');
+          const shouldBeOpen = rrDialog.open;
+          const shouldBeModal = rrDialog.isModal;
+
+          const modalChanged = wasModal !== shouldBeModal;
+          const openChanged = wasOpen !== shouldBeOpen;
+
+          if (modalChanged || (wasOpen && openChanged)) dialog.close();
+          if (shouldBeOpen && (openChanged || modalChanged)) {
+            try {
+              if (shouldBeModal) dialog.showModal();
+              else dialog.show();
+            } catch (e) {
+              console.warn(e);
+            }
+          }
+
           break;
         }
       }
@@ -321,12 +352,20 @@ function diffProps(
         }
       };
     } else if (newTree.tagName === 'IFRAME' && name === 'srcdoc') continue;
-    else oldTree.setAttribute(name, newValue);
+    else {
+      try {
+        oldTree.setAttribute(name, newValue);
+      } catch (err) {
+        // We want to continue diffing so we quietly catch
+        // this exception. Otherwise, this can throw and bubble up to
+        // the `ReplayerEvents.Flush` listener and break rendering
+        console.warn(err);
+      }
+    }
   }
 
   for (const { name } of Array.from(oldAttributes))
     if (!(name in newAttributes)) oldTree.removeAttribute(name);
-
   newTree.scrollLeft && (oldTree.scrollLeft = newTree.scrollLeft);
   newTree.scrollTop && (oldTree.scrollTop = newTree.scrollTop);
 }

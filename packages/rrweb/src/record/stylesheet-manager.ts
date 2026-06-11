@@ -1,6 +1,7 @@
-import type { elementNode, serializedNodeWithId } from 'rrweb-snapshot';
 import { stringifyRule } from 'rrweb-snapshot';
 import type {
+  elementNode,
+  serializedNodeWithId,
   adoptedStyleSheetCallback,
   adoptedStyleSheetParam,
   attributeMutation,
@@ -50,7 +51,10 @@ export class StylesheetManager {
     this.trackStylesheetInLinkElement(linkEl);
   }
 
-  public adoptStyleSheets(sheets: CSSStyleSheet[], hostId: number) {
+  public adoptStyleSheets(
+    sheets: CSSStyleSheet[] | readonly CSSStyleSheet[],
+    hostId: number,
+  ) {
     if (sheets.length === 0) return;
     const adoptedStyleSheetData: adoptedStyleSheetParam = {
       id: hostId,
@@ -64,7 +68,7 @@ export class StylesheetManager {
         styles.push({
           styleId,
           rules: Array.from(sheet.rules || CSSRule, (r, index) => ({
-            rule: stringifyRule(r),
+            rule: stringifyRule(r, sheet.href),
             index,
           })),
         });
@@ -81,7 +85,7 @@ export class StylesheetManager {
   }
 
   // TODO: take snapshot on stylesheet reload by applying event listener
-  private trackStylesheetInLinkElement(linkEl: HTMLLinkElement) {
+  private trackStylesheetInLinkElement(_linkEl: HTMLLinkElement) {
     // linkEl.addEventListener('load', () => {
     //   // re-loaded, maybe take another snapshot?
     // });

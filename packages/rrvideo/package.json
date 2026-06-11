@@ -1,15 +1,20 @@
 {
   "name": "rrvideo",
-  "version": "2.0.0-alpha.11",
+  "version": "2.0.1",
   "description": "transform rrweb session into video",
   "main": "build/index.js",
   "bin": {
     "rrvideo": "build/cli.js"
   },
   "files": [
-    "build"
+    "build",
+    "package.json"
   ],
   "types": "build/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb.git"
+  },
   "scripts": {
     "install": "playwright install",
     "build": "tsc",
@@ -17,7 +22,7 @@
     "check-types": "tsc -noEmit",
     "prepublish": "yarn build"
   },
-  "author": "yanzhen@smartx.com",
+  "author": "rrweb Core Team <maintainers@rrweb.com>",
   "license": "MIT",
   "devDependencies": {
     "@types/fs-extra": "11.0.1",
@@ -26,13 +31,13 @@
     "@types/node": "^18.15.11",
     "jest": "^27.5.1",
     "ts-jest": "^27.1.3",
-    "@rrweb/types": "^2.0.0-alpha.11"
+    "@rrweb/types": "^2.0.1"
   },
   "dependencies": {
     "@open-tech-world/cli-progress-bar": "^2.0.2",
     "fs-extra": "^11.1.1",
     "minimist": "^1.2.5",
-    "playwright": "^1.32.1",
-    "rrweb-player": "^2.0.0-alpha.11"
+    "playwright": "^1.60.0",
+    "rrweb-player": "^2.0.1"
   }
 }

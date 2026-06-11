@@ -26,7 +26,9 @@
 **示例 1**
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+
+record({
   emit(event) {},
   sampling: {
     // 不录制鼠标移动事件
@@ -46,7 +48,9 @@ rrweb.record({
 **示例 2**
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+
+record({
   emit(event) {},
   sampling: {
     // 定义不录制的鼠标交互事件类型，可以细粒度的开启或关闭对应交互录制
@@ -69,20 +73,25 @@ rrweb.record({
 
 ### 基于 packFn 的单数据压缩
 
-rrweb 内包含了基于 fflate 的简单压缩 rrweb.pack，在录制时可以作为 `packFn` 传入。
+rrweb 提供了一个基于 fflate 的简单压缩函数，在 [@rrweb/packer](../../packages/packer/) 中可以作为 `packFn` 传入使用。
 
 ```js
-rrweb.record({
+import { pack } from '@rrweb/packer';
+
+record({
   emit(event) {},
-  packFn: rrweb.pack,
+  packFn: pack,
 });
 ```
 
-回放时通用需要传入 rrweb.unpack 作为 `unpackFn` 传入。
+回放时通用需要传入 packer.unpack 作为 `unpackFn` 传入。
 
 ```js
-const replayer = new rrweb.Replayer(events, {
-  unpackFn: rrweb.unpack,
+import { unpack } from '@rrweb/packer';
+import { Replayer } from '@rrweb/replay';
+
+const replayer = new Replayer(events, {
+  unpackFn: unpack,
 });
 ```
 

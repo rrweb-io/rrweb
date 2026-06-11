@@ -1,6 +1,6 @@
 import {
-  actionWithDelay,
-  eventWithTime,
+  type actionWithDelay,
+  type eventWithTime,
   EventType,
   IncrementalSource,
 } from '@rrweb/types';
@@ -47,6 +47,14 @@ export class Timer {
     this.timeOffset = 0;
     this.lastTimestamp = performance.now();
     this.raf = requestAnimationFrame(this.rafCheck.bind(this));
+  }
+
+  public updateLiveTime() {
+    if (this.raf === true) {
+      // in live mode awaiting new events
+      // we don't run requestAnimationFrame
+      this.rafCheck(); // updates timeOffset
+    }
   }
 
   private rafCheck() {

@@ -6,7 +6,9 @@ There are some options for recording and replaying Canvas.
 Enable recording Canvas：
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+
+record({
   emit(event) {},
   recordCanvas: true,
 });
@@ -15,7 +17,9 @@ rrweb.record({
 Alternatively enable image snapshot recording of Canvas at a maximum of 15 frames per second：
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+
+record({
   emit(event) {},
   recordCanvas: true,
   sampling: {
@@ -32,13 +36,15 @@ rrweb.record({
 Enable replaying Canvas：
 
 ```js
-const replayer = new rrweb.Replayer(events, {
+import { Replayer } from '@rrweb/replay';
+
+const replayer = new Replayer(events, {
   UNSAFE_replayCanvas: true,
 });
 replayer.play();
 ```
 
-**Enable replaying Canvas will remove the sandbox, which may cause a potential security issue.**
+**Enabling canvas replay adds `allow-scripts` to the replay iframe and opts out of rrweb's sandbox script-execution protection. Only use `UNSAFE_replayCanvas` for replay data whose risk you accept.**
 
-Alternatively you can stream canvas elements via webrtc with the canvas-webrtc plugin.
-For more information see [canvas-webrtc documentation](../../packages/rrweb/src/plugins/canvas-webrtc/Readme.md)
+Alternatively you can stream canvas elements via webrtc with the [rrweb-plugin-canvas-webrtc-record](../../packages/plugins/rrweb-plugin-canvas-webrtc-record/) & [rrweb-plugin-canvas-webrtc-replay](../../packages/plugins/rrweb-plugin-canvas-webrtc-replay) plugins.
+For more information see [canvas-webrtc documentation](../../packages/plugins/rrweb-plugin-canvas-webrtc-record/Readme.md)

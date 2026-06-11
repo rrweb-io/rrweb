@@ -1,7 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
-
+import { vi } from 'vitest';
 import { polyfillWebGLGlobals } from '../utils';
 polyfillWebGLGlobals();
 
@@ -11,12 +11,12 @@ import type { Replayer } from '../../src/replay';
 let canvas: HTMLCanvasElement;
 describe('canvas2DMutation', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     canvas = document.createElement('canvas');
   });
   afterEach(() => {
-    jest.clearAllMocks();
-    jest.useRealTimers();
+    vi.clearAllMocks();
+    vi.useRealTimers();
   });
 
   it('should execute all mutations after args are parsed', async () => {
@@ -25,14 +25,14 @@ describe('canvas2DMutation', () => {
       resolve = r;
     });
     const context = {
-      clearRect: jest.fn(),
-      drawImage: jest.fn(),
+      clearRect: vi.fn(),
+      drawImage: vi.fn(),
     } as unknown as CanvasRenderingContext2D;
-    jest.spyOn(canvas, 'getContext').mockImplementation(() => {
+    vi.spyOn(canvas, 'getContext').mockImplementation(() => {
       return context;
     });
 
-    const createImageBitmapMock = jest.fn(() => {
+    const createImageBitmapMock = vi.fn(() => {
       return new Promise((r) => {
         setTimeout(r, 1000);
       });
@@ -64,14 +64,14 @@ describe('canvas2DMutation', () => {
       errorHandler: () => {},
     });
 
-    await jest.advanceTimersByTimeAsync(100);
+    await vi.advanceTimersByTimeAsync(100);
 
     await expect(createImageBitmapMock).toHaveBeenCalled();
 
     expect(context.clearRect).not.toBeCalled();
     expect(context.drawImage).not.toBeCalled();
 
-    await jest.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(1000);
 
     await mutation;
 

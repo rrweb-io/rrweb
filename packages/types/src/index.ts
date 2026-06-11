@@ -1,10 +1,3 @@
-import type {
-  serializedNodeWithId,
-  Mirror,
-  INode,
-  DataURLOptions,
-} from 'rrweb-snapshot';
-
 export enum EventType {
   DomContentLoaded,
   Load,
@@ -13,6 +6,7 @@ export enum EventType {
   Meta,
   Custom,
   Plugin,
+  Asset,
 }
 
 export type domContentLoadedEvent = {
@@ -66,6 +60,77 @@ export type pluginEvent<T = unknown> = {
   };
 };
 
+export type NetworkInitiatorType =
+  | 'audio'
+  | 'beacon'
+  | 'body'
+  | 'css'
+  | 'early-hint'
+  | 'embed'
+  | 'fetch'
+  | 'frame'
+  | 'iframe'
+  | 'icon'
+  | 'image'
+  | 'img'
+  | 'input'
+  | 'link'
+  | 'navigation'
+  | 'object'
+  | 'ping'
+  | 'script'
+  | 'track'
+  | 'video'
+  | 'xmlhttprequest';
+
+export type NetworkHeaders = Record<string, string>;
+export type NetworkBody = string | null;
+
+export type NetworkRequest = Omit<
+  PerformanceEntry,
+  'toJSON' | 'startTime' | 'endTime' | 'duration' | 'entryType'
+> & {
+  method?: string;
+  initiatorType?: NetworkInitiatorType;
+  status?: number;
+  startTime?: number;
+  endTime?: number;
+  duration?: number;
+  entryType?: string;
+  requestHeaders?: NetworkHeaders;
+  requestBody?: NetworkBody;
+  responseHeaders?: NetworkHeaders;
+  responseBody?: NetworkBody;
+  isInitial?: boolean;
+};
+
+export type NetworkData = {
+  requests: NetworkRequest[];
+  isInitial?: boolean;
+};
+
+export type NetworkRecordOptions = {
+  initiatorTypes?: NetworkInitiatorType[];
+  transformRequestFn?: (request: NetworkRequest) => NetworkRequest | undefined;
+  recordHeaders?: boolean | { request: boolean; response: boolean };
+  recordBody?:
+    | boolean
+    | string[]
+    | { request: boolean | string[]; response: boolean | string[] };
+  recordInitialRequests?: boolean;
+};
+
+export type NetworkEvent = pluginEvent<NetworkData>;
+
+export type assetEvent = {
+  type: EventType.Asset;
+  data: assetParam;
+};
+
+export type assetEventWithTime = assetEvent & {
+  timestamp: number;
+};
+
 export enum IncrementalSource {
   Mutation,
   MouseMove,
@@ -83,6 +148,7 @@ export enum IncrementalSource {
   StyleDeclaration,
   Selection,
   AdoptedStyleSheet,
+  CustomElement,
 }
 
 export type mutationData = {
@@ -142,6 +208,10 @@ export type adoptedStyleSheetData = {
   source: IncrementalSource.AdoptedStyleSheet;
 } & adoptedStyleSheetParam;
 
+export type customElementData = {
+  source: IncrementalSource.CustomElement;
+} & customElementParam;
+
 export type incrementalData =
   | mutationData
   | mousemoveData
@@ -155,18 +225,26 @@ export type incrementalData =
   | fontData
   | selectionData
   | styleDeclarationData
-  | adoptedStyleSheetData;
+  | adoptedStyleSheetData
+  | customElementData;
 
-export type event =
+export type eventWithoutTime =
   | domContentLoadedEvent
   | loadedEvent
   | fullSnapshotEvent
   | incrementalSnapshotEvent
   | metaEvent
   | customEvent
-  | pluginEvent;
+  | pluginEvent
+  | assetEvent;
 
-export type eventWithTime = event & {
+/**
+ * @deprecated intended for internal use
+ * a synonym for eventWithoutTime
+ */
+export type event = eventWithoutTime;
+
+export type eventWithTime = eventWithoutTime & {
   timestamp: number;
   delay?: number;
 };
@@ -242,7 +320,7 @@ export type RecordPlugin<TOptions = unknown> = {
   ) => listenerHandler;
   eventProcessor?: <TExtend>(event: eventWithTime) => eventWithTime & TExtend;
   getMirror?: (mirrors: {
-    nodeMirror: Mirror;
+    nodeMirror: IMirror<Node>;
     crossOriginIframeMirror: ICrossOriginIframeMirror;
     crossOriginIframeStyleMirror: ICrossOriginIframeMirror;
   }) => void;
@@ -262,6 +340,7 @@ export type hooksParam = {
   canvasMutation?: canvasMutationCallback;
   font?: fontCallback;
   selection?: selectionCallback;
+  customElement?: customElementCallback;
 };
 
 // https://dom.spec.whatwg.org/#interface-mutationrecord
@@ -376,16 +455,23 @@ export enum CanvasContext {
   WebGL2,
 }
 
+export type SerializedCssTextArg = {
+  rr_type: 'CssText';
+  cssTexts: string[]; // usually just a single item
+};
+
+export type SerializedBlobArg = {
+  rr_type: 'Blob';
+  data: Array<CanvasArg>;
+  type?: string;
+};
+
 export type SerializedCanvasArg =
   | {
       rr_type: 'ArrayBuffer';
       base64: string; // base64
     }
-  | {
-      rr_type: 'Blob';
-      data: Array<CanvasArg>;
-      type?: string;
-    }
+  | SerializedBlobArg
   | {
       rr_type: string;
       src: string; // url of image
@@ -410,8 +496,8 @@ export type CanvasArg =
 type mouseInteractionParam = {
   type: MouseInteractions;
   id: number;
-  x: number;
-  y: number;
+  x?: number;
+  y?: number;
   pointerType?: PointerTypes;
 };
 
@@ -552,7 +638,7 @@ export type inputValue = {
 
 export type inputCallback = (v: inputValue & { id: number }) => void;
 
-export const enum MediaInteractions {
+export enum MediaInteractions {
   Play,
   Pause,
   Seeked,
@@ -566,6 +652,7 @@ export type mediaInteractionParam = {
   currentTime?: number;
   volume?: number;
   muted?: boolean;
+  loop?: boolean;
   playbackRate?: number;
 };
 
@@ -592,6 +679,37 @@ export type selectionParam = {
 };
 
 export type selectionCallback = (p: selectionParam) => void;
+
+export type customElementParam = {
+  define?: {
+    name: string;
+  };
+};
+
+export type customElementCallback = (c: customElementParam) => void;
+
+export type assetParam =
+  | {
+      url: string;
+      payload: SerializedCanvasArg | SerializedCssTextArg;
+      timestamp?: number;
+    }
+  | {
+      url: string;
+      failed: {
+        status?: number;
+        message: string;
+      };
+    };
+
+export type assetCallback = (d: assetParam, timestamp?: number | true) => void;
+
+/**
+ *  @deprecated
+ */
+interface INode extends Node {
+  __sn: serializedNodeWithId;
+}
 
 export type DeprecatedMirror = {
   map: {
@@ -638,6 +756,9 @@ export type Arguments<T> = T extends (...payload: infer U) => unknown
 export enum ReplayerEvents {
   Start = 'start',
   Pause = 'pause',
+  /**
+   * @deprecated use Play instead
+   */
   Resume = 'resume',
   Resize = 'resize',
   Finish = 'finish',
@@ -679,3 +800,148 @@ export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
   Obj,
   TakeTypeHelper<Obj, Type>[keyof TakeTypeHelper<Obj, Type>]
 >;
+
+export enum NodeType {
+  Document,
+  DocumentType,
+  Element,
+  Text,
+  CDATA,
+  Comment,
+}
+
+export type documentNode = {
+  type: NodeType.Document;
+  childNodes: serializedNodeWithId[];
+  compatMode?: string;
+};
+
+export type documentTypeNode = {
+  type: NodeType.DocumentType;
+  name: string;
+  publicId: string;
+  systemId: string;
+};
+
+type cssTextKeyAttr = {
+  _cssText?: string;
+};
+
+export type attributes = cssTextKeyAttr & {
+  [key: string]:
+    | string
+    | number // properties e.g. rr_scrollLeft or rr_mediaCurrentTime
+    | true // e.g. checked  on <input type="radio">
+    | null; // an indication that an attribute was removed (during a mutation)
+};
+
+export type legacyAttributes = {
+  /**
+   * @deprecated old bug in rrweb was causing these to always be set
+   * @see https://github.com/rrweb-io/rrweb/pull/651
+   */
+  selected: false;
+};
+
+export type mediaAttributes = {
+  rr_mediaState: 'played' | 'paused';
+  rr_mediaCurrentTime: number;
+  /**
+   * for backwards compatibility this is optional but should always be set
+   */
+  rr_mediaPlaybackRate?: number;
+  /**
+   * for backwards compatibility this is optional but should always be set
+   */
+  rr_mediaMuted?: boolean;
+  /**
+   * for backwards compatibility this is optional but should always be set
+   */
+  rr_mediaLoop?: boolean;
+  /**
+   * for backwards compatibility this is optional but should always be set
+   */
+  rr_mediaVolume?: number;
+};
+
+export type elementNode = {
+  type: NodeType.Element;
+  tagName: string;
+  attributes: attributes;
+  childNodes: serializedNodeWithId[];
+  isSVG?: true;
+  needBlock?: boolean;
+  // This is a custom element or not.
+  isCustom?: true;
+};
+
+export type textNode = {
+  type: NodeType.Text;
+  textContent: string;
+  /**
+   * @deprecated styles are now always snapshotted against parent <style> element
+   * style mutations can still happen via an added textNode, but they don't need this attribute for correct replay
+   */
+  isStyle?: true;
+};
+
+export type cdataNode = {
+  type: NodeType.CDATA;
+  textContent: '';
+};
+
+export type commentNode = {
+  type: NodeType.Comment;
+  textContent: string;
+};
+
+export type serializedNode = (
+  | documentNode
+  | documentTypeNode
+  | elementNode
+  | textNode
+  | cdataNode
+  | commentNode
+) & {
+  rootId?: number;
+  isShadowHost?: boolean;
+  isShadow?: boolean;
+};
+
+export type serializedNodeWithId = serializedNode & { id: number };
+
+export type serializedElementNodeWithId = Extract<
+  serializedNodeWithId,
+  Record<'type', NodeType.Element>
+>;
+
+export interface IMirror<TNode> {
+  getId(n: TNode | undefined | null): number;
+
+  getNode(id: number): TNode | null;
+
+  getIds(): number[];
+
+  getMeta(n: TNode): serializedNodeWithId | null;
+
+  removeNodeFromMap(n: TNode): void;
+
+  has(id: number): boolean;
+
+  hasNode(node: TNode): boolean;
+
+  add(n: TNode, meta: serializedNodeWithId): void;
+
+  replace(id: number, n: TNode): void;
+
+  reset(): void;
+}
+
+export type DataURLOptions = Partial<{
+  type: string;
+  quality: number;
+}>;
+
+// Types for @rrweb/packer
+export type PackFn = (event: eventWithTime) => string;
+export type UnpackFn = (raw: string) => eventWithTime;

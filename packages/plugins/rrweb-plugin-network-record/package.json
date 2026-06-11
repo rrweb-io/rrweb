@@ -1,0 +1,62 @@
+{
+  "name": "@rrweb/rrweb-plugin-network-record",
+  "version": "2.0.1",
+  "description": "",
+  "type": "module",
+  "main": "./dist/rrweb-plugin-network-record.umd.cjs",
+  "module": "./dist/rrweb-plugin-network-record.js",
+  "unpkg": "./dist/rrweb-plugin-network-record.umd.cjs",
+  "jsdelivr": "./umd/rrweb-plugin-network-record.js",
+  "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/rrweb-plugin-network-record.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/rrweb-plugin-network-record.umd.cjs"
+      }
+    }
+  },
+  "files": [
+    "umd",
+    "dist",
+    "package.json"
+  ],
+  "scripts": {
+    "dev": "vite build --watch",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "build": "yarn turbo run prepublish",
+    "check-types": "tsc -noEmit",
+    "prepublish": "tsc -noEmit && vite build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb.git"
+  },
+  "keywords": [
+    "rrweb"
+  ],
+  "author": "rrweb Core Team <maintainers@rrweb.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rrweb-io/rrweb/issues"
+  },
+  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "devDependencies": {
+    "@rrweb/types": "^2.0.1",
+    "@rrweb/utils": "^2.0.1",
+    "rrweb": "^2.0.1",
+    "typescript": "^5.4.5",
+    "vite": "^6.0.1",
+    "vite-plugin-dts": "^3.9.1",
+    "vitest": "^1.4.0"
+  },
+  "peerDependencies": {
+    "rrweb": "^2.0.1",
+    "@rrweb/utils": "^2.0.1"
+  }
+}

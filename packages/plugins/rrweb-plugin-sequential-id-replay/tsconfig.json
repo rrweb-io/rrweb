@@ -1,0 +1,17 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "include": ["src"],
+  "exclude": ["vite.config.ts", "dist", "tsconfig.json"],
+  "compilerOptions": {
+    "rootDir": ".",
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
+  },
+  "references": [
+    {
+      "path": "../rrweb-plugin-sequential-id-record"
+    },
+    {
+      "path": "../../rrweb"
+    }
+  ]
+}

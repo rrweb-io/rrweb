@@ -1,13 +1,13 @@
-import type { Mirror } from 'rrweb-snapshot';
 import {
-  blockClass,
+  type blockClass,
   CanvasContext,
-  canvasManagerMutationCallback,
-  canvasMutationWithType,
-  IWindow,
-  listenerHandler,
+  type canvasManagerMutationCallback,
+  type canvasMutationWithType,
+  type IWindow,
+  type listenerHandler,
 } from '@rrweb/types';
-import { hookSetter, isBlocked, patch } from '../../../utils';
+import { hookSetter, isBlocked } from '../../../utils';
+import { patch } from '@rrweb/utils';
 import { saveWebGLVar, serializeArgs } from './serialize-args';
 
 function patchGLPrototype(
@@ -16,7 +16,6 @@ function patchGLPrototype(
   cb: canvasManagerMutationCallback,
   blockClass: blockClass,
   blockSelector: string | null,
-  mirror: Mirror,
   win: IWindow,
 ): listenerHandler[] {
   const handlers: listenerHandler[] = [];
@@ -53,7 +52,7 @@ function patchGLPrototype(
               'tagName' in this.canvas &&
               !isBlocked(this.canvas, blockClass, blockSelector, true)
             ) {
-              const recordArgs = serializeArgs([...args], win, this);
+              const recordArgs = serializeArgs(args, win, this);
               const mutation: canvasMutationWithType = {
                 type,
                 property: prop,
@@ -93,21 +92,21 @@ export default function initCanvasWebGLMutationObserver(
   win: IWindow,
   blockClass: blockClass,
   blockSelector: string | null,
-  mirror: Mirror,
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
 
-  handlers.push(
-    ...patchGLPrototype(
-      win.WebGLRenderingContext.prototype,
-      CanvasContext.WebGL,
-      cb,
-      blockClass,
-      blockSelector,
-      mirror,
-      win,
-    ),
-  );
+  if (typeof win.WebGLRenderingContext !== 'undefined') {
+    handlers.push(
+      ...patchGLPrototype(
+        win.WebGLRenderingContext.prototype,
+        CanvasContext.WebGL,
+        cb,
+        blockClass,
+        blockSelector,
+        win,
+      ),
+    );
+  }
 
   if (typeof win.WebGL2RenderingContext !== 'undefined') {
     handlers.push(
@@ -117,7 +116,6 @@ export default function initCanvasWebGLMutationObserver(
         cb,
         blockClass,
         blockSelector,
-        mirror,
         win,
       ),
     );
