@@ -3,13 +3,7 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import {
-  beforeEach,
-  describe,
-  expect as _expect,
-  it,
-  vi,
-} from 'vite-plus/test';
+import { beforeEach, describe, expect as _expect, it, vi } from 'vitest';
 import rebuild, {
   adaptCssForReplay,
   buildNodeWithSN,

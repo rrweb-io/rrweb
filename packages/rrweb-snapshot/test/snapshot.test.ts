@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { JSDOM } from 'jsdom';
-import { describe, expect, it } from 'vite-plus/test';
+import { describe, expect, it } from 'vitest';
 
 import snapshot, {
   _isBlockedElement,

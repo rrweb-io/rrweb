@@ -1,4 +1,4 @@
-import { describe, it, beforeAll, afterAll, expect, vi } from 'vite-plus/test';
+import { describe, it, beforeAll, afterAll, expect, vi } from 'vitest';
 import { stringifySnapshots } from '../../../rrweb/test/utils';
 import { createServer, ViteDevServer } from 'vite-plus';
 import * as puppeteer from 'puppeteer';

@@ -17,7 +17,7 @@ import * as path from 'path';
 import * as url from 'url';
 import { chromium, webkit, Browser } from 'playwright';
 const browserType = process.env.BROWSER === 'webkit' ? webkit : chromium;
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vite-plus/test';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { EventType, IncrementalSource, eventWithTime } from '@rrweb/types';
 import { getServerURL, startServer, waitForRAF } from '../utils';
 

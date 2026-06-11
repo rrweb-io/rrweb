@@ -29,7 +29,7 @@
     "start": "vite",
     "check-types": "svelte-check --tsconfig ./tsconfig.json",
     "prepublish": "yarn build",
-    "lint": "yarn eslint src/**/*.ts"
+    "lint": "vp lint src"
   },
   "description": "rrweb's replayer UI",
   "main": "./dist/rrweb-player.umd.cjs",

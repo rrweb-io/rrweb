@@ -12,7 +12,7 @@ import {
   expect,
   it,
   vi,
-} from 'vite-plus/test';
+} from 'vitest';
 
 import { getServerURL, waitForRAF } from './utils';
 

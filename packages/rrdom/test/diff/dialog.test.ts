@@ -1,7 +1,7 @@
 /**
  * @vitest-environment happy-dom
  */
-import { vi, MockInstance } from 'vite-plus/test';
+import { vi, MockInstance } from 'vitest';
 import {
   createMirror,
   Mirror as NodeMirror,

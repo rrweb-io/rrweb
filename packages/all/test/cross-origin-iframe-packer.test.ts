@@ -6,7 +6,7 @@ import {
   beforeEach,
   afterEach,
   afterAll,
-} from 'vite-plus/test';
+} from 'vitest';
 import type {
   eventWithTime,
   listenerHandler,

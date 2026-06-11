@@ -15,7 +15,7 @@ import * as path from 'path';
 import * as url from 'url';
 import { chromium, webkit, Browser, Page } from 'playwright';
 const browserType = process.env.BROWSER === 'webkit' ? webkit : chromium;
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vite-plus/test';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
 

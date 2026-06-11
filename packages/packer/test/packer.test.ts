@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vite-plus/test';
+import { describe, it, expect, vi } from 'vitest';
 import { pack, unpack } from '../src';
 import { type eventWithTime, EventType } from '@rrweb/types';
 import { MARK } from '../src/base';

@@ -37,7 +37,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "prepublish": "tsc -noEmit && vite build",
-    "lint": "yarn eslint src/**/*.ts"
+    "lint": "vp lint src"
   },
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"

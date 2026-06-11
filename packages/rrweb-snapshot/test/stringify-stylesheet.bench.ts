@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { bench } from 'vite-plus/test';
+import { bench } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import { stringifyStylesheet } from '../src/utils';

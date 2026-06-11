@@ -8,7 +8,7 @@
     "test": "vitest run",
     "test:watch": "vitest watch",
     "prepublish": "tsc -noEmit && vite build",
-    "lint": "yarn eslint src/**/*.ts"
+    "lint": "vp lint src"
   },
   "keywords": [
     "devtools",

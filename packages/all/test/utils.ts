@@ -1,4 +1,4 @@
-import { expect } from 'vite-plus/test';
+import { expect } from 'vitest';
 import {
   NodeType,
   EventType,

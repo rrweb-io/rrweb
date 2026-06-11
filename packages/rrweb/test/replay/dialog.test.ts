@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import * as path from 'path';
-import { vi } from 'vite-plus/test';
+import { vi } from 'vitest';
 
 import dialogPlaybackEvents, {
   closedFullSnapshotTime,

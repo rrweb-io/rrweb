@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { vi } from 'vite-plus/test';
+import { vi } from 'vitest';
 import { polyfillWebGLGlobals } from '../utils';
 polyfillWebGLGlobals();
 

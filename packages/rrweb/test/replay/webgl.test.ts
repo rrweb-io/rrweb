@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { vi } from 'vite-plus/test';
+import { vi } from 'vitest';
 import { launchPuppeteer } from '../utils';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
 import type * as puppeteer from 'puppeteer';
