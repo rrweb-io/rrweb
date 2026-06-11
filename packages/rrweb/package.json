@@ -20,7 +20,7 @@
     "build": "yarn turbo run prepublish",
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build",
-    "lint": "yarn eslint src",
+    "lint": "vp lint src",
     "benchmark": "vitest run --maxConcurrency 1 --no-file-parallelism test/benchmark",
     "test:webkit": "yarn build && vitest run --config vitest.config.webkit.ts"
   },

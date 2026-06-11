@@ -1,4 +1,4 @@
-import { defineConfig, LibraryFormats, PluginOption } from 'vite';
+import { defineConfig, LibraryFormats, PluginOption } from 'vite-plus';
 import webExtension, { readJsonFile } from 'vite-plugin-web-extension';
 import zip from 'vite-plugin-zip-pack';
 import * as path from 'path';

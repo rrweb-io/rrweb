@@ -26,7 +26,7 @@
     "retest:update": "cross-env PUPPETEER_HEADLESS=true yarn retest --update",
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build",
-    "lint": "yarn eslint src/**/*.ts"
+    "lint": "vp lint src"
   },
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/browser-client#readme",
   "bugs": {

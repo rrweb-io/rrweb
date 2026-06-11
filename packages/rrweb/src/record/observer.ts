@@ -169,8 +169,8 @@ function initMoveObserver({
           typeof DragEvent !== 'undefined' && evt instanceof DragEvent
             ? IncrementalSource.Drag
             : evt instanceof MouseEvent
-            ? IncrementalSource.MouseMove
-            : IncrementalSource.TouchMove,
+              ? IncrementalSource.MouseMove
+              : IncrementalSource.TouchMove,
         );
       }),
       threshold,
@@ -1385,10 +1385,10 @@ function hasNestedCSSRule(prop: CSSGroupingProp): boolean {
 function canMonkeyPatchNestedCSSRule(prop: CSSGroupingProp): boolean {
   return Boolean(
     typeof window[prop] !== 'undefined' &&
-      // Note: Generally, this check _shouldn't_ be necessary
-      // However, in some scenarios (e.g. jsdom) this can sometimes fail, so we check for it here
-      window[prop].prototype &&
-      'insertRule' in window[prop].prototype &&
-      'deleteRule' in window[prop].prototype,
+    // Note: Generally, this check _shouldn't_ be necessary
+    // However, in some scenarios (e.g. jsdom) this can sometimes fail, so we check for it here
+    window[prop].prototype &&
+    'insertRule' in window[prop].prototype &&
+    'deleteRule' in window[prop].prototype,
   );
 }

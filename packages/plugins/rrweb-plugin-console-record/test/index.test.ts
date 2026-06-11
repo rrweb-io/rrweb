@@ -1,6 +1,6 @@
 import { describe, it, beforeAll, afterAll, expect, vi } from 'vitest';
 import { stringifySnapshots } from '../../../rrweb/test/utils';
-import { createServer, ViteDevServer } from 'vite';
+import { createServer, ViteDevServer } from 'vite-plus';
 import * as puppeteer from 'puppeteer';
 import type { Browser, Page } from 'puppeteer';
 import type { eventWithTime } from '@rrweb/types';

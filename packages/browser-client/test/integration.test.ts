@@ -265,8 +265,8 @@ ${JSON.stringify(defaultOptions(options))}
           (metadataResponse) =>
             Boolean(
               metadataResponse &&
-                metadataResponse.metadata &&
-                Object.keys(metadataResponse.metadata).length,
+              metadataResponse.metadata &&
+              Object.keys(metadataResponse.metadata).length,
             ),
           { timeout: 8000, interval: 200 },
         );

@@ -16,7 +16,7 @@
     "build": "tsc -noEmit && vite build",
     "check-types": "tsc -noEmit",
     "prepublish": "npm run build",
-    "lint": "yarn eslint src/**/*.ts"
+    "lint": "vp lint src"
   },
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/utils#readme",
   "bugs": {

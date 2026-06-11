@@ -1,7 +1,12 @@
 /// <reference types="vite/client" />
 import dts from 'vite-plugin-dts';
 import { copyFileSync, mkdirSync, existsSync } from 'node:fs';
-import { defineConfig, LibraryOptions, LibraryFormats, Plugin } from 'vite';
+import {
+  defineConfig,
+  LibraryOptions,
+  LibraryFormats,
+  Plugin,
+} from 'vite-plus';
 import { build, Format } from 'esbuild';
 import { resolve, dirname } from 'path';
 import { umdWrapper } from 'esbuild-plugin-umd-wrapper';
