@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { compare } from 'compare-versions';
 import { RRDocument } from '../src/document-nodejs';
 import {

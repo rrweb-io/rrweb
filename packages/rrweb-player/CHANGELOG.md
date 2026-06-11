@@ -47,11 +47,9 @@
 - [#1045](https://github.com/rrweb-io/rrweb/pull/1045) [`e08d039`](https://github.com/rrweb-io/rrweb/commit/e08d03982b468360eafc4c9e2a3d257b73da4487) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix rrweb-player TypeScript imports after the `@rrweb/types` split.
 
 - Updated dependencies [[`b2d5689`](https://github.com/rrweb-io/rrweb/commit/b2d5689864eff62c80c4439e9a4e4f0f6983b1f5), [`a8478f1`](https://github.com/rrweb-io/rrweb/commit/a8478f1dd7613a08d5f15d176d6e555497f83e0d), [`ce6019d`](https://github.com/rrweb-io/rrweb/commit/ce6019d2d6264ac8ef4cc0c5f8ff1733787f9ea0), [`bac1d7b`](https://github.com/rrweb-io/rrweb/commit/bac1d7b0cbfcf1157476c49b4b12e178aab7fc94), [`5ba933c`](https://github.com/rrweb-io/rrweb/commit/5ba933ccdb8b51dfc067319d418dbadd2f7642db), [`fd85c79`](https://github.com/rrweb-io/rrweb/commit/fd85c79e853ef89a860e795a8ae3ba318ef42ae8)]:
-
   - rrweb@2.0.0-alpha.2
 
 - Updated dependencies [[`f1b23dd`](https://github.com/rrweb-io/rrweb/commit/f1b23ddc714ebaf9b66ca7a913f740e2c0524868)]:
-
   - rrweb@2.0.0-alpha.1
 
 - Updated dependencies [[`22bc4c3`](https://github.com/rrweb-io/rrweb/commit/22bc4c334e88f0b8ee5488d9e1e95cd8093a15c8), [`db20184`](https://github.com/rrweb-io/rrweb/commit/db201841accd2b5df3cd7c88779aa62ab158501c), [`22bc4c3`](https://github.com/rrweb-io/rrweb/commit/22bc4c334e88f0b8ee5488d9e1e95cd8093a15c8), [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf), [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf), [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf), [`33e01f5`](https://github.com/rrweb-io/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0)]:

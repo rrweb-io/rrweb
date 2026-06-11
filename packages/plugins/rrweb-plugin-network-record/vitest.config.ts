@@ -1,5 +1,5 @@
 /// <reference types="vitest" />
-import { defineProject, mergeConfig } from 'vitest/config';
+import { defineProject, mergeConfig } from 'vite-plus/test';
 import { resolve } from 'node:path';
 import configShared from '../../../vitest.config.ts';
 

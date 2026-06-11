@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
-import { vi } from 'vitest';
+import { vi } from 'vite-plus/test';
 import 'construct-style-sheets-polyfill';
 import {
   assertDomSnapshot,
@@ -813,9 +813,7 @@ describe('replayer', function () {
     expect(
       await iframeTwoDocument!.evaluate(
         (iframe) => (iframe as HTMLIFrameElement)!.contentDocument!.doctype,
-        (
-          await iframeTwoDocument!.$$('iframe')
-        )[1],
+        (await iframeTwoDocument!.$$('iframe'))[1],
       ),
     ).not.toBeNull();
   });

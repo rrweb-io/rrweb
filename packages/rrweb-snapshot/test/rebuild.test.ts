@@ -3,7 +3,13 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import { beforeEach, describe, expect as _expect, it, vi } from 'vitest';
+import {
+  beforeEach,
+  describe,
+  expect as _expect,
+  it,
+  vi,
+} from 'vite-plus/test';
 import rebuild, {
   adaptCssForReplay,
   buildNodeWithSN,
@@ -15,7 +21,9 @@ import { NodeType } from '@rrweb/types';
 import { createMirror, Mirror, normalizeCssString } from '../src/utils';
 
 const expect = _expect as unknown as {
-  <T = unknown>(actual: T): {
+  <T = unknown>(
+    actual: T,
+  ): {
     toMatchCss(expected: string): void;
   } & ReturnType<typeof _expect>;
 } & typeof _expect;

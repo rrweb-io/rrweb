@@ -4,7 +4,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
-import { vi } from 'vitest';
+import { vi } from 'vite-plus/test';
 import { JSDOM } from 'jsdom';
 import { buildNodeWithSN, Mirror } from 'rrweb-snapshot';
 import {

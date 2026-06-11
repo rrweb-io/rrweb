@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, test, expect } from 'vitest';
+import { describe, it, test, expect } from 'vite-plus/test';
 import {
   escapeImportStatement,
   extractFileExtension,

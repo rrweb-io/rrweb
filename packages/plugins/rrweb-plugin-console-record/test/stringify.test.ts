@@ -3,7 +3,7 @@
  */
 
 import { stringify } from '../src/stringify';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vite-plus/test';
 
 describe('console record plugin', () => {
   it('can stringify bigint', () => {

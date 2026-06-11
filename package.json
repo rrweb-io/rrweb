@@ -1,40 +1,58 @@
 {
   "name": "@rrweb/_monorepo",
+  "private": true,
   "description": "record and replay the web",
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
-  },
   "keywords": [
     "devtools",
     "product-analytics",
     "real-user-monitoring",
     "rrweb"
   ],
-  "author": "rrweb Core Team <maintainers@rrweb.com>",
-  "license": "MIT",
+  "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
-  "private": true,
-  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "license": "MIT",
+  "author": "rrweb Core Team <maintainers@rrweb.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
+  },
   "workspaces": [
     "packages/*",
     "packages/plugins/*"
   ],
+  "scripts": {
+    "build:all": "NODE_OPTIONS='--max-old-space-size=4096' yarn turbo run prepublish",
+    "references:update": "yarn workspaces-to-typescript-project-references",
+    "test": "yarn turbo run test --concurrency=1 --continue",
+    "test:watch": "yarn turbo run test:watch",
+    "test:update": "yarn turbo run test:update",
+    "check-types": "yarn turbo run check-types --continue",
+    "format": "vp fmt . --write",
+    "format:head": "git diff --name-only HEAD^ | grep '\\.[tj]sx\\?$\\|\\.md$' | xargs vp fmt --write",
+    "dev": "yarn turbo run dev --concurrency=18",
+    "repl": "cd packages/rrweb && npm run repl",
+    "live-stream": "cd packages/rrweb && yarn live-stream",
+    "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'yarn eslint \"packages/**/src/**/*.{ts,tsx,js,jsx,svelte}\"'",
+    "lint:report": "yarn eslint --output-file eslint_report.json --format json \"packages/**/src/**/*.{ts,tsx,js,jsx}\"",
+    "release": "yarn build:all && changeset publish"
+  },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.1",
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.39.1",
     "@monorepo-utils/workspaces-to-typescript-project-references": "^2.8.2",
     "@types/prettier": "2.7.3",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
+    "@typescript-eslint/eslint-plugin": "^8.61.0",
+    "@typescript-eslint/parser": "^8.61.0",
     "browserslist": "^4.22.1",
     "concurrently": "^7.1.0",
     "cross-env": "^7.0.3",
     "esbuild-plugin-umd-wrapper": "^2.0.0",
-    "eslint": "^8.53.0",
-    "eslint-plugin-compat": "^5.0.0",
+    "eslint": "^9.39.1",
+    "eslint-plugin-compat": "^7.0.2",
     "eslint-plugin-jest": "^27.6.0",
     "eslint-plugin-tsdoc": "^0.2.17",
     "happy-dom": "^14.12.0",
@@ -43,31 +61,16 @@
     "prettier": "2.8.4",
     "rollup-plugin-visualizer": "^5.12.0",
     "turbo": "^2.0.4",
-    "typescript": "^5.4.5"
-  },
-  "scripts": {
-    "build:all": "NODE_OPTIONS='--max-old-space-size=4096' yarn turbo run prepublish",
-    "references:update": "yarn workspaces-to-typescript-project-references",
-    "test": "yarn turbo run test --concurrency=1 --continue",
-    "test:watch": "yarn turbo run test:watch",
-    "test:update": "yarn turbo run test:update",
-    "check-types": "yarn turbo run check-types --continue",
-    "format": "yarn prettier --write '**/*.{ts,md}'",
-    "format:head": "git diff --name-only HEAD^ |grep '\\.ts$\\|\\.md$' |xargs yarn prettier --write",
-    "dev": "yarn turbo run dev --concurrency=18",
-    "repl": "cd packages/rrweb && npm run repl",
-    "live-stream": "cd packages/rrweb && yarn live-stream",
-    "lint": "yarn run concurrently --success=all -r -m=1 'yarn run markdownlint docs' 'ESLINT_USE_FLAT_CONFIG=false yarn eslint \"packages/**/src/**/*.{ts,tsx,js,jsx,svelte}\"'",
-    "lint:report": "ESLINT_USE_FLAT_CONFIG=false yarn eslint --output-file eslint_report.json --format json \"packages/**/src/**/*.{ts,tsx,js,jsx}\"",
-    "release": "yarn build:all && changeset publish"
+    "typescript": "^5.4.5",
+    "vite-plus": "^0.1.24"
   },
   "resolutions": {
-    "**/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz",
-    "**/@types/dom-webcodecs": "0.1.5"
+    "**/@types/dom-webcodecs": "0.1.5",
+    "**/cssom": "https://registry.npmjs.org/rrweb-cssom/-/rrweb-cssom-0.6.0.tgz"
   },
   "browserslist": [
     "defaults",
     "not op_mini all"
   ],
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.22"
 }

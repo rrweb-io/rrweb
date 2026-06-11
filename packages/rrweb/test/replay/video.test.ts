@@ -11,7 +11,7 @@ import {
   fakeGoto,
 } from '../utils';
 import { toMatchImageSnapshot } from 'jest-image-snapshot';
-import { vi } from 'vitest';
+import { vi } from 'vite-plus/test';
 import { Replayer } from '../../src/replay';
 import videoPlaybackEvents from '../events/video-playback';
 import videoPlaybackOnFullSnapshotEvents from '../events/video-playback-on-full-snapshot';

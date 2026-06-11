@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { vi } from 'vitest';
+import { vi } from 'vite-plus/test';
 import type { Page } from 'puppeteer';
 import type { eventWithTime } from '@rrweb/types';
 import type { recordOptions } from '../../src/types';

@@ -14,7 +14,6 @@
 - [#1497](https://github.com/rrweb-io/rrweb/pull/1497) [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf) Thanks [@Juice10](https://github.com/Juice10)! - Distributed files have new filenames, paths and extensions. **Important: If you reference distributed files or types directly, you might have to update your paths/filenames. E.g. you import from `rrweb/typings/...` or `rrdom/es`. However you run `import rrweb from 'rrweb'` you won't notice a difference with this change.** If you include rrweb files directly in a script tag, you might have to update that path to include a the `.umd.cjs` files instead. All `.js` files now use ES modules which can be used in modern browsers, node.js and bundlers that support ES modules. All npm packages now also ship `.cjs` and `.umd.cjs` files. The `.umd.cjs` files are CommonJS modules that bundle all files together to make it easy to ship one file to browser environments (similar to the previous `.js` files). The `.cjs` files are CommonJS modules that can be used in older Node.js environments. Types should be better defined in `package.json` and if you need specific types they might be exported from new packages (for example `PlayerMachineState` and `SpeedMachineState` are now exported from `@rrweb/replay`). Check the `package.json`'s `main` and `exports` field for the available files.
 
 - [#1127](https://github.com/rrweb-io/rrweb/pull/1127) [`3cc4323`](https://github.com/rrweb-io/rrweb/commit/3cc4323094065a12f8b65afecd45061d604e245f) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Refactor: Improve performance by 80% in a super large benchmark case.
-
   1. Refactor: change the data structure of childNodes from array to linked list
   2. Improve the performance of the "contains" function. New algorithm will reduce the complexity from O(n) to O(logn)
 
@@ -39,7 +38,6 @@
 - [#1561](https://github.com/rrweb-io/rrweb/pull/1561) [`8e55c45`](https://github.com/rrweb-io/rrweb/commit/8e55c455ff2987a3b5f367f23f48c1f2de74ce45) Thanks [@billyvg](https://github.com/billyvg)! - Ignore invalid DOM attributes when diffing
 
 - [#1222](https://github.com/rrweb-io/rrweb/pull/1222) [`b798f2d`](https://github.com/rrweb-io/rrweb/commit/b798f2dbc07b5a24dcaf40d164159200b6c0679d) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix: rrdom bugs
-
   1. Fix a bug in the diff algorithm.
   2. Omit the 'srcdoc' attribute of iframes to avoid overwriting content.
 
@@ -169,7 +167,6 @@
 ### Patch Changes
 
 - [#1222](https://github.com/rrweb-io/rrweb/pull/1222) [`b798f2d`](https://github.com/rrweb-io/rrweb/commit/b798f2dbc07b5a24dcaf40d164159200b6c0679d) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Fix: rrdom bugs
-
   1. Fix a bug in the diff algorithm.
   2. Omit the 'srcdoc' attribute of iframes to avoid overwriting content.
 
@@ -204,7 +201,6 @@
 ### Major Changes
 
 - [#1127](https://github.com/rrweb-io/rrweb/pull/1127) [`3cc4323`](https://github.com/rrweb-io/rrweb/commit/3cc4323094065a12f8b65afecd45061d604e245f) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Refactor: Improve performance by 80% in a super large benchmark case.
-
   1. Refactor: change the data structure of childNodes from array to linked list
   2. Improve the performance of the "contains" function. New algorithm will reduce the complexity from O(n) to O(logn)
 

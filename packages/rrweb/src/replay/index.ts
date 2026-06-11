@@ -1546,8 +1546,8 @@ export class Replayer {
       const targetDoc = mutation.node.rootId
         ? mirror.getNode(mutation.node.rootId)
         : this.usingVirtualDom
-        ? this.virtualDom
-        : this.iframe.contentDocument;
+          ? this.virtualDom
+          : this.iframe.contentDocument;
       if (isSerializedIframe<typeof parent>(parent, mirror)) {
         this.attachDocumentToIframe(
           mutation,

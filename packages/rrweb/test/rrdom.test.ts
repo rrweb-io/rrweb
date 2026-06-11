@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { EventType, IncrementalSource, Replayer, eventWithTime } from '../src';
-import { vi, type MockInstance } from 'vitest';
+import { vi, type MockInstance } from 'vite-plus/test';
 import type { styleDeclarationData, styleSheetRuleData } from '@rrweb/types';
 import { createMirror, Mirror as NodeMirror } from 'rrweb-snapshot';
 import type { ReplayerHandler } from 'rrdom';

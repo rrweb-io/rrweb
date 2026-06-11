@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, it, beforeEach, expect } from 'vitest';
+import { describe, it, beforeEach, expect } from 'vite-plus/test';
 import { mediaSelectorPlugin, pseudoClassPlugin } from '../src/css';
 import postcss, { type AcceptedPlugin } from 'postcss';
 import { JSDOM } from 'jsdom';

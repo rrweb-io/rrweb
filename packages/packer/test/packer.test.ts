@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vite-plus/test';
 import { pack, unpack } from '../src';
 import { type eventWithTime, EventType } from '@rrweb/types';
 import { MARK } from '../src/base';
@@ -30,7 +30,7 @@ describe('unpack', () => {
   it('stop on unknown data format', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    expect(() => unpack('[""]')).toThrow('');
+    expect(() => unpack('[""]')).toThrow('Unknown data format.');
 
     expect(consoleSpy).toHaveBeenCalled();
     vi.resetAllMocks();
