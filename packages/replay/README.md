@@ -27,13 +27,14 @@ browser:
   href="https://cdn.rrweb.com/replay/current/dist/style.css"
 />
 <script type="module">
-  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.js';
+  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.min.js';
 </script>
 ```
 
 Use `current` for the latest stable release, or pin an exact version such as
-`https://cdn.rrweb.com/replay/2.0.0/dist/replay.js` for immutable
-production URLs.
+`https://cdn.rrweb.com/replay/2.0.0/dist/replay.min.js` for immutable
+production URLs. Use `.min.js` for production; the unminified `.js` sibling
+remains useful for debugging.
 
 ### 3) Legacy Direct `<script>` Include (UMD fallback)
 

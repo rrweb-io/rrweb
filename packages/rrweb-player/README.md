@@ -27,14 +27,16 @@ import 'rrweb-player/dist/style.css';
   href="https://cdn.rrweb.com/rrweb-player/current/style.css"
 />
 <script type="module">
-  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.js';
+  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.min.js';
 </script>
 ```
 
 Use `current` for the latest stable release, or pin an exact version such as
-`https://cdn.rrweb.com/rrweb-player/2.0.0/rrweb-player.js` for immutable
-production URLs. See the [CDN assets docs](https://rrweb.com/docs/cloud/cdn-assets)
-for the full URL shape and catalog.
+`https://cdn.rrweb.com/rrweb-player/2.0.0/rrweb-player.min.js` for immutable
+production URLs. Use `.min.js` for production; the unminified `.js` sibling
+remains useful for debugging. See the
+[CDN assets docs](https://rrweb.com/docs/cloud/cdn-assets) for the full URL
+shape and catalog.
 
 ### 3) Legacy Direct `<script>` Include (UMD fallback)
 

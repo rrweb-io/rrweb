@@ -67,15 +67,16 @@ import 'rrweb/dist/style.css';
   href="https://cdn.rrweb.com/replay/current/dist/style.css"
 />
 <script type="module">
-  import { record } from 'https://cdn.rrweb.com/record/current/dist/record.js';
-  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.js';
+  import { record } from 'https://cdn.rrweb.com/record/current/dist/record.min.js';
+  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.min.js';
 </script>
 ```
 
 Use `current` for the latest stable release, or pin exact versions such as
-`https://cdn.rrweb.com/record/2.0.0/dist/record.js` and
-`https://cdn.rrweb.com/replay/2.0.0/dist/replay.js` for immutable
-production URLs.
+`https://cdn.rrweb.com/record/2.0.0/dist/record.min.js` and
+`https://cdn.rrweb.com/replay/2.0.0/dist/replay.min.js` for immutable
+production URLs. Use `.min.js` for production; the unminified `.js` sibling
+remains useful for debugging.
 
 ### 3) Legacy Direct `<script>` Include (UMD fallback)
 
