@@ -1,10 +1,13 @@
 {
   "name": "@rrweb/types",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.1",
   "publishConfig": {
     "access": "public"
   },
   "keywords": [
+    "devtools",
+    "product-analytics",
+    "real-user-monitoring",
     "rrweb",
     "@rrweb/types"
   ],
@@ -28,6 +31,7 @@
   "main": "./dist/types.umd.cjs",
   "module": "./dist/types.js",
   "unpkg": "./dist/types.umd.cjs",
+  "jsdelivr": "./umd/types.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -42,11 +46,12 @@
     }
   },
   "files": [
+    "umd",
     "dist",
     "package.json"
   ],
   "devDependencies": {
-    "vite": "^5.3.1",
+    "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1"
   },
   "browserslist": [

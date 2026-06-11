@@ -10,6 +10,8 @@
 - [@rrweb/rrweb-plugin-sequential-id-replay](packages/plugins/rrweb-plugin-sequential-id-replay)：一个用于回放顺序 ID 的插件。
 - [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record)：一个用于通过 WebRTC 流式传输 `<canvas>` 的插件。
 - [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay)：一个用于通过 WebRTC 播放流式 `<canvas>` 的插件。
+- [@rrweb/rrweb-plugin-network-record](packages/plugins/rrweb-plugin-network-record)：一个用于记录网络请求的插件 (xhr/fetch)。
+- [@rrweb/rrweb-plugin-network-replay](packages/plugins/rrweb-plugin-network-replay)：一个用于回放网络请求的插件 (xhr/fetch)。
 
 ## 接口
 
@@ -38,6 +40,8 @@ export type ReplayPlugin = {
 #### 录制侧插件
 
 ```ts
+import { record } from '@rrweb/record';
+
 const exampleRecordPlugin: RecordPlugin<{ foo: string }> = {
   name: 'my-scope/example@1',
   observer(cb, options) {
@@ -54,7 +58,7 @@ const exampleRecordPlugin: RecordPlugin<{ foo: string }> = {
   },
 };
 
-rrweb.record({
+record({
   emit: emit(event) {},
   plugins: [exampleRecordPlugin],
 });
@@ -79,6 +83,8 @@ rrweb.record({
 #### 回放侧插件
 
 ```ts
+import { Replayer } from '@rrweb/replay';
+
 const exampleReplayPlugin: ReplayPlugin = {
   handler(event, isSync, context) {
     if (event.type === EventType.Plugin) {
@@ -90,7 +96,7 @@ const exampleReplayPlugin: ReplayPlugin = {
   },
 };
 
-const replayer = new rrweb.Replayer(events, {
+const replayer = new Replayer(events, {
   plugins: [exampleReplayPlugin],
 });
 ```

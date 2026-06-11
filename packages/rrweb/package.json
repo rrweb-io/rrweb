@@ -1,6 +1,6 @@
 {
   "name": "rrweb",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.1",
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",
@@ -21,7 +21,8 @@
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src",
-    "benchmark": "vitest run --maxConcurrency 1 --no-file-parallelism test/benchmark"
+    "benchmark": "vitest run --maxConcurrency 1 --no-file-parallelism test/benchmark",
+    "test:webkit": "yarn build && vitest run --config vitest.config.webkit.ts"
   },
   "type": "module",
   "repository": {
@@ -29,11 +30,16 @@
     "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
   },
   "keywords": [
+    "devtools",
+    "product-analytics",
+    "real-user-monitoring",
     "rrweb"
   ],
   "main": "./dist/rrweb.umd.cjs",
   "module": "./dist/rrweb.js",
   "unpkg": "./dist/rrweb.umd.cjs",
+  "jsdelivr": "./umd/rrweb.js",
+  "style": "./dist/style.css",
   "typings": "dist/rrweb.d.ts",
   "exports": {
     ".": {
@@ -49,11 +55,12 @@
     "./dist/style.css": "./dist/style.css"
   },
   "files": [
+    "umd",
     "dist",
     "package.json"
   ],
   "sideEffects": false,
-  "author": "yanzhen@smartx.com",
+  "author": "rrweb Core Team <maintainers@rrweb.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
@@ -71,22 +78,23 @@
     "ignore-styles": "^5.0.1",
     "inquirer": "^9.0.0",
     "jest-image-snapshot": "^6.2.0",
+    "playwright": "^1.60.0",
     "puppeteer": "^20.9.0",
     "simple-peer-light": "^9.10.0",
     "ts-node": "^10.9.1",
     "tslib": "^2.3.1",
     "typescript": "^5.4.5",
-    "vite": "^5.3.1",
+    "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
-    "@rrweb/utils": "^2.0.0-alpha.18",
+    "@rrweb/types": "^2.0.1",
+    "@rrweb/utils": "^2.0.1",
     "@types/css-font-loading-module": "0.0.7",
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",
     "mitt": "^3.0.0",
-    "rrdom": "^2.0.0-alpha.18",
-    "rrweb-snapshot": "^2.0.0-alpha.18"
+    "rrdom": "^2.0.1",
+    "rrweb-snapshot": "^2.0.1"
   }
 }

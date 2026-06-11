@@ -1,10 +1,13 @@
 {
   "name": "@rrweb/utils",
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.1",
   "publishConfig": {
     "access": "public"
   },
   "keywords": [
+    "devtools",
+    "product-analytics",
+    "real-user-monitoring",
     "rrweb",
     "@rrweb/utils"
   ],
@@ -28,6 +31,7 @@
   "main": "./dist/utils.umd.cjs",
   "module": "./dist/utils.js",
   "unpkg": "./dist/utils.umd.cjs",
+  "jsdelivr": "./umd/utils.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -42,11 +46,12 @@
     }
   },
   "files": [
+    "umd",
     "dist",
     "package.json"
   ],
   "devDependencies": {
-    "vite": "^5.2.8",
+    "vite": "^6.0.1",
     "vite-plugin-dts": "^3.8.1"
   },
   "dependencies": {}

@@ -1,5 +1,76 @@
 # rrdom-nodejs
 
+## 2.0.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrdom@2.0.1
+  - @rrweb/types@2.0.1
+
+## 2.0.0
+
+### Major Changes
+
+- [#1497](https://github.com/rrweb-io/rrweb/pull/1497) [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf) Thanks [@Juice10](https://github.com/Juice10)! - Distributed files have new filenames, paths and extensions. **Important: If you reference distributed files or types directly, you might have to update your paths/filenames. E.g. you import from `rrweb/typings/...` or `rrdom/es`. However you run `import rrweb from 'rrweb'` you won't notice a difference with this change.** If you include rrweb files directly in a script tag, you might have to update that path to include a the `.umd.cjs` files instead. All `.js` files now use ES modules which can be used in modern browsers, node.js and bundlers that support ES modules. All npm packages now also ship `.cjs` and `.umd.cjs` files. The `.umd.cjs` files are CommonJS modules that bundle all files together to make it easy to ship one file to browser environments (similar to the previous `.js` files). The `.cjs` files are CommonJS modules that can be used in older Node.js environments. Types should be better defined in `package.json` and if you need specific types they might be exported from new packages (for example `PlayerMachineState` and `SpeedMachineState` are now exported from `@rrweb/replay`). Check the `package.json`'s `main` and `exports` field for the available files.
+
+- [#1127](https://github.com/rrweb-io/rrweb/pull/1127) [`3cc4323`](https://github.com/rrweb-io/rrweb/commit/3cc4323094065a12f8b65afecd45061d604e245f) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Refactor: Improve performance by 80% in a super large benchmark case.
+
+  1. Refactor: change the data structure of childNodes from array to linked list
+  2. Improve the performance of the "contains" function. New algorithm will reduce the complexity from O(n) to O(logn)
+
+### Patch Changes
+
+- [#1126](https://github.com/rrweb-io/rrweb/pull/1126) [`227d43a`](https://github.com/rrweb-io/rrweb/commit/227d43abb93d57cadc70c760b28c46911bf7d8ff) Thanks [@YunFeng0817](https://github.com/YunFeng0817)! - Refactor all suffix of bundled scripts with commonjs module from 'js' to cjs [#1087](https://github.com/rrweb-io/rrweb/pull/1087).
+
+- [#1593](https://github.com/rrweb-io/rrweb/pull/1593) [`5a78938`](https://github.com/rrweb-io/rrweb/commit/5a789385a341311ba327a768fe0e2f0f2f5002ee) Thanks [@daibhin](https://github.com/daibhin)! - `NodeType` enum was moved from rrweb-snapshot to @rrweb/types
+  The following types where moved from rrweb-snapshot to @rrweb/types: `documentNode`, `documentTypeNode`, `legacyAttributes`, `textNode`, `cdataNode`, `commentNode`, `elementNode`, `serializedNode`, `serializedNodeWithId`, `serializedElementNodeWithId`, `serializedTextNodeWithId`, `IMirror`, `INode`, `mediaAttributes`, `attributes` and `DataURLOptions`
+
+- [#1704](https://github.com/rrweb-io/rrweb/pull/1704) [`33e01f5`](https://github.com/rrweb-io/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Provide a /umd/ output folder alongside the /dist/ one so that we can serve UMD (Universal Module Definition) files with a .js extension, without upsetting expectations set by package.json that all .js files in /dist/ are modules
+
+- Updated dependencies [[`ad9bc3e`](https://github.com/rrweb-io/rrweb/commit/ad9bc3ed16d9172490bd8350c6922e3726a7f585), [`2a80949`](https://github.com/rrweb-io/rrweb/commit/2a809499739ed2068bf6d9c614142f9dc8cb09ab)]:
+
+  - rrdom@0.1.7
+
+- Updated dependencies [[`3809060`](https://github.com/rrweb-io/rrweb/commit/38090606b98e2d64073e74194d2c5c42453e8b5c), [`55ebce7`](https://github.com/rrweb-io/rrweb/commit/55ebce733393da99b01e786f9bc77bf5362ba828)]:
+
+  - rrdom@0.1.6
+
+- Updated dependencies [[`ce6019d`](https://github.com/rrweb-io/rrweb/commit/ce6019d2d6264ac8ef4cc0c5f8ff1733787f9ea0), [`fd85c79`](https://github.com/rrweb-io/rrweb/commit/fd85c79e853ef89a860e795a8ae3ba318ef42ae8)]:
+
+  - rrdom@0.1.5
+
+- Updated dependencies [[`f1b23dd`](https://github.com/rrweb-io/rrweb/commit/f1b23ddc714ebaf9b66ca7a913f740e2c0524868)]:
+
+  - rrdom@0.1.4
+
+- [#909](https://github.com/rrweb-io/rrweb/pull/909) [`d5d877e`](https://github.com/rrweb-io/rrweb/commit/d5d877e3c19364784abf08f6e3eea4ba911fe4e3) Thanks [@Juice10](https://github.com/Juice10)! - Inline stylesheets when they load so late stylesheet content is captured.
+
+- Updated dependencies [[`74f553a`](https://github.com/rrweb-io/rrweb/commit/74f553af9241c32a028ee60335a640b3ea2a27d5), [`de755ae`](https://github.com/rrweb-io/rrweb/commit/de755ae572c04131f74f251b06da6de648b112c4), [`a31e272`](https://github.com/rrweb-io/rrweb/commit/a31e272bddb0b750a584fd38336417a6e0254b1b), [`01612b7`](https://github.com/rrweb-io/rrweb/commit/01612b7a6d9cc10eaf8bd31f7b335d1d54aa845a)]:
+
+  - rrdom@0.1.3
+  - rrweb-snapshot@2.0.0-alpha.0
+
+- Updated dependencies [[`0f0a532`](https://github.com/rrweb-io/rrweb/commit/0f0a532a2ca6b9a71acefcf3af4415beb47db0bb), [`8e55c45`](https://github.com/rrweb-io/rrweb/commit/8e55c455ff2987a3b5f367f23f48c1f2de74ce45), [`d872d28`](https://github.com/rrweb-io/rrweb/commit/d872d2809e3ec8d6ff5d3d5f43bc81aff70e7548), [`b798f2d`](https://github.com/rrweb-io/rrweb/commit/b798f2dbc07b5a24dcaf40d164159200b6c0679d), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`efdc167`](https://github.com/rrweb-io/rrweb/commit/efdc167ca6c039d04af83612e3d92498bb9b41a7), [`979d2b1`](https://github.com/rrweb-io/rrweb/commit/979d2b1847a3d05e2731722952e4d6bd8be54f40), [`227d43a`](https://github.com/rrweb-io/rrweb/commit/227d43abb93d57cadc70c760b28c46911bf7d8ff), [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf), [`f27e545`](https://github.com/rrweb-io/rrweb/commit/f27e545e1871ed2c1753d37543f556e8ddc406b4), [`227d43a`](https://github.com/rrweb-io/rrweb/commit/227d43abb93d57cadc70c760b28c46911bf7d8ff), [`3cc4323`](https://github.com/rrweb-io/rrweb/commit/3cc4323094065a12f8b65afecd45061d604e245f), [`335639a`](https://github.com/rrweb-io/rrweb/commit/335639af9b0ce7f70eb0f38ce113d877c7325158), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`5a78938`](https://github.com/rrweb-io/rrweb/commit/5a789385a341311ba327a768fe0e2f0f2f5002ee), [`e607e83`](https://github.com/rrweb-io/rrweb/commit/e607e83b21d45131a56c1ff606e9519a5b475fc1), [`33e01f5`](https://github.com/rrweb-io/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0), [`c278d06`](https://github.com/rrweb-io/rrweb/commit/c278d068a0e2f1175cce7cc63920ac1fbf4783cf)]:
+  - @rrweb/types@2.0.0
+  - rrdom@2.0.0
+
+## 2.0.0-alpha.20
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrdom@2.0.0-alpha.20
+  - @rrweb/types@2.0.0-alpha.20
+
+## 2.0.0-alpha.19
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrdom@2.0.0-alpha.19
+  - @rrweb/types@2.0.0-alpha.19
+
 ## 2.0.0-alpha.18
 
 ### Patch Changes

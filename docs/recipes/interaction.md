@@ -3,7 +3,9 @@
 By default, the UI could not interact during replay. But you can use API to enable/disable this programmatically.
 
 ```js
-const replayer = new rrweb.Replayer(events);
+import { Replayer } from '@rrweb/replay';
+
+const replayer = new Replayer(events);
 
 // enable user interact with the UI
 replayer.enableInteract();

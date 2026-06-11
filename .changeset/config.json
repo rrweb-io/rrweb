@@ -15,6 +15,7 @@
       "@rrweb/types",
       "@rrweb/packer",
       "@rrweb/utils",
+      "@rrweb/browser-client",
       "@rrweb/web-extension",
       "rrvideo",
       "@rrweb/rrweb-plugin-console-record",
@@ -22,7 +23,9 @@
       "@rrweb/rrweb-plugin-sequential-id-record",
       "@rrweb/rrweb-plugin-sequential-id-replay",
       "@rrweb/rrweb-plugin-canvas-webrtc-record",
-      "@rrweb/rrweb-plugin-canvas-webrtc-replay"
+      "@rrweb/rrweb-plugin-canvas-webrtc-replay",
+      "@rrweb/rrweb-plugin-network-record",
+      "@rrweb/rrweb-plugin-network-replay"
     ]
   ],
   "linked": [],

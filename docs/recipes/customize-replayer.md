@@ -1,13 +1,13 @@
 # Customize the Replayer
 
-When rrweb's Replayer and the [rrweb-player](../../packages/rrweb-player/) UI do not fit your need, you can customize your replayer UI.
+When `Replayer` and the [rrweb-player](../../packages/rrweb-player/) UI do not fit your need, you can customize your replayer UI.
 
 There are several ways to do this:
 
 1. Use [rrweb-player](../../packages/rrweb-player/), and customize its CSS.
 2. Use [rrweb-player](../../packages/rrweb-player/), and set `showController: false` to hide the controller UI. With this config, you can implement your controller UI.
 3. Use the `insertStyleRules` options to inject some CSS into the replay iframe.
-4. Develop a new replayer UI with rrweb's Replayer.
+4. Develop a new replayer UI with `Replayer`.
 
 ## Implement Your Controller UI
 
@@ -69,6 +69,6 @@ rrwebPlayer.addEventListener('ui-update-progress', (event) => {
 });
 ```
 
-## Develop a new replayer UI with rrweb's Replayer.
+## Develop a new replayer UI with `Replayer`.
 
 Please refer [rrweb-player](https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-player/).

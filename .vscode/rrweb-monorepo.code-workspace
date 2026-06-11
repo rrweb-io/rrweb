@@ -76,6 +76,14 @@
     {
       "name": "@rrweb/rrweb-plugin-canvas-webrtc-replay",
       "path": "../packages/plugins/rrweb-plugin-canvas-webrtc-replay"
+    },
+    {
+      "name": "@rrweb/rrweb-plugin-network-record",
+      "path": "../packages/plugins/rrweb-plugin-network-record"
+    },
+    {
+      "name": "@rrweb/rrweb-plugin-network-replay",
+      "path": "../packages/plugins/rrweb-plugin-network-replay"
     }
   ],
   "settings": {
@@ -98,7 +106,9 @@
       "@rrweb/rrweb-plugin-console-replay",
       "@rrweb/rrweb-plugin-sequential-id",
       "@rrweb/rrweb-plugin-canvas-webrtc-record",
-      "@rrweb/rrweb-plugin-canvas-webrtc-replay"
+      "@rrweb/rrweb-plugin-canvas-webrtc-replay",
+      "@rrweb/rrweb-plugin-network-record",
+      "@rrweb/rrweb-plugin-network-replay"
     ],
     "typescript.tsdk": " rrweb monorepo/node_modules/typescript/lib"
   }
