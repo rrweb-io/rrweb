@@ -49,8 +49,8 @@ Use browser ESM assets from a CDN:
   href="https://cdn.rrweb.com/replay/current/dist/style.css"
 />
 <script type="module">
-  import { record } from 'https://cdn.rrweb.com/record/current/dist/record.js';
-  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.js';
+  import { record } from 'https://cdn.rrweb.com/record/current/dist/record.min.js';
+  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.min.js';
 
   record({
     emit(event) {
@@ -61,9 +61,10 @@ Use browser ESM assets from a CDN:
 ```
 
 Use `current` for the latest stable release, or pin an exact version such as
-`https://cdn.rrweb.com/record/2.0.0/dist/record.js` and
-`https://cdn.rrweb.com/replay/2.0.0/dist/replay.js` for immutable
-production URLs.
+`https://cdn.rrweb.com/record/2.0.0/dist/record.min.js` and
+`https://cdn.rrweb.com/replay/2.0.0/dist/replay.min.js` for immutable
+production URLs. Use `.min.js` for production; the unminified `.js` sibling
+remains useful for debugging.
 
 `rrweb-player` is also available as a browser ESM asset:
 
@@ -73,7 +74,7 @@ production URLs.
   href="https://cdn.rrweb.com/rrweb-player/current/style.css"
 />
 <script type="module">
-  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.js';
+  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.min.js';
 </script>
 ```
 
@@ -329,7 +330,7 @@ the CDN:
   href="https://cdn.rrweb.com/replay/current/dist/style.css"
 />
 <script type="module">
-  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.js';
+  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.min.js';
 
   const events = YOUR_EVENTS;
 
@@ -337,6 +338,9 @@ the CDN:
   replayer.play();
 </script>
 ```
+
+Use `.min.js` for production; switch to the unminified `.js` sibling when
+debugging.
 
 #### Control the replayer by API
 
@@ -410,9 +414,12 @@ Browser without bundler (ESM):
   href="https://cdn.rrweb.com/rrweb-player/current/style.css"
 />
 <script type="module">
-  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.js';
+  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.min.js';
 </script>
 ```
+
+Use `.min.js` for production; switch to the unminified `.js` sibling when
+debugging.
 
 Legacy direct `<script>` include (UMD fallback):
 

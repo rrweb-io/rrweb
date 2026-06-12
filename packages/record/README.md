@@ -22,13 +22,14 @@ browser:
 
 ```html
 <script type="module">
-  import { record } from 'https://cdn.rrweb.com/record/current/dist/record.js';
+  import { record } from 'https://cdn.rrweb.com/record/current/dist/record.min.js';
 </script>
 ```
 
 Use `current` for the latest stable release, or pin an exact version such as
-`https://cdn.rrweb.com/record/2.0.0/dist/record.js` for immutable
-production URLs.
+`https://cdn.rrweb.com/record/2.0.0/dist/record.min.js` for immutable
+production URLs. Use `.min.js` for production; the unminified `.js` sibling
+remains useful for debugging.
 
 ### 3) Legacy Direct `<script>` Include (UMD fallback)
 
