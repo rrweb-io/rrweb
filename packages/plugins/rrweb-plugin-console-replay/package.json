@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/rrweb-plugin-console-replay",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-console-replay.umd.cjs",
@@ -48,13 +48,13 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
-    "@rrweb/rrweb-plugin-console-record": "^2.0.1",
-    "rrweb": "^2.0.1",
+    "@rrweb/rrweb-plugin-console-record": "^3.0.0",
+    "rrweb": "^3.0.0",
     "typescript": "^5.4.5",
     "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1"
   },
   "peerDependencies": {
-    "rrweb": "^2.0.1"
+    "rrweb": "^3.0.0"
   }
 }

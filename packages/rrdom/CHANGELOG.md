@@ -1,5 +1,12 @@
 # rrdom
 
+## 3.0.0
+
+### Patch Changes
+
+- Updated dependencies [[`b08a06f`](https://github.com/rrweb-io/rrweb/commit/b08a06f8f5445e7779fe0744d301a7ceb8d857c3)]:
+  - rrweb-snapshot@3.0.0
+
 ## 2.0.1
 
 ### Patch Changes
