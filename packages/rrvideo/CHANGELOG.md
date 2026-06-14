@@ -24,82 +24,14 @@
 - Updated dependencies [[`b5e30cf`](https://github.com/rrweb-io/rrweb/commit/b5e30cf6cc7f5335d674ef1917a92bdf2895fe9e), [`efdc167`](https://github.com/rrweb-io/rrweb/commit/efdc167ca6c039d04af83612e3d92498bb9b41a7), [`227d43a`](https://github.com/rrweb-io/rrweb/commit/227d43abb93d57cadc70c760b28c46911bf7d8ff), [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf), [`a01a12e`](https://github.com/rrweb-io/rrweb/commit/a01a12ef6769f26aa922ccd6ac76499f0837f0c2), [`33e01f5`](https://github.com/rrweb-io/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0)]:
   - rrweb-player@2.0.0
 
-## 2.0.0-alpha.20
+## 2.0.0-alpha.10&mdash;20
+
+Patch Changes only following changes to rrweb-player
 
 ### Patch Changes
 
-- Updated dependencies []:
-  - rrweb-player@2.0.0-alpha.20
-
-## 2.0.0-alpha.19
-
-### Patch Changes
-
-- Updated dependencies []:
-  - rrweb-player@2.0.0-alpha.19
-
-## 2.0.0-alpha.18
-
-### Patch Changes
-
-- Updated dependencies []:
-  - rrweb-player@2.0.0-alpha.18
-
-## 2.0.0-alpha.17
-
-### Patch Changes
-
-- Updated dependencies []:
-  - rrweb-player@2.0.0-alpha.17
-
-## 2.0.0-alpha.16
-
-### Patch Changes
-
-- Updated dependencies []:
-  - rrweb-player@2.0.0-alpha.16
-
-## 2.0.0-alpha.15
-
-### Patch Changes
-
-- Updated dependencies [[`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf)]:
-  - rrweb-player@2.0.0-alpha.15
-
-## 2.0.0-alpha.14
-
-### Patch Changes
-
-- Updated dependencies []:
-  - rrweb-player@2.0.0-alpha.14
-
-## 2.0.0-alpha.13
-
-### Patch Changes
-
-- Updated dependencies []:
-  - rrweb-player@2.0.0-alpha.13
-
-## 2.0.0-alpha.12
-
-### Patch Changes
-
-- Updated dependencies []:
-  - rrweb-player@2.0.0-alpha.12
-
-## 2.0.0-alpha.11
-
-### Patch Changes
-
-- Updated dependencies [[`efdc167`](https://github.com/rrweb-io/rrweb/commit/efdc167ca6c039d04af83612e3d92498bb9b41a7)]:
-  - rrweb-player@2.0.0-alpha.11
-
-## 2.0.0-alpha.10
-
-### Patch Changes
-
-- Updated dependencies []:
-  - rrweb-player@2.0.0-alpha.10
+- Updated dependencies [[`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf), [`efdc167`](https://github.com/rrweb-io/rrweb/commit/efdc167ca6c039d04af83612e3d92498bb9b41a7)]:
+  - rrweb-player (2.0.0-alpha.10&mdash;20
 
 ## 2.0.0-alpha.9
 
