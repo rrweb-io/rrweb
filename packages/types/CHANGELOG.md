@@ -2,6 +2,8 @@
 
 ## 2.0.1
 
+No changes in this release, version bump to keep in sync with other packages
+
 ## 2.0.0
 
 ### Major Changes
@@ -37,12 +39,6 @@
 
 - Updated dependencies [[`2a80949`](https://github.com/rrweb-io/rrweb/commit/2a809499739ed2068bf6d9c614142f9dc8cb09ab)]:
   - rrweb-snapshot@2.0.0-alpha.4
-
-## 2.0.0-alpha.20
-
-## 2.0.0-alpha.19
-
-## 2.0.0-alpha.18
 
 ## 2.0.0-alpha.17
 
