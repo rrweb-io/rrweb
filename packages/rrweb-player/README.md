@@ -1,10 +1,12 @@
 # rrweb-player
 
-Since rrweb's replayer only provides a basic UI, you can choose rrweb-replayer which is based on rrweb's public APIs but has a feature-rich replayer UI.
+## Overview
 
-## How is this different from `rrweb.Replayer`?
+Use this package to get a feature-rich replayer UI out of the box; if you want to build your own UI or don't want to introduce a dependency on Svelte in your app, use the [@rrweb/replay](../../packages/replay/README.md) package.
 
-rrweb-player uses rrweb's Replayer under the hood, but as Replayer doesn't include any UI for controls, rrweb-player adds those.
+## How is this different from `new Replayer()`?
+
+`new Replayer()` is from the more foundational [@rrweb/replay](../../packages/replay/README.md) package, which renders and rebuilds an rrweb event stream within an iframe.  This package builds on that to provide UI in the form of play/pause controls and a timeline using the [Svelte](https://svelte.dev/) UI framework.  The similar naming is unfortunate, and we aim to fix that in a future major version.
 
 ## Installation
 
@@ -75,7 +77,7 @@ new rrwebPlayer({
 | inactiveColor  | #D4D4D4      | Customize the color of inactive periods indicator in the progress bar with a valid CSS color string.                |
 | ...            | -            | all the [rrweb Replayer options](https://github.com/rrweb-io/rrweb/blob/master/guide.md#options-1) will be bypassed |
 
-## methods on the rrwebPlayer component
+## Methods on the rrwebPlayer component
 
 ```ts
 addEventListener(event: string, handler: (params: any) => unknown): void;
