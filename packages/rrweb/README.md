@@ -2,15 +2,35 @@
 
 ## Overview
 
-**This is a simpler version of the [original rrweb README](../../README.md) within this rrweb subpackage**
+Convenience package that includes a bundle of rrweb packages.
 
-[中文文档](../../README.zh_CN.md)
+In most production setups, the recorder and replayer are deployed to different pages/apps. Use [@rrweb/record](packages/record/) on recorded pages and [@rrweb/replay](packages/replay/) (or [rrweb-player](packages/rrweb-player/) to include UI) on replay pages.
 
-rrweb refers to 'record and replay the web', which is a tool for recording and replaying users' interactions on the web.
+| Use case                                            | Package choice                    |
+| --------------------------------------------------- | --------------------------------- |
+| Most new apps (explicit record/replay dependencies) | `@rrweb/record` + `@rrweb/replay` |
+| Quick setup, one import for both record and replay  | `rrweb`                           |
+| Single import, also including packer                | `@rrweb/all`                      |
+
+Use `rrweb` when you intentionally want one package for convenience (for example demos, tooling, or simplified setups).
+
+Includes the following packages:
+
+- [rrweb](../rrweb)
+- [@rrweb/record](../record)
+- [@rrweb/replay](../replay)
+
+Use [@rrweb/all](packages/all/) if you also wish to bundle the [@rrweb/packer](packages/packer/)
+
+`rrweb` and `@rrweb/all` are kept mainly for backward compatibility as it would be unusual to both record and replay . For new integrations, prefer package-specific entrypoints [@rrweb/record](packages/record/) and [@rrweb/replay](packages/replay/).
+
+
+### Dev Note
+
+As this was the original rrweb package, typescript code for both @rrweb/record and @rrweb/replay still lives in src/record and src/replay in this package. These will be refactored into their respective packages in due course, but for now this package is the principal one for both record and replay related PRs. See [Contributing to rrweb](../../CONTRIBUTING.md) for more info.
+
 
 ## Installation
-
-`rrweb` and `@rrweb/all` are kept mainly for backward compatibility. For new integrations, prefer package-specific entrypoints [@rrweb/record](packages/record/) and [@rrweb/replay](packages/replay/).
 
 ### 1) Bundler / npm (Recommended)
 
