@@ -23,7 +23,7 @@ rrweb refers to 'record and replay the web', which is a tool for recording and r
 
 ## Installation
 
-`rrweb` is kept mainly for backward compatibility. For new integrations, prefer package-specific entrypoints (`@rrweb/record` and `@rrweb/replay`) first, or use `@rrweb/all` as a convenience package.
+`rrweb` and `@rrweb/all` are kept mainly for backward compatibility. For new integrations, prefer package-specific entrypoints [@rrweb/record](packages/record/) and [@rrweb/replay](packages/replay/).
 
 ### 1) Bundler / npm (Recommended)
 
