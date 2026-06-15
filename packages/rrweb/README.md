@@ -7,6 +7,8 @@
 
 # rrweb
 
+## Overview
+
 **This is a simpler version of the [original rrweb README](../../README.md) within this rrweb subpackage**
 
 [中文文档](../../README.zh_CN.md)

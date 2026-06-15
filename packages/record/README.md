@@ -1,5 +1,7 @@
 # @rrweb/record
 
+## Overview
+
 This package contains all the record related code in rrweb.
 See the [guide](../../guide.md) for more info on rrweb.
 

@@ -1,5 +1,7 @@
 # @rrweb/all
 
+## Overview
+
 Convenience package that includes a bundle of rrweb packages.
 For most new integrations, prefer `@rrweb/record` + `@rrweb/replay` first, and use `@rrweb/all` when you want a single-package setup.
 

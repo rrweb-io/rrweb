@@ -1,5 +1,7 @@
 # @rrweb/replay
 
+## Overview
+
 This package contains all the necessary code to replay recorded events.
 See the [guide](../../guide.md) for more info on rrweb.
 
