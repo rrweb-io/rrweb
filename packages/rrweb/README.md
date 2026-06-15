@@ -1,10 +1,3 @@
-<p align="center">
-  <img width="100px" height="100px" src="https://www.rrweb.io/favicon.png">
-</p>
-<p align="center">
-  <a href="https://www.rrweb.io/" style="font-weight: bold">Try rrweb</a>
-</p>
-
 # rrweb
 
 ## Overview
