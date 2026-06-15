@@ -185,7 +185,7 @@ function save() {
 setInterval(save, 10 * 1000);
 ```
 
-#### Options
+#### Record Options
 
 The `record` function accepts the following options.
 
@@ -359,7 +359,7 @@ replayer.pause(5000);
 replayer.destroy();
 ```
 
-#### Options
+#### Replay Options
 
 The replayer accepts options as its constructor's second parameter, and it has the following options:
 

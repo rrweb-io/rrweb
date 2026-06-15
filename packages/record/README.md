@@ -2,8 +2,10 @@
 
 ## Overview
 
-This package contains all the record related code in rrweb.
-See the [guide](../../guide.md) for more info on rrweb.
+This package contains all the record related code in rrweb and is designed to be published in a frontend app/webpage.  See [Getting Started](../../guide.md#getting-started) in the rrweb guide for more information including the [record options](../../guide.md#record-options).
+
+For websocket based recording against the rrweb cloud API use the [browser-client](https://rrweb.com/docs/cloud/browser-client) which builds on this package and accepts the same record options.
+
 
 ## Installation
 
