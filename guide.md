@@ -217,7 +217,7 @@ The `record` function accepts the following options.
 | inlineImages             | false              | Deprecated since 2.0.0. Still supported, but planned to be superseded by future `captureAssets` asset recording APIs.                                                                         |
 | collectFonts             | false              | whether to collect fonts in the website                                                                                                                                                       |
 | userTriggeredOnInput     | false              | whether to add `userTriggered` on input events that indicates if this event was triggered directly by the user or not. [What is `userTriggered`?](https://github.com/rrweb-io/rrweb/pull/495) |
-| plugins                  | []                 | load plugins to provide extended record functions. [What is plugins?](./docs/recipes/plugin.md)                                                                                               |
+| plugins                  | []                 | load plugins to provide extended record functions. [What are plugins?](./docs/recipes/plugin-api.md)                                                                                          |
 | errorHandler             | -                  | A callback that is called if something inside of rrweb throws an error. The callback receives the error as argument.                                                                          |
 
 #### Privacy
@@ -381,7 +381,7 @@ The replayer accepts options as its constructor's second parameter, and it has t
 | mouseTail               | true          | whether to show mouse tail during replay. Set to false to disable mouse tail. A complete config can be found in this [type](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
 | unpackFn                | -             | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                                                 |
 | logConfig               | -             | configuration of console output playback, refer to the [console recipe](./docs/recipes/console.md)                                                                                                                             |
-| plugins                 | []            | load plugins to provide extended replay functions. [What is plugins?](./docs/recipes/plugin.md)                                                                                                                                |
+| plugins                 | []            | load plugins to provide extended replay functions. [What are plugins?](./docs/recipes/plugin-api.md)                                                                                                                           |
 | useVirtualDom           | true          | whether to use Virtual Dom optimization in the process of skipping to a new point of time                                                                                                                                      |
 | logger                  | console       | The logger object used by the replayer to print warnings or errors                                                                                                                                                             |
 
