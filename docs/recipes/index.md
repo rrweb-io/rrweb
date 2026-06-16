@@ -10,12 +10,6 @@ Record and Replay is the most common use case, which is suitable for any scenari
 
 [link](./record-and-replay.md)
 
-### Dive Into Events
-
-The events recorded by rrweb are a set of strictly-typed JSON data. You may discover some flexible ways to use them when you are familiar with the details.
-
-[link](./dive-into-event.md)
-
 ### Load Events Asynchronous
 
 When the size of the recorded events increased, load them in one request is not performant. You can paginate the events and load them as you need.
