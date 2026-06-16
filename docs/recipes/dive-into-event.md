@@ -1,1 +1,1 @@
-This page has moved to [../events.md](events.md).
+This page has moved to [Events](../events.md).
