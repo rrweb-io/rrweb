@@ -24,11 +24,9 @@ Use [@rrweb/all](packages/all/) if you also wish to bundle the [@rrweb/packer](p
 
 `rrweb` and `@rrweb/all` are kept mainly for backward compatibility as it would be unusual to both record and replay . For new integrations, prefer package-specific entrypoints [@rrweb/record](packages/record/) and [@rrweb/replay](packages/replay/).
 
-
 ### Dev Note
 
 As this was the original rrweb package, typescript code for both @rrweb/record and @rrweb/replay still lives in src/record and src/replay in this package. These will be refactored into their respective packages in due course, but for now this package is the principal one for both record and replay related PRs. See [Contributing to rrweb](../../CONTRIBUTING.md) for more info.
-
 
 ## Installation
 

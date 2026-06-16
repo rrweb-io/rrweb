@@ -2,7 +2,7 @@
 
 ## Overview
 
-This package contains the shared types used across rrweb packages.  rrweb makes extensive use of typescript types to enforce correctness and define the data API between packages.  Dive into the [source](https://github.com/rrweb-io/rrweb/blob/main/packages/types/src/index.ts) to get a flavour the types available, or check out the [Contributing to rrweb](../../CONTRIBUTING.md) article for more info.
+This package contains the shared types used across rrweb packages. rrweb makes extensive use of typescript types to enforce correctness and define the data API between packages. Dive into the [source](https://github.com/rrweb-io/rrweb/blob/main/packages/types/src/index.ts) to get a flavour the types available, or check out the [Contributing to rrweb](../../CONTRIBUTING.md) article for more info.
 
 ## Sponsors
 

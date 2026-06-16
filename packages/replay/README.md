@@ -8,7 +8,6 @@ See the [replay](../../guide.md#replay) section of the guide for more info.
 This package handles basic replay, but leaves UI and controls up to you.
 For a pre-built UI check out the [rrweb-player](../../packages/rrweb-player/README.md) package.
 
-
 ## Installation
 
 ### 1) Bundler / npm (Recommended)
