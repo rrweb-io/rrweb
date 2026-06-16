@@ -6,10 +6,9 @@ Use this package to get a feature-rich replayer UI out of the box; if you want t
 
 This is the same replayer used in the [cloud dashboard](https://app.rrweb.com/), if you want to try out a replay of your website, you can sign up and make a quick recording using the 'Test record any webpage' bookmarklet.
 
-
 ## How is this different from `new Replayer()`?
 
-`new Replayer()` is from the more foundational [@rrweb/replay](../../packages/replay/README.md) package, which renders and rebuilds an rrweb event stream within an iframe.  This package builds on that to provide UI in the form of play/pause controls and a timeline using the [Svelte](https://svelte.dev/) UI framework.  The similar naming is unfortunate, and we aim to fix that in a future major version.
+`new Replayer()` is from the more foundational [@rrweb/replay](../../packages/replay/README.md) package, which renders and rebuilds an rrweb event stream within an iframe. This package builds on that to provide UI in the form of play/pause controls and a timeline using the [Svelte](https://svelte.dev/) UI framework. The similar naming is unfortunate, and we aim to fix that in a future major version.
 
 ## Installation
 
