@@ -73,8 +73,8 @@ This feature aims to provide developers with more information about the bug scen
 
 [link](./console.md)
 
-### Plugin
+### Plugin API
 
-The plugin API is designed to extend the function of rrweb without bump the size and complexity of rrweb's core part.
+The plugin API is designed to enable extending the functionality of rrweb without impacting regular use of the core packages.
 
-[link](./plugin.md)
+[link](./plugin-api.md)
