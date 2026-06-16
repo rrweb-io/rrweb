@@ -1,6 +1,6 @@
 # Recipes
 
-> You may also want to read the [guide](../../guide.md) to understand the APIs, or read the [design docs](../design/index.md) to know more technical details of rrweb.
+You may also want to read the [guide](../../guide.md) to understand the APIs, or read the [Internal Design](../design/index.md) docs to know more technical details of rrweb.
 
 ## Scenarios
 
