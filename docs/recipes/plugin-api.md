@@ -35,9 +35,9 @@ export type ReplayPlugin = {
 
 Both record and replay plugins have a type interface.
 
-### example
+### Example
 
-#### record plugin
+#### Record Plugin
 
 ```ts
 import { record } from '@rrweb/record';
@@ -80,7 +80,7 @@ In this example, the record plugin will emit events like this:
 }
 ```
 
-#### replay plugin
+#### Replay Plugin
 
 ```ts
 import { Replayer } from '@rrweb/replay';
@@ -103,7 +103,7 @@ const replayer = new Replayer(events, {
 
 A replay plugin can interact with the replayer by using `context.replayer`.
 
-## naming a plugin
+## Naming Plugins
 
 A record plugin should have a unique name, and it will be stored in the event it emits.
 
