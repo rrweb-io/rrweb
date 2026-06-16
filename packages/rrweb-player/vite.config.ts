@@ -1,6 +1,6 @@
 import path from 'path';
 import glob from 'fast-glob';
-import { Plugin } from 'vite';
+import { defineConfig, mergeConfig, Plugin } from 'vite';
 import config from '../../vite.config.default';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import sveltePreprocess from 'svelte-preprocess';
@@ -30,6 +30,7 @@ async function generateDts(inputPath: string) {
 function viteSvelteDts(): Plugin {
   return {
     name: 'vite-plugin-svelte-dts',
+    apply: 'build',
     async buildStart(options) {
       console.log('Generating .d.ts files for Svelte components...');
 
@@ -60,11 +61,21 @@ function viteSvelteDts(): Plugin {
   };
 }
 
-export default config(path.resolve(__dirname, 'src/main.ts'), 'rrwebPlayer', {
-  plugins: [
-    viteSvelteDts(),
-    svelte({
-      preprocess: [sveltePreprocess({ typescript: true })],
-    }),
-  ],
+const sveltePlugins = svelte({
+  preprocess: [sveltePreprocess({ typescript: true })],
+}) as Plugin[];
+
+const baseConfig = config(path.resolve(__dirname, 'src/main.ts'), 'rrwebPlayer', {
+  plugins: [viteSvelteDts(), ...sveltePlugins],
 });
+
+export default defineConfig((env) =>
+  mergeConfig(
+    typeof baseConfig === 'function' ? baseConfig(env) : baseConfig,
+    {
+      resolve: {
+        conditions: ['browser'],
+      },
+    },
+  ),
+);
