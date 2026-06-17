@@ -57,7 +57,7 @@
   "bugs": {
     "url": "https://github.com/grafana/rrweb/issues"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot#readme",
+  "homepage": "https://github.com/grafana/rrweb/tree/main/packages/rrweb-snapshot#readme",
   "devDependencies": {
     "@grafana/rrweb-types": "^2.0.0-alpha.20.grafana.0",
     "@grafana/rrweb-utils": "^2.0.0-alpha.20.grafana.0",

@@ -14,7 +14,7 @@ because upstream differs.
 Important fork context:
 
 - Remote: `git@github.com:grafana/rrweb.git`.
-- Base branch: `master`.
+- Base branch: `main`.
 - The original upstream README has been moved to `UPSTREAM_README.md`. The
   root `README.md` is a short internal-fork notice — do not restore upstream
   README content.
@@ -582,7 +582,7 @@ Key details:
   in the release-please config.
 - Currently in alpha prerelease mode (`2.0.0-alpha.x`).
 - Release-please automatically creates release PRs with changelogs when
-  conventional commits land on `master`.
+  conventional commits land on `main`.
 - Do not manually edit `.release-please-manifest.json`.
 - Do not manually bump version numbers in individual `package.json` files —
   release-please manages all of them.
