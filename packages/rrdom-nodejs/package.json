@@ -61,5 +61,9 @@
     "nwsapi": "2.2.0",
     "@grafana/rrdom": "^2.0.0-alpha.20.grafana.0",
     "@grafana/rrweb-types": "^2.0.0-alpha.20.grafana.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grafana/rrweb"
   }
 }

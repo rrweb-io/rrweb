@@ -20,11 +20,11 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/@rrweb/record#readme",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/grafana/rrweb/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "https://github.com/grafana/rrweb"
   },
   "license": "MIT",
   "type": "module",

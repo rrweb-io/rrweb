@@ -1,0 +1,232 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+# Hardening: default to read-only at the workflow level; jobs elevate id-token only where OIDC is needed.
+permissions:
+  contents: read
+
+# Hardening: avoid concurrent release/publish runs (risk of double-publishing).
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write # needed to mint the GitHub App token via OIDC (GATB)
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Mint GitHub App token
+        id: app-token
+        uses: grafana/shared-workflows/actions/create-github-app-token@259ba21cb3ff07724f331e26d926d655d24b317b
+        with:
+          github_app: app-o11y-kwl-ci
+
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5
+        id: release
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          target-branch: main
+
+      - name: Resolve release PR branch
+        id: release-branch
+        if: ${{ steps.release.outputs.prs_created == 'true' }}
+        env:
+          PR_JSON: ${{ steps.release.outputs.pr }}
+        run: |
+          BRANCH="$(echo "$PR_JSON" | jq -r '.headBranchName')"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout release PR branch
+        if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ steps.release-branch.outputs.branch }}
+          persist-credentials: false
+
+      - name: Setup Node.js
+        if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - name: Upgrade npm
+        if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
+        run: npm install -g npm@11.12.1
+
+      - name: Refresh package-lock.json
+        id: refresh
+        if: ${{ steps.release.outputs.prs_created == 'true' && steps.release-branch.outputs.branch != '' && steps.release-branch.outputs.branch != 'null' }}
+        run: |
+          set -euo pipefail
+          npm install --package-lock-only --ignore-scripts
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No lockfile changes."
+            exit 0
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      # Hardening: the token is introduced only HERE (after the untrusted install code has run),
+      # as env in a dedicated push step — not persisted in git config for the whole job.
+      - name: Commit and push lockfile update
+        if: ${{ steps.refresh.outputs.changed == 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          BRANCH: ${{ steps.release-branch.outputs.branch }}
+        run: |
+          set -euo pipefail
+          git config user.name 'app-o11y-kwl-ci[bot]'
+          git config user.email 'app-o11y-kwl-ci[bot]@users.noreply.github.com'
+          git add package-lock.json
+          git commit -m 'chore: refresh package-lock.json for release'
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${BRANCH}"
+
+  test:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - name: Upgrade npm
+        run: npm install -g npm@11.12.1
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Install browsers
+        run: |
+          for install in $(find . -path '*/puppeteer/install.js' -not -path '*/puppeteer/node_modules/*'); do
+            echo "Running $install"
+            node "$install"
+          done
+          npx playwright install --with-deps chromium
+
+      - name: Build
+        run: npm run build:all
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run check-types
+
+      - name: Unit tests
+        run: npm test
+        env:
+          PUPPETEER_HEADLESS: 'true'
+
+  publish:
+    permissions:
+      contents: read
+      id-token: write # npm provenance / trusted publishing (OIDC)
+
+    runs-on: ubuntu-latest
+    needs: [release-please, test]
+    if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+    timeout-minutes: 15
+    environment: npm-publish # Hardening: protect this environment with required reviewers + branch restriction
+
+    env:
+      NPM_CONFIG_ACCESS: public
+      NPM_CONFIG_PROVENANCE: true
+
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version-file: .nvmrc
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
+      - name: Upgrade npm
+        run: npm install -g npm@11.12.1
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build
+        run: npm run build:all
+
+      # Hardening: use npm trusted publishing (OIDC) instead of a long-lived NPM_TOKEN.
+      # id-token: write is already granted — npm publish --provenance uses the GitHub OIDC
+      # token for both authentication and provenance attestation.
+      - name: Publish packages to npm
+        run: |
+          publish_pkg() {
+            local pkg="$1"
+            local name version
+            name=$(node -e "process.stdout.write(require('./$pkg/package.json').name)")
+            version=$(node -e "process.stdout.write(require('./$pkg/package.json').version)")
+
+            if npm view "$name@$version" version 2>/dev/null | grep -qF "$version"; then
+              echo "Skipping $name@$version — already published"
+              return 0
+            fi
+
+            local tag_flag=""
+            if [[ "$version" == *-alpha* ]]; then
+              tag_flag="--tag alpha"
+            elif [[ "$version" == *-beta* ]]; then
+              tag_flag="--tag beta"
+            fi
+
+            echo "Publishing $name@$version..."
+            (cd "$pkg" && npm publish --provenance --access public $tag_flag)
+          }
+
+          failed=0
+          for pkg in packages/*/ packages/plugins/*/; do
+            if [ -f "$pkg/package.json" ] && node -e "const p=require('./$pkg/package.json'); process.exit(p.private ? 1 : 0)" 2>/dev/null; then
+              publish_pkg "$pkg" || failed=1
+            fi
+          done
+          exit $failed

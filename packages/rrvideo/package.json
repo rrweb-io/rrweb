@@ -38,5 +38,9 @@
     "minimist": "^1.2.5",
     "playwright": "^1.56.1",
     "@grafana/rrweb-player": "^2.0.0-alpha.20.grafana.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grafana/rrweb"
   }
 }

@@ -35,7 +35,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "https://github.com/grafana/rrweb"
   },
   "keywords": [
     "rrweb"
@@ -43,7 +43,7 @@
   "author": "yanzhen@smartx.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/grafana/rrweb/issues"
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {

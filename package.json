@@ -4,7 +4,7 @@
   "description": "record and replay the web",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
+    "url": "https://github.com/grafana/rrweb"
   },
   "keywords": [
     "rrweb"
@@ -12,7 +12,7 @@
   "author": "yanzhen@smartx.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/rrweb-io/rrweb/issues"
+    "url": "https://github.com/grafana/rrweb/issues"
   },
   "private": true,
   "homepage": "https://github.com/rrweb-io/rrweb#readme",

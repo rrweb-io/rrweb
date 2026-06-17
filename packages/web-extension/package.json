@@ -47,5 +47,9 @@
     "react-router-dom": "^6.4.1",
     "@grafana/rrweb": "^2.0.0-alpha.20.grafana.0",
     "@grafana/rrweb-player": "^2.0.0-alpha.20.grafana.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grafana/rrweb"
   }
 }
