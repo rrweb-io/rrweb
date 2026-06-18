@@ -31,7 +31,7 @@ Patch Changes only following changes to rrweb-player
 ### Patch Changes
 
 - Updated dependencies [[`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf), [`efdc167`](https://github.com/rrweb-io/rrweb/commit/efdc167ca6c039d04af83612e3d92498bb9b41a7)]:
-  - rrweb-player (2.0.0-alpha.10&mdash;20
+  - rrweb-player (2.0.0-alpha.10&mdash;20)
 
 ## 2.0.0-alpha.9
 

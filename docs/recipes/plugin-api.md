@@ -15,7 +15,7 @@ The plugin API is designed to enable extending the functionality of rrweb withou
 
 ## Interface
 
-Same to with other functionality in rrweb, a plugin can implement record or replay or both features.
+Consistent with other functionality in rrweb, a plugin can implement record or replay or both features.
 
 ```ts
 export type RecordPlugin<TOptions = unknown> = {

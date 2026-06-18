@@ -34,7 +34,7 @@ rrweb is composed of the following principal parts:
 
 - **[rrweb-snapshot](packages/rrweb-snapshot/)**, including both snapshot and rebuilding features. The snapshot is used to convert the DOM and its state into a serializable data structure with a unique identifier; the rebuilding feature is to rebuild the snapshot into corresponding DOM. This package can be used on it's own to provide a static HTML based 'screenshot' of the current web page state, with all Javascript deactivated.
 - **[record](packages/record)**, builds on an initial snapshot to record all HTML state changes (mutations) and user interactions as the user browses the web page. Multiple page loads can be chained together into a single recording.
-- **[rrweb](packages/replay)**, rebuilds the inital snapshot and replays the list or stream of subsequent events to show a 'session replay'
+- **[replay](packages/replay)**, rebuilds the inital snapshot and replays the list or stream of subsequent events to show a 'session replay'
 - **[rrweb-player](packages/rrweb-player/)**, a player UI on top of the replay package to provide GUI-based functions like pause, fast-forward, drag and drop to play at any time.
 
 ## Roadmap
