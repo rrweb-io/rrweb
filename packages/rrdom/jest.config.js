@@ -2,7 +2,6 @@
 export default {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  setupFiles: ['./jest.setup.ts'],
   /**
    * Keeps old (pre-jest 29) snapshot format
    * its a bit ugly and harder to read than the new format,
