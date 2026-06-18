@@ -16,7 +16,6 @@ export type ClickTrackPayload = {
   hrefAttr?: string;
   srcAttr?: string;
   targetText?: string;
-  targetClasses?: string[];
   sigTargetTagName?: string;
   sigTargetInternal?: boolean;
   pointerType?: 'mouse' | 'touch' | 'pen';

@@ -202,20 +202,6 @@ describe('createClickTracker (standalone)', () => {
     stop();
   });
 
-  it('includes target classes', () => {
-    setHTML('<button class="btn primary lg" id="cta">Go</button>');
-    const payloads: ClickTrackPayload[] = [];
-    const stop = createClickTracker({
-      callback: (p) => payloads.push(p),
-    });
-
-    click(document.getElementById('cta')!);
-
-    expect(payloads[0].targetClasses).toEqual(['btn', 'primary', 'lg']);
-
-    stop();
-  });
-
   it('cleanup function stops tracking', () => {
     setHTML('<button id="btn">Click</button>');
     const payloads: ClickTrackPayload[] = [];
