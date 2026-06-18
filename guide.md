@@ -6,13 +6,14 @@
 
 ## Installation
 
-| Goal                                               | Recommended package(s)            |
-| -------------------------------------------------- | --------------------------------- |
-| Most projects (record + replay)                    | `@rrweb/record` + `@rrweb/replay` |
-| Quick setup, one import for both record and replay | `rrweb`                           |
-| Single import, also including packer               | `@rrweb/all`                      |
+| Goal                                                | Recommended package(s)            |
+| --------------------------------------------------- | --------------------------------- |
+| Most projects (record + replay)                     | `@rrweb/record` + `@rrweb/replay` |
+| Quick setup, one import for record, replay + packer | `@rrweb/all`                      |
 
 In most production setups, recorder and replayer are deployed to different pages/apps. Use `@rrweb/record` on recorded pages and `@rrweb/replay` (or `rrweb-player`) on replay pages. Use `@rrweb/all` when you intentionally want one package for convenience (for example demos, tooling, or simplified setups).
+
+> The `rrweb` package is deprecated. It still works, but new projects should use `@rrweb/record` and `@rrweb/replay` (or `@rrweb/all` for a single import) so that we can slim down and eventually remove `rrweb`.
 
 ### 1) Bundler / npm (Recommended)
 

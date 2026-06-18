@@ -4,15 +4,15 @@
 
 Convenience package that includes a bundle of rrweb packages.
 
-In most production setups, the recorder and replayer are deployed to different pages/apps. Use [@rrweb/record](packages/record/) on recorded pages and [@rrweb/replay](packages/replay/) (or [rrweb-player](packages/rrweb-player/) to include UI) on replay pages.
+In most production setups, the recorder and replayer are deployed to different pages/apps. Use [@rrweb/record](packages/record) on recorded pages and [@rrweb/replay](packages/replay) (or [rrweb-player](packages/rrweb-player) to include UI) on replay pages.
 
 | Use case                                            | Package choice                    |
 | --------------------------------------------------- | --------------------------------- |
 | Most new apps (explicit record/replay dependencies) | `@rrweb/record` + `@rrweb/replay` |
-| Quick setup, one import for both record and replay  | `rrweb`                           |
-| Single import, also including packer                | `@rrweb/all`                      |
+| Single import for record, replay + packer           | `@rrweb/all`                      |
 
-Use `@rrweb/all` when you intentionally want one package for convenience (for example demos, tooling, or simplified setups).
+Use `@rrweb/all` when you intentionally want one package for convenience (for example demos, tooling, or simplified setups); the deprecated `rrweb` package also served a similar all-in-one purpose.
+
 
 Includes the following packages:
 

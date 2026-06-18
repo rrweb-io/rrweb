@@ -2,27 +2,16 @@
 
 ## Overview
 
-Convenience package that includes a bundle of rrweb packages.
+> **Deprecated.** `rrweb` is kept for backward compatibility only. New projects should depend on [@rrweb/record](../record) and [@rrweb/replay](../replay) directly, or use [@rrweb/all](../all) for a single convenience import. Moving to these entrypoints lets us slim down and eventually remove this package.
 
-In most production setups, the recorder and replayer are deployed to different pages/apps. Use [@rrweb/record](packages/record/) on recorded pages and [@rrweb/replay](packages/replay/) (or [rrweb-player](packages/rrweb-player/) to include UI) on replay pages.
+rrweb refers to 'record and replay the web', a tool for recording and replaying users' interactions on the web.
+
+In most production setups, the recorder and replayer are deployed to different pages/apps. Use [@rrweb/record](../record) on recorded pages and [@rrweb/replay](../replay) (or [rrweb-player](../rrweb-player) to include UI) on replay pages.
 
 | Use case                                            | Package choice                    |
 | --------------------------------------------------- | --------------------------------- |
-| Most new apps (explicit record/replay dependencies) | `@rrweb/record` + `@rrweb/replay` |
-| Quick setup, one import for both record and replay  | `rrweb`                           |
-| Single import, also including packer                | `@rrweb/all`                      |
-
-Use `rrweb` when you intentionally want one package for convenience (for example demos, tooling, or simplified setups).
-
-Includes the following packages:
-
-- [rrweb](../rrweb)
-- [@rrweb/record](../record)
-- [@rrweb/replay](../replay)
-
-Use [@rrweb/all](packages/all/) if you also wish to bundle the [@rrweb/packer](packages/packer/)
-
-`rrweb` and `@rrweb/all` are kept mainly for backward compatibility as it would be unusual to both record and replay . For new integrations, prefer package-specific entrypoints [@rrweb/record](packages/record/) and [@rrweb/replay](packages/replay/).
+| Most apps (explicit record/replay dependencies)     | `@rrweb/record` + `@rrweb/replay` |
+| Single import for record, replay + packer           | `@rrweb/all`                      |
 
 ### Dev Note
 
