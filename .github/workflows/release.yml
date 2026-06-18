@@ -36,7 +36,7 @@ jobs:
         id: app-token
         uses: grafana/shared-workflows/actions/create-github-app-token@259ba21cb3ff07724f331e26d926d655d24b317b
         with:
-          github_app: app-o11y-kwl-ci
+          github_app: grafana-session-replay-bot
 
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5
         id: release
@@ -95,8 +95,8 @@ jobs:
           BRANCH: ${{ steps.release-branch.outputs.branch }}
         run: |
           set -euo pipefail
-          git config user.name 'app-o11y-kwl-ci[bot]'
-          git config user.email 'app-o11y-kwl-ci[bot]@users.noreply.github.com'
+          git config user.name 'grafana-session-replay-bot[bot]'
+          git config user.email 'grafana-session-replay-bot[bot]@users.noreply.github.com'
           git add package-lock.json
           git commit -m 'chore: refresh package-lock.json for release'
           git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${BRANCH}"
