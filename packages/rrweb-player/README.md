@@ -2,7 +2,7 @@
 
 ## Overview
 
-Use this package to get a feature-rich replayer UI out of the box; if you want to build your own UI use the [@rrweb/replay](../../packages/replay/README.md) package.
+Use this package to get a feature-rich playback UI out of the box; if you want to build your own UI use the [@rrweb/replay](../../packages/replay/README.md) package.
 
 This is the same replayer used in the [cloud dashboard](https://app.rrweb.com/), if you want to try out a replay of your website, you can sign up and make a quick recording using the 'Test record any webpage' bookmarklet.
 

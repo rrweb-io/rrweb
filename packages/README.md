@@ -5,7 +5,7 @@ rrweb is a monorepo containing the following packages:
 - [rrweb](rrweb/) — Main package including both record and replay
 - [@rrweb/record](record/) — The record related code in rrweb and is designed to be published in a frontend app/webpage
 - [@rrweb/replay](replay/) — Rebuild and replay recorded events in an iframe
-- [rrweb-player (Svelte)](rrweb-player/) — Use this package to get a feature-rich replayer UI out of the box
+- [rrweb-player (ui)](rrweb-player/) — Builds on @rrweb/replay to provide a feature-rich playback UI out of the box
 - [rrweb-snapshot](rrweb-snapshot/) — Snapshot the DOM into a stateful and serializable data structure &mdash; basis of the FullSnapshot event in an rrweb recording
 - [@rrweb/types](types/) — Shared types used across rrweb packages
 - [@rrweb/utils](utils/) — Shared utility functions used across rrweb packages
