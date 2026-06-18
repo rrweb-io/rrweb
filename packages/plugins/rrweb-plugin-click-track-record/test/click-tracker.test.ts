@@ -218,8 +218,8 @@ describe('createClickTracker (standalone)', () => {
     expect(payloads).toHaveLength(1); // no new payload after stop
   });
 
-  it('includes relative click position', () => {
-    setHTML('<button id="btn" style="width:100px;height:50px">Click</button>');
+  it('includes percentage position, aspect ratio, and viewport width', () => {
+    setHTML('<button id="btn">Click</button>');
     const payloads: ClickTrackPayload[] = [];
     const stop = createClickTracker({
       callback: (p) => payloads.push(p),
@@ -227,11 +227,14 @@ describe('createClickTracker (standalone)', () => {
 
     click(document.getElementById('btn')!, { clientX: 25, clientY: 15 });
 
-    expect(payloads[0].x).toBe(25);
-    expect(payloads[0].y).toBe(15);
-    // relX/relY are relative to element bounds (which are 0,0 in jsdom)
-    expect(typeof payloads[0].relX).toBe('number');
-    expect(typeof payloads[0].relY).toBe('number');
+    // jsdom elements have 0x0 bounds, so pctX/pctY are based on fallback 1x1
+    expect(typeof payloads[0].pctX).toBe('number');
+    expect(typeof payloads[0].pctY).toBe('number');
+    expect(payloads[0].aspect).toBe(1); // 1x1 fallback → square
+    expect(payloads[0].vpW).toBe(window.innerWidth);
+    // x/y viewport coords should not be present
+    expect((payloads[0] as Record<string, unknown>).x).toBeUndefined();
+    expect((payloads[0] as Record<string, unknown>).y).toBeUndefined();
 
     stop();
   });

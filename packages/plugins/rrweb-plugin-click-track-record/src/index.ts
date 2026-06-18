@@ -7,12 +7,14 @@ export const PLUGIN_NAME = 'rrweb/click-track@1';
 export type ClickTrackPayload = {
   targetSelector: string;
   targetTagName: string;
-  targetW: number;
-  targetH: number;
-  relX: number;
-  relY: number;
-  x: number;
-  y: number;
+  /** Click position as percentage of element width (0–100) */
+  pctX: number;
+  /** Click position as percentage of element height (0–100) */
+  pctY: number;
+  /** Element aspect ratio: width / height (>1 landscape, <1 portrait, 1 square) */
+  aspect: number;
+  /** Viewport width in CSS pixels at click time */
+  vpW: number;
   hrefAttr?: string;
   srcAttr?: string;
   targetText?: string;
@@ -285,16 +287,16 @@ function buildPayload(
   if (!targetSelector) return null;
 
   const bounds = target.getBoundingClientRect();
+  const w = bounds.width || 1;
+  const h = bounds.height || 1;
 
   const payload: ClickTrackPayload = {
     targetSelector,
     targetTagName: target.tagName,
-    targetW: Math.round(10 * bounds.width) / 10,
-    targetH: Math.round(10 * bounds.height) / 10,
-    relX: Math.round(10 * (e.clientX - bounds.x)) / 10,
-    relY: Math.round(10 * (e.clientY - bounds.y)) / 10,
-    x: e.clientX,
-    y: e.clientY,
+    pctX: Math.round(10 * ((e.clientX - bounds.x) / w) * 100) / 10,
+    pctY: Math.round(10 * ((e.clientY - bounds.y) / h) * 100) / 10,
+    aspect: Math.round(100 * (w / h)) / 100,
+    vpW: window.innerWidth,
   };
 
   if (lastPointerType) {
