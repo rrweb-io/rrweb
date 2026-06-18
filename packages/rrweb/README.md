@@ -8,10 +8,10 @@ rrweb refers to 'record and replay the web', a tool for recording and replaying 
 
 In most production setups, the recorder and replayer are deployed to different pages/apps. Use [@rrweb/record](../record) on recorded pages and [@rrweb/replay](../replay) (or [rrweb-player](../rrweb-player) to include UI) on replay pages.
 
-| Use case                                            | Package choice                    |
-| --------------------------------------------------- | --------------------------------- |
-| Most apps (explicit record/replay dependencies)     | `@rrweb/record` + `@rrweb/replay` |
-| Single import for record, replay + packer           | `@rrweb/all`                      |
+| Use case                                        | Package choice                    |
+| ----------------------------------------------- | --------------------------------- |
+| Most apps (explicit record/replay dependencies) | `@rrweb/record` + `@rrweb/replay` |
+| Single import for record, replay + packer       | `@rrweb/all`                      |
 
 ### Dev Note
 

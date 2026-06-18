@@ -13,7 +13,6 @@ In most production setups, the recorder and replayer are deployed to different p
 
 Use `@rrweb/all` when you intentionally want one package for convenience (for example demos, tooling, or simplified setups); the deprecated `rrweb` package also served a similar all-in-one purpose.
 
-
 Includes the following packages:
 
 - [rrweb](../rrweb)
