@@ -1,4 +1,5 @@
 import snapshot, {
+  getHref,
   serializeNodeWithId,
   transformAttribute,
   ignoreAttribute,
@@ -9,6 +10,7 @@ import snapshot, {
   classMatchesRegex,
   IGNORED_NODE,
   genId,
+  getSourcesFromSrcset,
 } from './snapshot';
 import rebuild, {
   buildNodeWithSN,
@@ -16,6 +18,7 @@ import rebuild, {
   createCache,
   createSandboxedIframe,
   rebuildIntoSandboxedIframe,
+  buildStyleNode,
 } from './rebuild';
 export * from './types';
 // Legacy broad export kept for compatibility. New internal imports should
@@ -23,6 +26,7 @@ export * from './types';
 export * from './utils';
 
 export {
+  getHref,
   snapshot,
   serializeNodeWithId,
   rebuild,
@@ -40,4 +44,6 @@ export {
   classMatchesRegex,
   IGNORED_NODE,
   genId,
+  getSourcesFromSrcset,
+  buildStyleNode,
 };

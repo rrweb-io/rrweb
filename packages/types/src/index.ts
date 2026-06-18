@@ -19,6 +19,12 @@ export type loadedEvent = {
   data: unknown;
 };
 
+export type assetStatus = {
+  url: string;
+  status: 'capturing' | 'captured' | 'media-mismatch' | 'error' | 'refused';
+  timeout?: number;
+};
+
 export type fullSnapshotEvent = {
   type: EventType.FullSnapshot;
   data: {
@@ -27,7 +33,19 @@ export type fullSnapshotEvent = {
       top: number;
       left: number;
     };
+    /*
+     * the assets associated with this snapshot
+     * info is used to delay first FullSnapshot render until e.g. stylesheet
+     * assets have been received by the replayer
+     * could also be useful for server-side processing of the event stream
+     * without having to delve into the structure of this full snapshot
+     */
+    capturedAssetStatuses?: assetStatus[];
   };
+};
+
+export type fullSnapshotEventWithTime = fullSnapshotEvent & {
+  timestamp: number;
 };
 
 export type incrementalSnapshotEvent = {
@@ -59,6 +77,54 @@ export type pluginEvent<T = unknown> = {
     payload: T;
   };
 };
+
+export type captureAssetsParam = Partial<{
+  /**
+   * Captures object URLs (blobs, files, media sources).
+   * More info: https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
+   */
+  objectURLs: boolean;
+  /**
+   * Allowlist of origins to capture object URLs from.
+   * [origin, origin, ...] to capture from specific origins.
+   *   e.g. ['https://example.com', 'https://www.example.com']
+   * Set to `true` to capture from all origins.
+   * Set to `false` or `[]` to disable capturing from any origin (apart from object URLs or when inlineStylesheet=='all')
+   */
+  origins: string[] | true | false;
+  /**
+   * capture images irrespective of origin (populated from inlineImages setting)
+   */
+  images: boolean;
+  /**
+   * capture videos irrespective of origin
+   */
+  video: boolean;
+  /**
+   * capture audio irrespective of origin
+   */
+  audio: boolean;
+  /**
+   * capture stylesheets irrespective of origin (populated from inlineStylesheets setting)
+   */
+  stylesheets: boolean | 'without-fetch';
+  /*
+   * in milliseconds, default 2000
+   * stylesheets are captured as assets in order to take their processing off the main thread
+   * this number may need to be reduced to ensure that stylesheet assets are emitted
+   * in time
+   */
+  processStylesheetsWithin: number;
+  /*
+   * if set, process stylesheets with less than this number of css rules immediately/synchronously,
+   * and include directly in the snapshot without a separate asset event
+   */
+  stylesheetsRuleThreshold: number;
+  /**
+   * In a mutation context, we are already deferred, so performance related capturing can happen immediately (without a separate asset event)
+   */
+  _fromMutation: true;
+}>;
 
 export type NetworkInitiatorType =
   | 'audio'
@@ -129,6 +195,16 @@ export type assetEvent = {
 
 export type assetEventWithTime = assetEvent & {
   timestamp: number;
+};
+
+/*
+  used at record time to pass an asset between snapshot.ts and AssetManager
+*/
+export type asset = {
+  element: HTMLElement;
+  attr: string;
+  value: string;
+  styleId?: number;
 };
 
 export enum IncrementalSource {
@@ -246,7 +322,7 @@ export type event = eventWithoutTime;
 
 export type eventWithTime = eventWithoutTime & {
   timestamp: number;
-  delay?: number;
+  delay?: number; // added during replay
 };
 
 export type canvasEventWithTime = eventWithTime & {
@@ -405,7 +481,10 @@ export type mutationCallbackParam = {
   isAttachIframe?: true;
 };
 
-export type mutationCallBack = (m: mutationCallbackParam) => void;
+export type mutationCallBack = (
+  m: mutationCallbackParam,
+  timestamp?: number,
+) => void;
 
 export type mousemoveCallBack = (
   p: mousePosition[],
@@ -457,7 +536,7 @@ export enum CanvasContext {
 
 export type SerializedCssTextArg = {
   rr_type: 'CssText';
-  cssTexts: string[]; // usually just a single item
+  cssTexts: string[]; // normally a single string, except for <style> with multiple child nodes
 };
 
 export type SerializedBlobArg = {
@@ -800,6 +879,39 @@ export type TakeTypedKeyValues<Obj extends object, Type> = Pick<
   Obj,
   TakeTypeHelper<Obj, Type>[keyof TakeTypeHelper<Obj, Type>]
 >;
+
+export type RebuildAssetManagerUnknownStatus = { status: 'unknown' };
+export type RebuildAssetManagerLoadingStatus = { status: 'loading' };
+export type RebuildAssetManagerLoadedStatus = {
+  status: 'loaded';
+  url: string;
+  cssTexts?: string[];
+};
+export type RebuildAssetManagerFailedStatus = { status: 'failed' };
+export type RebuildAssetManagerFinalStatus =
+  | RebuildAssetManagerLoadedStatus
+  | RebuildAssetManagerFailedStatus;
+export type RebuildAssetManagerStatus =
+  | RebuildAssetManagerUnknownStatus
+  | RebuildAssetManagerLoadingStatus
+  | RebuildAssetManagerFinalStatus;
+
+export declare abstract class RebuildAssetManagerInterface {
+  constructor(
+    playerConfig: { liveMode: boolean },
+    assetManagerConfig?: captureAssetsParam | undefined,
+  );
+  abstract add(event: assetEvent): Promise<void>;
+  abstract get(url: string): RebuildAssetManagerStatus;
+  abstract whenReady(url: string): Promise<RebuildAssetManagerFinalStatus>;
+  abstract manageAttribute(
+    n: Element,
+    id: number,
+    attribute: string,
+    originalValue: string,
+    serializedNode?: serializedElementNodeWithId,
+  ): void;
+}
 
 export enum NodeType {
   Document,

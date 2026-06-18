@@ -49,7 +49,10 @@ async function injectRecording(frame, serverURL) {
           recordCanvas: false,
           recordCrossOriginIframes: true,
           collectFonts: true,
-          inlineImages: true,
+          captureAssets: {
+            objectURLs: true,
+            origins: true,
+          },
         });
       })();
     });

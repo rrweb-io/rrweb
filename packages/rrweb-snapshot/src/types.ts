@@ -21,6 +21,11 @@ export type DialogAttributes = {
   // rr_open_mode_index?: number;
 };
 
+// @deprecated
+export interface INode extends Node {
+  __sn: serializedNodeWithId;
+}
+
 export interface ICanvas extends HTMLCanvasElement {
   __context: string;
 }

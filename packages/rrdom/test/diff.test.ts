@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import { vi, MockInstance } from 'vitest';
+import { fromPartial } from '@total-typescript/shoehorn';
 import { createMirror, Mirror as NodeMirror } from 'rrweb-snapshot';
 import {
   buildFromDom,
@@ -26,6 +27,7 @@ import type {
   serializedNodeWithId,
   canvasMutationData,
   styleSheetRuleData,
+  RebuildAssetManagerInterface,
 } from '@rrweb/types';
 import {
   NodeType as RRNodeType,
@@ -116,6 +118,9 @@ describe('diff algorithm for rrdom', () => {
       applyScroll: () => {},
       applyStyleSheetMutation: () => {},
       afterAppend: () => {},
+      assetManager: fromPartial({
+        isCapturable: () => false,
+      }),
     };
     document.write('<!DOCTYPE html><html><head></head><body></body></html>');
     // Mock the original console.warn function to make the test fail once console.warn is called.
@@ -487,6 +492,62 @@ describe('diff algorithm for rrdom', () => {
 
       diff(element, rrIframe, replayer);
       expect(element.getAttribute('srcdoc')).toBe(null);
+    });
+
+    describe('with asset manager', () => {
+      let assetManager: RebuildAssetManagerInterface;
+      beforeEach(() => {
+        assetManager = fromPartial({
+          manageAttribute: vi.fn(),
+        });
+        replayer.assetManager = assetManager;
+      });
+
+      it('new properties are managed by asset manager if capturable', () => {
+        const tagName = 'IMG';
+        const node = document.createElement(tagName);
+        const sn = Object.assign({}, elementSn, { tagName });
+        mirror.add(node, sn);
+
+        const rrDocument = new RRDocument();
+        const rrNode = rrDocument.createElement(tagName);
+        const sn2 = Object.assign({}, elementSn, { tagName });
+        rrDocument.mirror.add(rrNode, sn2);
+
+        rrNode.attributes = { rr_captured_src: 'image.png', class: 'node' };
+        diff(node, rrNode, replayer);
+        expect(assetManager.manageAttribute).toHaveBeenCalledWith(
+          node,
+          mirror.getId(node),
+          'src',
+          'image.png',
+        );
+      });
+
+      it('new link elements are managed by asset manager', () => {
+        const tagName = 'LINK';
+        const node = document.createElement(tagName);
+        const sn = Object.assign({}, elementSn, { tagName });
+        mirror.add(node, sn);
+
+        const rrDocument = new RRDocument();
+        const rrNode = rrDocument.createElement(tagName);
+        const sn2 = Object.assign({}, elementSn, { tagName });
+        rrDocument.mirror.add(rrNode, sn2);
+
+        rrNode.attributes = {
+          rr_captured_href:
+            'https://cdn.jsdelivr.net/npm/select2@3.5.1/select2.css',
+          class: 'node',
+        };
+        diff(node, rrNode, replayer);
+        expect(assetManager.manageAttribute).toHaveBeenCalledWith(
+          node,
+          mirror.getId(node),
+          'href',
+          'https://cdn.jsdelivr.net/npm/select2@3.5.1/select2.css',
+        );
+      });
     });
   });
 
