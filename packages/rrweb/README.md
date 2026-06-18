@@ -2,11 +2,11 @@
 
 ## Overview
 
-> **Deprecated.** `rrweb` is kept for backward compatibility only. New projects should depend on [@rrweb/record](../record) and [@rrweb/replay](../replay) directly, or use [@rrweb/all](../all) for a single convenience import. Moving to these entrypoints lets us slim down and eventually remove this package.
+> **Deprecated.** `rrweb` is kept for backward compatibility only. New projects should depend on [@rrweb/record](packages/record/) and [@rrweb/replay](packages/replay/) directly, or use [@rrweb/all](packages/all/) for a single convenience import. Moving to these entrypoints lets us slim down and eventually remove this package.
 
 rrweb refers to 'record and replay the web', a tool for recording and replaying users' interactions on the web.
 
-In most production setups, the recorder and replayer are deployed to different pages/apps. Use [@rrweb/record](../record) on recorded pages and [@rrweb/replay](../replay) (or [rrweb-player](../rrweb-player) to include UI) on replay pages.
+In most production setups, the recorder and replayer are deployed to different pages/apps. Use [@rrweb/record](packages/record/) on recorded pages and [@rrweb/replay](packages/replay/) (or [rrweb-player](packages/rrweb-player/) to include UI) on replay pages.
 
 | Use case                                        | Package choice                    |
 | ----------------------------------------------- | --------------------------------- |
