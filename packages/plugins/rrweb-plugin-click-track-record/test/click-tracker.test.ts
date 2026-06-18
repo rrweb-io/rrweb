@@ -95,7 +95,7 @@ describe('createClickTracker (standalone)', () => {
     stop();
   });
 
-  it('extracts href for links', () => {
+  it('extracts hrefAttr for links', () => {
     setHTML('<a href="/products" id="link">Products</a>');
     const payloads: ClickTrackPayload[] = [];
     const stop = createClickTracker({
@@ -104,8 +104,8 @@ describe('createClickTracker (standalone)', () => {
 
     click(document.getElementById('link')!);
 
-    expect(payloads[0].href).toContain('/products');
     expect(payloads[0].hrefAttr).toBe('/products');
+    expect((payloads[0] as Record<string, unknown>).href).toBeUndefined();
 
     stop();
   });
@@ -194,7 +194,7 @@ describe('createClickTracker (standalone)', () => {
     click(document.getElementById('inner')!);
 
     expect(payloads[0].sigTargetTagName).toBe('A');
-    expect(payloads[0].href).toContain('/page');
+    expect(payloads[0].hrefAttr).toBe('/page');
     expect(payloads[0].targetText).toBe('Click');
     // targetSelector is for the actual clicked element (span)
     expect(payloads[0].targetTagName).toBe('SPAN');

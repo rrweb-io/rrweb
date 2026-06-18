@@ -13,9 +13,8 @@ export type ClickTrackPayload = {
   relY: number;
   x: number;
   y: number;
-  href?: string;
   hrefAttr?: string;
-  src?: string;
+  srcAttr?: string;
   targetText?: string;
   targetClasses?: string[];
   sigTargetTagName?: string;
@@ -311,24 +310,16 @@ function buildPayload(
   }
 
   if (tag === 'a' || tag === 'area') {
-    const anchor = significantEl as HTMLAnchorElement;
-    if (anchor.href && !anchor.href.startsWith('data:')) {
-      payload.href = anchor.href.substring(0, 300);
-      const hrefAttr = anchor.getAttribute('href');
-      if (hrefAttr) {
-        payload.hrefAttr = hrefAttr.substring(0, 300);
-      }
+    const hrefAttr = significantEl.getAttribute('href');
+    if (hrefAttr && !hrefAttr.startsWith('data:')) {
+      payload.hrefAttr = hrefAttr.substring(0, 300);
     }
   }
   if (tag === 'img') {
-    const img = significantEl as HTMLImageElement;
-    if (img.src && !img.src.startsWith('data:')) {
-      payload.src = img.src;
+    const srcAttr = significantEl.getAttribute('src');
+    if (srcAttr && !srcAttr.startsWith('data:')) {
+      payload.srcAttr = srcAttr.substring(0, 300);
     }
-  }
-
-  if (target.classList && target.classList.length) {
-    payload.targetClasses = Array.from(target.classList);
   }
 
   if (opts.targetText !== false) {
