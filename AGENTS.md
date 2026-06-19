@@ -166,6 +166,7 @@ Turbo global dependencies include:
 
 Turbo passes these env vars through to tasks:
 
+- `PUPPETEER_EXECUTABLE_PATH`
 - `PUPPETEER_HEADLESS`
 - `DISABLE_WORKER_INLINING`
 
