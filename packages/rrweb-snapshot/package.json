@@ -1,6 +1,6 @@
 {
   "name": "@grafana/rrweb-snapshot",
-  "version": "2.0.0-alpha.20.grafana.0",
+  "version": "2.0.0-grafana.0",
   "publishConfig": {
     "access": "public"
   },
@@ -59,8 +59,8 @@
   },
   "homepage": "https://github.com/grafana/rrweb/tree/main/packages/rrweb-snapshot#readme",
   "devDependencies": {
-    "@grafana/rrweb-types": "^2.0.0-alpha.20.grafana.0",
-    "@grafana/rrweb-utils": "^2.0.0-alpha.20.grafana.0",
+    "@grafana/rrweb-types": "^2.0.0-grafana.0",
+    "@grafana/rrweb-utils": "^2.0.0-grafana.0",
     "@types/jsdom": "^20.0.0",
     "@types/node": "^18.15.11",
     "@types/puppeteer": "^5.4.4",

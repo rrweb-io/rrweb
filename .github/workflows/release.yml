@@ -217,6 +217,8 @@ jobs:
               tag_flag="--tag alpha"
             elif [[ "$version" == *-beta* ]]; then
               tag_flag="--tag beta"
+            elif [[ "$version" == *-grafana* ]]; then
+              tag_flag="--tag grafana"
             fi
 
             echo "Publishing $name@$version..."

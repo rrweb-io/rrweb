@@ -8,7 +8,7 @@
   "bump-patch-for-minor-pre-major": true,
   "versioning": "prerelease",
   "prerelease": true,
-  "prerelease-type": "alpha",
+  "prerelease-type": "grafana",
   "pull-request-header": "rrweb Release - ${version}",
   "group-pull-request-title-pattern": "chore: release ${version}",
   "packages": {

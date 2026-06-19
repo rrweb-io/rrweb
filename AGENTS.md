@@ -580,7 +580,7 @@ Key details:
 
 - All 19 packages are versioned in lockstep via the `extra-files` mechanism
   in the release-please config.
-- Currently in alpha prerelease mode (`2.0.0-alpha.x`).
+- Currently in grafana prerelease mode (`2.0.0-grafana.x`).
 - Release-please automatically creates release PRs with changelogs when
   conventional commits land on `main`.
 - Do not manually edit `.release-please-manifest.json`.

@@ -1,11 +1,11 @@
 {
   "name": "@grafana/rrweb-player",
-  "version": "2.0.0-alpha.20.grafana.0",
+  "version": "2.0.0-grafana.0",
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "@grafana/rrweb-types": "^2.0.0-alpha.20.grafana.0",
+    "@grafana/rrweb-types": "^2.0.0-grafana.0",
     "@sveltejs/adapter-auto": "^3.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/package": "^2.0.0",
@@ -23,8 +23,8 @@
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
-    "@grafana/rrweb-replay": "^2.0.0-alpha.20.grafana.0",
-    "@grafana/rrweb-packer": "^2.0.0-alpha.20.grafana.0"
+    "@grafana/rrweb-replay": "^2.0.0-grafana.0",
+    "@grafana/rrweb-packer": "^2.0.0-grafana.0"
   },
   "scripts": {
     "dev": "vite build --watch",
