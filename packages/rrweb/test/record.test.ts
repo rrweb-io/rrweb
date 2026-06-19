@@ -11,6 +11,8 @@ import {
   IncrementalSource,
   styleSheetRuleData,
   selectionData,
+  adoptedStyleSheetData,
+  assetParam,
 } from '@rrweb/types';
 import {
   assertSnapshot,
@@ -562,6 +564,73 @@ describe('record', function (this: ISuite) {
     });
     await waitForRAF(ctx.page);
     await assertSnapshot(ctx.events);
+  });
+
+  it('emits adopted stylesheet css as an Asset when adoptedStylesheetAssets is enabled', async () => {
+    await ctx.page.evaluate(() => {
+      const { record } = (window as unknown as IWindow).rrweb;
+      record({
+        captureAssets: { adoptedStylesheetAssets: true },
+        emit: (window as unknown as IWindow).emit,
+      });
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync!('div { color: yellow; }');
+      document.adoptedStyleSheets = [sheet];
+    });
+    await waitForRAF(ctx.page);
+
+    const adoptedEvents = ctx.events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.AdoptedStyleSheet,
+    );
+    expect(adoptedEvents.length).toEqual(1);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const styles = (adoptedEvents[0].data as adoptedStyleSheetData).styles!;
+    expect(styles.length).toEqual(1);
+    // css content is referenced by a virtual url rather than inlined as rules
+    expect(styles[0].rules).toBeUndefined();
+    expect(styles[0].cssTextURL).toContain('#rr_adopted_style:');
+
+    // a matching Asset event carries the css content
+    const assetEvents = ctx.events.filter((e) => e.type === EventType.Asset);
+    expect(assetEvents.length).toEqual(1);
+    const assetData = assetEvents[0].data as assetParam;
+    expect(assetData.url).toEqual(styles[0].cssTextURL);
+    expect((assetData as { payload: unknown }).payload).toEqual({
+      rr_type: 'CssText',
+      cssTexts: ['div { color: yellow; }'],
+    });
+  });
+
+  it('inlines adopted stylesheet rules when adoptedStylesheetAssets is disabled', async () => {
+    await ctx.page.evaluate(() => {
+      const { record } = (window as unknown as IWindow).rrweb;
+      record({
+        emit: (window as unknown as IWindow).emit,
+      });
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync!('div { color: yellow; }');
+      document.adoptedStyleSheets = [sheet];
+    });
+    await waitForRAF(ctx.page);
+
+    const adoptedEvents = ctx.events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.AdoptedStyleSheet,
+    );
+    expect(adoptedEvents.length).toEqual(1);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const styles = (adoptedEvents[0].data as adoptedStyleSheetData).styles!;
+    expect(styles[0].cssTextURL).toBeUndefined();
+    expect(styles[0].rules).toEqual([
+      { rule: 'div { color: yellow; }', index: 0 },
+    ]);
+    // no Asset event emitted
+    expect(
+      ctx.events.filter((e) => e.type === EventType.Asset).length,
+    ).toEqual(0);
   });
 
   it('captures mutations on adopted stylesheets', async () => {

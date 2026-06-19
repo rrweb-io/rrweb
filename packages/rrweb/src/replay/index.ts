@@ -2160,9 +2160,31 @@ export class Replayer {
   private applyAdoptedStyleSheet(data: adoptedStyleSheetData) {
     const targetHost = this.mirror.getNode(data.id);
     if (!targetHost) return;
+
+    /**
+     * Build a constructed StyleSheet from raw css text (used when the stylesheet's
+     * content was emitted as a separate Asset event referenced by `cssTextURL`).
+     */
+    const buildFromCssText = (
+      hostWindow: IWindow,
+      styleId: number,
+      cssTexts: string[],
+    ) => {
+      try {
+        const newStyleSheet = new hostWindow.CSSStyleSheet();
+        this.styleMirror.add(newStyleSheet, styleId);
+        newStyleSheet.replaceSync(cssTexts.join(''));
+      } catch (e) {
+        // In case some browsers don't support constructing StyleSheet.
+      }
+    };
+
+    // Promises for stylesheets whose css content is still loading as an asset;
+    // adoption waits for these so the sheets exist in the styleMirror first.
+    const pendingAssets: Promise<unknown>[] = [];
+
     // Create StyleSheet objects which will be adopted after.
     data.styles?.forEach((style) => {
-      let newStyleSheet: CSSStyleSheet | null = null;
       /**
        * Constructed StyleSheet can't share across multiple documents.
        * The replayer has to get the correct host window to recreate a StyleSheetObject.
@@ -2174,8 +2196,28 @@ export class Replayer {
         hostWindow = (targetHost as Document).defaultView;
 
       if (!hostWindow) return;
+
+      if (style.cssTextURL) {
+        // css content lives in a separate Asset event
+        const url = style.cssTextURL;
+        const status = this.assetManager.get(url);
+        if (status.status === 'loaded' && status.cssTexts) {
+          buildFromCssText(hostWindow, style.styleId, status.cssTexts);
+        } else {
+          const hw = hostWindow;
+          pendingAssets.push(
+            this.assetManager.whenReady(url).then((readyStatus) => {
+              if (readyStatus.status === 'loaded' && readyStatus.cssTexts) {
+                buildFromCssText(hw, style.styleId, readyStatus.cssTexts);
+              }
+            }),
+          );
+        }
+        return;
+      }
+
       try {
-        newStyleSheet = new hostWindow.CSSStyleSheet();
+        const newStyleSheet = new hostWindow.CSSStyleSheet();
         this.styleMirror.add(newStyleSheet, style.styleId);
         // To reuse the code of applying stylesheet rules
         this.applyStyleSheetRule(
@@ -2215,7 +2257,14 @@ export class Replayer {
         count++;
       }
     };
-    adoptStyleSheets(targetHost, data.styleIds);
+    if (pendingAssets.length) {
+      // wait for any asset-backed stylesheets to load before adopting
+      void Promise.all(pendingAssets).then(() =>
+        adoptStyleSheets(targetHost, data.styleIds),
+      );
+    } else {
+      adoptStyleSheets(targetHost, data.styleIds);
+    }
   }
 
   private legacy_resolveMissingNode(

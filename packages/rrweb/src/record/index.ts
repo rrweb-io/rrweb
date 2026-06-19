@@ -126,6 +126,9 @@ function record<T = eventWithTime>(
       captureAssets.stylesheets = false;
     }
   }
+  if (captureAssets.adoptedStylesheetAssets === undefined) {
+    captureAssets.adoptedStylesheetAssets = false;
+  }
 
   registerErrorHandler(errorHandler);
 
@@ -304,9 +307,16 @@ function record<T = eventWithTime>(
       },
     });
 
+  assetManager = new AssetManager({
+    mutationCb: wrappedAssetEmit,
+    win: window,
+    captureAssets,
+  });
+
   const stylesheetManager = new StylesheetManager({
     mutationCb: wrappedMutationEmit,
     adoptedStyleSheetCb: wrappedAdoptedStyleSheetEmit,
+    assetManager,
   });
 
   const iframeManager = new IframeManager({
@@ -341,12 +351,6 @@ function record<T = eventWithTime>(
     mirror,
     sampling: sampling.canvas,
     dataURLOptions,
-  });
-
-  assetManager = new AssetManager({
-    mutationCb: wrappedAssetEmit,
-    win: window,
-    captureAssets,
   });
 
   const shadowDomManager = new ShadowDomManager({

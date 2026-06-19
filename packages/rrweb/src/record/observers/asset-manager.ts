@@ -36,6 +36,10 @@ export default class AssetManager {
   private failedURLs = new Set<string>();
   private resetHandlers: listenerHandler[] = [];
   private mutationCb: assetCallback;
+  // base href of the recording frame, used only to namespace adopted-stylesheet
+  // virtual urls so they don't collide across cross-origin iframes (which each
+  // have their own styleId counter starting at 1)
+  private baseHref: string;
   public readonly config: Exclude<
     recordOptions<eventWithTime>['captureAssets'],
     undefined
@@ -64,6 +68,7 @@ export default class AssetManager {
 
     this.mutationCb = options.mutationCb;
     this.config = options.captureAssets;
+    this.baseHref = win.location.href;
 
     const urlObjectMap = this.urlObjectMap;
 
@@ -298,6 +303,26 @@ export default class AssetManager {
         timeout: 100, // not sure how to make this figure meaningful in the context of setTimeout; this is intended to be used by a live replayer to know how long it should wait before deciding that the asset isn't going to arrive
       };
     }
+  }
+
+  /**
+   * Emit the css content of an adopted (constructed) stylesheet as a separate
+   * Asset event and return the virtual url which references it. The adopted
+   * stylesheet event stores the synthetic url below instead of inline css.
+   * This allows repeated content both between and within recordings to be
+   * handled separately as an Asset
+   */
+  public captureAdoptedStyleSheet(styleId: number, cssText: string): string {
+    const url = `${this.baseHref}#rr_adopted_style:${styleId}`;
+    const payload: SerializedCssTextArg = {
+      rr_type: 'CssText',
+      cssTexts: [cssText],
+    };
+    this.mutationCb({
+      url,
+      payload,
+    });
+    return url;
   }
 
   public capture(

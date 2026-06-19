@@ -8,19 +8,23 @@ import type {
   mutationCallBack,
 } from '@rrweb/types';
 import { StyleSheetMirror } from '../utils';
+import type AssetManager from './observers/asset-manager';
 
 export class StylesheetManager {
   private trackedLinkElements: WeakSet<HTMLLinkElement> = new WeakSet();
   private mutationCb: mutationCallBack;
   private adoptedStyleSheetCb: adoptedStyleSheetCallback;
+  private assetManager: AssetManager;
   public styleMirror = new StyleSheetMirror();
 
   constructor(options: {
     mutationCb: mutationCallBack;
     adoptedStyleSheetCb: adoptedStyleSheetCallback;
+    assetManager: AssetManager;
   }) {
     this.mutationCb = options.mutationCb;
     this.adoptedStyleSheetCb = options.adoptedStyleSheetCb;
+    this.assetManager = options.assetManager;
   }
 
   public attachLinkElement(
@@ -66,17 +70,27 @@ export class StylesheetManager {
       styleIds: [] as number[],
     };
     const styles: NonNullable<adoptedStyleSheetParam['styles']> = [];
+    const captureAsAsset = this.assetManager.config.adoptedStylesheetAssets;
     for (const sheet of sheets) {
       let styleId;
       if (!this.styleMirror.has(sheet)) {
         styleId = this.styleMirror.add(sheet);
-        styles.push({
-          styleId,
-          rules: Array.from(sheet.rules || CSSRule, (r, index) => ({
-            rule: stringifyRule(r, sheet.href),
-            index,
-          })),
-        });
+        const rules = Array.from(sheet.rules || CSSRule, (r, index) => ({
+          rule: stringifyRule(r, sheet.href),
+          index,
+        }));
+        if (captureAsAsset) {
+          // emit the css content as a separate Asset event and reference it by
+          // a virtual url instead of inlining the rules into this event
+          const cssText = rules.map((r) => r.rule).join('');
+          const cssTextURL = this.assetManager.captureAdoptedStyleSheet(
+            styleId,
+            cssText,
+          );
+          styles.push({ styleId, cssTextURL });
+        } else {
+          styles.push({ styleId, rules });
+        }
       } else styleId = this.styleMirror.getId(sheet);
       adoptedStyleSheetData.styleIds.push(styleId);
     }

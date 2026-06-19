@@ -120,6 +120,14 @@ export type captureAssetsParam = Partial<{
    * and include directly in the snapshot without a separate asset event
    */
   stylesheetsRuleThreshold: number;
+  /*
+   * default false
+   * when enabled, the css content of adopted (constructed) stylesheets is emitted
+   * as a separate Asset event and referenced from the adopted stylesheet event by a
+   * virtual url, rather than being inlined as css rules. This allows the (often
+   * duplicated) content to be de-duplicated out of band.
+   */
+  adoptedStylesheetAssets: boolean;
   /**
    * In a mutation context, we are already deferred, so performance related capturing can happen immediately (without a separate asset event)
    */
@@ -616,7 +624,14 @@ export type adoptedStyleSheetParam = {
   // New CSSStyleSheets which have never appeared before.
   styles?: {
     styleId: number;
-    rules: styleSheetAddRule[];
+    // the stylesheet's rules, inlined into the event. Omitted when the css
+    // content has instead been emitted as a separate Asset event (see cssTextURL).
+    rules?: styleSheetAddRule[];
+    // synthetic url pointing to an Asset event which holds the stylesheet's css text.
+    // present instead of `rules` when stylesheets are captured as assets, so that
+    // the (potentially large, often duplicated) css content can be de-duplicated
+    // out of band rather than bloating this event.
+    cssTextURL?: string;
   }[];
   // StyleSheet ids to be adopted.
   styleIds: number[];
