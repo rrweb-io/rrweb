@@ -1,6 +1,6 @@
 {
   "name": "@grafana/rrweb-plugin-sequential-id-replay",
-  "version": "2.0.0-grafana.0",
+  "version": "2.0.0-grafana.1",
   "publishConfig": {
     "access": "public"
   },
@@ -47,13 +47,13 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
-    "@grafana/rrweb-plugin-sequential-id-record": "^2.0.0-grafana.0",
-    "@grafana/rrweb": "^2.0.0-grafana.0",
+    "@grafana/rrweb-plugin-sequential-id-record": "^2.0.0-grafana.1",
+    "@grafana/rrweb": "^2.0.0-grafana.1",
     "typescript": "^5.4.5",
     "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1"
   },
   "peerDependencies": {
-    "@grafana/rrweb": "^2.0.0-grafana.0"
+    "@grafana/rrweb": "^2.0.0-grafana.1"
   }
 }

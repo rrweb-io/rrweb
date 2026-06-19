@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/_monorepo",
-  "version": "2.0.0-grafana.0",
+  "version": "2.0.0-grafana.1",
   "description": "record and replay the web",
   "repository": {
     "type": "git",

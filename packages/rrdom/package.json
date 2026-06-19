@@ -1,6 +1,6 @@
 {
   "name": "@grafana/rrdom",
-  "version": "2.0.0-grafana.0",
+  "version": "2.0.0-grafana.1",
   "publishConfig": {
     "access": "public"
   },
@@ -45,7 +45,7 @@
     "url": "https://github.com/grafana/rrweb/issues"
   },
   "devDependencies": {
-    "@grafana/rrweb-types": "^2.0.0-grafana.0",
+    "@grafana/rrweb-types": "^2.0.0-grafana.1",
     "@types/puppeteer": "^5.4.4",
     "@typescript-eslint/eslint-plugin": "^5.23.0",
     "@typescript-eslint/parser": "^5.23.0",
@@ -56,6 +56,6 @@
     "vite-plugin-dts": "^3.9.1"
   },
   "dependencies": {
-    "@grafana/rrweb-snapshot": "^2.0.0-grafana.0"
+    "@grafana/rrweb-snapshot": "^2.0.0-grafana.1"
   }
 }

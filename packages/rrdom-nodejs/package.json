@@ -1,6 +1,6 @@
 {
   "name": "@grafana/rrdom-nodejs",
-  "version": "2.0.0-grafana.0",
+  "version": "2.0.0-grafana.1",
   "publishConfig": {
     "access": "public"
   },
@@ -59,8 +59,8 @@
     "cssom": "^0.5.0",
     "cssstyle": "^2.3.0",
     "nwsapi": "2.2.0",
-    "@grafana/rrdom": "^2.0.0-grafana.0",
-    "@grafana/rrweb-types": "^2.0.0-grafana.0"
+    "@grafana/rrdom": "^2.0.0-grafana.1",
+    "@grafana/rrweb-types": "^2.0.0-grafana.1"
   },
   "repository": {
     "type": "git",

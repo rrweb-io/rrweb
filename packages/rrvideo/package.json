@@ -1,6 +1,6 @@
 {
   "name": "@grafana/rrvideo",
-  "version": "2.0.0-grafana.0",
+  "version": "2.0.0-grafana.1",
   "publishConfig": {
     "access": "public"
   },
@@ -30,14 +30,14 @@
     "@types/node": "^18.15.11",
     "jest": "^27.5.1",
     "ts-jest": "^27.1.3",
-    "@grafana/rrweb-types": "^2.0.0-grafana.0"
+    "@grafana/rrweb-types": "^2.0.0-grafana.1"
   },
   "dependencies": {
     "@open-tech-world/cli-progress-bar": "^2.0.2",
     "fs-extra": "^11.1.1",
     "minimist": "^1.2.5",
     "playwright": "^1.56.1",
-    "@grafana/rrweb-player": "^2.0.0-grafana.0"
+    "@grafana/rrweb-player": "^2.0.0-grafana.1"
   },
   "repository": {
     "type": "git",
