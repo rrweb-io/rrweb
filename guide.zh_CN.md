@@ -212,7 +212,7 @@ setInterval(save, 10 * 1000);
 | inlineImages             | false              | 自 2.0.0 起弃用。2.0 中仍受支持，但计划由未来的 `captureAssets` 资源录制 API 取代。                                                                                                   |
 | collectFonts             | false              | 是否记录页面中的字体文件                                                                                                                                                              |
 | userTriggeredOnInput     | false              | [什么是 `userTriggered`](https://github.com/rrweb-io/rrweb/pull/495)                                                                                                                  |
-| plugins                  | []                 | 加载插件以获得额外的录制功能. [什么是插件？](./docs/recipes/plugin-api.zh_CN.md)                                                                                                          |
+| plugins                  | []                 | 加载插件以获得额外的录制功能. [什么是插件？](./docs/recipes/plugin-api.zh_CN.md)                                                                                                      |
 | errorHandler             | -                  | 一个可以定制化处理错误的回调函数，它的参数是错误对象。如果 rrweb recorder 内部的某些内容抛出错误，则会调用该回调。                                                                    |
 
 #### 隐私
@@ -373,7 +373,7 @@ replayer.destroy();
 | pauseAnimation      | true          | 当播放器停止播放时，是否将 CSS 动画也停止播放                                                                                                                                                        |
 | mouseTail           | true          | 是否在回放时增加鼠标轨迹。传入 false 可关闭，传入对象可以定制轨迹持续时间、样式等，配置详见[类型](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
 | unpackFn            | -             | 数据解压缩函数，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                                         |
-| plugins             | []            | 加载插件以获得额外的回放功能. [什么是插件？](./docs/recipes/plugin-api.zh_CN.md)                                                                                                                         |
+| plugins             | []            | 加载插件以获得额外的回放功能. [什么是插件？](./docs/recipes/plugin-api.zh_CN.md)                                                                                                                     |
 | useVirtualDom       | true          | 在播放器跳转到一个新的时间点的过程中，是否使用 Virtual Dom 优化                                                                                                                                      |
 | logger              | console       | 当播放器出现警告或错误时用来打印日志的对象                                                                                                                                                           |
 
