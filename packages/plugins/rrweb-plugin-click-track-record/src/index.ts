@@ -8,13 +8,13 @@ export type ClickTrackPayload = {
   targetSelector: string;
   targetTagName: string;
   /** Click position as percentage of element width (0–100) */
-  pctX: number;
+  percentX: number;
   /** Click position as percentage of element height (0–100) */
-  pctY: number;
+  percentY: number;
   /** Element aspect ratio: width / height (>1 landscape, <1 portrait, 1 square) */
   aspect: number;
   /** Viewport width in CSS pixels at click time */
-  vpW: number;
+  viewportWidth: number;
   hrefAttr?: string;
   srcAttr?: string;
   targetText?: string;
@@ -293,10 +293,10 @@ function buildPayload(
   const payload: ClickTrackPayload = {
     targetSelector,
     targetTagName: target.tagName,
-    pctX: Math.round(10 * ((e.clientX - bounds.x) / w) * 100) / 10,
-    pctY: Math.round(10 * ((e.clientY - bounds.y) / h) * 100) / 10,
+    percentX: Math.round(10 * ((e.clientX - bounds.x) / w) * 100) / 10,
+    percentY: Math.round(10 * ((e.clientY - bounds.y) / h) * 100) / 10,
     aspect: Math.round(100 * (w / h)) / 100,
-    vpW: window.innerWidth,
+    viewportWidth: window.innerWidth,
   };
 
   if (lastPointerType) {

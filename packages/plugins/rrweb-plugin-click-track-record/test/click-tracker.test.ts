@@ -227,11 +227,11 @@ describe('createClickTracker (standalone)', () => {
 
     click(document.getElementById('btn')!, { clientX: 25, clientY: 15 });
 
-    // jsdom elements have 0x0 bounds, so pctX/pctY are based on fallback 1x1
-    expect(typeof payloads[0].pctX).toBe('number');
-    expect(typeof payloads[0].pctY).toBe('number');
+    // jsdom elements have 0x0 bounds, so percentX/percentY are based on fallback 1x1
+    expect(typeof payloads[0].percentX).toBe('number');
+    expect(typeof payloads[0].percentY).toBe('number');
     expect(payloads[0].aspect).toBe(1); // 1x1 fallback → square
-    expect(payloads[0].vpW).toBe(window.innerWidth);
+    expect(payloads[0].viewportWidth).toBe(window.innerWidth);
     // x/y viewport coords should not be present
     expect((payloads[0] as Record<string, unknown>).x).toBeUndefined();
     expect((payloads[0] as Record<string, unknown>).y).toBeUndefined();
