@@ -2,7 +2,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
 import type { recordOptions } from '../../src/types';
-import type { listenerHandler, eventWithTime, assetEvent } from '@rrweb/types';
+import type {
+  listenerHandler,
+  eventWithTime,
+  assetEvent,
+  assetParam,
+} from '@rrweb/types';
 import { EventType, IncrementalSource } from '@rrweb/types';
 import {
   getServerURL,
@@ -961,6 +966,142 @@ describe('asset capturing', function (this: ISuite) {
           },
         },
       ]);
+    });
+  });
+
+  describe('adopted stylesheet asset vs <style> element asset', function (this: ISuite) {
+    // a <style> element must be present at FullSnapshot time (rather than added
+    // via mutation, which inlines the cssText) for it to be emitted as a
+    // separate #rr_style_el asset to compare against.
+    const ctx: ISuite = setup.call(
+      this,
+      `
+<!DOCTYPE html>
+<html>
+<head>
+<style>div { color: yellow; }</style>
+</head>
+<body></body>
+</html>
+`,
+      {
+        captureAssets: {
+          origins: [],
+          objectURLs: false,
+          stylesheets: true,
+          adoptedStylesheetAssets: true,
+          // process the <style> element synchronously so its asset is emitted promptly
+          processStylesheetsWithin: 0,
+        },
+      },
+    );
+
+    it('produces an identical CssText payload for the same css, differing only in the url', async () => {
+      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+      await waitForRAF(ctx.page);
+
+      // adopt a constructed stylesheet with the SAME css content as the <style>
+      await ctx.page.evaluate(() => {
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync!('div { color: yellow; }');
+        document.adoptedStyleSheets = [sheet];
+      });
+      await waitForRAF(ctx.page);
+
+      const events = await ctx.page.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+
+      const assetEvents = events.filter((e) => e.type === EventType.Asset);
+      const urlOf = (e: eventWithTime) =>
+        (e.data as Extract<assetParam, { payload: unknown }>).url;
+      const payloadOf = (e: eventWithTime) =>
+        (e.data as Extract<assetParam, { payload: unknown }>).payload;
+
+      const styleElAsset = assetEvents.find((e) =>
+        urlOf(e).includes('#rr_style_el:'),
+      );
+      const adoptedAsset = assetEvents.find((e) =>
+        urlOf(e).includes('#rr_adopted_style:'),
+      );
+
+      expect(styleElAsset).toBeDefined();
+      expect(adoptedAsset).toBeDefined();
+
+      // same css content in the two contexts -> identical CssText payload
+      expect(payloadOf(adoptedAsset!)).toEqual(payloadOf(styleElAsset!));
+      expect(payloadOf(adoptedAsset!)).toEqual({
+        rr_type: 'CssText',
+        cssTexts: ['div { color: yellow; }'],
+      });
+
+      // ...but the urls differ (one references the style element, the other the
+      // adopted/constructed stylesheet)
+      expect(urlOf(adoptedAsset!)).not.toEqual(urlOf(styleElAsset!));
+    });
+  });
+
+  describe('adopted stylesheets with identical content', function (this: ISuite) {
+    const ctx: ISuite = setup.call(
+      this,
+      `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body></body>
+</html>
+`,
+      {
+        captureAssets: {
+          origins: [],
+          objectURLs: false,
+          adoptedStylesheetAssets: true,
+        },
+      },
+    );
+
+    // The styleMirror already dedupes by CSSStyleSheet *object identity*: the
+    // same sheet object adopted on multiple hosts only appears in styles[] (and
+    // thus emits an asset) once. This test covers two DISTINCT sheet objects
+    // that happen to share identical css content.
+    //
+    // CURRENT BEHAVIOUR: a separate asset is emitted per sheet object (one per
+    // styleId), so identical content is duplicated across two assets with
+    // different urls. Content-based dedup is NOT done here because it is unsafe
+    // at adoption time - a constructed sheet may be empty when adopted and only
+    // filled later via replace/replaceSync, and two sheets may diverge under
+    // later independent rule mutations. Safe dedup needs the asset url to be
+    // keyed by content rather than styleId (see the adoptedStyleSheetAssetParam
+    // redesign task); when that lands, flip the assertions below to expect a
+    // single asset whose url is shared by both styles[] entries.
+    it('currently emits one asset per distinct sheet object even when content is identical', async () => {
+      await waitForRAF(ctx.page);
+      await ctx.page.evaluate(() => {
+        const sheetA = new CSSStyleSheet();
+        sheetA.replaceSync!('div { color: yellow; }');
+        const sheetB = new CSSStyleSheet();
+        sheetB.replaceSync!('div { color: yellow; }');
+        // two distinct sheet objects, identical content, adopted together
+        document.adoptedStyleSheets = [sheetA, sheetB];
+      });
+      await waitForRAF(ctx.page);
+
+      const events = await ctx.page.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+      const urlOf = (e: eventWithTime) =>
+        (e.data as Extract<assetParam, { payload: unknown }>).url;
+      const payloadOf = (e: eventWithTime) =>
+        (e.data as Extract<assetParam, { payload: unknown }>).payload;
+
+      const adoptedAssets = events
+        .filter((e) => e.type === EventType.Asset)
+        .filter((e) => urlOf(e).includes('#rr_adopted_style:'));
+
+      // current (duplicated) behaviour: two assets, identical payload, two urls
+      expect(adoptedAssets.length).toEqual(2);
+      expect(payloadOf(adoptedAssets[0])).toEqual(payloadOf(adoptedAssets[1]));
+      expect(urlOf(adoptedAssets[0])).not.toEqual(urlOf(adoptedAssets[1]));
     });
   });
 });

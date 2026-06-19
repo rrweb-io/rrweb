@@ -7,6 +7,8 @@ import type {
   listenerHandler,
   eventWithTime,
   mutationData,
+  adoptedStyleSheetData,
+  assetParam,
 } from '@rrweb/types';
 import { EventType, IncrementalSource } from '@rrweb/types';
 import {
@@ -42,6 +44,7 @@ interface IWindow extends Window {
 }
 type ExtraOptions = {
   usePackFn?: boolean;
+  captureAssets?: recordOptions<eventWithTime>['captureAssets'];
 };
 
 async function injectRecordScript(
@@ -75,6 +78,7 @@ async function injectRecordScript(
         (window as unknown as IWindow).emit(event);
       },
     };
+    if (options.captureAssets) config.captureAssets = options.captureAssets;
     record(config);
   }, options);
 
@@ -578,6 +582,90 @@ describe('cross origin iframes', function (this: ISuite) {
         'window.snapshots',
       )) as eventWithTime[];
       await assertSnapshot(snapshots);
+    });
+  });
+});
+
+describe('cross origin iframes - adopted stylesheets as assets', function (
+  this: ISuite,
+) {
+  vi.setConfig({ testTimeout: 100_000 });
+
+  const content = `
+    <!DOCTYPE html>
+    <html>
+      <body>
+        <iframe src="{SERVER_URL}/html/blank.html"></iframe>
+      </body>
+    </html>
+  `;
+
+  const findAdopted = (snapshots: eventWithTime[]) =>
+    snapshots.find(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        (e.data as { source?: IncrementalSource }).source ===
+          IncrementalSource.AdoptedStyleSheet,
+    );
+
+  const adoptInIframe = async (ctx: ISuite) => {
+    const frame = ctx.page.mainFrame().childFrames()[0];
+    await frame.evaluate(() => {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync('h1 { color: blue; }');
+      document.adoptedStyleSheets = [sheet];
+    });
+    await waitForRAF(ctx.page);
+    return (await ctx.page.evaluate('window.snapshots')) as eventWithTime[];
+  };
+
+  describe('with adoptedStylesheetAssets disabled (legacy inline rules)', function (
+    this: ISuite,
+  ) {
+    const ctx: ISuite = setup.call(this, content, {
+      captureAssets: { adoptedStylesheetAssets: false },
+    });
+
+    it('forwards the adopted stylesheet rules inline from the cross-origin iframe', async () => {
+      const snapshots = await adoptInIframe(ctx);
+      const adopted = findAdopted(snapshots);
+      expect(adopted).toBeDefined();
+      const style = (adopted!.data as adoptedStyleSheetData).styles![0];
+      expect(style.cssTextURL).toBeUndefined();
+      expect(style.rules).toMatchObject([
+        { rule: 'h1 { color: blue; }', index: 0 },
+      ]);
+    });
+  });
+
+  describe('with adoptedStylesheetAssets enabled', function (this: ISuite) {
+    const ctx: ISuite = setup.call(this, content, {
+      captureAssets: { adoptedStylesheetAssets: true },
+    });
+
+    // KNOWN LIMITATION (see task: cross-origin asset forwarding): the css is
+    // emitted as an Asset *inside* the cross-origin iframe, but the parent's
+    // transformCrossOriginEvent has no EventType.Asset case, so the asset is
+    // dropped (returns false) and never reaches the top-level event stream.
+    // The styleIds are remapped but the cssTextURL string is not, so the
+    // forwarded adopted-stylesheet event references an asset that isn't there.
+    // When that gap is fixed, the final assertion below should be flipped to
+    // expect the Asset to be present (and its url to match cssTextURL).
+    it('drops the adopted stylesheet Asset from the cross-origin iframe', async () => {
+      const snapshots = await adoptInIframe(ctx);
+      const adopted = findAdopted(snapshots);
+      expect(adopted).toBeDefined();
+      const style = (adopted!.data as adoptedStyleSheetData).styles![0];
+      expect(style.rules).toBeUndefined();
+      expect(style.cssTextURL).toBeDefined();
+
+      const asset = snapshots.find(
+        (e) =>
+          e.type === EventType.Asset &&
+          (e.data as assetParam).url === style.cssTextURL,
+      );
+      // demonstrates the gap: no matching Asset is forwarded to the top level
+      expect(asset).toBeUndefined();
     });
   });
 });
