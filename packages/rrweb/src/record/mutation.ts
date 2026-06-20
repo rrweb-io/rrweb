@@ -192,6 +192,7 @@ export default class MutationBuffer {
   private shadowDomManager: observerParam['shadowDomManager'];
   private canvasManager: observerParam['canvasManager'];
   private processedNodeManager: observerParam['processedNodeManager'];
+  private onOrphansDropped: observerParam['onOrphansDropped'];
   private unattachedDoc: HTMLDocument;
 
   public init(options: MutationBufferParam) {
@@ -218,6 +219,7 @@ export default class MutationBuffer {
         'shadowDomManager',
         'canvasManager',
         'processedNodeManager',
+        'onOrphansDropped',
       ] as const
     ).forEach((key) => {
       // just a type trick, the runtime result is correct
@@ -438,9 +440,12 @@ export default class MutationBuffer {
          * it may be a bug or corner case. We need to escape the
          * dead while loop at once.
          */
+        let droppedCount = 0;
         while (addList.head) {
           addList.removeNode(addList.head.value);
+          droppedCount++;
         }
+        this.onOrphansDropped?.(droppedCount);
         break;
       }
       candidate = node.previous;

@@ -166,6 +166,8 @@ function record<T = eventWithTime>(
 
   let lastFullSnapshotEvent: eventWithTime;
   let incrementalSnapshotCount = 0;
+  const ORPHAN_RESNAPSHOT_COOLDOWN_MS = 5000;
+  let lastOrphanSnapshotTime = 0;
 
   const eventProcessor = (e: eventWithTime): T => {
     for (const plugin of plugins || []) {
@@ -506,6 +508,13 @@ function record<T = eventWithTime>(
                 ...c,
               },
             });
+          },
+          onOrphansDropped: () => {
+            const now = nowTimestamp();
+            if (now - lastOrphanSnapshotTime >= ORPHAN_RESNAPSHOT_COOLDOWN_MS) {
+              lastOrphanSnapshotTime = now;
+              takeFullSnapshot(true);
+            }
           },
           blockClass,
           ignoreClass,

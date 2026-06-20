@@ -125,6 +125,7 @@ export type observerParam = {
   canvasManager: CanvasManager;
   processedNodeManager: ProcessedNodeManager;
   ignoreCSSAttributes: Set<string>;
+  onOrphansDropped?: (count: number) => void;
   plugins: Array<{
     observer: (
       cb: (...arg: Array<unknown>) => void,
@@ -159,6 +160,7 @@ export type MutationBufferParam = Pick<
   | 'shadowDomManager'
   | 'canvasManager'
   | 'processedNodeManager'
+  | 'onOrphansDropped'
 >;
 
 export type ReplayPlugin = {
