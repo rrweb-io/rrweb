@@ -67,6 +67,8 @@ rrwebBrowserClient.start({
 - `addCustomEvent(tag, payload)`: queues a custom rrweb event.
 - `stop(resetRecordingId)`: stops rrweb recording and closes the WebSocket. Pass `true` to clear the stored recording id before a future `start()`.
 
+Browser-client events sent to rrweb Cloud include a top-level `sequenceId`. The client stores the latest assigned sequence ID in `sessionStorage` per recording ID, so same-tab page navigations continue ordering from the previous page. Sequence IDs are persisted when events are queued or sent, so gaps can appear if a page exits before an event reaches the server.
+
 ## Further Reading
 
 - [JavaScript SDK guide](https://rrweb.com/docs/cloud/javascript-sdk)
