@@ -94,6 +94,7 @@ export class IframeManager {
       this.stylesheetManager.adoptStyleSheets(
         iframeEl.contentDocument.adoptedStyleSheets,
         this.mirror.getId(iframeEl.contentDocument),
+        iframeEl.contentDocument.baseURI,
       );
   }
   private handleMessage(message: MessageEvent | CrossOriginIframeMessageEvent) {

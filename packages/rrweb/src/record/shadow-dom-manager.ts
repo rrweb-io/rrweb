@@ -83,6 +83,7 @@ export class ShadowDomManager {
         this.bypassOptions.stylesheetManager.adoptStyleSheets(
           shadowRoot.adoptedStyleSheets,
           this.mirror.getId(dom.host(shadowRoot)),
+          shadowRoot.baseURI,
         );
       this.restoreHandlers.push(
         initAdoptedStyleSheetObserver(

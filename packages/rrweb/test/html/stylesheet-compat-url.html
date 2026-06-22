@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stylesheet compat fix + relative url() across link / style / adopted</title>
+
+    <!-- All three sources share one source of truth: stylesheet-compat-url.css.
+         (1) external stylesheet via <link> -->
+    <link rel="stylesheet" href="stylesheet-compat-url.css" />
+  </head>
+
+  <body>
+    <h2>via &lt;link&gt;, &lt;style&gt; and adoptedStyleSheets (identical css)</h2>
+    <div class="cliptext">gradient text</div>
+    <div class="bgimg"></div>
+
+    <script>
+      // Load the SAME css file and apply it (2) as an inline <style> and
+      // (3) as an adopted/constructed stylesheet, so all three sources carry
+      // byte-for-byte identical rules. Must be served over http (the test
+      // server, or any static server) so fetch resolves.
+      fetch('stylesheet-compat-url.css')
+        .then((r) => r.text())
+        .then((css) => {
+          const styleEl = document.createElement('style');
+          styleEl.textContent = css;
+          document.head.appendChild(styleEl);
+
+          const sheet = new CSSStyleSheet();
+          sheet.replaceSync(css);
+          document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+        });
+    </script>
+  </body>
+</html>

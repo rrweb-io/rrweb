@@ -482,6 +482,7 @@ function record<T = eventWithTime>(
       stylesheetManager.adoptStyleSheets(
         document.adoptedStyleSheets,
         mirror.getId(document),
+        document.baseURI,
       );
   };
 

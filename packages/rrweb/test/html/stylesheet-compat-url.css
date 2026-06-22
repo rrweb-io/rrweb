@@ -1,0 +1,25 @@
+/* Single source of truth for the css used by all three stylesheet sources
+ * (<link>, <style> and an adopted/constructed stylesheet) in
+ * stylesheet-compat-url.html and in the record tests.
+ *
+ * It lives alongside the html document on purpose: url(assets/robot.png) then
+ * resolves to the same image whether the base is this css file (for <link>) or
+ * the document (for <style> and adopted sheets).
+ *
+ * Note `-webkit-background-clip: text` with no plain `background-clip`: Chrome
+ * serializes it back as `background-clip: text` in `.cssText` (dropping the
+ * prefix), which is exactly what fixBrowserCompatibilityIssuesInCSS re-prefixes. */
+.cliptext {
+  background-image: linear-gradient(45deg, purple, orange);
+  -webkit-background-clip: text;
+  color: transparent;
+  font-size: 40px;
+  font-weight: bold;
+}
+.bgimg {
+  width: 120px;
+  height: 120px;
+  background-image: url(assets/robot.png);
+  background-size: contain;
+  background-repeat: no-repeat;
+}

@@ -1212,3 +1212,98 @@ describe('asset capturing', function (this: ISuite) {
     });
   });
 });
+
+// Served from a real http origin (not setContent/about:blank) so that the
+// <link> loads, relative url()s have a real base, and stringifyRule can run
+// absolutifyURLs. The same css file (test/html/stylesheet-compat-url.css) is
+// used across all three style variants
+describe('stylesheet compatibility across link / style / adopted', () => {
+  vi.setConfig({ testTimeout: 100_000 });
+
+  let browser: puppeteer.Browser;
+  let server: http.Server;
+  let serverURL: string;
+  let page: puppeteer.Page;
+
+  beforeAll(async () => {
+    browser = await launchPuppeteer();
+    server = await startServer();
+    serverURL = getServerURL(server);
+  });
+
+  afterAll(async () => {
+    await browser.close();
+    server.close();
+  });
+
+  beforeEach(async () => {
+    page = await browser.newPage();
+    page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
+    // injectRecordScript's emit calls window.emit; provide a no-op so it exists
+    await page.exposeFunction('emit', () => undefined);
+    await page.goto(`${serverURL}/html/stylesheet-compat-url.html`);
+    // let the fetch()-driven <style> + adopted stylesheet apply
+    await page.waitForNetworkIdle({ idleTime: 100 });
+    await waitForRAF(page);
+  });
+
+  afterEach(async () => {
+    await page.close();
+  });
+
+  const urlOf = (e: eventWithTime) =>
+    (e.data as Extract<assetParam, { payload: unknown }>).url;
+  const payloadOf = (e: eventWithTime) =>
+    (e.data as Extract<assetParam, { payload: unknown }>).payload as {
+      rr_type: 'CssText';
+      cssTexts: string[];
+    };
+
+  it('serializes identical css across <link>, <style> and adopted (compat fix + absolutified relative url)', async () => {
+    // record after the page (incl. fetched <style> + adopted sheet) has loaded,
+    // so the FullSnapshot captures all three sources as assets
+    await injectRecordScript(page.mainFrame(), {
+      captureAssets: {
+        origins: [],
+        objectURLs: false,
+        stylesheets: true,
+        adoptedStylesheetAssets: true,
+        // emit the <link>/<style> assets promptly
+        processStylesheetsWithin: 0,
+      },
+    });
+    // wait past the adopted-stylesheet stability delay
+    await page.evaluate(() => new Promise((r) => setTimeout(r, 150)));
+    await waitForRAF(page);
+
+    const events = await page.evaluate(
+      () => (window as unknown as IWindow).snapshots,
+    );
+
+    const assets = events.filter((e) => e.type === EventType.Asset);
+    const linkAsset = assets.find((e) =>
+      urlOf(e).endsWith('stylesheet-compat-url.css'),
+    );
+    const styleAsset = assets.find((e) => urlOf(e).includes('#rr_style_el:'));
+    const adoptedAsset = assets.find((e) =>
+      urlOf(e).includes('#rr_adopted_style:'),
+    );
+
+    expect(linkAsset).toBeDefined();
+    expect(styleAsset).toBeDefined();
+    expect(adoptedAsset).toBeDefined();
+
+    // all three sources back onto the same css file, so the serialized payloads
+    // must match - the adopted path runs the same fixBrowserCompatibilityIssuesInCSS
+    // and url() absolutification as the <link>/<style> paths
+    expect(payloadOf(styleAsset!)).toEqual(payloadOf(linkAsset!));
+    expect(payloadOf(adoptedAsset!)).toEqual(payloadOf(linkAsset!));
+
+    const css = payloadOf(linkAsset!).cssTexts.join('');
+    // fixBrowserCompatibilityIssuesInCSS re-prefixed -webkit-background-clip
+    expect(css).toContain('-webkit-background-clip: text');
+    // the relative url() was absolutified against the document base
+    expect(css).toContain(`${serverURL}/html/assets/robot.png`);
+    expect(css).not.toContain('url("assets/robot.png")');
+  });
+});

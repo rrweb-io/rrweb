@@ -912,7 +912,7 @@ export function initAdoptedStyleSheetObserver(
       const result = originalPropertyDescriptor.set?.call(this, sheets);
       if (hostId !== null && hostId !== -1) {
         try {
-          stylesheetManager.adoptStyleSheets(sheets, hostId);
+          stylesheetManager.adoptStyleSheets(sheets, hostId, host.baseURI);
         } catch (e) {
           // for safety
         }

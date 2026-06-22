@@ -1,4 +1,4 @@
-import { stringifyRule } from 'rrweb-snapshot';
+import { stringifyCssRules, stringifyRule } from 'rrweb-snapshot';
 import type {
   elementNode,
   serializedNodeWithId,
@@ -75,10 +75,11 @@ export class StylesheetManager {
   public adoptStyleSheets(
     sheets: CSSStyleSheet[] | readonly CSSStyleSheet[],
     hostId: number,
+    docBaseHref: string,
   ) {
     if (sheets.length === 0) return;
     if (this.assetManager.config.adoptedStylesheetAssets) {
-      this.adoptStyleSheetsAsAssets(sheets, hostId);
+      this.adoptStyleSheetsAsAssets(sheets, hostId, docBaseHref);
       return;
     }
     const adoptedStyleSheetData: adoptedStyleSheetParam = {
@@ -105,6 +106,7 @@ export class StylesheetManager {
   private adoptStyleSheetsAsAssets(
     sheets: CSSStyleSheet[] | readonly CSSStyleSheet[],
     hostId: number,
+    docBaseHref: string,
   ) {
     // Emit the AdoptedStyleSheet event immediately (with the correct
     // timestamp), referencing each stylesheet by a virtual url whose trailing
@@ -121,7 +123,7 @@ export class StylesheetManager {
       if (!this.styleMirror.has(sheet)) {
         const styleId = this.styleMirror.add(sheet);
         this.blockedStyleIds.add(styleId);
-        this.scheduleAdoptedStyleSheetAsset(sheet, styleId);
+        this.scheduleAdoptedStyleSheetAsset(sheet, styleId, docBaseHref);
         assetUrls.push(this.assetManager.adoptedStyleSheetURL(styleId));
       } else {
         assetUrls.push(
@@ -135,13 +137,14 @@ export class StylesheetManager {
   private scheduleAdoptedStyleSheetAsset(
     sheet: CSSStyleSheet,
     styleId: number,
+    docBaseHref: string,
   ) {
     let lastCount = this.ruleCount(sheet);
     const check = () => {
       const count = this.ruleCount(sheet);
       if (count === lastCount) {
         this.adoptedStyleSheetTimers.delete(styleId);
-        this.captureAdoptedStyleSheetAsset(sheet, styleId);
+        this.captureAdoptedStyleSheetAsset(sheet, styleId, docBaseHref);
       } else {
         lastCount = count;
         this.adoptedStyleSheetTimers.set(
@@ -156,10 +159,17 @@ export class StylesheetManager {
     );
   }
 
-  private captureAdoptedStyleSheetAsset(sheet: CSSStyleSheet, styleId: number) {
-    const cssText = Array.from(sheet.rules || CSSRule, (r) =>
-      stringifyRule(r, sheet.href),
-    ).join('');
+  private captureAdoptedStyleSheetAsset(
+    sheet: CSSStyleSheet,
+    styleId: number,
+    docBaseHref: string,
+  ) {
+    // serialize via the same path as <link>/<style> assets: stringifyCssRules
+    // applies fixBrowserCompatibilityIssuesInCSS, and absolutifies relative
+    // url()s. An adopted sheet is always constructed, so its own href is null;
+    // the browser resolves its url()s against the host document's base, so we
+    // pass that (threaded from the adopting host, for multi-document support).
+    const cssText = stringifyCssRules(sheet.cssRules, docBaseHref);
     this.assetManager.captureAdoptedStyleSheet(styleId, cssText);
     // unblock only after the asset is emitted, so subsequent rule mutations are
     // recorded relative to the captured css
