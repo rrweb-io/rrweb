@@ -521,6 +521,10 @@ export default class MutationBuffer {
     this.mutationCb(payload);
   };
 
+  public bufferBelongsToIframe = (iframeEl: HTMLIFrameElement) => {
+    return this.doc === iframeEl.contentDocument;
+  };
+
   private genTextAreaValueMutation = (textarea: HTMLTextAreaElement) => {
     let item = this.attributeMap.get(textarea);
     if (!item) {
