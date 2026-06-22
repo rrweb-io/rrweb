@@ -1006,6 +1006,10 @@ describe('asset capturing', function (this: ISuite) {
         sheet.replaceSync!('div { color: yellow; }');
         document.adoptedStyleSheets = [sheet];
       });
+      // wait past the adopted-stylesheet stability delay so the asset is emitted
+      await ctx.page.evaluate(
+        () => new Promise((resolve) => setTimeout(resolve, 150)),
+      );
       await waitForRAF(ctx.page);
 
       const events = await ctx.page.evaluate(
@@ -1084,6 +1088,10 @@ describe('asset capturing', function (this: ISuite) {
         // two distinct sheet objects, identical content, adopted together
         document.adoptedStyleSheets = [sheetA, sheetB];
       });
+      // wait past the adopted-stylesheet stability delay so the assets are emitted
+      await ctx.page.evaluate(
+        () => new Promise((resolve) => setTimeout(resolve, 150)),
+      );
       await waitForRAF(ctx.page);
 
       const events = await ctx.page.evaluate(
@@ -1102,6 +1110,105 @@ describe('asset capturing', function (this: ISuite) {
       expect(adoptedAssets.length).toEqual(2);
       expect(payloadOf(adoptedAssets[0])).toEqual(payloadOf(adoptedAssets[1]));
       expect(urlOf(adoptedAssets[0])).not.toEqual(urlOf(adoptedAssets[1]));
+    });
+  });
+
+  describe('adopted stylesheet asset stability delay', function (this: ISuite) {
+    const ctx: ISuite = setup.call(
+      this,
+      `
+<!DOCTYPE html>
+<html>
+<head></head>
+<body></body>
+</html>
+`,
+      {
+        captureAssets: {
+          origins: [],
+          objectURLs: false,
+          adoptedStylesheetAssets: true,
+        },
+      },
+    );
+
+    const urlOf = (e: eventWithTime) =>
+      (e.data as Extract<assetParam, { payload: unknown }>).url;
+    const payloadOf = (e: eventWithTime) =>
+      (e.data as Extract<assetParam, { payload: unknown }>).payload;
+    const adoptedAssetsOf = (events: eventWithTime[]) =>
+      events
+        .filter((e) => e.type === EventType.Asset)
+        .filter((e) => urlOf(e).includes('#rr_adopted_style:'));
+    const styleSheetRulesOf = (events: eventWithTime[]) =>
+      events.filter(
+        (e) =>
+          e.type === EventType.IncrementalSnapshot &&
+          (e.data as { source?: IncrementalSource }).source ===
+            IncrementalSource.StyleSheetRule,
+      );
+
+    it('folds a rapid post-adoption replaceSync into a single non-empty asset (no rule mutation)', async () => {
+      await waitForRAF(ctx.page);
+      // adopt an EMPTY sheet, then populate it immediately - the stability delay
+      // should fold the replaceSync into the asset rather than emitting an empty
+      // asset plus a separate styleSheetRule mutation.
+      await ctx.page.evaluate(() => {
+        const sheet = new CSSStyleSheet();
+        document.adoptedStyleSheets = [sheet];
+        sheet.replaceSync!('div { color: yellow; }');
+      });
+      await ctx.page.evaluate(
+        () => new Promise((resolve) => setTimeout(resolve, 150)),
+      );
+      await waitForRAF(ctx.page);
+
+      const events = await ctx.page.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+
+      const adoptedAssets = adoptedAssetsOf(events);
+      expect(adoptedAssets.length).toEqual(1);
+      expect(payloadOf(adoptedAssets[0])).toEqual({
+        rr_type: 'CssText',
+        cssTexts: ['div { color: yellow; }'],
+      });
+      // the replaceSync happened while the sheet had no styleId, so it is not
+      // captured as a separate mutation
+      expect(styleSheetRulesOf(events).length).toEqual(0);
+    });
+
+    it('captures a mutation that happens after the stability window', async () => {
+      await waitForRAF(ctx.page);
+      await ctx.page.evaluate(() => {
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync!('div { color: yellow; }');
+        document.adoptedStyleSheets = [sheet];
+        (window as unknown as { __sheet: CSSStyleSheet }).__sheet = sheet;
+      });
+      // wait past the stability delay so the sheet is captured and its styleId
+      // assigned, then mutate it
+      await ctx.page.evaluate(
+        () => new Promise((resolve) => setTimeout(resolve, 150)),
+      );
+      await ctx.page.evaluate(() => {
+        (window as unknown as { __sheet: CSSStyleSheet }).__sheet.insertRule(
+          'span { color: red; }',
+        );
+      });
+      await waitForRAF(ctx.page);
+
+      const events = await ctx.page.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+
+      expect(adoptedAssetsOf(events).length).toEqual(1);
+      // the post-window insertRule is captured as a normal styleSheetRule mutation
+      const rules = styleSheetRulesOf(events);
+      expect(rules.length).toEqual(1);
+      expect(
+        (rules[0].data as { adds?: { rule: string }[] }).adds?.[0].rule,
+      ).toEqual('span { color: red; }');
     });
   });
 });

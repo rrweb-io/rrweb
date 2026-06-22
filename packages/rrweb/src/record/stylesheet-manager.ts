@@ -16,6 +16,18 @@ export class StylesheetManager {
   private adoptedStyleSheetCb: adoptedStyleSheetCallback;
   private assetManager: AssetManager;
   public styleMirror = new StyleSheetMirror();
+  // pending stability timers for newly-adopted stylesheets, keyed by styleId
+  private adoptedStyleSheetTimers = new Map<
+    number,
+    ReturnType<typeof setTimeout>
+  >();
+  // styleIds whose asset has not yet been captured. While a styleId is blocked,
+  // rule mutations on its stylesheet are suppressed (see observer.ts) so they
+  // don't duplicate the css that the deferred asset will contain.
+  private blockedStyleIds = new Set<number>();
+  // how long a new adopted stylesheet's rule count must stay unchanged before
+  // its css is captured as an asset (see adoptStyleSheetsAsAssets)
+  private adoptedStyleSheetStabilityDelay = 50;
 
   constructor(options: {
     mutationCb: mutationCallBack;
@@ -94,29 +106,82 @@ export class StylesheetManager {
     sheets: CSSStyleSheet[] | readonly CSSStyleSheet[],
     hostId: number,
   ) {
-    // emit each stylesheet's css content as a separate Asset event (only the
-    // first time it is encountered) and reference it by a virtual url. The
-    // styleId is embedded in the url, so no styleIds/rules are inlined here.
+    // Emit the AdoptedStyleSheet event immediately (with the correct
+    // timestamp), referencing each stylesheet by a virtual url whose trailing
+    // segment is its styleId. A newly-adopted sheet gets its styleId assigned
+    // now (so it is tracked) but is marked "blocked": its css asset is not
+    // captured until its rule count has been stable for
+    // `adoptedStyleSheetStabilityDelay`, and while blocked its rule mutations
+    // are suppressed (see observer.ts). A constructed stylesheet is often
+    // adopted while empty and populated immediately after; deferring the asset
+    // this way captures a single complete asset rather than an empty asset plus
+    // follow-up rule mutations (which would also duplicate the css on replay).
     const assetUrls: string[] = [];
     for (const sheet of sheets) {
-      let url: string;
       if (!this.styleMirror.has(sheet)) {
         const styleId = this.styleMirror.add(sheet);
-        const cssText = Array.from(sheet.rules || CSSRule, (r) =>
-          stringifyRule(r, sheet.href),
-        ).join('');
-        url = this.assetManager.captureAdoptedStyleSheet(styleId, cssText);
+        this.blockedStyleIds.add(styleId);
+        this.scheduleAdoptedStyleSheetAsset(sheet, styleId);
+        assetUrls.push(this.assetManager.adoptedStyleSheetURL(styleId));
       } else {
-        url = this.assetManager.adoptedStyleSheetURL(
-          this.styleMirror.getId(sheet),
+        assetUrls.push(
+          this.assetManager.adoptedStyleSheetURL(this.styleMirror.getId(sheet)),
         );
       }
-      assetUrls.push(url);
     }
     this.adoptedStyleSheetCb({ id: hostId, assetUrls });
   }
 
+  private scheduleAdoptedStyleSheetAsset(
+    sheet: CSSStyleSheet,
+    styleId: number,
+  ) {
+    let lastCount = this.ruleCount(sheet);
+    const check = () => {
+      const count = this.ruleCount(sheet);
+      if (count === lastCount) {
+        this.adoptedStyleSheetTimers.delete(styleId);
+        this.captureAdoptedStyleSheetAsset(sheet, styleId);
+      } else {
+        lastCount = count;
+        this.adoptedStyleSheetTimers.set(
+          styleId,
+          setTimeout(check, this.adoptedStyleSheetStabilityDelay),
+        );
+      }
+    };
+    this.adoptedStyleSheetTimers.set(
+      styleId,
+      setTimeout(check, this.adoptedStyleSheetStabilityDelay),
+    );
+  }
+
+  private captureAdoptedStyleSheetAsset(sheet: CSSStyleSheet, styleId: number) {
+    const cssText = Array.from(sheet.rules || CSSRule, (r) =>
+      stringifyRule(r, sheet.href),
+    ).join('');
+    this.assetManager.captureAdoptedStyleSheet(styleId, cssText);
+    // unblock only after the asset is emitted, so subsequent rule mutations are
+    // recorded relative to the captured css
+    this.blockedStyleIds.delete(styleId);
+  }
+
+  public isStyleSheetBlocked(styleId: number): boolean {
+    return this.blockedStyleIds.has(styleId);
+  }
+
+  private ruleCount(sheet: CSSStyleSheet): number {
+    try {
+      return sheet.cssRules.length;
+    } catch (e) {
+      return 0;
+    }
+  }
+
   public reset() {
+    this.adoptedStyleSheetTimers.forEach((timer) => clearTimeout(timer));
+    this.adoptedStyleSheetTimers.clear();
+    this.blockedStyleIds.clear();
     this.styleMirror.reset();
     this.trackedLinkElements = new WeakSet();
   }

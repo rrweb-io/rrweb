@@ -15,7 +15,6 @@ import {
   getWindowWidth,
   isBlocked,
   legacy_isTouchEvent,
-  StyleSheetMirror,
   nowTimestamp,
 } from '../utils';
 import { patch } from '@rrweb/utils';
@@ -574,15 +573,23 @@ function getNestedCSSRulePositions(rule: CSSRule): number[] {
 function getIdAndStyleId(
   sheet: CSSStyleSheet | undefined | null,
   mirror: Mirror,
-  styleMirror: StyleSheetMirror,
+  stylesheetManager: observerParam['stylesheetManager'],
 ): {
-  styleId?: number;
-  id?: number;
+  styleId: number;
+  id: number;
 } {
-  let id, styleId;
-  if (!sheet) return {};
-  if (sheet.ownerNode) id = mirror.getId(sheet.ownerNode as Node);
-  else styleId = styleMirror.getId(sheet);
+  let id = -1,
+    styleId = -1;
+  if (sheet) {
+    if (sheet.ownerNode) {
+      id = mirror.getId(sheet.ownerNode as Node) || -1;
+    } else {
+      styleId = stylesheetManager.styleMirror.getId(sheet) || -1;
+      if (stylesheetManager.isStyleSheetBlocked(styleId)) {
+        styleId = -1;
+      }
+    }
+  }
   return {
     styleId,
     id,
@@ -614,10 +621,10 @@ function initStyleSheetObserver(
         const { id, styleId } = getIdAndStyleId(
           thisArg,
           mirror,
-          stylesheetManager.styleMirror,
+          stylesheetManager,
         );
 
-        if ((id && id !== -1) || (styleId && styleId !== -1)) {
+        if (id !== -1 || styleId !== -1) {
           styleSheetRuleCb({
             id,
             styleId,
@@ -654,10 +661,10 @@ function initStyleSheetObserver(
         const { id, styleId } = getIdAndStyleId(
           thisArg,
           mirror,
-          stylesheetManager.styleMirror,
+          stylesheetManager,
         );
 
-        if ((id && id !== -1) || (styleId && styleId !== -1)) {
+        if (id !== -1 || styleId !== -1) {
           styleSheetRuleCb({
             id,
             styleId,
@@ -694,10 +701,10 @@ function initStyleSheetObserver(
           const { id, styleId } = getIdAndStyleId(
             thisArg,
             mirror,
-            stylesheetManager.styleMirror,
+            stylesheetManager,
           );
 
-          if ((id && id !== -1) || (styleId && styleId !== -1)) {
+          if (id !== -1 || styleId !== -1) {
             styleSheetRuleCb({
               id,
               styleId,
@@ -726,10 +733,10 @@ function initStyleSheetObserver(
           const { id, styleId } = getIdAndStyleId(
             thisArg,
             mirror,
-            stylesheetManager.styleMirror,
+            stylesheetManager,
           );
 
-          if ((id && id !== -1) || (styleId && styleId !== -1)) {
+          if (id !== -1 || styleId !== -1) {
             styleSheetRuleCb({
               id,
               styleId,
@@ -792,10 +799,10 @@ function initStyleSheetObserver(
             const { id, styleId } = getIdAndStyleId(
               thisArg.parentStyleSheet,
               mirror,
-              stylesheetManager.styleMirror,
+              stylesheetManager,
             );
 
-            if ((id && id !== -1) || (styleId && styleId !== -1)) {
+            if (id !== -1 || styleId !== -1) {
               styleSheetRuleCb({
                 id,
                 styleId,
@@ -830,10 +837,10 @@ function initStyleSheetObserver(
             const { id, styleId } = getIdAndStyleId(
               thisArg.parentStyleSheet,
               mirror,
-              stylesheetManager.styleMirror,
+              stylesheetManager,
             );
 
-            if ((id && id !== -1) || (styleId && styleId !== -1)) {
+            if (id !== -1 || styleId !== -1) {
               styleSheetRuleCb({
                 id,
                 styleId,
@@ -953,9 +960,9 @@ function initStyleDeclarationObserver(
         const { id, styleId } = getIdAndStyleId(
           thisArg.parentRule?.parentStyleSheet,
           mirror,
-          stylesheetManager.styleMirror,
+          stylesheetManager,
         );
-        if ((id && id !== -1) || (styleId && styleId !== -1)) {
+        if (id !== -1 || styleId !== -1) {
           styleDeclarationCb({
             id,
             styleId,
@@ -991,9 +998,9 @@ function initStyleDeclarationObserver(
         const { id, styleId } = getIdAndStyleId(
           thisArg.parentRule?.parentStyleSheet,
           mirror,
-          stylesheetManager.styleMirror,
+          stylesheetManager,
         );
-        if ((id && id !== -1) || (styleId && styleId !== -1)) {
+        if (id !== -1 || styleId !== -1) {
           styleDeclarationCb({
             id,
             styleId,
