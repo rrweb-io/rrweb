@@ -1061,9 +1061,9 @@ describe('asset capturing', function (this: ISuite) {
     );
 
     // The styleMirror already dedupes by CSSStyleSheet *object identity*: the
-    // same sheet object adopted on multiple hosts only appears in styles[] (and
-    // thus emits an asset) once. This test covers two DISTINCT sheet objects
-    // that happen to share identical css content.
+    // same sheet object adopted on multiple hosts emits an asset (and gets a
+    // styleId) only once. This test covers two DISTINCT sheet objects that
+    // happen to share identical css content.
     //
     // CURRENT BEHAVIOUR: a separate asset is emitted per sheet object (one per
     // styleId), so identical content is duplicated across two assets with
@@ -1071,9 +1071,9 @@ describe('asset capturing', function (this: ISuite) {
     // at adoption time - a constructed sheet may be empty when adopted and only
     // filled later via replace/replaceSync, and two sheets may diverge under
     // later independent rule mutations. Safe dedup needs the asset url to be
-    // keyed by content rather than styleId (see the adoptedStyleSheetAssetParam
-    // redesign task); when that lands, flip the assertions below to expect a
-    // single asset whose url is shared by both styles[] entries.
+    // keyed by content rather than styleId; when that lands, flip the
+    // assertions below to expect a single asset whose url is shared by both
+    // assetUrls entries.
     it('currently emits one asset per distinct sheet object even when content is identical', async () => {
       await waitForRAF(ctx.page);
       await ctx.page.evaluate(() => {

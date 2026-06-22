@@ -8,6 +8,8 @@ import type {
   eventWithTime,
   mutationData,
   adoptedStyleSheetData,
+  adoptedStyleSheetParam,
+  adoptedStyleSheetAssetParam,
   assetParam,
 } from '@rrweb/types';
 import { EventType, IncrementalSource } from '@rrweb/types';
@@ -630,8 +632,9 @@ describe('cross origin iframes - adopted stylesheets as assets', function (
       const snapshots = await adoptInIframe(ctx);
       const adopted = findAdopted(snapshots);
       expect(adopted).toBeDefined();
-      const style = (adopted!.data as adoptedStyleSheetData).styles![0];
-      expect(style.cssTextURL).toBeUndefined();
+      const data = adopted!.data as adoptedStyleSheetData;
+      expect('assetUrls' in data).toBe(false);
+      const style = (data as adoptedStyleSheetParam).styles![0];
       expect(style.rules).toMatchObject([
         { rule: 'h1 { color: blue; }', index: 0 },
       ]);
@@ -647,22 +650,24 @@ describe('cross origin iframes - adopted stylesheets as assets', function (
     // emitted as an Asset *inside* the cross-origin iframe, but the parent's
     // transformCrossOriginEvent has no EventType.Asset case, so the asset is
     // dropped (returns false) and never reaches the top-level event stream.
-    // The styleIds are remapped but the cssTextURL string is not, so the
-    // forwarded adopted-stylesheet event references an asset that isn't there.
-    // When that gap is fixed, the final assertion below should be flipped to
-    // expect the Asset to be present (and its url to match cssTextURL).
+    // The embedded styleId in the assetUrl is remapped, but the Asset event
+    // carrying the css is still dropped, so the forwarded adopted-stylesheet
+    // event references an asset that isn't there. When that gap is fixed, the
+    // final assertion below should be flipped to expect the Asset to be
+    // present (and its url to match the assetUrl).
     it('drops the adopted stylesheet Asset from the cross-origin iframe', async () => {
       const snapshots = await adoptInIframe(ctx);
       const adopted = findAdopted(snapshots);
       expect(adopted).toBeDefined();
-      const style = (adopted!.data as adoptedStyleSheetData).styles![0];
-      expect(style.rules).toBeUndefined();
-      expect(style.cssTextURL).toBeDefined();
+      const data = adopted!.data as adoptedStyleSheetData;
+      expect('assetUrls' in data).toBe(true);
+      const assetUrls = (data as adoptedStyleSheetAssetParam).assetUrls;
+      expect(assetUrls[0]).toBeDefined();
 
       const asset = snapshots.find(
         (e) =>
           e.type === EventType.Asset &&
-          (e.data as assetParam).url === style.cssTextURL,
+          (e.data as assetParam).url === assetUrls[0],
       );
       // demonstrates the gap: no matching Asset is forwarded to the top level
       expect(asset).toBeUndefined();

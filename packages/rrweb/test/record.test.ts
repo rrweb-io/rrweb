@@ -12,6 +12,8 @@ import {
   styleSheetRuleData,
   selectionData,
   adoptedStyleSheetData,
+  adoptedStyleSheetParam,
+  adoptedStyleSheetAssetParam,
   assetParam,
 } from '@rrweb/types';
 import {
@@ -585,18 +587,18 @@ describe('record', function (this: ISuite) {
         e.data.source === IncrementalSource.AdoptedStyleSheet,
     );
     expect(adoptedEvents.length).toEqual(1);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const styles = (adoptedEvents[0].data as adoptedStyleSheetData).styles!;
-    expect(styles.length).toEqual(1);
-    // css content is referenced by a virtual url rather than inlined as rules
-    expect(styles[0].rules).toBeUndefined();
-    expect(styles[0].cssTextURL).toContain('#rr_adopted_style:');
+    const data = adoptedEvents[0].data as adoptedStyleSheetData;
+    // css content is referenced by virtual urls rather than inlined as rules
+    expect('assetUrls' in data).toBe(true);
+    const assetUrls = (data as adoptedStyleSheetAssetParam).assetUrls;
+    expect(assetUrls.length).toEqual(1);
+    expect(assetUrls[0]).toContain('#rr_adopted_style:');
 
     // a matching Asset event carries the css content
     const assetEvents = ctx.events.filter((e) => e.type === EventType.Asset);
     expect(assetEvents.length).toEqual(1);
     const assetData = assetEvents[0].data as assetParam;
-    expect(assetData.url).toEqual(styles[0].cssTextURL);
+    expect(assetData.url).toEqual(assetUrls[0]);
     expect((assetData as { payload: unknown }).payload).toEqual({
       rr_type: 'CssText',
       cssTexts: ['div { color: yellow; }'],
@@ -621,9 +623,10 @@ describe('record', function (this: ISuite) {
         e.data.source === IncrementalSource.AdoptedStyleSheet,
     );
     expect(adoptedEvents.length).toEqual(1);
+    const data = adoptedEvents[0].data as adoptedStyleSheetData;
+    expect('assetUrls' in data).toBe(false);
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const styles = (adoptedEvents[0].data as adoptedStyleSheetData).styles!;
-    expect(styles[0].cssTextURL).toBeUndefined();
+    const styles = (data as adoptedStyleSheetParam).styles!;
     expect(styles[0].rules).toEqual([
       { rule: 'div { color: yellow; }', index: 0 },
     ]);

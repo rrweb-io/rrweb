@@ -6,7 +6,8 @@ const now = Date.now();
 /**
  * Same scenario as ./adopted-style-sheet, but with the css content of each
  * adopted (constructed) stylesheet extracted into a separate Asset event and
- * referenced from the adopted stylesheet event by a `cssTextURL` virtual url.
+ * referenced from the adopted stylesheet event by an `assetUrls` virtual url
+ * (the styleId is embedded in the url's trailing `:<styleId>` segment).
  * This is what `record` emits when `captureAssets.adoptedStylesheetAssets` is on.
  */
 const events: eventWithTime[] = [
@@ -177,13 +178,7 @@ const events: eventWithTime[] = [
     data: {
       source: IncrementalSource.AdoptedStyleSheet,
       id: 1,
-      styleIds: [1],
-      styles: [
-        {
-          styleId: 1,
-          cssTextURL: 'about:blank#rr_adopted_style:1',
-        },
-      ],
+      assetUrls: ['about:blank#rr_adopted_style:1'],
     },
     timestamp: now + 200,
   },
@@ -271,12 +266,9 @@ const events: eventWithTime[] = [
     data: {
       source: IncrementalSource.AdoptedStyleSheet,
       id: 10,
-      styleIds: [1, 2],
-      styles: [
-        {
-          styleId: 2,
-          cssTextURL: 'about:blank#rr_adopted_style:2',
-        },
+      assetUrls: [
+        'about:blank#rr_adopted_style:1',
+        'about:blank#rr_adopted_style:2',
       ],
     },
     timestamp: now + 300,
@@ -299,13 +291,7 @@ const events: eventWithTime[] = [
     data: {
       source: IncrementalSource.AdoptedStyleSheet,
       id: 20,
-      styleIds: [3],
-      styles: [
-        {
-          styleId: 3,
-          cssTextURL: 'about:blank#rr_adopted_style:3',
-        },
-      ],
+      assetUrls: ['about:blank#rr_adopted_style:3'],
     },
     timestamp: now + 300,
   },
@@ -382,13 +368,7 @@ const events: eventWithTime[] = [
     data: {
       source: IncrementalSource.AdoptedStyleSheet,
       id: 16,
-      styleIds: [4],
-      styles: [
-        {
-          styleId: 4,
-          cssTextURL: 'about:blank#rr_adopted_style:4',
-        },
-      ],
+      assetUrls: ['about:blank#rr_adopted_style:4'],
     },
     timestamp: now + 550,
   },

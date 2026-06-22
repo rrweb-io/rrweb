@@ -27,6 +27,7 @@ import {
   type scrollCallback,
   type canvasMutationParam,
   type adoptedStyleSheetParam,
+  type adoptedStyleSheetAssetParam,
   type assetParam,
   type asset,
   type assetStatus,
@@ -298,7 +299,9 @@ function record<T = eventWithTime>(
       timestamp: snapshotTimestamp,
     } as assetEventWithTime);
 
-  const wrappedAdoptedStyleSheetEmit = (a: adoptedStyleSheetParam) =>
+  const wrappedAdoptedStyleSheetEmit = (
+    a: adoptedStyleSheetParam | adoptedStyleSheetAssetParam,
+  ) =>
     wrappedEmit({
       type: EventType.IncrementalSnapshot,
       data: {

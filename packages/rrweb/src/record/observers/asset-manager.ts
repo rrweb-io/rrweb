@@ -306,14 +306,24 @@ export default class AssetManager {
   }
 
   /**
+   * The virtual url which references the Asset event holding an adopted
+   * (constructed) stylesheet's css text. The styleId is embedded in the url so
+   * that the replay side can recover it without a separate field.
+   */
+  public adoptedStyleSheetURL(styleId: number): string {
+    return `${this.baseHref}#rr_adopted_style:${styleId}`;
+  }
+
+  /**
    * Emit the css content of an adopted (constructed) stylesheet as a separate
    * Asset event and return the virtual url which references it. The adopted
-   * stylesheet event stores the synthetic url below instead of inline css.
-   * This allows repeated content both between and within recordings to be
-   * handled separately as an Asset
+   * stylesheet event stores the synthetic url instead of inline css. This
+   * allows repeated content both between and within recordings to be handled
+   * separately as an Asset. Only called the first time a given stylesheet is
+   * encountered.
    */
   public captureAdoptedStyleSheet(styleId: number, cssText: string): string {
-    const url = `${this.baseHref}#rr_adopted_style:${styleId}`;
+    const url = this.adoptedStyleSheetURL(styleId);
     const payload: SerializedCssTextArg = {
       rr_type: 'CssText',
       cssTexts: [cssText],

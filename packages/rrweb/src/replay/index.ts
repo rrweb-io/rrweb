@@ -2162,16 +2162,26 @@ export class Replayer {
     if (!targetHost) return;
 
     /**
+     * Constructed StyleSheet can't share across multiple documents.
+     * The replayer has to get the correct host window to recreate a StyleSheetObject.
+     */
+    let hostWindow: IWindow | null = null;
+    if (hasShadowRoot(targetHost))
+      hostWindow = targetHost.ownerDocument?.defaultView || null;
+    else if (targetHost.nodeName === '#document')
+      hostWindow = (targetHost as Document).defaultView;
+
+    /**
      * Build a constructed StyleSheet from raw css text (used when the stylesheet's
-     * content was emitted as a separate Asset event referenced by `cssTextURL`).
+     * content was emitted as a separate Asset event referenced by an assetUrl).
      */
     const buildFromCssText = (
-      hostWindow: IWindow,
+      win: IWindow,
       styleId: number,
       cssTexts: string[],
     ) => {
       try {
-        const newStyleSheet = new hostWindow.CSSStyleSheet();
+        const newStyleSheet = new win.CSSStyleSheet();
         this.styleMirror.add(newStyleSheet, styleId);
         newStyleSheet.replaceSync(cssTexts.join(''));
       } catch (e) {
@@ -2183,54 +2193,57 @@ export class Replayer {
     // adoption waits for these so the sheets exist in the styleMirror first.
     const pendingAssets: Promise<unknown>[] = [];
 
-    // Create StyleSheet objects which will be adopted after.
-    data.styles?.forEach((style) => {
-      /**
-       * Constructed StyleSheet can't share across multiple documents.
-       * The replayer has to get the correct host window to recreate a StyleSheetObject.
-       */
-      let hostWindow: IWindow | null = null;
-      if (hasShadowRoot(targetHost))
-        hostWindow = targetHost.ownerDocument?.defaultView || null;
-      else if (targetHost.nodeName === '#document')
-        hostWindow = (targetHost as Document).defaultView;
+    // The styleIds to adopt (in order). For the asset variant these are derived
+    // from the assetUrls; otherwise they come from data.styleIds.
+    let styleIds: number[];
 
-      if (!hostWindow) return;
-
-      if (style.cssTextURL) {
-        // css content lives in a separate Asset event
-        const url = style.cssTextURL;
+    if ('assetUrls' in data) {
+      // css content lives in separate Asset events; the styleId is embedded in
+      // each url's trailing `:<styleId>` segment.
+      styleIds = data.assetUrls.map((url) =>
+        parseInt(url.slice(url.lastIndexOf(':') + 1), 10),
+      );
+      data.assetUrls.forEach((url, i) => {
+        if (!hostWindow) return;
+        const styleId = styleIds[i];
+        // build only the first time a given stylesheet is seen
+        if (this.styleMirror.getStyle(styleId)) return;
+        const win = hostWindow;
         const status = this.assetManager.get(url);
         if (status.status === 'loaded' && status.cssTexts) {
-          buildFromCssText(hostWindow, style.styleId, status.cssTexts);
+          buildFromCssText(win, styleId, status.cssTexts);
         } else {
-          const hw = hostWindow;
           pendingAssets.push(
             this.assetManager.whenReady(url).then((readyStatus) => {
+              if (this.styleMirror.getStyle(styleId)) return;
               if (readyStatus.status === 'loaded' && readyStatus.cssTexts) {
-                buildFromCssText(hw, style.styleId, readyStatus.cssTexts);
+                buildFromCssText(win, styleId, readyStatus.cssTexts);
               }
             }),
           );
         }
-        return;
-      }
-
-      try {
-        const newStyleSheet = new hostWindow.CSSStyleSheet();
-        this.styleMirror.add(newStyleSheet, style.styleId);
-        // To reuse the code of applying stylesheet rules
-        this.applyStyleSheetRule(
-          {
-            source: IncrementalSource.StyleSheetRule,
-            adds: style.rules,
-          },
-          newStyleSheet,
-        );
-      } catch (e) {
-        // In case some browsers don't support constructing StyleSheet.
-      }
-    });
+      });
+    } else {
+      styleIds = data.styleIds;
+      // Create StyleSheet objects which will be adopted after.
+      data.styles?.forEach((style) => {
+        if (!hostWindow) return;
+        try {
+          const newStyleSheet = new hostWindow.CSSStyleSheet();
+          this.styleMirror.add(newStyleSheet, style.styleId);
+          // To reuse the code of applying stylesheet rules
+          this.applyStyleSheetRule(
+            {
+              source: IncrementalSource.StyleSheetRule,
+              adds: style.rules,
+            },
+            newStyleSheet,
+          );
+        } catch (e) {
+          // In case some browsers don't support constructing StyleSheet.
+        }
+      });
+    }
 
     const MAX_RETRY_TIME = 10;
     let count = 0;
@@ -2260,10 +2273,10 @@ export class Replayer {
     if (pendingAssets.length) {
       // wait for any asset-backed stylesheets to load before adopting
       void Promise.all(pendingAssets).then(() =>
-        adoptStyleSheets(targetHost, data.styleIds),
+        adoptStyleSheets(targetHost, styleIds),
       );
     } else {
-      adoptStyleSheets(targetHost, data.styleIds);
+      adoptStyleSheets(targetHost, styleIds);
     }
   }
 

@@ -240,10 +240,18 @@ export class IframeManager {
           }
           case IncrementalSource.AdoptedStyleSheet: {
             this.replaceIds(e.data, iframeEl, ['id']);
-            this.replaceStyleIds(e.data, iframeEl, ['styleIds']);
-            e.data.styles?.forEach((style) => {
-              this.replaceStyleIds(style, iframeEl, ['styleId']);
-            });
+            if ('assetUrls' in e.data) {
+              // the styleId is embedded in each url's trailing `:<styleId>`
+              // segment; remap it so it matches the parent's style mirror
+              e.data.assetUrls = e.data.assetUrls.map((url) =>
+                this.replaceStyleIdInUrl(url, iframeEl),
+              );
+            } else {
+              this.replaceStyleIds(e.data, iframeEl, ['styleIds']);
+              e.data.styles?.forEach((style) => {
+                this.replaceStyleIds(style, iframeEl, ['styleId']);
+              });
+            }
             return e;
           }
         }
@@ -287,6 +295,18 @@ export class IframeManager {
     keys: Array<keyof T>,
   ): T {
     return this.replace(this.crossOriginIframeStyleMirror, obj, iframeEl, keys);
+  }
+
+  private replaceStyleIdInUrl(
+    url: string,
+    iframeEl: HTMLIFrameElement,
+  ): string {
+    const idx = url.lastIndexOf(':');
+    if (idx === -1) return url;
+    const styleId = parseInt(url.slice(idx + 1), 10);
+    if (Number.isNaN(styleId)) return url;
+    const newId = this.crossOriginIframeStyleMirror.getId(iframeEl, styleId);
+    return `${url.slice(0, idx + 1)}${newId}`;
   }
 
   private replaceIdOnNode(

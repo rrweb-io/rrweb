@@ -290,7 +290,7 @@ export type selectionData = {
 
 export type adoptedStyleSheetData = {
   source: IncrementalSource.AdoptedStyleSheet;
-} & adoptedStyleSheetParam;
+} & (adoptedStyleSheetParam | adoptedStyleSheetAssetParam);
 
 export type customElementData = {
   source: IncrementalSource.CustomElement;
@@ -624,20 +624,30 @@ export type adoptedStyleSheetParam = {
   // New CSSStyleSheets which have never appeared before.
   styles?: {
     styleId: number;
-    // the stylesheet's rules, inlined into the event. Omitted when the css
-    // content has instead been emitted as a separate Asset event (see cssTextURL).
-    rules?: styleSheetAddRule[];
-    // synthetic url pointing to an Asset event which holds the stylesheet's css text.
-    // present instead of `rules` when stylesheets are captured as assets, so that
-    // the (potentially large, often duplicated) css content can be de-duplicated
-    // out of band rather than bloating this event.
-    cssTextURL?: string;
+    rules: styleSheetAddRule[];
   }[];
   // StyleSheet ids to be adopted.
   styleIds: number[];
 };
 
-export type adoptedStyleSheetCallback = (a: adoptedStyleSheetParam) => void;
+// Alternative to adoptedStyleSheetParam used when
+// captureAssets.adoptedStylesheetAssets is enabled: instead of inlining the
+// stylesheets' rules (or referencing them by styleId), the host's adopted
+// stylesheets are listed as synthetic asset urls. The styleId is embedded in
+// each url (the trailing `:<styleId>` segment), so a separate Asset event
+// carrying the css text is emitted only the first time a given stylesheet is
+// encountered.
+export type adoptedStyleSheetAssetParam = {
+  // id indicates the node id of document or shadow DOMs' host element.
+  id: number;
+  // synthetic urls (one per adopted stylesheet, in order) each pointing to an
+  // Asset event which holds the stylesheet's css text.
+  assetUrls: string[];
+};
+
+export type adoptedStyleSheetCallback = (
+  a: adoptedStyleSheetParam | adoptedStyleSheetAssetParam,
+) => void;
 
 export type styleDeclarationParam = {
   id?: number;

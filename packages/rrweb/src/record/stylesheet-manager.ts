@@ -65,12 +65,15 @@ export class StylesheetManager {
     hostId: number,
   ) {
     if (sheets.length === 0) return;
+    if (this.assetManager.config.adoptedStylesheetAssets) {
+      this.adoptStyleSheetsAsAssets(sheets, hostId);
+      return;
+    }
     const adoptedStyleSheetData: adoptedStyleSheetParam = {
       id: hostId,
       styleIds: [] as number[],
     };
     const styles: NonNullable<adoptedStyleSheetParam['styles']> = [];
-    const captureAsAsset = this.assetManager.config.adoptedStylesheetAssets;
     for (const sheet of sheets) {
       let styleId;
       if (!this.styleMirror.has(sheet)) {
@@ -79,23 +82,38 @@ export class StylesheetManager {
           rule: stringifyRule(r, sheet.href),
           index,
         }));
-        if (captureAsAsset) {
-          // emit the css content as a separate Asset event and reference it by
-          // a virtual url instead of inlining the rules into this event
-          const cssText = rules.map((r) => r.rule).join('');
-          const cssTextURL = this.assetManager.captureAdoptedStyleSheet(
-            styleId,
-            cssText,
-          );
-          styles.push({ styleId, cssTextURL });
-        } else {
-          styles.push({ styleId, rules });
-        }
+        styles.push({ styleId, rules });
       } else styleId = this.styleMirror.getId(sheet);
       adoptedStyleSheetData.styleIds.push(styleId);
     }
     if (styles.length > 0) adoptedStyleSheetData.styles = styles;
     this.adoptedStyleSheetCb(adoptedStyleSheetData);
+  }
+
+  private adoptStyleSheetsAsAssets(
+    sheets: CSSStyleSheet[] | readonly CSSStyleSheet[],
+    hostId: number,
+  ) {
+    // emit each stylesheet's css content as a separate Asset event (only the
+    // first time it is encountered) and reference it by a virtual url. The
+    // styleId is embedded in the url, so no styleIds/rules are inlined here.
+    const assetUrls: string[] = [];
+    for (const sheet of sheets) {
+      let url: string;
+      if (!this.styleMirror.has(sheet)) {
+        const styleId = this.styleMirror.add(sheet);
+        const cssText = Array.from(sheet.rules || CSSRule, (r) =>
+          stringifyRule(r, sheet.href),
+        ).join('');
+        url = this.assetManager.captureAdoptedStyleSheet(styleId, cssText);
+      } else {
+        url = this.assetManager.adoptedStyleSheetURL(
+          this.styleMirror.getId(sheet),
+        );
+      }
+      assetUrls.push(url);
+    }
+    this.adoptedStyleSheetCb({ id: hostId, assetUrls });
   }
 
   public reset() {
