@@ -1,5 +1,7 @@
 # @rrweb/browser-client
 
+## Overview
+
 Browser client for recording rrweb sessions to an rrweb Cloud-compatible API. It wraps rrweb recording, streams events over WebSocket, and falls back to HTTP POST for buffered events.
 
 This README covers the npm/ESM package. For the hosted script snippet and broader rrweb Cloud setup, see the [JavaScript SDK guide](https://rrweb.com/docs/cloud/javascript-sdk).
