@@ -588,9 +588,7 @@ describe('cross origin iframes', function (this: ISuite) {
   });
 });
 
-describe('cross origin iframes - adopted stylesheets as assets', function (
-  this: ISuite,
-) {
+describe('cross origin iframes - adopted stylesheets as assets', function (this: ISuite) {
   vi.setConfig({ testTimeout: 100_000 });
 
   const content = `
@@ -621,9 +619,7 @@ describe('cross origin iframes - adopted stylesheets as assets', function (
     return (await ctx.page.evaluate('window.snapshots')) as eventWithTime[];
   };
 
-  describe('with adoptedStylesheetAssets disabled (legacy inline rules)', function (
-    this: ISuite,
-  ) {
+  describe('with adoptedStylesheetAssets disabled (legacy inline rules)', function (this: ISuite) {
     const ctx: ISuite = setup.call(this, content, {
       captureAssets: { adoptedStylesheetAssets: false },
     });

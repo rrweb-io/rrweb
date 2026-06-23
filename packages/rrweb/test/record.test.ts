@@ -631,9 +631,9 @@ describe('record', function (this: ISuite) {
       { rule: 'div { color: yellow; }', index: 0 },
     ]);
     // no Asset event emitted
-    expect(
-      ctx.events.filter((e) => e.type === EventType.Asset).length,
-    ).toEqual(0);
+    expect(ctx.events.filter((e) => e.type === EventType.Asset).length).toEqual(
+      0,
+    );
   });
 
   it('captures mutations on adopted stylesheets', async () => {
