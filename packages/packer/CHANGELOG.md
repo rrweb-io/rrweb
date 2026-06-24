@@ -26,35 +26,16 @@
 - Updated dependencies [[`0f0a532`](https://github.com/rrweb-io/rrweb/commit/0f0a532a2ca6b9a71acefcf3af4415beb47db0bb), [`d872d28`](https://github.com/rrweb-io/rrweb/commit/d872d2809e3ec8d6ff5d3d5f43bc81aff70e7548), [`efdc167`](https://github.com/rrweb-io/rrweb/commit/efdc167ca6c039d04af83612e3d92498bb9b41a7), [`979d2b1`](https://github.com/rrweb-io/rrweb/commit/979d2b1847a3d05e2731722952e4d6bd8be54f40), [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf), [`335639a`](https://github.com/rrweb-io/rrweb/commit/335639af9b0ce7f70eb0f38ce113d877c7325158), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`33e01f5`](https://github.com/rrweb-io/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0), [`c278d06`](https://github.com/rrweb-io/rrweb/commit/c278d068a0e2f1175cce7cc63920ac1fbf4783cf)]:
   - @rrweb/types@2.0.0
 
-## 2.0.0-alpha.20
+## 2.0.0-alpha.17&mdash;20
 
-### Patch Changes
-
-- Updated dependencies []:
-  - @rrweb/types@2.0.0-alpha.20
-
-## 2.0.0-alpha.19
-
-### Patch Changes
-
-- Updated dependencies []:
-  - @rrweb/types@2.0.0-alpha.19
-
-## 2.0.0-alpha.18
-
-### Patch Changes
-
-- Updated dependencies []:
-  - @rrweb/types@2.0.0-alpha.18
-
-## 2.0.0-alpha.17
+Patch Changes only following changes to @rrweb/types
 
 ### Patch Changes
 
 - [`db20184`](https://github.com/rrweb-io/rrweb/commit/db201841accd2b5df3cd7c88779aa62ab158501c) Thanks [@Juice10](https://github.com/Juice10)! - Keep package version in sync with other packages
 
 - Updated dependencies [[`335639a`](https://github.com/rrweb-io/rrweb/commit/335639af9b0ce7f70eb0f38ce113d877c7325158)]:
-  - @rrweb/types@2.0.0-alpha.17
+  - @rrweb/types (2.0.0-alpha.17&mdash;20)
 
 ## 2.0.0-alpha.15
 

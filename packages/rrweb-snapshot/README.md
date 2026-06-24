@@ -1,6 +1,6 @@
 # rrweb-snapshot
 
-[![Build Status](https://travis-ci.org/rrweb-io/rrweb.svg?branch=master)](https://travis-ci.org/rrweb-io/rrweb) [![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-41pxl6epj-~N2YyGQxvI5r3V6d59it8w) [![Reddit](https://img.shields.io/badge/reddit-r/rrweb-teal.svg?logo=reddit)](https://www.reddit.com/r/rrweb)
+## Overview
 
 Snapshot the DOM into a stateful and serializable data structure.
 Also, provide the ability to rebuild the DOM via snapshot.
