@@ -19,8 +19,8 @@ declare const __RRWEB_BROWSER_CLIENT_COMMIT_HASH__: string;
 export type clientConfig = {
   serverUrl?: string;
   publicApiKey: string;
-  autostart: boolean;
-  includePii: boolean;
+  autostart?: boolean;
+  includePii?: boolean;
   jsSource?: string;
   jsEntrypoint?: string;
   meta?: nameValues;
