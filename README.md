@@ -9,7 +9,7 @@
 
 **[(new!) rrweb cloud - hosted rrweb backend is now available](https://rrweb.com/)**
 
-[![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-siwoc6hx-uWay3s2wyG8t5GpZVb8rWg)
+[![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-41pxl6epj-~N2YyGQxvI5r3V6d59it8w)
 [![Twitter Follow](https://img.shields.io/badge/twitter-@rrweb__io-teal.svg?logo=twitter)](https://twitter.com/rrweb_io)
 [![Reddit](https://img.shields.io/badge/reddit-r/rrweb-teal.svg?logo=reddit)](https://www.reddit.com/r/rrweb)
 ![record bundle size](https://img.shields.io/bundlejs/size/%40rrweb/record)
