@@ -4,31 +4,22 @@ const mockState = vi.hoisted(() => ({
   record: vi.fn(),
 }));
 
-vi.mock(
-  '@rrweb/record',
-  () => {
-    mockState.record.addCustomEvent = vi.fn();
-    mockState.record.freezePage = vi.fn();
-    return { record: mockState.record };
+vi.mock('@rrweb/record', () => {
+  mockState.record.addCustomEvent = vi.fn();
+  mockState.record.freezePage = vi.fn();
+  return { record: mockState.record };
+});
+
+vi.mock('@rrweb/types', () => ({
+  EventType: {
+    Custom: 5,
+    Meta: 4,
   },
-);
+}));
 
-vi.mock(
-  '@rrweb/types',
-  () => ({
-    EventType: {
-      Custom: 5,
-      Meta: 4,
-    },
-  }),
-);
-
-vi.mock(
-  '@rrweb/utils',
-  () => ({
-    nowTimestamp: () => 1,
-  }),
-);
+vi.mock('@rrweb/utils', () => ({
+  nowTimestamp: () => 1,
+}));
 
 vi.mock('websocket-ts', () => {
   class ArrayQueue {
