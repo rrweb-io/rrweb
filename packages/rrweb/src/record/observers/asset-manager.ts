@@ -28,12 +28,22 @@ export function isProcessingStyleElement(
   return '__rrProcessingStylesheet' in el;
 }
 
+// the content kind embedded in a data: url's virtual url for readability, e.g.
+// `#rr_data_style:2` or `#rr_data_image:3` (font/document may be added later)
+type dataAssetKind = 'image' | 'video' | 'audio' | 'style';
+
 export default class AssetManager {
   private urlObjectMap = new Map<string, File | Blob | MediaSource>();
   private urlTextMap = new Map<string, string>();
   private capturedURLs = new Set<string>();
   private capturingURLs = new Set<string>();
   private failedURLs = new Set<string>();
+  // data: urls embed their content, so emitting them verbatim would duplicate
+  // that (often large) content inline in the snapshot. Instead each distinct
+  // data: url is mapped to a stable virtual url and emitted as a normal Asset
+  // under it. Identical data: urls dedupe to the same virtual url / asset.
+  private dataURLMap = new Map<string, string>();
+  private dataURLCounter = 0;
   private resetHandlers: listenerHandler[] = [];
   private mutationCb: assetCallback;
   // base href of the recording frame, used only to namespace adopted-stylesheet
@@ -53,6 +63,8 @@ export default class AssetManager {
     this.capturedURLs.clear();
     this.capturingURLs.clear();
     this.failedURLs.clear();
+    this.dataURLMap.clear();
+    this.dataURLCounter = 0;
     this.resetHandlers.forEach((h) => h());
   }
 
@@ -143,6 +155,11 @@ export default class AssetManager {
     snapshotTimestamp?: number | true,
   ): assetStatus {
     let cssRules: CSSRuleList;
+    if (sheetBaseHref.startsWith('data:')) {
+      // a data: stylesheet's content is read from el.sheet below; emit it under
+      // a virtual url so the (often large) data: url isn't duplicated inline
+      sheetBaseHref = this.dataURLVirtualURL(sheetBaseHref, 'style');
+    }
     let url = sheetBaseHref; // linkEl.href for a link element
     if (styleId) {
       url += `#rr_style_el:${styleId}`;
@@ -306,6 +323,42 @@ export default class AssetManager {
   }
 
   /**
+   * Create or reuse the virtual url under which a data: url's content is emitted
+   * as an Asset. The data: url itself can be very large, so referencing it by a
+   * short virtual url (mirroring the #rr_style_el: / #rr_adopted_style: scheme)
+   * keeps it out of the snapshot. The `kind` (image/video/audio/style/...) is
+   * embedded for legibility during storage and doesn't matter for replay assignment
+   * as the numeric id is unique across all assets emitted.
+   * Identical `data:` urls map to the same url so only one asset is emitted
+   */
+  private dataURLVirtualURL(dataURL: string, kind: dataAssetKind): string {
+    const existing = this.dataURLMap.get(dataURL);
+    if (existing) {
+      return existing;
+    }
+    const url = `${this.baseHref}#rr_data_${kind}:${++this.dataURLCounter}`;
+    this.dataURLMap.set(dataURL, url);
+    return url;
+  }
+
+  /**
+   * Classify the asset kind of a (non-stylesheet) element so its data: virtual
+   * url reflects the content type. Defaults to 'image' for the generic
+   * capturable attributes (object/embed data, backgrounds, svg images).
+   */
+  private mediaKind(element: HTMLElement): dataAssetKind {
+    const name = element.nodeName;
+    if (name === 'VIDEO') return 'video';
+    if (name === 'AUDIO') return 'audio';
+    if (name === 'SOURCE') {
+      const parent = element.parentNode?.nodeName;
+      if (parent === 'VIDEO') return 'video';
+      if (parent === 'AUDIO') return 'audio';
+    }
+    return 'image';
+  }
+
+  /**
    * The virtual url which references the Asset event holding an adopted
    * (constructed) stylesheet's css text. The styleId is embedded in the url so
    * that the replay side can recover it without a separate field.
@@ -349,35 +402,52 @@ export default class AssetManager {
     } else if (asset.attr === 'srcset') {
       const statuses: assetStatus[] = [];
       getSourcesFromSrcset(asset.value).forEach((url) => {
+        // data: sources are self-contained; leave them inline within the srcset
+        // string (the whole string is stored verbatim) rather than emitting an
+        // asset that the unrewritten srcset on replay couldn't reference
+        if (url.startsWith('data:')) {
+          return;
+        }
         statuses.push(this.captureUrl(url, snapshotTimestamp));
       });
       return statuses;
     } else {
-      return this.captureUrl(asset.value, snapshotTimestamp);
+      return this.captureUrl(
+        asset.value,
+        snapshotTimestamp,
+        this.mediaKind(asset.element),
+      );
     }
   }
 
   private captureUrl(
     url: string,
     snapshotTimestamp?: number | true,
+    kind: dataAssetKind = 'image',
   ): assetStatus {
-    if (this.capturedURLs.has(url)) {
+    // content is fetched from the original `url`, but the asset is emitted and
+    // tracked under `emitUrl`; for data: urls this is a short virtual url so the
+    // data: url isn't duplicated inline in the snapshot
+    const emitUrl = url.startsWith('data:')
+      ? this.dataURLVirtualURL(url, kind)
+      : url;
+    if (this.capturedURLs.has(emitUrl)) {
       return {
-        url,
+        url: emitUrl,
         status: 'captured',
       };
-    } else if (this.capturingURLs.has(url)) {
+    } else if (this.capturingURLs.has(emitUrl)) {
       return {
-        url,
+        url: emitUrl,
         status: 'capturing',
       };
-    } else if (this.failedURLs.has(url)) {
+    } else if (this.failedURLs.has(emitUrl)) {
       return {
-        url,
+        url: emitUrl,
         status: 'error',
       };
     }
-    this.capturingURLs.add(url);
+    this.capturingURLs.add(emitUrl);
     void this.getURLObject(url)
       .then(async (object) => {
         if (object) {
@@ -397,12 +467,12 @@ export default class AssetManager {
               ],
             };
 
-            this.capturedURLs.add(url);
-            this.capturingURLs.delete(url);
+            this.capturedURLs.add(emitUrl);
+            this.capturingURLs.delete(emitUrl);
 
             this.mutationCb(
               {
-                url,
+                url: emitUrl,
                 payload,
               },
               snapshotTimestamp === true
@@ -412,10 +482,10 @@ export default class AssetManager {
           }
         }
       })
-      .catch(this.fetchCatcher(url));
+      .catch(this.fetchCatcher(emitUrl));
 
     return {
-      url,
+      url: emitUrl,
       status: 'capturing',
     };
   }

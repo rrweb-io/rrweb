@@ -444,9 +444,16 @@ function record<T = eventWithTime>(
           asset,
           true, // indicate it's a FullSnapshot
         );
-        if (!Array.isArray(assetStatus) && assetStatus.timeout) {
+        if (Array.isArray(assetStatus)) {
+          // removeme when we just capture one asset from srcset
+          // srcset: we're not expecting a timeout (no requestIdleCallback), and don't want to do `data:` related substitution in the caller
+          return;
+        }
+        if (assetStatus.timeout) {
           maxAssetDelay = Math.max(maxAssetDelay, assetStatus.timeout);
         }
+        // calling code needs to inline the new 'virtual' url to replace the full `data:` string
+        return assetStatus.url;
       },
       keepIframeSrcFn,
     });

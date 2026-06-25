@@ -648,12 +648,27 @@ export const CAPTURABLE_ELEMENT_ATTRIBUTE_COMBINATIONS = new Map([
   ['cursor', new Set(['href'])],
 ]);
 
+// a data: url embeds its content inline; below this length it's cheaper to
+// leave it in the snapshot than to emit it as a separate Asset event (which
+// carries its own per-event overhead and an extra virtual url reference)
+export const MIN_DATA_URL_ASSET_LENGTH = 200;
+
 export function shouldCaptureAsset(
   n: Element,
   attribute: string,
   value: string,
   config: captureAssetsParam,
 ): boolean {
+  const dataURLThreshold =
+    config.dataURLAssetThreshold ?? MIN_DATA_URL_ASSET_LENGTH;
+  if (
+    attribute !== 'srcset' &&
+    value.startsWith('data:') &&
+    value.length < dataURLThreshold
+  ) {
+    // keep short data: urls inline rather than emitting a whole asset for them
+    return false;
+  }
   let parentOfSource = '';
   if (['SOURCE', 'TRACK'].includes(n.nodeName) && n.parentNode) {
     parentOfSource = n.parentNode.nodeName;

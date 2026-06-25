@@ -399,6 +399,99 @@ describe('asset capturing', function (this: ISuite) {
       );
     });
   });
+  describe('data urls as assets (dataURLAssetThreshold: 0)', () => {
+    const dataURL = `data:image/png;base64,${BASE64_PNG_RECTANGLE}`;
+    const ctx: ISuite = setup.call(
+      this,
+      `
+        <!DOCTYPE html>
+        <html>
+          <body>
+          <img src="${dataURL}" />
+          <img src="${dataURL}" />
+          </body>
+        </html>
+      `,
+      {
+        captureAssets: {
+          images: true,
+          origins: false,
+          objectURLs: false,
+          // emit even this small data: url as an asset so the fixture stays small
+          dataURLAssetThreshold: 0,
+        },
+      },
+    );
+
+    it('emits a single asset under a virtual url for two identical data: urls', async () => {
+      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+      await waitForRAF(ctx.page);
+      const events = await ctx.page?.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+
+      const assetEvents = events.filter((e) => e.type === EventType.Asset);
+      // both <img>s reference the same data: url, so only one asset is emitted
+      expect(assetEvents).toHaveLength(1);
+
+      const asset = assetEvents[0] as assetEvent;
+      // the asset is referenced by a short, type-aware virtual url (these are
+      // <img>s) rather than the large data: url
+      expect(asset.data.url).toContain('#rr_data_image:');
+      expect(asset.data.url.startsWith('data:')).toBe(false);
+      expect('payload' in asset.data && asset.data.payload).toMatchObject({
+        rr_type: 'Blob',
+        type: 'image/png',
+      });
+
+      // the data: url is not inlined in the snapshot; both <img>s reference the
+      // virtual url via rr_captured_src instead
+      const fullSnapshot = events.find(
+        (e) => e.type === EventType.FullSnapshot,
+      );
+      const json = JSON.stringify(fullSnapshot);
+      expect(json).not.toContain(dataURL);
+      const virtualUrlOccurrences = json.split(asset.data.url).length - 1;
+      expect(virtualUrlOccurrences).toBe(2);
+    });
+  });
+  describe('short data urls stay inline (below dataURLAssetThreshold)', () => {
+    const shortDataURL = 'data:image/gif;base64,R0lGODlhAQABAAAAACw=';
+    const ctx: ISuite = setup.call(
+      this,
+      `
+        <!DOCTYPE html>
+        <html>
+          <body>
+          <img src="${shortDataURL}" />
+          </body>
+        </html>
+      `,
+      {
+        captureAssets: {
+          images: true,
+          origins: false,
+          objectURLs: false,
+          // default threshold of 200 chars applies; this data: url is shorter
+        },
+      },
+    );
+
+    it('does not emit an asset for a short data: url', async () => {
+      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+      await waitForRAF(ctx.page);
+      const events = await ctx.page?.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+
+      expect(events.filter((e) => e.type === EventType.Asset)).toHaveLength(0);
+      // the short data: url remains inline as the plain src attribute
+      const fullSnapshot = events.find(
+        (e) => e.type === EventType.FullSnapshot,
+      );
+      expect(JSON.stringify(fullSnapshot)).toContain(shortDataURL);
+    });
+  });
   describe('origins: false', () => {
     const ctx: ISuite = setup.call(
       this,

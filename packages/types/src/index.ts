@@ -127,6 +127,14 @@ export type captureAssetsParam = Partial<{
    * duplicated) content to be de-duplicated out of band.
    */
   adoptedStylesheetAssets: boolean;
+  /*
+   * default 200 (characters)
+   * data: urls shorter than this are kept inline in the snapshot rather than
+   * being emitted as a separate Asset event (referenced by a virtual url).
+   * Short data: urls are cheaper inline than as a whole asset event. Set to 0
+   * to emit every data: url as an asset (e.g. to keep test fixtures small).
+   */
+  dataURLAssetThreshold: number;
   /**
    * In a mutation context, we are already deferred, so performance related capturing can happen immediately (without a separate asset event)
    */

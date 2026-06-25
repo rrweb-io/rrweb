@@ -365,7 +365,14 @@ export default class MutationBuffer {
         },
         cssCaptured,
         onAssetDetected: (asset: asset) => {
-          this.assetManager.capture(asset, now);
+          const assetStatus = this.assetManager.capture(asset, now);
+          if (Array.isArray(assetStatus)) {
+            // srcset: stored verbatim, no substitution
+            return;
+          }
+          // return the (possibly virtual, e.g. for a data: url) url the asset
+          // was emitted under so the captured attribute references it
+          return assetStatus.url;
         },
       });
       if (sn) {
@@ -663,7 +670,7 @@ export default class MutationBuffer {
         }
 
         if (!ignoreAttribute(target.tagName, attributeName, value)) {
-          const transformedValue = transformAttribute(
+          let transformedValue = transformAttribute(
             this.doc,
             toLowerCase(target.tagName),
             toLowerCase(attributeName),
@@ -678,12 +685,18 @@ export default class MutationBuffer {
               this.captureAssets,
             )
           ) {
-            this.assetManager.capture({
+            const assetStatus = this.assetManager.capture({
               element: target,
               attr: attributeName,
               value: transformedValue,
             });
             attributeName = `rr_captured_${attributeName}`;
+            if (!Array.isArray(assetStatus)) {
+              // store the (possibly virtual, e.g. for a data: url) url the asset
+              // was emitted under so the replayer can match it; srcset keeps its
+              // verbatim string
+              transformedValue = assetStatus.url;
+            }
           }
           // overwrite attribute if the mutations was triggered in same time
           item.attributes[attributeName] = transformedValue;

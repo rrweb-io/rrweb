@@ -661,7 +661,7 @@ function serializeElementNode(
     if (attributes._cssText && ['href', 'rel'].includes(attr.name)) {
       // ignore in snapshot, and no need to try to asset capture the href (already done)
     } else if (!ignoreAttribute(tagName, attr.name, attr.value) && !needBlock) {
-      const value = transformAttribute(
+      let value = transformAttribute(
         doc,
         tagName,
         toLowerCase(attr.name),
@@ -675,12 +675,17 @@ function serializeElementNode(
         onAssetDetected &&
         shouldCaptureAsset(n, attr.name, value, captureAssets)
       ) {
-        onAssetDetected({
+        const capturedUrl = onAssetDetected({
           element: n,
           attr: attr.name,
           value,
         });
         name = `rr_captured_${name}`;
+        if (typeof capturedUrl === 'string') {
+          // the asset was emitted under a (possibly virtual) url, e.g. for a
+          // data: url; store that so the replayer can match it to the asset
+          value = capturedUrl;
+        }
       }
       attributes[name] = value;
     }
