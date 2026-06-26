@@ -10,6 +10,15 @@ export type CaptureOptions = {
    * dimension measurements.
    */
   excludeEl?: HTMLElement | null;
+  /**
+   * The document to capture. Defaults to the global `document`. Pass an
+   * iframe's `contentDocument` to capture a page rendered inside a device
+   * frame (e.g. a mobile/desktop viewport simulator). All reported
+   * dimensions, scroll, and inner-size metrics reflect the target frame.
+   *
+   * Must be same-origin so its DOM and stylesheets are accessible.
+   */
+  targetDocument?: Document | null;
 };
 
 export type CaptureResult = {
@@ -46,13 +55,16 @@ export type CaptureResult = {
 export function captureFullSnapshot(
   options: CaptureOptions = {},
 ): CaptureResult {
-  const { excludeEl = null } = options;
+  const { excludeEl = null, targetDocument = null } = options;
 
-  const unfreezeAnimations = freezeAnimations();
+  const doc = targetDocument ?? document;
+  const win = doc.defaultView ?? window;
+
+  const unfreezeAnimations = freezeAnimations(doc);
 
   try {
     const mirror = new Mirror();
-    const snap = snapshot(document, {
+    const snap = snapshot(doc, {
       mirror,
       inlineImages: false,
       inlineStylesheet: true,
@@ -62,7 +74,7 @@ export function captureFullSnapshot(
 
     if (snap) {
       const nextId = { value: getNextIdFromMirror(mirror) };
-      injectAllAdoptedStyles(snap, mirror, nextId);
+      injectAllAdoptedStyles(snap, mirror, nextId, doc);
     }
 
     const fullSnapshotEvent = snap
@@ -72,30 +84,30 @@ export function captureFullSnapshot(
           data: {
             node: snap,
             initialOffset: {
-              left: typeof window.scrollX === 'number' ? window.scrollX : 0,
-              top: typeof window.scrollY === 'number' ? window.scrollY : 0,
+              left: typeof win.scrollX === 'number' ? win.scrollX : 0,
+              top: typeof win.scrollY === 'number' ? win.scrollY : 0,
             },
           },
         }
       : null;
 
-    const { pageHeight, pageWidth } = getFullPageDimensions(excludeEl);
+    const { pageHeight, pageWidth } = getFullPageDimensions(doc, excludeEl);
 
     return {
       fullSnapshotEvent,
-      pageUrl: window.location.href,
-      pageTitle: document.title || null,
+      pageUrl: doc.location?.href ?? win.location.href,
+      pageTitle: doc.title || null,
       capturedAt: new Date().toISOString(),
-      scrollX: window.scrollX,
-      scrollY: window.scrollY,
-      scrollHeight: document.documentElement.scrollHeight,
-      scrollWidth: document.documentElement.scrollWidth,
-      clientHeight: document.documentElement.clientHeight,
-      clientWidth: document.documentElement.clientWidth,
+      scrollX: win.scrollX,
+      scrollY: win.scrollY,
+      scrollHeight: doc.documentElement.scrollHeight,
+      scrollWidth: doc.documentElement.scrollWidth,
+      clientHeight: doc.documentElement.clientHeight,
+      clientWidth: doc.documentElement.clientWidth,
       pageHeight,
       pageWidth,
-      innerHeight: window.innerHeight,
-      innerWidth: window.innerWidth,
+      innerHeight: win.innerHeight,
+      innerWidth: win.innerWidth,
     };
   } finally {
     unfreezeAnimations();

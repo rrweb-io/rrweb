@@ -78,8 +78,9 @@ export function injectAllAdoptedStyles(
   snap: serializedNodeWithId,
   mirror: Mirror,
   nextId: { value: number },
+  targetDocument: Document = document,
 ): void {
-  const docCss = serializeAdoptedStyleSheets(document);
+  const docCss = serializeAdoptedStyleSheets(targetDocument);
 
   function walk(node: serializedNodeWithId): void {
     // Shadow DOM adopted stylesheets
@@ -162,8 +163,9 @@ export function injectAdoptedStyles(
 export function injectDocumentAdoptedStyles(
   snap: serializedNodeWithId,
   nextId: { value: number },
+  targetDocument: Document = document,
 ): void {
-  const docCss = serializeAdoptedStyleSheets(document);
+  const docCss = serializeAdoptedStyleSheets(targetDocument);
   if (!docCss || !hasChildNodes(snap)) return;
 
   const html = snap.childNodes.find(

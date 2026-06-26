@@ -129,3 +129,69 @@ describe('captureFullSnapshot', () => {
     expect('childNodes' in node!).toBe(true);
   });
 });
+
+describe('captureFullSnapshot with targetDocument', () => {
+  let iframe: HTMLIFrameElement;
+
+  beforeEach(() => {
+    iframe = document.createElement('iframe');
+    document.body.appendChild(iframe);
+    const idoc = iframe.contentDocument!;
+    if (!idoc.getAnimations) {
+      idoc.getAnimations = () => [];
+    }
+    idoc.title = 'Iframe Page';
+    idoc.body.innerHTML = '<div id="frame-content"><p>Inside frame</p></div>';
+  });
+
+  afterEach(() => {
+    iframe.remove();
+  });
+
+  it('captures the iframe document, not the top-level document', () => {
+    // Top-level document has different content
+    document.title = 'Top Page';
+    document.body.innerHTML = '<div id="top-content">Top level</div>';
+
+    const result = captureFullSnapshot({
+      targetDocument: iframe.contentDocument,
+    });
+
+    expect(result.fullSnapshotEvent).not.toBeNull();
+    expect(result.pageTitle).toBe('Iframe Page');
+    // Reported metrics should come from the iframe's frame, not the top window
+    expect(result.innerWidth).toBe(iframe.contentWindow!.innerWidth);
+    expect(result.scrollHeight).toBe(
+      iframe.contentDocument!.documentElement.scrollHeight,
+    );
+  });
+
+  it('serializes DOM nodes from inside the iframe', () => {
+    const result = captureFullSnapshot({
+      targetDocument: iframe.contentDocument,
+    });
+    const json = JSON.stringify(result.fullSnapshotEvent!.data.node);
+
+    expect(json).toContain('Inside frame');
+  });
+
+  it('injects the freeze stylesheet into the iframe and cleans it up', () => {
+    captureFullSnapshot({ targetDocument: iframe.contentDocument });
+
+    // Freeze stylesheet should have been removed from the iframe after capture
+    expect(
+      iframe.contentDocument!.querySelector('style[data-amp-freeze]'),
+    ).toBeNull();
+    // And never leaked into the top document
+    expect(document.querySelector('style[data-amp-freeze]')).toBeNull();
+  });
+
+  it('falls back to the global document when targetDocument is null', () => {
+    document.title = 'Top Page';
+    document.body.innerHTML = '<div>top</div>';
+
+    const result = captureFullSnapshot({ targetDocument: null });
+
+    expect(result.pageTitle).toBe('Top Page');
+  });
+});

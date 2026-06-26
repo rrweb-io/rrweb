@@ -82,13 +82,13 @@ describe('getFullPageDimensions', () => {
     const el = document.createElement('div');
     document.body.appendChild(el);
 
-    const dims = getFullPageDimensions(el);
+    const dims = getFullPageDimensions(document, el);
     expect(typeof dims.pageHeight).toBe('number');
     expect(typeof dims.pageWidth).toBe('number');
   });
 
   it('handles null excludeEl gracefully', () => {
-    const dims = getFullPageDimensions(null);
+    const dims = getFullPageDimensions(document, null);
     expect(typeof dims.pageHeight).toBe('number');
     expect(typeof dims.pageWidth).toBe('number');
   });
@@ -109,7 +109,7 @@ describe('getFullPageDimension', () => {
     const el = document.createElement('div');
     document.body.appendChild(el);
 
-    const height = getFullPageDimension('height', el);
+    const height = getFullPageDimension('height', document, el);
     expect(typeof height).toBe('number');
   });
 });
