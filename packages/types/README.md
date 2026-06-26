@@ -1,7 +1,8 @@
 # @rrweb/types
 
-This package contains the shared types used across rrweb packages.
-See the [guide](../../guide.md) for more info on rrweb.
+## Overview
+
+This package contains the shared types used across rrweb packages. rrweb makes extensive use of typescript types to enforce correctness and define the data API between packages. Check out the [Events](../../docs/events.md) doc for an introduction to the principal `Event` type. [View the source code](https://github.com/rrweb-io/rrweb/blob/main/packages/types/src/index.ts) to get a flavour the types available, or check out the [Contributor Guide](../../CONTRIBUTING.md) for more info.
 
 ## Sponsors
 
