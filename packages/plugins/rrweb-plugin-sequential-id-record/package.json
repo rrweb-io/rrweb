@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/rrweb-plugin-sequential-id-record",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-sequential-id-record.umd.cjs",
@@ -48,7 +48,7 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
-    "rrweb": "^2.0.1",
+    "rrweb": "^2.1.0",
     "typescript": "^5.4.5",
     "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1"
