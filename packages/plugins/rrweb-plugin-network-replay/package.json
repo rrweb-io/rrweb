@@ -53,7 +53,7 @@
     "vite-plugin-dts": "^3.9.1"
   },
   "peerDependencies": {
-    "rrweb": "^2.0.1",
-    "@rrweb/types": "^2.0.1"
+    "rrweb": "^2.1.0",
+    "@rrweb/types": "^2.1.0"
   }
 }
