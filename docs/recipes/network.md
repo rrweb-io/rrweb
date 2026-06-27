@@ -76,10 +76,10 @@ All options are described below:
 It is up to you to decide how to best replay your network events using the `onNetworkData` callback.
 
 ```js
-import rrweb from 'rrweb';
+import { Replayer } from '@rrweb/replay';
 import { getReplayNetworkPlugin } from '@rrweb/rrweb-plugin-network-replay';
 
-const replayer = new rrweb.Replayer(events, {
+const replayer = new Replayer(events, {
   plugins: [
     getReplayNetworkPlugin({
       onNetworkData: ({ requests }) => {

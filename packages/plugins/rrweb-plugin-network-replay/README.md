@@ -3,6 +3,8 @@
 Please refer to the [network recipe](../../../docs/recipes/network.md) on how to use this plugin.
 See the [guide](../../../guide.md) for more info on rrweb.
 
+Use this plugin with one compatible replay host: `rrweb`, `@rrweb/replay`, or `@rrweb/all`.
+
 ## Sponsors
 
 [Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on GitHub with a link to your site.

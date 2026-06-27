@@ -18,18 +18,39 @@ The plugin API is designed to enable extending the functionality of rrweb withou
 Consistent with other functionality in rrweb, a plugin can implement record or replay or both features.
 
 ```ts
-export type RecordPlugin<TOptions = unknown> = {
+import type { RecordPlugin, ReplayPlugin } from '@rrweb/types';
+```
+
+For reference, the public types exported by `@rrweb/types` are shaped as follows. Import these types rather than redeclaring them in application code.
+
+```ts
+type RecordPlugin<TOptions = unknown> = {
   name: string;
-  observer: (cb: Function, options: TOptions) => listenerHandler;
+  observer?: (
+    cb: (...args: Array<unknown>) => void,
+    win: IWindow,
+    options: TOptions,
+  ) => listenerHandler;
+  eventProcessor?: <TExtend>(event: eventWithTime) => eventWithTime & TExtend;
+  getMirror?: (mirrors: {
+    nodeMirror: IMirror<Node>;
+    crossOriginIframeMirror: ICrossOriginIframeMirror;
+    crossOriginIframeStyleMirror: ICrossOriginIframeMirror;
+  }) => void;
   options: TOptions;
 };
 
-export type ReplayPlugin = {
-  handler: (
+type ReplayPlugin<TReplayer = unknown, TNode = Node, TMirror = unknown> = {
+  handler?: (
     event: eventWithTime,
     isSync: boolean,
-    context: { replayer: Replayer },
+    context: { replayer: TReplayer },
   ) => void;
+  onBuild?: (
+    node: Node | TNode,
+    context: { id: number; replayer: TReplayer },
+  ) => void;
+  getMirror?: (mirrors: { nodeMirror: TMirror }) => void;
 };
 ```
 
@@ -41,10 +62,11 @@ Both record and replay plugins have a type interface.
 
 ```ts
 import { record } from '@rrweb/record';
+import type { RecordPlugin } from '@rrweb/types';
 
 const exampleRecordPlugin: RecordPlugin<{ foo: string }> = {
   name: 'my-scope/example@1',
-  observer(cb, options) {
+  observer(cb, _win, options) {
     const timer = setInterval(() => {
       cb({
         foo: options.foo,
@@ -84,6 +106,7 @@ In this example, the record plugin will emit events like this:
 
 ```ts
 import { Replayer } from '@rrweb/replay';
+import { EventType, type ReplayPlugin } from '@rrweb/types';
 
 const exampleReplayPlugin: ReplayPlugin = {
   handler(event, isSync, context) {

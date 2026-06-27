@@ -3,6 +3,8 @@
 Use this plugin in combination with the [@rrweb/rrweb-plugin-sequential-id-replay](../rrweb-plugin-sequential-id-replay) plugin to record and replay events with a sequential id.
 See the [guide](../../../guide.md) for more info on rrweb.
 
+Use this plugin with one compatible recording host: `rrweb`, `@rrweb/record`, or `@rrweb/all`.
+
 ## Installation
 
 ```bash
