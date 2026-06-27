@@ -46,17 +46,14 @@
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
-  "devDependencies": {
+  "dependencies": {
     "@rrweb/types": "^2.0.1",
-    "@rrweb/utils": "^2.0.1",
-    "rrweb": "^2.0.1",
+    "@rrweb/utils": "^2.0.1"
+  },
+  "devDependencies": {
     "typescript": "^5.4.5",
     "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1",
     "vitest": "^1.4.0"
-  },
-  "peerDependencies": {
-    "rrweb": "^2.0.1",
-    "@rrweb/utils": "^2.0.1"
   }
 }
