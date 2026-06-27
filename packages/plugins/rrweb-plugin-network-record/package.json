@@ -56,7 +56,8 @@
     "vitest": "^1.4.0"
   },
   "peerDependencies": {
-    "rrweb": "^2.0.1",
-    "@rrweb/utils": "^2.0.1"
+    "rrweb": "^2.1.0",
+    "@rrweb/types": "^2.1.0",
+    "@rrweb/utils": "^2.1.0"
   }
 }
