@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
 /**
- * Class StackFrame is a fork of https://github.com/stacktracejs/stackframe/blob/master/stackframe.js
+ * Class StackFrame is a fork of https://github.com/stacktracejs/stackframe/blob/HEAD/stackframe.js
  * I fork it because:
  * 1. There are some build issues when importing this package.
  * 2. Rewrites into typescript give us a better type interface.
@@ -34,7 +34,7 @@ export class StackFrame {
 }
 
 /**
- * ErrorStackParser is a fork of https://github.com/stacktracejs/error-stack-parser/blob/master/error-stack-parser.js
+ * ErrorStackParser is a fork of https://github.com/stacktracejs/error-stack-parser/blob/HEAD/error-stack-parser.js
  * I fork it because:
  * 1. There are some build issues when importing this package.
  * 2. Rewrites into typescript give us a better type interface.
