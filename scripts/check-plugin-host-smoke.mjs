@@ -4,6 +4,8 @@ import {
   existsSync,
   mkdtempSync,
   mkdirSync,
+  readdirSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -24,9 +26,18 @@ const packages = {
   rrweb: 'packages/rrweb',
   record: 'packages/record',
   replay: 'packages/replay',
+  canvasWebrtcRecord: 'packages/plugins/rrweb-plugin-canvas-webrtc-record',
+  canvasWebrtcReplay: 'packages/plugins/rrweb-plugin-canvas-webrtc-replay',
   consoleRecord: 'packages/plugins/rrweb-plugin-console-record',
   consoleReplay: 'packages/plugins/rrweb-plugin-console-replay',
+  networkRecord: 'packages/plugins/rrweb-plugin-network-record',
+  networkReplay: 'packages/plugins/rrweb-plugin-network-replay',
+  sequentialIdRecord: 'packages/plugins/rrweb-plugin-sequential-id-record',
+  sequentialIdReplay: 'packages/plugins/rrweb-plugin-sequential-id-replay',
 };
+
+const forbiddenDeclarationImport =
+  /(?:from\s+|import\()\s*['"](rrweb|rrdom|rrweb-snapshot)['"]/;
 
 function run(command, args, options = {}) {
   return execFileSync(command, args, {
@@ -42,6 +53,35 @@ function assertBuilt(packagePath) {
     throw new Error(
       `Missing ${dist}. Run the required package builds before this smoke test.`,
     );
+  }
+}
+
+function findDeclarationFiles(dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      return findDeclarationFiles(entryPath);
+    }
+    return entryPath.endsWith('.d.ts') || entryPath.endsWith('.d.cts')
+      ? [entryPath]
+      : [];
+  });
+}
+
+function assertPluginDeclarationsHostNeutral() {
+  for (const packagePath of Object.values(packages).filter((value) =>
+    value.startsWith('packages/plugins/'),
+  )) {
+    assertBuilt(packagePath);
+    for (const file of findDeclarationFiles(join(root, packagePath, 'dist'))) {
+      const content = readFileSync(file, 'utf8');
+      const match = content.match(forbiddenDeclarationImport);
+      if (match) {
+        throw new Error(
+          `Plugin declaration ${file} imports forbidden host package "${match[1]}".`,
+        );
+      }
+    }
   }
 }
 
@@ -101,6 +141,8 @@ function writeConsumer(name, dependencies, source) {
 }
 
 try {
+  assertPluginDeclarationsHostNeutral();
+
   const packed = Object.fromEntries(
     Object.entries(packages).map(([name, packagePath]) => [
       name,
@@ -114,19 +156,36 @@ try {
       '@rrweb/types': packed.types,
       '@rrweb/utils': packed.utils,
       '@rrweb/record': packed.record,
+      '@rrweb/rrweb-plugin-canvas-webrtc-record': packed.canvasWebrtcRecord,
       '@rrweb/rrweb-plugin-console-record': packed.consoleRecord,
+      '@rrweb/rrweb-plugin-network-record': packed.networkRecord,
+      '@rrweb/rrweb-plugin-sequential-id-record': packed.sequentialIdRecord,
       rrdom: packed.rrdom,
       rrweb: packed.rrweb,
       'rrweb-snapshot': packed.rrwebSnapshot,
     },
     `import { record } from '@rrweb/record';
+import { RRWebPluginCanvasWebRTCRecord } from '@rrweb/rrweb-plugin-canvas-webrtc-record';
 import { getRecordConsolePlugin } from '@rrweb/rrweb-plugin-console-record';
+import { getRecordNetworkPlugin } from '@rrweb/rrweb-plugin-network-record';
+import { getRecordSequentialIdPlugin } from '@rrweb/rrweb-plugin-sequential-id-record';
+
+const canvasRecordPlugin = new RRWebPluginCanvasWebRTCRecord({
+  signalSendCallback(signal: unknown) {
+    void signal;
+  },
+}).initPlugin();
 
 record({
   emit(event) {
     void event;
   },
-  plugins: [getRecordConsolePlugin()],
+  plugins: [
+    getRecordConsolePlugin(),
+    getRecordNetworkPlugin(),
+    getRecordSequentialIdPlugin(),
+    canvasRecordPlugin,
+  ],
 });
 `,
   );
@@ -137,17 +196,45 @@ record({
       '@rrweb/types': packed.types,
       '@rrweb/utils': packed.utils,
       '@rrweb/replay': packed.replay,
+      '@rrweb/rrweb-plugin-canvas-webrtc-record': packed.canvasWebrtcRecord,
+      '@rrweb/rrweb-plugin-canvas-webrtc-replay': packed.canvasWebrtcReplay,
       '@rrweb/rrweb-plugin-console-record': packed.consoleRecord,
       '@rrweb/rrweb-plugin-console-replay': packed.consoleReplay,
+      '@rrweb/rrweb-plugin-network-record': packed.networkRecord,
+      '@rrweb/rrweb-plugin-network-replay': packed.networkReplay,
+      '@rrweb/rrweb-plugin-sequential-id-record': packed.sequentialIdRecord,
+      '@rrweb/rrweb-plugin-sequential-id-replay': packed.sequentialIdReplay,
       rrdom: packed.rrdom,
       rrweb: packed.rrweb,
       'rrweb-snapshot': packed.rrwebSnapshot,
     },
     `import { Replayer } from '@rrweb/replay';
+import { RRWebPluginCanvasWebRTCReplay } from '@rrweb/rrweb-plugin-canvas-webrtc-replay';
 import { getReplayConsolePlugin } from '@rrweb/rrweb-plugin-console-replay';
+import { getReplayNetworkPlugin } from '@rrweb/rrweb-plugin-network-replay';
+import { getReplaySequentialIdPlugin } from '@rrweb/rrweb-plugin-sequential-id-replay';
+
+const canvasReplayPlugin = new RRWebPluginCanvasWebRTCReplay({
+  canvasFoundCallback(node: unknown, context: unknown) {
+    void node;
+    void context;
+  },
+  signalSendCallback(signal: unknown) {
+    void signal;
+  },
+}).initPlugin();
 
 const replayer = new Replayer([], {
-  plugins: [getReplayConsolePlugin()],
+  plugins: [
+    getReplayConsolePlugin(),
+    getReplayNetworkPlugin({
+      onNetworkData(data) {
+        void data;
+      },
+    }),
+    getReplaySequentialIdPlugin(),
+    canvasReplayPlugin,
+  ],
 });
 replayer.play();
 `,
