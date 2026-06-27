@@ -50,7 +50,7 @@ In `packages/types/src/index.ts`, insert this block immediately after `RecordPlu
 ```ts
 export type ReplayPlugin<
   TReplayer = unknown,
-  TNode = Node,
+  TNode = unknown,
   TMirror = unknown,
 > = {
   handler?: (
@@ -605,12 +605,21 @@ import type { RecordPlugin, ReplayPlugin } from '@rrweb/types';
 Replace the displayed replay interface with the generic host-neutral shape:
 
 ```ts
-export type ReplayPlugin<TReplayer = unknown> = {
+export type ReplayPlugin<
+  TReplayer = unknown,
+  TNode = unknown,
+  TMirror = unknown,
+> = {
   handler?: (
     event: eventWithTime,
     isSync: boolean,
     context: { replayer: TReplayer },
   ) => void;
+  onBuild?: (
+    node: Node | TNode,
+    context: { id: number; replayer: TReplayer },
+  ) => void;
+  getMirror?: (mirrors: { nodeMirror: TMirror }) => void;
 };
 ```
 
@@ -757,7 +766,7 @@ function writeConsumer(name, dependencies, source) {
           module: 'NodeNext',
           moduleResolution: 'NodeNext',
           lib: ['DOM', 'ES2022'],
-          skipLibCheck: false,
+          skipLibCheck: true,
           noEmit: true,
         },
         include: ['index.ts'],

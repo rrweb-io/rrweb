@@ -40,7 +40,7 @@ type RecordPlugin<TOptions = unknown> = {
   options: TOptions;
 };
 
-type ReplayPlugin<TReplayer = unknown, TNode = Node, TMirror = unknown> = {
+type ReplayPlugin<TReplayer = unknown, TNode = unknown, TMirror = unknown> = {
   handler?: (
     event: eventWithTime,
     isSync: boolean,

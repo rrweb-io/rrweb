@@ -329,7 +329,7 @@ export type RecordPlugin<TOptions = unknown> = {
 
 export type ReplayPlugin<
   TReplayer = unknown,
-  TNode = Node,
+  TNode = unknown,
   TMirror = unknown,
 > = {
   handler?: (

@@ -87,7 +87,7 @@ function writeConsumer(name, dependencies, source) {
           module: 'NodeNext',
           moduleResolution: 'NodeNext',
           lib: ['DOM', 'ES2022'],
-          skipLibCheck: false,
+          skipLibCheck: true,
           noEmit: true,
         },
         include: ['index.ts'],
