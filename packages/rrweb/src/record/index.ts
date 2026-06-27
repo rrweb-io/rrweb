@@ -157,8 +157,8 @@ function record<T = eventWithTime>(
           password: true,
         }
       : _maskInputOptions !== undefined
-      ? _maskInputOptions
-      : { password: true };
+        ? _maskInputOptions
+        : { password: true };
 
   const slimDOMOptions = slimDOMDefaults(_slimDOMOptions);
 

@@ -15,7 +15,9 @@ import { NodeType } from '@rrweb/types';
 import { createMirror, Mirror, normalizeCssString } from '../src/utils';
 
 const expect = _expect as unknown as {
-  <T = unknown>(actual: T): {
+  <T = unknown>(
+    actual: T,
+  ): {
     toMatchCss(expected: string): void;
   } & ReturnType<typeof _expect>;
 } & typeof _expect;

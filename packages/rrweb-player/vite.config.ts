@@ -1,6 +1,6 @@
 import path from 'path';
 import glob from 'fast-glob';
-import { Plugin } from 'vite';
+import { Plugin } from 'vite-plus';
 import config from '../../vite.config.default';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import sveltePreprocess from 'svelte-preprocess';

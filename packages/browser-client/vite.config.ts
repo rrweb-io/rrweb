@@ -1,5 +1,5 @@
 import path from 'path';
-import { defineConfig, mergeConfig } from 'vite';
+import { defineConfig, mergeConfig } from 'vite-plus';
 import config from '../../vite.config.default';
 import { browserClientBuildDefines } from './buildMetadata';
 

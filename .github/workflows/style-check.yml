@@ -1,9 +1,9 @@
-name: Prettier Check
+name: Format Check
 
 on: [push, pull_request]
 
 jobs:
-  prettier_check:
+  format_check:
     # In the forked PR, it's hard to format code and push to the branch directly, so the action only check the format correctness.
     if: github.event_name != 'push' && github.event.pull_request.head.repo.full_name != 'rrweb-io/rrweb'
     permissions:
@@ -24,10 +24,10 @@ jobs:
         run: yarn install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
-      - name: Prettier Check
-        run: yarn prettier --check '**/*.{ts,md}'
+      - name: Format Check
+        run: yarn vp fmt . --check
 
-  prettier:
+  format:
     # Skip the format code action in forked PRs
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == 'rrweb-io/rrweb'
     runs-on: ubuntu-latest
@@ -48,8 +48,8 @@ jobs:
         run: yarn install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
-      - name: Prettify Code
-        run: yarn prettier --write '**/*.{ts,md}'
+      - name: Format Code
+        run: yarn vp fmt . --write
       - name: Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:

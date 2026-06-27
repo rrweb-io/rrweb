@@ -1308,10 +1308,10 @@ function snapshot(
           password: true,
         }
       : maskAllInputs === false
-      ? {
-          password: true,
-        }
-      : maskAllInputs;
+        ? {
+            password: true,
+          }
+        : maskAllInputs;
   const slimDOMOptions = slimDOMDefaults(slimDOM);
 
   return serializeNodeWithId(n, {

@@ -813,9 +813,7 @@ describe('replayer', function () {
     expect(
       await iframeTwoDocument!.evaluate(
         (iframe) => (iframe as HTMLIFrameElement)!.contentDocument!.doctype,
-        (
-          await iframeTwoDocument!.$$('iframe')
-        )[1],
+        (await iframeTwoDocument!.$$('iframe'))[1],
       ),
     ).not.toBeNull();
   });

@@ -248,14 +248,14 @@ export function polyfill(w: Window = window, d = document) {
         arguments[0].left !== undefined
           ? arguments[0].left
           : typeof arguments[0] !== 'object'
-          ? arguments[0]
-          : w.scrollX || w.pageXOffset,
+            ? arguments[0]
+            : w.scrollX || w.pageXOffset,
         // use top prop, second argument if present or fallback to scrollY
         arguments[0].top !== undefined
           ? arguments[0].top
           : arguments[1] !== undefined
-          ? arguments[1]
-          : w.scrollY || w.pageYOffset,
+            ? arguments[1]
+            : w.scrollY || w.pageYOffset,
       );
 
       return;
@@ -288,13 +288,13 @@ export function polyfill(w: Window = window, d = document) {
         arguments[0].left !== undefined
           ? arguments[0].left
           : typeof arguments[0] !== 'object'
-          ? arguments[0]
-          : 0,
+            ? arguments[0]
+            : 0,
         arguments[0].top !== undefined
           ? arguments[0].top
           : arguments[1] !== undefined
-          ? arguments[1]
-          : 0,
+            ? arguments[1]
+            : 0,
       );
 
       return;
@@ -329,14 +329,14 @@ export function polyfill(w: Window = window, d = document) {
         arguments[0].left !== undefined
           ? ~~arguments[0].left
           : typeof arguments[0] !== 'object'
-          ? ~~arguments[0]
-          : this.scrollLeft,
+            ? ~~arguments[0]
+            : this.scrollLeft,
         // use top prop, second argument or fallback to scrollTop
         arguments[0].top !== undefined
           ? ~~arguments[0].top
           : arguments[1] !== undefined
-          ? ~~arguments[1]
-          : this.scrollTop,
+            ? ~~arguments[1]
+            : this.scrollTop,
       );
 
       return;

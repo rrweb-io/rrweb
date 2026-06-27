@@ -1,5 +1,5 @@
 import path from 'path';
-import type { Plugin } from 'vite';
+import type { Plugin } from 'vite-plus';
 import config from '../../vite.config.default';
 
 const sourceEntryByPackageName = new Map([
