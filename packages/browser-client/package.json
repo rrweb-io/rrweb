@@ -41,6 +41,7 @@
   "main": "./dist/browser-client.cjs",
   "module": "./dist/browser-client.js",
   "unpkg": "./dist/browser-client.umd.cjs",
+  "jsdelivr": "./umd/browser-client.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {

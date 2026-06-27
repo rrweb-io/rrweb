@@ -1,8 +1,8 @@
-# network recorder and replayer
+# Network Recorder and Replayer
 
 This feature aims to provide developers with more information about the bug scene. There are some options for recording and replaying network output.
 
-### Enable recording network
+### Enable Recording Network
 
 You can enable using default option like this:
 
@@ -71,7 +71,7 @@ All options are described below:
 | recordBody            | `false`                                | Record the request & response bodies for `fetch` and `xmlhttprequest` requests                                                                                                                      |
 | recordInitialRequests | `false`                                | Record an event for all requests prior to `record()` being called                                                                                                                                   |
 
-## replay network
+## Replay Network Requests
 
 It is up to you to decide how to best replay your network events using the `onNetworkData` callback.
 
@@ -102,7 +102,7 @@ Description of replay option is as follows:
 | ------------- | ----------- | ------------------------------------------------------------------------------------------ |
 | onNetworkData | `undefined` | You could use this interface to replay the network requests in a simulated browser console |
 
-## technical implementation
+## Technical Implementation
 
 This implementation records [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) and [`XMLHttpRequest`](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) by patching their object & methods. We record document navigation using [`PerformanceNavigationTiming`](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming) and we use [`PerformanceResourceTiming`](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceResourceTiming) for recording everything else (script, img, link etc.) via [`PerformanceObserver`](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver) API.
 

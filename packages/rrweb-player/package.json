@@ -36,6 +36,8 @@
   "main": "./dist/rrweb-player.umd.cjs",
   "module": "./dist/rrweb-player.js",
   "unpkg": "./dist/rrweb-player.umd.cjs",
+  "jsdelivr": "./umd/rrweb-player.js",
+  "style": "./dist/style.css",
   "typings": "dist/rrweb-player.d.ts",
   "exports": {
     ".": {

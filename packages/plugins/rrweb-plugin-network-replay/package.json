@@ -6,6 +6,7 @@
   "main": "./dist/rrweb-plugin-network-replay.umd.cjs",
   "module": "./dist/rrweb-plugin-network-replay.js",
   "unpkg": "./dist/rrweb-plugin-network-replay.umd.cjs",
+  "jsdelivr": "./umd/rrweb-plugin-network-replay.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -20,8 +21,8 @@
     }
   },
   "files": [
-    "dist",
     "umd",
+    "dist",
     "package.json"
   ],
   "scripts": {

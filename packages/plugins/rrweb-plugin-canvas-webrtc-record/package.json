@@ -6,6 +6,7 @@
   "main": "./dist/rrweb-plugin-canvas-webrtc-record.umd.cjs",
   "module": "./dist/rrweb-plugin-canvas-webrtc-record.js",
   "unpkg": "./dist/rrweb-plugin-canvas-webrtc-record.umd.cjs",
+  "jsdelivr": "./umd/rrweb-plugin-canvas-webrtc-record.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {

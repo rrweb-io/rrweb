@@ -179,8 +179,6 @@
 
 - [#909](https://github.com/rrweb-io/rrweb/pull/909) [`d5d877e`](https://github.com/rrweb-io/rrweb/commit/d5d877e3c19364784abf08f6e3eea4ba911fe4e3) Thanks [@Juice10](https://github.com/Juice10)! - Inline stylesheets when they load so late stylesheet content is captured.
 
-## 2.0.0-alpha.20
-
 ## 2.0.0-alpha.19
 
 ### Patch Changes

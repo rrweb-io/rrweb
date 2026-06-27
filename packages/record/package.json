@@ -34,6 +34,7 @@
   "main": "./dist/record.cjs",
   "module": "./dist/record.js",
   "unpkg": "./dist/record.umd.cjs",
+  "jsdelivr": "./umd/record.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {

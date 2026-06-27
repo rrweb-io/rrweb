@@ -9,7 +9,7 @@
 
 **[rrweb 纪录片（中文）](https://www.bilibili.com/video/BV1wL4y1B7wN?share_source=copy_web)**
 
-[![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-siwoc6hx-uWay3s2wyG8t5GpZVb8rWg)
+[![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-41pxl6epj-~N2YyGQxvI5r3V6d59it8w)
 [![Reddit](https://img.shields.io/badge/reddit-r/rrweb-teal.svg?logo=reddit)](https://www.reddit.com/r/rrweb)
 ![record bundle size](https://img.shields.io/bundlejs/size/%40rrweb/record)
 ![replay bundle size](https://img.shields.io/bundlejs/size/%40rrweb/replay)

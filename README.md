@@ -7,9 +7,9 @@
 
 # rrweb
 
-**[The rrweb documentary (in Chinese, with English subtitles)](https://www.bilibili.com/video/BV1wL4y1B7wN?share_source=copy_web)**
+**[(new!) rrweb cloud - hosted rrweb backend is now available](https://rrweb.com/)**
 
-[![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-siwoc6hx-uWay3s2wyG8t5GpZVb8rWg)
+[![Join the chat at slack](https://img.shields.io/badge/slack-@rrweb-teal.svg?logo=slack)](https://join.slack.com/t/rrweb/shared_invite/zt-41pxl6epj-~N2YyGQxvI5r3V6d59it8w)
 [![Twitter Follow](https://img.shields.io/badge/twitter-@rrweb__io-teal.svg?logo=twitter)](https://twitter.com/rrweb_io)
 [![Reddit](https://img.shields.io/badge/reddit-r/rrweb-teal.svg?logo=reddit)](https://www.reddit.com/r/rrweb)
 ![record bundle size](https://img.shields.io/bundlejs/size/%40rrweb/record)
@@ -18,30 +18,29 @@
 
 [中文文档](./README.zh_CN.md)
 
-> I have joined Github Sponsors and highly appreciate your sponsorship.
-
 rrweb refers to 'record and replay the web', which is a tool for recording and replaying users' interactions on the web.
 
 ## Guide
 
-[**📚 Read the rrweb guide here. 📚**](./guide.md)
+[**📚 Read the rrweb guide here. 📚**](https://rrweb.com/docs/guide)
 
-[**🍳 Recipes 🍳**](./docs/recipes/index.md)
+[**🍳 Recipes 🍳**](https://rrweb.com/docs/recipes/)
 
 [**📺 Presentation:** Hacking the browser to digital twin your users 📺](https://youtu.be/cWxpp9HwLYw)
 
 ## Project Structure
 
-rrweb is mainly composed of 3 parts:
+rrweb is composed of the following principal parts:
 
-- **[rrweb-snapshot](https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot/)**, including both snapshot and rebuilding features. The snapshot is used to convert the DOM and its state into a serializable data structure with a unique identifier; the rebuilding feature is to rebuild the snapshot into corresponding DOM.
-- **[rrweb](https://github.com/rrweb-io/rrweb)**, including two functions, record and replay. The record function is used to record all the mutations in the DOM; the replay is to replay the recorded mutations one by one according to the corresponding timestamp.
-- **[rrweb-player](https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-player/)**, is a player UI for rrweb, providing GUI-based functions like pause, fast-forward, drag and drop to play at any time.
+- **[rrweb-snapshot](packages/rrweb-snapshot/)**, including both snapshot and rebuilding features. The snapshot is used to convert the DOM and its state into a serializable data structure with a unique identifier; the rebuilding feature is to rebuild the snapshot into corresponding DOM. This package can be used on it's own to provide a static HTML based 'screenshot' of the current web page state, with all Javascript deactivated.
+- **[record](packages/record)**, builds on an initial snapshot to record all HTML state changes (mutations) and user interactions as the user browses the web page. Multiple page loads can be chained together into a single recording.
+- **[replay](packages/replay)**, rebuilds the inital snapshot and replays the list or stream of subsequent events to show a 'session replay'
+- **[rrweb-player](packages/rrweb-player/)**, a player UI on top of the replay package to provide GUI-based functions like pause, fast-forward, drag and drop to play at any time.
 
 ## Roadmap
 
-- storage engine: do deduplication on a large number of rrweb sessions
-- compact mutation data in common patterns
+- ✅ [storage engine: do deduplication on a large number of rrweb sessions](https://rrweb.com)
+- Token efficient AI session replay format (in progress)
 - provide plugins via the new plugin API, including:
   - XHR plugin
   - fetch plugin
@@ -124,25 +123,14 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
 <table>
   <tr>
     <td align="center">
-      <a href="https://github.com/Yuyz0112">
+      <a href="https://github.com/juice10">
         <img
-          src="https://avatars.githubusercontent.com/u/13651389?s=100"
+          src="https://avatars.githubusercontent.com/u/4106?s=100"
           width="100px;"
-          alt=""
+          alt="Justin Halsall"
         />
-        <br /><sub><b>Yuyz0112</b></sub>
-        <br /><br />
-      </a>
-    </td>
-    <td align="center">
-      <a href="https://github.com/YunFeng0817">
-        <img
-          src="https://avatars.githubusercontent.com/u/27533910?s=100"
-          width="100px;"
-          alt=""
-        />
-        <br /><sub><b>Yun Feng</b></sub>
-        <br /><br />
+        <br /><sub><b>Juice10</b></sub>
+        <br /><sub>open for rrweb consulting</sub>
       </a>
     </td>
     <td align="center">
@@ -157,14 +145,14 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
       </a>
     </td>
     <td align="center">
-      <a href="https://github.com/juice10">
+      <a href="https://github.com/YunFeng0817">
         <img
-          src="https://avatars.githubusercontent.com/u/4106?s=100"
+          src="https://avatars.githubusercontent.com/u/27533910?s=100"
           width="100px;"
           alt=""
         />
-        <br /><sub><b>Juice10</b></sub>
-        <br /><sub>open for rrweb consulting</sub>
+        <br /><sub><b>Yun Feng</b></sub>
+        <br /><br />
       </a>
     </td>
   </tr>

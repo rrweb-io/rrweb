@@ -26,6 +26,7 @@
   "main": "./dist/rrdom-nodejs.umd.cjs",
   "module": "./dist/rrdom-nodejs.js",
   "unpkg": "./dist/rrdom-nodejs.umd.cjs",
+  "jsdelivr": "./umd/rrdom-nodejs.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
