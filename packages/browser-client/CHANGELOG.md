@@ -1,5 +1,19 @@
 # @rrweb/browser-client
 
+## 2.1.0
+
+### Patch Changes
+
+- [#1885](https://github.com/rrweb-io/rrweb/pull/1885) [`4e501fd`](https://github.com/rrweb-io/rrweb/commit/4e501fdc7fb54c93f644e037b05225ae70471b4a) Thanks [@kevinvandijk](https://github.com/kevinvandijk)! - Make autostart and includePii attributes optional on initialization
+
+- [#1884](https://github.com/rrweb-io/rrweb/pull/1884) [`907f744`](https://github.com/rrweb-io/rrweb/commit/907f744246f70476008d6a8ad7ef2c456a3d2db8) Thanks [@kevinvandijk](https://github.com/kevinvandijk)! - Add compatibility for importing browser-client in projects which use SSR
+
+- Updated dependencies [[`b08a06f`](https://github.com/rrweb-io/rrweb/commit/b08a06f8f5445e7779fe0744d301a7ceb8d857c3), [`7f0f75f`](https://github.com/rrweb-io/rrweb/commit/7f0f75f14d96fc7043ab6cfb52dfe8bbb73b499e), [`6fe4fed`](https://github.com/rrweb-io/rrweb/commit/6fe4fed0fdce46b0562a0770a056f77e326bed79)]:
+  - @rrweb/record@2.1.0
+  - rrweb@2.1.0
+  - @rrweb/types@2.1.0
+  - @rrweb/utils@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes
