@@ -327,6 +327,23 @@ export type RecordPlugin<TOptions = unknown> = {
   options: TOptions;
 };
 
+export type ReplayPlugin<
+  TReplayer = unknown,
+  TNode = Node,
+  TMirror = unknown,
+> = {
+  handler?: (
+    event: eventWithTime,
+    isSync: boolean,
+    context: { replayer: TReplayer },
+  ) => void;
+  onBuild?: (
+    node: Node | TNode,
+    context: { id: number; replayer: TReplayer },
+  ) => void;
+  getMirror?: (mirrors: { nodeMirror: TMirror }) => void;
+};
+
 export type hooksParam = {
   mutation?: mutationCallBack;
   mousemove?: mousemoveCallBack;
