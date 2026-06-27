@@ -48,7 +48,7 @@ jobs:
 
       - name: Publish Chrome Extension
         uses: mnao305/chrome-extension-upload@v5.0.0
-        if: steps.changesets.outputs.published == 'true' && github.ref == 'refs/heads/master'
+        if: steps.changesets.outputs.published == 'true' && github.ref == 'refs/heads/main'
         with:
           extension-id: 'pdaldeopoccdhlkabbkcjmecmmoninhe'
           file-path: ./packages/web-extension/dist/chrome.zip
