@@ -59,7 +59,7 @@ const exampleRecordPlugin: RecordPlugin<{ foo: string }> = {
 };
 
 record({
-  emit: emit(event) {},
+  emit(event) {},
   plugins: [exampleRecordPlugin],
 });
 ```
