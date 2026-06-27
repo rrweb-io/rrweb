@@ -59,7 +59,7 @@
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
-  "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot#readme",
+  "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrweb-snapshot#readme",
   "devDependencies": {
     "@rrweb/types": "^2.0.1",
     "@rrweb/utils": "^2.0.1",
