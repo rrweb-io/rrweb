@@ -322,7 +322,10 @@ type WebRTCPeer = {
   addStream(stream: MediaStream): void;
   on(event: 'error', callback: (err: Error) => void): void;
   on(event: 'close', callback: () => void): void;
-  on(event: 'signal', callback: (data: RTCSessionDescriptionInit) => void): void;
+  on(
+    event: 'signal',
+    callback: (data: RTCSessionDescriptionInit) => void,
+  ): void;
   on(event: 'connect', callback: () => void): void;
   on(event: 'data', callback: (data: SimplePeer.SimplePeerData) => void): void;
   on(event: 'stream', callback: (stream: MediaStream) => void): void;
@@ -617,17 +620,17 @@ Create `.changeset/plugin-dependency-cleanup.md` with this content:
 
 ```md
 ---
-"rrweb": patch
-"@rrweb/types": patch
-"@rrweb/replay": patch
-"@rrweb/rrweb-plugin-console-record": patch
-"@rrweb/rrweb-plugin-console-replay": patch
-"@rrweb/rrweb-plugin-sequential-id-record": patch
-"@rrweb/rrweb-plugin-sequential-id-replay": patch
-"@rrweb/rrweb-plugin-canvas-webrtc-record": patch
-"@rrweb/rrweb-plugin-canvas-webrtc-replay": patch
-"@rrweb/rrweb-plugin-network-record": patch
-"@rrweb/rrweb-plugin-network-replay": patch
+'rrweb': patch
+'@rrweb/types': patch
+'@rrweb/replay': patch
+'@rrweb/rrweb-plugin-console-record': patch
+'@rrweb/rrweb-plugin-console-replay': patch
+'@rrweb/rrweb-plugin-sequential-id-record': patch
+'@rrweb/rrweb-plugin-sequential-id-replay': patch
+'@rrweb/rrweb-plugin-canvas-webrtc-record': patch
+'@rrweb/rrweb-plugin-canvas-webrtc-replay': patch
+'@rrweb/rrweb-plugin-network-record': patch
+'@rrweb/rrweb-plugin-network-replay': patch
 ---
 
 Clean up plugin dependency metadata for split record and replay host packages.
@@ -1019,11 +1022,13 @@ The body must include:
 ### Option 1: No host peer
 
 Pros:
+
 - supports all valid host entrypoints
 - avoids false `rrweb` peer warnings for split-package users
 - keeps manifests focused on published-artifact imports
 
 Cons:
+
 - no install-time warning when a plugin is installed without a host
 - compatibility is enforced through docs, TypeScript, and smoke tests
 
@@ -1032,20 +1037,24 @@ Chosen because npm cannot express one of `rrweb`, `@rrweb/record`, `@rrweb/repla
 ### Option 2: Optional host peers
 
 Pros:
+
 - keeps host compatibility visible in metadata
 - avoids hard install failures
 
 Cons:
+
 - does not require that any compatible host is installed
 - creates noisy metadata and still does not fix undeclared imports
 
 ### Option 3: Strict host peer
 
 Pros:
+
 - gives clear feedback when there is one canonical host
 - familiar plugin-package model
 
 Cons:
+
 - no longer matches rrweb's package split
 - forces or warns about `rrweb` for valid split-package consumers
 ```
