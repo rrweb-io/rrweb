@@ -488,6 +488,32 @@ describe('diff algorithm for rrdom', () => {
       diff(element, rrIframe, replayer);
       expect(element.getAttribute('srcdoc')).toBe(null);
     });
+
+    it('can skip calling setAttribute when attr/value already exists', () => {
+      const tagName = 'STYLE';
+      const element = document.createElement(tagName);
+      const sn = Object.assign({}, elementSn, { tagName });
+      mirror.add(element, sn);
+
+      element.setAttribute('type', 'text/css');
+      expect(element.getAttribute('type')).toEqual('text/css');
+      
+      const rrDocument = new RRDocument();
+      const rrNode = rrDocument.createElement(tagName);
+      const sn2 = Object.assign({}, elementSn, { tagName });
+      rrDocument.mirror.add(rrNode, sn2);
+      rrNode.attributes = { type: 'text/css' };
+      
+      const setAttributeSpy = vi.spyOn(element, 'setAttribute');
+      diff(element, rrNode, replayer);
+      expect(setAttributeSpy).not.toHaveBeenCalled();
+      
+      rrNode.attributes = { type: 'application/css' };
+      diff(element, rrNode, replayer);
+      expect(setAttributeSpy).toHaveBeenCalledWith('type', 'application/css');
+      
+      setAttributeSpy.mockRestore();
+    });
   });
 
   describe('diff children', () => {
