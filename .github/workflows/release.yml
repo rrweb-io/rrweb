@@ -93,7 +93,10 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
         env:
-          PUPPETEER_SKIP_DOWNLOAD: true
+          # Browser binaries must be provisioned here: the "Run tests" step
+          # below gates publish on the full suite, which launches Puppeteer
+          # (rrweb et al.) and Playwright Chromium (rrvideo). Mirrors ci-cd.yml.
+          PUPPETEER_DOWNLOAD_BASE_URL: 'https://storage.googleapis.com/chrome-for-testing-public'
 
       - name: Build packages
         run: pnpm build:all
@@ -103,8 +106,10 @@ jobs:
       - name: Run tests
         # Gate publish on tests passing. Skipped for dry-run since dry-run
         # is just a version-bump preview, not an actual release.
+        # Puppeteer-based tests need a display + headless mode, so run under
+        # xvfb with PUPPETEER_HEADLESS, matching ci-cd.yml.
         if: ${{ github.event.inputs.releaseType != 'dry-run' }}
-        run: pnpm test
+        run: PUPPETEER_HEADLESS=true xvfb-run --server-args="-screen 0 1920x1080x24" pnpm test
 
       - name: Reset working tree
         # Build prepublish hooks mutate tracked files (tsconfig project references).

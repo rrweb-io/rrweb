@@ -12,7 +12,7 @@
   ],
   "types": "build/index.d.ts",
   "scripts": {
-    "install": "playwright install",
+    "install": "playwright install chromium", 
     "build": "tsc",
     "test": "jest",
     "check-types": "tsc -noEmit",
@@ -39,6 +39,6 @@
     "@open-tech-world/cli-progress-bar": "^2.0.2",
     "fs-extra": "^11.1.1",
     "minimist": "^1.2.5",
-    "playwright": "^1.32.1"
+    "playwright": "1.60.0"
   }
 }
