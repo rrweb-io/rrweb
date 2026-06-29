@@ -26,6 +26,7 @@ jobs:
         run: pnpm install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
+          PLAYWRIGHT_DOWNLOAD_HOST: https://cdn.playwright.dev/dbazure/download/playwright
       - name: Build Packages
         run: NODE_OPTIONS='--max-old-space-size=4096' pnpm build:all
       - name: Eslint Check
@@ -60,6 +61,7 @@ jobs:
         run: pnpm install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
+          PLAYWRIGHT_DOWNLOAD_HOST: https://cdn.playwright.dev/dbazure/download/playwright
       - name: Prettier Check
         run: pnpm exec prettier --check '**/*.{ts,md}'
 
@@ -85,6 +87,7 @@ jobs:
         run: pnpm install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
+          PLAYWRIGHT_DOWNLOAD_HOST: https://cdn.playwright.dev/dbazure/download/playwright
       - name: Prettify Code
         run: pnpm exec prettier --write '**/*.{ts,md}'
       - name: Commit Changes
