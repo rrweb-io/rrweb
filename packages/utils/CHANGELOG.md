@@ -1,3 +1,12 @@
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## <small>2.1.2 (2026-06-30)</small>
+
+- chore(build): migrate from yarn 1 to pnpm (#124) ([830a643](https://github.com/amplitude/rrweb/commit/830a643)), closes [#124](https://github.com/amplitude/rrweb/issues/124) [#124](https://github.com/amplitude/rrweb/issues/124)
+
 # @amplitude/rrweb-utils
 
 ## 2.0.0-alpha.40

@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrweb-utils",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "publishConfig": {
     "access": "public"
   },
@@ -48,6 +48,5 @@
   "devDependencies": {
     "vite": "^6",
     "vite-plugin-dts": "^3.8.1"
-  },
-  "dependencies": {}
+  }
 }

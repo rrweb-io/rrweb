@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrweb",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "record and replay the web",
   "scripts": {
     "retest": "cross-env PUPPETEER_HEADLESS=true pnpm retest:headful",
@@ -70,6 +70,7 @@
     "ignore-styles": "^5.0.1",
     "inquirer": "^9.0.0",
     "jest-image-snapshot": "^6.2.0",
+    "prettier": "2.8.4",
     "puppeteer": "^20.9.0",
     "simple-peer-light": "^9.10.0",
     "ts-node": "^10.9.1",
@@ -77,8 +78,7 @@
     "typescript": "^5.4.5",
     "vite": "^6",
     "vite-plugin-dts": "^3.9.1",
-    "vitest": "^1.4.0",
-    "prettier": "2.8.4"
+    "vitest": "^1.4.0"
   },
   "dependencies": {
     "@amplitude/rrdom": "workspace:^",

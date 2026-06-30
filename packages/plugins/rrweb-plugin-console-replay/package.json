@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrweb-plugin-console-replay",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-console-replay.umd.cjs",

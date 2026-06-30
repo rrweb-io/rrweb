@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrweb-plugin-sequential-id-record",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-sequential-id-record.umd.cjs",

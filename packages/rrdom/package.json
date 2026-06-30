@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrdom",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "homepage": "https://github.com/rrweb-io/rrweb/tree/main/packages/rrdom#readme",
   "license": "MIT",
   "type": "module",
@@ -43,10 +43,10 @@
   "devDependencies": {
     "@amplitude/rrweb-types": "workspace:^",
     "@types/jsdom": "^20.0.0",
-    "jsdom": "^16.7.0",
     "@typescript-eslint/eslint-plugin": "^5.23.0",
     "@typescript-eslint/parser": "^5.23.0",
     "eslint": "^8.15.0",
+    "jsdom": "^16.7.0",
     "puppeteer": "^20.9.0",
     "typescript": "^5.4.5",
     "vite": "^6",

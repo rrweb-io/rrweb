@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrweb-snapshot",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "retest": "vitest run",
@@ -55,8 +55,8 @@
     "@amplitude/rrweb-types": "workspace:^",
     "@amplitude/rrweb-utils": "workspace:^",
     "@types/jsdom": "^20.0.0",
-    "jsdom": "^16.7.0",
     "@types/node": "^18.15.11",
+    "jsdom": "^16.7.0",
     "puppeteer": "^20.9.0",
     "ts-node": "^7.0.1",
     "tslib": "^1.9.3",

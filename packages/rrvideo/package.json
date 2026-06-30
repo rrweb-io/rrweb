@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrvideo",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "transform rrweb session into video",
   "main": "build/index.js",
   "bin": {
@@ -12,7 +12,7 @@
   ],
   "types": "build/index.d.ts",
   "scripts": {
-    "install": "playwright install chromium", 
+    "install": "playwright install chromium",
     "build": "tsc",
     "test": "jest",
     "check-types": "tsc -noEmit",

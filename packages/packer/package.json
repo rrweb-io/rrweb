@@ -1,6 +1,6 @@
 {
   "name": "@amplitude/rrweb-packer",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "publishConfig": {
     "access": "public"
   },
@@ -71,14 +71,14 @@
     "package.json"
   ],
   "devDependencies": {
+    "typescript": "^5.4.5",
     "vite": "^6",
     "vite-plugin-dts": "^3.9.1",
-    "vitest": "^1.4.0",
-    "typescript": "^5.4.5"
+    "vitest": "^1.4.0"
   },
   "dependencies": {
-    "fflate": "^0.4.4",
-    "@amplitude/rrweb-types": "workspace:^"
+    "@amplitude/rrweb-types": "workspace:^",
+    "fflate": "^0.4.4"
   },
   "browserslist": [
     "supports es6-class"
