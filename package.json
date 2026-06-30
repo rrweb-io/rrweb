@@ -46,6 +46,7 @@
     "build:all": "NODE_OPTIONS='--max-old-space-size=4096' turbo run prepublish",
     "references:update": "workspaces-to-typescript-project-references",
     "test": "turbo run test --concurrency=1 --continue",
+    "test:no-browser": "turbo run test --concurrency=1 --continue --filter=!@amplitude/rrweb --filter=!@amplitude/rrdom --filter=!@amplitude/rrvideo --filter=!@amplitude/rrweb-snapshot --filter=!@amplitude/rrweb-all --filter=!@amplitude/rrweb-plugin-console-record",
     "test:watch": "turbo run test:watch",
     "test:update": "turbo run test:update",
     "check-types": "turbo run check-types --continue",
