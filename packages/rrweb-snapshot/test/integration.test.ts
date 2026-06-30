@@ -102,6 +102,7 @@ describe('integration tests', function (this: ISuite) {
     server = await startServer();
     serverURL = getServerURL(server);
     browser = await puppeteer.launch({
+      headless: 'new',
       // headless: false,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
@@ -435,6 +436,7 @@ describe('iframe integration tests', function (this: ISuite) {
     server = await startServer();
     serverURL = getServerURL(server);
     browser = await puppeteer.launch({
+      headless: 'new',
       // headless: false,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
@@ -480,6 +482,7 @@ describe('dialog integration tests', function (this: ISuite) {
     server = await startServer();
     serverURL = getServerURL(server);
     browser = await puppeteer.launch({
+      headless: 'new',
       // headless: false,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
@@ -527,6 +530,7 @@ describe('shadow DOM integration tests', function (this: ISuite) {
     server = await startServer();
     serverURL = getServerURL(server);
     browser = await puppeteer.launch({
+      headless: 'new',
       // headless: false,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });

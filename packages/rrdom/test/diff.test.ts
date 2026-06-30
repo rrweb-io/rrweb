@@ -1414,6 +1414,7 @@ describe('diff algorithm for rrdom', () => {
        * This test result executed in JSDom is different from that in real browser so we use puppeteer as test environment.
        */
       const browser = await puppeteer.launch({
+        headless: 'new',
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();

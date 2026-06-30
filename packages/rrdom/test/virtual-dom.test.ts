@@ -243,6 +243,7 @@ describe('RRDocument for browser environment', () => {
 
     beforeAll(async () => {
       browser = await puppeteer.launch({
+        headless: 'new',
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       code = fs.readFileSync(
