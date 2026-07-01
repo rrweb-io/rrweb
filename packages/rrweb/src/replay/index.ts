@@ -1064,6 +1064,18 @@ export class Replayer {
     }
 
     this.mirror.reset();
+
+    // record/stylesheet-manager.ts's StylesheetManager.reset() resets its
+    // styleMirror right before every snapshot() call (see record/index.ts),
+    // so a given styleId is only unique within one FullSnapshot generation -
+    // the same small integer in the next generation refers to an unrelated
+    // stylesheet. Mirror that here: without this reset,
+    // applySnapshotAdoptedStyleSheets would resolve a recycled styleId to the
+    // previous generation's cached CSSStyleSheet, corrupting that sheet and
+    // producing incorrect (often oversized) styles for shadow-DOM
+    // adoptedStyleSheets.
+    this.styleMirror.reset();
+
     rebuild(event.data.node, {
       doc: this.iframe.contentDocument,
       afterAppend,
