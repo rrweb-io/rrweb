@@ -1,4 +1,8 @@
-import { mediaSelectorPlugin, pseudoClassPlugin } from './css';
+import {
+  mediaSelectorPlugin,
+  pseudoClassPlugin,
+  type HackCssPseudoClass,
+} from './css';
 import {
   type serializedNodeWithId,
   type serializedElementNodeWithId,
@@ -63,26 +67,36 @@ function getTagName(n: elementNode): string {
   return tagName;
 }
 
-export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
-  const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
+export function adaptCssForReplay(
+  cssText: string,
+  cache: BuildCache,
+  pseudoClasses: HackCssPseudoClass[] = [':hover'],
+): string {
+  // The rewritten result depends on the selected pseudo-class set, so it has
+  // to be part of the cache key (\u0000 can't appear in css, so it's a safe
+  // separator).
+  const cacheKey = `${pseudoClasses.join(',')}\u0000${cssText}`;
+  const cachedStyle = cache?.stylesWithHoverClass.get(cacheKey);
   if (cachedStyle) return cachedStyle;
 
   let result = cssText;
   try {
     const ast: { css: string } = postcss([
       mediaSelectorPlugin,
-      pseudoClassPlugin,
+      pseudoClassPlugin(pseudoClasses),
     ]).process(cssText);
     result = ast.css;
   } catch (error) {
     console.warn('Failed to adapt css for replay', error);
   }
 
-  cache?.stylesWithHoverClass.set(cssText, result);
+  cache?.stylesWithHoverClass.set(cacheKey, result);
   return result;
 }
 
 export function createCache(): BuildCache {
+  // caches all pseudo-class rewrites, not only hover; the name is kept for
+  // back compat.
   const stylesWithHoverClass: Map<string, string> = new Map();
   return {
     stylesWithHoverClass,
@@ -110,6 +124,12 @@ type RebuildOptions = {
   onVisit?: (node: Node) => unknown;
   /** Adapts CSS selectors for replay-specific hover behavior when enabled. */
   hackCss?: boolean;
+  /**
+   * User-action pseudo-classes to mirror as escaped classes when `hackCss` is
+   * enabled, e.g. `foo:focus` becomes `foo:focus, foo.\:focus`.
+   * Defaults to `[':hover']`.
+   */
+  hackCssPseudoClasses?: HackCssPseudoClass[];
   /** Called after a rebuilt node is appended to its parent. */
   afterAppend?: (n: Node, id: number) => unknown;
   /** Per-rebuild cache for derived snapshot data. */
@@ -199,6 +219,7 @@ export function applyCssSplits(
   cssText: string,
   hackCss: boolean,
   cache: BuildCache,
+  hackCssPseudoClasses?: HackCssPseudoClass[],
 ): void {
   const childTextNodes = [];
   for (const scn of n.childNodes) {
@@ -216,7 +237,11 @@ export function applyCssSplits(
   }
   let adaptedCss = '';
   if (hackCss) {
-    adaptedCss = adaptCssForReplay(cssTextSplits.join(''), cache);
+    adaptedCss = adaptCssForReplay(
+      cssTextSplits.join(''),
+      cache,
+      hackCssPseudoClasses,
+    );
   }
   let startIndex = 0;
   for (let i = 0; i < childTextNodes.length; i++) {
@@ -273,14 +298,15 @@ export function buildStyleNode(
     doc: Document;
     hackCss: boolean;
     cache: BuildCache;
+    hackCssPseudoClasses?: HackCssPseudoClass[];
   },
 ) {
-  const { doc, hackCss, cache } = options;
+  const { doc, hackCss, cache, hackCssPseudoClasses } = options;
   if (n.childNodes.length) {
-    applyCssSplits(n, cssText, hackCss, cache);
+    applyCssSplits(n, cssText, hackCss, cache, hackCssPseudoClasses);
   } else {
     if (hackCss) {
-      cssText = adaptCssForReplay(cssText, cache);
+      cssText = adaptCssForReplay(cssText, cache, hackCssPseudoClasses);
     }
     /**
        <link> element or dynamic <style> are serialized without any child nodes
@@ -296,9 +322,10 @@ function buildNode(
     doc: Document;
     hackCss: boolean;
     cache: BuildCache;
+    hackCssPseudoClasses?: HackCssPseudoClass[];
   },
 ): Node | null {
-  const { doc, hackCss, cache } = options;
+  const { doc, hackCss, cache, hackCssPseudoClasses } = options;
   switch (n.type) {
     case NodeType.Document:
       return doc.implementation.createDocument(null, '', null);
@@ -529,7 +556,9 @@ function buildNode(
     case NodeType.Text:
       if (n.isStyle && hackCss) {
         // support legacy style
-        return doc.createTextNode(adaptCssForReplay(n.textContent, cache));
+        return doc.createTextNode(
+          adaptCssForReplay(n.textContent, cache, hackCssPseudoClasses),
+        );
       }
       return doc.createTextNode(n.textContent);
     case NodeType.CDATA:
@@ -548,6 +577,7 @@ export function buildNodeWithSN(
     mirror: Mirror;
     skipChild?: boolean;
     hackCss: boolean;
+    hackCssPseudoClasses?: HackCssPseudoClass[];
     /**
      * This callback will be called for each of this nodes' `.childNodes` after they are appended to _this_ node.
      * Caveat: This callback _doesn't_ get called when this node is appended to the DOM.
@@ -561,6 +591,7 @@ export function buildNodeWithSN(
     mirror,
     skipChild = false,
     hackCss = true,
+    hackCssPseudoClasses,
     afterAppend,
     cache,
   } = options;
@@ -577,7 +608,7 @@ export function buildNodeWithSN(
     // For safety concern, check if the node in mirror is the same as the node we are trying to build
     if (isNodeMetaEqual(meta, n)) return mirror.getNode(n.id);
   }
-  let node = buildNode(n, { doc, hackCss, cache });
+  let node = buildNode(n, { doc, hackCss, cache, hackCssPseudoClasses });
   if (!node) {
     return null;
   }
@@ -627,6 +658,7 @@ export function buildNodeWithSN(
         mirror,
         skipChild: false,
         hackCss,
+        hackCssPseudoClasses,
         afterAppend,
         cache,
       });
@@ -719,6 +751,7 @@ function rebuild(
     doc,
     onVisit,
     hackCss = true,
+    hackCssPseudoClasses,
     afterAppend,
     cache,
     mirror = new Mirror(),
@@ -728,6 +761,7 @@ function rebuild(
     mirror,
     skipChild: false,
     hackCss,
+    hackCssPseudoClasses,
     afterAppend,
     cache,
   });
