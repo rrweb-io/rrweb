@@ -56,6 +56,17 @@ describe('css parser', () => {
       expect(parse(pseudoClassPlugin([':hover']), cssText)).toEqual(cssText);
     });
 
+    it("doesn't rewrite ':focus' inside ':focus-visible' / ':focus-within'", () => {
+      // backs the `(?![-\w])` boundary: without it, `:focus` would match inside
+      // these and emit a spurious `.\:focus-visible` mirror
+      expect(
+        parse(pseudoClassPlugin([':focus']), '.a:focus-visible { color: red }'),
+      ).toEqual('.a:focus-visible { color: red }');
+      expect(
+        parse(pseudoClassPlugin([':focus']), '.a:focus-within { color: red }'),
+      ).toEqual('.a:focus-within { color: red }');
+    });
+
     it("doesn't ignore :hover within :is brackets", () => {
       const cssText =
         'body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) {background: red;}';
