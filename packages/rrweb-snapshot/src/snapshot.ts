@@ -615,15 +615,16 @@ function serializeElementNode(
   // form fields
   if (['input', 'textarea', 'select'].includes(tagName)) {
     const value = (n as HTMLInputElement | HTMLTextAreaElement).value;
+    const placeholder = (n as HTMLInputElement | HTMLTextAreaElement).placeholder;
     const checked = (n as HTMLInputElement).checked;
     if (
       attributes.type !== 'radio' &&
       attributes.type !== 'checkbox' &&
       attributes.type !== 'submit' &&
       attributes.type !== 'button' &&
-      value
+      (value || placeholder)
     ) {
-      attributes.value = maskInputValue({
+      if (value) attributes.value = maskInputValue({
         element: n,
         type: getInputType(n),
         tagName,
@@ -631,6 +632,14 @@ function serializeElementNode(
         maskInputOptions,
         maskInputFn,
       });
+      if (placeholder) attributes.placeholder = maskInputValue({
+        element: n,
+        type: getInputType(n),
+        tagName,
+        value: placeholder,
+        maskInputOptions,
+        maskInputFn,
+      })
     } else if (checked) {
       attributes.checked = checked;
     }
