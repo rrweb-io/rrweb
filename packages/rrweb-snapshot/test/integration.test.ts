@@ -423,6 +423,112 @@ iframe.contentDocument.querySelector('center').clientHeight
     );
     expect(snapshotResult).toMatchSnapshot();
   });
+
+  it('hackCssPseudoClasses lets a rebuilt snapshot paint user-action pseudo-classes', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.goto(`${serverURL}/html`);
+    await page.setContent(
+      `<!DOCTYPE html><html><head><style>
+        .box { background-color: rgb(255, 200, 200); }
+        .box.h:hover { background-color: rgb(11, 11, 11); }
+        .box.a:active { background-color: rgb(22, 22, 22); }
+        .box.f:focus { background-color: rgb(33, 33, 33); }
+        .box.fv:focus-visible { background-color: rgb(44, 44, 44); }
+        .wrap:focus-within .box.fw { background-color: rgb(55, 55, 55); }
+      </style></head><body>
+        <div class="box h">hover</div>
+        <div class="box a">active</div>
+        <div class="box f">focus</div>
+        <div class="box fv">focus-visible</div>
+        <div class="wrap"><div class="box fw">focus-within</div></div>
+      </body></html>`,
+      { waitUntil: 'load' },
+    );
+
+    // Reproduce the static-snapshot consumer flow: snapshot, rebuild with the
+    // opt-in set, then add the mirror class ourselves (as a viewer would) and
+    // assert the rebuilt element actually paints the pseudo-class style.
+    const result = (await page.evaluate(`${code}
+      const snap = rrwebSnapshot.snapshot(document);
+      const { iframe } = rrwebSnapshot.rebuildIntoSandboxedIframe(snap, {
+        root: document.body,
+        hackCssPseudoClasses: [
+          ':hover',
+          ':active',
+          ':focus',
+          ':focus-visible',
+          ':focus-within',
+        ],
+      });
+      const doc = iframe.contentDocument;
+      // [element to read, class to toggle, element to toggle it on]
+      const cases = [
+        ['.h', ':hover', '.h'],
+        ['.a', ':active', '.a'],
+        ['.f', ':focus', '.f'],
+        ['.fv', ':focus-visible', '.fv'],
+        ['.fw', ':focus-within', '.wrap'],
+      ];
+      const out = {};
+      for (const [readSel, klass, toggleSel] of cases) {
+        const readEl = doc.querySelector(readSel);
+        const before = getComputedStyle(readEl).backgroundColor;
+        doc.querySelector(toggleSel).classList.add(klass);
+        const after = getComputedStyle(readEl).backgroundColor;
+        out[readSel] = { before, after };
+      }
+      JSON.stringify(out);
+    `)) as string;
+
+    expect(JSON.parse(result)).toEqual({
+      '.h': { before: 'rgb(255, 200, 200)', after: 'rgb(11, 11, 11)' },
+      '.a': { before: 'rgb(255, 200, 200)', after: 'rgb(22, 22, 22)' },
+      '.f': { before: 'rgb(255, 200, 200)', after: 'rgb(33, 33, 33)' },
+      '.fv': { before: 'rgb(255, 200, 200)', after: 'rgb(44, 44, 44)' },
+      '.fw': { before: 'rgb(255, 200, 200)', after: 'rgb(55, 55, 55)' },
+    });
+  });
+
+  it('hackCssPseudoClasses defaults to hover-only', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.goto(`${serverURL}/html`);
+    await page.setContent(
+      `<!DOCTYPE html><html><head><style>
+        .box { background-color: rgb(255, 200, 200); }
+        .box.h:hover { background-color: rgb(11, 11, 11); }
+        .box.f:focus { background-color: rgb(33, 33, 33); }
+      </style></head><body>
+        <div class="box h">hover</div>
+        <div class="box f">focus</div>
+      </body></html>`,
+      { waitUntil: 'load' },
+    );
+
+    // No hackCssPseudoClasses -> default [':hover']: hover still paints, but
+    // :focus is not mirrored, so adding the class has no effect.
+    const result = (await page.evaluate(`${code}
+      const snap = rrwebSnapshot.snapshot(document);
+      const { iframe } = rrwebSnapshot.rebuildIntoSandboxedIframe(snap, {
+        root: document.body,
+      });
+      const doc = iframe.contentDocument;
+      const hoverEl = doc.querySelector('.h');
+      const focusEl = doc.querySelector('.f');
+      hoverEl.classList.add(':hover');
+      focusEl.classList.add(':focus');
+      JSON.stringify({
+        hover: getComputedStyle(hoverEl).backgroundColor,
+        focus: getComputedStyle(focusEl).backgroundColor,
+      });
+    `)) as string;
+
+    expect(JSON.parse(result)).toEqual({
+      hover: 'rgb(11, 11, 11)', // hover mirror is on by default
+      focus: 'rgb(255, 200, 200)', // :focus not mirrored -> stays off
+    });
+  });
 });
 
 describe('iframe integration tests', function (this: ISuite) {

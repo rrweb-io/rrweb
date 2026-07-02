@@ -53,13 +53,39 @@ describe('css parser', () => {
     it('parses nested commas in selectors correctly', () => {
       const cssText =
         'body > ul :is(li:not(:first-of-type) a.current, li:not(:first-of-type).active a) {background: red;}';
-      expect(parse(pseudoClassPlugin, cssText)).toEqual(cssText);
+      expect(parse(pseudoClassPlugin([':hover']), cssText)).toEqual(cssText);
+    });
+
+    it("doesn't rewrite ':focus' inside ':focus-visible' / ':focus-within'", () => {
+      // backs the `(?![-\w])` boundary: without it, `:focus` would match inside
+      // these and emit a spurious `.\:focus-visible` mirror
+      expect(
+        parse(pseudoClassPlugin([':focus']), '.a:focus-visible { color: red }'),
+      ).toEqual('.a:focus-visible { color: red }');
+      expect(
+        parse(pseudoClassPlugin([':focus']), '.a:focus-within { color: red }'),
+      ).toEqual('.a:focus-within { color: red }');
+    });
+
+    it('mirrors each supported user-action pseudo-class', () => {
+      expect(parse(pseudoClassPlugin([':active']), '.a:active { color: red }')).toEqual(
+        '.a:active,\n.a.\\:active { color: red }',
+      );
+      expect(parse(pseudoClassPlugin([':focus']), '.a:focus { color: red }')).toEqual(
+        '.a:focus,\n.a.\\:focus { color: red }',
+      );
+      expect(
+        parse(pseudoClassPlugin([':focus-visible']), '.a:focus-visible { color: red }'),
+      ).toEqual('.a:focus-visible,\n.a.\\:focus-visible { color: red }');
+      expect(
+        parse(pseudoClassPlugin([':focus-within']), '.a:focus-within { color: red }'),
+      ).toEqual('.a:focus-within,\n.a.\\:focus-within { color: red }');
     });
 
     it("doesn't ignore :hover within :is brackets", () => {
       const cssText =
         'body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) {background: red;}';
-      expect(parse(pseudoClassPlugin, cssText))
+      expect(parse(pseudoClassPlugin([':hover']), cssText))
         .toEqual(`body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a),
 body > ul :is(li:not(:first-of-type) a.\\:hover, li:not(:first-of-type).active a) {background: red;}`);
     });
@@ -67,7 +93,7 @@ body > ul :is(li:not(:first-of-type) a.\\:hover, li:not(:first-of-type).active a
     it('should parse selector with comma nested inside ()', () => {
       const cssText =
         '[_nghost-ng-c4172599085]:not(.fit-content).aim-select:hover:not(:disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--invalid, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--active) { border-color: rgb(84, 84, 84); }';
-      expect(parse(pseudoClassPlugin, cssText))
+      expect(parse(pseudoClassPlugin([':hover']), cssText))
         .toEqual(`[_nghost-ng-c4172599085]:not(.fit-content).aim-select:hover:not(:disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--invalid, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--active),
 [_nghost-ng-c4172599085]:not(.fit-content).aim-select.\\:hover:not(:disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--disabled, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--invalid, [_nghost-ng-c4172599085]:not(.fit-content).aim-select--active) { border-color: rgb(84, 84, 84); }`);
     });
@@ -75,21 +101,21 @@ body > ul :is(li:not(:first-of-type) a.\\:hover, li:not(:first-of-type).active a
     it('ignores ( in strings', () => {
       const cssText =
         'li[attr="weirdly("] a:hover, li[attr="weirdly)"] a {background-color: red;}';
-      expect(parse(pseudoClassPlugin, cssText))
+      expect(parse(pseudoClassPlugin([':hover']), cssText))
         .toEqual(`li[attr="weirdly("] a:hover, li[attr="weirdly)"] a,
 li[attr="weirdly("] a.\\:hover {background-color: red;}`);
     });
 
     it('ignores escaping in strings', () => {
       const cssText = `li[attr="weirder\\"("] a:hover, li[attr="weirder\\")"] a {background-color: red;}`;
-      expect(parse(pseudoClassPlugin, cssText))
+      expect(parse(pseudoClassPlugin([':hover']), cssText))
         .toEqual(`li[attr="weirder\\"("] a:hover, li[attr="weirder\\")"] a,
 li[attr="weirder\\"("] a.\\:hover {background-color: red;}`);
     });
 
     it('ignores comma in string', () => {
       const cssText = 'li[attr="has,comma"] a:hover {background: red;}';
-      expect(parse(pseudoClassPlugin, cssText)).toEqual(
+      expect(parse(pseudoClassPlugin([':hover']), cssText)).toEqual(
         `li[attr="has,comma"] a:hover,
 li[attr="has,comma"] a.\\:hover {background: red;}`,
       );
