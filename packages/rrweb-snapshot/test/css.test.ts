@@ -67,6 +67,21 @@ describe('css parser', () => {
       ).toEqual('.a:focus-within { color: red }');
     });
 
+    it('mirrors each supported user-action pseudo-class', () => {
+      expect(parse(pseudoClassPlugin([':active']), '.a:active { color: red }')).toEqual(
+        '.a:active,\n.a.\\:active { color: red }',
+      );
+      expect(parse(pseudoClassPlugin([':focus']), '.a:focus { color: red }')).toEqual(
+        '.a:focus,\n.a.\\:focus { color: red }',
+      );
+      expect(
+        parse(pseudoClassPlugin([':focus-visible']), '.a:focus-visible { color: red }'),
+      ).toEqual('.a:focus-visible,\n.a.\\:focus-visible { color: red }');
+      expect(
+        parse(pseudoClassPlugin([':focus-within']), '.a:focus-within { color: red }'),
+      ).toEqual('.a:focus-within,\n.a.\\:focus-within { color: red }');
+    });
+
     it("doesn't ignore :hover within :is brackets", () => {
       const cssText =
         'body > ul :is(li:not(:first-of-type) a:hover, li:not(:first-of-type).active a) {background: red;}';
