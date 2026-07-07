@@ -99,9 +99,21 @@ function pack(packagePath) {
   return join(packDir, packed.filename);
 }
 
-function writeConsumer(name, dependencies, source) {
+function packageName(packagePath) {
+  const manifest = JSON.parse(
+    readFileSync(join(root, packagePath, 'package.json'), 'utf8'),
+  );
+  return manifest.name;
+}
+
+function writeConsumer(name, dependencies, localPackageSpecs, source) {
   const dir = join(tempRoot, name);
   mkdirSync(dir);
+  const overrides = Object.fromEntries(
+    Object.entries(localPackageSpecs).filter(
+      ([packageName]) => !(packageName in dependencies),
+    ),
+  );
   writeFileSync(
     join(dir, 'package.json'),
     JSON.stringify(
@@ -109,6 +121,7 @@ function writeConsumer(name, dependencies, source) {
         private: true,
         type: 'module',
         dependencies,
+        overrides,
         devDependencies: {
           typescript: '5.4.5',
         },
@@ -149,21 +162,23 @@ try {
       `file:${pack(packagePath)}`,
     ]),
   );
+  const localPackageSpecs = Object.fromEntries(
+    Object.entries(packages).map(([name, packagePath]) => [
+      packageName(packagePath),
+      packed[name],
+    ]),
+  );
 
   const recordConsumer = writeConsumer(
     'record-consumer',
     {
-      '@rrweb/types': packed.types,
-      '@rrweb/utils': packed.utils,
       '@rrweb/record': packed.record,
       '@rrweb/rrweb-plugin-canvas-webrtc-record': packed.canvasWebrtcRecord,
       '@rrweb/rrweb-plugin-console-record': packed.consoleRecord,
       '@rrweb/rrweb-plugin-network-record': packed.networkRecord,
       '@rrweb/rrweb-plugin-sequential-id-record': packed.sequentialIdRecord,
-      rrdom: packed.rrdom,
-      rrweb: packed.rrweb,
-      'rrweb-snapshot': packed.rrwebSnapshot,
     },
+    localPackageSpecs,
     `import { record } from '@rrweb/record';
 import { RRWebPluginCanvasWebRTCRecord } from '@rrweb/rrweb-plugin-canvas-webrtc-record';
 import { getRecordConsolePlugin } from '@rrweb/rrweb-plugin-console-record';
@@ -193,21 +208,13 @@ record({
   const replayConsumer = writeConsumer(
     'replay-consumer',
     {
-      '@rrweb/types': packed.types,
-      '@rrweb/utils': packed.utils,
       '@rrweb/replay': packed.replay,
-      '@rrweb/rrweb-plugin-canvas-webrtc-record': packed.canvasWebrtcRecord,
       '@rrweb/rrweb-plugin-canvas-webrtc-replay': packed.canvasWebrtcReplay,
-      '@rrweb/rrweb-plugin-console-record': packed.consoleRecord,
       '@rrweb/rrweb-plugin-console-replay': packed.consoleReplay,
-      '@rrweb/rrweb-plugin-network-record': packed.networkRecord,
       '@rrweb/rrweb-plugin-network-replay': packed.networkReplay,
-      '@rrweb/rrweb-plugin-sequential-id-record': packed.sequentialIdRecord,
       '@rrweb/rrweb-plugin-sequential-id-replay': packed.sequentialIdReplay,
-      rrdom: packed.rrdom,
-      rrweb: packed.rrweb,
-      'rrweb-snapshot': packed.rrwebSnapshot,
     },
+    localPackageSpecs,
     `import { Replayer } from '@rrweb/replay';
 import { RRWebPluginCanvasWebRTCReplay } from '@rrweb/rrweb-plugin-canvas-webrtc-replay';
 import { getReplayConsolePlugin } from '@rrweb/rrweb-plugin-console-replay';
