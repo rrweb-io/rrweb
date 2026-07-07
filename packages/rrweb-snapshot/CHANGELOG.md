@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.1.0
+
+### Patch Changes
+
+- [#1865](https://github.com/rrweb-io/rrweb/pull/1865) [`b08a06f`](https://github.com/rrweb-io/rrweb/commit/b08a06f8f5445e7779fe0744d301a7ceb8d857c3) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fix conversion of absolute to relative urls if url contains a hash
+
 ## 2.0.1
 
 ### Patch Changes

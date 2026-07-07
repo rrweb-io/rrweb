@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/rrweb-plugin-canvas-webrtc-replay",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-canvas-webrtc-replay.umd.cjs",
@@ -48,7 +48,7 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "dependencies": {
-    "@rrweb/types": "^2.0.1",
+    "@rrweb/types": "^2.1.0",
     "simple-peer-light": "^9.10.0"
   },
   "devDependencies": {
