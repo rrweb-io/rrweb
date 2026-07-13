@@ -11,7 +11,7 @@
       "path": "../../types"
     },
     {
-      "path": "../rrweb-plugin-dialog-record"
+      "path": "../rrweb-plugin-popup-record"
     }
   ]
 }

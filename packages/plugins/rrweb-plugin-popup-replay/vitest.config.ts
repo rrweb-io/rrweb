@@ -8,9 +8,9 @@ export default mergeConfig(
   defineProject({
     resolve: {
       alias: {
-        '@rrweb/rrweb-plugin-dialog-record': resolve(
+        '@rrweb/rrweb-plugin-popup-record': resolve(
           __dirname,
-          '../rrweb-plugin-dialog-record/src',
+          '../rrweb-plugin-popup-record/src',
         ),
         '@rrweb/types': resolve(__dirname, '../../types/src'),
         '@rrweb/utils': resolve(__dirname, '../../utils/src'),

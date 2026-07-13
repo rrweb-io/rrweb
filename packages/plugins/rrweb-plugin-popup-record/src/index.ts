@@ -1,22 +1,22 @@
 import type { listenerHandler, RecordPlugin, IWindow } from '@rrweb/types';
 import { patch } from '@rrweb/utils';
 
-export const PLUGIN_NAME = 'rrweb/dialog@1';
+export const PLUGIN_NAME = 'rrweb/popup@1';
 
-export type DialogKind = 'alert' | 'confirm' | 'prompt';
+export type PopupKind = 'alert' | 'confirm' | 'prompt';
 
-export type DialogData = {
-  kind: DialogKind;
+export type PopupData = {
+  kind: PopupKind;
   message: string;
   defaultValue?: string;
   returnValue?: boolean | string | null;
 };
 
-export type DialogRecordOptions = {
+export type PopupRecordOptions = {
   /**
-   * Which native dialogs to hook. Defaults to all three.
+   * Which native popups to hook. Defaults to all three.
    */
-  level?: DialogKind[];
+  level?: PopupKind[];
   /**
    * Whether to record the user's response for `confirm` / `prompt`.
    * `alert` never has a return value. Defaults to `true`.
@@ -25,17 +25,17 @@ export type DialogRecordOptions = {
   /**
    * Redaction hook applied to the payload immediately before it is emitted.
    */
-  maskDialog?: (data: DialogData) => DialogData;
+  maskPopup?: (data: PopupData) => PopupData;
 };
 
-type DialogCallback = (data: DialogData) => void;
+type PopupCallback = (data: PopupData) => void;
 
-const ALL_KINDS: DialogKind[] = ['alert', 'confirm', 'prompt'];
+const ALL_KINDS: PopupKind[] = ['alert', 'confirm', 'prompt'];
 
-function initDialogObserver(
-  cb: DialogCallback,
+function initPopupObserver(
+  cb: PopupCallback,
   win: IWindow,
-  options: DialogRecordOptions,
+  options: PopupRecordOptions,
 ): listenerHandler {
   const kinds = options.level ?? ALL_KINDS;
   const recordReturnValue = options.recordReturnValue !== false;
@@ -49,11 +49,11 @@ function initDialogObserver(
         (original) => {
           const originalFn = original as (...args: unknown[]) => unknown;
           return function (this: unknown, ...args: unknown[]) {
-            // Call through to the real (blocking) dialog first so we can
+            // Call through to the real (blocking) popup first so we can
             // capture the user's response for confirm / prompt.
             const returnValue = originalFn.apply(this, args);
 
-            let data: DialogData = {
+            let data: PopupData = {
               kind,
               message: String(args[0] ?? ''),
             };
@@ -63,8 +63,8 @@ function initDialogObserver(
             if (recordReturnValue && kind !== 'alert') {
               data.returnValue = returnValue as boolean | string | null;
             }
-            if (options.maskDialog) {
-              data = options.maskDialog(data);
+            if (options.maskPopup) {
+              data = options.maskPopup(data);
             }
             cb(data);
 
@@ -80,10 +80,10 @@ function initDialogObserver(
   };
 }
 
-export const getRecordDialogPlugin: (
-  options?: DialogRecordOptions,
-) => RecordPlugin<DialogRecordOptions> = (options) => ({
+export const getRecordPopupPlugin: (
+  options?: PopupRecordOptions,
+) => RecordPlugin<PopupRecordOptions> = (options) => ({
   name: PLUGIN_NAME,
-  observer: initDialogObserver as RecordPlugin['observer'],
+  observer: initPopupObserver as RecordPlugin['observer'],
   options: options ?? {},
 });

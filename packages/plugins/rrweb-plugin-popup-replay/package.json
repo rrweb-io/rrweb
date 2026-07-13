@@ -1,22 +1,22 @@
 {
-  "name": "@rrweb/rrweb-plugin-dialog-replay",
+  "name": "@rrweb/rrweb-plugin-popup-replay",
   "version": "2.1.0",
   "description": "",
   "type": "module",
-  "main": "./dist/rrweb-plugin-dialog-replay.umd.cjs",
-  "module": "./dist/rrweb-plugin-dialog-replay.js",
-  "unpkg": "./dist/rrweb-plugin-dialog-replay.umd.cjs",
-  "jsdelivr": "./umd/rrweb-plugin-dialog-replay.js",
+  "main": "./dist/rrweb-plugin-popup-replay.umd.cjs",
+  "module": "./dist/rrweb-plugin-popup-replay.js",
+  "unpkg": "./dist/rrweb-plugin-popup-replay.umd.cjs",
+  "jsdelivr": "./umd/rrweb-plugin-popup-replay.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": {
         "types": "./dist/index.d.ts",
-        "default": "./dist/rrweb-plugin-dialog-replay.js"
+        "default": "./dist/rrweb-plugin-popup-replay.js"
       },
       "require": {
         "types": "./dist/index.d.cts",
-        "default": "./dist/rrweb-plugin-dialog-replay.umd.cjs"
+        "default": "./dist/rrweb-plugin-popup-replay.umd.cjs"
       }
     }
   },
@@ -47,7 +47,7 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
-    "@rrweb/rrweb-plugin-dialog-record": "^2.1.0",
+    "@rrweb/rrweb-plugin-popup-record": "^2.1.0",
     "@rrweb/types": "^2.1.0",
     "rrweb": "^2.1.0",
     "typescript": "^5.4.5",

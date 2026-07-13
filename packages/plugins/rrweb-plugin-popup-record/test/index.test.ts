@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { getRecordDialogPlugin, PLUGIN_NAME } from '../src';
-import type { DialogData } from '../src';
+import { getRecordPopupPlugin, PLUGIN_NAME } from '../src';
+import type { PopupData } from '../src';
 
 type MockWindow = {
   alert: (message?: unknown) => void;
@@ -19,22 +19,22 @@ function createMockWindow(overrides: Partial<MockWindow> = {}): MockWindow {
 
 function run(
   win: MockWindow,
-  options: Parameters<typeof getRecordDialogPlugin>[0] = undefined,
+  options: Parameters<typeof getRecordPopupPlugin>[0] = undefined,
 ) {
-  const events: DialogData[] = [];
-  const plugin = getRecordDialogPlugin(options);
+  const events: PopupData[] = [];
+  const plugin = getRecordPopupPlugin(options);
   const cleanup = plugin.observer!(
-    (data: DialogData) => events.push(data),
+    (data: PopupData) => events.push(data),
     win as never,
     plugin.options,
   );
   return { events, cleanup };
 }
 
-describe('rrweb-plugin-dialog-record', () => {
+describe('rrweb-plugin-popup-record', () => {
   it('exposes the expected plugin name', () => {
-    expect(PLUGIN_NAME).toBe('rrweb/dialog@1');
-    expect(getRecordDialogPlugin().name).toBe('rrweb/dialog@1');
+    expect(PLUGIN_NAME).toBe('rrweb/popup@1');
+    expect(getRecordPopupPlugin().name).toBe('rrweb/popup@1');
   });
 
   it('records an alert with its message and no returnValue', () => {
@@ -104,10 +104,10 @@ describe('rrweb-plugin-dialog-record', () => {
     ]);
   });
 
-  it('applies maskDialog before emitting', () => {
+  it('applies maskPopup before emitting', () => {
     const win = createMockWindow({ prompt: () => 'secret' });
     const { events, cleanup } = run(win, {
-      maskDialog: (data) => ({ ...data, message: '***', returnValue: '***' }),
+      maskPopup: (data) => ({ ...data, message: '***', returnValue: '***' }),
     });
 
     win.prompt('ssn?', '000');
@@ -137,7 +137,7 @@ describe('rrweb-plugin-dialog-record', () => {
     ]);
   });
 
-  it('restores the original dialog functions on teardown', () => {
+  it('restores the original popup functions on teardown', () => {
     const originalAlert = vi.fn();
     const win = createMockWindow({ alert: originalAlert });
     const { cleanup } = run(win);
