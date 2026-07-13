@@ -16,7 +16,7 @@ export type PopupRecordOptions = {
   /**
    * Which native popups to hook. Defaults to all three.
    */
-  kinds?: PopupKind[];
+  popupKinds?: PopupKind[];
   /**
    * Whether to record the user's response for `confirm` / `prompt`.
    * `alert` never has a return value. Defaults to `true`.
@@ -38,7 +38,7 @@ function initPopupObserver(
   options: PopupRecordOptions,
 ): listenerHandler {
   const popupOptions = options || {};
-  const kinds = popupOptions.kinds ?? ALL_KINDS;
+  const kinds = popupOptions.popupKinds ?? ALL_KINDS;
   const recordReturnValue = popupOptions.recordReturnValue !== false;
   const handlers: listenerHandler[] = [];
 

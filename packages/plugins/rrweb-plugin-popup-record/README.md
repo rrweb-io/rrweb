@@ -50,7 +50,7 @@ once they dismiss it.
 ```ts
 getRecordPopupPlugin({
   // Which popups to hook. Defaults to all three.
-  kinds: ['alert', 'confirm', 'prompt'],
+  popupKinds: ['alert', 'confirm', 'prompt'],
 
   // Whether to record the user's response for confirm / prompt. Defaults to true.
   recordReturnValue: true,
@@ -62,6 +62,6 @@ getRecordPopupPlugin({
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `kinds` | `('alert' \| 'confirm' \| 'prompt')[]` | all three | Which native popups to hook. |
+| `popupKinds` | `('alert' \| 'confirm' \| 'prompt')[]` | all three | Which native popups to hook. |
 | `recordReturnValue` | `boolean` | `true` | Record the `confirm`/`prompt` response. `alert` never has a return value. |
 | `maskPopup` | `(data: PopupData) => PopupData` | — | Transform the payload before it is emitted, e.g. to redact PII. |

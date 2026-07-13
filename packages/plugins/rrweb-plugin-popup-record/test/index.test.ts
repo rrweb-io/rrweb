@@ -123,9 +123,9 @@ describe('rrweb-plugin-popup-record', () => {
     ]);
   });
 
-  it('only patches the kinds listed in the kinds option', () => {
+  it('only patches the kinds listed in the popupKinds option', () => {
     const win = createMockWindow({ confirm: () => true });
-    const { events, cleanup } = run(win, { kinds: ['confirm'] });
+    const { events, cleanup } = run(win, { popupKinds: ['confirm'] });
 
     win.alert('ignored');
     win.confirm('kept');
