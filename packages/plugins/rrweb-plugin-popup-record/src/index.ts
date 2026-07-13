@@ -37,8 +37,9 @@ function initPopupObserver(
   win: IWindow,
   options: PopupRecordOptions,
 ): listenerHandler {
-  const kinds = options.level ?? ALL_KINDS;
-  const recordReturnValue = options.recordReturnValue !== false;
+  const popupOptions = options || {};
+  const kinds = popupOptions.level ?? ALL_KINDS;
+  const recordReturnValue = popupOptions.recordReturnValue !== false;
   const handlers: listenerHandler[] = [];
 
   for (const kind of kinds) {
@@ -63,8 +64,8 @@ function initPopupObserver(
             if (recordReturnValue && kind !== 'alert') {
               data.returnValue = returnValue as boolean | string | null;
             }
-            if (options.maskPopup) {
-              data = options.maskPopup(data);
+            if (popupOptions.maskPopup) {
+              data = popupOptions.maskPopup(data);
             }
             cb(data);
 
@@ -82,8 +83,8 @@ function initPopupObserver(
 
 export const getRecordPopupPlugin: (
   options?: PopupRecordOptions,
-) => RecordPlugin<PopupRecordOptions> = (options) => ({
+) => RecordPlugin = (options) => ({
   name: PLUGIN_NAME,
   observer: initPopupObserver as RecordPlugin['observer'],
-  options: options ?? {},
+  options: options,
 });
