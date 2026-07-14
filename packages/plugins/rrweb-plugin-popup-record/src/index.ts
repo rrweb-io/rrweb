@@ -33,10 +33,9 @@ const ALL_KINDS: PopupKind[] = ['alert', 'confirm', 'prompt'];
 function initPopupObserver(
   cb: PopupCallback,
   win: IWindow,
-  options: PopupRecordOptions,
+  options?: PopupRecordOptions,
 ): listenerHandler {
-  const popupOptions = options || {};
-  const kinds = popupOptions.popupKinds ?? ALL_KINDS;
+  const kinds = options?.popupKinds ?? ALL_KINDS;
   const handlers: listenerHandler[] = [];
 
   for (const kind of kinds) {
@@ -61,8 +60,8 @@ function initPopupObserver(
             if (kind !== 'alert') {
               data.returnValue = returnValue as boolean | string | null;
             }
-            if (popupOptions.maskPopupData) {
-              data = popupOptions.maskPopupData(data);
+            if (options?.maskPopupData) {
+              data = options.maskPopupData(data);
             }
             cb(data);
 
