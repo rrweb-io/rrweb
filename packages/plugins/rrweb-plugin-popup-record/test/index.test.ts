@@ -90,24 +90,10 @@ describe('rrweb-plugin-popup-record', () => {
     ]);
   });
 
-  it('omits returnValue when recordReturnValue is false', () => {
-    const win = createMockWindow({ confirm: () => true, prompt: () => 'x' });
-    const { events, cleanup } = run(win, { recordReturnValue: false });
-
-    win.confirm('ok?');
-    win.prompt('name?');
-    cleanup();
-
-    expect(events).toEqual([
-      { kind: 'confirm', message: 'ok?' },
-      { kind: 'prompt', message: 'name?' },
-    ]);
-  });
-
-  it('applies maskPopup before emitting', () => {
+  it('applies maskPopupData before emitting', () => {
     const win = createMockWindow({ prompt: () => 'secret' });
     const { events, cleanup } = run(win, {
-      maskPopup: (data) => ({ ...data, message: '***', returnValue: '***' }),
+      maskPopupData: (data) => ({ ...data, message: '***', returnValue: '***' }),
     });
 
     win.prompt('ssn?', '000');
@@ -121,6 +107,18 @@ describe('rrweb-plugin-popup-record', () => {
         returnValue: '***',
       },
     ]);
+  });
+
+  it('lets maskPopupData drop the return value', () => {
+    const win = createMockWindow({ prompt: () => 'secret' });
+    const { events, cleanup } = run(win, {
+      maskPopupData: ({ returnValue, ...rest }) => rest,
+    });
+
+    win.prompt('name?');
+    cleanup();
+
+    expect(events).toEqual([{ kind: 'prompt', message: 'name?' }]);
   });
 
   it('only patches the kinds listed in the popupKinds option', () => {

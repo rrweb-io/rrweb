@@ -18,14 +18,12 @@ export type PopupRecordOptions = {
    */
   popupKinds?: PopupKind[];
   /**
-   * Whether to record the user's response for `confirm` / `prompt`.
-   * `alert` never has a return value. Defaults to `true`.
-   */
-  recordReturnValue?: boolean;
-  /**
    * Redaction hook applied to the payload immediately before it is emitted.
+   * Return a modified copy to redact sensitive content — e.g. mask the
+   * `message`, or drop `returnValue` to avoid recording what the user typed
+   * into a `prompt` or answered in a `confirm`.
    */
-  maskPopup?: (data: PopupData) => PopupData;
+  maskPopupData?: (data: PopupData) => PopupData;
 };
 
 type PopupCallback = (data: PopupData) => void;
@@ -39,7 +37,6 @@ function initPopupObserver(
 ): listenerHandler {
   const popupOptions = options || {};
   const kinds = popupOptions.popupKinds ?? ALL_KINDS;
-  const recordReturnValue = popupOptions.recordReturnValue !== false;
   const handlers: listenerHandler[] = [];
 
   for (const kind of kinds) {
@@ -61,11 +58,11 @@ function initPopupObserver(
             if (kind === 'prompt' && args[1] != null) {
               data.defaultValue = String(args[1]);
             }
-            if (recordReturnValue && kind !== 'alert') {
+            if (kind !== 'alert') {
               data.returnValue = returnValue as boolean | string | null;
             }
-            if (popupOptions.maskPopup) {
-              data = popupOptions.maskPopup(data);
+            if (popupOptions.maskPopupData) {
+              data = popupOptions.maskPopupData(data);
             }
             cb(data);
 

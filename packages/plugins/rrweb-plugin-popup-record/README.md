@@ -52,16 +52,23 @@ getRecordPopupPlugin({
   // Which popups to hook. Defaults to all three.
   popupKinds: ['alert', 'confirm', 'prompt'],
 
-  // Whether to record the user's response for confirm / prompt. Defaults to true.
-  recordReturnValue: true,
-
   // Redact sensitive content just before it is recorded.
-  maskPopup: (data) => ({ ...data, message: '***', returnValue: '***' }),
+  maskPopupData: (data) => ({ ...data, message: '***', returnValue: '***' }),
 });
 ```
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `popupKinds` | `('alert' \| 'confirm' \| 'prompt')[]` | all three | Which native popups to hook. |
-| `recordReturnValue` | `boolean` | `true` | Record the `confirm`/`prompt` response. `alert` never has a return value. |
-| `maskPopup` | `(data: PopupData) => PopupData` | — | Transform the payload before it is emitted, e.g. to redact PII. |
+| `maskPopupData` | `(data: PopupData) => PopupData` | — | Transform the payload before it is emitted, e.g. to redact PII. |
+
+Use `maskPopupData` to redact anything sensitive, including the user's response.
+Return a modified copy to mask the `message`, or drop `returnValue` entirely to
+avoid recording what the user typed into a `prompt` or answered in a `confirm`:
+
+```ts
+getRecordPopupPlugin({
+  // Record that a popup happened, but never store the user's response.
+  maskPopupData: ({ returnValue, ...rest }) => rest,
+});
+```
