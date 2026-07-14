@@ -46,10 +46,10 @@ function initPopupObserver(
         kind,
         (original) => {
           const originalFn = original as (...args: unknown[]) => unknown;
-          return function (this: unknown, ...args: unknown[]) {
+          return (...args: unknown[]) => {
             // Call through to the real (blocking) popup first so we can
             // capture the user's response for confirm / prompt.
-            const returnValue = originalFn.apply(this, args);
+            const returnValue = originalFn.apply(win, args);
 
             let data: PopupData = {
               kind,
