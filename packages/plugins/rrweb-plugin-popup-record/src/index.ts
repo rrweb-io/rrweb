@@ -42,7 +42,7 @@ function initPopupObserver(
   for (const kind of kinds) {
     handlers.push(
       patch(
-        win as unknown as Record<string, unknown>,
+        win,
         kind,
         (original) => {
           const originalFn = original as (...args: unknown[]) => unknown;
