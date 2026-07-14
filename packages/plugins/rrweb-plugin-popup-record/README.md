@@ -1,74 +1,212 @@
 # @rrweb/rrweb-plugin-popup-record
 
-Records native browser popups — `window.alert`, `window.confirm`, and `window.prompt` —
-that are otherwise invisible to rrweb because they are rendered as browser chrome outside the
-DOM. The plugin captures the popup message, `prompt`'s default value, and the user's
-response (the boolean from `confirm`, the string from `prompt`).
-
-Pair it with [`@rrweb/rrweb-plugin-popup-replay`](../rrweb-plugin-popup-replay) to surface
-the captured popups during replay.
-
+Please refer to the [popup recipe](../../../docs/recipes/popup.md) on how to use this plugin.
 See the [guide](../../../guide.md) for more info on rrweb.
 
-## Installation
+## Sponsors
 
-```sh
-npm install @rrweb/rrweb-plugin-popup-record
-```
+[Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.
 
-## Usage
+### Gold Sponsors 🥇
 
-```ts
-import { record } from 'rrweb';
-import { getRecordPopupPlugin } from '@rrweb/rrweb-plugin-popup-record';
+<div dir="auto">
 
-record({
-  emit(event) {
-    // store the event
-  },
-  plugins: [getRecordPopupPlugin()],
-});
-```
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/0/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/1/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/2/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/3/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/4/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/5/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/gold-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/gold-sponsor/6/avatar.svg?requireActive=false&avatarHeight=225" alt="sponsor"></a>
 
-Each captured popup is emitted as an rrweb Plugin event with this payload shape:
+</div>
 
-```ts
-type PopupData = {
-  kind: 'alert' | 'confirm' | 'prompt';
-  message: string;
-  defaultValue?: string; // prompt's second argument, when provided
-  returnValue?: boolean | string | null; // confirm → boolean, prompt → string | null; omitted for alert
-};
-```
+### Silver Sponsors 🥈
 
-Note: because native popups are synchronous and blocking, the plugin calls through to the
-real popup first (so the page behaves exactly as before) and records the user's response
-once they dismiss it.
+<div dir="auto">
 
-## Options
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/0/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/1/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/2/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/3/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/4/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/5/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/silver-sponsor/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/silver-sponsor/6/avatar.svg?requireActive=false&avatarHeight=158" alt="sponsor"></a>
 
-```ts
-getRecordPopupPlugin({
-  // Which popups to hook. Defaults to all three.
-  popupKinds: ['alert', 'confirm', 'prompt'],
+</div>
 
-  // Redact sensitive content just before it is recorded.
-  maskPopupData: (data) => ({ ...data, message: '***', returnValue: '***' }),
-});
-```
+### Bronze Sponsors 🥉
 
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
-| `popupKinds` | `('alert' \| 'confirm' \| 'prompt')[]` | all three | Which native popups to hook. |
-| `maskPopupData` | `(data: PopupData) => PopupData` | — | Transform the payload before it is emitted, e.g. to redact PII. |
+<div dir="auto">
 
-Use `maskPopupData` to redact anything sensitive, including the user's response.
-Return a modified copy to mask the `message`, or drop `returnValue` entirely to
-avoid recording what the user typed into a `prompt` or answered in a `confirm`:
+<a href="https://opencollective.com/rrweb/tiers/sponsors/0/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/0/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/1/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/1/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/2/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/2/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/3/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/3/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/4/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/4/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/5/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/5/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/6/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/6/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/7/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/7/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
+<a href="https://opencollective.com/rrweb/tiers/sponsors/8/website?requireActive=false" target="_blank"><img src="https://opencollective.com/rrweb/tiers/sponsors/8/avatar.svg?requireActive=false&avatarHeight=70" alt="sponsor"></a>
 
-```ts
-getRecordPopupPlugin({
-  // Record that a popup happened, but never store the user's response.
-  maskPopupData: ({ returnValue, ...rest }) => rest,
-});
-```
+</div>
+
+### Backers
+
+<a href="https://opencollective.com/rrweb#sponsor" rel="nofollow"><img src="https://opencollective.com/rrweb/tiers/backers.svg?avatarHeight=36"></a>
+
+## Core Team Members
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/Yuyz0112">
+        <img
+          src="https://avatars.githubusercontent.com/u/13651389?s=100"
+          width="100px;"
+          alt=""
+        />
+        <br /><sub><b>Yuyz0112</b></sub>
+        <br /><br />
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/YunFeng0817">
+        <img
+          src="https://avatars.githubusercontent.com/u/27533910?s=100"
+          width="100px;"
+          alt=""
+        />
+        <br /><sub><b>Yun Feng</b></sub>
+        <br /><br />
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/eoghanmurray">
+        <img
+          src="https://avatars.githubusercontent.com/u/156780?s=100"
+          width="100px;"
+          alt=""
+        />
+        <br /><sub><b>eoghanmurray</b></sub>
+        <br /><br />
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Juice10">
+        <img
+          src="https://avatars.githubusercontent.com/u/4106?s=100"
+          width="100px;"
+          alt=""
+        />
+        <br /><sub><b>Juice10</b></sub>
+        <br /><sub>open for rrweb consulting</sub>
+      </a>
+    </td>
+  </tr>
+</table>
+
+## Who's using rrweb?
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="http://www.smartx.com/" target="_blank">
+        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/master/static/logos/smartx.png" alt="SmartX">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://posthog.com?utm_source=rrweb&utm_medium=sponsorship&utm_campaign=open-source-sponsorship" target="_blank">
+        <img width="195px" src="https://rrweb.com/posthog.png" alt="PostHog">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://statcounter.com/session-replay/" target="_blank">
+        <img width="195px" src="https://statcounter.com/images/logo-statcounter-arc-blue.svg">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://recordonce.com/" target="_blank">
+        <img width="195px" alt="Smart screen recording for SaaS" src="https://uploads-ssl.webflow.com/5f3d133183156245630d4446/5f3d1940abe8db8612c23521_Record-Once-logo-554x80px.svg">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://sentry.io" target="_blank">
+        <img width="195px" src="https://rrweb.com/sentry.png" alt="Sentry">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://www.pendo.io" target="_blank">
+        <img width="195px" src="https://rrweb.com/pendo.png" alt="Pendo">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://mixpanel.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/mixpanel.png" alt="Mixpanel">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://www.datadoghq.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/datadog.png" alt="Datadog">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://amplitude.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/amplitude.png" alt="Amplitude">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://newrelic.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/new%20relic.png" alt="New Relic">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://cux.io" target="_blank">
+        <img style="padding: 8px" alt="The first ever UX automation tool" width="195px" src="https://cux.io/cux-logo.svg">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://remsupp.com" target="_blank">
+        <img style="padding: 8px" alt="Remote Access & Co-Browsing" width="195px" src="https://remsupp.com/images/logo.png">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://highlight.io" target="_blank">
+        <img style="padding: 8px" alt="The open source, fullstack Monitoring Platform." width="195px" src="https://github.com/highlight/highlight/raw/main/highlight.io/public/images/logo.png">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://analyzee.io" target="_blank">
+        <img style="padding: 8px" alt="Comprehensive data analytics platform that empowers businesses to gain valuable insights and make data-driven decisions." width="195px" src="https://analyzee.io/img/analyzee-main-logo.webp">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://requestly.io" target="_blank">
+        <img style="padding: 8px" alt="Intercept, Modify, Record & Replay HTTP Requests." width="195px" src="https://github.com/requestly/requestly/assets/16779465/652552db-c867-44cb-9bb5-94a2026e04ca">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://gleap.io" target="_blank">
+        <img style="padding: 8px" alt="In-app bug reporting & customer feedback platform." width="195px" src="https://assets-global.website-files.com/6506f3f29c68b1724807619d/6506f56010237164c6306591_GleapLogo.svg">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://uxwizz.com" target="_blank">
+        <img style="padding: 8px" alt="Self-hosted website analytics with heatmaps and session recordings." width="195px" src="https://github.com/UXWizz/public-files/raw/main/assets/logo.png">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://www.howdygo.com" target="_blank">
+        <img style="padding: 8px" alt="Interactive product demos for small marketing teams" width="195px" src="https://assets-global.website-files.com/650afb446f1dd5bd410f00cc/650b2cec6188ff54dd9b01e1_Logo.svg">
+      </a>
+    </td>
+  </tr>
+</table>
