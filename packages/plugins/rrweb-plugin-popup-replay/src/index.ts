@@ -9,10 +9,10 @@ type ReplayPlugin = {
   handler?: (event: eventWithTime, isSync: boolean, context: unknown) => void;
 };
 
-export type OnPopup = (data: PopupData) => void;
+export type OnPopupData = (data: PopupData) => void;
 
 export type PopupReplayOptions = {
-  onPopup: OnPopup;
+  onPopup: OnPopupData;
 };
 
 export const getReplayPopupPlugin: (
