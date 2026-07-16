@@ -1,5 +1,15 @@
 # rrweb-player
 
+## 2.1.1
+
+### Patch Changes
+
+- [#1901](https://github.com/rrweb-io/rrweb/pull/1901) [`a11f8ef`](https://github.com/rrweb-io/rrweb/commit/a11f8ef7cedbfe0f39e3c8f806bad299aa50f50d) Thanks [@kevinvandijk](https://github.com/kevinvandijk)! - Fix the rrweb-player production build so Svelte lifecycle APIs resolve to the browser runtime instead of to stubs
+
+- Updated dependencies []:
+  - @rrweb/replay@2.1.1
+  - @rrweb/packer@2.1.1
+
 ## 2.1.0
 
 ### Patch Changes
