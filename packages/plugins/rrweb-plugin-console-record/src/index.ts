@@ -188,7 +188,12 @@ function initLogObserver(
       level,
       (original: (...args: Array<unknown>) => void) => {
         return (...args: Array<unknown>) => {
-          original.apply(this, args);
+          // `this` here is not the logger (this arrow fn's lexical `this` is
+          // whatever `replace` was called with, not the console instance).
+          // Native console methods can throw "Illegal invocation" when
+          // called with the wrong receiver (observed in extension content
+          // scripts), so bind explicitly to `_logger`.
+          original.apply(_logger, args);
 
           if (level === 'assert' && !!args[0]) {
             // assert does not log if the first argument evaluates to true
@@ -230,7 +235,8 @@ function initLogObserver(
               });
             }
           } catch (error) {
-            original('rrweb logger error:', error, ...args);
+            // same `this`-binding requirement as above
+            original.apply(_logger, ['rrweb logger error:', error, ...args]);
           } finally {
             inStack = false;
           }
