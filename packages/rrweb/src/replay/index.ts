@@ -1453,32 +1453,29 @@ export class Replayer {
       }
       // target may be removed with its parents before
       mirror.removeNodeFromMap(target as Node & RRNode);
-      if (parent)
-        try {
-          parent.removeChild(target as Node & RRNode);
-          /**
-           * https://github.com/rrweb-io/rrweb/pull/887
-           * Remove any virtual style rules for stylesheets if a child text node is removed.
-           */
-          if (
-            this.usingVirtualDom &&
-            target.nodeName === '#text' &&
-            parent.nodeName === 'STYLE' &&
-            (parent as RRStyleElement).rules?.length > 0
-          )
-            (parent as RRStyleElement).rules = [];
-        } catch (error) {
-          if (error instanceof DOMException) {
-            this.warn(
-              'parent could not remove child in mutation',
-              parent,
-              target,
-              d,
-            );
-          } else {
-            throw error;
-          }
-        }
+      if (!parent) {
+        return;
+      } else if (parent.nodeType !== 1 && parent.nodeType !== 9 && parent.nodeType !== 11) {
+        this.warn(
+          "parent is a leaf node and cannot remove child in mutation",
+          parent,
+          target,
+          d,
+        );
+        return;
+      }
+      parent.removeChild(target as Node & RRNode);
+      /**
+       * https://github.com/rrweb-io/rrweb/pull/887
+       * Remove any virtual style rules for stylesheets if a child text node is removed.
+       */
+      if (
+        this.usingVirtualDom &&
+          target.nodeName === '#text' &&
+          parent.nodeName === 'STYLE' &&
+          (parent as RRStyleElement).rules?.length > 0
+      )
+        (parent as RRStyleElement).rules = [];
     });
 
     const legacy_missingNodeMap: missingNodeMap = {
