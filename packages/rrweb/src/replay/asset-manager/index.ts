@@ -220,13 +220,10 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       values.forEach((value) => {
         promises.push(
           this.whenReady(value).then((status) => {
-            const isLoaded = status.status === 'loaded';
-            if (!isLoaded) {
-              if (!this.liveMode && !isCssTextElement) {
-                // failed to load asset, revert to recorded value
-                node.setAttribute(attribute, serializedValue);
-              }
-              return; // failed to load asset
+            if (status.status !== 'loaded') { // only 'failed' should be possible
+              // revert to recorded value
+              node.setAttribute(attribute, serializedValue);
+              return;
             }
 
             if (!isCssTextElement) {
@@ -291,10 +288,9 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       }
       promises.push(
         this.whenReady(serializedValue).then((status) => {
-          const isLoaded = status.status === 'loaded';
-          if (!isLoaded) {
-            if (!this.liveMode && !isCssTextElement) {
-              // failed to load asset, revert to recorded value
+          if (status.status !== 'loaded') { // only 'failed' should be possible
+            // failed to load asset, revert to recorded value
+            if (!isCssTextElement) {
               node.setAttribute(attribute, serializedValue);
             }
             return;
