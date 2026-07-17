@@ -217,12 +217,17 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     if (attribute === 'srcset') {
       const values = getSourcesFromSrcset(serializedValue);
       let expectedValue: string | null = node.getAttribute(attribute);
+      let failedCount = 0;
       values.forEach((value) => {
         promises.push(
           this.whenReady(value).then((status) => {
             if (status.status !== 'loaded') { // only 'failed' should be possible
-              // revert to recorded value
-              node.setAttribute(attribute, serializedValue);
+              failedCount += 1;
+              if (failedCount === values.length) {
+                // optimistic: ignore some failures in the hope that a
+                // succeeding srcset asset was the one that actually rendered
+                node.setAttribute(attribute, serializedValue);
+              }
               return;
             }
 
