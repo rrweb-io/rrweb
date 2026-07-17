@@ -37,6 +37,7 @@ import type {
   styleSheetRuleCallback,
   viewportResizeCallback,
   PackFn,
+  ReplayPlugin as BaseReplayPlugin,
   UnpackFn,
 } from '@rrweb/types';
 import type ProcessedNodeManager from './record/processed-node-manager';
@@ -161,18 +162,7 @@ export type MutationBufferParam = Pick<
   | 'processedNodeManager'
 >;
 
-export type ReplayPlugin = {
-  handler?: (
-    event: eventWithTime,
-    isSync: boolean,
-    context: { replayer: Replayer },
-  ) => void;
-  onBuild?: (
-    node: Node | RRNode,
-    context: { id: number; replayer: Replayer },
-  ) => void;
-  getMirror?: (mirrors: { nodeMirror: Mirror }) => void;
-};
+export type ReplayPlugin = BaseReplayPlugin<Replayer, RRNode, Mirror>;
 export type { Replayer } from './replay';
 export type playerConfig = {
   speed: number;

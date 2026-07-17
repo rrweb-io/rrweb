@@ -2,6 +2,8 @@
 
 Plugin that live streams contents of canvas elements via webrtc
 
+Use this plugin with one compatible replay host: `rrweb`, `@rrweb/replay`, or `@rrweb/all`.
+
 ## Example of live streaming via `yarn live-stream`
 
 https://user-images.githubusercontent.com/4106/186701616-fd71a107-5d53-423c-ba09-0395a3a0252f.mov

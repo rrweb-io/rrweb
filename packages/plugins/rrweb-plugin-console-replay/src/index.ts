@@ -3,9 +3,8 @@ import {
   type LogData,
   PLUGIN_NAME,
 } from '@rrweb/rrweb-plugin-console-record';
-import type { eventWithTime } from '@rrweb/types';
+import type { eventWithTime, ReplayPlugin } from '@rrweb/types';
 import { EventType, IncrementalSource } from '@rrweb/types';
-import type { ReplayPlugin, Replayer } from 'rrweb';
 
 /**
  * define an interface to replay log records
@@ -16,6 +15,12 @@ type ReplayLogger = Partial<Record<LogLevel, (data: LogData) => void>>;
 type LogReplayConfig = {
   level?: LogLevel[];
   replayLogger?: ReplayLogger;
+};
+
+type ReplayerWithWarnings = {
+  config: {
+    showWarning: boolean;
+  };
 };
 
 const ORIGINAL_ATTRIBUTE_NAME = '__rrweb_original__';
@@ -111,7 +116,7 @@ class LogReplayPlugin {
 
 export const getReplayConsolePlugin: (
   options?: LogReplayConfig,
-) => ReplayPlugin = (options) => {
+) => ReplayPlugin<ReplayerWithWarnings> = (options) => {
   const replayLogger =
     options?.replayLogger || new LogReplayPlugin(options).getConsoleLogger();
 
@@ -119,7 +124,7 @@ export const getReplayConsolePlugin: (
     handler(
       event: eventWithTime,
       _isSync: boolean,
-      context: { replayer: Replayer },
+      context: { replayer: ReplayerWithWarnings },
     ) {
       let logData: LogData | null = null;
       if (

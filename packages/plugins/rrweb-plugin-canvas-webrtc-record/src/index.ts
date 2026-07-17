@@ -13,7 +13,7 @@ export type CrossOriginIframeMessageEventContent = {
   data:
     | {
         type: 'signal';
-        signal: RTCSessionDescriptionInit;
+        signal: WebRTCSignal;
       }
     | {
         type: 'who-has-canvas';
@@ -26,8 +26,39 @@ export type CrossOriginIframeMessageEventContent = {
       };
 };
 
+type WebRTCSignal =
+  | string
+  | RTCSessionDescriptionInit
+  | {
+      type: 'candidate';
+      candidate: RTCIceCandidateInit;
+    }
+  | {
+      type: 'renegotiate';
+      renegotiate: true;
+    }
+  | {
+      type: 'transceiverRequest';
+      transceiverRequest: {
+        kind: string;
+        init?: RTCRtpTransceiverInit;
+      };
+    };
+
+type WebRTCPeer = {
+  signal(signal: WebRTCSignal): void;
+  send(data: string): void;
+  addStream(stream: MediaStream): void;
+  on(event: 'error', callback: (err: Error) => void): void;
+  on(event: 'close', callback: () => void): void;
+  on(event: 'signal', callback: (data: WebRTCSignal) => void): void;
+  on(event: 'connect', callback: () => void): void;
+  on(event: 'data', callback: (data: unknown) => void): void;
+  on(event: 'stream', callback: (stream: MediaStream) => void): void;
+};
+
 export class RRWebPluginCanvasWebRTCRecord {
-  private peer: SimplePeer.Instance | null = null;
+  private peer: WebRTCPeer | null = null;
   private mirror: IMirror<Node> | undefined;
   private crossOriginIframeMirror: ICrossOriginIframeMirror | undefined;
   private streamMap: Map<number, MediaStream> = new Map();
@@ -35,16 +66,16 @@ export class RRWebPluginCanvasWebRTCRecord {
   private outgoingStreams = new Set<MediaStream>();
   private streamNodeMap = new Map<string, number>();
   private canvasWindowMap = new Map<number, WindowProxy>();
-  private windowPeerMap = new WeakMap<WindowProxy, SimplePeer.Instance>();
-  private peerWindowMap = new WeakMap<SimplePeer.Instance, WindowProxy>();
-  private signalSendCallback: (msg: RTCSessionDescriptionInit) => void;
+  private windowPeerMap = new WeakMap<WindowProxy, WebRTCPeer>();
+  private peerWindowMap = new WeakMap<WebRTCPeer, WindowProxy>();
+  private signalSendCallback: (msg: WebRTCSignal) => void;
 
   constructor({
     signalSendCallback,
     peer,
   }: {
     signalSendCallback: RRWebPluginCanvasWebRTCRecord['signalSendCallback'];
-    peer?: SimplePeer.Instance;
+    peer?: WebRTCPeer;
   }) {
     this.signalSendCallback = signalSendCallback;
     window.addEventListener('message', (event: MessageEvent) =>
@@ -63,13 +94,13 @@ export class RRWebPluginCanvasWebRTCRecord {
     };
   }
 
-  public signalReceive(signal: RTCSessionDescriptionInit) {
+  public signalReceive(signal: WebRTCSignal) {
     if (!this.peer) this.setupPeer();
     this.peer?.signal(signal);
   }
 
   public signalReceiveFromCrossOriginIframe(
-    signal: RTCSessionDescriptionInit,
+    signal: WebRTCSignal,
     source: WindowProxy,
   ) {
     const peer = this.setupPeer(source);
@@ -88,8 +119,8 @@ export class RRWebPluginCanvasWebRTCRecord {
     this.outgoingStreams.add(stream);
   }
 
-  public setupPeer(source?: WindowProxy): SimplePeer.Instance {
-    let peer: SimplePeer.Instance;
+  public setupPeer(source?: WindowProxy): WebRTCPeer {
+    let peer: WebRTCPeer;
 
     if (!source) {
       if (this.peer) return this.peer;
@@ -128,7 +159,7 @@ export class RRWebPluginCanvasWebRTCRecord {
       console.log('closing');
     });
 
-    peer.on('signal', (data: RTCSessionDescriptionInit) => {
+    peer.on('signal', (data: WebRTCSignal) => {
       if (this.inRootFrame()) {
         if (peer === this.peer) {
           // connected to replayer
@@ -175,9 +206,9 @@ export class RRWebPluginCanvasWebRTCRecord {
 
     if (!this.inRootFrame()) return peer;
 
-    peer.on('data', (data: SimplePeer.SimplePeerData) => {
+    peer.on('data', (data: unknown) => {
       try {
-        const json = JSON.parse(data as string) as WebRTCDataChannel;
+        const json = JSON.parse(String(data)) as WebRTCDataChannel;
         this.streamNodeMap.set(json.streamId, json.nodeId);
       } catch (error) {
         console.error('Could not parse data', error);

@@ -1,18 +1,56 @@
-import type { RRNode } from 'rrdom';
-import type { Mirror } from 'rrweb-snapshot';
 import SimplePeer from 'simple-peer-light';
-import type { ReplayPlugin, Replayer } from 'rrweb';
+import type { ReplayPlugin } from '@rrweb/types';
 import type { WebRTCDataChannel } from './types';
+
+type ReplayCanvasNode = Node | { nodeName: string };
+
+type ReplayCanvasContext = {
+  id: number;
+  replayer: unknown;
+};
+
+type ReplayCanvasMirror = {
+  getNode(id: number): Node | null;
+};
+
+type WebRTCSignal =
+  | string
+  | RTCSessionDescriptionInit
+  | {
+      type: 'candidate';
+      candidate: RTCIceCandidateInit;
+    }
+  | {
+      type: 'renegotiate';
+      renegotiate: true;
+    }
+  | {
+      type: 'transceiverRequest';
+      transceiverRequest: {
+        kind: string;
+        init?: RTCRtpTransceiverInit;
+      };
+    };
+
+type WebRTCPeer = {
+  signal(signal: WebRTCSignal): void;
+  on(event: 'error', callback: (err: Error) => void): void;
+  on(event: 'close', callback: () => void): void;
+  on(event: 'signal', callback: (data: WebRTCSignal) => void): void;
+  on(event: 'connect', callback: () => void): void;
+  on(event: 'data', callback: (data: unknown) => void): void;
+  on(event: 'stream', callback: (stream: MediaStream) => void): void;
+};
 
 // TODO: restrict callback to real nodes only, or make sure callback gets called when real node gets added to dom as well
 
 export class RRWebPluginCanvasWebRTCReplay {
   private canvasFoundCallback: (
-    node: Node | RRNode,
-    context: { id: number; replayer: Replayer },
+    node: ReplayCanvasNode,
+    context: ReplayCanvasContext,
   ) => void;
-  private signalSendCallback: (signal: RTCSessionDescriptionInit) => void;
-  private mirror: Mirror | undefined;
+  private signalSendCallback: (signal: WebRTCSignal) => void;
+  private mirror: ReplayCanvasMirror | undefined;
 
   constructor({
     canvasFoundCallback,
@@ -25,12 +63,13 @@ export class RRWebPluginCanvasWebRTCReplay {
     this.signalSendCallback = signalSendCallback;
   }
 
-  public initPlugin(): ReplayPlugin {
+  public initPlugin(): ReplayPlugin<
+    ReplayCanvasContext['replayer'],
+    ReplayCanvasNode,
+    ReplayCanvasMirror
+  > {
     return {
-      onBuild: (
-        node: Node | RRNode,
-        context: { id: number; replayer: Replayer },
-      ) => {
+      onBuild: (node: ReplayCanvasNode, context: ReplayCanvasContext) => {
         if (node.nodeName === 'CANVAS') {
           this.canvasFoundCallback(node, context);
         }
@@ -104,11 +143,11 @@ export class RRWebPluginCanvasWebRTCReplay {
     }
   }
 
-  private peer: SimplePeer.Instance | null = null;
+  private peer: WebRTCPeer | null = null;
   private streamNodeMap = new Map<string, number>();
   private streams = new Set<MediaStream>();
   private runningStreams = new WeakSet<MediaStream>();
-  public signalReceive(msg: RTCSessionDescriptionInit) {
+  public signalReceive(msg: WebRTCSignal) {
     if (!this.peer) {
       this.peer = new SimplePeer({
         initiator: false,
@@ -125,7 +164,7 @@ export class RRWebPluginCanvasWebRTCReplay {
         console.log('closing');
       });
 
-      this.peer.on('signal', (data: RTCSessionDescriptionInit) => {
+      this.peer.on('signal', (data: WebRTCSignal) => {
         this.signalSendCallback(data);
       });
 
@@ -133,9 +172,9 @@ export class RRWebPluginCanvasWebRTCReplay {
         // connected!
       });
 
-      this.peer.on('data', (data: SimplePeer.SimplePeerData) => {
+      this.peer.on('data', (data: unknown) => {
         try {
-          const json = JSON.parse(data as string) as WebRTCDataChannel;
+          const json = JSON.parse(String(data)) as WebRTCDataChannel;
           this.streamNodeMap.set(json.streamId, json.nodeId);
         } catch (error) {
           console.error('Could not parse data', error);
