@@ -221,7 +221,8 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       values.forEach((value) => {
         promises.push(
           this.whenReady(value).then((status) => {
-            if (status.status !== 'loaded') { // only 'failed' should be possible
+            if (status.status !== 'loaded') {
+              // only 'failed' should be possible
               failedCount += 1;
               if (failedCount === values.length) {
                 // optimistic: ignore some failures in the hope that a
@@ -293,7 +294,8 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       }
       promises.push(
         this.whenReady(serializedValue).then((status) => {
-          if (status.status !== 'loaded') { // only 'failed' should be possible
+          if (status.status !== 'loaded') {
+            // only 'failed' should be possible
             // failed to load asset, try to revert to recorded value
             if (isCssTextElement) {
               if (
@@ -305,7 +307,9 @@ export default class AssetManager implements RebuildAssetManagerInterface {
                 const styleEl = node as HTMLStyleElement;
 
                 // see `escapeImportStatement` for first use of this JSON.stringify approach
-                const inlinedLink = `@import url(${JSON.stringify(serializedValue)});`
+                const inlinedLink = `@import url(${JSON.stringify(
+                  serializedValue,
+                )});`;
                 buildStyleNode(styleEl, styleEl, inlinedLink, {
                   hackCss: false,
                   cache: this.cache,
