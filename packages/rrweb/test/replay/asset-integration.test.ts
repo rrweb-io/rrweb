@@ -128,6 +128,37 @@ describe('replayer', function () {
       expect(image).toMatchImageSnapshot(); // should be blank white and not have image rendered yet
     });
 
+    it('should fall back to the original stylesheet url when its asset never arrives', async () => {
+      // when the asset-wait budget elapses with the stylesheet asset still
+      // missing (e.g. the recorder disconnected before uploading it), the
+      // captured <link> should revert to an @import of its original href
+      // rather than leave the page permanently unstyled
+      await page.evaluate(`
+      const { Replayer } = rrweb;
+      window.replayer = new Replayer([], {
+        liveMode: true,
+      });
+      replayer.startLive();
+      window.replayer.addEvent(events[0]);
+      window.replayer.addEvent(events[1]);
+      // deliberately never add events[3]/events[4], the stylesheet assets
+    `);
+
+      // wait past the snapshot's maxAssetDelay (50) + 100ms margin
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      const revertedToImport = await page.evaluate(`
+        Array.from(
+          document.querySelector('iframe').contentDocument.querySelectorAll('style'),
+        ).some(
+          (s) =>
+            s.textContent.includes('@import') &&
+            s.textContent.includes('example.com/style.css'),
+        )
+      `);
+      expect(revertedToImport).toBe(true);
+    });
+
     it('should support urls src modified via incremental mutation', async () => {
       await page.evaluate(`
       const { Replayer } = rrweb;

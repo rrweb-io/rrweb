@@ -278,7 +278,7 @@ export default class AssetManager {
         (el as ProcessingStyleElement).__rrProcessingStylesheet = true;
         // process inline style elements before external links
         // as they are more integral to the page and more likely
-        // to only appear on this page (can't be reconstructed if lost)
+        // to only appear on this page (can't be reconstructed from @import fallback)
         timeout = Math.floor(timeout / 2);
       }
       // try not to clog up main thread

@@ -255,6 +255,52 @@ describe('AssetManager', () => {
     expect(element.getAttribute('srcset')).toBe(`objectURL1 x2, objectURL2 x3`);
   });
 
+  it('keeps loaded srcset sources and leaves failed ones at their recorded url', async () => {
+    const loadedUrl = 'https://example.com/loaded.png';
+    const failedUrl = 'https://example.com/failed.png';
+    vi.spyOn(URL, 'createObjectURL').mockReturnValue('objectURL');
+    await assetManager.add({
+      type: EventType.Asset,
+      data: { url: loadedUrl, payload: examplePayload },
+    });
+    await assetManager.add({
+      type: EventType.Asset,
+      data: { url: failedUrl, failed: { message: 'network error' } },
+    });
+
+    const element = document.createElement('img');
+    await assetManager.manageAttribute(
+      element,
+      1,
+      'srcset',
+      `${loadedUrl} 1x, ${failedUrl} 2x`,
+    );
+
+    // only the loaded source is swapped; the failed one is left as recorded
+    expect(element.getAttribute('srcset')).toBe(
+      `objectURL 1x, ${failedUrl} 2x`,
+    );
+  });
+
+  it('reverts the whole srcset to the recorded value only when every source fails', async () => {
+    const url1 = 'https://example.com/a.png';
+    const url2 = 'https://example.com/b.png';
+    await assetManager.add({
+      type: EventType.Asset,
+      data: { url: url1, failed: { message: 'network error' } },
+    });
+    await assetManager.add({
+      type: EventType.Asset,
+      data: { url: url2, failed: { message: 'network error' } },
+    });
+
+    const element = document.createElement('img');
+    const value = `${url1} 1x, ${url2} 2x`;
+    await assetManager.manageAttribute(element, 1, 'srcset', value);
+
+    expect(element.getAttribute('srcset')).toBe(value);
+  });
+
   it('should support svg elements', async () => {
     const url = 'https://example.com/image.png';
     const event: assetEvent = {
@@ -449,6 +495,66 @@ describe('AssetManager', () => {
         status: 'loaded',
         url,
       });
+    });
+
+    it('injects an @import fallback into a link-derived <style> when the stylesheet asset failed', async () => {
+      const url = 'https://example.com/style.css';
+      await assetManager.add({
+        type: EventType.Asset,
+        data: { url, failed: { message: 'network error' } },
+      });
+
+      // a <link rel=stylesheet> is rebuilt as an (empty) <style> on replay
+      const style = document.createElement('style');
+      await assetManager.manageAttribute(style, 1, 'href', url);
+
+      expect(style.textContent).toBe(`@import url("${url}");`);
+    });
+
+    it('does not duplicate the @import fallback if the failed link is managed again', async () => {
+      const url = 'https://example.com/style.css';
+      await assetManager.add({
+        type: EventType.Asset,
+        data: { url, failed: { message: 'network error' } },
+      });
+
+      const style = document.createElement('style');
+      await assetManager.manageAttribute(style, 1, 'href', url);
+      await assetManager.manageAttribute(style, 1, 'href', url);
+
+      expect(style.textContent).toBe(`@import url("${url}");`);
+      expect(style.childNodes).toHaveLength(1);
+    });
+
+    it('escapes the url in the @import fallback to prevent breaking out of url("...")', async () => {
+      const url = 'https://example.com/a").png;}body{display:none}/*';
+      await assetManager.add({
+        type: EventType.Asset,
+        data: { url, failed: { message: 'network error' } },
+      });
+
+      const style = document.createElement('style');
+      await assetManager.manageAttribute(style, 1, 'href', url);
+
+      // the embedded " is backslash-escaped so it can't terminate url("...")
+      expect(style.textContent).toBe(
+        '@import url("https://example.com/a\\").png;}body{display:none}/*");',
+      );
+    });
+
+    it('does not inject an @import fallback for a non-link (adopted/inline) style', async () => {
+      // adopted/inline styles arrive via rr_css_text, which is erased to '' -
+      // only real external links (attribute === 'href') get the @import
+      const url = 'https://example.com/#rr_style_el:1';
+      await assetManager.add({
+        type: EventType.Asset,
+        data: { url, failed: { message: 'network error' } },
+      });
+
+      const style = document.createElement('style');
+      await assetManager.manageAttribute(style, 1, '', url);
+
+      expect(style.textContent).toBe('');
     });
   });
 });

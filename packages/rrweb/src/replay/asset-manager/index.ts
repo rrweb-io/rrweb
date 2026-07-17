@@ -289,8 +289,24 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       promises.push(
         this.whenReady(serializedValue).then((status) => {
           if (status.status !== 'loaded') { // only 'failed' should be possible
-            // failed to load asset, revert to recorded value
-            if (!isCssTextElement) {
+            // failed to load asset, try to revert to recorded value
+            if (isCssTextElement) {
+              if (
+                attribute === 'href' &&
+                /^https?:\/\//i.test(serializedValue)
+              ) {
+                // As we convert <link rel=stylesheet href="..."> to a <style> element
+                // reverting the href attribute directly wouldn't work
+                const styleEl = node as HTMLStyleElement;
+
+                // see `escapeImportStatement` for first use of this JSON.stringify approach
+                const inlinedLink = `@import url(${JSON.stringify(serializedValue)});`
+                buildStyleNode(styleEl, styleEl, inlinedLink, {
+                  hackCss: false,
+                  cache: this.cache,
+                });
+              }
+            } else {
               node.setAttribute(attribute, serializedValue);
             }
             return;
