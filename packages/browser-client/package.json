@@ -34,7 +34,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/rrweb-io/rrweb.git",
+    "directory": "packages/browser-client"
   },
   "license": "MIT",
   "type": "module",

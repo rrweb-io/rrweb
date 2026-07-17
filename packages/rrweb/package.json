@@ -27,7 +27,8 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
+    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git",
+    "directory": "packages/rrweb"
   },
   "keywords": [
     "devtools",
