@@ -1518,7 +1518,7 @@ export class Replayer {
         return queue.push(mutation);
       } else if (!canContainChildren(parent)) {
         this.warn(
-          'parent is a leaf node and cannot be used to append a child',
+          'parent is a leaf node and cannot be used to append new child in mutation',
           parent,
           mutation.node,
         );
