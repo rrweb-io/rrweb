@@ -79,6 +79,7 @@ import {
   type AppendedIframe,
   getBaseDimension,
   hasShadowRoot,
+  canContainChildren,
   isSerializedIframe,
   getNestedRule,
   getPositionsAndIndex,
@@ -1456,7 +1457,11 @@ export class Replayer {
       if (!parent)
         return;
       if (parent !== target.parentNode) {
-        this.warn("parent child mismatch in mutation", parent, target, d);
+        if (!canContainChildren(parent)) {
+          this.warn('invalid parent, cannot be used to remove node', parent, target, d);
+        } else {
+          this.warn('parent mismatch, cannot be used to remove node', parent, target, d);
+        }
         return;
       }
       parent.removeChild(target as Node & RRNode);
@@ -1509,7 +1514,7 @@ export class Replayer {
           return this.newDocumentQueue.push(mutation);
         }
         return queue.push(mutation);
-      } else if (parent.nodeType !== 1 && parent.nodeType !== 9 && parent.nodeType !== 11) {
+      } else if (!canContainChildren(parent)) {
         this.warn(
           "parent is a leaf node and cannot be used to append a child",
           parent,
