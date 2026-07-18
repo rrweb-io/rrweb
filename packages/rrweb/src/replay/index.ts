@@ -1457,9 +1457,19 @@ export class Replayer {
       if (!parent) return;
       if (parent !== target.parentNode) {
         if (!canContainChildren(parent)) {
-          this.warn('invalid parent, cannot be used to remove node', parent, target, d);
+          this.warn(
+            'invalid parent, cannot be used to remove node',
+            parent,
+            target,
+            d,
+          );
         } else {
-          this.warn('parent mismatch, cannot be used to remove node', parent, target, d);
+          this.warn(
+            'parent mismatch, cannot be used to remove node',
+            parent,
+            target,
+            d,
+          );
         }
         return;
       }
