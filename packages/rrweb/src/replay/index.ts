@@ -1453,15 +1453,10 @@ export class Replayer {
       }
       // target may be removed with its parents before
       mirror.removeNodeFromMap(target as Node & RRNode);
-      if (!parent) {
+      if (!parent)
         return;
-      } else if (parent.nodeType !== 1 && parent.nodeType !== 9 && parent.nodeType !== 11) {
-        this.warn(
-          "parent is a leaf node and cannot remove child in mutation",
-          parent,
-          target,
-          d,
-        );
+      if (parent !== target.parentNode) {
+        this.warn("parent child mismatch in mutation", parent, target, d);
         return;
       }
       parent.removeChild(target as Node & RRNode);
@@ -1514,6 +1509,12 @@ export class Replayer {
           return this.newDocumentQueue.push(mutation);
         }
         return queue.push(mutation);
+      } else if (parent.nodeType !== 1 && parent.nodeType !== 9 && parent.nodeType !== 11) {
+        this.warn(
+          "parent is a leaf node and cannot be used to append a child",
+          parent,
+          mutation.node,
+        );
       }
 
       if (mutation.node.isShadow) {
