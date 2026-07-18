@@ -1454,8 +1454,7 @@ export class Replayer {
       }
       // target may be removed with its parents before
       mirror.removeNodeFromMap(target as Node & RRNode);
-      if (!parent)
-        return;
+      if (!parent) return;
       if (parent !== target.parentNode) {
         if (!canContainChildren(parent)) {
           this.warn('invalid parent, cannot be used to remove node', parent, target, d);
@@ -1471,9 +1470,9 @@ export class Replayer {
        */
       if (
         this.usingVirtualDom &&
-          target.nodeName === '#text' &&
-          parent.nodeName === 'STYLE' &&
-          (parent as RRStyleElement).rules?.length > 0
+        target.nodeName === '#text' &&
+        parent.nodeName === 'STYLE' &&
+        (parent as RRStyleElement).rules?.length > 0
       )
         (parent as RRStyleElement).rules = [];
     });
@@ -1516,7 +1515,7 @@ export class Replayer {
         return queue.push(mutation);
       } else if (!canContainChildren(parent)) {
         this.warn(
-          "parent is a leaf node and cannot be used to append a child",
+          'parent is a leaf node and cannot be used to append a child',
           parent,
           mutation.node,
         );
