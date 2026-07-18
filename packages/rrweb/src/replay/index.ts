@@ -1456,21 +1456,14 @@ export class Replayer {
       mirror.removeNodeFromMap(target as Node & RRNode);
       if (!parent) return;
       if (parent !== target.parentNode) {
-        if (!canContainChildren(parent)) {
-          this.warn(
-            'invalid parent, cannot be used to remove node',
-            parent,
-            target,
-            d,
-          );
-        } else {
-          this.warn(
-            'parent mismatch, cannot be used to remove node',
-            parent,
-            target,
-            d,
-          );
-        }
+        this.warn(
+          canContainChildren(parent)
+            ? 'parent mismatch, cannot be used to remove node in mutation'
+            : 'invalid parent, cannot be used to remove node in mutation',
+          parent,
+          target,
+          d,
+        );
         return;
       }
       parent.removeChild(target as Node & RRNode);
