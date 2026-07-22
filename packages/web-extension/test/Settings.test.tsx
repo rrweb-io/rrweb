@@ -55,6 +55,16 @@ describe('SettingsView', () => {
     expect(browser.storage.sync.get).not.toHaveBeenCalled();
   });
 
+  it('warns that remote upload endpoints should use HTTPS', async () => {
+    renderSettings();
+
+    const warning = await screen.findByText(
+      /Use HTTPS for remote endpoints\. HTTP is only appropriate for trusted local development because uploads include your bearer token and recording data\./,
+    );
+
+    expect(warning.closest('[role="alert"]')).not.toBeNull();
+  });
+
   it('populates the form with the stored cloud settings', async () => {
     browser.storage.local.get.mockResolvedValue({
       'rrweb-cloud-settings': {

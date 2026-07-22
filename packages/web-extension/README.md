@@ -37,11 +37,14 @@ yarn dev:firefox
 
 Completed recordings stay in the extension's local session storage until you
 select them and choose **Upload**. Uploading does not start recording
-automatically, and this feature does not add a page-to-session-ID bridge.
+automatically, does not remove the local recording, and this feature does not
+add a page-to-session-ID bridge.
 
 Configure uploads from the extension's **Settings** page. The default API base
-URL is `https://api.rrweb.com`; you can use another HTTP or HTTPS base URL for
-a proxy or local development. The authentication bearer token is stored only in
+URL is `https://api.rrweb.com`; you can configure another base URL for a proxy
+or local development. Remote endpoints must use HTTPS because each upload sends
+the bearer token and recording data. Plain HTTP is only appropriate for trusted
+local development. The authentication bearer token is stored only in
 extension-local storage (`Browser.storage.local`) and is never synchronized.
 
 For each selected session, the extension sends a `POST` request to

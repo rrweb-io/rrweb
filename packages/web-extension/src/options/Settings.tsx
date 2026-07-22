@@ -173,6 +173,13 @@ export function SettingsView() {
               <FormErrorMessage>{saveError}</FormErrorMessage>
             </FormControl>
 
+            <Alert fontSize="sm" status="warning">
+              <AlertIcon />
+              Use HTTPS for remote endpoints. HTTP is only appropriate for
+              trusted local development because uploads include your bearer
+              token and recording data.
+            </Alert>
+
             <FormControl>
               <FormLabel htmlFor="authToken">Authentication token</FormLabel>
               <Input
