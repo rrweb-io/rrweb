@@ -67,6 +67,15 @@ const paginatedSessions: Session[] = Array.from({ length: 11 }, (_, index) => ({
   recorderVersion: '1.0.0',
 }));
 
+const duplicateNameSessions: Session[] = sessions.map((session) => ({
+  ...session,
+  name: 'Recording',
+}));
+
+function selectionLabel(name: string, id: string) {
+  return `Select ${name} (${id})`;
+}
+
 function renderSessionList() {
   return render(
     <ChakraProvider>
@@ -80,7 +89,7 @@ function renderSessionList() {
 async function selectFirstSession() {
   await screen.findByText('Checkout flow');
   const checkbox = screen.getByRole('checkbox', {
-    name: 'Select Checkout flow',
+    name: selectionLabel('Checkout flow', 'session-1'),
   }) as HTMLInputElement;
   await userEvent.click(checkbox);
   expect(checkbox.checked).toBe(true);
@@ -91,6 +100,7 @@ describe('SessionList cloud uploads', () => {
   beforeEach(() => {
     storage.getAllSessions.mockResolvedValue(sessions);
     storage.deleteSessions.mockReset();
+    storage.deleteSessions.mockResolvedValue(undefined);
     storage.downloadSessions.mockReset();
     storage.addSession.mockReset();
     storage.updateSession.mockReset();
@@ -129,7 +139,7 @@ describe('SessionList cloud uploads', () => {
     expect(
       (
         screen.getByRole('checkbox', {
-          name: 'Select Checkout flow',
+          name: selectionLabel('Checkout flow', 'session-1'),
         }) as HTMLInputElement
       ).checked,
     ).toBe(true);
@@ -148,10 +158,14 @@ describe('SessionList cloud uploads', () => {
     renderSessionList();
     await screen.findByText('Checkout flow');
     await userEvent.click(
-      screen.getByRole('checkbox', { name: 'Select Checkout flow' }),
+      screen.getByRole('checkbox', {
+        name: selectionLabel('Checkout flow', 'session-1'),
+      }),
     );
     await userEvent.click(
-      screen.getByRole('checkbox', { name: 'Select Sign in flow' }),
+      screen.getByRole('checkbox', {
+        name: selectionLabel('Sign in flow', 'session-2'),
+      }),
     );
     await screen.findByRole('button', { name: 'Upload' });
 
@@ -168,7 +182,7 @@ describe('SessionList cloud uploads', () => {
     expect(
       (
         screen.getByRole('checkbox', {
-          name: 'Select Sign in flow',
+          name: selectionLabel('Sign in flow', 'session-2'),
         }) as HTMLInputElement
       ).checked,
     ).toBe(true);
@@ -225,7 +239,7 @@ describe('SessionList cloud uploads', () => {
     expect(
       (
         screen.getByRole('checkbox', {
-          name: 'Select Checkout flow',
+          name: selectionLabel('Checkout flow', 'session-1'),
         }) as HTMLInputElement
       ).checked,
     ).toBe(true);
@@ -236,7 +250,9 @@ describe('SessionList cloud uploads', () => {
     renderSessionList();
     await screen.findByText('Session 1');
     await userEvent.click(
-      screen.getByRole('checkbox', { name: 'Select Session 1' }),
+      screen.getByRole('checkbox', {
+        name: selectionLabel('Session 1', 'session-1'),
+      }),
     );
 
     await userEvent.click(
@@ -254,7 +270,7 @@ describe('SessionList cloud uploads', () => {
     expect(
       (
         screen.getByRole('checkbox', {
-          name: 'Select Session 11',
+          name: selectionLabel('Session 11', 'session-11'),
         }) as HTMLInputElement
       ).checked,
     ).toBe(false);
@@ -269,14 +285,18 @@ describe('SessionList cloud uploads', () => {
     renderSessionList();
     await screen.findByText('Session 1');
     await userEvent.click(
-      screen.getByRole('checkbox', { name: 'Select Session 1' }),
+      screen.getByRole('checkbox', {
+        name: selectionLabel('Session 1', 'session-1'),
+      }),
     );
     await userEvent.click(
       screen.getByRole('button', { name: 'Goto Next Page' }),
     );
     await screen.findByText('Session 11');
     await userEvent.click(
-      screen.getByRole('checkbox', { name: 'Select Session 11' }),
+      screen.getByRole('checkbox', {
+        name: selectionLabel('Session 11', 'session-11'),
+      }),
     );
     await userEvent.click(
       screen.getByRole('button', { name: 'Goto Previous Page' }),
@@ -285,7 +305,7 @@ describe('SessionList cloud uploads', () => {
     expect(
       (
         screen.getByRole('checkbox', {
-          name: 'Select Session 1',
+          name: selectionLabel('Session 1', 'session-1'),
         }) as HTMLInputElement
       ).checked,
     ).toBe(true);
@@ -302,5 +322,79 @@ describe('SessionList cloud uploads', () => {
         expect.anything(),
       );
     });
+  });
+
+  it('makes duplicate session names uniquely selectable by stable session ID', async () => {
+    storage.getAllSessions.mockResolvedValue(duplicateNameSessions);
+    renderSessionList();
+
+    await screen.findAllByText('Recording');
+
+    expect(
+      screen.getByRole('checkbox', {
+        name: selectionLabel('Recording', 'session-1'),
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('checkbox', {
+        name: selectionLabel('Recording', 'session-2'),
+      }),
+    ).toBeTruthy();
+  });
+
+  it('deletes cross-page selections by stable session IDs', async () => {
+    storage.getAllSessions.mockResolvedValue(paginatedSessions);
+    renderSessionList();
+    await screen.findByText('Session 1');
+    await userEvent.click(
+      screen.getByRole('checkbox', {
+        name: selectionLabel('Session 1', 'session-1'),
+      }),
+    );
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Goto Next Page' }),
+    );
+    await screen.findByText('Session 11');
+    await userEvent.click(
+      screen.getByRole('checkbox', {
+        name: selectionLabel('Session 11', 'session-11'),
+      }),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => {
+      expect(storage.deleteSessions).toHaveBeenCalledWith([
+        'session-1',
+        'session-11',
+      ]);
+    });
+  });
+
+  it('downloads cross-page selections by stable session IDs', async () => {
+    storage.getAllSessions.mockResolvedValue(paginatedSessions);
+    renderSessionList();
+    await screen.findByText('Session 1');
+    await userEvent.click(
+      screen.getByRole('checkbox', {
+        name: selectionLabel('Session 1', 'session-1'),
+      }),
+    );
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Goto Next Page' }),
+    );
+    await screen.findByText('Session 11');
+    await userEvent.click(
+      screen.getByRole('checkbox', {
+        name: selectionLabel('Session 11', 'session-11'),
+      }),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Download' }));
+
+    expect(storage.downloadSessions).toHaveBeenCalledWith([
+      'session-1',
+      'session-11',
+    ]);
   });
 });

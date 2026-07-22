@@ -123,7 +123,7 @@ export function SessionList() {
         ),
         cell: ({ row }) => (
           <Checkbox
-            aria-label={`Select ${row.original.name}`}
+            aria-label={`Select ${row.original.name} (${row.original.id})`}
             isChecked={row.getIsSelected()}
             isIndeterminate={row.getIsSomeSelected()}
             onChange={row.getToggleSelectedHandler()}
