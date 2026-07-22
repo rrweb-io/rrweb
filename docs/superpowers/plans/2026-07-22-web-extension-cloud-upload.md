@@ -13,6 +13,7 @@
 ### Task 1: Establish the extension unit-test harness
 
 **Files:**
+
 - Modify: `packages/web-extension/package.json`
 - Create: `packages/web-extension/vitest.config.ts`
 - Create: `packages/web-extension/test/setup.ts`
@@ -105,6 +106,7 @@ git commit -m "test(web-extension): add unit test harness"
 ### Task 2: Define and persist secure cloud settings
 
 **Files:**
+
 - Modify: `packages/web-extension/src/types.ts`
 - Create: `packages/web-extension/src/utils/cloud-settings.ts`
 - Create: `packages/web-extension/test/cloud-settings.test.ts`
@@ -194,7 +196,9 @@ export function normalizeApiBaseUrl(value: string): string {
     throw new Error('API base URL must use HTTP or HTTPS.');
   }
   if (url.username || url.password || url.search || url.hash) {
-    throw new Error('API base URL cannot include credentials, a query, or a hash.');
+    throw new Error(
+      'API base URL cannot include credentials, a query, or a hash.',
+    );
   }
   return url.href.replace(/\/+$/, '');
 }
@@ -245,6 +249,7 @@ git commit -m "feat(web-extension): add local cloud settings"
 ### Task 3: Implement the upload transport with compression fallbacks
 
 **Files:**
+
 - Create: `packages/web-extension/src/utils/cloud-upload.ts`
 - Create: `packages/web-extension/test/cloud-upload.test.ts`
 
@@ -359,6 +364,7 @@ git commit -m "feat(web-extension): upload sessions to rrweb API"
 ### Task 4: Add and test the local settings screen
 
 **Files:**
+
 - Create: `packages/web-extension/src/options/Settings.tsx`
 - Modify: `packages/web-extension/src/options/App.tsx`
 - Create: `packages/web-extension/test/Settings.test.tsx`
@@ -423,6 +429,7 @@ git commit -m "feat(web-extension): configure cloud uploads locally"
 ### Task 5: Add and test session-list uploads
 
 **Files:**
+
 - Modify: `packages/web-extension/src/pages/SessionList.tsx`
 - Create: `packages/web-extension/test/SessionList.test.tsx`
 
@@ -482,6 +489,7 @@ git commit -m "feat(web-extension): add session upload action"
 ### Task 6: Document and verify the complete feature
 
 **Files:**
+
 - Modify: `packages/web-extension/README.md`
 
 - [ ] **Step 1: Document configuration and behavior**
