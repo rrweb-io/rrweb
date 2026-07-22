@@ -33,6 +33,26 @@ yarn dev:chrome
 yarn dev:firefox
 ```
 
+## Cloud uploads
+
+Completed recordings stay in the extension's local session storage until you
+select them and choose **Upload**. Uploading does not start recording
+automatically, and this feature does not add a page-to-session-ID bridge.
+
+Configure uploads from the extension's **Settings** page. The default API base
+URL is `https://api.rrweb.com`; you can use another HTTP or HTTPS base URL for
+a proxy or local development. The authentication bearer token is stored only in
+extension-local storage (`Browser.storage.local`) and is never synchronized.
+
+For each selected session, the extension sends a `POST` request to
+`<base URL>/recordings/<session ID>/ingest`. Its body is NDJSON event data, with
+Brotli compression when available, gzip as a fallback, and an uncompressed
+request as a last resort.
+
+The configured endpoint must permit the extension origin to make `POST`
+requests via CORS, including the `Authorization`, `Content-Type`, and
+`Content-Encoding` request headers.
+
 ## Sponsors
 
 [Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.
