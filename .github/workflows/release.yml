@@ -5,6 +5,13 @@ on:
     branches:
       - main
       - next
+  workflow_dispatch:
+    inputs:
+      publish_chrome_extension:
+        description: Build and publish the Chrome extension without an npm release
+        required: true
+        default: false
+        type: boolean
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -43,12 +50,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Chrome Extension
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.changesets.outputs.published == 'true' || inputs.publish_chrome_extension
         run: NODE_OPTIONS='--max-old-space-size=4096' DISABLE_WORKER_INLINING=true yarn turbo run prepublish --filter=@rrweb/web-extension
 
       - name: Publish Chrome Extension
         uses: mnao305/chrome-extension-upload@v5.0.0
-        if: steps.changesets.outputs.published == 'true' && github.ref == 'refs/heads/main'
+        if: (steps.changesets.outputs.published == 'true' || inputs.publish_chrome_extension) && github.ref == 'refs/heads/main'
         with:
           extension-id: 'pdaldeopoccdhlkabbkcjmecmmoninhe'
           file-path: ./packages/web-extension/dist/chrome.zip
@@ -59,7 +66,7 @@ jobs:
 
       - name: Publish Next Chrome Extension
         uses: mnao305/chrome-extension-upload@v5.0.0
-        if: steps.changesets.outputs.published == 'true' && github.ref == 'refs/heads/next'
+        if: (steps.changesets.outputs.published == 'true' || inputs.publish_chrome_extension) && github.ref == 'refs/heads/next'
         with:
           extension-id: ${{ secrets.NEXT_CWS_EXTENSION_ID }}
           file-path: ./packages/web-extension/dist/chrome.zip
