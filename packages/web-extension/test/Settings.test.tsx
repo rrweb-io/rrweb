@@ -203,6 +203,82 @@ describe('SettingsView', () => {
     ).toBe(false);
   });
 
+  it('lets users recover from invalid stored settings without overwriting them', async () => {
+    const user = userEvent.setup();
+    browser.storage.local.get.mockResolvedValue({
+      'rrweb-cloud-settings': {
+        apiBaseUrl: 'ftp://invalid.example.test',
+        authToken: 'stored-secret-token',
+      },
+    });
+
+    renderSettings();
+
+    expect(
+      await screen.findByText(
+        'Could not load cloud upload settings. Please try again.',
+      ),
+    ).toBeTruthy();
+    expect(
+      (
+        screen.getByRole('button', {
+          name: 'Save settings',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+
+    await user.click(
+      screen.getByRole('button', { name: 'Retry loading settings' }),
+    );
+
+    await waitFor(() => {
+      expect(browser.storage.local.get).toHaveBeenCalledTimes(2);
+    });
+    expect(
+      screen.getByText(
+        'Could not load cloud upload settings. Please try again.',
+      ),
+    ).toBeTruthy();
+
+    await user.click(
+      screen.getByRole('button', { name: 'Use default settings' }),
+    );
+
+    expect(
+      (screen.getByLabelText('Cloud API base URL') as HTMLInputElement).value,
+    ).toBe(DEFAULT_CLOUD_SETTINGS.apiBaseUrl);
+    expect(
+      (screen.getByLabelText('Authentication token') as HTMLInputElement).value,
+    ).toBe('');
+    expect(browser.storage.local.set).not.toHaveBeenCalled();
+    expect(
+      screen.queryByText(
+        'Could not load cloud upload settings. Please try again.',
+      ),
+    ).toBeNull();
+    expect(
+      (
+        screen.getByRole('button', {
+          name: 'Save settings',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false);
+
+    const apiBaseUrl = screen.getByLabelText('Cloud API base URL');
+    await user.clear(apiBaseUrl);
+    await user.type(apiBaseUrl, 'https://recovered.example.test');
+    await user.click(screen.getByRole('button', { name: 'Save settings' }));
+
+    await waitFor(() => {
+      expect(browser.storage.local.set).toHaveBeenCalledWith({
+        'rrweb-cloud-settings': {
+          apiBaseUrl: 'https://recovered.example.test',
+          authToken: '',
+        },
+      });
+    });
+  });
+
   it('shows save failures without logging configured credentials', async () => {
     const consoleError = vi
       .spyOn(console, 'error')

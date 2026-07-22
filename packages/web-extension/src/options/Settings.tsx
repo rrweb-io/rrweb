@@ -79,6 +79,15 @@ export function SettingsView() {
     };
   }, [loadSettings]);
 
+  function useDefaultSettings() {
+    // Ignore an in-flight retry so it cannot replace the user's recovery form.
+    ++loadRequestId.current;
+    setSettings({ ...DEFAULT_CLOUD_SETTINGS });
+    setLoadError(undefined);
+    setSaveError(undefined);
+    setLoadState('ready');
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (loadState !== 'ready') {
@@ -142,12 +151,19 @@ export function SettingsView() {
               w="full"
             >
               <Text>{loadError}</Text>
+              <Text fontSize="sm">
+                Use the defaults to discard the invalid values in this form.
+                Nothing is saved until you choose Save settings.
+              </Text>
               <Button
                 onClick={() => void loadSettings()}
                 size="sm"
                 variant="outline"
               >
                 Retry loading settings
+              </Button>
+              <Button onClick={useDefaultSettings} size="sm">
+                Use default settings
               </Button>
             </Stack>
           </Alert>
