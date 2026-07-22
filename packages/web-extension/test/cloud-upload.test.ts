@@ -1,7 +1,11 @@
 import type { eventWithTime } from '@rrweb/types';
 import type { CloudSettings, Session } from '~/types';
 import { describe, expect, it, vi } from 'vitest';
-import { buildUploadUrl, uploadSessions } from '../src/utils/cloud-upload';
+import {
+  buildUploadUrl,
+  type UploadDependencies,
+  uploadSessions,
+} from '../src/utils/cloud-upload';
 
 const settings: CloudSettings = {
   apiBaseUrl: ' https://cloud.example.com/api/// ',
@@ -23,12 +27,16 @@ const event = (timestamp: number): eventWithTime =>
 const response = (status = 200, statusText = 'OK') =>
   ({ ok: status >= 200 && status < 300, status, statusText } as Response);
 
-function dependencies(overrides: Record<string, unknown> = {}) {
+function dependencies(
+  overrides: Partial<UploadDependencies> = {},
+): UploadDependencies {
   return {
     getSession: vi.fn(async (id: string) => session(id)),
     getEvents: vi.fn(async () => [event(1), event(2)]),
     fetchFn: vi.fn(async () => response()),
     compress: vi.fn(async () => new ArrayBuffer(1)),
+    compressionStreamCtor:
+      CompressionStream as unknown as UploadDependencies['compressionStreamCtor'],
     ...overrides,
   };
 }
@@ -78,7 +86,7 @@ describe('cloud upload', () => {
     ]);
     expect(deps.compress).toHaveBeenCalledWith(
       `${JSON.stringify(event(1))}\n${JSON.stringify(event(2))}`,
-      'br',
+      'brotli',
     );
     expect(deps.fetchFn).toHaveBeenCalledWith(
       'https://cloud.example.com/api/recordings/a%2Fb/ingest',
@@ -90,6 +98,29 @@ describe('cloud upload', () => {
           'Content-Type': 'application/x-ndjson',
           'Content-Encoding': 'br',
         },
+      }),
+    );
+  });
+
+  it('uses the default CompressionStream compressor with the Brotli format', async () => {
+    const compressionStreamCtor = vi.fn(function () {
+      return new TransformStream<Uint8Array, Uint8Array>();
+    });
+    const fetchFn = vi.fn(async () => response());
+    const deps = {
+      getSession: vi.fn(async (id: string) => session(id)),
+      getEvents: vi.fn(async () => [event(1)]),
+      fetchFn,
+      compressionStreamCtor,
+    };
+
+    await uploadSessions(['one'], settings, deps);
+
+    expect(compressionStreamCtor).toHaveBeenCalledWith('brotli');
+    expect(fetchFn).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.objectContaining({ 'Content-Encoding': 'br' }),
       }),
     );
   });
@@ -108,7 +139,7 @@ describe('cloud upload', () => {
     expect(deps.compress).toHaveBeenNthCalledWith(
       1,
       `${JSON.stringify(event(1))}\n${JSON.stringify(event(2))}`,
-      'br',
+      'brotli',
     );
     expect(deps.compress).toHaveBeenNthCalledWith(
       2,
@@ -195,6 +226,33 @@ describe('cloud upload', () => {
       },
     ]);
     expect(deps.fetchFn).not.toHaveBeenCalled();
+  });
+
+  it('reports unavailable events with a stable message and continues uploading', async () => {
+    const deps = dependencies({
+      getEvents: vi.fn(async (id: string) => {
+        if (id === 'missing-events') {
+          throw new TypeError(
+            "Cannot read properties of undefined (reading 'events')",
+          );
+        }
+
+        return [event(1)];
+      }),
+    });
+
+    await expect(
+      uploadSessions(['missing-events', 'valid'], settings, deps),
+    ).resolves.toEqual([
+      {
+        id: 'missing-events',
+        name: 'Session missing-events',
+        ok: false,
+        error: 'Session events could not be loaded',
+      },
+      { id: 'valid', name: 'Session valid', ok: true },
+    ]);
+    expect(deps.fetchFn).toHaveBeenCalledTimes(1);
   });
 
   it('converts fetch rejections into a per-session failure', async () => {

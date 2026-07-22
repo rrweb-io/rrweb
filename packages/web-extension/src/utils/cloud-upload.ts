@@ -10,7 +10,9 @@ export type SessionUploadResult = {
   error?: string;
 };
 
-type CompressionEncoding = 'br' | 'gzip';
+export type CompressionFormat = 'brotli' | 'gzip';
+
+type ContentEncoding = 'br' | 'gzip';
 
 export type UploadDependencies = {
   getSession: (id: string) => Promise<Session | undefined>;
@@ -18,33 +20,39 @@ export type UploadDependencies = {
   fetchFn: typeof fetch;
   compress: (
     payload: string,
-    encoding: CompressionEncoding,
+    format: CompressionFormat,
   ) => Promise<ArrayBuffer>;
+  compressionStreamCtor: CompressionStreamConstructor;
 };
 
-type CompressionStreamConstructor = new (format: CompressionEncoding) => {
+export type CompressionStreamConstructor = new (format: CompressionFormat) => {
   writable: WritableStream<BufferSource>;
   readable: ReadableStream<Uint8Array>;
 };
 
 async function compressWithCompressionStream(
   payload: string,
-  encoding: CompressionEncoding,
+  format: CompressionFormat,
+  compressionStreamCtor: CompressionStreamConstructor,
 ): Promise<ArrayBuffer> {
-  const CompressionStreamWithBrotli =
-    CompressionStream as unknown as CompressionStreamConstructor;
-  const stream = new Blob([payload])
-    .stream()
-    .pipeThrough(new CompressionStreamWithBrotli(encoding));
+  const source = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(payload));
+      controller.close();
+    },
+  });
+  const stream = source.pipeThrough(new compressionStreamCtor(format));
 
   return new Response(stream).arrayBuffer();
 }
 
-const defaultDependencies: UploadDependencies = {
+const defaultDependencies: Omit<
+  UploadDependencies,
+  'compress' | 'compressionStreamCtor'
+> = {
   getSession,
   getEvents,
   fetchFn: fetch,
-  compress: compressWithCompressionStream,
 };
 
 export function buildUploadUrl(baseUrl: string, sessionId: string): string {
@@ -68,10 +76,10 @@ async function compressPayload(
   compress: UploadDependencies['compress'],
 ): Promise<{
   body: ArrayBuffer | string;
-  contentEncoding?: CompressionEncoding;
+  contentEncoding?: ContentEncoding;
 }> {
   try {
-    return { body: await compress(payload, 'br'), contentEncoding: 'br' };
+    return { body: await compress(payload, 'brotli'), contentEncoding: 'br' };
   } catch {
     try {
       return { body: await compress(payload, 'gzip'), contentEncoding: 'gzip' };
@@ -81,6 +89,10 @@ async function compressPayload(
   }
 }
 
+/**
+ * Configured API endpoints must allow extension-origin POST requests and the
+ * Authorization, Content-Type, and Content-Encoding request headers via CORS.
+ */
 export async function uploadSessions(
   ids: string[],
   settings: CloudSettings,
@@ -98,10 +110,19 @@ export async function uploadSessions(
     return ids.map((id) => failure(id, id, 'Missing authentication token'));
   }
 
-  const { getSession, getEvents, fetchFn, compress } = {
+  const { getSession, getEvents, fetchFn } = {
     ...defaultDependencies,
     ...dependencies,
   };
+  const compress =
+    dependencies.compress ??
+    ((payload: string, format: CompressionFormat) =>
+      compressWithCompressionStream(
+        payload,
+        format,
+        dependencies.compressionStreamCtor ??
+          (CompressionStream as unknown as CompressionStreamConstructor),
+      ));
   const results: SessionUploadResult[] = [];
 
   for (const id of ids) {
@@ -114,7 +135,17 @@ export async function uploadSessions(
         continue;
       }
 
-      const events = await getEvents(id);
+      let events: unknown;
+
+      try {
+        events = await getEvents(id);
+      } catch {
+        results.push(
+          failure(id, session.name || id, 'Session events could not be loaded'),
+        );
+        continue;
+      }
+
       if (!Array.isArray(events)) {
         results.push(
           failure(id, session.name || id, 'Session events are invalid'),
@@ -122,9 +153,13 @@ export async function uploadSessions(
         continue;
       }
 
-      const payload = (events as eventWithTime[])
-        .map((event) => JSON.stringify(event))
-        .join('\n');
+      let payload = '';
+      for (const event of events as eventWithTime[]) {
+        if (payload) {
+          payload += '\n';
+        }
+        payload += JSON.stringify(event);
+      }
       const { body, contentEncoding } = await compressPayload(
         payload,
         compress,
