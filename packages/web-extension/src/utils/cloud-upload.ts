@@ -14,6 +14,8 @@ export type CompressionFormat = 'brotli' | 'gzip';
 
 type ContentEncoding = 'br' | 'gzip';
 
+export const DEFAULT_UPLOAD_TIMEOUT_MS = 30_000;
+
 export type UploadDependencies = {
   getSession: (id: string) => Promise<Session | undefined>;
   getEvents: (id: string) => Promise<unknown>;
@@ -23,6 +25,7 @@ export type UploadDependencies = {
     format: CompressionFormat,
   ) => Promise<ArrayBuffer>;
   compressionStreamCtor: CompressionStreamConstructor;
+  uploadTimeoutMs?: number;
 };
 
 export type CompressionStreamConstructor = new (format: CompressionFormat) => {
@@ -71,6 +74,57 @@ function errorMessage(error: unknown): string {
     : 'Upload failed';
 }
 
+class UploadTimeoutError extends Error {
+  constructor() {
+    super('Upload timed out');
+  }
+}
+
+function getUploadTimeoutMs(dependencies: Partial<UploadDependencies>): number {
+  const { uploadTimeoutMs } = dependencies;
+
+  return typeof uploadTimeoutMs === 'number' &&
+    Number.isFinite(uploadTimeoutMs) &&
+    uploadTimeoutMs >= 0
+    ? uploadTimeoutMs
+    : DEFAULT_UPLOAD_TIMEOUT_MS;
+}
+
+async function fetchWithTimeout(
+  fetchFn: typeof fetch,
+  input: RequestInfo | URL,
+  init: RequestInit,
+  timeoutMs: number,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutError = new UploadTimeoutError();
+  let timedOut = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      timedOut = true;
+      reject(timeoutError);
+      controller.abort();
+    }, timeoutMs);
+  });
+
+  try {
+    const response = await Promise.race([
+      fetchFn(input, { ...init, signal: controller.signal }),
+      timeout,
+    ]);
+
+    return response;
+  } catch (error) {
+    throw timedOut ? timeoutError : error;
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
+    }
+  }
+}
+
 async function compressPayload(
   payload: string,
   compress: UploadDependencies['compress'],
@@ -114,6 +168,7 @@ export async function uploadSessions(
     ...defaultDependencies,
     ...dependencies,
   };
+  const uploadTimeoutMs = getUploadTimeoutMs(dependencies);
   const compress =
     dependencies.compress ??
     ((payload: string, format: CompressionFormat) =>
@@ -173,9 +228,11 @@ export async function uploadSessions(
         headers['Content-Encoding'] = contentEncoding;
       }
 
-      const response = await fetchFn(
+      const response = await fetchWithTimeout(
+        fetchFn,
         buildUploadUrl(normalizedSettings.apiBaseUrl, id),
         { method: 'POST', headers, body },
+        uploadTimeoutMs,
       );
 
       if (!response.ok) {

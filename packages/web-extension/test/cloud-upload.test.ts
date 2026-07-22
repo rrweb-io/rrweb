@@ -1,7 +1,8 @@
 import type { eventWithTime } from '@rrweb/types';
 import type { CloudSettings, Session } from '~/types';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  DEFAULT_UPLOAD_TIMEOUT_MS,
   buildUploadUrl,
   type UploadDependencies,
   uploadSessions,
@@ -42,6 +43,14 @@ function dependencies(
 }
 
 describe('cloud upload', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('uses a thirty-second upload timeout by default', () => {
+    expect(DEFAULT_UPLOAD_TIMEOUT_MS).toBe(30_000);
+  });
+
   it('builds a normalized endpoint with encoded session IDs', () => {
     expect(buildUploadUrl('https://cloud.example.com/', 'a/b')).toBe(
       'https://cloud.example.com/recordings/a%2Fb/ingest',
@@ -269,6 +278,66 @@ describe('cloud upload', () => {
         ok: false,
         error: 'Network unavailable',
       },
+    ]);
+  });
+
+  it('reports a stable failure when a request hangs past its timeout', async () => {
+    vi.useFakeTimers();
+    const deps = dependencies({
+      fetchFn: vi.fn(() => new Promise<Response>(() => {})),
+      uploadTimeoutMs: 10,
+    });
+    const upload = uploadSessions(['one'], settings, deps);
+
+    await vi.advanceTimersByTimeAsync(10);
+
+    await expect(upload).resolves.toEqual([
+      {
+        id: 'one',
+        name: 'Session one',
+        ok: false,
+        error: 'Upload timed out',
+      },
+    ]);
+  });
+
+  it('aborts the request signal when an upload times out', async () => {
+    vi.useFakeTimers();
+    let requestSignal: AbortSignal | undefined;
+    const deps = dependencies({
+      fetchFn: vi.fn((_url, init) => {
+        requestSignal = init?.signal ?? undefined;
+        return new Promise<Response>(() => {});
+      }),
+      uploadTimeoutMs: 10,
+    });
+    const upload = uploadSessions(['one'], settings, deps);
+
+    await vi.advanceTimersByTimeAsync(10);
+
+    expect(requestSignal?.aborted).toBe(true);
+    await expect(upload).resolves.toHaveLength(1);
+  });
+
+  it('continues the batch after timing out a hung request', async () => {
+    vi.useFakeTimers();
+    const fetchFn = vi
+      .fn()
+      .mockImplementationOnce(() => new Promise<Response>(() => {}))
+      .mockImplementationOnce(async () => response());
+    const deps = dependencies({ fetchFn, uploadTimeoutMs: 10 });
+    const upload = uploadSessions(['stalled', 'next'], settings, deps);
+
+    await vi.advanceTimersByTimeAsync(10);
+
+    await expect(upload).resolves.toEqual([
+      {
+        id: 'stalled',
+        name: 'Session stalled',
+        ok: false,
+        error: 'Upload timed out',
+      },
+      { id: 'next', name: 'Session next', ok: true },
     ]);
   });
 
