@@ -98,7 +98,7 @@ publishes prerelease packages to npm using the `next` dist-tag.
 Chrome extension publication is also branch-specific:
 
 - `main` publishes the production extension listing. Its extension ID is
-  hard-coded in `.github/workflows/release.yml`, and it uses the existing
+  hard-coded in `.github/workflows/release.yml`, and it uses the
   `CWS_PUBLISHER_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, and
   `CWS_REFRESH_TOKEN` secrets.
 - `next` publishes the prerelease extension listing with
