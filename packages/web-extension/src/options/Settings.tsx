@@ -5,14 +5,16 @@ import {
   Button,
   FormControl,
   FormErrorMessage,
+  FormHelperText,
   FormLabel,
+  Heading,
   Input,
   Spinner,
   Stack,
   Text,
   useToast,
 } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Browser from 'webextension-polyfill';
 import type { CloudSettings } from '~/types';
 import {
@@ -28,43 +30,61 @@ const LOAD_ERROR_MESSAGE =
 const SAVE_ERROR_MESSAGE =
   'Could not save cloud upload settings. Please try again.';
 
+type LoadState = 'loading' | 'error' | 'ready';
+
 export function SettingsView() {
   const toast = useToast();
   const [settings, setSettings] = useState<CloudSettings>(
     DEFAULT_CLOUD_SETTINGS,
   );
-  const [isLoading, setIsLoading] = useState(true);
+  const [loadState, setLoadState] = useState<LoadState>('loading');
   const [isSaving, setIsSaving] = useState(false);
   const [loadError, setLoadError] = useState<string>();
   const [saveError, setSaveError] = useState<string>();
+  const isMounted = useRef(true);
+  const loadRequestId = useRef(0);
+
+  const loadSettings = useCallback(async () => {
+    const requestId = ++loadRequestId.current;
+    if (isMounted.current) {
+      setLoadState('loading');
+      setLoadError(undefined);
+    }
+
+    try {
+      const loadedSettings = await loadCloudSettings(Browser.storage.local);
+      if (!isMounted.current || requestId !== loadRequestId.current) {
+        return;
+      }
+
+      setSettings(loadedSettings);
+      setLoadError(undefined);
+      setLoadState('ready');
+    } catch {
+      if (!isMounted.current || requestId !== loadRequestId.current) {
+        return;
+      }
+
+      setLoadError(LOAD_ERROR_MESSAGE);
+      setLoadState('error');
+    }
+  }, []);
 
   useEffect(() => {
-    let active = true;
-
-    void loadCloudSettings(Browser.storage.local)
-      .then((loadedSettings) => {
-        if (active) {
-          setSettings(loadedSettings);
-        }
-      })
-      .catch(() => {
-        if (active) {
-          setLoadError(LOAD_ERROR_MESSAGE);
-        }
-      })
-      .finally(() => {
-        if (active) {
-          setIsLoading(false);
-        }
-      });
+    isMounted.current = true;
+    void loadSettings();
 
     return () => {
-      active = false;
+      isMounted.current = false;
     };
-  }, []);
+  }, [loadSettings]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (loadState !== 'ready') {
+      return;
+    }
+
     setSaveError(undefined);
 
     let normalizedSettings: CloudSettings;
@@ -78,6 +98,10 @@ export function SettingsView() {
     setIsSaving(true);
     try {
       await saveCloudSettings(Browser.storage.local, normalizedSettings);
+      if (!isMounted.current) {
+        return;
+      }
+
       setSettings(normalizedSettings);
       toast({
         title: 'Cloud upload settings saved.',
@@ -86,9 +110,13 @@ export function SettingsView() {
         isClosable: true,
       });
     } catch {
-      setSaveError(SAVE_ERROR_MESSAGE);
+      if (isMounted.current) {
+        setSaveError(SAVE_ERROR_MESSAGE);
+      }
     } finally {
-      setIsSaving(false);
+      if (isMounted.current) {
+        setIsSaving(false);
+      }
     }
   }
 
@@ -96,9 +124,9 @@ export function SettingsView() {
     <Box maxW="2xl">
       <Stack spacing="6">
         <Box>
-          <Text fontSize="2xl" fontWeight="semibold">
+          <Heading as="h1" size="lg">
             Cloud uploads
-          </Text>
+          </Heading>
           <Text color="gray.600" mt="2">
             Configure where this extension uploads completed recordings.
           </Text>
@@ -107,11 +135,25 @@ export function SettingsView() {
         {loadError && (
           <Alert status="error">
             <AlertIcon />
-            {loadError}
+            <Stack
+              align="center"
+              direction="row"
+              justify="space-between"
+              w="full"
+            >
+              <Text>{loadError}</Text>
+              <Button
+                onClick={() => void loadSettings()}
+                size="sm"
+                variant="outline"
+              >
+                Retry loading settings
+              </Button>
+            </Stack>
           </Alert>
         )}
 
-        <Box as="form" onSubmit={handleSubmit}>
+        <Box as="form" noValidate onSubmit={handleSubmit}>
           <Stack spacing="5">
             <FormControl isInvalid={saveError === INVALID_URL_MESSAGE}>
               <FormLabel htmlFor="apiBaseUrl">Cloud API base URL</FormLabel>
@@ -126,7 +168,7 @@ export function SettingsView() {
                     apiBaseUrl: event.target.value,
                   }))
                 }
-                isDisabled={isLoading || isSaving}
+                isDisabled={loadState !== 'ready' || isSaving}
               />
               <FormErrorMessage>{saveError}</FormErrorMessage>
             </FormControl>
@@ -138,17 +180,19 @@ export function SettingsView() {
                 name="authToken"
                 type="password"
                 value={settings.authToken}
+                autoComplete="off"
+                spellCheck={false}
                 onChange={(event) =>
                   setSettings((current) => ({
                     ...current,
                     authToken: event.target.value,
                   }))
                 }
-                isDisabled={isLoading || isSaving}
+                isDisabled={loadState !== 'ready' || isSaving}
               />
-              <Text color="gray.600" fontSize="sm" mt="2">
+              <FormHelperText>
                 This token stays on this device and is never synced.
-              </Text>
+              </FormHelperText>
             </FormControl>
 
             <Text color="gray.600" fontSize="sm">
@@ -168,7 +212,7 @@ export function SettingsView() {
             <Button
               alignSelf="flex-start"
               colorScheme="blue"
-              isDisabled={isLoading}
+              isDisabled={loadState !== 'ready'}
               isLoading={isSaving}
               type="submit"
             >
@@ -177,7 +221,7 @@ export function SettingsView() {
           </Stack>
         </Box>
 
-        {isLoading && (
+        {loadState === 'loading' && (
           <Stack align="center" direction="row" color="gray.600">
             <Spinner size="sm" />
             <Text>Loading cloud upload settings…</Text>

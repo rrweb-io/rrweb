@@ -1,7 +1,7 @@
 import { ChakraProvider } from '@chakra-ui/react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_CLOUD_SETTINGS } from '../src/utils/cloud-settings';
 import { SettingsView } from '../src/options/Settings';
 
@@ -29,6 +29,10 @@ function renderSettings() {
 }
 
 describe('SettingsView', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   beforeEach(() => {
     browser.storage.local.get.mockReset();
     browser.storage.local.set.mockReset();
@@ -49,6 +53,25 @@ describe('SettingsView', () => {
       'rrweb-cloud-settings',
     );
     expect(browser.storage.sync.get).not.toHaveBeenCalled();
+  });
+
+  it('populates the form with the stored cloud settings', async () => {
+    browser.storage.local.get.mockResolvedValue({
+      'rrweb-cloud-settings': {
+        apiBaseUrl: 'https://stored.example.test',
+        authToken: 'stored-token',
+      },
+    });
+
+    renderSettings();
+
+    expect(
+      ((await screen.findByLabelText('Cloud API base URL')) as HTMLInputElement)
+        .value,
+    ).toBe('https://stored.example.test');
+    expect(
+      (screen.getByLabelText('Authentication token') as HTMLInputElement).value,
+    ).toBe('stored-token');
   });
 
   it('saves normalized cloud settings in local storage', async () => {
@@ -73,6 +96,9 @@ describe('SettingsView', () => {
       });
     });
     expect(browser.storage.sync.set).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText('Cloud upload settings saved.'),
+    ).toBeTruthy();
   });
 
   it('shows a validation error for an FTP URL without writing storage', async () => {
@@ -82,6 +108,22 @@ describe('SettingsView', () => {
     const apiBaseUrl = await screen.findByLabelText('Cloud API base URL');
     await user.clear(apiBaseUrl);
     await user.type(apiBaseUrl, 'ftp://uploads.example.test');
+    await user.click(screen.getByRole('button', { name: 'Save settings' }));
+
+    expect(
+      await screen.findByText('Please enter a valid HTTP or HTTPS URL.'),
+    ).toBeTruthy();
+    expect(browser.storage.local.set).not.toHaveBeenCalled();
+    expect(browser.storage.sync.set).not.toHaveBeenCalled();
+  });
+
+  it('shows a validation error for a malformed URL without writing storage', async () => {
+    const user = userEvent.setup();
+    renderSettings();
+
+    const apiBaseUrl = await screen.findByLabelText('Cloud API base URL');
+    await user.clear(apiBaseUrl);
+    await user.type(apiBaseUrl, 'not a URL');
     await user.click(screen.getByRole('button', { name: 'Save settings' }));
 
     expect(
@@ -101,13 +143,16 @@ describe('SettingsView', () => {
     ).toBe('password');
   });
 
-  it('shows a load failure without logging configured credentials', async () => {
-    const consoleError = vi
-      .spyOn(console, 'error')
-      .mockImplementation(() => {});
+  it('keeps save disabled after a load failure until a retry succeeds', async () => {
     browser.storage.local.get.mockRejectedValueOnce(
       new Error('storage unavailable'),
     );
+    browser.storage.local.get.mockResolvedValueOnce({
+      'rrweb-cloud-settings': {
+        apiBaseUrl: 'https://recovered.example.test',
+        authToken: 'recovered-token',
+      },
+    });
 
     renderSettings();
 
@@ -116,7 +161,64 @@ describe('SettingsView', () => {
         'Could not load cloud upload settings. Please try again.',
       ),
     ).toBeTruthy();
+    expect(
+      (
+        screen.getByRole('button', {
+          name: 'Save settings',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    expect(browser.storage.local.set).not.toHaveBeenCalled();
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Retry loading settings' }),
+    );
+
+    await waitFor(() => {
+      expect(
+        (screen.getByLabelText('Cloud API base URL') as HTMLInputElement).value,
+      ).toBe('https://recovered.example.test');
+    });
+    expect(
+      screen.queryByText(
+        'Could not load cloud upload settings. Please try again.',
+      ),
+    ).toBeNull();
+    expect(
+      (
+        screen.getByRole('button', {
+          name: 'Save settings',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false);
+  });
+
+  it('shows save failures without logging configured credentials', async () => {
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+    browser.storage.local.get.mockResolvedValue({
+      'rrweb-cloud-settings': {
+        apiBaseUrl: 'https://configured.example.test',
+        authToken: 'configured-token',
+      },
+    });
+    browser.storage.local.set.mockRejectedValue(
+      new Error('storage unavailable'),
+    );
+
+    renderSettings();
+
+    await screen.findByDisplayValue('https://configured.example.test');
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Save settings' }),
+    );
+
+    expect(
+      await screen.findByText(
+        'Could not save cloud upload settings. Please try again.',
+      ),
+    ).toBeTruthy();
     expect(consoleError).not.toHaveBeenCalled();
-    consoleError.mockRestore();
   });
 });
