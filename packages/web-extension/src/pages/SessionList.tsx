@@ -31,6 +31,7 @@ import {
   flexRender,
   getCoreRowModel,
   type SortingState,
+  type RowSelectionState,
   getSortedRowModel,
   type PaginationState,
 } from '@tanstack/react-table';
@@ -71,7 +72,7 @@ export function SessionList() {
       desc: true,
     },
   ]);
-  const [rowSelection, setRowSelection] = useState({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [isUploading, setIsUploading] = useState(false);
 
   const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
@@ -100,6 +101,13 @@ export function SessionList() {
     }),
     [pageIndex, pageSize],
   );
+  const selectedSessionIds = useMemo(
+    () =>
+      sessions
+        .filter((session) => rowSelection[session.id])
+        .map((session) => session.id),
+    [rowSelection, sessions],
+  );
 
   const columns = useMemo(
     () => [
@@ -107,6 +115,7 @@ export function SessionList() {
         id: 'select',
         header: ({ table }) => (
           <Checkbox
+            aria-label="Select all sessions on this page"
             isChecked={table.getIsAllRowsSelected()}
             isIndeterminate={table.getIsSomeRowsSelected()}
             onChange={table.getToggleAllRowsSelectedHandler()}
@@ -114,6 +123,7 @@ export function SessionList() {
         ),
         cell: ({ row }) => (
           <Checkbox
+            aria-label={`Select ${row.original.name}`}
             isChecked={row.getIsSelected()}
             isIndeterminate={row.getIsSomeSelected()}
             onChange={row.getToggleSelectedHandler()}
@@ -201,6 +211,7 @@ export function SessionList() {
       sorting,
       rowSelection,
     },
+    getRowId: (row) => row.id,
     manualPagination: true,
     pageCount: fetchData(fetchDataOptions).pageCount,
   });
@@ -254,9 +265,8 @@ export function SessionList() {
     reader.readAsText(file);
   };
 
-  const handleUpload = async () => {
-    const selectedRows = table.getSelectedRowModel().flatRows;
-    if (selectedRows.length === 0) return;
+  const handleUpload = async (ids: string[]) => {
+    if (ids.length === 0) return;
 
     setIsUploading(true);
     try {
@@ -281,10 +291,7 @@ export function SessionList() {
       let results: SessionUploadResult[];
 
       try {
-        results = await uploadSessions(
-          selectedRows.map((row) => row.original.id),
-          settings,
-        );
+        results = await uploadSessions(ids, settings);
       } catch (error) {
         toast({
           title: 'Could not complete the upload.',
@@ -307,7 +314,8 @@ export function SessionList() {
 
       if (failures.length === 0) {
         toast({
-          title: `Uploaded ${successes} selected session${
+          title: 'Upload complete',
+          description: `Uploaded ${successes} selected session${
             successes === 1 ? '' : 's'
           }.`,
           status: 'success',
@@ -316,16 +324,16 @@ export function SessionList() {
         });
       } else if (successes > 0) {
         toast({
-          title: `Uploaded ${successes} of ${results.length} selected sessions.`,
-          description: failureDescription,
+          title: 'Upload completed with errors',
+          description: `Uploaded ${successes} of ${results.length} selected sessions.\n${failureDescription}`,
           status: 'warning',
           duration: 8000,
           isClosable: true,
         });
       } else {
         toast({
-          title: 'Could not upload the selected sessions.',
-          description: failureDescription,
+          title: 'Upload failed',
+          description: `No selected sessions were uploaded.\n${failureDescription}`,
           status: 'error',
           duration: 8000,
           isClosable: true,
@@ -500,7 +508,7 @@ export function SessionList() {
               </option>
             ))}
           </Select>
-          {Object.keys(rowSelection).length > 0 && (
+          {selectedSessionIds.length > 0 && (
             <Flex gap={1}>
               <Button
                 mr={4}
@@ -508,11 +516,7 @@ export function SessionList() {
                 colorScheme="red"
                 isDisabled={isUploading}
                 onClick={() => {
-                  if (table.getSelectedRowModel().flatRows.length === 0) return;
-                  const ids = table
-                    .getSelectedRowModel()
-                    .flatRows.map((row) => row.original.id);
-                  void deleteSessions(ids).then(() => {
+                  void deleteSessions(selectedSessionIds).then(() => {
                     setRowSelection({});
                     void updateSessions();
                     channel.emit(EventName.SessionUpdated, {});
@@ -527,11 +531,7 @@ export function SessionList() {
                 colorScheme="green"
                 isDisabled={isUploading}
                 onClick={() => {
-                  const selectedRows = table.getSelectedRowModel().flatRows;
-                  if (selectedRows.length === 0) return;
-                  void downloadSessions(
-                    selectedRows.map((row) => row.original.id),
-                  );
+                  void downloadSessions(selectedSessionIds);
                 }}
               >
                 Download
@@ -543,7 +543,7 @@ export function SessionList() {
                 isLoading={isUploading}
                 loadingText="Uploading"
                 onClick={() => {
-                  void handleUpload();
+                  void handleUpload(selectedSessionIds);
                 }}
               >
                 Upload

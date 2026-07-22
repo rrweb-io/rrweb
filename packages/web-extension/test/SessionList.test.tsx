@@ -58,6 +58,15 @@ const sessions: Session[] = [
   },
 ];
 
+const paginatedSessions: Session[] = Array.from({ length: 11 }, (_, index) => ({
+  id: `session-${index + 1}`,
+  name: `Session ${index + 1}`,
+  tags: [],
+  createTimestamp: 11 - index,
+  modifyTimestamp: 11 - index,
+  recorderVersion: '1.0.0',
+}));
+
 function renderSessionList() {
   return render(
     <ChakraProvider>
@@ -70,9 +79,11 @@ function renderSessionList() {
 
 async function selectFirstSession() {
   await screen.findByText('Checkout flow');
-  const checkboxes = screen.getAllByRole('checkbox');
-  await userEvent.click(checkboxes[1]);
-  expect((checkboxes[1] as HTMLInputElement).checked).toBe(true);
+  const checkbox = screen.getByRole('checkbox', {
+    name: 'Select Checkout flow',
+  }) as HTMLInputElement;
+  await userEvent.click(checkbox);
+  expect(checkbox.checked).toBe(true);
   await screen.findByRole('button', { name: 'Upload' });
 }
 
@@ -111,11 +122,17 @@ describe('SessionList cloud uploads', () => {
         authToken: 'token',
       });
     });
-    expect(
-      await screen.findByText('Uploaded 1 selected session.'),
-    ).toBeTruthy();
+    expect(await screen.findByText('Upload complete')).toBeTruthy();
+    expect(screen.getByText('Uploaded 1 selected session.')).toBeTruthy();
     expect(screen.getByText('Checkout flow')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Upload' })).toBeTruthy();
+    expect(
+      (
+        screen.getByRole('checkbox', {
+          name: 'Select Checkout flow',
+        }) as HTMLInputElement
+      ).checked,
+    ).toBe(true);
   });
 
   it('reports partial failures by session name without clearing the selection', async () => {
@@ -130,20 +147,31 @@ describe('SessionList cloud uploads', () => {
     ]);
     renderSessionList();
     await screen.findByText('Checkout flow');
-    const checkboxes = screen.getAllByRole('checkbox');
-    await userEvent.click(checkboxes[1]);
-    await userEvent.click(checkboxes[2]);
+    await userEvent.click(
+      screen.getByRole('checkbox', { name: 'Select Checkout flow' }),
+    );
+    await userEvent.click(
+      screen.getByRole('checkbox', { name: 'Select Sign in flow' }),
+    );
     await screen.findByRole('button', { name: 'Upload' });
 
     await userEvent.click(screen.getByRole('button', { name: 'Upload' }));
 
     expect(
-      await screen.findByText('Uploaded 1 of 2 selected sessions.'),
+      await screen.findByText('Upload completed with errors'),
     ).toBeTruthy();
+    expect(screen.getByText(/Uploaded 1 of 2 selected sessions/)).toBeTruthy();
     expect(
-      screen.getByText('Sign in flow: Upload failed: 500 Server Error'),
+      screen.getByText(/Sign in flow: Upload failed: 500 Server Error/),
     ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Upload' })).toBeTruthy();
+    expect(
+      (
+        screen.getByRole('checkbox', {
+          name: 'Select Sign in flow',
+        }) as HTMLInputElement
+      ).checked,
+    ).toBe(true);
   });
 
   it('shows a useful error when settings cannot be loaded', async () => {
@@ -177,11 +205,102 @@ describe('SessionList cloud uploads', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Upload' }));
 
+    expect(await screen.findByText('Upload failed')).toBeTruthy();
     expect(
-      await screen.findByText('Could not upload the selected sessions.'),
+      screen.getByText(/Checkout flow: Missing authentication token/),
     ).toBeTruthy();
+  });
+
+  it('shows an upload error and preserves selection when the transport rejects', async () => {
+    cloudUpload.uploadSessions.mockRejectedValue(new Error('network failed'));
+    renderSessionList();
+    await selectFirstSession();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+
     expect(
-      screen.getByText('Checkout flow: Missing authentication token'),
+      await screen.findByText('Could not complete the upload.'),
     ).toBeTruthy();
+    expect(screen.getByText('network failed')).toBeTruthy();
+    expect(
+      (
+        screen.getByRole('checkbox', {
+          name: 'Select Checkout flow',
+        }) as HTMLInputElement
+      ).checked,
+    ).toBe(true);
+  });
+
+  it('does not substitute a first-page selection after page navigation', async () => {
+    storage.getAllSessions.mockResolvedValue(paginatedSessions);
+    renderSessionList();
+    await screen.findByText('Session 1');
+    await userEvent.click(
+      screen.getByRole('checkbox', { name: 'Select Session 1' }),
+    );
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Goto Next Page' }),
+    );
+    await screen.findByText('Session 11');
+    await userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+
+    await waitFor(() => {
+      expect(cloudUpload.uploadSessions).toHaveBeenCalledWith(
+        ['session-1'],
+        expect.anything(),
+      );
+    });
+    expect(
+      (
+        screen.getByRole('checkbox', {
+          name: 'Select Session 11',
+        }) as HTMLInputElement
+      ).checked,
+    ).toBe(false);
+  });
+
+  it('uploads selected sessions across pages by their stable session IDs', async () => {
+    storage.getAllSessions.mockResolvedValue(paginatedSessions);
+    cloudUpload.uploadSessions.mockResolvedValue([
+      { id: 'session-1', name: 'Session 1', ok: true },
+      { id: 'session-11', name: 'Session 11', ok: true },
+    ]);
+    renderSessionList();
+    await screen.findByText('Session 1');
+    await userEvent.click(
+      screen.getByRole('checkbox', { name: 'Select Session 1' }),
+    );
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Goto Next Page' }),
+    );
+    await screen.findByText('Session 11');
+    await userEvent.click(
+      screen.getByRole('checkbox', { name: 'Select Session 11' }),
+    );
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Goto Previous Page' }),
+    );
+    await screen.findByText('Session 1');
+    expect(
+      (
+        screen.getByRole('checkbox', {
+          name: 'Select Session 1',
+        }) as HTMLInputElement
+      ).checked,
+    ).toBe(true);
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Goto Next Page' }),
+    );
+    await screen.findByText('Session 11');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+
+    await waitFor(() => {
+      expect(cloudUpload.uploadSessions).toHaveBeenCalledWith(
+        ['session-1', 'session-11'],
+        expect.anything(),
+      );
+    });
   });
 });
