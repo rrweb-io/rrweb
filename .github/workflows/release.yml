@@ -5,19 +5,11 @@ on:
     branches:
       - main
       - next
-  workflow_dispatch:
-    inputs:
-      publish_chrome_extension:
-        description: Build and publish the Chrome extension without an npm release
-        required: true
-        default: false
-        type: boolean
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   release:
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next'
     name: Release
     runs-on: ubuntu-latest
     permissions:
@@ -50,12 +42,14 @@ jobs:
           NODE_OPTIONS: '--max-old-space-size=4096'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Manual recovery: build and upload through the Chrome Web Store dashboard.
+      # See docs/releases/next-channel.md#manual-chrome-extension-recovery.
       - name: Build Chrome Extension
-        if: steps.changesets.outputs.published == 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_chrome_extension == 'true')
+        if: steps.changesets.outputs.published == 'true'
         run: NODE_OPTIONS='--max-old-space-size=4096' DISABLE_WORKER_INLINING=true yarn turbo run prepublish --filter=@rrweb/web-extension
 
       - name: Publish Chrome Extension
-        if: (steps.changesets.outputs.published == 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_chrome_extension == 'true')) && github.ref == 'refs/heads/main'
+        if: steps.changesets.outputs.published == 'true' && github.ref == 'refs/heads/main'
         run: npx --yes chrome-webstore-upload-cli@4.0.1 --source ./packages/web-extension/dist/chrome.zip
         env:
           EXTENSION_ID: 'pdaldeopoccdhlkabbkcjmecmmoninhe'
@@ -65,7 +59,7 @@ jobs:
           REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
 
       - name: Publish Next Chrome Extension
-        if: (steps.changesets.outputs.published == 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_chrome_extension == 'true')) && github.ref == 'refs/heads/next'
+        if: steps.changesets.outputs.published == 'true' && github.ref == 'refs/heads/next'
         run: npx --yes chrome-webstore-upload-cli@4.0.1 --source ./packages/web-extension/dist/chrome.zip
         env:
           EXTENSION_ID: ${{ secrets.NEXT_CWS_EXTENSION_ID }}
