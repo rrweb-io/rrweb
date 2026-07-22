@@ -37,9 +37,12 @@ import {
 import { VscTriangleDown, VscTriangleUp } from 'react-icons/vsc';
 import { FiEdit3 as EditIcon } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import Browser from 'webextension-polyfill';
 import type { eventWithTime } from 'rrweb';
-import { type Session, EventName } from '~/types';
+import { type CloudSettings, type Session, EventName } from '~/types';
 import Channel from '~/utils/channel';
+import { loadCloudSettings } from '~/utils/cloud-settings';
+import { type SessionUploadResult, uploadSessions } from '~/utils/cloud-upload';
 import {
   deleteSessions,
   getAllSessions,
@@ -69,6 +72,7 @@ export function SessionList() {
     },
   ]);
   const [rowSelection, setRowSelection] = useState({});
+  const [isUploading, setIsUploading] = useState(false);
 
   const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -250,6 +254,88 @@ export function SessionList() {
     reader.readAsText(file);
   };
 
+  const handleUpload = async () => {
+    const selectedRows = table.getSelectedRowModel().flatRows;
+    if (selectedRows.length === 0) return;
+
+    setIsUploading(true);
+    try {
+      let settings: CloudSettings;
+
+      try {
+        settings = await loadCloudSettings(Browser.storage.local);
+      } catch (error) {
+        toast({
+          title: 'Could not load cloud upload settings.',
+          description:
+            error instanceof Error && error.message
+              ? error.message
+              : 'Please try again.',
+          status: 'error',
+          duration: 8000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      let results: SessionUploadResult[];
+
+      try {
+        results = await uploadSessions(
+          selectedRows.map((row) => row.original.id),
+          settings,
+        );
+      } catch (error) {
+        toast({
+          title: 'Could not complete the upload.',
+          description:
+            error instanceof Error && error.message
+              ? error.message
+              : 'Please try again.',
+          status: 'error',
+          duration: 8000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      const failures = results.filter((result) => !result.ok);
+      const successes = results.length - failures.length;
+      const failureDescription = failures
+        .map((result) => `${result.name}: ${result.error ?? 'Upload failed'}`)
+        .join('\n');
+
+      if (failures.length === 0) {
+        toast({
+          title: `Uploaded ${successes} selected session${
+            successes === 1 ? '' : 's'
+          }.`,
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+      } else if (successes > 0) {
+        toast({
+          title: `Uploaded ${successes} of ${results.length} selected sessions.`,
+          description: failureDescription,
+          status: 'warning',
+          duration: 8000,
+          isClosable: true,
+        });
+      } else {
+        toast({
+          title: 'Could not upload the selected sessions.',
+          description: failureDescription,
+          status: 'error',
+          duration: 8000,
+          isClosable: true,
+        });
+      }
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <>
       <Flex justify="flex-end" mb={4}>
@@ -420,6 +506,7 @@ export function SessionList() {
                 mr={4}
                 size="md"
                 colorScheme="red"
+                isDisabled={isUploading}
                 onClick={() => {
                   if (table.getSelectedRowModel().flatRows.length === 0) return;
                   const ids = table
@@ -438,6 +525,7 @@ export function SessionList() {
                 mr={4}
                 size="md"
                 colorScheme="green"
+                isDisabled={isUploading}
                 onClick={() => {
                   const selectedRows = table.getSelectedRowModel().flatRows;
                   if (selectedRows.length === 0) return;
@@ -447,6 +535,18 @@ export function SessionList() {
                 }}
               >
                 Download
+              </Button>
+              <Button
+                mr={4}
+                size="md"
+                colorScheme="blue"
+                isLoading={isUploading}
+                loadingText="Uploading"
+                onClick={() => {
+                  void handleUpload();
+                }}
+              >
+                Upload
               </Button>
             </Flex>
           )}
