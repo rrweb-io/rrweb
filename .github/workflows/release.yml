@@ -54,23 +54,21 @@ jobs:
         run: NODE_OPTIONS='--max-old-space-size=4096' DISABLE_WORKER_INLINING=true yarn turbo run prepublish --filter=@rrweb/web-extension
 
       - name: Publish Chrome Extension
-        uses: mnao305/chrome-extension-upload@v5.0.0
         if: (steps.changesets.outputs.published == 'true' || inputs.publish_chrome_extension) && github.ref == 'refs/heads/main'
-        with:
-          extension-id: 'pdaldeopoccdhlkabbkcjmecmmoninhe'
-          file-path: ./packages/web-extension/dist/chrome.zip
-          client-id: ${{ secrets.CWS_CLIENT_ID }}
-          client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
-          refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
-          publish: true
+        run: npx --yes chrome-webstore-upload-cli@4.0.1 --source ./packages/web-extension/dist/chrome.zip
+        env:
+          EXTENSION_ID: 'pdaldeopoccdhlkabbkcjmecmmoninhe'
+          PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+          CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
 
       - name: Publish Next Chrome Extension
-        uses: mnao305/chrome-extension-upload@v5.0.0
         if: (steps.changesets.outputs.published == 'true' || inputs.publish_chrome_extension) && github.ref == 'refs/heads/next'
-        with:
-          extension-id: ${{ secrets.NEXT_CWS_EXTENSION_ID }}
-          file-path: ./packages/web-extension/dist/chrome.zip
-          client-id: ${{ secrets.NEXT_CWS_CLIENT_ID }}
-          client-secret: ${{ secrets.NEXT_CWS_CLIENT_SECRET }}
-          refresh-token: ${{ secrets.NEXT_CWS_REFRESH_TOKEN }}
-          publish: true
+        run: npx --yes chrome-webstore-upload-cli@4.0.1 --source ./packages/web-extension/dist/chrome.zip
+        env:
+          EXTENSION_ID: ${{ secrets.NEXT_CWS_EXTENSION_ID }}
+          PUBLISHER_ID: ${{ secrets.NEXT_CWS_PUBLISHER_ID }}
+          CLIENT_ID: ${{ secrets.NEXT_CWS_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.NEXT_CWS_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.NEXT_CWS_REFRESH_TOKEN }}
