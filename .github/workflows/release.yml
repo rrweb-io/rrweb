@@ -17,6 +17,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   release:
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next'
     name: Release
     runs-on: ubuntu-latest
     permissions:
