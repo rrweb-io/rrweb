@@ -12,6 +12,11 @@ export type Settings = {
   //
 };
 
+export type CloudSettings = {
+  apiBaseUrl: string;
+  authToken: string;
+};
+
 export enum LocalDataKey {
   recorderStatus = 'recorder_status',
 }
