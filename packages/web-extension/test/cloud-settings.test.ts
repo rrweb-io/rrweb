@@ -81,4 +81,13 @@ describe('cloud settings', () => {
   it('normalizes partial settings without mutating defaults', () => {
     expect(normalizeCloudSettings()).toEqual(DEFAULT_CLOUD_SETTINGS);
   });
+
+  it('uses the default API URL when a configured API URL is blank', () => {
+    expect(
+      normalizeCloudSettings({ apiBaseUrl: '   ', authToken: 'token' }),
+    ).toEqual({
+      apiBaseUrl: DEFAULT_CLOUD_SETTINGS.apiBaseUrl,
+      authToken: 'token',
+    });
+  });
 });

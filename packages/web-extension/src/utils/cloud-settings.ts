@@ -44,7 +44,7 @@ export function normalizeCloudSettings(
 ): CloudSettings {
   return {
     apiBaseUrl:
-      typeof value.apiBaseUrl === 'string'
+      typeof value.apiBaseUrl === 'string' && value.apiBaseUrl.trim()
         ? normalizeApiBaseUrl(value.apiBaseUrl)
         : DEFAULT_CLOUD_SETTINGS.apiBaseUrl,
     authToken:
