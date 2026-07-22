@@ -51,11 +51,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Chrome Extension
-        if: steps.changesets.outputs.published == 'true' || inputs.publish_chrome_extension
+        if: steps.changesets.outputs.published == 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_chrome_extension == 'true')
         run: NODE_OPTIONS='--max-old-space-size=4096' DISABLE_WORKER_INLINING=true yarn turbo run prepublish --filter=@rrweb/web-extension
 
       - name: Publish Chrome Extension
-        if: (steps.changesets.outputs.published == 'true' || inputs.publish_chrome_extension) && github.ref == 'refs/heads/main'
+        if: (steps.changesets.outputs.published == 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_chrome_extension == 'true')) && github.ref == 'refs/heads/main'
         run: npx --yes chrome-webstore-upload-cli@4.0.1 --source ./packages/web-extension/dist/chrome.zip
         env:
           EXTENSION_ID: 'pdaldeopoccdhlkabbkcjmecmmoninhe'
@@ -65,7 +65,7 @@ jobs:
           REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
 
       - name: Publish Next Chrome Extension
-        if: (steps.changesets.outputs.published == 'true' || inputs.publish_chrome_extension) && github.ref == 'refs/heads/next'
+        if: (steps.changesets.outputs.published == 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_chrome_extension == 'true')) && github.ref == 'refs/heads/next'
         run: npx --yes chrome-webstore-upload-cli@4.0.1 --source ./packages/web-extension/dist/chrome.zip
         env:
           EXTENSION_ID: ${{ secrets.NEXT_CWS_EXTENSION_ID }}
