@@ -3,7 +3,7 @@
 Starting from v1.0.0, we add the plugin to record and play back console output.
 This feature aims to provide developers with more information about the bug scene. There are some options for recording and replaying console output.
 
-### Enable Console Recording
+## Enable Console Recording
 
 You can enable the logger using default option like this:
 
