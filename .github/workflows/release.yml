@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
 
       - name: Setup Node.js lts/*
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
         with:
           node-version: lts/*
 
@@ -27,7 +27,7 @@ jobs:
 
       - name: Create Release Pull Request or Publish to npm
         id: changesets
-        uses: changesets/action@v1
+        uses: changesets/action@c8bada60c408975afd1a20b3db81d6eee6789308 # v1
         with:
           publish: yarn run release
         env:
@@ -40,7 +40,7 @@ jobs:
         run: NODE_OPTIONS='--max-old-space-size=4096' DISABLE_WORKER_INLINING=true yarn turbo run prepublish --filter=@rrweb/web-extension
 
       - name: Publish Chrome Extension
-        uses: mnao305/chrome-extension-upload@v5.0.0
+        uses: mnao305/chrome-extension-upload@4008e29e13c144d0f6725462cbd49b7c291b4928 # v5.0.0
         if: steps.changesets.outputs.published == 'true'
         with:
           extension-id: 'pdaldeopoccdhlkabbkcjmecmmoninhe'
