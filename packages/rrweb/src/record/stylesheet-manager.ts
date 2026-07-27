@@ -84,6 +84,49 @@ export class StylesheetManager {
     this.trackedLinkElements = new WeakSet();
   }
 
+  /**
+   * Cleans up stylesheets associated with a removed node.
+   *
+   * @param removedNode - The node that was removed from the DOM.
+   */
+  public cleanupStylesheetsForRemovedNode(removedNode: Node): void {
+    try {
+      if (removedNode.nodeType === Node.DOCUMENT_NODE) {
+        const doc = removedNode as Document;
+        if (doc.adoptedStyleSheets) {
+          for (const sheet of doc.adoptedStyleSheets) {
+            this.styleMirror.remove(sheet);
+          }
+        }
+      }
+
+      if (removedNode.nodeName === 'STYLE') {
+        const styleEl = removedNode as HTMLStyleElement;
+        if (styleEl.sheet) {
+          this.styleMirror.remove(styleEl.sheet);
+        }
+      }
+
+      if (
+        removedNode.nodeName === 'LINK' &&
+        (removedNode as HTMLLinkElement).rel === 'stylesheet'
+      ) {
+        const linkEl = removedNode as HTMLLinkElement;
+        if (linkEl.sheet) {
+          this.styleMirror.remove(linkEl.sheet);
+        }
+      }
+
+      if (removedNode.childNodes) {
+        removedNode.childNodes.forEach((child) => {
+          this.cleanupStylesheetsForRemovedNode(child);
+        });
+      }
+    } catch (e) {
+      // Ignore errors
+    }
+  }
+
   // TODO: take snapshot on stylesheet reload by applying event listener
   private trackStylesheetInLinkElement(_linkEl: HTMLLinkElement) {
     // linkEl.addEventListener('load', () => {

@@ -4,7 +4,11 @@ import {
   type SlimDOMOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import { initObservers, mutationBuffers } from './observer';
+import {
+  initObservers,
+  mutationBuffers,
+  removeMutationBufferForDoc,
+} from './observer';
 import {
   on,
   getWindowWidth,
@@ -39,6 +43,7 @@ import {
   registerErrorHandler,
   unregisterErrorHandler,
 } from './error-handler';
+import { buildAllowedOriginSet } from './cross-origin-utils';
 import dom from '@rrweb/utils';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
@@ -89,6 +94,7 @@ function record<T = eventWithTime>(
     recordDOM = true,
     recordCanvas = false,
     recordCrossOriginIframes = false,
+    allowedIframeOrigins,
     recordAfter = options.recordAfter === 'DOMContentLoaded'
       ? options.recordAfter
       : 'load',
@@ -102,6 +108,18 @@ function record<T = eventWithTime>(
   } = options;
 
   registerErrorHandler(errorHandler);
+
+  let validatedOrigins: ReadonlySet<string> | undefined;
+  if (
+    recordCrossOriginIframes &&
+    allowedIframeOrigins &&
+    allowedIframeOrigins.length > 0
+  ) {
+    validatedOrigins = buildAllowedOriginSet(allowedIframeOrigins);
+    if (validatedOrigins.size === 0) {
+      validatedOrigins = undefined;
+    }
+  }
 
   const inEmittingFrame = recordCrossOriginIframes
     ? window.parent === window
@@ -155,6 +173,7 @@ function record<T = eventWithTime>(
           textarea: true,
           select: true,
           password: true,
+          hidden: true,
         }
       : _maskInputOptions !== undefined
       ? _maskInputOptions
@@ -226,7 +245,13 @@ function record<T = eventWithTime>(
         origin: window.location.origin,
         isCheckout,
       };
-      window.parent.postMessage(message, '*');
+      if (validatedOrigins) {
+        for (const targetOrigin of validatedOrigins) {
+          window.parent.postMessage(message, targetOrigin);
+        }
+      } else {
+        window.parent.postMessage(message, '*');
+      }
     }
 
     if (e.type === EventType.FullSnapshot) {
@@ -575,7 +600,28 @@ function record<T = eventWithTime>(
 
     iframeManager.addLoadListener((iframeEl) => {
       try {
-        handlers.push(observe(iframeEl.contentDocument!));
+        const iframeDoc = iframeEl.contentDocument!;
+        const iframeHandler = observe(iframeDoc);
+        handlers.push(iframeHandler);
+
+        const existingCleanup = iframeManager.getObserverCleanup(iframeEl);
+        iframeManager.setObserverCleanup(iframeEl, () => {
+          if (existingCleanup) {
+            try {
+              existingCleanup();
+            } catch (e) {
+              // Ignore errors during cleanup
+            }
+          }
+          try {
+            iframeHandler();
+            const idx = handlers.indexOf(iframeHandler);
+            if (idx !== -1) handlers.splice(idx, 1);
+            removeMutationBufferForDoc(iframeDoc);
+          } catch (e) {
+            // Ignore errors during cleanup
+          }
+        });
       } catch (error) {
         // TODO: handle internal error
         console.warn(error);
@@ -625,9 +671,9 @@ function record<T = eventWithTime>(
           /**
            * https://github.com/rrweb-io/rrweb/pull/1695
            * This error can occur in a known scenario:
-           * If an iframe is initially same-origin and observed, but later its 
-           location is changed in an opaque way to a cross-origin URL (perhaps within the iframe via its `document.location` or a redirect) 
-           * attempting to execute the handler in the stop record function will 
+           * If an iframe is initially same-origin and observed, but later its
+           location is changed in an opaque way to a cross-origin URL (perhaps within the iframe via its `document.location` or a redirect)
+           * attempting to execute the handler in the stop record function will
            throw a "cannot access cross-origin frame" error.
            * This error is expected and can be safely ignored.
            */

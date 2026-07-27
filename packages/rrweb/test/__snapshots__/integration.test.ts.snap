@@ -2954,8 +2954,23 @@ exports[`record integration tests > can record form interactions 1`] = `
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 63
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"input\\",
+                        \\"attributes\\": {
+                          \\"type\\": \\"hidden\\",
+                          \\"value\\": \\"123456\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"id\\": 64
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 65
                       }
                     ],
                     \\"id\\": 18
@@ -2963,7 +2978,7 @@ exports[`record integration tests > can record form interactions 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 64
+                    \\"id\\": 66
                   },
                   {
                     \\"type\\": 2,
@@ -2973,15 +2988,15 @@ exports[`record integration tests > can record form interactions 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 66
+                        \\"id\\": 68
                       }
                     ],
-                    \\"id\\": 65
+                    \\"id\\": 67
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 67
+                    \\"id\\": 69
                   }
                 ],
                 \\"id\\": 16
@@ -4940,8 +4955,23 @@ exports[`record integration tests > can use maskInputOptions to configure which 
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 63
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"input\\",
+                        \\"attributes\\": {
+                          \\"type\\": \\"hidden\\",
+                          \\"value\\": \\"123456\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"id\\": 64
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 65
                       }
                     ],
                     \\"id\\": 18
@@ -4949,7 +4979,7 @@ exports[`record integration tests > can use maskInputOptions to configure which 
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 64
+                    \\"id\\": 66
                   },
                   {
                     \\"type\\": 2,
@@ -4959,15 +4989,15 @@ exports[`record integration tests > can use maskInputOptions to configure which 
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 66
+                        \\"id\\": 68
                       }
                     ],
-                    \\"id\\": 65
+                    \\"id\\": 67
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 67
+                    \\"id\\": 69
                   }
                 ],
                 \\"id\\": 16
@@ -6769,8 +6799,23 @@ exports[`record integration tests > should mask inputs via function call 1`] = `
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 63
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"input\\",
+                        \\"attributes\\": {
+                          \\"type\\": \\"hidden\\",
+                          \\"value\\": \\"******\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"id\\": 64
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 65
                       }
                     ],
                     \\"id\\": 18
@@ -6778,7 +6823,7 @@ exports[`record integration tests > should mask inputs via function call 1`] = `
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 64
+                    \\"id\\": 66
                   },
                   {
                     \\"type\\": 2,
@@ -6788,15 +6833,15 @@ exports[`record integration tests > should mask inputs via function call 1`] = `
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 66
+                        \\"id\\": 68
                       }
                     ],
-                    \\"id\\": 65
+                    \\"id\\": 67
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 67
+                    \\"id\\": 69
                   }
                 ],
                 \\"id\\": 16
@@ -10599,8 +10644,23 @@ exports[`record integration tests > should not record input values if maskAllInp
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 63
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"input\\",
+                        \\"attributes\\": {
+                          \\"type\\": \\"hidden\\",
+                          \\"value\\": \\"******\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"id\\": 64
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 65
                       }
                     ],
                     \\"id\\": 18
@@ -10608,7 +10668,7 @@ exports[`record integration tests > should not record input values if maskAllInp
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 64
+                    \\"id\\": 66
                   },
                   {
                     \\"type\\": 2,
@@ -10618,15 +10678,15 @@ exports[`record integration tests > should not record input values if maskAllInp
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 66
+                        \\"id\\": 68
                       }
                     ],
-                    \\"id\\": 65
+                    \\"id\\": 67
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 67
+                    \\"id\\": 69
                   }
                 ],
                 \\"id\\": 16
@@ -13715,8 +13775,23 @@ exports[`record integration tests > should record input userTriggered values if 
                       },
                       {
                         \\"type\\": 3,
-                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"textContent\\": \\"\\\\n      \\",
                         \\"id\\": 63
+                      },
+                      {
+                        \\"type\\": 2,
+                        \\"tagName\\": \\"input\\",
+                        \\"attributes\\": {
+                          \\"type\\": \\"hidden\\",
+                          \\"value\\": \\"123456\\"
+                        },
+                        \\"childNodes\\": [],
+                        \\"id\\": 64
+                      },
+                      {
+                        \\"type\\": 3,
+                        \\"textContent\\": \\"\\\\n    \\",
+                        \\"id\\": 65
                       }
                     ],
                     \\"id\\": 18
@@ -13724,7 +13799,7 @@ exports[`record integration tests > should record input userTriggered values if 
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n  \\\\n    \\",
-                    \\"id\\": 64
+                    \\"id\\": 66
                   },
                   {
                     \\"type\\": 2,
@@ -13734,15 +13809,15 @@ exports[`record integration tests > should record input userTriggered values if 
                       {
                         \\"type\\": 3,
                         \\"textContent\\": \\"SCRIPT_PLACEHOLDER\\",
-                        \\"id\\": 66
+                        \\"id\\": 68
                       }
                     ],
-                    \\"id\\": 65
+                    \\"id\\": 67
                   },
                   {
                     \\"type\\": 3,
                     \\"textContent\\": \\"\\\\n    \\\\n    \\\\n\\\\n\\",
-                    \\"id\\": 67
+                    \\"id\\": 69
                   }
                 ],
                 \\"id\\": 16

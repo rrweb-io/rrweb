@@ -1302,6 +1302,9 @@ export class Replayer {
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
         }
+        if (!this.mediaManager.isSupportedMediaElement(target)) {
+          return this.debugNodeNotFound(d, d.id);
+        }
         const mediaEl = target as HTMLMediaElement | RRMediaElement;
         const { events } = this.service.state.context;
 
@@ -2048,11 +2051,13 @@ export class Replayer {
         styleSheet.rules,
         data.index,
       ) as unknown as CSSStyleRule;
-      rule.style.setProperty(
-        data.set.property,
-        data.set.value,
-        data.set.priority,
-      );
+      if (rule?.style) {
+        rule.style.setProperty(
+          data.set.property,
+          data.set.value,
+          data.set.priority,
+        );
+      }
     }
 
     if (data.remove) {
@@ -2060,7 +2065,9 @@ export class Replayer {
         styleSheet.rules,
         data.index,
       ) as unknown as CSSStyleRule;
-      rule.style.removeProperty(data.remove.property);
+      if (rule?.style) {
+        rule.style.removeProperty(data.remove.property);
+      }
     }
   }
 

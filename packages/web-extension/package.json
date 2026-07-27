@@ -1,7 +1,7 @@
 {
-  "name": "@rrweb/web-extension",
+  "name": "@mixpanel/rrweb-web-extension",
   "private": true,
-  "version": "2.0.0-alpha.18",
+  "version": "2.0.0-alpha.18.5",
   "description": "The web extension of rrweb which helps to run rrweb on any website out of box",
   "author": "rrweb-io",
   "license": "MIT",
@@ -15,10 +15,10 @@
     "pack:firefox": "cross-env TARGET_BROWSER=firefox ZIP=true vite build",
     "check-types": "tsc -noEmit",
     "build": "npm run pack:chrome && npm run pack:firefox",
-    "prepublish": "yarn build"
+    "prepublish": "echo 'Skipping build for extension'"
   },
   "devDependencies": {
-    "@rrweb/types": "^2.0.0-alpha.18",
+    "@mixpanel/rrweb-types": "^2.0.0-alpha.18",
     "@types/chrome": "^0.0.287",
     "@types/react-dom": "^18.0.6",
     "@types/semver": "^7.5.8",
@@ -44,7 +44,7 @@
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
     "react-router-dom": "^6.4.1",
-    "rrweb": "^2.0.0-alpha.18",
-    "rrweb-player": "^2.0.0-alpha.18"
+    "@mixpanel/rrweb": "^2.0.0-alpha.18",
+    "@mixpanel/rrweb-player": "^2.0.0-alpha.18"
   }
 }

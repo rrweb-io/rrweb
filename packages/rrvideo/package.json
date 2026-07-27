@@ -1,6 +1,6 @@
 {
-  "name": "rrvideo",
-  "version": "2.0.0-alpha.18",
+  "name": "@mixpanel/rrvideo",
+  "version": "2.0.0-alpha.18.5",
   "description": "transform rrweb session into video",
   "main": "build/index.js",
   "bin": {
@@ -27,7 +27,7 @@
     "@types/node": "^18.15.11",
     "jest": "^27.5.1",
     "ts-jest": "^27.1.3",
-    "@rrweb/types": "^2.0.0-alpha.18"
+    "@mixpanel/rrweb-types": "^2.0.0-alpha.18"
   },
   "dependencies": {
     "@open-tech-world/cli-progress-bar": "^2.0.2",

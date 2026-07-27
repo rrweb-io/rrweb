@@ -1,4 +1,4 @@
-export * from 'rrweb';
-export * from '@rrweb/packer';
-// export * from '@rrweb/rrweb-plugin-console-record';
-// export * from '@rrweb/rrweb-plugin-console-replay';
+export * from '@mixpanel/rrweb';
+export * from '@mixpanel/rrweb-packer';
+// export * from '@mixpanel/rrweb-plugin-console-record';
+// export * from '@mixpanel/rrweb-plugin-console-replay';

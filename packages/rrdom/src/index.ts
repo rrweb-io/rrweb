@@ -368,7 +368,7 @@ export class Mirror implements IMirror<RRNode> {
 
   // removes the node from idNodeMap
   // doesn't remove the node from nodeMetaMap
-  removeNodeFromMap(n: RRNode) {
+  removeNodeFromMap(n: RRNode, _permanent?: boolean) {
     const id = this.getId(n);
     this.idNodeMap.delete(id);
 
