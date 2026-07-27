@@ -1109,7 +1109,8 @@ exports[`cross origin iframes > form.html > should map input events correctly 1`
                                 \\"type\\": 2,
                                 \\"tagName\\": \\"input\\",
                                 \\"attributes\\": {
-                                  \\"type\\": \\"text\\"
+                                  \\"type\\": \\"text\\",
+                                  \\"placeholder\\": \\"Enter your email\\"
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
@@ -1270,7 +1271,8 @@ exports[`cross origin iframes > form.html > should map input events correctly 1`
                                   \\"id\\": \\"\\",
                                   \\"cols\\": \\"30\\",
                                   \\"rows\\": \\"10\\",
-                                  \\"data-unmask-example\\": \\"true\\"
+                                  \\"data-unmask-example\\": \\"true\\",
+                                  \\"placeholder\\": \\"Tell us about yourself\\"
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
@@ -2122,7 +2124,8 @@ exports[`cross origin iframes > form.html > should map scroll events correctly 1
                                 \\"type\\": 2,
                                 \\"tagName\\": \\"input\\",
                                 \\"attributes\\": {
-                                  \\"type\\": \\"text\\"
+                                  \\"type\\": \\"text\\",
+                                  \\"placeholder\\": \\"Enter your email\\"
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
@@ -2283,7 +2286,8 @@ exports[`cross origin iframes > form.html > should map scroll events correctly 1
                                   \\"id\\": \\"\\",
                                   \\"cols\\": \\"30\\",
                                   \\"rows\\": \\"10\\",
-                                  \\"data-unmask-example\\": \\"true\\"
+                                  \\"data-unmask-example\\": \\"true\\",
+                                  \\"placeholder\\": \\"Tell us about yourself\\"
                                 },
                                 \\"childNodes\\": [],
                                 \\"rootId\\": 11,
