@@ -15,6 +15,8 @@ export type ClickTrackPayload = {
   aspect: number;
   /** Viewport width in CSS pixels at click time */
   viewportWidth: number;
+  /** Viewport height in CSS pixels at click time */
+  viewportHeight: number;
   hrefAttr?: string;
   srcAttr?: string;
   targetText?: string;
@@ -297,6 +299,7 @@ function buildPayload(
     percentY: Math.round(10 * ((e.clientY - bounds.y) / h) * 100) / 10,
     aspect: Math.round(100 * (w / h)) / 100,
     viewportWidth: window.innerWidth,
+    viewportHeight: window.innerHeight,
   };
 
   if (lastPointerType) {
