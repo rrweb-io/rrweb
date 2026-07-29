@@ -37,6 +37,9 @@
     "click-tracking"
   ],
   "license": "MIT",
+  "dependencies": {
+    "semantic-selector": "^0.1.0"
+  },
   "devDependencies": {
     "rrweb": "^2.0.1",
     "typescript": "^5.4.5",
