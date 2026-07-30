@@ -24,8 +24,6 @@ export type ClickTrackPayload = {
   viewportWidth: number;
   /** Viewport height in CSS pixels at click time */
   viewportHeight: number;
-  hrefAttr?: string;
-  srcAttr?: string;
   targetText?: string;
   sigTargetTagName?: string;
   sigTargetInternal?: boolean;
@@ -141,12 +139,6 @@ function buildPayload(
     }
   } catch {
     // querySelectorAll can throw on exotic selectors; just skip the index.
-  }
-  if (tag === 'img') {
-    const srcAttr = significantEl.getAttribute('src');
-    if (srcAttr && !srcAttr.startsWith('data:')) {
-      payload.srcAttr = srcAttr.substring(0, 300);
-    }
   }
 
   if (opts.targetText !== false) {

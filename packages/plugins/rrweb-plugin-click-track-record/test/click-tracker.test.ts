@@ -95,17 +95,21 @@ describe('createClickTracker (standalone)', () => {
     stop();
   });
 
-  it('extracts hrefAttr for links', () => {
-    setHTML('<a href="/products" id="link">Products</a>');
+  it('embodies the link URL in the selector', () => {
+    // A weak, enumerated id (word stem + trailing number) is not a strong
+    // anchor by semantic-selector's rules, so the href becomes the element's
+    // identity and is embedded as a[href="…"] — the plugin no longer records a
+    // separate hrefAttr field.
+    const weak_id = 'link_1';
+    setHTML(`<a href="/products" id="${weak_id}">Products</a>`);
     const payloads: ClickTrackPayload[] = [];
     const stop = createClickTracker({
       callback: (p) => payloads.push(p),
     });
 
-    click(document.getElementById('link')!);
+    click(document.getElementById(weak_id)!);
 
-    expect(payloads[0].hrefAttr).toBe('/products');
-    expect((payloads[0] as Record<string, unknown>).href).toBeUndefined();
+    expect(payloads[0].targetSelector).toContain('[href="/products"]');
 
     stop();
   });
@@ -194,7 +198,6 @@ describe('createClickTracker (standalone)', () => {
     click(document.getElementById('inner')!);
 
     expect(payloads[0].sigTargetTagName).toBe('A');
-    expect(payloads[0].hrefAttr).toBe('/page');
     expect(payloads[0].targetText).toBe('Click');
     // targetSelector is for the actual clicked element (span)
     expect(payloads[0].targetTagName).toBe('SPAN');
