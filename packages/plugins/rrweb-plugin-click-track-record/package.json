@@ -6,6 +6,7 @@
   "main": "./dist/rrweb-plugin-click-track-record.umd.cjs",
   "module": "./dist/rrweb-plugin-click-track-record.js",
   "unpkg": "./dist/rrweb-plugin-click-track-record.umd.cjs",
+  "jsdelivr": "./umd/rrweb-plugin-click-track-record.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -20,6 +21,7 @@
     }
   },
   "files": [
+    "umd",
     "dist",
     "package.json"
   ],
@@ -31,12 +33,21 @@
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb.git"
+  },
   "keywords": [
     "rrweb",
     "heatmap",
     "click-tracking"
   ],
+  "author": "rrweb Core Team <maintainers@rrweb.com>",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rrweb-io/rrweb/issues"
+  },
+  "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "dependencies": {
     "semantic-selector": "^0.1.0"
   },
