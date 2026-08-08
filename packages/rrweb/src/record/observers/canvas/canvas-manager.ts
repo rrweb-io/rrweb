@@ -32,6 +32,14 @@ export class CanvasManager {
 
   private mutationCb: canvasMutationCallback;
   private resetObservers?: listenerHandler;
+  private recordCanvas: boolean;
+  private sampling: 'all' | number;
+  private blockClass: blockClass;
+  private blockSelector: string | null;
+  private dataURLOptions: DataURLOptions;
+  private observedWindows: WeakSet<IWindow> = new WeakSet();
+  private windowResetObservers: listenerHandler[] = [];
+  private rafStarted = false;
   private frozen = false;
   private locked = false;
 
@@ -76,13 +84,55 @@ export class CanvasManager {
     } = options;
     this.mutationCb = options.mutationCb;
     this.mirror = options.mirror;
+    this.recordCanvas = recordCanvas;
+    this.sampling = sampling;
+    this.blockClass = blockClass;
+    this.blockSelector = blockSelector;
+    this.dataURLOptions = dataURLOptions;
 
-    if (recordCanvas && sampling === 'all')
-      this.initCanvasMutationObserver(win, blockClass, blockSelector);
-    if (recordCanvas && typeof sampling === 'number')
-      this.initCanvasFPSObserver(sampling, win, blockClass, blockSelector, {
-        dataURLOptions,
-      });
+    if (recordCanvas && (sampling === 'all' || typeof sampling === 'number')) {
+      this.addWindow(win);
+    }
+  }
+
+  public addWindow(win: IWindow) {
+    if (!this.recordCanvas || this.observedWindows.has(win)) return;
+    this.observedWindows.add(win);
+
+    let reset: listenerHandler = () => {
+      //
+    };
+    try {
+      if (this.sampling === 'all') {
+        if (!this.rafStarted) {
+          this.rafStarted = true;
+          this.startRAFTimestamping();
+          this.startPendingCanvasMutationFlusher();
+        }
+        reset = this.initCanvasMutationObserver(
+          win,
+          this.blockClass,
+          this.blockSelector,
+        );
+      } else if (typeof this.sampling === 'number') {
+        reset = this.initCanvasFPSObserver(
+          this.sampling,
+          win,
+          this.blockClass,
+          this.blockSelector,
+          {
+            dataURLOptions: this.dataURLOptions,
+          },
+        );
+      }
+    } catch (error) {
+      console.warn('rrweb: failed to observe canvas in window', error);
+    }
+
+    this.windowResetObservers.push(reset);
+    this.resetObservers = () => {
+      this.windowResetObservers.forEach((handler) => handler());
+    };
   }
 
   private processMutation: canvasManagerMutationCallback = (
@@ -110,7 +160,7 @@ export class CanvasManager {
     options: {
       dataURLOptions: DataURLOptions;
     },
-  ) {
+  ): listenerHandler {
     const canvasContextReset = initCanvasContextObserver(
       win,
       blockClass,
@@ -231,7 +281,7 @@ export class CanvasManager {
 
     rafId = requestAnimationFrame(takeCanvasSnapshots);
 
-    this.resetObservers = () => {
+    return () => {
       canvasContextReset();
       cancelAnimationFrame(rafId);
     };
@@ -241,10 +291,7 @@ export class CanvasManager {
     win: IWindow,
     blockClass: blockClass,
     blockSelector: string | null,
-  ): void {
-    this.startRAFTimestamping();
-    this.startPendingCanvasMutationFlusher();
-
+  ): listenerHandler {
     const canvasContextReset = initCanvasContextObserver(
       win,
       blockClass,
@@ -265,7 +312,7 @@ export class CanvasManager {
       blockSelector,
     );
 
-    this.resetObservers = () => {
+    return () => {
       canvasContextReset();
       canvas2DReset();
       canvasWebGL1and2Reset();
