@@ -93,8 +93,8 @@ describe('replayer', function () {
       window.replayer.addEvent(events[0]);
       const fullSnapshot = events[1];
 
-      // filtering: avoid the bit where we pause/wait for the css assets when building a full snapshot
-      fullSnapshot.data.capturedAssetStatuses = fullSnapshot.data.capturedAssetStatuses.filter(s => !s.url.includes('css') && !s.url.includes('style'));
+      // avoid the bit where we hold off attaching the snapshot while waiting for the css assets
+      delete fullSnapshot.data.maxAssetWithin;
       window.replayer.addEvent(fullSnapshot);
     `);
 
@@ -126,6 +126,83 @@ describe('replayer', function () {
       await waitForRAF(page);
       const image = await page.screenshot();
       expect(image).toMatchImageSnapshot(); // should be blank white and not have image rendered yet
+    });
+
+    it('should keep waiting for stylesheet assets when a sync mutation arrives first', async () => {
+      // A live catch-up replays past-timestamped events synchronously. A sync
+      // mutation must not abort the asset-wait by switching to the virtual dom
+      // (which forks from the real document and would attach the snapshot early).
+      await page.evaluate(`
+      const { Replayer } = rrweb;
+      window.replayer = new Replayer([], {
+        liveMode: true,
+      });
+      replayer.startLive();
+      window.replayer.addEvent(events[0]);
+      window.replayer.addEvent(events[1]);
+      window.replayer.addEvent({
+        type: 3, // IncrementalSnapshot
+        data: {
+          source: 0, // Mutation
+          texts: [],
+          attributes: [],
+          removes: [],
+          adds: [
+            {
+              parentId: 14, // body
+              nextId: null,
+              node: {
+                type: 2,
+                tagName: 'div',
+                attributes: {},
+                childNodes: [],
+                id: 1000,
+              },
+            },
+          ],
+        },
+        timestamp: events[1].timestamp + 1,
+      });
+    `);
+
+      await waitForRAF(page);
+
+      // the snapshot must still be detached (held); nothing rebuilt into the iframe
+      const attached = await page.evaluate(
+        `!!document.querySelector('iframe').contentDocument.querySelector('img')`,
+      );
+      expect(attached).toBe(false);
+    });
+
+    it('should fall back to the original stylesheet url when its asset never arrives', async () => {
+      // when the asset-wait budget elapses with the stylesheet asset still
+      // missing (e.g. the recorder disconnected before uploading it), the
+      // captured <link> should revert to an @import of its original href
+      // rather than leave the page permanently unstyled
+      await page.evaluate(`
+      const { Replayer } = rrweb;
+      window.replayer = new Replayer([], {
+        liveMode: true,
+      });
+      replayer.startLive();
+      window.replayer.addEvent(events[0]);
+      window.replayer.addEvent(events[1]);
+      // deliberately never add events[3]/events[4], the stylesheet assets
+    `);
+
+      // wait past the snapshot's maxAssetWithin (50) + 100ms margin
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      const revertedToImport = await page.evaluate(`
+        Array.from(
+          document.querySelector('iframe').contentDocument.querySelectorAll('style'),
+        ).some(
+          (s) =>
+            s.textContent.includes('@import') &&
+            s.textContent.includes('example.com/style.css'),
+        )
+      `);
+      expect(revertedToImport).toBe(true);
     });
 
     it('should fall back to the original stylesheet url when its asset never arrives', async () => {
@@ -230,8 +307,8 @@ describe('replayer', function () {
       window.replayer.addEvent(events[0]);
       const fullSnapshot = events[1];
 
-      // filtering: avoid the bit where we pause/wait for the css assets when building a full snapshot
-      fullSnapshot.data.capturedAssetStatuses = fullSnapshot.data.capturedAssetStatuses.filter(s => !s.url.includes('css') && !s.url.includes('style'));
+      // avoid the bit where we hold off attaching the snapshot while waiting for the css assets
+      delete fullSnapshot.data.maxAssetWithin;
       window.replayer.addEvent(fullSnapshot);
     `);
 

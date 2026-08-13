@@ -204,11 +204,6 @@ export function stringifySnapshots(snapshots: eventWithTime[]): string {
             }
           });
         } else if (
-          s.type === EventType.FullSnapshot &&
-          s.data.capturedAssetStatuses
-        ) {
-          s.data.capturedAssetStatuses.forEach(stripBlobURLsFromValues);
-        } else if (
           s.type === EventType.IncrementalSnapshot &&
           s.data.source === IncrementalSource.MediaInteraction
         ) {

@@ -29,8 +29,12 @@ export default class AssetManager implements RebuildAssetManagerInterface {
   > = new Map();
   private liveMode: boolean;
   private cache: BuildCache;
-  public expectedAssets: Set<string> | null = null;
   public replayerApproxTs = 0;
+
+  // Assets which are intrinsic to a FullSnapshot, i.e. should delay rebuild until they are ready
+  public fullSnapshotAssets:
+    | { url: string; ready: Promise<unknown> }[]
+    | null = null;
 
   constructor({ liveMode, cache }: { liveMode: boolean; cache: BuildCache }) {
     this.liveMode = liveMode;
@@ -49,9 +53,6 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       return;
     }
     this.loadingURLs.add(url);
-    if (this.expectedAssets !== null) {
-      this.expectedAssets.delete(url);
-    }
 
     // tracks if deserializing did anything, not really needed for AssetManager
     const status = {
@@ -115,16 +116,6 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       currentStatus.status === 'failed'
     ) {
       return currentStatus;
-    } else if (
-      currentStatus.status === 'unknown' &&
-      this.expectedAssets !== null &&
-      this.expectedAssets.size === 0 &&
-      !this.liveMode
-    ) {
-      // we don't expect assets to arrive later
-      return {
-        status: 'failed',
-      };
     }
     let resolve: (status: RebuildAssetManagerFinalStatus) => void;
     const promise = new Promise<RebuildAssetManagerFinalStatus>((r) => {
@@ -137,6 +128,18 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     this.callbackMap.get(url)!.push(resolve!);
 
     return promise;
+  }
+
+  /**
+   * Mark an asset as failed if it hasn't arrived in time
+   * `whenReady` sees the 'failed' status and can provide a fallback
+   */
+  public failAsset(url: string) {
+    if (this.get(url).status === 'loaded') {
+      return;
+    }
+    this.failedURLs.add(url);
+    this.executeCallbacks(url, { status: 'failed' });
   }
 
   public get(url: string): RebuildAssetManagerStatus {
@@ -292,8 +295,8 @@ export default class AssetManager implements RebuildAssetManagerInterface {
           }
         }
       }
-      promises.push(
-        this.whenReady(serializedValue).then((status) => {
+      const whenReadyPromise = this.whenReady(serializedValue).then(
+        (status) => {
           if (status.status !== 'loaded') {
             // only 'failed' should be possible
             // failed to load asset, try to revert to recorded value
@@ -350,8 +353,17 @@ export default class AssetManager implements RebuildAssetManagerInterface {
           } else {
             node.setAttribute(attribute, status.url);
           }
-        }),
+        },
       );
+      promises.push(whenReadyPromise);
+      if (isCssTextElement) {
+        // also includes <link>s which are not intrinsic to the fullsnapshot
+        // but which in most browsers do delay record time rendering, so we should delay rebuild likewise
+        this.fullSnapshotAssets?.push({
+          url: serializedValue,
+          ready: whenReadyPromise,
+        });
+      }
     }
 
     return Promise.all(promises);

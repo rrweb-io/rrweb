@@ -1,5 +1,5 @@
 import {
-  rebuild,
+  rebuildDetached,
   adaptCssForReplay,
   buildNodeWithSN,
   type BuildCache,
@@ -71,6 +71,7 @@ import type {
   styleDeclarationData,
   adoptedStyleSheetData,
   serializedElementNodeWithId,
+  serializedDocumentNodeWithId,
 } from '@rrweb/types';
 import {
   polyfill,
@@ -161,6 +162,8 @@ export class Replayer {
   private mediaManager: MediaManager;
 
   private firstFullSnapshot: eventWithTime | true | null = null;
+
+  private pendingFullSnapshotRender: (() => void) | null = null;
 
   private newDocumentQueue: addedNodeMutation[] = [];
 
@@ -303,15 +306,7 @@ export class Replayer {
           }
         }
 
-        this.constructedStyleMutations.forEach((data) => {
-          this.applyStyleSheetMutation(data);
-        });
-        this.constructedStyleMutations = [];
-
-        this.adoptedStyleSheets.forEach((data) => {
-          this.applyAdoptedStyleSheet(data);
-        });
-        this.adoptedStyleSheets = [];
+        this.applyQueuedStyleSheets();
       }
 
       if (this.mousePos) {
@@ -423,11 +418,9 @@ export class Replayer {
           return;
         }
         this.firstFullSnapshot = firstFullsnapshot;
+        // scrolls to the snapshot's initialOffset once it attaches
         this.rebuildFullSnapshot(
           firstFullsnapshot as fullSnapshotEvent & { timestamp: number },
-        );
-        this.iframe.contentWindow?.scrollTo(
-          (firstFullsnapshot as fullSnapshotEvent).data.initialOffset,
         );
       }, 1);
     }
@@ -718,8 +711,8 @@ export class Replayer {
           }
           this.mediaManager.reset();
           this.styleMirror.reset();
+          // scrolls to the snapshot's initialOffset once it attaches
           this.rebuildFullSnapshot(event, isSync);
-          this.iframe.contentWindow?.scrollTo(event.data.initialOffset);
         };
         break;
       case EventType.IncrementalSnapshot:
@@ -866,37 +859,88 @@ export class Replayer {
       this.usingVirtualDom = false;
     }
 
+    // a still-pending earlier snapshot is superseded by this one
+    this.pendingFullSnapshotRender = null;
     this.mirror.reset();
-    rebuild(event.data.node, {
-      doc: this.iframe.contentDocument,
-      afterAppend,
-      cache: this.cache,
-      mirror: this.mirror,
-      UNSAFE_allowUnprotectedRebuild: this.UNSAFE_replayCanvas,
-      assetManager: this.assetManager,
-    });
-    afterAppend(this.iframe.contentDocument, event.data.node.id);
+    const fullSnapshotAssets: { url: string; ready: Promise<unknown> }[] = [];
+    this.assetManager.fullSnapshotAssets = fullSnapshotAssets;
+    const { attach } = rebuildDetached(
+      event.data.node as serializedDocumentNodeWithId,
+      {
+        doc: this.iframe.contentDocument,
+        afterAppend,
+        cache: this.cache,
+        mirror: this.mirror,
+        UNSAFE_allowUnprotectedRebuild: this.UNSAFE_replayCanvas,
+        assetManager: this.assetManager,
+      },
+    );
+    this.assetManager.fullSnapshotAssets = null;
 
-    for (const { mutationInQueue, builtNode } of collectedIframes) {
-      this.attachDocumentToIframe(mutationInQueue, builtNode);
-      this.newDocumentQueue = this.newDocumentQueue.filter(
-        (m) => m !== mutationInQueue,
+    const completeRender = () => {
+      if (!this.iframe.contentDocument) {
+        return; // replayer was destroyed while the attach was pending
+      }
+      attach();
+      afterAppend(this.iframe.contentDocument, event.data.node.id);
+
+      for (const { mutationInQueue, builtNode } of collectedIframes) {
+        this.attachDocumentToIframe(mutationInQueue, builtNode);
+        this.newDocumentQueue = this.newDocumentQueue.filter(
+          (m) => m !== mutationInQueue,
+        );
+      }
+      const { documentElement, head } = this.iframe.contentDocument;
+      this.insertStyleRules(documentElement, head);
+      this.applyQueuedStyleSheets(); // sequence: after resetDocument and any nested iframes have been attached
+      collectedDialogs.forEach((d) => applyDialogToTopLevel(d));
+      if (!this.service.state.matches('playing')) {
+        this.iframe.contentDocument
+          .getElementsByTagName('html')[0]
+          .classList.add('rrweb-paused');
+      }
+      this.iframe.contentWindow?.scrollTo(event.data.initialOffset);
+      this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded, event);
+      if (!isSync) {
+        this.waitForStylesheetLoad();
+      }
+      if (this.config.UNSAFE_replayCanvas) {
+        void this.preloadAllImages();
+      }
+    };
+
+    const { maxAssetWithin } = event.data;
+    if (
+      (this.config.liveMode || !isSync) &&
+      maxAssetWithin &&
+      fullSnapshotAssets.length
+    ) {
+      // hold the previous frame on screen until fullsnapshot assets for this
+      // snapshot have arrived (e.g. inline styles), avoiding FOUC
+      const doRender = () => {
+        if (this.pendingFullSnapshotRender !== doRender) {
+          return; // already rendered, or superseded by a newer snapshot
+        }
+        this.pendingFullSnapshotRender = null;
+        clearTimeout(renderTimeout);
+        completeRender();
+      };
+      const renderTimeout = setTimeout(() => {
+        // assets still outstanding; fail them to revert
+        // to original URL if possible (mainly <link> -> @import
+        // fallback as missing <style> has no fallback)
+        for (const { url } of fullSnapshotAssets) {
+          this.assetManager.failAsset(url);
+        }
+        doRender();
+      }, maxAssetWithin + 100); // margin for processing time
+      this.pendingFullSnapshotRender = doRender;
+      void Promise.all(fullSnapshotAssets.map(({ ready }) => ready)).then(
+        doRender,
       );
-    }
-    const { documentElement, head } = this.iframe.contentDocument;
-    this.insertStyleRules(documentElement, head);
-    collectedDialogs.forEach((d) => applyDialogToTopLevel(d));
-    if (!this.service.state.matches('playing')) {
-      this.iframe.contentDocument
-        .getElementsByTagName('html')[0]
-        .classList.add('rrweb-paused');
-    }
-    this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded, event);
-    if (!isSync) {
-      this.waitForStylesheetLoad();
-    }
-    if (this.config.UNSAFE_replayCanvas) {
-      void this.preloadAllImages();
+    } else {
+      // e.g. scrub fast-forward jump - render synchronously
+      completeRender();
     }
   }
 
@@ -945,6 +989,10 @@ export class Replayer {
     mutation: addedNodeMutation,
     iframeEl: HTMLIFrameElement | RRIFrameElement,
   ) {
+    if (!this.usingVirtualDom && !iframeEl.contentDocument) {
+      // an iframe only gains a contentDocument when added to an attached document
+      this.pendingFullSnapshotRender?.();
+    }
     const mirror: RRDOMMirror | Mirror = this.usingVirtualDom
       ? this.virtualDom.mirror
       : this.mirror;
@@ -1081,14 +1129,6 @@ export class Replayer {
     fullSnapshot: fullSnapshotEvent & { timestamp: number },
   ): Promise<void[]> {
     const promises: Promise<void>[] = [];
-    if (fullSnapshot.data.capturedAssetStatuses) {
-      fullSnapshot.data.capturedAssetStatuses.forEach((status) => {
-        if (this.assetManager.expectedAssets === null) {
-          this.assetManager.expectedAssets = new Set();
-        }
-        this.assetManager.expectedAssets.add(status.url);
-      });
-    }
     for (const event of this.service.state.context.events) {
       if (event.timestamp < fullSnapshot.timestamp) continue;
       if (
@@ -1382,7 +1422,12 @@ export class Replayer {
             (
               this.virtualDom.mirror.getNode(d.id) as RRStyleElement | null
             )?.rules.push(d);
-        } else this.applyStyleSheetMutation(d);
+        } else if (this.pendingFullSnapshotRender && d.styleId) {
+          this.constructedStyleMutations.push(d);
+        } else {
+          this.pendingFullSnapshotRender?.();  // need the real dom to have a `.sheet` to mutate
+          this.applyStyleSheetMutation(d);
+        }
         break;
       }
       case IncrementalSource.CanvasMutation: {
@@ -1440,7 +1485,8 @@ export class Replayer {
         break;
       }
       case IncrementalSource.AdoptedStyleSheet: {
-        if (this.usingVirtualDom) this.adoptedStyleSheets.push(d);
+        if (this.usingVirtualDom || this.pendingFullSnapshotRender)
+          this.adoptedStyleSheets.push(d);
         else this.applyAdoptedStyleSheet(d);
         break;
       }
@@ -1455,7 +1501,17 @@ export class Replayer {
    */
   private applyMutation(d: mutationData, isSync: boolean) {
     // Only apply virtual dom optimization if the fast-forward process has node mutation. Because the cost of creating a virtual dom tree and executing the diff algorithm is usually higher than directly applying other kind of events.
-    if (this.config.useVirtualDom && !this.usingVirtualDom && isSync) {
+    if (
+      this.config.useVirtualDom &&
+      !this.usingVirtualDom &&
+      isSync
+      /*
+        exclude virtualDom during pendingFullSnapshotRender as:
+        - `buildFromDOM` would incorrectly fork from an old contentDocument
+        - less need for virtualdom as we can apply mutations to a detached tree without triggering reflow
+       */
+       && !this.pendingFullSnapshotRender
+    ) {
       this.usingVirtualDom = true;
       buildFromDom(this.iframe.contentDocument!, this.mirror, this.virtualDom);
       // If these legacy missing nodes haven't been resolved, they should be converted to virtual nodes.
@@ -2155,6 +2211,19 @@ export class Replayer {
         rule.style.removeProperty(data.remove.property);
       }
     }
+  }
+
+  // after a virtual dom fast-forward or a deferred full snapshot attach
+  private applyQueuedStyleSheets() {
+    this.constructedStyleMutations.forEach((data) => {
+      this.applyStyleSheetMutation(data);
+    });
+    this.constructedStyleMutations = [];
+
+    this.adoptedStyleSheets.forEach((data) => {
+      this.applyAdoptedStyleSheet(data);
+    });
+    this.adoptedStyleSheets = [];
   }
 
   private applyAdoptedStyleSheet(data: adoptedStyleSheetData) {

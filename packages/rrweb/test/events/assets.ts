@@ -119,22 +119,7 @@ const events: eventWithTime[] = [
         id: 1,
       },
       initialOffset: { left: 0, top: 0 },
-      capturedAssetStatuses: [
-        {
-          url: 'ftp://example.com/image.png',
-          status: 'capturing',
-        },
-        {
-          url: 'https://example.com/style.css',
-          status: 'capturing',
-          timeout: 50,
-        },
-        {
-          url: '#rr_style_el:1',
-          status: 'capturing',
-          timeout: 50,
-        },
-      ],
+      maxAssetWithin: 50,
     },
     timestamp: 1636379531389,
   },

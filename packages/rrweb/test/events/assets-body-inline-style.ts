@@ -90,12 +90,6 @@ const events: eventWithTime[] = [
         id: 1,
       },
       initialOffset: { left: 0, top: 0 },
-      capturedAssetStatuses: [
-        {
-          url: 'https://example.com/#rr_style_el:1',
-          status: 'captured',
-        },
-      ],
     },
     timestamp: 125,
   },

@@ -13,6 +13,7 @@ import snapshot, {
   getSourcesFromSrcset,
 } from './snapshot';
 import rebuild, {
+  rebuildDetached,
   buildNodeWithSN,
   adaptCssForReplay,
   createCache,
@@ -30,6 +31,7 @@ export {
   snapshot,
   serializeNodeWithId,
   rebuild,
+  rebuildDetached,
   createSandboxedIframe,
   rebuildIntoSandboxedIframe,
   buildNodeWithSN,

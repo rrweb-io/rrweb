@@ -3,7 +3,9 @@ import {
   type RebuildAssetManagerInterface,
   type serializedNodeWithId,
   type serializedElementNodeWithId,
+  type serializedDocumentNodeWithId,
   NodeType,
+  type documentNode,
   type elementNode,
   type legacyAttributes,
 } from '@rrweb/types';
@@ -582,6 +584,64 @@ function buildNode(
   }
 }
 
+function resetDocument(doc: Document, n: documentNode): void {
+  // close before open to make sure document was closed
+  doc.close();
+  doc.open();
+  if (
+    n.compatMode === 'BackCompat' &&
+    n.childNodes &&
+    n.childNodes[0].type !== NodeType.DocumentType // there isn't one already defined
+  ) {
+    // Trigger compatMode in the iframe
+    // this is needed as document.createElement('iframe') otherwise inherits a CSS1Compat mode from the parent replayer environment
+    if (
+      n.childNodes[0].type === NodeType.Element &&
+      'xmlns' in n.childNodes[0].attributes &&
+      n.childNodes[0].attributes.xmlns === 'http://www.w3.org/1999/xhtml'
+    ) {
+      // might as well use an xhtml doctype if we've got an xhtml namespace
+      doc.write(
+        '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "">',
+      );
+    } else {
+      doc.write(
+        '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "">',
+      );
+    }
+  }
+}
+
+function appendChildToDocument(
+  doc: Document,
+  childNode: Node,
+  childN: serializedNodeWithId,
+): void {
+  if (childN.type === NodeType.Element) {
+    const htmlElement = childNode as HTMLElement;
+    let body: HTMLBodyElement | null = null;
+    htmlElement.childNodes.forEach((child) => {
+      if (child.nodeName === 'BODY') body = child as HTMLBodyElement;
+    });
+    if (body) {
+      // this branch solves a problem in Firefox where css transitions are incorrectly
+      // being applied upon rebuild.  Presumably FF doesn't finished parsing the styles
+      // in time, and applies e.g. a default margin:0 to elements which have a non-zero
+      // margin set in CSS, along with a transition on them
+      htmlElement.removeChild(body);
+      // append <head> and <style>s
+      doc.appendChild(childNode);
+      // now append <body>
+      htmlElement.appendChild(body);
+    } else {
+      doc.appendChild(childNode);
+    }
+  } else {
+    // doctype
+    doc.appendChild(childNode);
+  }
+}
+
 export function buildNodeWithSN(
   n: serializedNodeWithId,
   options: {
@@ -630,31 +690,7 @@ export function buildNodeWithSN(
   }
   // use target document as root document
   if (n.type === NodeType.Document) {
-    // close before open to make sure document was closed
-    doc.close();
-    doc.open();
-    if (
-      n.compatMode === 'BackCompat' &&
-      n.childNodes &&
-      n.childNodes[0].type !== NodeType.DocumentType // there isn't one already defined
-    ) {
-      // Trigger compatMode in the iframe
-      // this is needed as document.createElement('iframe') otherwise inherits a CSS1Compat mode from the parent replayer environment
-      if (
-        n.childNodes[0].type === NodeType.Element &&
-        'xmlns' in n.childNodes[0].attributes &&
-        n.childNodes[0].attributes.xmlns === 'http://www.w3.org/1999/xhtml'
-      ) {
-        // might as well use an xhtml doctype if we've got an xhtml namespace
-        doc.write(
-          '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "">',
-        );
-      } else {
-        doc.write(
-          '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "">',
-        );
-      }
-    }
+    resetDocument(doc, n);
     node = doc;
   }
 
@@ -681,28 +717,8 @@ export function buildNodeWithSN(
 
       if (childN.isShadow && isElement(node) && node.shadowRoot) {
         node.shadowRoot.appendChild(childNode);
-      } else if (
-        n.type === NodeType.Document &&
-        childN.type == NodeType.Element
-      ) {
-        const htmlElement = childNode as HTMLElement;
-        let body: HTMLBodyElement | null = null;
-        htmlElement.childNodes.forEach((child) => {
-          if (child.nodeName === 'BODY') body = child as HTMLBodyElement;
-        });
-        if (body) {
-          // this branch solves a problem in Firefox where css transitions are incorrectly
-          // being applied upon rebuild.  Presumably FF doesn't finished parsing the styles
-          // in time, and applies e.g. a default margin:0 to elements which have a non-zero
-          // margin set in CSS, along with a transition on them
-          htmlElement.removeChild(body);
-          // append <head> and <style>s
-          node.appendChild(childNode);
-          // now append <body>
-          htmlElement.appendChild(body);
-        } else {
-          node.appendChild(childNode);
-        }
+      } else if (n.type === NodeType.Document) {
+        appendChildToDocument(node as Document, childNode, childN);
       } else {
         node.appendChild(childNode);
       }
@@ -784,6 +800,72 @@ function rebuild(
     handleScroll(visitedNode, mirror);
   });
   return node;
+}
+
+/**
+ * defer FullSnapshot rendering to wait for e.g. assets to arrive
+ * returns `attach` function which can be called when they do
+ */
+export function rebuildDetached(
+  n: serializedDocumentNodeWithId,
+  options: RebuildOptions,
+): { attach: () => Node | null } {
+  assertRebuildTargetAllowed(options);
+
+  const {
+    doc,
+    onVisit,
+    hackCss = true,
+    afterAppend,
+    cache,
+    mirror = new Mirror(),
+    assetManager,
+  } = options;
+
+  // the serialized Document maps to `doc` itself (it can't be swapped out), so
+  // register it up front: descendants' rootId and document-parented mutations
+  // resolve through the mirror even before attach
+  if (n.rootId && (mirror.getNode(n.rootId) as Document) !== doc) {
+    mirror.replace(n.rootId, doc);
+  }
+  mirror.add(doc, n);
+
+  const builtChildren: Array<{ childN: serializedNodeWithId; node: Node }> = [];
+  for (const childN of n.childNodes) {
+    const childNode = buildNodeWithSN(childN, {
+      doc,
+      mirror,
+      skipChild: false,
+      hackCss,
+      afterAppend,
+      cache,
+      assetManager,
+    });
+    if (!childNode) {
+      console.warn('Failed to rebuild', childN);
+      continue;
+    }
+    builtChildren.push({ childN, node: childNode });
+  }
+
+  const attach = () => {
+    resetDocument(doc, n);
+    for (const { childN, node: childNode } of builtChildren) {
+      appendChildToDocument(doc, childNode, childN);
+      if (afterAppend) {
+        afterAppend(childNode, childN.id);
+      }
+    }
+    visit(mirror, (visitedNode) => {
+      if (onVisit) {
+        onVisit(visitedNode);
+      }
+      handleScroll(visitedNode, mirror);
+    });
+    return doc;
+  };
+
+  return { attach };
 }
 
 /**

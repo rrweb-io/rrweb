@@ -1297,28 +1297,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
         \\"left\\": 0,
         \\"top\\": 0
       },
-      \\"capturedAssetStatuses\\": [
-        {
-          \\"url\\": \\"http://localhost:3030/html#rr_style_el:1\\",
-          \\"status\\": \\"capturing\\",
-          \\"timeout\\": 50
-        },
-        {
-          \\"url\\": \\"http://localhost:3030/html#rr_style_el:2\\",
-          \\"status\\": \\"capturing\\",
-          \\"timeout\\": 50
-        },
-        {
-          \\"url\\": \\"http://localhost:3030/html#rr_style_el:3\\",
-          \\"status\\": \\"capturing\\",
-          \\"timeout\\": 50
-        },
-        {
-          \\"url\\": \\"http://localhost:3030/html#rr_style_el:4\\",
-          \\"status\\": \\"capturing\\",
-          \\"timeout\\": 50
-        }
-      ]
+      \\"maxAssetWithin\\": 50
     }
   },
   {
@@ -15812,18 +15791,7 @@ exports[`record integration tests > should record shadow DOM 1`] = `
         \\"left\\": 0,
         \\"top\\": 0
       },
-      \\"capturedAssetStatuses\\": [
-        {
-          \\"url\\": \\"about:blank#rr_style_el:1\\",
-          \\"status\\": \\"capturing\\",
-          \\"timeout\\": 50
-        },
-        {
-          \\"url\\": \\"about:blank#rr_style_el:2\\",
-          \\"status\\": \\"capturing\\",
-          \\"timeout\\": 50
-        }
-      ]
+      \\"maxAssetWithin\\": 50
     }
   },
   {
@@ -16909,13 +16877,7 @@ exports[`record integration tests > should record style mutations and replay the
         \\"left\\": 0,
         \\"top\\": 0
       },
-      \\"capturedAssetStatuses\\": [
-        {
-          \\"url\\": \\"about:blank#rr_style_el:1\\",
-          \\"status\\": \\"capturing\\",
-          \\"timeout\\": 5
-        }
-      ]
+      \\"maxAssetWithin\\": 5
     }
   },
   {
@@ -17149,13 +17111,7 @@ exports[`record integration tests > should record style mutations with multiple 
         \\"left\\": 0,
         \\"top\\": 0
       },
-      \\"capturedAssetStatuses\\": [
-        {
-          \\"url\\": \\"about:blank#rr_style_el:1\\",
-          \\"status\\": \\"capturing\\",
-          \\"timeout\\": 5
-        }
-      ]
+      \\"maxAssetWithin\\": 5
     }
   },
   {

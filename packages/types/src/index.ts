@@ -34,13 +34,12 @@ export type fullSnapshotEvent = {
       left: number;
     };
     /*
-     * the assets associated with this snapshot
-     * info is used to delay first FullSnapshot render until e.g. stylesheet
-     * assets have been received by the replayer
-     * could also be useful for server-side processing of the event stream
-     * without having to delve into the structure of this full snapshot
+     * the maximum number of milliseconds the recorder may take to emit the
+     * stylesheet assets referenced by this snapshot (they normally arrive much
+     * sooner); a replayer can delay revealing the snapshot by up to this long
+     * while waiting for them, avoiding a flash of unstyled content
      */
-    capturedAssetStatuses?: assetStatus[];
+    maxAssetWithin?: number;
   };
 };
 
@@ -1050,6 +1049,11 @@ export type serializedNodeWithId = serializedNode & { id: number };
 export type serializedElementNodeWithId = Extract<
   serializedNodeWithId,
   Record<'type', NodeType.Element>
+>;
+
+export type serializedDocumentNodeWithId = Extract<
+  serializedNodeWithId,
+  Record<'type', NodeType.Document>
 >;
 
 export interface IMirror<TNode> {

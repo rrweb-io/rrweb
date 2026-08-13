@@ -30,7 +30,6 @@ import {
   type adoptedStyleSheetAssetParam,
   type assetParam,
   type asset,
-  type assetStatus,
   type fullSnapshotEvent,
   type fullSnapshotEventWithTime,
   type assetEventWithTime,
@@ -404,7 +403,7 @@ function record<T = eventWithTime>(
 
     shadowDomManager.init();
 
-    const capturedAssetStatuses: assetStatus[] = [];
+    let maxAssetWithin = 0;
 
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
@@ -445,11 +444,8 @@ function record<T = eventWithTime>(
           asset,
           true, // indicate it's a FullSnapshot
         );
-        if (Array.isArray(assetStatus)) {
-          // removeme when we just capture one asset from srcset
-          capturedAssetStatuses.push(...assetStatus);
-        } else {
-          capturedAssetStatuses.push(assetStatus);
+        if (!Array.isArray(assetStatus) && assetStatus.timeout) {
+          maxAssetWithin = Math.max(maxAssetWithin, assetStatus.timeout);
         }
       },
       keepIframeSrcFn,
@@ -462,8 +458,8 @@ function record<T = eventWithTime>(
       node,
       initialOffset: getWindowScroll(window),
     };
-    if (capturedAssetStatuses.length) {
-      data['capturedAssetStatuses'] = capturedAssetStatuses;
+    if (maxAssetWithin) {
+      data.maxAssetWithin = maxAssetWithin;
     }
     const now = nowTimestamp();
     assetManager.lastFullSnapshotTimestamp = now;
