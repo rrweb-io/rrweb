@@ -165,6 +165,11 @@ export class Replayer {
 
   private pendingFullSnapshotRender: (() => void) | null = null;
 
+  // Scrolls that arrive while a FullSnapshot's attach is pending (detached tree with no scroll adjustment possible)
+  private pendingScrolls: scrollData[] = []; // c.f. RRElement.scrollData
+
+  private iframesToAttach: AppendedIframe[] = [];
+
   private newDocumentQueue: addedNodeMutation[] = [];
 
   private mousePos: mouseMovePos | null = null;
@@ -177,7 +182,7 @@ export class Replayer {
   // In the fast-forward mode, only the last selection data needs to be applied.
   private lastSelectionData: selectionData | null = null;
 
-  // In the fast-forward mode using VirtualDom optimization, all stylesheetRule, and styleDeclaration events on constructed StyleSheets will be delayed to get applied until the flush stage.
+  // deferred (until after rrdom or detached FullSnapshot) as they need a .sheet to mutate
   private constructedStyleMutations: (
     | styleSheetRuleData
     | styleDeclarationData
@@ -823,12 +828,11 @@ export class Replayer {
       );
     }
     this.legacy_missingNodeRetryMap = {};
-    const collectedIframes: AppendedIframe[] = [];
     const collectedDialogs = new Set<HTMLDialogElement>();
     const afterAppend = (builtNode: Node, id: number) => {
       if (builtNode.nodeName === 'DIALOG')
         collectedDialogs.add(builtNode as HTMLDialogElement);
-      this.collectIframeAndAttachDocument(collectedIframes, builtNode);
+      this.collectIframeAndAttachDocument(this.iframesToAttach, builtNode);
       if (this.mediaManager.isSupportedMediaElement(builtNode)) {
         const { events } = this.service.state.context;
         this.mediaManager.addMediaElements(
@@ -861,6 +865,8 @@ export class Replayer {
 
     // a still-pending earlier snapshot is superseded by this one
     this.pendingFullSnapshotRender = null;
+    this.pendingScrolls = [];
+    this.iframesToAttach = [];
     this.mirror.reset();
     const fullSnapshotAssets: { url: string; ready: Promise<unknown> }[] = [];
     this.assetManager.fullSnapshotAssets = fullSnapshotAssets;
@@ -884,12 +890,13 @@ export class Replayer {
       attach();
       afterAppend(this.iframe.contentDocument, event.data.node.id);
 
-      for (const { mutationInQueue, builtNode } of collectedIframes) {
+      for (const { mutationInQueue, builtNode } of this.iframesToAttach) {
         this.attachDocumentToIframe(mutationInQueue, builtNode);
         this.newDocumentQueue = this.newDocumentQueue.filter(
           (m) => m !== mutationInQueue,
         );
       }
+      this.iframesToAttach = [];
       const { documentElement, head } = this.iframe.contentDocument;
       this.insertStyleRules(documentElement, head);
       this.applyQueuedStyleSheets(); // sequence: after resetDocument and any nested iframes have been attached
@@ -900,6 +907,10 @@ export class Replayer {
           .classList.add('rrweb-paused');
       }
       this.iframe.contentWindow?.scrollTo(event.data.initialOffset);
+      for (const scroll of this.pendingScrolls) {
+        this.applyScroll(scroll, true);
+      }
+      this.pendingScrolls = [];
       this.emitter.emit(ReplayerEvents.FullsnapshotRebuilded, event);
       if (!isSync) {
         this.waitForStylesheetLoad();
@@ -991,7 +1002,13 @@ export class Replayer {
   ) {
     if (!this.usingVirtualDom && !iframeEl.contentDocument) {
       // an iframe only gains a contentDocument when added to an attached document
-      this.pendingFullSnapshotRender?.();
+      if (this.pendingFullSnapshotRender) {
+        this.iframesToAttach.push({
+          mutationInQueue: mutation,
+          builtNode: iframeEl,
+        });
+        return;
+      }
     }
     const mirror: RRDOMMirror | Mirror = this.usingVirtualDom
       ? this.virtualDom.mirror
@@ -1365,6 +1382,10 @@ export class Replayer {
           target.scrollData = d;
           break;
         }
+        if (this.pendingFullSnapshotRender) {
+          this.pendingScrolls.push(d);
+          break;
+        }
         // Use isSync rather than this.usingVirtualDom because not every fast-forward process uses virtual dom optimization.
         this.applyScroll(d, isSync);
         break;
@@ -1422,10 +1443,10 @@ export class Replayer {
             (
               this.virtualDom.mirror.getNode(d.id) as RRStyleElement | null
             )?.rules.push(d);
-        } else if (this.pendingFullSnapshotRender && d.styleId) {
+        } else if (this.pendingFullSnapshotRender) {
+          // a detached <style> has no `.sheet` yet
           this.constructedStyleMutations.push(d);
         } else {
-          this.pendingFullSnapshotRender?.();  // need the real dom to have a `.sheet` to mutate
           this.applyStyleSheetMutation(d);
         }
         break;
@@ -1568,12 +1589,10 @@ export class Replayer {
            * Remove any virtual style rules for stylesheets if a child text node is removed.
            */
           if (
-            this.usingVirtualDom &&
             target.nodeName === '#text' &&
-            parent.nodeName === 'STYLE' &&
-            (parent as RRStyleElement).rules?.length > 0
+            parent.nodeName === 'STYLE'
           )
-            (parent as RRStyleElement).rules = [];
+            this.dropQueuedStyleRules(parent);
         } catch (error) {
           if (error instanceof DOMException) {
             this.warn(
@@ -1788,13 +1807,10 @@ export class Replayer {
        * Remove any virtual style rules for stylesheets if a new text node is appended.
        */
       if (
-        this.usingVirtualDom &&
         target.nodeName === '#text' &&
-        parent.nodeName === 'STYLE' &&
-        (parent as RRStyleElement).rules?.length > 0
+        parent.nodeName === 'STYLE'
       )
-        (parent as RRStyleElement).rules = [];
-
+        this.dropQueuedStyleRules(parent);
       if (isSerializedIframe(target, this.mirror)) {
         const targetId = this.mirror.getId(target as HTMLIFrameElement);
         const mutationInQueue = this.newDocumentQueue.find(
@@ -1878,10 +1894,9 @@ export class Replayer {
        * https://github.com/rrweb-io/rrweb/pull/865
        * Remove any virtual style rules for stylesheets whose contents are replaced.
        */
-      if (this.usingVirtualDom) {
-        const parent = target.parentNode as RRStyleElement;
-        if (parent?.rules?.length > 0) parent.rules = [];
-      }
+      const parent = target.parentNode as Node | null;
+      if (parent?.nodeName === 'STYLE')
+        this.dropQueuedStyleRules(parent);
     });
     d.attributes.forEach((mutation) => {
       const target = mirror.getNode(mutation.id);
@@ -2224,6 +2239,23 @@ export class Replayer {
       this.applyAdoptedStyleSheet(data);
     });
     this.adoptedStyleSheets = [];
+  }
+
+  /**
+   * In the DOM, a <style>'s text content being replaced discards its stylesheet's rules
+   */
+  private dropQueuedStyleRules(styleEl: Node | RRNode) {
+    if (this.usingVirtualDom) {
+      if ((styleEl as RRStyleElement).rules?.length > 0)
+        (styleEl as RRStyleElement).rules = [];
+    } else if (this.pendingFullSnapshotRender) {
+      // deferred attach holds all pending rules in a single structure
+      const styleId = this.mirror.getId(styleEl as Node);
+      if (styleId < 0) return;
+      this.constructedStyleMutations = this.constructedStyleMutations.filter(
+        (m) => m.id !== styleId,
+      );
+    }
   }
 
   private applyAdoptedStyleSheet(data: adoptedStyleSheetData) {

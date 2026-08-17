@@ -236,6 +236,91 @@ describe('replayer', function () {
       expect(revertedToImport).toBe(true);
     });
 
+    it('replays a scroll that arrives during the attach pause, overriding initialOffset', async () => {
+      // a scroll can't be applied to the detached (unrendered) tree, so it's
+      // held and replayed after attach — where, being later, it must win over
+      // the snapshot's restored initialOffset (top: 0)
+      await page.evaluate(`
+      const { Replayer } = rrweb;
+      window.replayer = new Replayer([], {
+        liveMode: true,
+      });
+      replayer.startLive();
+      window.replayer.addEvent(events[0]);
+      window.replayer.addEvent(events[1]);
+      // make the document scrollable; applies to the detached tree during the pause
+      window.replayer.addEvent({
+        type: 3, // IncrementalSnapshot
+        data: {
+          source: 0, // Mutation
+          texts: [],
+          attributes: [],
+          removes: [],
+          adds: [
+            {
+              parentId: 14, // body
+              nextId: null,
+              node: {
+                type: 2,
+                tagName: 'div',
+                attributes: { style: 'height: 5000px;' },
+                childNodes: [],
+                id: 2000,
+              },
+            },
+          ],
+        },
+        timestamp: events[1].timestamp + 1,
+      });
+      // scroll the document (id 1) during the pause
+      window.replayer.addEvent({
+        type: 3, // IncrementalSnapshot
+        data: { source: 3 /* Scroll */, id: 1, x: 0, y: 200 },
+        timestamp: events[1].timestamp + 2,
+      });
+      // deliver the stylesheet assets to release the pause and attach
+      window.replayer.addEvent(events[3]);
+      window.replayer.addEvent(events[4]);
+    `);
+
+      await waitForRAF(page);
+
+      const scrollY = await page.evaluate(
+        `document.querySelector('iframe').contentWindow.scrollY`,
+      );
+      expect(scrollY).toBe(200);
+    });
+
+    it('holds the frame when a per-element StyleSheetRule arrives during the pause', async () => {
+      // a rule mutation on a detached <style> (null .sheet) must be queued and
+      // flushed at attach, not force the frame to reveal early
+      await page.evaluate(`
+      const { Replayer } = rrweb;
+      window.replayer = new Replayer([], {
+        liveMode: true,
+      });
+      replayer.startLive();
+      window.replayer.addEvent(events[0]);
+      window.replayer.addEvent(events[1]);
+      window.replayer.addEvent({
+        type: 3, // IncrementalSnapshot
+        data: {
+          source: 8, // StyleSheetRule
+          id: 24, // the <style> element in the fixture
+          adds: [{ rule: '.injected-during-pause { color: red; }', index: 0 }],
+        },
+        timestamp: events[1].timestamp + 1,
+      });
+    `);
+
+      await waitForRAF(page);
+
+      const attached = await page.evaluate(
+        `!!document.querySelector('iframe').contentDocument.querySelector('img')`,
+      );
+      expect(attached).toBe(false);
+    });
+
     it('should support urls src modified via incremental mutation', async () => {
       await page.evaluate(`
       const { Replayer } = rrweb;
