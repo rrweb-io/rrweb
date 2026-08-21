@@ -49,6 +49,14 @@ export class Timer {
     this.raf = requestAnimationFrame(this.rafCheck.bind(this));
   }
 
+  public updateLiveTime() {
+    if (this.raf === true) {
+      // in live mode awaiting new events
+      // we don't run requestAnimationFrame
+      this.rafCheck(); // updates timeOffset
+    }
+  }
+
   private rafCheck() {
     const time = performance.now();
     this.timeOffset += (time - this.lastTimestamp) * this.speed;
