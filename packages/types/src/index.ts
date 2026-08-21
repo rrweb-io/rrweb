@@ -6,6 +6,7 @@ export enum EventType {
   Meta,
   Custom,
   Plugin,
+  Asset,
 }
 
 export type domContentLoadedEvent = {
@@ -57,6 +58,77 @@ export type pluginEvent<T = unknown> = {
     plugin: string;
     payload: T;
   };
+};
+
+export type NetworkInitiatorType =
+  | 'audio'
+  | 'beacon'
+  | 'body'
+  | 'css'
+  | 'early-hint'
+  | 'embed'
+  | 'fetch'
+  | 'frame'
+  | 'iframe'
+  | 'icon'
+  | 'image'
+  | 'img'
+  | 'input'
+  | 'link'
+  | 'navigation'
+  | 'object'
+  | 'ping'
+  | 'script'
+  | 'track'
+  | 'video'
+  | 'xmlhttprequest';
+
+export type NetworkHeaders = Record<string, string>;
+export type NetworkBody = string | null;
+
+export type NetworkRequest = Omit<
+  PerformanceEntry,
+  'toJSON' | 'startTime' | 'endTime' | 'duration' | 'entryType'
+> & {
+  method?: string;
+  initiatorType?: NetworkInitiatorType;
+  status?: number;
+  startTime?: number;
+  endTime?: number;
+  duration?: number;
+  entryType?: string;
+  requestHeaders?: NetworkHeaders;
+  requestBody?: NetworkBody;
+  responseHeaders?: NetworkHeaders;
+  responseBody?: NetworkBody;
+  isInitial?: boolean;
+};
+
+export type NetworkData = {
+  requests: NetworkRequest[];
+  isInitial?: boolean;
+};
+
+export type NetworkRecordOptions = {
+  initiatorTypes?: NetworkInitiatorType[];
+  transformRequestFn?: (request: NetworkRequest) => NetworkRequest | undefined;
+  recordHeaders?: boolean | { request: boolean; response: boolean };
+  recordBody?:
+    | boolean
+    | string[]
+    | { request: boolean | string[]; response: boolean | string[] };
+  recordInitialRequests?: boolean;
+};
+
+export type NetworkEvent = pluginEvent<NetworkData>;
+
+export type assetEvent = {
+  type: EventType.Asset;
+  data: assetParam;
+};
+
+export type assetEventWithTime = assetEvent & {
+  timestamp: number;
 };
 
 export enum IncrementalSource {
@@ -163,7 +235,8 @@ export type eventWithoutTime =
   | incrementalSnapshotEvent
   | metaEvent
   | customEvent
-  | pluginEvent;
+  | pluginEvent
+  | assetEvent;
 
 /**
  * @deprecated intended for internal use
@@ -382,16 +455,23 @@ export enum CanvasContext {
   WebGL2,
 }
 
+export type SerializedCssTextArg = {
+  rr_type: 'CssText';
+  cssTexts: string[]; // usually just a single item
+};
+
+export type SerializedBlobArg = {
+  rr_type: 'Blob';
+  data: Array<CanvasArg>;
+  type?: string;
+};
+
 export type SerializedCanvasArg =
   | {
       rr_type: 'ArrayBuffer';
       base64: string; // base64
     }
-  | {
-      rr_type: 'Blob';
-      data: Array<CanvasArg>;
-      type?: string;
-    }
+  | SerializedBlobArg
   | {
       rr_type: string;
       src: string; // url of image
@@ -607,6 +687,22 @@ export type customElementParam = {
 };
 
 export type customElementCallback = (c: customElementParam) => void;
+
+export type assetParam =
+  | {
+      url: string;
+      payload: SerializedCanvasArg | SerializedCssTextArg;
+      timestamp?: number;
+    }
+  | {
+      url: string;
+      failed: {
+        status?: number;
+        message: string;
+      };
+    };
+
+export type assetCallback = (d: assetParam, timestamp?: number | true) => void;
 
 /**
  *  @deprecated

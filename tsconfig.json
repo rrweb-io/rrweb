@@ -25,6 +25,12 @@
       "path": "packages/plugins/rrweb-plugin-console-record"
     },
     {
+      "path": "packages/plugins/rrweb-plugin-network-record"
+    },
+    {
+      "path": "packages/plugins/rrweb-plugin-network-replay"
+    },
+    {
       "path": "packages/rrvideo"
     },
     {
