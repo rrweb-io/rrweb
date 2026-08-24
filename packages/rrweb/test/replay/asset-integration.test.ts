@@ -321,6 +321,145 @@ describe('replayer', function () {
       expect(attached).toBe(false);
     });
 
+    it('attaches nested iframes added during the attach pause on flush', async () => {
+      await page.evaluate(`
+      const { Replayer } = rrweb;
+      window.replayer = new Replayer([], {
+        liveMode: true,
+      });
+      replayer.startLive();
+      window.replayer.addEvent(events[0]);
+      window.replayer.addEvent(events[1]);
+      // during the pause: add an outer iframe element to the (detached) body
+      window.replayer.addEvent({
+        type: 3, // IncrementalSnapshot
+        data: {
+          source: 0, // Mutation
+          texts: [],
+          attributes: [],
+          removes: [],
+          adds: [
+            {
+              parentId: 14, // body
+              nextId: null,
+              node: {
+                type: 2,
+                tagName: 'iframe',
+                attributes: { id: 'outer' },
+                childNodes: [],
+                id: 100,
+              },
+            },
+          ],
+        },
+        timestamp: events[1].timestamp + 1,
+      });
+      // its document, containing a nested iframe element (isAttachIframe)
+      window.replayer.addEvent({
+        type: 3,
+        data: {
+          source: 0,
+          texts: [],
+          attributes: [],
+          removes: [],
+          isAttachIframe: true,
+          adds: [
+            {
+              parentId: 100, // the outer iframe
+              nextId: null,
+              node: {
+                type: 0,
+                id: 101,
+                childNodes: [
+                  { type: 1, name: 'html', publicId: '', systemId: '', rootId: 101, id: 102 },
+                  {
+                    type: 2, tagName: 'html', attributes: {}, rootId: 101, id: 103,
+                    childNodes: [
+                      { type: 2, tagName: 'head', attributes: {}, childNodes: [], rootId: 101, id: 104 },
+                      {
+                        type: 2, tagName: 'body', attributes: {}, rootId: 101, id: 105,
+                        childNodes: [
+                          { type: 2, tagName: 'iframe', attributes: { id: 'inner' }, childNodes: [], rootId: 101, id: 106 },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        timestamp: events[1].timestamp + 2,
+      });
+      // the nested iframe's document (parent 106 is not built yet -> newDocumentQueue)
+      window.replayer.addEvent({
+        type: 3,
+        data: {
+          source: 0,
+          texts: [],
+          attributes: [],
+          removes: [],
+          isAttachIframe: true,
+          adds: [
+            {
+              parentId: 106, // the nested iframe
+              nextId: null,
+              node: {
+                type: 0,
+                id: 107,
+                childNodes: [
+                  { type: 1, name: 'html', publicId: '', systemId: '', rootId: 107, id: 108 },
+                  {
+                    type: 2, tagName: 'html', attributes: {}, rootId: 107, id: 109,
+                    childNodes: [
+                      { type: 2, tagName: 'head', attributes: {}, childNodes: [], rootId: 107, id: 110 },
+                      {
+                        type: 2, tagName: 'body', attributes: {}, rootId: 107, id: 111,
+                        childNodes: [
+                          {
+                            type: 2, tagName: 'div', attributes: { id: 'inner-marker' }, rootId: 107, id: 112,
+                            childNodes: [{ type: 3, textContent: 'nested content', rootId: 107, id: 113 }],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        timestamp: events[1].timestamp + 3,
+      });
+    `);
+
+      // still held: nothing attached into the replayer iframe yet
+      const heldBeforeAssets = await page.evaluate(
+        `!!document.querySelector('iframe').contentDocument.querySelector('#outer')`,
+      );
+      expect(heldBeforeAssets).toBe(false);
+
+      // deliver the stylesheet assets to release the pause and attach
+      await page.evaluate(`
+        window.replayer.addEvent(events[3]);
+        window.replayer.addEvent(events[4]);
+      `);
+      await waitForRAF(page);
+
+      const nestedText = await page.evaluate(`
+        (function () {
+          const rep = document.querySelector('iframe').contentDocument;
+          const outer = rep.querySelector('iframe#outer');
+          if (!outer || !outer.contentDocument) return 'NO_OUTER';
+          const inner = outer.contentDocument.querySelector('iframe#inner');
+          if (!inner || !inner.contentDocument) return 'NO_INNER';
+          const marker = inner.contentDocument.querySelector('#inner-marker');
+          return marker ? marker.textContent : 'NO_MARKER';
+        })()
+      `);
+      expect(nestedText).toBe('nested content');
+    });
+
     it('should support urls src modified via incremental mutation', async () => {
       await page.evaluate(`
       const { Replayer } = rrweb;
