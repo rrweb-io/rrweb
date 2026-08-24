@@ -58,6 +58,23 @@ export type recordOptions<T> = {
   slimDOMOptions?: SlimDOMOptions | 'all' | true;
   ignoreCSSAttributes?: Set<string>;
   /**
+   * Limit which DOM attributes the MutationObserver watches.
+   * When set, only mutations to the listed attributes trigger recording.
+   * Unlisted attributes are never observed — they produce zero CPU overhead.
+   *
+   * When omitted or undefined, all attributes are observed (default behavior).
+   *
+   * Common use: exclude high-frequency `style` attribute mutations from CSS
+   * animations while still recording `class`, `value`, and other state changes:
+   *
+   * ```
+   * attributeFilter: ['class', 'value', 'checked', 'selected', 'disabled']
+   * ```
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/observe#attributefilter
+   */
+  attributeFilter?: string[];
+  /**
    * @deprecated Since 2.0.0. This option is still supported, but is planned to
    * be superseded by future captureAssets asset recording APIs.
    */
@@ -125,6 +142,7 @@ export type observerParam = {
   canvasManager: CanvasManager;
   processedNodeManager: ProcessedNodeManager;
   ignoreCSSAttributes: Set<string>;
+  attributeFilter?: string[];
   plugins: Array<{
     observer: (
       cb: (...arg: Array<unknown>) => void,
@@ -159,6 +177,7 @@ export type MutationBufferParam = Pick<
   | 'shadowDomManager'
   | 'canvasManager'
   | 'processedNodeManager'
+  | 'attributeFilter'
 >;
 
 export type ReplayPlugin = {

@@ -98,6 +98,7 @@ function record<T = eventWithTime>(
     plugins,
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
+    attributeFilter,
     errorHandler,
   } = options;
 
@@ -534,6 +535,7 @@ function record<T = eventWithTime>(
           processedNodeManager,
           canvasManager,
           ignoreCSSAttributes,
+          attributeFilter,
           plugins:
             plugins
               ?.filter((p) => p.observer)
