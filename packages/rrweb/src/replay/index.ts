@@ -1007,8 +1007,10 @@ export class Replayer {
           mutationInQueue: mutation,
           builtNode: iframeEl,
         });
-        return;
+      } else {
+        this.warn('Missing contentDocument on iframe mutation', mutation, iframeEl);
       }
+      return;
     }
     const mirror: RRDOMMirror | Mirror = this.usingVirtualDom
       ? this.virtualDom.mirror
