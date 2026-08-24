@@ -71,4 +71,4 @@ rrwebPlayer.addEventListener('ui-update-progress', (event) => {
 
 ## 基于 `Replayer` 开发自己的回放器 UI
 
-可以参照 [rrweb-player](https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-player/) 的方式进行开发。
+可以参照 [rrweb-player](../../packages/rrweb-player/) 的方式进行开发。
