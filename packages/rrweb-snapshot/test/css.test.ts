@@ -6,7 +6,7 @@ import { mediaSelectorPlugin, pseudoClassPlugin } from '../src/css';
 import postcss, { type AcceptedPlugin } from 'postcss';
 import { JSDOM } from 'jsdom';
 import { splitCssText, stringifyStylesheet } from './../src/utils';
-import { applyCssSplits } from './../src/rebuild';
+import { adaptCssForReplay, applyCssSplits, createCache } from './../src/rebuild';
 import * as fs from 'fs';
 import * as path from 'path';
 import type {
@@ -432,5 +432,48 @@ describe('applyCssSplits css rejoiner', function () {
     expect((sn1.childNodes[0] as textNode).textContent).toEqual(
       halfCssText + otherHalfCssText,
     );
+  });
+
+  it('rejoins a split that lands inside a quoted attribute selector without corrupting it (#1692)', () => {
+    // reduced from the CssSyntaxError: <css input>:25:1093: Unclosed bracket
+    // report in https://github.com/rrweb-io/rrweb/issues/1692, where the
+    // split point fell inside a `[class~="..."]` attribute selector
+    const firstHalf =
+      '.not-prose :where(blockquote strong):not(:where([class~="not-prose"], [class~="not-prose"';
+    const secondHalf = '] *)) { color: inherit; }';
+    const markedCssText = [firstHalf, secondHalf].join('/* rr_split */');
+    expect(() =>
+      applyCssSplits(sn, markedCssText, true, mockLastUnusedArg),
+    ).not.toThrow();
+    expect(
+      (sn.childNodes[0] as textNode).textContent +
+        (sn.childNodes[1] as textNode).textContent,
+    ).toEqual(firstHalf + secondHalf);
+  });
+});
+
+describe('adaptCssForReplay with malformed css (#1734)', function () {
+  it('does not throw on empty longhand declarations produced by the browser CSSOM', () => {
+    // captured from `style.sheet.rules[0].style.cssText` after setting a
+    // shorthand `border` alongside `border-color: var(...)`, per
+    // https://github.com/rrweb-io/rrweb/issues/1734
+    const cssText =
+      '.cl {border-top-style: ; border-top-width: ; border-right-style: ; ' +
+      'border-right-width: ; border-bottom-style: ; border-bottom-width: ; ' +
+      'border-left-style: ; border-left-width: ; border-image-source: ; ' +
+      'border-image-slice: ; border-image-width: ; border-image-outset: ; ' +
+      'border-image-repeat: ; border-color: var(--border-color);}';
+    const cache = createCache();
+    let result = '';
+    expect(() => {
+      result = adaptCssForReplay(cssText, cache);
+    }).not.toThrow();
+    expect(result).toContain('border-color: var(--border-color)');
+  });
+
+  it('falls back to the original text instead of throwing on genuinely unparseable css', () => {
+    const cssText = '.a { content: "unterminated }';
+    const cache = createCache();
+    expect(() => adaptCssForReplay(cssText, cache)).not.toThrow();
   });
 });
