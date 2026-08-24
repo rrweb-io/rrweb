@@ -1,0 +1,35 @@
+[
+  {
+    "type": 3,
+    "data": {
+      "source": 0,
+      "texts": [],
+      "attributes": [],
+      "removes": [],
+      "adds": [
+        {
+          "parentId": 7,
+          "nextId": null,
+          "node": {
+            "type": 2,
+            "tagName": "div",
+            "attributes": {},
+            "childNodes": [],
+            "id": 9
+          }
+        },
+        {
+          "parentId": 9,
+          "nextId": null,
+          "node": {
+            "type": 2,
+            "tagName": "div",
+            "attributes": {},
+            "childNodes": [],
+            "id": 10
+          }
+        }
+      ]
+    }
+  }
+]
