@@ -1036,7 +1036,11 @@ export class Replayer {
           builtNode: iframeEl,
         });
       } else {
-        this.warn('Missing contentDocument on iframe mutation', mutation, iframeEl);
+        this.warn(
+          'Missing contentDocument on iframe mutation',
+          mutation,
+          iframeEl,
+        );
       }
       return;
     }
@@ -1618,10 +1622,7 @@ export class Replayer {
            * https://github.com/rrweb-io/rrweb/pull/887
            * Remove any virtual style rules for stylesheets if a child text node is removed.
            */
-          if (
-            target.nodeName === '#text' &&
-            parent.nodeName === 'STYLE'
-          )
+          if (target.nodeName === '#text' && parent.nodeName === 'STYLE')
             this.dropQueuedStyleRules(parent);
         } catch (error) {
           if (error instanceof DOMException) {
@@ -1836,10 +1837,7 @@ export class Replayer {
        * https://github.com/rrweb-io/rrweb/pull/887
        * Remove any virtual style rules for stylesheets if a new text node is appended.
        */
-      if (
-        target.nodeName === '#text' &&
-        parent.nodeName === 'STYLE'
-      )
+      if (target.nodeName === '#text' && parent.nodeName === 'STYLE')
         this.dropQueuedStyleRules(parent);
       if (isSerializedIframe(target, this.mirror)) {
         const targetId = this.mirror.getId(target as HTMLIFrameElement);
@@ -1925,8 +1923,7 @@ export class Replayer {
        * Remove any virtual style rules for stylesheets whose contents are replaced.
        */
       const parent = target.parentNode as Node | null;
-      if (parent?.nodeName === 'STYLE')
-        this.dropQueuedStyleRules(parent);
+      if (parent?.nodeName === 'STYLE') this.dropQueuedStyleRules(parent);
     });
     d.attributes.forEach((mutation) => {
       const target = mirror.getNode(mutation.id);

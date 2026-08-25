@@ -32,9 +32,8 @@ export default class AssetManager implements RebuildAssetManagerInterface {
   public replayerApproxTs = 0;
 
   // Assets which are intrinsic to a FullSnapshot, i.e. should delay rebuild until they are ready
-  public fullSnapshotAssets:
-    | { url: string; ready: Promise<unknown> }[]
-    | null = null;
+  public fullSnapshotAssets: { url: string; ready: Promise<unknown> }[] | null =
+    null;
 
   constructor({ liveMode, cache }: { liveMode: boolean; cache: BuildCache }) {
     this.liveMode = liveMode;
