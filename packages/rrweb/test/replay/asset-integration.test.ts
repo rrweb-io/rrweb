@@ -94,7 +94,7 @@ describe('replayer', function () {
       const fullSnapshot = events[1];
 
       // avoid the bit where we hold off attaching the snapshot while waiting for the css assets
-      delete fullSnapshot.data.maxAssetWithin;
+      delete fullSnapshot.data.maxAssetDelay;
       window.replayer.addEvent(fullSnapshot);
     `);
 
@@ -190,7 +190,7 @@ describe('replayer', function () {
       // deliberately never add events[3]/events[4], the stylesheet assets
     `);
 
-      // wait past the snapshot's maxAssetWithin (50) + 100ms margin
+      // wait past the snapshot's maxAssetDelay (50) + 100ms margin
       await new Promise((resolve) => setTimeout(resolve, 300));
 
       const revertedToImport = await page.evaluate(`
@@ -532,7 +532,7 @@ describe('replayer', function () {
       const fullSnapshot = events[1];
 
       // avoid the bit where we hold off attaching the snapshot while waiting for the css assets
-      delete fullSnapshot.data.maxAssetWithin;
+      delete fullSnapshot.data.maxAssetDelay;
       window.replayer.addEvent(fullSnapshot);
     `);
 

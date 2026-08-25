@@ -922,10 +922,10 @@ export class Replayer {
       }
     };
 
-    const { maxAssetWithin } = event.data;
+    const { maxAssetDelay } = event.data;
     if (
       (this.config.liveMode || !isSync) &&
-      maxAssetWithin &&
+      maxAssetDelay &&
       fullSnapshotAssets.length
     ) {
       const pendingFullSnapshotAssets = new Set(fullSnapshotAssets);
@@ -965,7 +965,7 @@ export class Replayer {
       };
       let failTimeout = setTimeout(
         failRemainingAssets,
-        maxAssetWithin + ASSET_PROCESSING_BUFFER,
+        maxAssetDelay + ASSET_PROCESSING_BUFFER,
       );
       this.pendingFullSnapshotRender = doRender;
       for (const pendingAsset of pendingFullSnapshotAssets) {

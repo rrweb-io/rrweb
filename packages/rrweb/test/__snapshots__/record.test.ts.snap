@@ -1563,7 +1563,7 @@ exports[`record > captures inserted style text nodes correctly 1`] = `
         \\"left\\": 0,
         \\"top\\": 0
       },
-      \\"maxAssetWithin\\": 1000
+      \\"maxAssetDelay\\": 1000
     }
   },
   {
@@ -2695,7 +2695,7 @@ exports[`record > captures stylesheets with \`blob:\` url 1`] = `
         \\"left\\": 0,
         \\"top\\": 0
       },
-      \\"maxAssetWithin\\": 2000
+      \\"maxAssetDelay\\": 2000
     }
   },
   {
@@ -2796,7 +2796,7 @@ exports[`record > doesn't duplicate assets and mutations 1`] = `
         \\"left\\": 0,
         \\"top\\": 0
       },
-      \\"maxAssetWithin\\": 1000
+      \\"maxAssetDelay\\": 1000
     }
   },
   {

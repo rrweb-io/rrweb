@@ -119,7 +119,7 @@ const events: eventWithTime[] = [
         id: 1,
       },
       initialOffset: { left: 0, top: 0 },
-      maxAssetWithin: 50,
+      maxAssetDelay: 50,
     },
     timestamp: 1636379531389,
   },

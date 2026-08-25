@@ -39,7 +39,7 @@ export type fullSnapshotEvent = {
      * sooner); a replayer can delay revealing the snapshot by up to this long
      * while waiting for them, avoiding a flash of unstyled content
      */
-    maxAssetWithin?: number;
+    maxAssetDelay?: number;
   };
 };
 

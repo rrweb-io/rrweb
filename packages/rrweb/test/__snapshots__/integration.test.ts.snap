@@ -1297,7 +1297,7 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
         \\"left\\": 0,
         \\"top\\": 0
       },
-      \\"maxAssetWithin\\": 50
+      \\"maxAssetDelay\\": 50
     }
   },
   {
@@ -15791,7 +15791,7 @@ exports[`record integration tests > should record shadow DOM 1`] = `
         \\"left\\": 0,
         \\"top\\": 0
       },
-      \\"maxAssetWithin\\": 50
+      \\"maxAssetDelay\\": 50
     }
   },
   {
@@ -16877,7 +16877,7 @@ exports[`record integration tests > should record style mutations and replay the
         \\"left\\": 0,
         \\"top\\": 0
       },
-      \\"maxAssetWithin\\": 5
+      \\"maxAssetDelay\\": 5
     }
   },
   {
@@ -17111,7 +17111,7 @@ exports[`record integration tests > should record style mutations with multiple 
         \\"left\\": 0,
         \\"top\\": 0
       },
-      \\"maxAssetWithin\\": 5
+      \\"maxAssetDelay\\": 5
     }
   },
   {

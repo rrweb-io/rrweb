@@ -403,7 +403,7 @@ function record<T = eventWithTime>(
 
     shadowDomManager.init();
 
-    let maxAssetWithin = 0;
+    let maxAssetDelay = 0;
 
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
@@ -445,7 +445,7 @@ function record<T = eventWithTime>(
           true, // indicate it's a FullSnapshot
         );
         if (!Array.isArray(assetStatus) && assetStatus.timeout) {
-          maxAssetWithin = Math.max(maxAssetWithin, assetStatus.timeout);
+          maxAssetDelay = Math.max(maxAssetDelay, assetStatus.timeout);
         }
       },
       keepIframeSrcFn,
@@ -458,8 +458,8 @@ function record<T = eventWithTime>(
       node,
       initialOffset: getWindowScroll(window),
     };
-    if (maxAssetWithin) {
-      data.maxAssetWithin = maxAssetWithin;
+    if (maxAssetDelay) {
+      data.maxAssetDelay = maxAssetDelay;
     }
     const now = nowTimestamp();
     assetManager.lastFullSnapshotTimestamp = now;
