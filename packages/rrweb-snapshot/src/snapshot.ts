@@ -357,12 +357,19 @@ function onceIframeLoaded(
   iframeEl.addEventListener('load', listener);
 }
 
+const stylesheetLoadTracked = new Map<HTMLLinkElement, AbortController>();
+
+export function resetStylesheetLoadTracking(): void {
+  stylesheetLoadTracked.forEach((controller) => controller.abort());
+  stylesheetLoadTracked.clear();
+}
+
 function onceStylesheetLoaded(
   link: HTMLLinkElement,
   listener: () => unknown,
   styleSheetLoadTimeout: number,
 ) {
-  let fired = false;
+  if (stylesheetLoadTracked.has(link)) return;
   let styleSheetLoaded: StyleSheet | null;
   try {
     styleSheetLoaded = link.sheet;
@@ -372,18 +379,30 @@ function onceStylesheetLoaded(
 
   if (styleSheetLoaded) return;
 
-  const timer = setTimeout(() => {
-    if (!fired) {
-      listener();
-      fired = true;
-    }
-  }, styleSheetLoadTimeout);
-
-  link.addEventListener('load', () => {
-    clearTimeout(timer);
+  const controller = new AbortController();
+  let fired = false;
+  const fire = () => {
+    if (fired) return;
     fired = true;
-    listener();
+    try {
+      listener();
+    } finally {
+      stylesheetLoadTracked.delete(link);
+      controller.abort();
+    }
+  };
+
+  const timer = setTimeout(fire, styleSheetLoadTimeout);
+  controller.signal.addEventListener('abort', () => clearTimeout(timer), {
+    once: true,
   });
+
+  link.addEventListener('load', fire, {
+    signal: controller.signal,
+    once: true,
+  });
+
+  stylesheetLoadTracked.set(link, controller);
 }
 
 function serializeNode(
