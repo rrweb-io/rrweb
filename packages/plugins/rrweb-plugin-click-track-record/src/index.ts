@@ -30,7 +30,7 @@ export type PositionedTarget = {
   /** Element's aspect ratio: width / height (>1 landscape, <1 portrait) */
   aspect: number;
   /**
-   * 1-based ordinal of this element among all `targetSelector` matched within
+   * 0-based ordinal of this element among all `targetSelector` matched within
    * its root at record time. `semantic-selector`'s contract permits a selector
    * to match several same-identity elements, so the plugin records which one
    * was hit for reconstruction to disambiguate. Present only when > 1 matched.
@@ -231,7 +231,7 @@ function buildPayload(
       if (matches.length > 1) {
         for (let i = 0; i < matches.length; i++) {
           if (matches[i] === el) {
-            node.selectorMatchIndex = i + 1;
+            node.selectorMatchIndex = i;
             node.selectorMatchCount = matches.length;
             break;
           }

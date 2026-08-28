@@ -275,6 +275,21 @@ describe('createClickTracker (standalone)', () => {
 
     stop();
   });
+
+  it('records the zero-based ordinal among identity-less twins', () => {
+    setHTML('<div><button>First</button><button data-x>Second</button><button>Third</button></div>');
+    const payloads: ClickTrackPayload[] = [];
+    const stop = createClickTracker({
+      callback: (p) => payloads.push(p),
+    });
+
+    click(document.querySelector('[data-x]')!);
+    expect(payloads[0].targetSelector).toBe('button');
+    expect(payloads[0].selectorMatchIndex).toBe(1);
+    expect(payloads[0].selectorMatchCount).toBe(3);
+
+    stop();
+  });
 });
 
 describe('getRecordClickTrackPlugin (rrweb integration)', () => {
