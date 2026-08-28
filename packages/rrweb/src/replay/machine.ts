@@ -29,6 +29,12 @@ export type PlayerEvent =
       };
     }
   | {
+      type: 'PLAY_SINGLE_EVENT';
+      payload: {
+        singleEvent: number;
+      };
+    }
+  | {
       type: 'CAST_EVENT';
       payload: {
         event: eventWithTime;
@@ -78,6 +84,30 @@ export function discardPriorSnapshots(
   return events;
 }
 
+function discardPriorSnapshotsToEvent(
+  events: eventWithTime[],
+  targetIndex: number,
+) {
+  const targetEvent = events[targetIndex];
+
+  if (!targetEvent) {
+    return [];
+  }
+
+  for (let idx = targetIndex; idx >= 0; idx--) {
+    const event = events[idx];
+
+    if (!event) {
+      continue;
+    }
+
+    if (event.type === EventType.Meta) {
+      return events.slice(idx, targetIndex + 1);
+    }
+  }
+  return events;
+}
+
 type PlayerAssets = {
   emitter: Emitter;
   applyEventsSynchronously(events: Array<eventWithTime>): void;
@@ -118,6 +148,10 @@ export function createPlayerService(
             PLAY: {
               target: 'playing',
               actions: ['recordTimeOffset', 'play'],
+            },
+            PLAY_SINGLE_EVENT: {
+              target: 'playing',
+              actions: ['playSingleEvent'],
             },
             CAST_EVENT: {
               target: 'paused',
@@ -168,6 +202,23 @@ export function createPlayerService(
             baselineTime: ctx.events[0].timestamp + timeOffset,
           };
         }),
+
+        playSingleEvent(ctx, event) {
+          if (event.type !== 'PLAY_SINGLE_EVENT') {
+            return;
+          }
+
+          const { singleEvent } = event.payload;
+
+          const neededEvents = discardPriorSnapshotsToEvent(
+            ctx.events,
+            singleEvent,
+          );
+
+          applyEventsSynchronously(neededEvents);
+          emitter.emit(ReplayerEvents.Flush);
+        },
+
         play(ctx) {
           const { timer, events, baselineTime, lastPlayedEvent } = ctx;
           timer.clear();
