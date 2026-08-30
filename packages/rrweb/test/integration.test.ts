@@ -1047,6 +1047,30 @@ describe('record integration tests', function (this: ISuite) {
     await assertSnapshot(snapshots);
   });
 
+  it('should record closed shadow DOM after monkeypatching', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.setContent(getHtml.call(this, 'blank.html'));
+    await page.evaluate(() => {
+      return new Promise((resolve) => {
+        const el = document.createElement('div') as HTMLDivElement;
+        const shadow = el.attachShadow({ mode: 'closed' });
+        shadow.appendChild(document.createElement('input'));
+        setTimeout(() => {
+          document.body.append(el);
+          resolve(null);
+        }, 10);
+      });
+    });
+    await waitForRAF(page);
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    await assertSnapshot(snapshots, true);
+  });
+
   it('should record shadow DOM 3', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
