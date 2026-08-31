@@ -403,6 +403,7 @@ function record<T = eventWithTime>(
 
     shadowDomManager.init();
 
+    let intrinsicAssetCount = 0;
     let maxAssetDelay = 0;
 
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
@@ -449,8 +450,12 @@ function record<T = eventWithTime>(
           // srcset: we're not expecting a timeout (no requestIdleCallback), and don't want to do `data:` related substitution in the caller
           return;
         }
-        if (assetStatus.timeout) {
-          maxAssetDelay = Math.max(maxAssetDelay, assetStatus.timeout);
+        if (assetStatus.status === 'capturing' && assetStatus.intrinsic) {
+          // asset is an inline part of the DOM and will be emitted with a backdated timestamp to match this fullsnapshot 
+          intrinsicAssetCount += 1;
+          if (assetStatus.timeout) {
+            maxAssetDelay = Math.max(maxAssetDelay, assetStatus.timeout);
+          }
         }
         // calling code needs to inline the new 'virtual' url to replace the full `data:` string
         return assetStatus.url;
@@ -465,6 +470,9 @@ function record<T = eventWithTime>(
       node,
       initialOffset: getWindowScroll(window),
     };
+    if (intrinsicAssetCount) {
+      data.intrinsicAssetCount = intrinsicAssetCount;
+    }
     if (maxAssetDelay) {
       data.maxAssetDelay = maxAssetDelay;
     }

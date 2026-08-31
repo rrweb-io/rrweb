@@ -449,6 +449,8 @@ describe('asset capturing', function (this: ISuite) {
       const fullSnapshot = events.find(
         (e) => e.type === EventType.FullSnapshot,
       );
+      expect(fullSnapshot).toBeDefined();
+      expect(asset.timestamp).toBe(fullSnapshot!.timestamp);
       const json = JSON.stringify(fullSnapshot);
       expect(json).not.toContain(dataURL);
       const virtualUrlOccurrences = json.split(asset.data.url).length - 1;
@@ -589,6 +591,23 @@ describe('asset capturing', function (this: ISuite) {
           type: EventType.Asset,
         }),
       );
+    });
+
+    it('does not backdate a network asset to the fullsnapshot timestamp (only render-blocking data: urls are backdated)', async () => {
+      await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+      await waitForRAF(ctx.page);
+
+      const events = await ctx.page?.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+
+      const fullSnapshot = events.find(
+        (e) => e.type === EventType.FullSnapshot,
+      );
+      const asset = events.find((e) => e.type === EventType.Asset);
+      expect(fullSnapshot).toBeDefined();
+      expect(asset).toBeDefined();
+      expect(asset!.timestamp).not.toBe(fullSnapshot!.timestamp);
     });
   });
 
@@ -1124,6 +1143,15 @@ describe('asset capturing', function (this: ISuite) {
 
       expect(styleElAsset).toBeDefined();
       expect(adoptedAsset).toBeDefined();
+
+      const fullSnapshotEvent = events.find(
+        (e) => e.type === EventType.FullSnapshot,
+      );
+      expect(fullSnapshotEvent).toBeDefined();
+      expect(styleElAsset!.timestamp).toBe(fullSnapshotEvent!.timestamp);
+      expect(events.indexOf(styleElAsset!)).toBeGreaterThan(
+        events.indexOf(fullSnapshotEvent!),
+      );
 
       // same css content in the two contexts -> identical CssText payload
       expect(payloadOf(adoptedAsset!)).toEqual(payloadOf(styleElAsset!));

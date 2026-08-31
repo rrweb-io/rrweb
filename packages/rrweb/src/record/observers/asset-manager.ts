@@ -32,6 +32,9 @@ export function isProcessingStyleElement(
 // `#rr_data_style:2` or `#rr_data_image:3` (font/document may be added later)
 type dataAssetKind = 'image' | 'video' | 'audio' | 'style';
 
+const DATA_URL_ASSET_TIMEOUT = 100;
+const BLOB_URL_ASSET_TIMEOUT = 500;
+
 export default class AssetManager {
   private urlObjectMap = new Map<string, File | Blob | MediaSource>();
   private urlTextMap = new Map<string, string>();
@@ -393,12 +396,14 @@ export default class AssetManager {
     snapshotTimestamp?: number | true,
   ): assetStatus | assetStatus[] {
     if ('sheet' in asset.element) {
-      return this.captureStylesheet(
+      const status = this.captureStylesheet(
         asset.value,
         asset.element as HTMLStyleElement | HTMLLinkElement,
         asset.styleId,
         snapshotTimestamp,
       );
+      status.intrinsic = true;
+      return status;
     } else if (asset.attr === 'srcset') {
       const statuses: assetStatus[] = [];
       getSourcesFromSrcset(asset.value).forEach((url) => {
@@ -431,20 +436,30 @@ export default class AssetManager {
     const emitUrl = url.startsWith('data:')
       ? this.dataURLVirtualURL(url, kind)
       : url;
+    const intrinsic = url.startsWith('data:') || url.startsWith('blob:');
+    const timeout = url.startsWith('data:')
+      ? DATA_URL_ASSET_TIMEOUT
+      : url.startsWith('blob:')
+      ? BLOB_URL_ASSET_TIMEOUT
+      : undefined;
     if (this.capturedURLs.has(emitUrl)) {
       return {
         url: emitUrl,
         status: 'captured',
+        intrinsic,
       };
     } else if (this.capturingURLs.has(emitUrl)) {
       return {
         url: emitUrl,
         status: 'capturing',
+        intrinsic,
+        timeout,
       };
     } else if (this.failedURLs.has(emitUrl)) {
       return {
         url: emitUrl,
         status: 'error',
+        intrinsic,
       };
     }
     this.capturingURLs.add(emitUrl);
@@ -476,7 +491,9 @@ export default class AssetManager {
                 payload,
               },
               snapshotTimestamp === true
-                ? this.lastFullSnapshotTimestamp
+                ? intrinsic
+                  ? this.lastFullSnapshotTimestamp
+                  : undefined
                 : snapshotTimestamp,
             );
           }
@@ -487,6 +504,8 @@ export default class AssetManager {
     return {
       url: emitUrl,
       status: 'capturing',
+      intrinsic,
+      timeout,
     };
   }
 
