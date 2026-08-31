@@ -1,221 +1,71 @@
 import * as fs from 'fs-extra';
-import * as path from 'path';
-import { chromium } from 'playwright';
-import { EventType, eventWithTime } from '@rrweb/types';
-import type Player from 'rrweb-player';
+import type { eventWithTime } from '@rrweb/types';
+import { resolveConfig } from './config';
+import { captureWithFfmpeg } from './ffmpeg-capture';
+import { captureWithPlaywrightVideo } from './playwright-capture';
+import { mapPool } from './parallel';
+import { PLAYWRIGHT_MAX_SCALE } from './replay-html';
+import { getMaxViewport, scaleViewport } from './timeline';
+import type {
+  RRvideoConfig,
+  ResolvedRRvideoConfig,
+  ViewportSize,
+} from './types';
 
-const rrwebScriptPath = path.resolve(
-  require.resolve('rrweb-player'),
-  '../../dist/rrweb-player.umd.cjs',
-);
-const rrwebStylePath = path.resolve(rrwebScriptPath, '../style.css');
-const rrwebRaw = fs.readFileSync(rrwebScriptPath, 'utf-8');
-const rrwebStyle = fs.readFileSync(rrwebStylePath, 'utf-8');
-// The max valid scale value for the scaling method which can improve the video quality.
-const MaxScaleValue = 2.5;
+export type { RRvideoConfig, CaptureBackend } from './types';
+export { getFrameTimeOffsets, estimateFrameCount } from './timeline';
+export { buildFfmpegArgs } from './ffmpeg';
+export { CHROMIUM_LAUNCH_ARGS } from './ffmpeg-capture';
+export { resolveCapture } from './config';
 
-type RRvideoConfig = {
-  input: string;
-  output?: string;
-  headless?: boolean;
-  // A number between 0 and 1. The higher the value, the better the quality of the video.
-  resolutionRatio?: number;
-  // A callback function that will be called when the progress of the replay is updated.
-  onProgressUpdate?: (percent: number) => void;
-  rrwebPlayer?: Omit<
-    ConstructorParameters<typeof Player>[0]['props'],
-    'events'
-  >;
-};
-
-const defaultConfig: Required<RRvideoConfig> = {
-  input: '',
-  output: 'rrvideo-output.webm',
-  headless: true,
-  // A good trade-off value between quality and file size.
-  resolutionRatio: 0.8,
-  onProgressUpdate: () => {
-    //
-  },
-  rrwebPlayer: {},
-};
-
-function getHtml(events: Array<eventWithTime>, config?: RRvideoConfig): string {
-  return `
-<html>
-  <head>
-  <style>${rrwebStyle}</style>
-  <style>html, body {padding: 0; border: none; margin: 0;}</style>
-  </head>
-  <body>
-    <script>
-      ${rrwebRaw};
-      /*<!--*/
-      const events = ${JSON.stringify(events).replace(
-        /<\/script>/g,
-        '<\\/script>',
-      )};
-      /*-->*/
-      const userConfig = ${JSON.stringify(config?.rrwebPlayer || {})};
-      try {
-        window.replayer = new rrwebPlayer({
-          target: document.body,
-          props: {
-            ...userConfig,
-            events,
-            showController: false,
-            autoPlay: false,
-          },
-        });
-        window.replayer.addEventListener('finish', () => window.onReplayFinish());
-        window.replayer.addEventListener('ui-update-progress', (payload)=> window.onReplayProgressUpdate(payload));
-        window.replayer.addEventListener('resize', () => document.querySelector('.replayer-wrapper').style.transform = 'scale(${
-          (config?.resolutionRatio ?? 1) * MaxScaleValue
-        }) translate(-50%, -50%)');
-        // Start playback after event listeners are attached
-        window.replayer.play();
-      } catch (error) {
-        console.error('Error initializing replayer:', error);
-        window.onReplayFinish();
-      }
-    </script>
-  </body>
-</html>
-`;
-}
-
-/**
- * Preprocess all events to get a maximum view port size.
- */
-function getMaxViewport(events: eventWithTime[]) {
-  let maxWidth = 0,
-    maxHeight = 0;
-  events.forEach((event) => {
-    if (event.type !== EventType.Meta) return;
-    if (event.data.width > maxWidth) maxWidth = event.data.width;
-    if (event.data.height > maxHeight) maxHeight = event.data.height;
-  });
-  return {
-    width: maxWidth,
-    height: maxHeight,
-  };
+function viewportForCapture(
+  events: eventWithTime[],
+  config: ResolvedRRvideoConfig,
+): ViewportSize {
+  const maxViewport = getMaxViewport(events);
+  if (config.capture === 'ffmpeg') {
+    const playerWidth = config.rrwebPlayer.width;
+    const playerHeight = config.rrwebPlayer.height;
+    if (typeof playerWidth === 'number' && typeof playerHeight === 'number') {
+      return scaleViewport({ width: playerWidth, height: playerHeight }, 1);
+    }
+    return scaleViewport(maxViewport, config.resolutionRatio);
+  }
+  return scaleViewport(
+    maxViewport,
+    (config.resolutionRatio ?? 1) * PLAYWRIGHT_MAX_SCALE,
+  );
 }
 
 export async function transformToVideo(options: RRvideoConfig) {
-  const defaultVideoDir = '__rrvideo__temp__';
-  const config = { ...defaultConfig };
-  if (!options.input) throw new Error('input is required');
-  // If the output is not specified or undefined, use the default value.
-  if (!options.output) delete options.output;
-  Object.assign(config, options);
-  if (config.resolutionRatio > 1) config.resolutionRatio = 1; // The max value is 1.
-
-  const eventsPath = path.isAbsolute(config.input)
-    ? config.input
-    : path.resolve(process.cwd(), config.input);
-  const outputPath = path.isAbsolute(config.output)
-    ? config.output
-    : path.resolve(process.cwd(), config.output);
+  const config = resolveConfig(options);
   const events = JSON.parse(
-    fs.readFileSync(eventsPath, 'utf-8'),
+    fs.readFileSync(config.input, 'utf-8'),
   ) as eventWithTime[];
 
-  // Make the browser viewport fit the player size.
-  const maxViewport = getMaxViewport(events);
-  // Use the scaling method to improve the video quality.
-  const scaledViewport = {
-    width: Math.round(
-      maxViewport.width * (config.resolutionRatio ?? 1) * MaxScaleValue,
-    ),
-    height: Math.round(
-      maxViewport.height * (config.resolutionRatio ?? 1) * MaxScaleValue,
-    ),
-  };
-  Object.assign(config.rrwebPlayer, scaledViewport);
-  const browser = await chromium.launch({
-    headless: config.headless,
-  });
-  const context = await browser.newContext({
-    viewport: scaledViewport,
-    recordVideo: {
-      dir: defaultVideoDir,
-      size: scaledViewport,
-    },
-  });
-  const page = await context.newPage();
-  await page.goto('about:blank');
-  // Listen to console messages from the page
-  page.on('console', (msg) => {
-    console.log('[PAGE CONSOLE]', msg.type(), msg.text());
-  });
+  const viewport = viewportForCapture(events, config);
+  Object.assign(config.rrwebPlayer, viewport);
 
-  // Listen to page errors
-  page.on('pageerror', (error) => {
-    console.error('[PAGE ERROR]', error.message);
-  });
+  if (config.capture === 'ffmpeg') {
+    return captureWithFfmpeg(events, viewport, config);
+  }
+  return captureWithPlaywrightVideo(events, viewport, config);
+}
 
-  await page.exposeFunction(
-    'onReplayProgressUpdate',
-    (data: { payload: number }) => {
-      config.onProgressUpdate(data.payload);
-    },
+export type TransformManyOptions = {
+  concurrency?: number;
+};
+
+/**
+ * Render many sessions in parallel. Each job launches its own Chromium and
+ * ffmpeg process. Keep `concurrency` at or below CPU cores — 1080p/60fps
+ * screenshotting is CPU-bound.
+ */
+export async function transformMany(
+  jobs: RRvideoConfig[],
+  options: TransformManyOptions = {},
+): Promise<string[]> {
+  return mapPool(jobs, options.concurrency ?? 2, (job) =>
+    transformToVideo(job),
   );
-
-  // Wait for the replay to finish
-  await new Promise<void>((resolve, reject) => {
-    const timeoutBuffer = 120000; // 2 minute timeout buffer
-    const videoStartTime = events[0]?.timestamp;
-    const videoEndTime = events[events.length - 1]?.timestamp;
-    const videoDuration = videoEndTime - videoStartTime;
-    const videoPlaybackSpeed = options.rrwebPlayer?.speed || 1;
-    const expectedPlaybackTime = videoDuration / videoPlaybackSpeed;
-    console.log(
-      `[DEBUG] Expected playback time: ${expectedPlaybackTime}ms (video duration: ${videoDuration}ms, playback speed: ${videoPlaybackSpeed}x)`,
-    );
-    const totalTimeout = expectedPlaybackTime + timeoutBuffer;
-    const timeout = setTimeout(() => {
-      console.error('[DEBUG] Replay timeout - finish event never fired');
-      reject(new Error('Replay timeout'));
-    }, totalTimeout); // playback + 2 minute timeout
-
-    void page
-      .exposeFunction('onReplayFinish', () => {
-        console.log('[DEBUG] Replay finished');
-        clearTimeout(timeout);
-        resolve();
-      })
-      .then(() => {
-        console.log('[DEBUG] Setting page content');
-        return page.setContent(getHtml(events, config));
-      })
-      .then(() => {
-        console.log('[DEBUG] Page content set successfully');
-      })
-      .catch((err) => {
-        console.error('[DEBUG] Error setting page content:', err);
-        clearTimeout(timeout);
-        reject(err);
-      });
-  });
-  const videoPath = (await page.video()?.path()) || '';
-  const cleanFiles = async (videoPath: string) => {
-    await fs.remove(videoPath);
-    if ((await fs.readdir(defaultVideoDir)).length === 0) {
-      await fs.remove(defaultVideoDir);
-    }
-  };
-  await context.close();
-  await Promise.all([
-    fs
-      .move(videoPath, outputPath, { overwrite: true })
-      .catch((e) => {
-        console.error(
-          "Can't create video file. Please check the output path.",
-          e,
-        );
-      })
-      .finally(() => void cleanFiles(videoPath)),
-    browser.close(),
-  ]);
-  return outputPath;
 }

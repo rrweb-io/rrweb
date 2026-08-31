@@ -35,6 +35,26 @@ rrvideo --input PATH_TO_YOUR_RRWEB_EVENTS_JSON_FILE --config PATH_TO_YOUR_RRVIDE
 
 rrvideo 配置文件可参考[示例](./rrvideo.config.example.json)。
 
+### 高帧率 / MP4（ffmpeg 后端）
+
+Playwright 的 `recordVideo`（`.webm` 默认路径）走的是 CDP screencast，
+帧率大约只有 10–25fps，编码器也只能写出 VP8 WebM。
+
+ffmpeg 后端**不会**按墙钟时间录屏。它按输出帧时间 `goto` rrweb-player，
+截取 JPEG，再把帧管道送给 ffmpeg（`libx264`）。
+因此 60fps、120fps 是精确的，即使截图比实时更慢。
+
+```shell
+rrvideo --input PATH_TO_YOUR_RRWEB_EVENTS_FILE --output session.mp4 --fps 60
+```
+
+输出 `.mp4` 或传入 `--fps` 会自动选择该后端。
+配置文件里也可写 `"capture": "ffmpeg"`。
+
+`speed` 为 2 或 4 时会缩短成片时长，而不是降低编码帧率。
+批量任务请用 `transformMany(jobs, { concurrency })`，
+每个任务独立的 Chromium + ffmpeg 进程。
+
 ## Sponsors
 
 [Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.

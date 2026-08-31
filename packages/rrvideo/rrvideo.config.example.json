@@ -1,8 +1,14 @@
 {
-  "width": 1400,
-  "height": 900,
-  "speed": 4,
+  "width": 1920,
+  "height": 1080,
+  "speed": 2,
   "skipInactive": true,
+  "fps": 60,
+  "capture": "ffmpeg",
+  "quality": 90,
+  "crf": 18,
+  "x264Preset": "veryfast",
+  "pixelRatio": 1,
   "mouseTail": {
     "strokeStyle": "green",
     "lineWidth": 2

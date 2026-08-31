@@ -39,6 +39,48 @@ rrvideo --input PATH_TO_YOUR_RRWEB_EVENTS_JSON_FILE --config PATH_TO_YOUR_RRVIDE
 
 You can find an example of the rrvideo config file [here](./rrvideo.config.example.json).
 
+### High fps / MP4 (ffmpeg backend)
+
+Playwright `recordVideo` (the default for `.webm` output) is CDP
+screencast. Chromium typically delivers ~10–25fps and Playwright's
+bundled encoder writes VP8 WebM, so this path cannot do high-fps MP4.
+
+The ffmpeg backend does **not** record the page in real time. It seeks
+`rrweb-player` to each output-frame timestamp, takes a JPEG screenshot,
+and pipes the stills into ffmpeg (`libx264`). Output fps is exact (60,
+120, …) even when capture is slower than real time.
+
+```shell
+# 60fps MP4. Requires ffmpeg on PATH.
+rrvideo --input PATH_TO_YOUR_RRWEB_EVENTS_FILE --output session.mp4 --fps 60
+```
+
+`.mp4` output (or `--fps`) selects this backend automatically. You can
+also set `"capture": "ffmpeg"` in the config file.
+
+Playback speed (`speed` 2 or 4 in the config file) shortens the file: a
+60s session at `speed: 4` and `--fps 60` becomes a 15s 60fps MP4. It
+does not drop the encoded frame rate.
+
+For many sessions, use `transformMany(jobs, { concurrency })`. Each job
+is its own Chromium + ffmpeg process. Keep concurrency around CPU cores;
+1080p/60fps screenshotting is CPU-bound. Splitting **one** long session
+across workers is not supported yet.
+
+`pixelRatio: 2` screenshots at 2× CSS pixels for sharper output.
+`width` / `height` in the config file set the viewport.
+
+Seeking with `goto` applies mouse-move batches synchronously, so the
+cursor jumps to the last position in each recorded event rather than
+interpolating every 16ms. DOM mutations still land on the correct
+frame. That is an rrweb seek limitation, not an fps cap.
+
+The [Browserless Playwright recorder](https://github.com/browserless/examples/tree/main/examples/record-browser-session/frameworks/playwright)
+is also a real-time screencast (`Browserless.startRecording` → WebM).
+It does not expose fps, buffers the whole file as base64, and needs a
+headed Browserless session — so it has the same high-fps / parallel /
+MP4 limits as Playwright `recordVideo`.
+
 ## Sponsors
 
 [Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.
