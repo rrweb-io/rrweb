@@ -5,7 +5,11 @@ import { describe, it, beforeEach, expect } from 'vitest';
 import { mediaSelectorPlugin, pseudoClassPlugin } from '../src/css';
 import postcss, { type AcceptedPlugin } from 'postcss';
 import { JSDOM } from 'jsdom';
-import { splitCssText, stringifyStylesheet } from './../src/utils';
+import {
+  snapCssSplitsToRuleBoundaries,
+  splitCssText,
+  stringifyStylesheet,
+} from './../src/utils';
 import { applyCssSplits } from './../src/rebuild';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -408,13 +412,74 @@ describe('applyCssSplits css rejoiner', function () {
       '/* rr_split */',
     );
     applyCssSplits(sn3, markedCssText, true, mockLastUnusedArg);
+    // the split points move to the end of the rule they landed in, so each
+    // text node holds whole rules rather than half of one
     expect((sn3.childNodes[0] as textNode).textContent).toEqual(
-      badStartThird.replace('.a:hover', '.a:hover,\n.a.\\:hover'),
+      '.a:hover,\n.a.\\:hover { background-color: red; }',
     );
     expect((sn3.childNodes[1] as textNode).textContent).toEqual(
-      badMidThird.replace('input:hover', 'input:hover,\ninput.\\:hover'),
+      ' input:hover,\ninput.\\:hover {border: 1px solid purple; }',
     );
-    expect((sn3.childNodes[2] as textNode).textContent).toEqual(badEndThird);
+    expect((sn3.childNodes[2] as textNode).textContent).toEqual('');
+    expect(
+      (sn3.childNodes[0] as textNode).textContent +
+        (sn3.childNodes[1] as textNode).textContent +
+        (sn3.childNodes[2] as textNode).textContent,
+    ).toEqual(
+      [badStartThird, badMidThird, badEndThird]
+        .join('')
+        .replace('.a:hover', '.a:hover,\n.a.\\:hover')
+        .replace('input:hover', 'input:hover,\ninput.\\:hover'),
+    );
+  });
+
+  it('moves a split point which lands inside a rule to the end of that rule', () => {
+    const markedCssText = [
+      '.a { color: red; }.b { col',
+      'or: green; }.c { color: blue; }',
+    ].join('/* rr_split */');
+    applyCssSplits(sn, markedCssText, false, mockLastUnusedArg);
+    expect((sn.childNodes[0] as textNode).textContent).toEqual(
+      '.a { color: red; }.b { color: green; }',
+    );
+    expect((sn.childNodes[1] as textNode).textContent).toEqual(
+      '.c { color: blue; }',
+    );
+  });
+
+  it('survives a sibling text node being inserted between the splits', () => {
+    // a later mutation can insert a text node between these two, which is the
+    // whole reason the split is preserved; the css has to stay valid when it
+    // does
+    const markedCssText = [
+      '.a { color: red; }.b { col',
+      'or: green; }.c { color: blue; }',
+    ].join('/* rr_split */');
+    applyCssSplits(sn, markedCssText, false, mockLastUnusedArg);
+    const inserted = '.inserted { color: pink; }';
+    expect(
+      (sn.childNodes[0] as textNode).textContent +
+        inserted +
+        (sn.childNodes[1] as textNode).textContent,
+    ).toEqual(
+      '.a { color: red; }.b { color: green; }' +
+        inserted +
+        '.c { color: blue; }',
+    );
+  });
+
+  it('does not mistake braces inside strings for the end of a rule', () => {
+    const markedCssText = [
+      '.a::after { content: "}',
+      '"; }.b { color: red; }',
+    ].join('/* rr_split */');
+    applyCssSplits(sn, markedCssText, false, mockLastUnusedArg);
+    expect((sn.childNodes[0] as textNode).textContent).toEqual(
+      '.a::after { content: "}"; }',
+    );
+    expect((sn.childNodes[1] as textNode).textContent).toEqual(
+      '.b { color: red; }',
+    );
   });
 
   it('maintains entire css text when there are too few child nodes', () => {
@@ -432,5 +497,51 @@ describe('applyCssSplits css rejoiner', function () {
     expect((sn1.childNodes[0] as textNode).textContent).toEqual(
       halfCssText + otherHalfCssText,
     );
+  });
+});
+
+describe('snapCssSplitsToRuleBoundaries', function () {
+  it('leaves splits which already sit on a rule boundary alone', () => {
+    const splits = ['.a { color: red; }', '.b { color: green; }'];
+    expect(snapCssSplitsToRuleBoundaries(splits)).toEqual(splits);
+  });
+
+  it('moves a split point forward to the end of the rule', () => {
+    expect(
+      snapCssSplitsToRuleBoundaries([
+        '.a { col',
+        'or: red; }.b { color: green; }',
+      ]),
+    ).toEqual(['.a { color: red; }', '.b { color: green; }']);
+  });
+
+  it('ignores braces inside strings and comments', () => {
+    expect(
+      snapCssSplitsToRuleBoundaries([
+        '.a { content: "}"; /* } */ ',
+        '}.b { color: red; }',
+      ]),
+    ).toEqual(['.a { content: "}"; /* } */ }', '.b { color: red; }']);
+  });
+
+  it('keeps nested at-rules together', () => {
+    expect(
+      snapCssSplitsToRuleBoundaries([
+        '@media print { .a { color',
+        ': red; } }.b { color: green; }',
+      ]),
+    ).toEqual(['@media print { .a { color: red; } }', '.b { color: green; }']);
+  });
+
+  it('empties trailing splits when everything snapped into an earlier one', () => {
+    expect(
+      snapCssSplitsToRuleBoundaries(['.a { col', 'or', ': red; }']),
+    ).toEqual(['.a { color: red; }', '', '']);
+  });
+
+  it('is a no-op for a single split', () => {
+    expect(snapCssSplitsToRuleBoundaries(['.a { color'])).toEqual([
+      '.a { color',
+    ]);
   });
 });

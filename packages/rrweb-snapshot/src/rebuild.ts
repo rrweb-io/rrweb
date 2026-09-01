@@ -12,6 +12,9 @@ import {
   Mirror,
   isNodeMetaEqual,
   extractFileExtension,
+  cssRuleBoundaries,
+  nextCssRuleBoundary,
+  snapCssSplitsToRuleBoundaries,
 } from './rebuild-utils';
 import postcss from 'postcss';
 
@@ -206,7 +209,7 @@ export function applyCssSplits(
       childTextNodes.push(scn);
     }
   }
-  const cssTextSplits = cssText.split('/* rr_split */');
+  let cssTextSplits = cssText.split('/* rr_split */');
   while (
     cssTextSplits.length > 1 &&
     cssTextSplits.length > childTextNodes.length
@@ -214,9 +217,16 @@ export function applyCssSplits(
     // unexpected: remerge the last two so that we don't discard any css
     cssTextSplits.splice(-2, 2, cssTextSplits.slice(-2).join(''));
   }
+  // the split points recorded by `markCssSplits` regularly land in the middle
+  // of a rule; move them to the end of that rule so that a sibling inserted
+  // between two of these text nodes by a later mutation can't cut a rule in
+  // half (see `snapCssSplitsToRuleBoundaries`)
+  cssTextSplits = snapCssSplitsToRuleBoundaries(cssTextSplits);
   let adaptedCss = '';
+  let adaptedBoundaries: number[] = [];
   if (hackCss) {
     adaptedCss = adaptCssForReplay(cssTextSplits.join(''), cache);
+    adaptedBoundaries = cssRuleBoundaries(adaptedCss);
   }
   let startIndex = 0;
   for (let i = 0; i < childTextNodes.length; i++) {
@@ -248,6 +258,13 @@ export function applyCssSplits(
         // something went wrong, put a similar sized chunk in the right place
         endIndex += cssTextSplits[i].length;
       }
+      // `adaptCssForReplay` rewrites selectors, so the split point has to be
+      // re-aligned with the rewritten css as well
+      endIndex = nextCssRuleBoundary(
+        adaptedBoundaries,
+        endIndex,
+        adaptedCss.length,
+      );
       childTextNode.textContent = adaptedCss.substring(startIndex, endIndex);
       startIndex = endIndex;
     } else {

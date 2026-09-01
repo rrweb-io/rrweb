@@ -608,3 +608,81 @@ export function markCssSplits(
 ): string {
   return splitCssText(cssText, style).join('/* rr_split */');
 }
+
+/**
+ * Offsets just past the end of each top-level css rule (i.e. just after a `}`
+ * which closes back to depth zero). Braces inside strings and comments are
+ * not counted.
+ */
+export function cssRuleBoundaries(cssText: string): number[] {
+  const boundaries: number[] = [];
+  let depth = 0;
+  let quote: string | null = null;
+  for (let i = 0; i < cssText.length; i++) {
+    const char = cssText[i];
+    if (quote !== null) {
+      if (char === '\\') i++;
+      else if (char === quote) quote = null;
+      continue;
+    }
+    if (char === '"' || char === "'") {
+      quote = char;
+    } else if (char === '/' && cssText[i + 1] === '*') {
+      const end = cssText.indexOf('*/', i + 2);
+      i = end === -1 ? cssText.length : end + 1;
+    } else if (char === '{') {
+      depth++;
+    } else if (char === '}') {
+      depth = Math.max(0, depth - 1);
+      if (depth === 0) boundaries.push(i + 1);
+    }
+  }
+  return boundaries;
+}
+
+/**
+ * The first rule boundary at or after `index`, or the end of the string.
+ */
+export function nextCssRuleBoundary(
+  boundaries: number[],
+  index: number,
+  end: number,
+): number {
+  return boundaries.find((boundary) => boundary >= index) ?? end;
+}
+
+/**
+ * Move each split point forward to the end of the rule it lands in.
+ *
+ * `splitCssText` locates the split points by searching for each text node's
+ * content inside the browser-serialized stylesheet, so a split point regularly
+ * lands in the middle of a rule (e.g. after `color: rgba(0, 0, 0, 0.84`).
+ * That is harmless while the parts stay adjacent, but keeping the parts
+ * separate is only worthwhile because later mutations can insert siblings
+ * between them — and a rule cut in half around an inserted sibling is invalid
+ * css. The browser then goes looking for the closing brace and drops every
+ * rule until it recovers.
+ *
+ * The exact position of a split point is a guess to begin with, so nothing is
+ * lost by moving it to the next rule boundary.
+ */
+export function snapCssSplitsToRuleBoundaries(splits: string[]): string[] {
+  if (splits.length < 2) return splits;
+  const cssText = splits.join('');
+  const boundaries = cssRuleBoundaries(cssText);
+  const snapped: string[] = [];
+  let from = 0;
+  let at = 0;
+  for (let i = 0; i < splits.length - 1; i++) {
+    at += splits[i].length;
+    const boundary = nextCssRuleBoundary(
+      boundaries,
+      Math.max(at, from),
+      cssText.length,
+    );
+    snapped.push(cssText.substring(from, boundary));
+    from = boundary;
+  }
+  snapped.push(cssText.substring(from));
+  return snapped;
+}
