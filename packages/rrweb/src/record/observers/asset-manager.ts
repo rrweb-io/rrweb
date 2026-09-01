@@ -32,8 +32,9 @@ export function isProcessingStyleElement(
 // `#rr_data_style:2` or `#rr_data_image:3` (font/document may be added later)
 type dataAssetKind = 'image' | 'video' | 'audio' | 'style';
 
-const DATA_URL_ASSET_TIMEOUT = 100;
-const BLOB_URL_ASSET_TIMEOUT = 500;
+const STYLESHEET_PROCESSING_ESTIMATE = 100;
+const DATA_URL_PROCESSING_ESTIMATE = 100;
+const BLOB_URL_PROCESSING_ESTIMATE = 500;
 
 export default class AssetManager {
   private urlObjectMap = new Map<string, File | Blob | MediaSource>();
@@ -47,6 +48,7 @@ export default class AssetManager {
   // under it. Identical data: urls dedupe to the same virtual url / asset.
   private dataURLMap = new Map<string, string>();
   private dataURLCounter = 0;
+  private pendingSnapshotAssetEmits: Array<() => void> = [];
   private resetHandlers: listenerHandler[] = [];
   private mutationCb: assetCallback;
   // base href of the recording frame, used only to namespace adopted-stylesheet
@@ -68,7 +70,14 @@ export default class AssetManager {
     this.failedURLs.clear();
     this.dataURLMap.clear();
     this.dataURLCounter = 0;
+    this.pendingSnapshotAssetEmits = [];
     this.resetHandlers.forEach((h) => h());
+  }
+
+  public flushSnapshotAssets() {
+    const pending = this.pendingSnapshotAssetEmits;
+    this.pendingSnapshotAssetEmits = [];
+    for (const emit of pending) emit();
   }
 
   constructor(options: {
@@ -281,12 +290,19 @@ export default class AssetManager {
         delete el.__rrProcessingStylesheet;
       }
     };
-    let timeout = this.config.processStylesheetsWithin;
-    if (!timeout && timeout !== 0) {
-      timeout = 2000;
+    let { processStylesheetsWithin } = this.config;
+    if (!processStylesheetsWithin && processStylesheetsWithin !== 0) {
+      processStylesheetsWithin = 2000;
     }
-    if (timeout <= 0) {
-      // warning: stylesheet will be emitted with an earlier timestamp than snapshot it is associated with
+    if (processStylesheetsWithin <= 0) {
+      if (snapshotTimestamp === true) {
+        this.pendingSnapshotAssetEmits.push(processStylesheet);
+        return {
+          url,
+          status: 'capturing',
+          timeout: STYLESHEET_PROCESSING_ESTIMATE,
+        };
+      }
       processStylesheet();
       return {
         url,
@@ -299,28 +315,28 @@ export default class AssetManager {
         // process inline style elements before external links
         // as they are more integral to the page and more likely
         // to only appear on this page (can't be reconstructed from @import fallback)
-        timeout = Math.floor(timeout / 2);
+        processStylesheetsWithin = Math.floor(processStylesheetsWithin / 2);
       }
       // try not to clog up main thread
       requestIdleCallback(processStylesheet, {
-        timeout,
+        timeout: processStylesheetsWithin,
       });
       return {
         url,
         status: 'capturing', // 'processing' ?
-        timeout,
+        timeout: processStylesheetsWithin,
       };
     } else {
       // fallback for e.g. iOS which doesn't have requestIdleCallback
       // we still defer so that it isn't emitted before FullSnapshot
       // and also so that we don't block the main thread.
-      // don't use the `timeout` variable as that should be seen
-      // as a maximum delay and not a minimum
+      // don't use the `processStylesheetsWithin` variable
+      // as that should be seen as a maximum delay and not a minimum
       setTimeout(processStylesheet, 0);
       return {
         url,
         status: 'capturing', // 'processing' ?
-        timeout: 100, // not sure how to make this figure meaningful in the context of setTimeout; this is intended to be used by a live replayer to know how long it should wait before deciding that the asset isn't going to arrive
+        timeout: STYLESHEET_PROCESSING_ESTIMATE,
       };
     }
   }
@@ -438,9 +454,9 @@ export default class AssetManager {
       : url;
     const intrinsic = url.startsWith('data:') || url.startsWith('blob:');
     const timeout = url.startsWith('data:')
-      ? DATA_URL_ASSET_TIMEOUT
+      ? DATA_URL_PROCESSING_ESTIMATE
       : url.startsWith('blob:')
-      ? BLOB_URL_ASSET_TIMEOUT
+      ? BLOB_URL_PROCESSING_ESTIMATE
       : undefined;
     if (this.capturedURLs.has(emitUrl)) {
       return {

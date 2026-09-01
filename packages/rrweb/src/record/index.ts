@@ -486,6 +486,7 @@ function record<T = eventWithTime>(
       } as fullSnapshotEventWithTime,
       isCheckout,
     );
+    assetManager.flushSnapshotAssets();
     mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
 
     // Some old browsers don't support adoptedStyleSheets.

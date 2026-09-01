@@ -1181,7 +1181,7 @@ export class Replayer {
   ): Promise<void[]> {
     const promises: Promise<void>[] = [];
     for (const event of this.service.state.context.events) {
-      if (event.timestamp < fullSnapshot.timestamp) continue;
+      if (event.timestamp < fullSnapshot.timestamp) continue; // should not be possible to emit an asset before it's fullsnapshot
       if (
         event.type === EventType.Meta &&
         event.timestamp !== fullSnapshot.timestamp
