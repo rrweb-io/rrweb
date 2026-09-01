@@ -91,7 +91,7 @@ export type ClickTrackOptions = {
 // --- Significant element detection ---
 
 const DEFAULT_SIGNIFICANT_SELECTOR =
-  'a[href],area[href],button,input[type="submit"],input[type="button"]';
+  'a[href],area[href],button,input[type="submit"],input[type="button"],[role="button"]';
 
 const defaultOptions: ClickTrackOptions = {
   targetText: 'button,a,input[type="submit"],input[type="button"],[role="button"]',
