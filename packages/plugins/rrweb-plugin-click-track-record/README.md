@@ -1,12 +1,12 @@
 # @rrweb/rrweb-plugin-click-track-record
 
-Records a stable, semantic data about of every click/touch, not tied to the internal rrweb mirror id of the target element. 
+Records a stable, semantic data about of every click/touch, not tied to the internal rrweb mirror id of the target element.
 
 Instead, a stable and robust CSS selector is generated for the target element of the click is attributed to, exactly where within that element the click was located (percentX/percentY), and (for buttons and anchors) the element's innerText.
 
-For clicks within elements, e.g. a click on an image icon within a button, we prefer a 'significant' target (a parent button or anchor) in order that we can better attribute the click against the element and any associated hrefs, but the real target is not lost but recorded in recursive `.inner` data.  The inner data can also record where exactly within a ShadowDOM the click occurred, while also remaining useful to consumers who opt to ignore shadow dom.
+For clicks within elements, e.g. a click on an image icon within a button, we prefer a 'significant' target (a parent button or anchor) in order that we can better attribute the click against the element and any associated hrefs, but the real target is not lost but recorded in recursive `.inner` data. The inner data can also record where exactly within a ShadowDOM the click occurred, while also remaining useful to consumers who opt to ignore shadow dom.
 
-Selectors are generated with [`semantic-selector`](https://github.com/eoghanmurray/semantic-selector), so they favour meaningful, human-readable class/attribute paths over brittle positional ordinals, and stay resolvable across page revisions. The `semantic-selector` library does not output a *unique* selector for the element (the rrweb mirror id covers this in the context of a particular recording), but rather focuses on picking out the semantic classes and attributes in the target's ancestor path, to maximize the chances of the 'same' element being addressable in a different version of the page.  We augment the css selector with a `selectorMatchIndex` (and `selectorMatchCount`) to discriminate between multiple elements (rather than injecting`:nth-of-type` / `:nth-child` into the selector to force uniqueness)
+Selectors are generated with [`semantic-selector`](https://github.com/eoghanmurray/semantic-selector), so they favour meaningful, human-readable class/attribute paths over brittle positional ordinals, and stay resolvable across page revisions. The `semantic-selector` library does not output a _unique_ selector for the element (the rrweb mirror id covers this in the context of a particular recording), but rather focuses on picking out the semantic classes and attributes in the target's ancestor path, to maximize the chances of the 'same' element being addressable in a different version of the page. We augment the css selector with a `selectorMatchIndex` (and `selectorMatchCount`) to discriminate between multiple elements (rather than injecting`:nth-of-type` / `:nth-child` into the selector to force uniqueness)
 
 Useful for click heatmaps and click analytics independently of the rrweb replayer (this plugin can also be run standalone without rrweb).
 
@@ -64,7 +64,7 @@ All options are optional; defaults are shown.
 | --------------------- | ------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `targetText`          | `boolean \| string` | `'button,a,input[type="submit"],input[type="button"],[role="button"]'`  | Which clicked elements get their text recorded. `true` = all elements, `false` = none, or a comma-separated list of **CSS selectors** — the element's text is recorded when it matches any of them. Text is `innerText` (falling back to `textContent`), truncated to 40 characters; for `input` it is the element `value`, and only ever for `type="submit"`/`type="button"` so text-field input is never captured. |
 | `shadow`              | `boolean`           | `false`                                                                 | Descend into **open** shadow roots, recording the real inner target as a chain of `inner` hops (one per boundary crossed). When off, a click inside a shadow tree is recorded against the shadow host in the regular document.                                                                                                                                                                                       |
-| `significantSelector` | `string`            | `'a[href],area[href],button,input[type="submit"],input[type="button"]'` | CSS selector for the element a click is *attributed* to. The plugin walks up from the real target and stops at the first matching ancestor (the link/button/control level); a finer descendant that was actually clicked is recorded as an `inner` hop. Falls back to the clicked element itself when nothing matches.                                                                                               |
+| `significantSelector` | `string`            | `'a[href],area[href],button,input[type="submit"],input[type="button"]'` | CSS selector for the element a click is _attributed_ to. The plugin walks up from the real target and stops at the first matching ancestor (the link/button/control level); a finer descendant that was actually clicked is recorded as an `inner` hop. Falls back to the clicked element itself when nothing matches.                                                                                               |
 
 > **Leaf text.** By default only links/buttons/controls get `targetText`. To also
 > capture the text of bare "leaf" elements (e.g. a `<div class="k">Where</div>`),
@@ -84,10 +84,10 @@ hit.
 ```jsonc
 {
   // --- PositionedTarget for the significant element (inlined) ---
-  "targetSelector": ".fact .fg-link",  // semantic-selector output, relative to root
-  "percentX": 42.1,        // click X as % of the element's box width (0–100)
-  "percentY": 55.0,        // click Y as % of the element's box height (0–100)
-  "aspect": 6.3,           // element width / height
+  "targetSelector": ".fact .fg-link", // semantic-selector output, relative to root
+  "percentX": 42.1, // click X as % of the element's box width (0–100)
+  "percentY": 55.0, // click Y as % of the element's box height (0–100)
+  "aspect": 6.3, // element width / height
   "selectorMatchIndex": 0, // present only when the selector matched >1 element
   "selectorMatchCount": 3, // present only when the selector matched >1 element
 
@@ -95,7 +95,7 @@ hit.
   "viewportWidth": 1280,
   "viewportHeight": 720,
   "targetText": "Add to Cart", // present per `targetText` option
-  "pointerType": "mouse",                     // 'mouse' | 'touch' | 'pen'
+  "pointerType": "mouse", // 'mouse' | 'touch' | 'pen'
 
   // --- finer target actually clicked (optional, recursive) ---
   "inner": {
@@ -137,14 +137,14 @@ ordinals (`:nth-child`) and machine-generated identifiers (React `useId`, UUIDs,
 styled-components hashes, stateful classes e.g. `.active` etc.).
 
 A consequence is that `semantic-selector` **does not guarantee uniqueness** — one
-selector may match several same-identity elements. This plugin currently disambiguates by pairing the selector with a **match index + count** at record time (later we could add further signals like target bounding box). 
+selector may match several same-identity elements. This plugin currently disambiguates by pairing the selector with a **match index + count** at record time (later we could add further signals like target bounding box).
 
 - When `targetSelector` matched exactly one element, `selectorMatchIndex` /
   `selectorMatchCount` are **omitted** — resolve with a plain
   `root.querySelector(targetSelector)`.
 
 - When it matched several, both are present. Resolve with:
-  
+
   ```js
   const matches = root.querySelectorAll(node.targetSelector);
   const el =

@@ -94,7 +94,8 @@ const DEFAULT_SIGNIFICANT_SELECTOR =
   'a[href],area[href],button,input[type="submit"],input[type="button"],[role="button"]';
 
 const defaultOptions: ClickTrackOptions = {
-  targetText: 'button,a,input[type="submit"],input[type="button"],[role="button"]',
+  targetText:
+    'button,a,input[type="submit"],input[type="button"],[role="button"]',
   shadow: false,
   significantSelector: DEFAULT_SIGNIFICANT_SELECTOR,
 };
@@ -295,7 +296,8 @@ function buildPayload(
         }
       } else {
         text =
-          (significantTarget as HTMLElement).innerText || significantTarget.textContent;
+          (significantTarget as HTMLElement).innerText ||
+          significantTarget.textContent;
       }
       if (text) {
         payload.targetText = text.substring(0, 40);

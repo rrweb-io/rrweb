@@ -10,10 +10,15 @@ import {
 
 // jsdom doesn't ship PointerEvent — polyfill it
 if (typeof PointerEvent === 'undefined') {
-  (globalThis as Record<string, unknown>).PointerEvent = class PointerEvent extends MouseEvent {
+  (
+    globalThis as Record<string, unknown>
+  ).PointerEvent = class PointerEvent extends MouseEvent {
     readonly pointerType: string;
     readonly pointerId: number;
-    constructor(type: string, init: PointerEventInit & { pointerType?: string } = {}) {
+    constructor(
+      type: string,
+      init: PointerEventInit & { pointerType?: string } = {},
+    ) {
       super(type, init);
       this.pointerType = init.pointerType || '';
       this.pointerId = init.pointerId || 0;
@@ -25,7 +30,10 @@ function setHTML(html: string) {
   document.body.innerHTML = html;
 }
 
-function click(el: Element, opts: { pointerType?: string; clientX?: number; clientY?: number } = {}) {
+function click(
+  el: Element,
+  opts: { pointerType?: string; clientX?: number; clientY?: number } = {},
+) {
   // Simulate pointerdown first (for pointer type detection)
   el.dispatchEvent(
     new PointerEvent('pointerdown', {
@@ -229,7 +237,9 @@ describe('createClickTracker (standalone)', () => {
   });
 
   it('does not leak a text input value even when it has role=button', () => {
-    setHTML('<input type="text" id="pii" role="button" value="user@example.com">');
+    setHTML(
+      '<input type="text" id="pii" role="button" value="user@example.com">',
+    );
     const payloads: ClickTrackPayload[] = [];
     const stop = createClickTracker({
       callback: (p) => payloads.push(p),
@@ -301,9 +311,7 @@ describe('createClickTracker (standalone)', () => {
     );
     expect(p.inner).toBeDefined();
     expect(
-      document
-        .getElementById('rb')!
-        .querySelector(p.inner!.targetSelector),
+      document.getElementById('rb')!.querySelector(p.inner!.targetSelector),
     ).toBe(document.getElementById('lbl'));
 
     stop();
@@ -347,7 +355,9 @@ describe('createClickTracker (standalone)', () => {
   });
 
   it('records the zero-based ordinal among identity-less twins', () => {
-    setHTML('<div><button>First</button><button data-x>Second</button><button>Third</button></div>');
+    setHTML(
+      '<div><button>First</button><button data-x>Second</button><button>Third</button></div>',
+    );
     const payloads: ClickTrackPayload[] = [];
     const stop = createClickTracker({
       callback: (p) => payloads.push(p),
@@ -502,7 +512,9 @@ describe('open shadow DOM', () => {
     // Full replay chain resolves back to the clicked element.
     const o = document.querySelector(p.targetSelector)!;
     const m = o.shadowRoot!.querySelector(p.inner!.targetSelector)!;
-    const resolved = m.shadowRoot!.querySelector(p.inner!.inner!.targetSelector);
+    const resolved = m.shadowRoot!.querySelector(
+      p.inner!.inner!.targetSelector,
+    );
     expect(resolved).toBe(btn);
 
     stop();
