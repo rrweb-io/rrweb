@@ -96,6 +96,8 @@ import { applyDialogToTopLevel, removeDialogFromTopLevel } from './dialog';
 
 const SKIP_TIME_INTERVAL = 5 * 1000;
 
+const ASSET_PROCESSING_BUFFER = 100;
+
 // https://github.com/rollup/rollup/issues/1267#issuecomment-296395734
 const mitt = mittProxy.default || mittProxy;
 
@@ -926,6 +928,8 @@ export class Replayer {
       maxAssetWithin &&
       fullSnapshotAssets.length
     ) {
+      const pendingFullSnapshotAssets = new Set(fullSnapshotAssets);
+
       // hold the previous frame on screen until fullsnapshot assets for this
       // snapshot have arrived (e.g. inline styles), avoiding FOUC
       const doRender = () => {
@@ -933,22 +937,46 @@ export class Replayer {
           return; // already rendered, or superseded by a newer snapshot
         }
         this.pendingFullSnapshotRender = null;
-        clearTimeout(renderTimeout);
+        clearTimeout(failTimeout);
         completeRender();
       };
-      const renderTimeout = setTimeout(() => {
-        // assets still outstanding; fail them to revert
-        // to original URL if possible (mainly <link> -> @import
-        // fallback as missing <style> has no fallback)
-        for (const { url } of fullSnapshotAssets) {
+    
+      let lastAssetArrival = Date.now();
+      const failRemainingAssets = () => {
+        if (this.pendingFullSnapshotRender !== doRender) {
+          return; // already attached, or superseded by a newer snapshot
+        }
+        const quietFor = Date.now() - lastAssetArrival;
+        if (quietFor < ASSET_PROCESSING_BUFFER) {
+          // extend as we have received an asset recently
+          // Assets could trickle in like this if several hit the requestIdleCallback timeout at the same time, and the stylesheet processing is serialized
+          failTimeout = setTimeout(
+            failRemainingAssets,
+            ASSET_PROCESSING_BUFFER - quietFor,
+          );
+          return;
+        }
+        for (const { url } of pendingFullSnapshotAssets) {
+          // when we fail a <link> asset, an @import fallback will kick in here
           this.assetManager.failAsset(url);
         }
+        pendingFullSnapshotAssets.clear();
         doRender();
-      }, maxAssetWithin + 100); // margin for processing time
-      this.pendingFullSnapshotRender = doRender;
-      void Promise.all(fullSnapshotAssets.map(({ ready }) => ready)).then(
-        doRender,
+      };
+      let failTimeout = setTimeout(
+        failRemainingAssets,
+        maxAssetWithin + ASSET_PROCESSING_BUFFER,
       );
+      this.pendingFullSnapshotRender = doRender;
+      for (const pendingAsset of pendingFullSnapshotAssets) {
+        void pendingAsset.ready.then(() => {
+          lastAssetArrival = Date.now();
+          pendingFullSnapshotAssets.delete(pendingAsset);
+          if (pendingFullSnapshotAssets.size === 0) {
+            doRender();
+          }
+        });
+      }
     } else {
       // e.g. scrub fast-forward jump - render synchronously
       completeRender();
