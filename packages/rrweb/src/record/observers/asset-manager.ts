@@ -34,7 +34,6 @@ type dataAssetKind = 'image' | 'video' | 'audio' | 'style';
 
 const STYLESHEET_PROCESSING_ESTIMATE = 100;
 const DATA_URL_PROCESSING_ESTIMATE = 100;
-const BLOB_URL_PROCESSING_ESTIMATE = 500;
 
 export default class AssetManager {
   private urlObjectMap = new Map<string, File | Blob | MediaSource>();
@@ -418,7 +417,7 @@ export default class AssetManager {
         asset.styleId,
         snapshotTimestamp,
       );
-      status.intrinsic = true;
+      status.renderBlocking = true;
       return status;
     } else if (asset.attr === 'srcset') {
       const statuses: assetStatus[] = [];
@@ -452,30 +451,26 @@ export default class AssetManager {
     const emitUrl = url.startsWith('data:')
       ? this.dataURLVirtualURL(url, kind)
       : url;
-    const intrinsic = url.startsWith('data:') || url.startsWith('blob:');
-    const timeout = url.startsWith('data:')
-      ? DATA_URL_PROCESSING_ESTIMATE
-      : url.startsWith('blob:')
-      ? BLOB_URL_PROCESSING_ESTIMATE
-      : undefined;
+    const renderBlocking = url.startsWith('data:');
+    const timeout = renderBlocking ? DATA_URL_PROCESSING_ESTIMATE : undefined;
     if (this.capturedURLs.has(emitUrl)) {
       return {
         url: emitUrl,
         status: 'captured',
-        intrinsic,
+        renderBlocking,
       };
     } else if (this.capturingURLs.has(emitUrl)) {
       return {
         url: emitUrl,
         status: 'capturing',
-        intrinsic,
+        renderBlocking,
         timeout,
       };
     } else if (this.failedURLs.has(emitUrl)) {
       return {
         url: emitUrl,
         status: 'error',
-        intrinsic,
+        renderBlocking,
       };
     }
     this.capturingURLs.add(emitUrl);
@@ -507,7 +502,7 @@ export default class AssetManager {
                 payload,
               },
               snapshotTimestamp === true
-                ? intrinsic
+                ? renderBlocking
                   ? this.lastFullSnapshotTimestamp
                   : undefined
                 : snapshotTimestamp,
@@ -520,7 +515,7 @@ export default class AssetManager {
     return {
       url: emitUrl,
       status: 'capturing',
-      intrinsic,
+      renderBlocking,
       timeout,
     };
   }

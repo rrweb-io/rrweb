@@ -31,7 +31,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
   private cache: BuildCache;
   public replayerApproxTs = 0;
 
-  // Assets which are intrinsic to a FullSnapshot, i.e. should delay rebuild until they are ready
+  // Assets which are render-blocking for a FullSnapshot, i.e. should delay rebuild until they are ready
   public fullSnapshotAssets: { url: string; ready: Promise<unknown> }[] | null =
     null;
 
@@ -356,7 +356,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       );
       promises.push(whenReadyPromise);
       if (isCssTextElement) {
-        // also includes <link>s which are not intrinsic to the fullsnapshot
+        // also includes <link>s which are not render-blocking for the fullsnapshot
         // but which in most browsers do delay record time rendering, so we should delay rebuild likewise
         this.fullSnapshotAssets?.push({
           url: serializedValue,

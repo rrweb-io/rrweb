@@ -23,7 +23,7 @@ export type assetStatus = {
   url: string;
   status: 'capturing' | 'captured' | 'media-mismatch' | 'error' | 'refused';
   timeout?: number;
-  intrinsic?: boolean;
+  renderBlocking?: boolean;
 };
 
 export type fullSnapshotEvent = {
@@ -34,10 +34,10 @@ export type fullSnapshotEvent = {
       top: number;
       left: number;
     };
-    intrinsicAssetCount?: number;
+    renderBlockingAssetCount?: number;
     /*
      * the maximum number of milliseconds the recorder may take to emit the
-     * intrinsic assets referenced by this snapshot (they normally arrive much
+     * render-blocking assets referenced by this snapshot (they normally arrive much
      * sooner); a replayer can delay revealing the snapshot by up to this long
      * while waiting for them, avoiding a flash of unstyled content
      */
