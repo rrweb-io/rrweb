@@ -186,6 +186,76 @@ describe('createClickTracker (standalone)', () => {
     stop();
   });
 
+  it('extracts targetText from an input[type=submit] value by default', () => {
+    setHTML('<input type="submit" id="go" value="Send Message">');
+    const payloads: ClickTrackPayload[] = [];
+    const stop = createClickTracker({
+      callback: (p) => payloads.push(p),
+    });
+
+    click(document.getElementById('go')!);
+
+    expect(payloads[0].targetText).toBe('Send Message');
+
+    stop();
+  });
+
+  it('extracts targetText from an input[type=button] value by default', () => {
+    setHTML('<input type="button" id="tog" value="Show more">');
+    const payloads: ClickTrackPayload[] = [];
+    const stop = createClickTracker({
+      callback: (p) => payloads.push(p),
+    });
+
+    click(document.getElementById('tog')!);
+
+    expect(payloads[0].targetText).toBe('Show more');
+
+    stop();
+  });
+
+  it('extracts targetText from a role=button element by default', () => {
+    setHTML('<div id="rb" role="button">Toggle menu</div>');
+    const payloads: ClickTrackPayload[] = [];
+    const stop = createClickTracker({
+      callback: (p) => payloads.push(p),
+    });
+
+    click(document.getElementById('rb')!);
+
+    expect(payloads[0].targetText).toBe('Toggle menu');
+
+    stop();
+  });
+
+  it('does not leak a text input value even when it has role=button', () => {
+    setHTML('<input type="text" id="pii" role="button" value="user@example.com">');
+    const payloads: ClickTrackPayload[] = [];
+    const stop = createClickTracker({
+      callback: (p) => payloads.push(p),
+    });
+
+    click(document.getElementById('pii')!);
+
+    expect(payloads[0].targetText).toBeUndefined();
+
+    stop();
+  });
+
+  it('does not extract targetText from a text input value by default', () => {
+    setHTML('<input type="text" id="email" value="user@example.com">');
+    const payloads: ClickTrackPayload[] = [];
+    const stop = createClickTracker({
+      callback: (p) => payloads.push(p),
+    });
+
+    click(document.getElementById('email')!);
+
+    expect(payloads[0].targetText).toBeUndefined();
+
+    stop();
+  });
+
   it('walks up to the significant clickable ancestor', () => {
     setHTML('<a href="/page" id="link"><span id="inner">Click</span></a>');
     const payloads: ClickTrackPayload[] = [];
@@ -302,7 +372,8 @@ describe('getRecordClickTrackPlugin (rrweb integration)', () => {
     expect(plugin.name).toBe('rrweb/click-track@1');
     expect(typeof plugin.observer).toBe('function');
     expect(plugin.options).toEqual({
-      targetText: 'button,a',
+      targetText:
+        'button,a,input[type="submit"],input[type="button"],[role="button"]',
       shadow: false,
       significantSelector:
         'a[href],area[href],button,input[type="submit"],input[type="button"]',

@@ -68,7 +68,8 @@ export type ClickTrackOptions = {
    * Control innerText extraction for click targets.
    * - true: extract from all elements
    * - false: never extract
-   * - string: comma-separated tag names to extract from (e.g. 'button,a')
+   * - string: comma-separated CSS selectors; extract when the element matches
+   *   any of them (e.g. 'button,a,input[type="submit"]')
    */
   targetText: boolean | string;
   /**
@@ -93,7 +94,7 @@ const DEFAULT_SIGNIFICANT_SELECTOR =
   'a[href],area[href],button,input[type="submit"],input[type="button"]';
 
 const defaultOptions: ClickTrackOptions = {
-  targetText: 'button,a',
+  targetText: 'button,a,input[type="submit"],input[type="button"],[role="button"]',
   shadow: false,
   significantSelector: DEFAULT_SIGNIFICANT_SELECTOR,
 };
@@ -176,8 +177,15 @@ function shadowHops(el: Element, documentRoot: Element): SelectorHop[] {
 function shouldExtractText(el: Element, config: boolean | string): boolean {
   if (config === true) return true;
   if (config === false) return false;
-  const tags = (config as string).split(',').map((t) => t.trim().toLowerCase());
-  return tags.includes(el.tagName.toLowerCase());
+  return (config as string).split(',').some((sel) => {
+    const s = sel.trim();
+    if (!s) return false;
+    try {
+      return el.matches(s);
+    } catch {
+      return false;
+    }
+  });
 }
 
 function buildPayload(
@@ -281,7 +289,10 @@ function buildPayload(
     if (shouldExtractText(significantTarget, opts.targetText)) {
       let text: string | null = null;
       if (tag === 'input') {
-        text = (significantTarget as HTMLInputElement).value;
+        const inputType = (significantTarget as HTMLInputElement).type;
+        if (inputType === 'submit' || inputType === 'button') {
+          text = (significantTarget as HTMLInputElement).value;
+        }
       } else {
         text =
           (significantTarget as HTMLElement).innerText || significantTarget.textContent;
