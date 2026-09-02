@@ -34,6 +34,7 @@ type dataAssetKind = 'image' | 'video' | 'audio' | 'style';
 
 const STYLESHEET_PROCESSING_ESTIMATE = 100;
 const DATA_URL_PROCESSING_ESTIMATE = 100;
+const IDLE_TIMEOUT_STAGGER = 20;
 
 export default class AssetManager {
   private urlObjectMap = new Map<string, File | Blob | MediaSource>();
@@ -48,6 +49,7 @@ export default class AssetManager {
   private dataURLMap = new Map<string, string>();
   private dataURLCounter = 0;
   private pendingSnapshotAssetEmits: Array<() => void> = [];
+  private pendingIdleStylesheets = 0;
   private resetHandlers: listenerHandler[] = [];
   private mutationCb: assetCallback;
   // base href of the recording frame, used only to namespace adopted-stylesheet
@@ -70,6 +72,7 @@ export default class AssetManager {
     this.dataURLMap.clear();
     this.dataURLCounter = 0;
     this.pendingSnapshotAssetEmits = [];
+    this.pendingIdleStylesheets = 0;
     this.resetHandlers.forEach((h) => h());
   }
 
@@ -291,7 +294,7 @@ export default class AssetManager {
     };
     let { processStylesheetsWithin } = this.config;
     if (!processStylesheetsWithin && processStylesheetsWithin !== 0) {
-      processStylesheetsWithin = 2000;
+      processStylesheetsWithin = 4000;
     }
     if (processStylesheetsWithin <= 0) {
       if (snapshotTimestamp === true) {
@@ -308,22 +311,34 @@ export default class AssetManager {
         status: 'captured',
       };
     } else if (window.requestIdleCallback !== undefined) {
+      // Spread the idle-callback deadlines of stylesheets queued together so
+      // that on a busy page that never goes idle, they don't all hit their
+      // timeout and get dumped on the main thread at the same time.
+      // Ultimate cure for a busy page is to increase the processStylesheetsWithin
+      // limit and trust requestIdleCallback scheduling
+      const midpoint = Math.floor(processStylesheetsWithin / 2);
+      const stagger = this.pendingIdleStylesheets * IDLE_TIMEOUT_STAGGER;
+      this.pendingIdleStylesheets += 1;
+      let timeout: number;
       if (el.tagName === 'STYLE') {
         // mark it so mutations on it can be ignored until processed
         (el as ProcessingStyleElement).__rrProcessingStylesheet = true;
         // process inline style elements before external links
         // as they are more integral to the page and more likely
         // to only appear on this page (can't be reconstructed from @import fallback)
-        processStylesheetsWithin = Math.floor(processStylesheetsWithin / 2);
+        timeout = Math.max(0, midpoint - stagger);
+      } else {
+        timeout = Math.min(processStylesheetsWithin, midpoint + stagger);
       }
       // try not to clog up main thread
-      requestIdleCallback(processStylesheet, {
-        timeout: processStylesheetsWithin,
-      });
+      requestIdleCallback(() => {
+        this.pendingIdleStylesheets -= 1;
+        processStylesheet();
+      }, { timeout });
       return {
         url,
         status: 'capturing', // 'processing' ?
-        timeout: processStylesheetsWithin,
+        timeout,
       };
     } else {
       // fallback for e.g. iOS which doesn't have requestIdleCallback
