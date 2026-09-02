@@ -1180,14 +1180,22 @@ export class Replayer {
     fullSnapshot: fullSnapshotEvent & { timestamp: number },
   ): Promise<void[]> {
     const promises: Promise<void>[] = [];
+    let renderBlocking = fullSnapshot.data.renderBlockingAssetCount ?? 0;
     for (const event of this.service.state.context.events) {
       if (event.timestamp < fullSnapshot.timestamp) continue; // should not be possible to emit an asset before it's fullsnapshot
       if (
         event.type === EventType.Meta &&
-        event.timestamp !== fullSnapshot.timestamp
+        event.timestamp !== fullSnapshot.timestamp &&
+        renderBlocking <= 0
       )
+        // later assets likely belong to a later fullsnapshot
         break;
       if (event.type === EventType.Asset) {
+        if (event.timestamp === fullSnapshot.timestamp) {
+          // our 'contract' is that render-blocking assets are backdated at record time
+          // with the same timestamp as their associated fullsnapshot
+          renderBlocking--;
+        }
         promises.push(this.assetManager.add(event));
       }
     }
