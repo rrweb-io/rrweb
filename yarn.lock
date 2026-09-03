@@ -9931,10 +9931,10 @@ scheduler@^0.23.0:
   dependencies:
     loose-envify "^1.1.0"
 
-semantic-selector@^0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/semantic-selector/-/semantic-selector-0.3.0.tgz#9b8702d915b07c498132322a67f7eb669ef9d634"
-  integrity sha512-AL6BCvoSoG7qg1bkjWctsVTLGUtSszwcxkLNaAfrWCm+thmeG9i6Lsbu6IHg8Iz+TtXiX4+6AnkpvM9sCfezoQ==
+semantic-selector@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/semantic-selector/-/semantic-selector-0.3.1.tgz#f46fea3177c4f9933fa7a5184c40fb307004482a"
+  integrity sha512-qOaUSmTglH1KJpSDZP19DT95YFOnu3hE/u0kft8RNNMHzjCW8piq6uqtRrjHPcbd485Hgg0vWIzszj1g4FnMeQ==
 
 semver-diff@^4.0.0:
   version "4.0.0"
