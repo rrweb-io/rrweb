@@ -386,7 +386,7 @@ describe('getRecordClickTrackPlugin (rrweb integration)', () => {
         'button,a,input[type="submit"],input[type="button"],[role="button"]',
       shadow: false,
       significantSelector:
-        'a[href],area[href],button,input[type="submit"],input[type="button"]',
+        'a[href],area[href],button,input[type="submit"],input[type="button"],[role="button"]',
     });
   });
 
