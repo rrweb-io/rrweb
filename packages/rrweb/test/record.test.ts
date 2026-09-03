@@ -568,11 +568,11 @@ describe('record', function (this: ISuite) {
     await assertSnapshot(ctx.events);
   });
 
-  it('emits adopted stylesheet css as an Asset when adoptedStylesheetAssets is enabled', async () => {
+  it('emits adopted stylesheet css as an Asset when adoptedStylesheets is enabled', async () => {
     await ctx.page.evaluate(() => {
       const { record } = (window as unknown as IWindow).rrweb;
       record({
-        captureAssets: { adoptedStylesheetAssets: true },
+        captureAssets: { adoptedStylesheets: true },
         emit: (window as unknown as IWindow).emit,
       });
       const sheet = new CSSStyleSheet();
@@ -605,7 +605,7 @@ describe('record', function (this: ISuite) {
     });
   });
 
-  it('inlines adopted stylesheet rules when adoptedStylesheetAssets is disabled', async () => {
+  it('inlines adopted stylesheet rules when adoptedStylesheets is disabled', async () => {
     await ctx.page.evaluate(() => {
       const { record } = (window as unknown as IWindow).rrweb;
       record({

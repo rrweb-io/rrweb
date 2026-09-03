@@ -128,7 +128,7 @@ export type captureAssetsParam = Partial<{
    * virtual url, rather than being inlined as css rules. This allows the (often
    * duplicated) content to be de-duplicated out of band.
    */
-  adoptedStylesheetAssets: boolean;
+  adoptedStylesheets: boolean;
   /*
    * default 200 (characters)
    * data: urls shorter than this are kept inline in the snapshot rather than
@@ -640,7 +640,7 @@ export type adoptedStyleSheetParam = {
 };
 
 // Alternative to adoptedStyleSheetParam used when
-// captureAssets.adoptedStylesheetAssets is enabled: instead of inlining the
+// captureAssets.adoptedStylesheets is enabled: instead of inlining the
 // stylesheets' rules (or referencing them by styleId), the host's adopted
 // stylesheets are listed as synthetic asset urls. The styleId is embedded in
 // each url (the trailing `:<styleId>` segment), so a separate Asset event

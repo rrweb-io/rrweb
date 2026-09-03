@@ -34,7 +34,7 @@
 
 - `processStylesheetsWithin`（默认值：`4000`）：此属性定义了浏览器在开始处理页面上最后一个样式表之前应延迟的最长时间（以毫秒为单位）。`<link>` 样式表会在此值的一半时开始被强制处理，而 `<style>` 元素则会比这更早被强制处理。增大此值可以转而信任浏览器的 [requestIdleCallback](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) 会优雅地调度处理。如果您希望提高短时“跳出”访问在访客卸载页面前发出样式表的几率，可以降低此值。设置为零或负数会同步处理样式表，这可能导致在比如 https://pagespeed.web.dev/ 上得分较差（“第三方代码阻塞了主线程”）。
 
-- `adoptedStylesheetAssets`（默认值：`false`）：设置为 `true` 时，被采用的（构造的）样式表的 css 内容会作为一个单独的 `asset` 事件发出，并通过 `assetUrls` 虚拟 url（样式表的 id 嵌入在每个 url 中）从被采用样式表事件中引用，而不是作为 css 规则内联。这样可以对在许多被采用样式表之间共享的 css 进行去重（每个唯一的样式表只发出/存储一次静态资源），并使增量快照事件保持较小。在回放时，样式表会从静态资源中被重建。
+- `adoptedStylesheets`（默认值：`false`）：设置为 `true` 时，被采用的（构造的）样式表的 css 内容会作为一个单独的 `asset` 事件发出，并通过 `assetUrls` 虚拟 url（样式表的 id 嵌入在每个 url 中）从被采用样式表事件中引用，而不是作为 css 规则内联。这样可以对在许多被采用样式表之间共享的 css 进行去重（每个唯一的样式表只发出/存储一次静态资源），并使增量快照事件保持较小。在回放时，样式表会从静态资源中被重建。
 
 ## TypeScript 类型定义
 
@@ -50,7 +50,7 @@ export type recordOptions<T> = {
     stylesheets: boolean | 'without-fetch';
     processStylesheetsWithin: number;
     stylesheetsRuleThreshold: number;
-    adoptedStylesheetAssets: boolean;
+    adoptedStylesheets: boolean;
   };
   inlineImages?: boolean;
   inlineStylesheet?: boolean;

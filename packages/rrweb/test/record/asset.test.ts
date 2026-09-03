@@ -1369,7 +1369,7 @@ describe('asset capturing', function (this: ISuite) {
           origins: [],
           objectURLs: false,
           stylesheets: true,
-          adoptedStylesheetAssets: true,
+          adoptedStylesheets: true,
           // process the <style> element synchronously so its asset is emitted promptly
           processStylesheetsWithin: 0,
         },
@@ -1448,7 +1448,7 @@ describe('asset capturing', function (this: ISuite) {
         captureAssets: {
           origins: [],
           objectURLs: false,
-          adoptedStylesheetAssets: true,
+          adoptedStylesheets: true,
         },
       },
     );
@@ -1516,7 +1516,7 @@ describe('asset capturing', function (this: ISuite) {
         captureAssets: {
           origins: [],
           objectURLs: false,
-          adoptedStylesheetAssets: true,
+          adoptedStylesheets: true,
         },
       },
     );
@@ -1656,7 +1656,7 @@ describe('stylesheet compatibility across link / style / adopted', () => {
         origins: [],
         objectURLs: false,
         stylesheets: true,
-        adoptedStylesheetAssets: true,
+        adoptedStylesheets: true,
         // emit the <link>/<style> assets promptly
         processStylesheetsWithin: 0,
       },

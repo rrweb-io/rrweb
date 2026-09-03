@@ -8,7 +8,7 @@ const now = Date.now();
  * adopted (constructed) stylesheet extracted into a separate Asset event and
  * referenced from the adopted stylesheet event by an `assetUrls` virtual url
  * (the styleId is embedded in the url's trailing `:<styleId>` segment).
- * This is what `record` emits when `captureAssets.adoptedStylesheetAssets` is on.
+ * This is what `record` emits when `captureAssets.adoptedStylesheets` is on.
  */
 const events: eventWithTime[] = [
   { type: EventType.DomContentLoaded, data: {}, timestamp: now },

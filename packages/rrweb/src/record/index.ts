@@ -126,8 +126,8 @@ function record<T = eventWithTime>(
       captureAssets.stylesheets = false;
     }
   }
-  if (captureAssets.adoptedStylesheetAssets === undefined) {
-    captureAssets.adoptedStylesheetAssets = false;
+  if (captureAssets.adoptedStylesheets === undefined) {
+    captureAssets.adoptedStylesheets = false;
   }
 
   registerErrorHandler(errorHandler);

@@ -619,9 +619,9 @@ describe('cross origin iframes - adopted stylesheets as assets', function (this:
     return (await ctx.page.evaluate('window.snapshots')) as eventWithTime[];
   };
 
-  describe('with adoptedStylesheetAssets disabled (legacy inline rules)', function (this: ISuite) {
+  describe('with adoptedStylesheets disabled (legacy inline rules)', function (this: ISuite) {
     const ctx: ISuite = setup.call(this, content, {
-      captureAssets: { adoptedStylesheetAssets: false },
+      captureAssets: { adoptedStylesheets: false },
     });
 
     it('forwards the adopted stylesheet rules inline from the cross-origin iframe', async () => {
@@ -637,9 +637,9 @@ describe('cross origin iframes - adopted stylesheets as assets', function (this:
     });
   });
 
-  describe('with adoptedStylesheetAssets enabled', function (this: ISuite) {
+  describe('with adoptedStylesheets enabled', function (this: ISuite) {
     const ctx: ISuite = setup.call(this, content, {
-      captureAssets: { adoptedStylesheetAssets: true },
+      captureAssets: { adoptedStylesheets: true },
     });
 
     // KNOWN LIMITATION (see task: cross-origin asset forwarding): the css is

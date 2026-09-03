@@ -34,7 +34,7 @@ The `captureAssets` configuration option allows you to customize the asset captu
 
 - `processStylesheetsWithin` (default: `4000`): This property defines the maximum time in milliseconds that the browser should delay before starting processing the last stylesheet on the page. `<link>` stylesheets will start to be force processed at half this value, while `<style>` elements will be force processed even earlier than this. Increase this value to instead trust that the browser [requestIdleCallback](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) will schedule processing gracefully. Lower the value if you wish to improve the odds that short 'bounce' visits will emit stylesheets before visitor unloads page. Set to zero or a negative number to process stylesheets synchronously, which can cause poor scores on e.g. https://pagespeed.web.dev/ ("Third-party code blocked the main thread").
 
-- `adoptedStylesheetAssets` (default: `false`): When set to `true`, the css content of adopted (constructed) stylesheets is emitted as a separate `asset` event and referenced from the adopted stylesheet event by `assetUrls` virtual urls (the stylesheet's id is embedded in each url), rather than being inlined as css rules. This de-duplicates css that is shared across many adopted stylesheets (the asset is only emitted/stored once per unique stylesheet) and keeps the incremental snapshot events small. On replay the stylesheets are reconstructed from the asset.
+- `adoptedStylesheets` (default: `false`): When set to `true`, the css content of adopted (constructed) stylesheets is emitted as a separate `asset` event and referenced from the adopted stylesheet event by `assetUrls` virtual urls (the stylesheet's id is embedded in each url), rather than being inlined as css rules. This de-duplicates css that is shared across many adopted stylesheets (the asset is only emitted/stored once per unique stylesheet) and keeps the incremental snapshot events small. On replay the stylesheets are reconstructed from the asset.
 
 ## TypeScript Type Definition
 
@@ -50,7 +50,7 @@ export type recordOptions<T> = {
     stylesheets: boolean | 'without-fetch';
     processStylesheetsWithin: number;
     stylesheetsRuleThreshold: number;
-    adoptedStylesheetAssets: boolean;
+    adoptedStylesheets: boolean;
   };
   inlineImages?: boolean;
   inlineStylesheet?: boolean;

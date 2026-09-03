@@ -78,7 +78,7 @@ export class StylesheetManager {
     docBaseHref: string,
   ) {
     if (sheets.length === 0) return;
-    if (this.assetManager.config.adoptedStylesheetAssets) {
+    if (this.assetManager.config.adoptedStylesheets) {
       this.adoptStyleSheetsAsAssets(sheets, hostId, docBaseHref);
       return;
     }
