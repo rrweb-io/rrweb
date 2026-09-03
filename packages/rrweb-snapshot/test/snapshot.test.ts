@@ -562,4 +562,63 @@ describe('onAssetDetected callback', () => {
     );
     expect(source.attributes).not.toHaveProperty('srcset');
   });
+
+  it('renders nothing (no live src/srcset) for a responsive <img> whose currentSrc is not yet decided (Option A)', () => {
+    const el = render(`<div>
+      <img src="https://example.com/fallback.jpg" srcset="https://example.com/a.jpg, https://example.com/b.jpg 2x" />
+    </div>`);
+    const sn = serializeNode(el, () => undefined) as serializedNodeWithId;
+    const img = findByTag(sn, 'img')!;
+    expect(img.attributes).not.toHaveProperty('src');
+    expect(img.attributes).not.toHaveProperty('srcset');
+    expect(img.attributes).not.toHaveProperty('rr_captured_src');
+    expect(String(img.attributes['rrweb-original-srcset'])).toContain('b.jpg 2x');
+    expect(img.attributes['rrweb-original-src']).toBe(
+      'https://example.com/fallback.jpg',
+    );
+  });
+
+  it('renders nothing for a <picture> whose <img> currentSrc is not yet decided (Option A)', () => {
+    const el = render(`<div>
+      <picture>
+        <source srcset="https://example.com/wide.jpg" media="(min-width: 600px)" />
+        <img src="https://example.com/fallback.jpg" />
+      </picture>
+    </div>`);
+    const sn = serializeNode(el, () => undefined) as serializedNodeWithId;
+    const img = findByTag(sn, 'img')!;
+    const source = findByTag(sn, 'source')!;
+    expect(img.attributes).not.toHaveProperty('src');
+    expect(img.attributes).not.toHaveProperty('rr_captured_src');
+    expect(img.attributes['rrweb-original-src']).toBe(
+      'https://example.com/fallback.jpg',
+    );
+    expect(source.attributes).not.toHaveProperty('srcset');
+    expect(String(source.attributes['rrweb-original-srcset'])).toContain(
+      'wide.jpg',
+    );
+  });
+
+  it('neuters a <picture> <source> even when the fallback <img> src is relative (absolutified for the capture check)', () => {
+    const el = render(`<div>
+      <picture>
+        <source srcset="https://example.com/wide.jpg" media="(min-width: 600px)" />
+        <img src="images/fallback.jpg" />
+      </picture>
+    </div>`);
+    const sn = serializeNode(
+      el,
+      (a) =>
+        (a as asset).attr === 'src'
+          ? 'https://example.com/wide.jpg#rr_asset'
+          : undefined,
+      undefined,
+      { origins: true, objectURLs: false },
+    ) as serializedNodeWithId;
+    const source = findByTag(sn, 'source')!;
+    expect(source.attributes).not.toHaveProperty('srcset');
+    expect(String(source.attributes['rrweb-original-srcset'])).toContain(
+      'wide.jpg',
+    );
+  });
 });

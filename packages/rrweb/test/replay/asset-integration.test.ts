@@ -7,6 +7,7 @@ import events from '../events/assets';
 import mutationEvents from '../events/assets-mutation';
 import assetsChangedEvents from '../events/assets-src-changed-before-asset-loaded';
 import assetsBodyInlineStyleEvents from '../events/assets-body-inline-style';
+import assetsCurrentSrcNotDecided from '../events/assets-currentsrc-not-decided';
 import type { assetEvent } from '@rrweb/types';
 import { vi } from 'vitest';
 
@@ -53,6 +54,11 @@ describe('replayer', function () {
         assetsBodyInlineStyleEvents,
       )}`,
     );
+    await page.evaluate(
+      `let assetsCurrentSrcNotDecided = ${JSON.stringify(
+        assetsCurrentSrcNotDecided,
+      )}`,
+    );
 
     page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
   });
@@ -81,6 +87,31 @@ describe('replayer', function () {
 
       const image = await page.screenshot();
       expect(image).toMatchImageSnapshot();
+    });
+
+    it('renders a responsive <img> blank (no self-selected src) when currentSrc was not decided at record time', async () => {
+      await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(assetsCurrentSrcNotDecided, {
+      });
+      replayer.pause(0);
+    `);
+
+      await waitForRAF(page);
+
+      const src = await page.evaluate(
+        `document.querySelector('iframe').contentDocument.querySelector('img').getAttribute('src')`,
+      );
+      const srcset = await page.evaluate(
+        `document.querySelector('iframe').contentDocument.querySelector('img').getAttribute('srcset')`,
+      );
+      const originalSrcset = await page.evaluate(
+        `document.querySelector('iframe').contentDocument.querySelector('img').getAttribute('rrweb-original-srcset')`,
+      );
+
+      expect(src).toBeNull();
+      expect(srcset).toBeNull();
+      expect(originalSrcset).toContain('b.jpg 2x');
     });
 
     it('should incorporate assets streamed later', async () => {

@@ -581,6 +581,20 @@ function serializeTextNode(
   };
 }
 
+function willCaptureImg(
+  doc: Document,
+  img: HTMLImageElement,
+  captureAssets: captureAssetsParam,
+): boolean {
+  const attr = img.getAttribute('srcset') !== null ? 'srcset' : 'src';
+  const raw = img.getAttribute(attr);
+  if (raw === null) {
+    return false;
+  }
+  const value = transformAttribute(doc, 'img', attr, raw);
+  return value !== null && shouldCaptureAsset(img, attr, value, captureAssets);
+}
+
 function serializeElementNode(
   n: HTMLElement,
   options: {
@@ -695,14 +709,19 @@ function serializeElementNode(
           // the asset was emitted under a (possibly virtual) url, e.g. for a
           // data: url; store that so the replayer can match it to the asset
           value = capturedUrl;
+        } else if (
+          n.nodeName === 'IMG' &&
+          (attr.name === 'src' || attr.name === 'srcset')
+        ) {
+          attributes[`rrweb-original-${attr.name}`] = value;
+          continue;
         }
       } else if (
         onAssetDetected &&
         typeof value === 'string' &&
         n.nodeName === 'IMG' &&
         attr.name === 'src' &&
-        n.getAttribute('srcset') &&
-        (n as HTMLImageElement).currentSrc
+        n.getAttribute('srcset')
       ) {
         if (value !== (n as HTMLImageElement).currentSrc) {
           attributes['rrweb-original-src'] = value;
@@ -713,11 +732,13 @@ function serializeElementNode(
         typeof value === 'string' &&
         n.nodeName === 'SOURCE' &&
         attr.name === 'srcset' &&
-        n.parentElement?.nodeName === 'PICTURE' &&
-        n.parentElement.querySelector('img')?.currentSrc
+        n.parentElement?.nodeName === 'PICTURE'
       ) {
-        attributes['rrweb-original-srcset'] = value;
-        continue;
+        const pictureImg = n.parentElement.querySelector('img');
+        if (pictureImg && willCaptureImg(doc, pictureImg, captureAssets)) {
+          attributes['rrweb-original-srcset'] = value;
+          continue;
+        }
       }
       attributes[name] = value;
     }
