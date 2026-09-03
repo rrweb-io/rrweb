@@ -22,6 +22,8 @@
   - `true`：从所有来源录制资源。
   - `[origin1, origin2, ...]`：仅从指定的来源录制资源。例如，`origins: ['https://s3.example.com/']` 表示录制来自 `https://s3.example.com/` 的所有静态资源。
 
+- `sources`（默认值：`'current'`）：当一个媒体元素有多个媒体源选项时（例如响应式图像或多种文件类型选项），此设置控制其中哪些会被录制为静态资源。默认的 `'current'` 选项只会发出单个 `asset`（对应浏览器当前选中的源）；如果之后发生变化（例如视口变窄），该变化会作为一个变更（mutation）事件被录制，从而在回放时更新图像。使用 `'all'` 选项则会将所有候选静态资源都传输到服务器，并允许回放端自行决定使用哪一个（例如在回放时使用更高 dpi 的图像，即使录制时显示的是较低 dpi 的图像）。
+
 - `images`（默认值：如果 rrweb.record 配置中 `inlineImages` 为 true，则默认为 `true`）：设置为 true 时，无论图像来源如何，都会开启对所有图像的静态资源录制。设置为 false 时，即使来源匹配也不会录制任何图像。默认情况下，如果图像的 src url 匹配上面的 `origins` 设置（包括 `origins` 设置为 `true` 的情况），图像就会被录制。
 
 - `video`：设置为 true 时，无论视频来源如何，都会开启对视频的静态资源录制。设置为 false 时，即使来源匹配也不会录制任何视频。默认情况下，如果视频的 src url 匹配上面的 `origins` 设置（包括 `origins` 设置为 `true` 的情况），视频就会被录制。
@@ -46,11 +48,15 @@ export type recordOptions<T> = {
   captureAssets?: {
     objectURLs: boolean;
     origins: string[] | true | false;
+    sources: 'current' | 'all';
     images: boolean;
+    video: boolean;
+    audio: boolean;
     stylesheets: boolean | 'without-fetch';
     processStylesheetsWithin: number;
     stylesheetsRuleThreshold: number;
     adoptedStylesheets: boolean;
+    dataURLAssetThreshold: number;
   };
   inlineImages?: boolean;
   inlineStylesheet?: boolean;

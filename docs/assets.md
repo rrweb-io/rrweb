@@ -49,10 +49,13 @@ export type recordOptions<T> = {
     origins: string[] | true | false;
     sources: 'current' | 'all';
     images: boolean;
+    video: boolean;
+    audio: boolean;
     stylesheets: boolean | 'without-fetch';
     processStylesheetsWithin: number;
     stylesheetsRuleThreshold: number;
     adoptedStylesheets: boolean;
+    dataURLAssetThreshold: number;
   };
   inlineImages?: boolean;
   inlineStylesheet?: boolean;
