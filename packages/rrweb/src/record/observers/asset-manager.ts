@@ -341,10 +341,13 @@ export default class AssetManager {
         timeout = Math.min(processStylesheetsWithin, midpoint + stagger);
       }
       // try not to clog up main thread
-      requestIdleCallback(() => {
-        this.pendingIdleStylesheets -= 1;
-        processStylesheet();
-      }, { timeout });
+      requestIdleCallback(
+        () => {
+          this.pendingIdleStylesheets -= 1;
+          processStylesheet();
+        },
+        { timeout },
+      );
       return {
         url,
         status: 'capturing', // 'processing' ?
@@ -431,10 +434,7 @@ export default class AssetManager {
     return url;
   }
 
-  public capture(
-    asset: asset,
-    snapshotTimestamp?: number | true,
-  ): assetStatus {
+  public capture(asset: asset, snapshotTimestamp?: number | true): assetStatus {
     if ('sheet' in asset.element) {
       const status = this.captureStylesheet(
         asset.value,
@@ -444,10 +444,13 @@ export default class AssetManager {
       );
       status.renderBlocking = true;
       return status;
-    } else if ([
-      'srcset',
-      'src',  // <img> within <picture>
-    ].includes(asset.attr) && asset.element.tagName === 'IMG') {
+    } else if (
+      [
+        'srcset',
+        'src', // <img> within <picture>
+      ].includes(asset.attr) &&
+      asset.element.tagName === 'IMG'
+    ) {
       const image = asset.element as HTMLImageElement;
       const isResponsive =
         image.getAttribute('srcset') !== null ||
@@ -474,7 +477,7 @@ export default class AssetManager {
           return {
             url: asset.value,
             status: 'not-current-src',
-          }
+          };
         }
       }
     }

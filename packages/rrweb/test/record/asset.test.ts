@@ -787,7 +787,7 @@ describe('asset capturing', function (this: ISuite) {
   describe('should only capture one asset according to .currentSrc', () => {
     const ctx: ISuite = setup.call(
       this,
-`
+      `
         <!DOCTYPE html>
         <html>
           <body background="{SERVER_URL}/html/assets/robot.png?body">
@@ -850,7 +850,7 @@ describe('asset capturing', function (this: ISuite) {
       '{SERVER_URL}/html/assets/robot.png?2x',
       '{SERVER_URL}/html/assets/bunny-video.mp4',
       '{SERVER_URL}/html/assets/1-minute-of-silence.ogg',
-   ].forEach((u) => {
+    ].forEach((u) => {
       it(`shouldn't capture ${u} which are not the focus of .currentSrc`, async () => {
         const url = u.replace(/\{SERVER_URL\}/g, ctx.serverURL);
         await ctx.page.waitForNetworkIdle({ idleTime: 100 });
@@ -871,7 +871,6 @@ describe('asset capturing', function (this: ISuite) {
         );
       });
     });
-
 
     it("shouldn't capture assets within a blocked section", async () => {
       await ctx.page.waitForNetworkIdle({ idleTime: 100 });
@@ -1003,7 +1002,6 @@ describe('asset capturing', function (this: ISuite) {
     });
   });
 
-
   describe('srcset and regular viewport width', () => {
     const ctx: ISuite = setup.call(
       this,
@@ -1051,7 +1049,6 @@ describe('asset capturing', function (this: ISuite) {
         );
       });
     });
-
   });
 
   describe('narrow viewport width', () => {
@@ -1077,11 +1074,11 @@ describe('asset capturing', function (this: ISuite) {
         viewportConfig: {
           width: 350,
           height: 500,
-        }
+        },
       },
     );
 
-    it("should capture correct srcset asset on narrow viewport, and emit wide asset after viewport expands", async () => {
+    it('should capture correct srcset asset on narrow viewport, and emit wide asset after viewport expands', async () => {
       const u = '{SERVER_URL}/html/assets/robot.png?narrow';
       const url = u.replace(/\{SERVER_URL\}/g, ctx.serverURL);
       await ctx.page.waitForNetworkIdle({ idleTime: 100 });
@@ -1125,9 +1122,7 @@ describe('asset capturing', function (this: ISuite) {
       await waitForRAF(ctx.page);
 
       const events = stripBase64(
-        await ctx.page.evaluate(
-          () => (window as unknown as IWindow).snapshots,
-        ),
+        await ctx.page.evaluate(() => (window as unknown as IWindow).snapshots),
       );
 
       expect(events).toContainEqual(
@@ -1164,9 +1159,7 @@ describe('asset capturing', function (this: ISuite) {
           },
         }),
       );
-
     });
-
   });
 
   describe('sources: all captures every srcset candidate', () => {

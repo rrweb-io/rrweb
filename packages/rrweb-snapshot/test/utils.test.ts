@@ -419,7 +419,7 @@ describe('utils', () => {
       ).toBe(true);
       expect(
         shouldCaptureAsset(image, 'src', image.srcset, { images: true }),
-      ).toBe(false);  // capture a single url from srcset, don't capture both
+      ).toBe(false); // capture a single url from srcset, don't capture both
 
       expect(
         shouldCaptureAsset(image, 'srcset', image.srcset, { images: false }),

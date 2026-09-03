@@ -1,8 +1,4 @@
-import {
-  EventType,
-  IncrementalSource,
-  type eventWithTime,
-} from '@rrweb/types';
+import { EventType, IncrementalSource, type eventWithTime } from '@rrweb/types';
 
 const A = 'https://example.com/a.png';
 const B = 'https://example.com/b.png';

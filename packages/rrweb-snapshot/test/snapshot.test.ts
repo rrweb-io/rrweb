@@ -572,7 +572,9 @@ describe('onAssetDetected callback', () => {
     expect(img.attributes).not.toHaveProperty('src');
     expect(img.attributes).not.toHaveProperty('srcset');
     expect(img.attributes).not.toHaveProperty('rr_captured_src');
-    expect(String(img.attributes['rrweb-original-srcset'])).toContain('b.jpg 2x');
+    expect(String(img.attributes['rrweb-original-srcset'])).toContain(
+      'b.jpg 2x',
+    );
     expect(img.attributes['rrweb-original-src']).toBe(
       'https://example.com/fallback.jpg',
     );

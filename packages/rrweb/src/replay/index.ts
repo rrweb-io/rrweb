@@ -941,7 +941,7 @@ export class Replayer {
         clearTimeout(failTimeout);
         completeRender();
       };
-    
+
       let lastAssetArrival = Date.now();
       const failRemainingAssets = () => {
         if (this.pendingFullSnapshotRender !== doRender) {
@@ -1568,13 +1568,13 @@ export class Replayer {
     if (
       this.config.useVirtualDom &&
       !this.usingVirtualDom &&
-      isSync
+      isSync &&
       /*
         exclude virtualDom during pendingFullSnapshotRender as:
         - `buildFromDOM` would incorrectly fork from an old contentDocument
         - less need for virtualdom as we can apply mutations to a detached tree without triggering reflow
        */
-       && !this.pendingFullSnapshotRender
+      !this.pendingFullSnapshotRender
     ) {
       this.usingVirtualDom = true;
       buildFromDom(this.iframe.contentDocument!, this.mirror, this.virtualDom);

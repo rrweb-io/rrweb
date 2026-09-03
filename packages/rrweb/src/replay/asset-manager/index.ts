@@ -153,7 +153,12 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     for (const original of candidates) {
       const status = this.get(original);
       if (status.status === 'loaded') {
-        rebuilt = updateSrcset(node, original, status.url, rebuilt ?? srcsetValue);
+        rebuilt = updateSrcset(
+          node,
+          original,
+          status.url,
+          rebuilt ?? srcsetValue,
+        );
       }
     }
   }

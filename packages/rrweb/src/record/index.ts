@@ -451,7 +451,7 @@ function record<T = eventWithTime>(
           return;
         }
         if (assetStatus.status === 'capturing' && assetStatus.renderBlocking) {
-          // asset is an inline part of the DOM and will be emitted with a backdated timestamp to match this fullsnapshot 
+          // asset is an inline part of the DOM and will be emitted with a backdated timestamp to match this fullsnapshot
           renderBlockingAssetCount += 1;
           if (assetStatus.timeout) {
             maxAssetDelay = Math.max(maxAssetDelay, assetStatus.timeout);
