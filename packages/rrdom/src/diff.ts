@@ -525,6 +525,24 @@ function diffChildren(
   let oldChild = oldTree.firstChild;
   let newChild = newTree.firstChild;
   while (oldChild !== null && newChild !== null) {
+    // For mismatched node types (e.g., Element vs Text), we create a new node and insert it before the old one.
+    // This preserves the oldChild reference needed for the recursive diff loop, which would break if we replaced the node directly.
+    const isMismatch = !sameNodeType(oldChild, newChild);
+
+    if (isMismatch) {
+      const newNode = createOrGetNode(newChild, replayer.mirror, rrnodeMirror);
+
+      try {
+        oldTree.insertBefore(newNode, oldChild);
+      } catch (e) {
+        console.warn(e);
+      }
+
+      diff(newNode, newChild, replayer, rrnodeMirror);
+      newChild = newChild.nextSibling;
+      continue;
+    }
+
     diff(oldChild, newChild, replayer, rrnodeMirror);
     oldChild = oldChild.nextSibling;
     newChild = newChild.nextSibling;
