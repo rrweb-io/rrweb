@@ -350,6 +350,174 @@ const events: eventWithTime[] = [
     },
     timestamp: now + 550,
   },
+  // Create shadow host #3
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.Mutation,
+      texts: [],
+      attributes: [],
+      removes: [],
+      adds: [
+        {
+          parentId: 7,
+          nextId: null,
+          node: {
+            type: 2,
+            tagName: 'div',
+            attributes: {},
+            childNodes: [],
+            id: 36,
+          },
+        },
+        {
+          parentId: 36,
+          nextId: null,
+          node: {
+            type: 2,
+            tagName: 'div',
+            id: 37,
+            childNodes: [],
+            isShadowHost: true,
+            attributes: {
+              id: 'shadow-host3',
+            },
+          },
+        },
+      ],
+    },
+    timestamp: now + 600,
+  },
+  // Create a new shadow dom with button
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.Mutation,
+      texts: [],
+      attributes: [],
+      removes: [],
+      adds: [
+        {
+          parentId: 37,
+          nextId: null,
+          node: {
+            type: 2,
+            tagName: 'button',
+            attributes: {
+              class: 'blue-btn',
+            },
+            childNodes: [],
+            id: 38,
+            isShadow: true,
+          },
+        },
+      ],
+    },
+    timestamp: now + 650,
+  },
+  // Adopt the stylesheet #5 on the shadow dom
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.AdoptedStyleSheet,
+      id: 37,
+      styleIds: [5],
+      styles: [
+        {
+          styleId: 5,
+          rules: [{ rule: '.blue-btn { color: blue; }' }],
+        },
+      ],
+    },
+    timestamp: now + 700,
+  },
+  // Remove the parent of shadow host #3 and add a new shadow host #4
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.Mutation,
+      // remove parent of shadow host #3 which contained the element with styles for style id 5
+      removes: [
+        {
+          parentId: 7,
+          id: 36,
+        },
+      ],
+      adds: [
+        {
+          parentId: 7,
+          nextId: null,
+          node: {
+            type: 2,
+            tagName: 'div',
+            attributes: {},
+            childNodes: [],
+            id: 40,
+          },
+        },
+        {
+          parentId: 40,
+          nextId: null,
+          node: {
+            type: 2,
+            tagName: 'div',
+            id: 41,
+            childNodes: [],
+            isShadowHost: true,
+            attributes: {
+              id: 'shadow-host4',
+            },
+          },
+        },
+      ],
+      texts: [],
+      attributes: [],
+    },
+    timestamp: now + 750,
+  },
+  // Create a new shadow dom with button
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.Mutation,
+      texts: [],
+      attributes: [],
+      removes: [],
+      adds: [
+        {
+          parentId: 41,
+          nextId: null,
+          node: {
+            type: 2,
+            tagName: 'button',
+            attributes: {
+              class: 'blue-btn',
+            },
+            childNodes: [],
+            id: 42,
+            isShadow: true,
+          },
+        },
+      ],
+    },
+    timestamp: now + 800,
+  },
+  // Adopt stlyesheet #5 and #6 on the shadow dom
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.AdoptedStyleSheet,
+      id: 41,
+      styleIds: [5, 6],
+      styles: [
+        {
+          styleId: 6,
+          rules: [{ rule: '.blue-btn { border: 1px solid green }' }],
+        },
+      ],
+    },
+    timestamp: now + 850,
+  },
 ];
 
 export default events;
