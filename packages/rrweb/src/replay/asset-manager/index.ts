@@ -37,8 +37,10 @@ export default class AssetManager implements RebuildAssetManagerInterface {
   public replayerApproxTs = 0;
 
   // Assets which are render-blocking for a FullSnapshot, i.e. should delay rebuild until they are ready
-  public fullSnapshotAssets: { url: string; ready: Promise<unknown> }[] | null =
-    null;
+  public fullSnapshotOutstanding: Map<
+    string,
+    Promise<unknown>
+  > | null = null;
 
   constructor({ liveMode, cache }: { liveMode: boolean; cache: BuildCache }) {
     this.liveMode = liveMode;
@@ -384,10 +386,10 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       if (isCssTextElement) {
         // also includes <link>s which are not render-blocking for the fullsnapshot
         // but which in most browsers do delay record time rendering, so we should delay rebuild likewise
-        this.fullSnapshotAssets?.push({
-          url: serializedValue,
-          ready: whenReadyPromise,
-        });
+        this.fullSnapshotOutstanding?.set(
+          serializedValue,
+          whenReadyPromise,
+        );
       }
     }
 

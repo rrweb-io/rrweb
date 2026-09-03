@@ -870,8 +870,11 @@ export class Replayer {
     this.pendingScrolls = [];
     this.iframesToAttach = [];
     this.mirror.reset();
-    const fullSnapshotAssets: { url: string; ready: Promise<unknown> }[] = [];
-    this.assetManager.fullSnapshotAssets = fullSnapshotAssets;
+    const outstandingAssets: Map<
+      string,
+      Promise<unknown>
+    > = new Map();
+    this.assetManager.fullSnapshotOutstanding = outstandingAssets;
     const { attach } = rebuildDetached(
       event.data.node as serializedDocumentNodeWithId,
       {
@@ -883,7 +886,7 @@ export class Replayer {
         assetManager: this.assetManager,
       },
     );
-    this.assetManager.fullSnapshotAssets = null;
+    this.assetManager.fullSnapshotOutstanding = null; // reset, we have what we want in local outstandingAssets
 
     const completeRender = () => {
       if (!this.iframe.contentDocument) {
@@ -926,10 +929,8 @@ export class Replayer {
     if (
       (this.config.liveMode || !isSync) &&
       maxAssetDelay &&
-      fullSnapshotAssets.length
+      outstandingAssets.size
     ) {
-      const pendingFullSnapshotAssets = new Set(fullSnapshotAssets);
-
       // hold the previous frame on screen until fullsnapshot assets for this
       // snapshot have arrived (e.g. inline styles), avoiding FOUC
       const doRender = () => {
@@ -956,11 +957,11 @@ export class Replayer {
           );
           return;
         }
-        for (const { url } of pendingFullSnapshotAssets) {
+        for (const url of outstandingAssets.keys()) {
           // when we fail a <link> asset, an @import fallback will kick in here
           this.assetManager.failAsset(url);
         }
-        pendingFullSnapshotAssets.clear();
+        outstandingAssets.clear();
         doRender();
       };
       let failTimeout = setTimeout(
@@ -968,11 +969,11 @@ export class Replayer {
         maxAssetDelay + ASSET_PROCESSING_BUFFER,
       );
       this.pendingFullSnapshotRender = doRender;
-      for (const pendingAsset of pendingFullSnapshotAssets) {
-        void pendingAsset.ready.then(() => {
+      for (const [url, ready] of outstandingAssets) {
+        void ready.then(() => {
           lastAssetArrival = Date.now();
-          pendingFullSnapshotAssets.delete(pendingAsset);
-          if (pendingFullSnapshotAssets.size === 0) {
+          outstandingAssets.delete(url);
+          if (outstandingAssets.size === 0) {
             doRender();
           }
         });
