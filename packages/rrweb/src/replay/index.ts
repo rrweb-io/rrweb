@@ -870,10 +870,7 @@ export class Replayer {
     this.pendingScrolls = [];
     this.iframesToAttach = [];
     this.mirror.reset();
-    const outstandingAssets: Map<
-      string,
-      Promise<unknown>
-    > = new Map();
+    const outstandingAssets: Map<string, Promise<unknown>> = new Map();
     this.assetManager.fullSnapshotOutstanding = outstandingAssets;
     const { attach } = rebuildDetached(
       event.data.node as serializedDocumentNodeWithId,
