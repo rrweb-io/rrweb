@@ -1169,6 +1169,54 @@ describe('asset capturing', function (this: ISuite) {
 
   });
 
+  describe('sources: all captures every srcset candidate', () => {
+    const ctx: ISuite = setup.call(
+      this,
+      `
+        <!DOCTYPE html>
+        <html>
+          <body>
+            <img
+              src="{SERVER_URL}/html/assets/robot.png?overridden"
+              srcset="{SERVER_URL}/html/assets/robot.png?narrow 300w, {SERVER_URL}/html/assets/robot.png?wide 600w"
+              sizes="(max-width: 400px) 300px, 600px"
+            />
+          </body>
+        </html>
+      `,
+      {
+        captureAssets: {
+          origins: ['{SERVER_URL}'],
+          objectURLs: false,
+          sources: 'all',
+        },
+        viewportConfig: {
+          width: 350,
+          height: 500,
+        },
+      },
+    );
+
+    ['?narrow', '?wide'].forEach((q) => {
+      it(`captures ${q} even though only one is displayed`, async () => {
+        const url = `${ctx.serverURL}/html/assets/robot.png${q}`;
+        await ctx.page.waitForNetworkIdle({ idleTime: 100 });
+        await waitForRAF(ctx.page);
+
+        const events = await ctx.page.evaluate(
+          () => (window as unknown as IWindow).snapshots,
+        );
+
+        expect(stripBase64(events)).toContainEqual(
+          expect.objectContaining({
+            type: EventType.Asset,
+            data: expect.objectContaining({ url }),
+          }),
+        );
+      });
+    });
+  });
+
   describe('jsdelivr <link> with CORS restrictions', () => {
     const ctx: ISuite = setup.call(
       this,

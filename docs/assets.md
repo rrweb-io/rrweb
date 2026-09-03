@@ -21,6 +21,7 @@ The `captureAssets` configuration option allows you to customize the asset captu
   - `false` or `[]`: Disables capturing any assets apart from object URLs, stylesheets (unless set to false) and images (if that setting is turned on).
   - `true`: Captures assets from all origins.
   - `[origin1, origin2, ...]`: Captures assets only from the specified origins. For example, `origins: ['https://s3.example.com/']` captures all assets from the origin `https://s3.example.com/`.
+- `sources` (default: `'current'`): in the event that a media element has multiple media source options (e.g. responsive images or multiple file type options), this controls which ones get recorded as an asset.  The default 'current' option causes a single Asset to be emitted, and if this later changes (e.g. the viewport is narrowed), this change is recorded as a mutation which will update the replay.  Use the `'all'` option to transmit all assets to the server, and allow the replayer to decide which one to use (e.g. use a higher dpi image on replay even though a lower dpi one was displayed at replay time)
 
 - `images` (default: `true` if `inlineImages` is true in rrweb.record config): When set to true, this option turns on asset capturing for all images irrespective of their origin. When set to false, no images will be captured even if the origin matches. By default images will be captured if their src url matches the `origins` setting above, including if the `origins` is set to `true`.
 
@@ -46,6 +47,7 @@ export type recordOptions<T> = {
   captureAssets?: {
     objectURLs: boolean;
     origins: string[] | true | false;
+    sources: 'current' | 'all';
     images: boolean;
     stylesheets: boolean | 'without-fetch';
     processStylesheetsWithin: number;

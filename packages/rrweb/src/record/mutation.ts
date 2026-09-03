@@ -690,7 +690,17 @@ export default class MutationBuffer {
               value: transformedValue,
             });
             if (assetStatus.status !== 'not-current-src') {
-              attributeName = `rr_captured_${attributeName}`;
+              if (
+                target.nodeName === 'IMG' &&
+                (attributeName === 'src' || attributeName === 'srcset')
+              ) {
+                if (attributeName === 'srcset') {
+                  item.attributes['rrweb-original-srcset'] = transformedValue;
+                }
+                attributeName = 'rr_captured_src';
+              } else {
+                attributeName = `rr_captured_${attributeName}`;
+              }
               // store the (possibly virtual, e.g. for a data: url) url the asset
               // was emitted under so the replayer can match it
               transformedValue = assetStatus.url;

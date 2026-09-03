@@ -8,6 +8,8 @@ import mutationEvents from '../events/assets-mutation';
 import assetsChangedEvents from '../events/assets-src-changed-before-asset-loaded';
 import assetsBodyInlineStyleEvents from '../events/assets-body-inline-style';
 import assetsCurrentSrcNotDecided from '../events/assets-currentsrc-not-decided';
+import assetsSrcsetAll from '../events/assets-srcset-all';
+import assetsSrcsetMutation from '../events/assets-srcset-mutation';
 import type { assetEvent } from '@rrweb/types';
 import { vi } from 'vitest';
 
@@ -58,6 +60,12 @@ describe('replayer', function () {
       `let assetsCurrentSrcNotDecided = ${JSON.stringify(
         assetsCurrentSrcNotDecided,
       )}`,
+    );
+    await page.evaluate(
+      `let assetsSrcsetAll = ${JSON.stringify(assetsSrcsetAll)}`,
+    );
+    await page.evaluate(
+      `let assetsSrcsetMutation = ${JSON.stringify(assetsSrcsetMutation)}`,
     );
 
     page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
@@ -112,6 +120,58 @@ describe('replayer', function () {
       expect(src).toBeNull();
       expect(srcset).toBeNull();
       expect(originalSrcset).toContain('b.jpg 2x');
+    });
+
+    it('rebuilds the srcset from all-local assets (sources: all) once every candidate has arrived', async () => {
+      await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(assetsSrcsetAll, {
+      });
+      replayer.pause(0);
+    `);
+
+      await waitForRAF(page);
+      await waitForRAF(page);
+
+      const srcset = (await page.evaluate(
+        `document.querySelector('iframe').contentDocument.querySelector('img').getAttribute('srcset')`,
+      )) as string | null;
+
+      expect(srcset).not.toBeNull();
+      expect(srcset).toContain('blob:');
+      expect(srcset).not.toContain('example.com');
+      expect((srcset!.match(/blob:/g) || []).length).toBe(2);
+    });
+
+    it('re-reconstructs the srcset when rrweb-original-srcset is mutated (sources: all)', async () => {
+      await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(assetsSrcsetMutation, {});
+      replayer.pause(1000);
+    `);
+
+      await waitForRAF(page);
+      await waitForRAF(page);
+
+      const result = (await page.evaluate(`
+      (() => {
+        const el = document.querySelector('iframe').contentDocument.querySelector('img');
+        return JSON.stringify({
+          srcset: el.getAttribute('srcset'),
+          original: el.getAttribute('rrweb-original-srcset'),
+        });
+      })()
+    `)) as string;
+      const { srcset, original } = JSON.parse(result);
+
+      expect(original).toBe(
+        'https://example.com/c.png, https://example.com/d.png 3x',
+      );
+      expect((srcset.match(/blob:/g) || []).length).toBe(2);
+      // the new descriptor (3x) only appears if the srcset was rebuilt from the
+      // mutated candidate set, not left stale on the original (a,b 2x) set
+      expect(srcset).toContain('3x');
+      expect(srcset).not.toContain('2x');
     });
 
     it('should incorporate assets streamed later', async () => {

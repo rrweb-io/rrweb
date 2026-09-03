@@ -2017,6 +2017,15 @@ export class Replayer {
                   attributeName.substring('rr_captured_'.length),
                   value,
                 );
+              } else if (
+                attributeName === 'rrweb-original-srcset' &&
+                typeof value === 'string'
+              ) {
+                targetEl.setAttribute(attributeName, value);
+                this.assetManager.reconstructSrcsetWhenComplete(
+                  targetEl,
+                  value,
+                );
               } else {
                 targetEl.setAttribute(attributeName, value);
               }

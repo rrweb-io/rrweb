@@ -17,6 +17,7 @@ import { patch } from '@rrweb/utils';
 
 import type { recordOptions, ProcessingStyleElement } from '../../types';
 import {
+  getSourcesFromSrcset,
   shouldCaptureAsset,
   stringifyCssRules,
   absolutifyURLs,
@@ -453,6 +454,9 @@ export default class AssetManager {
         image.parentElement?.nodeName === 'PICTURE';
       if (isResponsive) {
         this.trackImageSrcChanges(image);
+        if (this.config.sources === 'all') {
+          this.captureAllCandidates(image, snapshotTimestamp);
+        }
         if (image.currentSrc) {
           this.imgLastCurrentSrc.set(image, image.currentSrc);
           return this.captureUrl(image.currentSrc, snapshotTimestamp);
@@ -479,6 +483,41 @@ export default class AssetManager {
       snapshotTimestamp,
       this.mediaKind(asset.element),
     );
+  }
+
+  private captureAllCandidates(
+    image: HTMLImageElement,
+    snapshotTimestamp?: number | true,
+  ) {
+    const srcsets: string[] = [];
+    const ownSrcset = image.getAttribute('srcset');
+    if (ownSrcset) {
+      srcsets.push(ownSrcset);
+    }
+    const parent = image.parentElement;
+    if (parent && parent.nodeName === 'PICTURE') {
+      parent.querySelectorAll('source').forEach((source) => {
+        const sourceSrcset = source.getAttribute('srcset');
+        if (sourceSrcset) {
+          srcsets.push(sourceSrcset);
+        }
+      });
+    }
+    const baseHref = image.ownerDocument?.baseURI;
+    for (const srcset of srcsets) {
+      for (const rawUrl of getSourcesFromSrcset(srcset)) {
+        if (rawUrl.startsWith('data:')) {
+          continue;
+        }
+        let url: string;
+        try {
+          url = baseHref ? new URL(rawUrl, baseHref).href : rawUrl;
+        } catch (e) {
+          continue;
+        }
+        this.captureUrl(url, snapshotTimestamp);
+      }
+    }
   }
 
   private trackImageSrcChanges(image: HTMLImageElement) {

@@ -21,6 +21,11 @@ export default class AssetManager implements RebuildAssetManagerInterface {
   private urlToStylesheetMap: Map<string, Map<number, string[]>> = new Map();
   private nodeIdAttributeHijackedMap: Map<number, Map<string, string>> =
     new Map();
+  private srcsetWatchers: Array<{
+    node: Element | RRElement;
+    srcsetValue: string;
+    candidates: string[];
+  }> = [];
   private loadingURLs: Set<string> = new Set();
   private failedURLs: Set<string> = new Set();
   private callbackMap: Map<
@@ -90,6 +95,64 @@ export default class AssetManager implements RebuildAssetManagerInterface {
       this.loadingURLs.delete(url);
       this.failedURLs.delete(url);
       this.executeCallbacks(url, { status: 'loaded', url: objectURL });
+      this.tryReconstructSrcsets(url);
+    }
+  }
+
+  public reconstructSrcsetWhenComplete(
+    node: Element | RRElement,
+    srcsetValue: string,
+  ) {
+    // the srcset may have changed (mutation): drop any prior watcher and clear
+    // the now-stale reconstructed srcset so the pinned src shows again until the
+    // new candidate set is ready
+    this.srcsetWatchers = this.srcsetWatchers.filter((w) => w.node !== node);
+    if (node.getAttribute('srcset')) {
+      node.removeAttribute('srcset');
+    }
+    const candidates = getSourcesFromSrcset(srcsetValue);
+    if (candidates.length === 0) {
+      return;
+    }
+    if (this.candidatesAllLoaded(candidates)) {
+      this.reconstructSrcset(node, srcsetValue, candidates);
+      return;
+    }
+    this.srcsetWatchers.push({ node, srcsetValue, candidates });
+  }
+
+  private candidatesAllLoaded(candidates: string[]): boolean {
+    return candidates.every((url) => this.get(url).status === 'loaded');
+  }
+
+  private tryReconstructSrcsets(loadedUrl: string) {
+    for (let i = this.srcsetWatchers.length - 1; i >= 0; i--) {
+      const watcher = this.srcsetWatchers[i];
+      if (!watcher.candidates.includes(loadedUrl)) {
+        continue;
+      }
+      if (this.candidatesAllLoaded(watcher.candidates)) {
+        this.srcsetWatchers.splice(i, 1);
+        this.reconstructSrcset(
+          watcher.node,
+          watcher.srcsetValue,
+          watcher.candidates,
+        );
+      }
+    }
+  }
+
+  private reconstructSrcset(
+    node: Element | RRElement,
+    srcsetValue: string,
+    candidates: string[],
+  ) {
+    let rebuilt: string | null = srcsetValue;
+    for (const original of candidates) {
+      const status = this.get(original);
+      if (status.status === 'loaded') {
+        rebuilt = updateSrcset(node, original, status.url, rebuilt ?? srcsetValue);
+      }
     }
   }
 
@@ -216,44 +279,7 @@ export default class AssetManager implements RebuildAssetManagerInterface {
     }
     const promises: Promise<unknown>[] = [];
 
-    if (attribute === 'srcset') {
-      const values = getSourcesFromSrcset(serializedValue);
-      let expectedValue: string | null = node.getAttribute(attribute);
-      let failedCount = 0;
-      values.forEach((value) => {
-        promises.push(
-          this.whenReady(value).then((status) => {
-            if (status.status !== 'loaded') {
-              // only 'failed' should be possible
-              failedCount += 1;
-              if (failedCount === values.length) {
-                // optimistic: ignore some failures in the hope that a
-                // succeeding srcset asset was the one that actually rendered
-                node.setAttribute(attribute, serializedValue);
-              }
-              return;
-            }
-
-            if (!isCssTextElement) {
-              const attributeUnchanged =
-                node.getAttribute(attribute) === expectedValue;
-
-              if (!attributeUnchanged) return; // attribute was changed since we started loading the asset
-            }
-            if (!expectedValue) {
-              // before srcset has been set for the first time
-              expectedValue = serializedValue;
-            }
-            expectedValue = updateSrcset(
-              node,
-              value,
-              status.url,
-              expectedValue,
-            );
-          }),
-        );
-      });
-    } else if (
+    if (
       preloadedStatus.status === 'loaded' &&
       preloadedStatus.cssTexts &&
       serializedNode

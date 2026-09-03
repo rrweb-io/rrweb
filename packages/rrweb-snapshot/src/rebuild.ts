@@ -455,6 +455,12 @@ function buildNode(
             continue;
           } else {
             node.setAttribute(name, value.toString());
+            if (name === 'rrweb-original-srcset') {
+              options.assetManager?.reconstructSrcsetWhenComplete(
+                node,
+                value.toString(),
+              );
+            }
           }
         } catch (error) {
           // skip invalid attribute

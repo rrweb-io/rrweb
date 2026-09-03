@@ -98,6 +98,15 @@ export type captureAssetsParam = Partial<{
    */
   images: boolean;
   /**
+   * for a media element with multiple source options (responsive images /
+   * multiple file formats), controls which get recorded as assets.
+   * 'current' (default): emit a single Asset for the browser-selected source;
+   *   a later change (e.g. viewport resize) is recorded as a mutation.
+   * 'all': emit every candidate as an asset and let the replayer choose (e.g.
+   *   a higher-dpi image on replay than was displayed at record time).
+   */
+  sources: 'current' | 'all';
+  /**
    * capture videos irrespective of origin
    */
   video: boolean;
@@ -945,6 +954,7 @@ export declare abstract class RebuildAssetManagerInterface {
     originalValue: string,
     serializedNode?: serializedElementNodeWithId,
   ): void;
+  abstract reconstructSrcsetWhenComplete(n: Element, srcsetValue: string): void;
 }
 
 export enum NodeType {

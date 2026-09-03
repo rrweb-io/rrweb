@@ -372,7 +372,15 @@ function diffProps(
       console.warn(
         'styles should not be assigned during a mutation but rather inlined directly',
       );
-    else {
+    else if (
+      assetManager &&
+      name === 'rrweb-original-srcset' &&
+      newValue &&
+      typeof newValue === 'string'
+    ) {
+      oldTree.setAttribute(name, newValue);
+      assetManager.reconstructSrcsetWhenComplete(oldTree, newValue);
+    } else {
       try {
         oldTree.setAttribute(name, newValue);
       } catch (err) {
