@@ -41,7 +41,7 @@ jobs:
         run: yarn turbo run lint
       - name: Publish package previews
         if: github.event_name == 'pull_request'
-        run: yarn pkg-pr-new publish './packages/*' './packages/plugins/*' --previewVersion --peerDeps --no-template --commentWithSha --no-compact
+        run: yarn pkg-pr-new publish './packages/*' './packages/plugins/*' --previewVersion --no-template --commentWithSha --no-compact
       - name: Save Code Linting Report JSON
         run: yarn lint:report
         # Continue to the next step even if this fails
