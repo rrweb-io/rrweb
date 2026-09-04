@@ -18,9 +18,12 @@ jobs:
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
       - name: Checkout current branch
         if: github.event_name != 'pull_request'
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
@@ -36,6 +39,9 @@ jobs:
           PUPPETEER_SKIP_DOWNLOAD: true
       - name: Eslint Check
         run: yarn turbo run lint
+      - name: Publish package previews
+        if: github.event_name == 'pull_request'
+        run: yarn pkg-pr-new publish './packages/*' './packages/plugins/*' --previewVersion --peerDeps --no-template --commentWithSha --no-compact
       - name: Save Code Linting Report JSON
         run: yarn lint:report
         # Continue to the next step even if this fails
@@ -70,6 +76,8 @@ jobs:
     steps:
       - name: Checkout workflow ref
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Prepare bundle size helper
         run: |
           cp .github/scripts/measure-bundle-sizes.js /tmp/measure-bundle-sizes.js
@@ -77,6 +85,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
       - name: Download PR bundle sizes
         uses: actions/download-artifact@v4
         with:
