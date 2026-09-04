@@ -1,18 +1,16 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": [
-    "src"
-  ],
+  "include": ["src"],
   "compilerOptions": {
     "rootDir": "src",
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
   },
   "references": [
     {
-      "path": "../types"
+      "path": "../rrdom"
     },
     {
-      "path": "../rrdom"
+      "path": "../types"
     }
   ]
 }
