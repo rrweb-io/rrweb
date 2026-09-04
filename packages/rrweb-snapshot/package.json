@@ -1,6 +1,6 @@
 {
   "name": "rrweb-snapshot",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "rrweb's component to take a snapshot of DOM, aka DOM serializer",
   "scripts": {
     "prepare": "npm run prepack",
@@ -61,8 +61,8 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-snapshot#readme",
   "devDependencies": {
-    "@rrweb/types": "^2.1.1",
-    "@rrweb/utils": "^2.1.1",
+    "@rrweb/types": "^2.1.2",
+    "@rrweb/utils": "^2.1.2",
     "@types/jsdom": "^20.0.0",
     "@types/node": "^18.15.11",
     "@types/puppeteer": "^5.4.4",
