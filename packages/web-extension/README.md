@@ -4,6 +4,8 @@
 
 # rrweb extension
 
+## Overview
+
 The package web-extension provides a browser extension for recording and replaying web pages.
 
 ## Installation

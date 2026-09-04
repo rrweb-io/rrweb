@@ -47,4 +47,4 @@ replayer.play();
 **Enabling canvas replay adds `allow-scripts` to the replay iframe and opts out of rrweb's sandbox script-execution protection. Only use `UNSAFE_replayCanvas` for replay data whose risk you accept.**
 
 Alternatively you can stream canvas elements via webrtc with the [rrweb-plugin-canvas-webrtc-record](../../packages/plugins/rrweb-plugin-canvas-webrtc-record/) & [rrweb-plugin-canvas-webrtc-replay](../../packages/plugins/rrweb-plugin-canvas-webrtc-replay) plugins.
-For more information see [canvas-webrtc documentation](../../packages/plugins/rrweb-plugin-canvas-webrtc-record/Readme.md)
+For more information see [canvas-webrtc documentation](../../packages/plugins/rrweb-plugin-canvas-webrtc-record/README.md)

@@ -1,27 +1,23 @@
-<p align="center">
-  <img width="100px" height="100px" src="https://www.rrweb.io/favicon.png">
-</p>
-<p align="center">
-  <a href="https://www.rrweb.io/" style="font-weight: bold">Try rrweb</a>
-</p>
-
 # rrweb
 
-**This is a simpler version of the [original rrweb README](../../README.md) within this rrweb subpackage**
+## Overview
 
-[中文文档](../../README.zh_CN.md)
+> **Deprecated.** `rrweb` is kept for backward compatibility only. New projects should depend on [@rrweb/record](packages/record/) and [@rrweb/replay](packages/replay/) directly, or use [@rrweb/all](packages/all/) for a single convenience import. Moving to these entrypoints lets us slim down and eventually remove this package.
 
-rrweb refers to 'record and replay the web', which is a tool for recording and replaying users' interactions on the web.
+rrweb refers to 'record and replay the web', a tool for recording and replaying users' interactions on the web.
 
-## Guide
+In most production setups, the recorder and replayer are deployed to different pages/apps. Use [@rrweb/record](packages/record/) on recorded pages and [@rrweb/replay](packages/replay/) (or [rrweb-player](packages/rrweb-player/) to include UI) on replay pages.
 
-[**📚 Read the rrweb guide here. 📚**](../../guide.md)
+| Use case                                        | Package choice                    |
+| ----------------------------------------------- | --------------------------------- |
+| Most apps (explicit record/replay dependencies) | `@rrweb/record` + `@rrweb/replay` |
+| Single import for record, replay + packer       | `@rrweb/all`                      |
 
-[**🍳 Recipes 🍳**](../../docs/recipes/index.md)
+### Dev Note
+
+As this was the original rrweb package, typescript code for both @rrweb/record and @rrweb/replay still lives in src/record and src/replay in this package. These will be refactored into their respective packages in due course, but for now this package is the principal one for both record and replay related PRs. See [Contributing to rrweb](../../CONTRIBUTING.md) for more info.
 
 ## Installation
-
-`rrweb` is kept mainly for backward compatibility. For new integrations, prefer package-specific entrypoints (`@rrweb/record` and `@rrweb/replay`) first, or use `@rrweb/all` as a convenience package.
 
 ### 1) Bundler / npm (Recommended)
 
@@ -90,49 +86,6 @@ support the ESM method above.
 <script src="https://cdn.rrweb.com/record/current/dist/record.umd.cjs"></script>
 <script src="https://cdn.rrweb.com/replay/current/dist/replay.umd.cjs"></script>
 ```
-
-## Project Structure
-
-**[rrweb](https://github.com/rrweb-io/rrweb)** mainly includes two funtions:
-
-- **Record**: The record function is used to record all the mutations in the DOM
-- **Replayer**: The replay function is to replay the recorded mutations one by one according to the corresponding timestamp.
-
-## Roadmap
-
-- storage engine: do deduplication on a large number of rrweb sessions
-- compact mutation data in common patterns
-- provide plugins via the new plugin API, including:
-  - XHR plugin
-  - fetch plugin
-  - GraphQL plugin
-  - ...
-
-## Internal Design
-
-- [serialization](../../docs/serialization.md)
-- [incremental snapshot](../../docs/observer.md)
-- [replay](../../docs/replay.md)
-- [sandbox](../../docs/sandbox.md)
-
-## Contribute Guide
-
-Since we want the record and replay sides to share a strongly typed data structure, rrweb is developed with typescript which provides stronger type support.
-
-[Typescript handbook](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
-
-1. Fork this repository.
-2. Run `yarn install` in the root to install required dependencies for all sub-packages (note: `npm install` is _not_ recommended).
-3. Run `yarn dev` in the root to get auto-building for all the sub-packages whenever you modify anything.
-4. Navigate to one of the sub-packages (in the `packages` folder) where you'd like to make a change.
-5. Patch the code and run `yarn test` to run the tests, make sure they pass before you commit anything.
-6. Push the code and create a pull request.
-
-Protip: You can run `yarn test` in the root folder to run all the tests.
-
-In addition to adding integration tests and unit tests, rrweb also provides a REPL testing tool.
-
-[Using the REPL tool](../../guide.md#REPL-tool)
 
 ## Sponsors
 

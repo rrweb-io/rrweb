@@ -19,8 +19,8 @@ declare const __RRWEB_BROWSER_CLIENT_COMMIT_HASH__: string;
 export type clientConfig = {
   serverUrl?: string;
   publicApiKey: string;
-  autostart: boolean;
-  includePii: boolean;
+  autostart?: boolean;
+  includePii?: boolean;
   jsSource?: string;
   jsEntrypoint?: string;
   meta?: nameValues;
@@ -62,6 +62,10 @@ let wsConnectionPaused = false;
 
 const buffer: ArrayQueue<string> = new ArrayQueue();
 let rrwebStopFn: listenerHandler | undefined;
+
+function hasDocument(): boolean {
+  return typeof document !== 'undefined';
+}
 
 function isServerMessage(value: unknown): value is ServerMessage {
   return typeof value === 'object' && value !== null;
@@ -116,7 +120,11 @@ export function stop(resetRecordingId: boolean) {
 }
 
 function removeRecordingId(): void {
-  sessionStorage.removeItem(sessionStorageName);
+  try {
+    sessionStorage.removeItem(sessionStorageName);
+  } catch {
+    // Ignore environments without sessionStorage, such as SSR.
+  }
 }
 
 function getSetVisitorId() {
@@ -272,6 +280,10 @@ async function postData(
 export function start(
   options: browserClientRecordOptions = defaultClientConfig,
 ) {
+  if (!hasDocument()) {
+    return;
+  }
+
   const {
     includePii,
     publicApiKey,
@@ -521,7 +533,7 @@ export function addPageviewMeta(payload: nameValues) {
   addCustomEvent('pageview-meta', payload);
 }
 
-if (document && document.currentScript) {
+if (hasDocument() && document.currentScript) {
   let config = defaultClientConfig;
   const truthyAttr: readonly (string | null)[] = ['', 'yes', 'on', 'true', '1']; // empty string allows setting plain html5 attributes without values
   const self = document.currentScript as HTMLScriptElement;

@@ -1,5 +1,13 @@
 # rrweb-snapshot
 
+## 2.1.1
+
+## 2.1.0
+
+### Patch Changes
+
+- [#1865](https://github.com/rrweb-io/rrweb/pull/1865) [`b08a06f`](https://github.com/rrweb-io/rrweb/commit/b08a06f8f5445e7779fe0744d301a7ceb8d857c3) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fix conversion of absolute to relative urls if url contains a hash
+
 ## 2.0.1
 
 ### Patch Changes
@@ -172,8 +180,6 @@
 - [#903](https://github.com/rrweb-io/rrweb/pull/903) [`058c457`](https://github.com/rrweb-io/rrweb/commit/058c4579530414f6e55434fb28f9227443ed3b6d) Thanks [@Juice10](https://github.com/Juice10)! - Speed up snapshotting of many newly added DOM nodes.
 
 - [#909](https://github.com/rrweb-io/rrweb/pull/909) [`d5d877e`](https://github.com/rrweb-io/rrweb/commit/d5d877e3c19364784abf08f6e3eea4ba911fe4e3) Thanks [@Juice10](https://github.com/Juice10)! - Inline stylesheets when they load so late stylesheet content is captured.
-
-## 2.0.0-alpha.20
 
 ## 2.0.0-alpha.19
 

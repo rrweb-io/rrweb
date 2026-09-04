@@ -1,7 +1,12 @@
 # @rrweb/replay
 
+## Overview
+
 This package contains all the necessary code to replay recorded events.
-See the [guide](../../guide.md) for more info on rrweb.
+See the [replay](../../guide.md#replay) section of the guide for more info.
+
+This package handles basic replay, but leaves UI and controls up to you.
+For a pre-built UI check out the [rrweb-player](../../packages/rrweb-player/README.md) package.
 
 ## Installation
 

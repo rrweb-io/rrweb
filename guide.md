@@ -2,17 +2,18 @@
 
 [中文指南](./guide.zh_CN.md)
 
-> You may also want to read the [recipes](./docs/recipes/index.md) to find some use real-world use case, or read the [design docs](./docs) to know more technical details of rrweb.
+> You may also want to read the [recipes](./docs/recipes/index.md) to find some use real-world use case, or read the [internal design docs](./docs/design/index.md) to know more technical details of rrweb.
 
 ## Installation
 
-| Goal                            | Recommended package(s)            |
-| ------------------------------- | --------------------------------- |
-| Most projects (record + replay) | `@rrweb/record` + `@rrweb/replay` |
-| Single-package convenience      | `@rrweb/all`                      |
-| Legacy compatibility only       | `rrweb`                           |
+| Goal                                                | Recommended package(s)            |
+| --------------------------------------------------- | --------------------------------- |
+| Most projects (record + replay)                     | `@rrweb/record` + `@rrweb/replay` |
+| Quick setup, one import for record, replay + packer | `@rrweb/all`                      |
 
 In most production setups, recorder and replayer are deployed to different pages/apps. Use `@rrweb/record` on recorded pages and `@rrweb/replay` (or `rrweb-player`) on replay pages. Use `@rrweb/all` when you intentionally want one package for convenience (for example demos, tooling, or simplified setups).
+
+> The `rrweb` package is deprecated. It still works, but new projects should use `@rrweb/record` and `@rrweb/replay` (or `@rrweb/all` for a single import) so that we can slim down and eventually remove `rrweb`.
 
 ### 1) Bundler / npm (Recommended)
 
@@ -91,29 +92,7 @@ CDN assets for modern browsers.
 
 #### Other packages
 
-Besides the `@rrweb/record` and `@rrweb/replay` packages, rrweb also provides other packages for different usage.
-
-- [rrweb](packages/rrweb): The core package of rrweb, including record and replay functions.
-- [rrweb-player](packages/rrweb-player): A GUI for rrweb, providing a timeline and buttons for things like pause, fast-forward, and speedup.
-- [rrweb-snapshot](packages/rrweb-snapshot): Handles snapshot and rebuilding features, converting the DOM and its state into a serializable data structure.
-- [rrdom](packages/rrdom): A virtual dom package rrweb.
-- [rrdom-nodejs](packages/rrdom-nodejs): The Node.js version of rrdom for server-side DOM operations.
-- [@rrweb/all](packages/all): A convenience package that includes `rrweb` and `@rrweb/packer`.
-- [@rrweb/record](packages/record): A package for recording rrweb sessions.
-- [@rrweb/replay](packages/replay): A package for replaying rrweb sessions.
-- [@rrweb/packer](packages/packer): A package for packing and unpacking rrweb data.
-- [@rrweb/types](packages/types): Contains types shared across rrweb packages.
-- [@rrweb/utils](packages/utils): Contains utility functions shared across rrweb packages.
-- [web-extension](packages/web-extension): A web extension for rrweb.
-- [rrvideo](packages/rrvideo): A package for handling video operations in rrweb.
-- [@rrweb/rrweb-plugin-console-record](packages/plugins/rrweb-plugin-console-record): A plugin for recording console logs.
-- [@rrweb/rrweb-plugin-console-replay](packages/plugins/rrweb-plugin-console-replay): A plugin for replaying console logs.
-- [@rrweb/rrweb-plugin-sequential-id-record](packages/plugins/rrweb-plugin-sequential-id-record): A plugin for recording sequential IDs.
-- [@rrweb/rrweb-plugin-sequential-id-replay](packages/plugins/rrweb-plugin-sequential-id-replay): A plugin for replaying sequential IDs.
-- [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record): A plugin for stream `<canvas>` via WebRTC.
-- [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay): A plugin for playing streamed `<canvas>` via WebRTC.
-- [@rrweb/rrweb-plugin-network-record](packages/plugins/rrweb-plugin-network-record): A plugin for recording network requests (xhr/fetch).
-- [@rrweb/rrweb-plugin-network-replay](packages/plugins/rrweb-plugin-network-replay): A plugin for replaying network requests (xhr/fetch).
+For a full list of rrweb packages with descriptions, see the [Packages reference](packages/).
 
 ### Compatibility Note
 
@@ -185,7 +164,7 @@ function save() {
 setInterval(save, 10 * 1000);
 ```
 
-#### Options
+#### Record Options
 
 The `record` function accepts the following options.
 
@@ -217,7 +196,7 @@ The `record` function accepts the following options.
 | inlineImages             | false              | Deprecated since 2.0.0. Still supported, but planned to be superseded by future `captureAssets` asset recording APIs.                                                                         |
 | collectFonts             | false              | whether to collect fonts in the website                                                                                                                                                       |
 | userTriggeredOnInput     | false              | whether to add `userTriggered` on input events that indicates if this event was triggered directly by the user or not. [What is `userTriggered`?](https://github.com/rrweb-io/rrweb/pull/495) |
-| plugins                  | []                 | load plugins to provide extended record functions. [What is plugins?](./docs/recipes/plugin.md)                                                                                               |
+| plugins                  | []                 | load plugins to provide extended record functions. [What are plugins?](./docs/recipes/plugin-api.md)                                                                                          |
 | errorHandler             | -                  | A callback that is called if something inside of rrweb throws an error. The callback receives the error as argument.                                                                          |
 
 #### Privacy
@@ -359,7 +338,7 @@ replayer.pause(5000);
 replayer.destroy();
 ```
 
-#### Options
+#### Replay Options
 
 The replayer accepts options as its constructor's second parameter, and it has the following options:
 
@@ -381,7 +360,7 @@ The replayer accepts options as its constructor's second parameter, and it has t
 | mouseTail               | true          | whether to show mouse tail during replay. Set to false to disable mouse tail. A complete config can be found in this [type](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
 | unpackFn                | -             | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                                                 |
 | logConfig               | -             | configuration of console output playback, refer to the [console recipe](./docs/recipes/console.md)                                                                                                                             |
-| plugins                 | []            | load plugins to provide extended replay functions. [What is plugins?](./docs/recipes/plugin.md)                                                                                                                                |
+| plugins                 | []            | load plugins to provide extended replay functions. [What are plugins?](./docs/recipes/plugin-api.md)                                                                                                                           |
 | useVirtualDom           | true          | whether to use Virtual Dom optimization in the process of skipping to a new point of time                                                                                                                                      |
 | logger                  | console       | The logger object used by the replayer to print warnings or errors                                                                                                                                                             |
 
