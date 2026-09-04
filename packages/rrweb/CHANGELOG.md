@@ -1,5 +1,17 @@
 # rrweb
 
+## 2.1.2
+
+### Patch Changes
+
+- [#1712](https://github.com/rrweb-io/rrweb/pull/1712) [`129a805`](https://github.com/rrweb-io/rrweb/commit/129a8052364f062f134bbe717c7ee3be6105e808) Thanks [@pauldambra](https://github.com/pauldambra)! - Use the provided logger from player config instead of directly calling console.warn
+
+- Updated dependencies [[`129a805`](https://github.com/rrweb-io/rrweb/commit/129a8052364f062f134bbe717c7ee3be6105e808)]:
+  - rrweb-snapshot@2.1.2
+  - rrdom@2.1.2
+  - @rrweb/types@2.1.2
+  - @rrweb/utils@2.1.2
+
 ## 2.1.1
 
 ### Patch Changes
