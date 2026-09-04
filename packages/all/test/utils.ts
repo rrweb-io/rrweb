@@ -24,7 +24,7 @@ export async function launchPuppeteer(
       width: 1920,
       height: 1080,
     },
-    args: ['--no-sandbox'],
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
     ...options,
   });
 }

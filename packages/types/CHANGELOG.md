@@ -1,6 +1,52 @@
 # @rrweb/types
 
-## 2.0.0-alpha.18
+## 2.1.1
+
+## 2.1.0
+
+### Minor Changes
+
+- [#1689](https://github.com/rrweb-io/rrweb/pull/1689) [`6fe4fed`](https://github.com/rrweb-io/rrweb/commit/6fe4fed0fdce46b0562a0770a056f77e326bed79) Thanks [@crutch12](https://github.com/crutch12)! - Add the network-plugin
+
+## 2.0.1
+
+No changes in this release, version bump to keep in sync with other packages
+
+## 2.0.0
+
+### Major Changes
+
+- [#1497](https://github.com/rrweb-io/rrweb/pull/1497) [`2606a2a`](https://github.com/rrweb-io/rrweb/commit/2606a2a28f2a6d897b8ae4ea3ec40ef0eeacbfaf) Thanks [@Juice10](https://github.com/Juice10)! - Distributed files have new filenames, paths and extensions. **Important: If you reference distributed files or types directly, you might have to update your paths/filenames. E.g. you import from `rrweb/typings/...` or `rrdom/es`. However you run `import rrweb from 'rrweb'` you won't notice a difference with this change.** If you include rrweb files directly in a script tag, you might have to update that path to include a the `.umd.cjs` files instead. All `.js` files now use ES modules which can be used in modern browsers, node.js and bundlers that support ES modules. All npm packages now also ship `.cjs` and `.umd.cjs` files. The `.umd.cjs` files are CommonJS modules that bundle all files together to make it easy to ship one file to browser environments (similar to the previous `.js` files). The `.cjs` files are CommonJS modules that can be used in older Node.js environments. Types should be better defined in `package.json` and if you need specific types they might be exported from new packages (for example `PlayerMachineState` and `SpeedMachineState` are now exported from `@rrweb/replay`). Check the `package.json`'s `main` and `exports` field for the available files.
+
+- [#1031](https://github.com/rrweb-io/rrweb/pull/1031) [`ad9bc3e`](https://github.com/rrweb-io/rrweb/commit/ad9bc3ed16d9172490bd8350c6922e3726a7f585) Thanks [@Juice10](https://github.com/Juice10)! - Move shared rrweb event and recorder types into the new `@rrweb/types` package.
+
+### Minor Changes
+
+- [#1129](https://github.com/rrweb-io/rrweb/pull/1129) [`979d2b1`](https://github.com/rrweb-io/rrweb/commit/979d2b1847a3d05e2731722952e4d6bd8be54f40) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - click events now include a `.pointerType` attribute which distinguishes between ['pen', 'mouse' and 'touch' events](https://developer.mozilla.org/en-US/docs/Web/API/PointerEvent/pointerType). There is no new PenDown/PenUp events, but these can be detected with a MouseDown/MouseUp + pointerType=pen
+
+- [#1503](https://github.com/rrweb-io/rrweb/pull/1503) [`335639a`](https://github.com/rrweb-io/rrweb/commit/335639af9b0ce7f70eb0f38ce113d877c7325158) Thanks [@Juice10](https://github.com/Juice10)! - Support top-layer <dialog> components. Fixes #1381.
+
+- [#1035](https://github.com/rrweb-io/rrweb/pull/1035) [`2a80949`](https://github.com/rrweb-io/rrweb/commit/2a809499739ed2068bf6d9c614142f9dc8cb09ab) Thanks [@Juice10](https://github.com/Juice10)! - Add types for cross-origin iframe recording support.
+
+### Patch Changes
+
+- [#1833](https://github.com/rrweb-io/rrweb/pull/1833) [`0f0a532`](https://github.com/rrweb-io/rrweb/commit/0f0a532a2ca6b9a71acefcf3af4415beb47db0bb) Thanks [@Juice10](https://github.com/Juice10)! - Add public asset event type aliases for the 2.0 event contract.
+
+- [#1268](https://github.com/rrweb-io/rrweb/pull/1268) [`d872d28`](https://github.com/rrweb-io/rrweb/commit/d872d2809e3ec8d6ff5d3d5f43bc81aff70e7548) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Compact style mutation fixes and improvements
+
+  - fixes when style updates contain a 'var()' on a shorthand property #1246
+  - further ensures that style mutations are compact by reverting to string method if it is shorter
+
+- [#1287](https://github.com/rrweb-io/rrweb/pull/1287) [`efdc167`](https://github.com/rrweb-io/rrweb/commit/efdc167ca6c039d04af83612e3d92498bb9b41a7) Thanks [@Juice10](https://github.com/Juice10)! - Upgrade all projects to typescript 4.9.5
+
+- [#1432](https://github.com/rrweb-io/rrweb/pull/1432) [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961) Thanks [@Juice10](https://github.com/Juice10)! - Add `loop` to `mediaInteractionParam`
+
+- [#1704](https://github.com/rrweb-io/rrweb/pull/1704) [`33e01f5`](https://github.com/rrweb-io/rrweb/commit/33e01f5f005580cbab23d2d4c60dd25c0245d8f0) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Provide a /umd/ output folder alongside the /dist/ one so that we can serve UMD (Universal Module Definition) files with a .js extension, without upsetting expectations set by package.json that all .js files in /dist/ are modules
+
+- [#1369](https://github.com/rrweb-io/rrweb/pull/1369) [`c278d06`](https://github.com/rrweb-io/rrweb/commit/c278d068a0e2f1175cce7cc63920ac1fbf4783cf) Thanks [@stefansundin](https://github.com/stefansundin)! - Fix type error when using `"moduleResolution": "NodeNext"`.
+
+- Updated dependencies [[`2a80949`](https://github.com/rrweb-io/rrweb/commit/2a809499739ed2068bf6d9c614142f9dc8cb09ab)]:
+  - rrweb-snapshot@2.0.0-alpha.4
 
 ## 2.0.0-alpha.17
 
@@ -95,23 +141,11 @@
 - Updated dependencies [[`bc84246`](https://github.com/rrweb-io/rrweb/commit/bc84246f78849a80dbb8fe9b4e76117afcc5c3f7), [`d0fdc0f`](https://github.com/rrweb-io/rrweb/commit/d0fdc0f273bb156a1faab4782b40fbec8dccf915)]:
   - rrweb-snapshot@2.0.0-alpha.8
 
-## 2.0.0-alpha.7
+## 2.0.0-alpha.5&mdash7
+
+Patch Changes only following changes to rrweb-snapshot
 
 ### Patch Changes
 
-- Updated dependencies [[`d2582e9`](https://github.com/rrweb-io/rrweb/commit/d2582e9a81197130cd93bc1dd778e16fddfb0be3), [`e7f0c80`](https://github.com/rrweb-io/rrweb/commit/e7f0c808c3f348fb27d1acd5fa300a5d92b14d00)]:
-  - rrweb-snapshot@2.0.0-alpha.7
-
-## 2.0.0-alpha.6
-
-### Patch Changes
-
-- Updated dependencies [[`c28ef5f`](https://github.com/rrweb-io/rrweb/commit/c28ef5f658abb93086504581409cf7a376db48dc), [`f6f07e9`](https://github.com/rrweb-io/rrweb/commit/f6f07e953376634a4caf28ff8cbfed5a017c4347), [`eac9b18`](https://github.com/rrweb-io/rrweb/commit/eac9b18bbfa3c350797b99b583dd93a5fc32b828), [`8e47ca1`](https://github.com/rrweb-io/rrweb/commit/8e47ca1021ebb4fc036b37623ef10abf7976d6dd)]:
-  - rrweb-snapshot@2.0.0-alpha.6
-
-## 2.0.0-alpha.5
-
-### Patch Changes
-
-- Updated dependencies [[`1385f7a`](https://github.com/rrweb-io/rrweb/commit/1385f7acc0052f83be1458a7b00e18c026ee393f), [`227d43a`](https://github.com/rrweb-io/rrweb/commit/227d43abb93d57cadc70c760b28c46911bf7d8ff)]:
-  - rrweb-snapshot@2.0.0-alpha.5
+- Updated dependencies [[`d2582e9`](https://github.com/rrweb-io/rrweb/commit/d2582e9a81197130cd93bc1dd778e16fddfb0be3), [`e7f0c80`](https://github.com/rrweb-io/rrweb/commit/e7f0c808c3f348fb27d1acd5fa300a5d92b14d00), [`c28ef5f`](https://github.com/rrweb-io/rrweb/commit/c28ef5f658abb93086504581409cf7a376db48dc), [`f6f07e9`](https://github.com/rrweb-io/rrweb/commit/f6f07e953376634a4caf28ff8cbfed5a017c4347), [`eac9b18`](https://github.com/rrweb-io/rrweb/commit/eac9b18bbfa3c350797b99b583dd93a5fc32b828), [`8e47ca1`](https://github.com/rrweb-io/rrweb/commit/8e47ca1021ebb4fc036b37623ef10abf7976d6dd), [`1385f7a`](https://github.com/rrweb-io/rrweb/commit/1385f7acc0052f83be1458a7b00e18c026ee393f), [`227d43a`](https://github.com/rrweb-io/rrweb/commit/227d43abb93d57cadc70c760b28c46911bf7d8ff)]:
+  - rrweb-snapshot (2.0.0-alpha.5&mdash7)

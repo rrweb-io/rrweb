@@ -783,9 +783,46 @@ describe('record integration tests', function (this: ISuite) {
 
       const nextElement = document.querySelector('#one')!;
       nextElement.parentNode!.insertBefore(el, nextElement);
+
+      const ta = document.createElement('textarea');
+      ta.size = 50;
+      ta.id = 'textarea';
+      ta.setAttribute('size', '50');
+      ta.value = 'textarea should be masked';
+
+      nextElement.parentNode!.insertBefore(ta, nextElement);
     });
 
     await page.type('#input', 'moo');
+    await page.type('#textarea', 'boo');
+
+    await page.evaluate(() => {
+      const el = document.querySelector('input');
+      el.value = 'input attribute mutation should also be masked';
+
+      const ta = document.querySelector('textarea');
+      ta.value = 'textarea attribute mutation should also be masked';
+    });
+
+    await page.evaluate(() => {
+      const el = document.querySelector('input');
+      el.setAttribute(
+        'value',
+        "input attribute mutation should also be masked (even though the new value doesn't take effect)",
+      );
+
+      const ta = document.querySelector('textarea');
+      ta.setAttribute(
+        'value',
+        "textarea attribute mutation should also be masked (even though the new value doesn't take effect)",
+      );
+    });
+
+    await page.evaluate(() => {
+      const ta = document.querySelector('textarea');
+      ta.innerText =
+        'textarea attribute mutation via innerText should also be masked ';
+    });
 
     await assertSnapshot(page);
   });

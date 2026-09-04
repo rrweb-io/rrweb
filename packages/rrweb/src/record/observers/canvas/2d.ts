@@ -5,7 +5,8 @@ import {
   type IWindow,
   type listenerHandler,
 } from '@rrweb/types';
-import { hookSetter, isBlocked, patch } from '../../../utils';
+import { hookSetter, isBlocked } from '../../../utils';
+import { patch } from '@rrweb/utils';
 import { serializeArgs } from './serialize-args';
 
 export default function initCanvas2DMutationObserver(

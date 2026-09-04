@@ -16,6 +16,7 @@ temp
 # output of `yarn build`
 build
 dist
+umd
 
 # turbo cache
 .turbo
@@ -35,3 +36,6 @@ dist
 # for vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# bundle analysis files
+*-bundle-analysis.html

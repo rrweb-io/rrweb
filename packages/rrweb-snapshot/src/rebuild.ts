@@ -7,7 +7,12 @@ import {
   type legacyAttributes,
 } from '@rrweb/types';
 import { type tagMap, type BuildCache } from './types';
-import { isElement, Mirror, isNodeMetaEqual } from './utils';
+import {
+  isElement,
+  Mirror,
+  isNodeMetaEqual,
+  extractFileExtension,
+} from './rebuild-utils';
 import postcss from 'postcss';
 
 const tagMap: tagMap = {
@@ -62,11 +67,17 @@ export function adaptCssForReplay(cssText: string, cache: BuildCache): string {
   const cachedStyle = cache?.stylesWithHoverClass.get(cssText);
   if (cachedStyle) return cachedStyle;
 
-  const ast: { css: string } = postcss([
-    mediaSelectorPlugin,
-    pseudoClassPlugin,
-  ]).process(cssText);
-  const result = ast.css;
+  let result = cssText;
+  try {
+    const ast: { css: string } = postcss([
+      mediaSelectorPlugin,
+      pseudoClassPlugin,
+    ]).process(cssText);
+    result = ast.css;
+  } catch (error) {
+    console.warn('Failed to adapt css for replay', error);
+  }
+
   cache?.stylesWithHoverClass.set(cssText, result);
   return result;
 }
@@ -76,6 +87,107 @@ export function createCache(): BuildCache {
   return {
     stylesWithHoverClass,
   };
+}
+
+const REBUILD_TARGET_ERROR =
+  'rrweb-snapshot.rebuild() cannot rebuild into an unprotected browser document. Use rebuildIntoSandboxedIframe() or set UNSAFE_allowUnprotectedRebuild: true only when you accept the script-execution risk.';
+const SANDBOXED_IFRAME_ROOT_ERROR =
+  'rrweb-snapshot.createSandboxedIframe() requires root to be connected to a document before creating a sandboxed iframe.';
+
+const sandboxedRebuildDocuments = new WeakSet<Document>();
+
+/**
+ * Options used to rebuild a serialized snapshot into a live document.
+ *
+ * Browser rebuilds are protected by default. Use
+ * `rebuildIntoSandboxedIframe()` or `createSandboxedIframe()` when replaying
+ * untrusted data.
+ */
+type RebuildOptions = {
+  /** Target document that receives the rebuilt nodes. */
+  doc: Document;
+  /** Called after each rebuilt node is created and before it may be appended. */
+  onVisit?: (node: Node) => unknown;
+  /** Adapts CSS selectors for replay-specific hover behavior when enabled. */
+  hackCss?: boolean;
+  /** Called after a rebuilt node is appended to its parent. */
+  afterAppend?: (n: Node, id: number) => unknown;
+  /** Per-rebuild cache for derived snapshot data. */
+  cache: BuildCache;
+  /** Mirror used to associate serialized node ids with rebuilt nodes. */
+  mirror: Mirror;
+  /**
+   * Explicit unsafe opt-out from protected browser rebuild checks.
+   *
+   * Setting this to `true` allows rebuilding directly into an unprotected
+   * browser document and can execute scripts from replay data.
+   */
+  UNSAFE_allowUnprotectedRebuild?: boolean;
+};
+
+/**
+ * Options for creating a sandboxed iframe that is safe for snapshot rebuilds.
+ *
+ * The `root` element must already be connected to a document so the iframe can
+ * create a live `contentDocument`. The helper always sets `sandbox` to exactly
+ * `allow-same-origin`; any caller-provided `sandbox` attribute is ignored.
+ */
+type CreateSandboxedIframeOptions = {
+  /** Connected element that receives the created iframe. */
+  root: Element;
+  /**
+   * Attributes to apply to the iframe before insertion.
+   *
+   * `sandbox` is intentionally excluded and ignored at runtime because this
+   * helper must force the sandbox policy required by protected rebuilds.
+   */
+  iframeAttributes?: Record<string, string> & { sandbox?: never };
+};
+
+/**
+ * Options for rebuilding a serialized snapshot into a new sandboxed iframe.
+ *
+ * Inherits the iframe creation options and the standard rebuild callbacks and
+ * cache options, while choosing the target document internally from the created
+ * iframe. Use this helper for untrusted replay data.
+ */
+type RebuildIntoSandboxedIframeOptions = CreateSandboxedIframeOptions &
+  Omit<RebuildOptions, 'doc' | 'UNSAFE_allowUnprotectedRebuild'>;
+
+function isSupportedSandboxedIframe(
+  frameElement: Element | null,
+): frameElement is HTMLIFrameElement {
+  if (!frameElement || frameElement.tagName !== 'IFRAME') {
+    return false;
+  }
+
+  if (!('sandbox' in frameElement)) {
+    return false;
+  }
+
+  const sandboxTokens = Array.from((frameElement as HTMLIFrameElement).sandbox);
+
+  return sandboxTokens.length === 1 && sandboxTokens[0] === 'allow-same-origin';
+}
+
+function assertRebuildTargetAllowed(options: RebuildOptions): void {
+  if (options.UNSAFE_allowUnprotectedRebuild) {
+    return;
+  }
+
+  const win = options.doc.defaultView;
+  if (!win) {
+    return;
+  }
+
+  if (
+    sandboxedRebuildDocuments.has(options.doc) &&
+    isSupportedSandboxedIframe(win.frameElement)
+  ) {
+    return;
+  }
+
+  throw new Error(REBUILD_TARGET_ERROR);
 }
 
 /**
@@ -102,15 +214,44 @@ export function applyCssSplits(
     // unexpected: remerge the last two so that we don't discard any css
     cssTextSplits.splice(-2, 2, cssTextSplits.slice(-2).join(''));
   }
+  let adaptedCss = '';
+  if (hackCss) {
+    adaptedCss = adaptCssForReplay(cssTextSplits.join(''), cache);
+  }
+  let startIndex = 0;
   for (let i = 0; i < childTextNodes.length; i++) {
+    if (i === cssTextSplits.length) {
+      break;
+    }
     const childTextNode = childTextNodes[i];
-    const cssTextSection = cssTextSplits[i];
-    if (childTextNode && cssTextSection) {
-      // id will be assigned when these child nodes are
-      // iterated over in buildNodeWithSN
-      childTextNode.textContent = hackCss
-        ? adaptCssForReplay(cssTextSection, cache)
-        : cssTextSection;
+    if (!hackCss) {
+      childTextNode.textContent = cssTextSplits[i];
+    } else if (i < cssTextSplits.length - 1) {
+      let endIndex = startIndex;
+      let endSearch = cssTextSplits[i + 1].length;
+
+      // don't do hundreds of searches, in case a mismatch
+      // is caused close to start of string
+      endSearch = Math.min(endSearch, 30);
+
+      let found = false;
+      for (; endSearch > 2; endSearch--) {
+        const searchBit = cssTextSplits[i + 1].substring(0, endSearch);
+        const searchIndex = adaptedCss.substring(startIndex).indexOf(searchBit);
+        found = searchIndex !== -1;
+        if (found) {
+          endIndex += searchIndex;
+          break;
+        }
+      }
+      if (!found) {
+        // something went wrong, put a similar sized chunk in the right place
+        endIndex += cssTextSplits[i].length;
+      }
+      childTextNode.textContent = adaptedCss.substring(startIndex, endIndex);
+      startIndex = endIndex;
+    } else {
+      childTextNode.textContent = adaptedCss.substring(startIndex);
     }
   }
 }
@@ -264,16 +405,15 @@ function buildNode(
             continue;
           } else if (
             tagName === 'link' &&
-            (n.attributes.rel === 'preload' ||
-              n.attributes.rel === 'modulepreload') &&
-            n.attributes.as === 'script'
+            ((n.attributes.rel === 'preload' && n.attributes.as === 'script') ||
+              n.attributes.rel === 'modulepreload')
           ) {
             // ignore
           } else if (
             tagName === 'link' &&
             n.attributes.rel === 'prefetch' &&
             typeof n.attributes.href === 'string' &&
-            n.attributes.href.endsWith('.js')
+            extractFileExtension(n.attributes.href) === 'js'
           ) {
             // ignore
           } else if (
@@ -571,15 +711,10 @@ function handleScroll(node: Node, mirror: Mirror) {
 
 function rebuild(
   n: serializedNodeWithId,
-  options: {
-    doc: Document;
-    onVisit?: (node: Node) => unknown;
-    hackCss?: boolean;
-    afterAppend?: (n: Node, id: number) => unknown;
-    cache: BuildCache;
-    mirror: Mirror;
-  },
+  options: RebuildOptions,
 ): Node | null {
+  assertRebuildTargetAllowed(options);
+
   const {
     doc,
     onVisit,
@@ -603,6 +738,77 @@ function rebuild(
     handleScroll(visitedNode, mirror);
   });
   return node;
+}
+
+/**
+ * Create and append an iframe configured for protected snapshot rebuilds.
+ *
+ * The `root` option must be connected to a document. The returned iframe is
+ * appended to `root`, tracked as an allowed rebuild target, and forced to use
+ * exactly `sandbox="allow-same-origin"`. A caller-provided `sandbox` attribute
+ * is ignored so replay data cannot weaken or expand the sandbox policy.
+ *
+ * Use this helper, or `rebuildIntoSandboxedIframe()`, when preparing a target
+ * for untrusted replay data.
+ */
+export function createSandboxedIframe(
+  options: CreateSandboxedIframeOptions,
+): HTMLIFrameElement {
+  if (!options.root.isConnected) {
+    throw new Error(SANDBOXED_IFRAME_ROOT_ERROR);
+  }
+
+  const iframe = options.root.ownerDocument.createElement('iframe');
+
+  for (const [name, value] of Object.entries(options.iframeAttributes || {})) {
+    if (name === 'sandbox') {
+      continue;
+    }
+    iframe.setAttribute(name, value);
+  }
+
+  iframe.setAttribute('sandbox', 'allow-same-origin');
+  options.root.appendChild(iframe);
+
+  const doc = iframe.contentDocument;
+  if (!doc || !iframe.contentWindow) {
+    iframe.parentNode?.removeChild(iframe);
+    throw new Error(SANDBOXED_IFRAME_ROOT_ERROR);
+  }
+
+  sandboxedRebuildDocuments.add(doc);
+
+  return iframe;
+}
+
+/**
+ * Rebuild a serialized snapshot into a newly created sandboxed iframe.
+ *
+ * This is the preferred helper for untrusted replay data. It creates an iframe
+ * with `sandbox` forced to exactly `allow-same-origin`, rebuilds into that
+ * iframe's document, and returns both the iframe and rebuilt root node. If the
+ * rebuild fails, the newly appended iframe is removed before the error is
+ * rethrown.
+ */
+export function rebuildIntoSandboxedIframe(
+  n: serializedNodeWithId,
+  options: RebuildIntoSandboxedIframeOptions,
+): { iframe: HTMLIFrameElement; node: Node | null } {
+  const iframe = createSandboxedIframe(options);
+  const doc = iframe.contentDocument!;
+
+  let node: Node | null;
+  try {
+    node = rebuild(n, {
+      ...options,
+      doc,
+    });
+  } catch (error) {
+    iframe.parentNode?.removeChild(iframe);
+    throw error;
+  }
+
+  return { iframe, node };
 }
 
 export default rebuild;

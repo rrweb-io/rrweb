@@ -26,7 +26,7 @@ export async function launchPuppeteer(
       width: 1920,
       height: 1080,
     },
-    args: ['--no-sandbox'],
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
     ...options,
   });
 }
@@ -726,9 +726,11 @@ export const polyfillWebGLGlobals = () => {
   global.WebGL2RenderingContext = WebGL2RenderingContext as any;
 };
 
-export async function waitForRAF(
-  pageOrFrame: puppeteer.Page | puppeteer.Frame,
-) {
+interface PageOrFrameWithEvaluate {
+  evaluate<T>(pageFunction: () => T | Promise<T>): Promise<T>;
+}
+
+export async function waitForRAF(pageOrFrame: PageOrFrameWithEvaluate) {
   return await pageOrFrame.evaluate(() => {
     return new Promise((resolve) => {
       requestAnimationFrame(() => {

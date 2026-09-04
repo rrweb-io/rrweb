@@ -2,10 +2,12 @@
 
 If you want to replay the events in a real-time way, you can use the live mode API. This API is also useful for some real-time collaboration usage.
 
-When you are using rrweb's Replayer to do a real-time replay, you need to configure `liveMode: true` and call the `startLive` API to enable the live mode.
+When you use `Replayer` for real-time replay, configure `liveMode: true` and call `startLive()` to enable live mode.
 
 ```js
-const replayer = new rrweb.Replayer([], {
+import { Replayer } from '@rrweb/replay';
+
+const replayer = new Replayer([], {
   liveMode: true,
 });
 replayer.startLive();
@@ -22,7 +24,9 @@ function onReceive(event) {
 If you have an ongoing recording that already has events, and wish to initiate play from a 'live' time, it's also possible to use the `play` function, supplied with an offset which corresponds to the current time:
 
 ```js
-const replayer = new rrweb.Replayer(EXISTING_EVENTS, {
+import { Replayer } from '@rrweb/replay';
+
+const replayer = new Replayer(EXISTING_EVENTS, {
   liveMode: true,
 });
 replayer.play(Date.now() - EXISTING_EVENTS[0].timestamp);

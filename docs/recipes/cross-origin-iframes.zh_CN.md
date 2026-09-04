@@ -8,7 +8,9 @@
 在父页面中启用录制跨域 iframe:
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+
+record({
   emit(event) {}, // 所有事件都将在此处发出，包括来自跨源 iframe 的事件
   recordCrossOriginIframes: true,
 });
@@ -17,7 +19,9 @@ rrweb.record({
 在您的子页面中启用重放跨域 iframe:
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+
+record({
   emit(event) {}, // 这是 rrweb 所必需的，但子页面不会发出任何事件
   recordCrossOriginIframes: true,
 });

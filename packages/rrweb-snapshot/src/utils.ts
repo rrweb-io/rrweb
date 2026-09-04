@@ -1,3 +1,15 @@
+/**
+ * Legacy shared utility module.
+ *
+ * This file currently contains helpers used by both snapshot and rebuild paths
+ * and is also part of the public API surface, re-exported from index.ts.
+ *
+ * Migration intent:
+ * - snapshot.ts should consume snapshot-domain helpers via snapshot-utils.ts
+ * - rebuild.ts should consume rebuild-domain helpers via rebuild-utils.ts
+ * - when safe, split internals into snapshot-only / rebuild-only / shared
+ *   modules while keeping this module as a compatibility shim for external users
+ */
 import type {
   idNodeMap,
   MaskInputFn,
@@ -118,9 +130,9 @@ export function stringifyStylesheet(s: CSSStyleSheet): string | null {
       return null;
     }
     let sheetHref = s.href;
-    if (!sheetHref && s.ownerNode && s.ownerNode.ownerDocument) {
+    if (!sheetHref && s.ownerNode) {
       // an inline <style> element
-      sheetHref = s.ownerNode.ownerDocument.location.href;
+      sheetHref = s.ownerNode.baseURI;
     }
     const stringifiedRules = Array.from(rules, (rule: CSSRule) =>
       stringifyRule(rule, sheetHref),
@@ -429,8 +441,10 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
           extractOrigin(href) + filePath
         }${maybeQuote})`;
       }
-      const stack = href.split('/');
-      const parts = filePath.split('/');
+      const filePathNoHash = filePath.split('#')[0];
+      const maybeHash = filePath.substring(filePathNoHash.length);
+      const stack = href.split('#')[0].split('/');
+      const parts = filePathNoHash.split('/');
       stack.pop();
       for (const part of parts) {
         if (part === '.') {
@@ -441,7 +455,7 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
           stack.push(part);
         }
       }
-      return `url(${maybeQuote}${stack.join('/')}${maybeQuote})`;
+      return `url(${maybeQuote}${stack.join('/')}${maybeHash}${maybeQuote})`;
     },
   );
 }
@@ -450,8 +464,19 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
  * Intention is to normalize by remove spaces, semicolons and CSS comments
  * so that we can compare css as authored vs. output of stringifyStylesheet
  */
-export function normalizeCssString(cssText: string): string {
-  return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '');
+export function normalizeCssString(
+  cssText: string,
+  /**
+   * _testNoPxNorm: only used as part of the 'substring matching going from many to none'
+   * test case so that it will trigger a failure if the conditions that let to the creation of that test arise again
+   */
+  _testNoPxNorm = false,
+): string {
+  if (_testNoPxNorm) {
+    return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '');
+  } else {
+    return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '').replace(/0px/g, '0');
+  }
 }
 
 /**
@@ -463,19 +488,24 @@ export function normalizeCssString(cssText: string): string {
 export function splitCssText(
   cssText: string,
   style: HTMLStyleElement,
+  _testNoPxNorm = false,
 ): string[] {
   const childNodes = Array.from(style.childNodes);
   const splits: string[] = [];
-  let iterLimit = 0;
+  let iterCount = 0;
   if (childNodes.length > 1 && cssText && typeof cssText === 'string') {
-    let cssTextNorm = normalizeCssString(cssText);
+    let cssTextNorm = normalizeCssString(cssText, _testNoPxNorm);
     const normFactor = cssTextNorm.length / cssText.length;
     for (let i = 1; i < childNodes.length; i++) {
       if (
         childNodes[i].textContent &&
         typeof childNodes[i].textContent === 'string'
       ) {
-        const textContentNorm = normalizeCssString(childNodes[i].textContent!);
+        const textContentNorm = normalizeCssString(
+          childNodes[i].textContent!,
+          _testNoPxNorm,
+        );
+        const jLimit = 100; // how many iterations for the first part of searching
         let j = 3;
         for (; j < textContentNorm.length; j++) {
           if (
@@ -489,31 +519,62 @@ export function splitCssText(
           break;
         }
         for (; j < textContentNorm.length; j++) {
-          const bit = textContentNorm.substring(0, j);
+          let startSubstring = textContentNorm.substring(0, j);
           // this substring should appears only once in overall text too
-          const bits = cssTextNorm.split(bit);
+          let cssNormSplits = cssTextNorm.split(startSubstring);
           let splitNorm = -1;
-          if (bits.length === 2) {
-            splitNorm = cssTextNorm.indexOf(bit);
+          if (cssNormSplits.length === 2) {
+            splitNorm = cssNormSplits[0].length;
           } else if (
-            bits.length > 2 &&
-            bits[0] === '' &&
+            cssNormSplits.length > 2 &&
+            cssNormSplits[0] === '' &&
             childNodes[i - 1].textContent !== ''
           ) {
             // this childNode has same starting content as previous
-            splitNorm = cssTextNorm.indexOf(bit, 1);
+            splitNorm = cssTextNorm.indexOf(startSubstring, 1);
+          } else if (cssNormSplits.length === 1) {
+            // try to roll back to get multiple matches again
+            startSubstring = startSubstring.substring(
+              0,
+              startSubstring.length - 1,
+            );
+            cssNormSplits = cssTextNorm.split(startSubstring);
+            if (cssNormSplits.length <= 1) {
+              // no split possible
+              splits.push(cssText);
+              return splits;
+            }
+            j = jLimit + 1; // trigger end of search
+          } else if (j === textContentNorm.length - 1) {
+            // we're about to end loop without a split point
+            splitNorm = cssTextNorm.indexOf(startSubstring);
+          }
+          if (cssNormSplits.length >= 2 && j > jLimit) {
+            const prevTextContent = childNodes[i - 1].textContent;
+            if (prevTextContent && typeof prevTextContent === 'string') {
+              // pick the first matching point which respects the previous chunk's approx size
+              const prevMinLength = normalizeCssString(prevTextContent).length;
+              splitNorm = cssTextNorm.indexOf(startSubstring, prevMinLength);
+            }
+            if (splitNorm === -1) {
+              // fall back to pick the first matching point of many
+              splitNorm = cssNormSplits[0].length;
+            }
           }
           if (splitNorm !== -1) {
             // find the split point in the original text
             let k = Math.floor(splitNorm / normFactor);
             for (; k > 0 && k < cssText.length; ) {
-              iterLimit += 1;
-              if (iterLimit > 50 * childNodes.length) {
+              iterCount += 1;
+              if (iterCount > 50 * childNodes.length) {
                 // quit for performance purposes
                 splits.push(cssText);
                 return splits;
               }
-              const normPart = normalizeCssString(cssText.substring(0, k));
+              const normPart = normalizeCssString(
+                cssText.substring(0, k),
+                _testNoPxNorm,
+              );
               if (normPart.length === splitNorm) {
                 splits.push(cssText.substring(0, k));
                 cssText = cssText.substring(k);

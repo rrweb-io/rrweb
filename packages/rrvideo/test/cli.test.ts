@@ -18,16 +18,20 @@ describe('should be able to run cli', () => {
     await fs.remove(path.resolve(__dirname, './generated'));
   });
 
+  const execOptions = { timeout: 60_000 } as const;
+  const execOptionsWithOutput = { ...execOptions, stdio: 'inherit' } as const;
+
   it('should throw error without input path', () => {
     expect(() => {
-      execSync('node ./build/cli.js', { stdio: 'pipe' });
+      execSync('node ./build/cli.js', { ...execOptions, stdio: 'pipe' });
     }).toThrowError(/.*please pass --input to your rrweb events file.*/);
   });
 
   it('should generate a video without output path', () => {
-    execSync('node ./build/cli.js --input ./test/generated/example.json', {
-      stdio: 'pipe',
-    });
+    execSync(
+      'node ./build/cli.js --input ./test/generated/example.json',
+      execOptionsWithOutput,
+    );
     const outputFile = path.resolve(__dirname, '../rrvideo-output.webm');
     expect(fs.existsSync(outputFile)).toBe(true);
     fs.removeSync(outputFile);
@@ -37,7 +41,7 @@ describe('should be able to run cli', () => {
     const outputFile = path.resolve(__dirname, './generated/output.webm');
     execSync(
       `node ./build/cli.js --input ./test/generated/example.json --output ${outputFile}`,
-      { stdio: 'pipe' },
+      execOptionsWithOutput,
     );
     expect(fs.existsSync(outputFile)).toBe(true);
     fs.removeSync(outputFile);
