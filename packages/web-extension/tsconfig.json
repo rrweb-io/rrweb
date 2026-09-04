@@ -12,7 +12,13 @@
     },
     "jsx": "react-jsx"
   },
-  "exclude": ["dist", "node_modules", "vite.config.ts"],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "test"
+  ],
   "references": [
     {
       "path": "../rrweb"

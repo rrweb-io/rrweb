@@ -31,15 +31,19 @@ import {
   flexRender,
   getCoreRowModel,
   type SortingState,
+  type RowSelectionState,
   getSortedRowModel,
   type PaginationState,
 } from '@tanstack/react-table';
 import { VscTriangleDown, VscTriangleUp } from 'react-icons/vsc';
 import { FiEdit3 as EditIcon } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import Browser from 'webextension-polyfill';
 import type { eventWithTime } from 'rrweb';
-import { type Session, EventName } from '~/types';
+import { type CloudSettings, type Session, EventName } from '~/types';
 import Channel from '~/utils/channel';
+import { loadCloudSettings } from '~/utils/cloud-settings';
+import { type SessionUploadResult, uploadSessions } from '~/utils/cloud-upload';
 import {
   deleteSessions,
   getAllSessions,
@@ -68,7 +72,8 @@ export function SessionList() {
       desc: true,
     },
   ]);
-  const [rowSelection, setRowSelection] = useState({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [isUploading, setIsUploading] = useState(false);
 
   const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -96,6 +101,13 @@ export function SessionList() {
     }),
     [pageIndex, pageSize],
   );
+  const selectedSessionIds = useMemo(
+    () =>
+      sessions
+        .filter((session) => rowSelection[session.id])
+        .map((session) => session.id),
+    [rowSelection, sessions],
+  );
 
   const columns = useMemo(
     () => [
@@ -103,6 +115,7 @@ export function SessionList() {
         id: 'select',
         header: ({ table }) => (
           <Checkbox
+            aria-label="Select all sessions on this page"
             isChecked={table.getIsAllRowsSelected()}
             isIndeterminate={table.getIsSomeRowsSelected()}
             onChange={table.getToggleAllRowsSelectedHandler()}
@@ -110,6 +123,7 @@ export function SessionList() {
         ),
         cell: ({ row }) => (
           <Checkbox
+            aria-label={`Select ${row.original.name} (${row.original.id})`}
             isChecked={row.getIsSelected()}
             isIndeterminate={row.getIsSomeSelected()}
             onChange={row.getToggleSelectedHandler()}
@@ -197,6 +211,7 @@ export function SessionList() {
       sorting,
       rowSelection,
     },
+    getRowId: (row) => row.id,
     manualPagination: true,
     pageCount: fetchData(fetchDataOptions).pageCount,
   });
@@ -248,6 +263,85 @@ export function SessionList() {
       }
     };
     reader.readAsText(file);
+  };
+
+  const handleUpload = async (ids: string[]) => {
+    if (ids.length === 0) return;
+
+    setIsUploading(true);
+    try {
+      let settings: CloudSettings;
+
+      try {
+        settings = await loadCloudSettings(Browser.storage.local);
+      } catch (error) {
+        toast({
+          title: 'Could not load cloud upload settings.',
+          description:
+            error instanceof Error && error.message
+              ? error.message
+              : 'Please try again.',
+          status: 'error',
+          duration: 8000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      let results: SessionUploadResult[];
+
+      try {
+        results = await uploadSessions(ids, settings);
+      } catch (error) {
+        toast({
+          title: 'Could not complete the upload.',
+          description:
+            error instanceof Error && error.message
+              ? error.message
+              : 'Please try again.',
+          status: 'error',
+          duration: 8000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      const failures = results.filter((result) => !result.ok);
+      const successes = results.length - failures.length;
+      const failureDescription = failures
+        .map((result) => `${result.name}: ${result.error ?? 'Upload failed'}`)
+        .join('\n');
+
+      if (failures.length === 0) {
+        toast({
+          title: 'Upload complete',
+          description: `Uploaded ${successes} selected session${
+            successes === 1 ? '' : 's'
+          }.`,
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+      } else if (successes > 0) {
+        toast({
+          title: 'Upload completed with errors',
+          description: `Uploaded ${successes} of ${results.length} selected sessions.\n${failureDescription}`,
+          status: 'warning',
+          duration: 8000,
+          isClosable: true,
+        });
+      } else {
+        toast({
+          title: 'Upload failed',
+          description: `No selected sessions were uploaded.\n${failureDescription}`,
+          status: 'error',
+          duration: 8000,
+          isClosable: true,
+        });
+      }
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -414,18 +508,15 @@ export function SessionList() {
               </option>
             ))}
           </Select>
-          {Object.keys(rowSelection).length > 0 && (
+          {selectedSessionIds.length > 0 && (
             <Flex gap={1}>
               <Button
                 mr={4}
                 size="md"
                 colorScheme="red"
+                isDisabled={isUploading}
                 onClick={() => {
-                  if (table.getSelectedRowModel().flatRows.length === 0) return;
-                  const ids = table
-                    .getSelectedRowModel()
-                    .flatRows.map((row) => row.original.id);
-                  void deleteSessions(ids).then(() => {
+                  void deleteSessions(selectedSessionIds).then(() => {
                     setRowSelection({});
                     void updateSessions();
                     channel.emit(EventName.SessionUpdated, {});
@@ -438,15 +529,24 @@ export function SessionList() {
                 mr={4}
                 size="md"
                 colorScheme="green"
+                isDisabled={isUploading}
                 onClick={() => {
-                  const selectedRows = table.getSelectedRowModel().flatRows;
-                  if (selectedRows.length === 0) return;
-                  void downloadSessions(
-                    selectedRows.map((row) => row.original.id),
-                  );
+                  void downloadSessions(selectedSessionIds);
                 }}
               >
                 Download
+              </Button>
+              <Button
+                mr={4}
+                size="md"
+                colorScheme="blue"
+                isLoading={isUploading}
+                loadingText="Uploading"
+                onClick={() => {
+                  void handleUpload(selectedSessionIds);
+                }}
+              >
+                Upload
               </Button>
             </Flex>
           )}
