@@ -79,6 +79,7 @@ import {
   type AppendedIframe,
   getBaseDimension,
   hasShadowRoot,
+  canContainChildren,
   isSerializedIframe,
   getNestedRule,
   getPositionsAndIndex,
@@ -1453,32 +1454,30 @@ export class Replayer {
       }
       // target may be removed with its parents before
       mirror.removeNodeFromMap(target as Node & RRNode);
-      if (parent)
-        try {
-          parent.removeChild(target as Node & RRNode);
-          /**
-           * https://github.com/rrweb-io/rrweb/pull/887
-           * Remove any virtual style rules for stylesheets if a child text node is removed.
-           */
-          if (
-            this.usingVirtualDom &&
-            target.nodeName === '#text' &&
-            parent.nodeName === 'STYLE' &&
-            (parent as RRStyleElement).rules?.length > 0
-          )
-            (parent as RRStyleElement).rules = [];
-        } catch (error) {
-          if (error instanceof DOMException) {
-            this.warn(
-              'parent could not remove child in mutation',
-              parent,
-              target,
-              d,
-            );
-          } else {
-            throw error;
-          }
-        }
+      if (!parent) return;
+      if (parent !== target.parentNode) {
+        this.warn(
+          canContainChildren(parent)
+            ? 'parent mismatch, cannot be used to remove node in mutation'
+            : 'invalid parent, cannot be used to remove node in mutation',
+          parent,
+          target,
+          d,
+        );
+        return;
+      }
+      parent.removeChild(target as Node & RRNode);
+      /**
+       * https://github.com/rrweb-io/rrweb/pull/887
+       * Remove any virtual style rules for stylesheets if a child text node is removed.
+       */
+      if (
+        this.usingVirtualDom &&
+        target.nodeName === '#text' &&
+        parent.nodeName === 'STYLE' &&
+        (parent as RRStyleElement).rules?.length > 0
+      )
+        (parent as RRStyleElement).rules = [];
     });
 
     const legacy_missingNodeMap: missingNodeMap = {
@@ -1517,6 +1516,12 @@ export class Replayer {
           return this.newDocumentQueue.push(mutation);
         }
         return queue.push(mutation);
+      } else if (!canContainChildren(parent)) {
+        this.warn(
+          'parent is a leaf node and cannot be used to append new child in mutation',
+          parent,
+          mutation.node,
+        );
       }
 
       if (mutation.node.isShadow) {
