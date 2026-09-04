@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import snapshot, {
   _isBlockedElement,
+  ignoreAttribute,
   serializeNodeWithId,
 } from '../src/snapshot';
 import { elementNode, serializedNodeWithId } from '../src/types';
@@ -156,6 +157,24 @@ describe('isBlockedElement()', () => {
     expect(
       subject('<div data-rr-block />', { blockSelector: '[data-rr-block]' }),
     ).toEqual(true);
+  });
+});
+
+describe('ignoreAttribute()', () => {
+  it('ignores autoplay on lowercase media tag names', () => {
+    expect(ignoreAttribute('video', 'autoplay', '')).toEqual(true);
+    expect(ignoreAttribute('audio', 'autoplay', '')).toEqual(true);
+  });
+
+  it('ignores autoplay on native uppercase media tag names', () => {
+    expect(ignoreAttribute('VIDEO', 'autoplay', '')).toEqual(true);
+    expect(ignoreAttribute('AUDIO', 'autoplay', '')).toEqual(true);
+  });
+
+  it('does not ignore other attributes or other elements', () => {
+    expect(ignoreAttribute('video', 'src', '')).toEqual(false);
+    expect(ignoreAttribute('DIV', 'autoplay', '')).toEqual(false);
+    expect(ignoreAttribute('div', 'autoplay', '')).toEqual(false);
   });
 });
 
