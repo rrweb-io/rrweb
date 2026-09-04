@@ -38,6 +38,96 @@ export const saveWebGLVar = (
   return index;
 };
 
+const inlinedImageCache = new Map<string, string>();
+const ignoredCanvasMutationTargets = new WeakSet<HTMLCanvasElement>();
+const objectTag = (value: unknown) => Object.prototype.toString.call(value);
+const typedArrayTags: Record<string, true> = {
+  '[object Float32Array]': true,
+  '[object Float64Array]': true,
+  '[object Int32Array]': true,
+  '[object Uint32Array]': true,
+  '[object Uint8Array]': true,
+  '[object Uint16Array]': true,
+  '[object Int16Array]': true,
+  '[object Int8Array]': true,
+  '[object Uint8ClampedArray]': true,
+};
+
+function hasTagName(value: unknown, tagName: string): boolean {
+  return Boolean(
+    value &&
+      typeof value === 'object' &&
+      'tagName' in value &&
+      value.tagName === tagName,
+  );
+}
+
+function isHTMLImageElement(
+  value: unknown,
+  win: IWindow,
+): value is HTMLImageElement {
+  return Boolean(
+    hasTagName(value, 'IMG') ||
+      (typeof win.HTMLImageElement === 'function' &&
+        value instanceof win.HTMLImageElement),
+  );
+}
+
+function isHTMLCanvasElement(
+  value: unknown,
+  win: IWindow,
+): value is HTMLCanvasElement {
+  return Boolean(
+    hasTagName(value, 'CANVAS') ||
+      (typeof win.HTMLCanvasElement === 'function' &&
+        value instanceof win.HTMLCanvasElement),
+  );
+}
+
+function isImageData(value: unknown, win: IWindow): value is ImageData {
+  return Boolean(
+    value &&
+      typeof value === 'object' &&
+      (objectTag(value) === '[object ImageData]' ||
+        (typeof win.ImageData === 'function' &&
+          value instanceof win.ImageData)),
+  );
+}
+
+function inlineImageSrc(value: HTMLImageElement): string {
+  const { src } = value;
+  try {
+    if (!value.complete || !value.naturalWidth) return src;
+    if (typeof src !== 'string' || src.startsWith('data:')) return src;
+    const cached = inlinedImageCache.get(src);
+    if (cached) return cached;
+
+    const canvas = (value.ownerDocument || document).createElement('canvas');
+    ignoredCanvasMutationTargets.add(canvas);
+    canvas.width = value.naturalWidth;
+    canvas.height = value.naturalHeight;
+    try {
+      const context = canvas.getContext('2d');
+      if (!context) return src;
+      context.drawImage(value, 0, 0);
+      const dataURL = canvas.toDataURL();
+      if (inlinedImageCache.size > 100) inlinedImageCache.clear();
+      inlinedImageCache.set(src, dataURL);
+      return dataURL;
+    } finally {
+      ignoredCanvasMutationTargets.delete(canvas);
+    }
+  } catch {
+    return src;
+  }
+}
+
+export function isIgnoredCanvasMutationTarget(
+  value: HTMLCanvasElement,
+): boolean {
+  return ignoredCanvasMutationTargets.has(value);
+}
+
 // from webgl-recorder: https://github.com/evanw/webgl-recorder/blob/bef0e65596e981ee382126587e2dcbe0fc7748e2/webgl-recorder.js#L50-L77
 export function serializeArg(
   value: unknown,
@@ -48,21 +138,16 @@ export function serializeArg(
     return value.map((arg) => serializeArg(arg, win, ctx));
   } else if (value === null) {
     return value;
-  } else if (
-    value instanceof Float32Array ||
-    value instanceof Float64Array ||
-    value instanceof Int32Array ||
-    value instanceof Uint32Array ||
-    value instanceof Uint8Array ||
-    value instanceof Uint16Array ||
-    value instanceof Int16Array ||
-    value instanceof Int8Array ||
-    value instanceof Uint8ClampedArray
-  ) {
-    const name = value.constructor.name;
+  } else if (typedArrayTags[objectTag(value)]) {
+    const typedArray = value as {
+      constructor: { name: string };
+      length: number;
+      [index: number]: number;
+    };
+    const name = typedArray.constructor.name;
     return {
       rr_type: name,
-      args: [Object.values(value)],
+      args: [Array.from(typedArray)],
     };
   } else if (
     // SharedArrayBuffer disabled on most browsers due to spectre.
@@ -87,14 +172,14 @@ export function serializeArg(
         value.byteLength,
       ],
     };
-  } else if (value instanceof HTMLImageElement) {
-    const name = value.constructor.name;
-    const { src } = value;
+  } else if (isHTMLImageElement(value, win)) {
+    const name = 'HTMLImageElement';
+    const src = inlineImageSrc(value);
     return {
       rr_type: name,
       src,
     };
-  } else if (value instanceof HTMLCanvasElement) {
+  } else if (isHTMLCanvasElement(value, win)) {
     const name = 'HTMLImageElement';
     // TODO: move `toDataURL` to web worker if possible
     const src = value.toDataURL(); // heavy on large canvas
@@ -102,8 +187,8 @@ export function serializeArg(
       rr_type: name,
       src,
     };
-  } else if (value instanceof ImageData) {
-    const name = value.constructor.name;
+  } else if (isImageData(value, win)) {
+    const name = 'ImageData';
     return {
       rr_type: name,
       args: [serializeArg(value.data, win, ctx), value.width, value.height],
