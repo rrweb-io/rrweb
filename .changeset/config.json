@@ -26,6 +26,7 @@
       "@rrweb/rrweb-plugin-canvas-webrtc-replay",
       "@rrweb/rrweb-plugin-network-record",
       "@rrweb/rrweb-plugin-network-replay"
+      "@rrweb/rrweb-plugin-click-track-record"
     ]
   ],
   "linked": [],
