@@ -23,6 +23,11 @@
   export let events: eventWithTime[];
   export let showCaptions = false;
   export let hasCaptions = false;
+  let noteDismissalVersion = 0;
+
+  function dismissNotesOnEscape(event: KeyboardEvent) {
+    if (event.key === 'Escape') noteDismissalVersion += 1;
+  }
   export let showController: boolean;
   export let autoPlay: boolean;
   export let skipInactive: boolean;
@@ -265,6 +270,8 @@
   };
 
   const handleProgressKeydown = (event: KeyboardEvent) => { 
+    // Marker keys may reach host shortcuts without also seeking the timeline.
+    if (event.target !== event.currentTarget) return;
     if (speedState === 'skipping') {
       return;
     }
@@ -346,6 +353,8 @@
     stopTimer();
   });
 </script>
+
+<svelte:window on:keydown={dismissNotesOnEscape} />
 
 <style>
   .rr-controller {
@@ -465,6 +474,7 @@
         {#each customEvents as event}
           {#if event.note}
             <CustomEventMarker
+              dismissalVersion={noteDismissalVersion}
               name={event.name}
               text={event.note}
               background={event.background}

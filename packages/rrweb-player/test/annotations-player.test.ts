@@ -208,6 +208,33 @@ describe('player annotations', () => {
     expect(target.querySelector('[role="tooltip"]')).not.toBeNull();
   });
 
+  it('lets marker shortcuts bubble without seeking and dismisses focused notes', async () => {
+    const player = await mount();
+    player.goto(2000, false);
+    await tick();
+    const marker = target.querySelector('.rr-custom-event');
+    const keys: string[] = [];
+    const onKey = (event: KeyboardEvent) => keys.push(event.key);
+    window.addEventListener('keydown', onKey);
+    try {
+      for (const key of ['k', 'ArrowRight', 'Escape']) {
+        marker?.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+      }
+      await tick();
+      expect(keys).toEqual(['k', 'ArrowRight', 'Escape']);
+      expect(player.getReplayer().getCurrentTime()).toBe(2000);
+      expect(target.querySelector('[role="tooltip"]')).toBeNull();
+      marker?.dispatchEvent(new Event('focus'));
+      await tick();
+      expect(target.querySelector('[role="tooltip"]')).not.toBeNull();
+      marker?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      await tick();
+      expect(target.querySelector('[role="tooltip"]')).toBeNull();
+    } finally {
+      window.removeEventListener('keydown', onKey);
+    }
+  });
+
   it('shows notes without a CC toggle when no caption set events exist', async () => {
     await mount({
       events: [recording()[0], note(2000, 'Just a note'), clear(5000)],

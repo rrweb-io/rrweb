@@ -45,7 +45,10 @@ export type RRwebPlayerOptions = {
      * @defaultValue `true`
      */
     showController?: boolean;
-    /** Display timed captions from custom event annotation payloads. Defaults to false. */
+    /**
+     * Display timed captions from custom event annotation payloads.
+     * @defaultValue `false`
+     */
     showCaptions?: boolean;
     /**
      * Customize the custom events style with a key-value map

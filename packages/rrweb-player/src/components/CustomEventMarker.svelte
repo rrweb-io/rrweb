@@ -6,19 +6,16 @@
   export let background: string;
   export let position: string;
   export let disabled = false;
+  export let dismissalVersion = 0;
 
   const dispatch = createEventDispatcher<{ seek: void }>();
   let dismissed = false;
+  $: if (dismissalVersion) dismissed = true;
   $: alignment =
     parseFloat(position) < 20 ? 'left' :
     parseFloat(position) > 80 ? 'right' : 'center';
 
-  function dismissOnEscape(event: KeyboardEvent) {
-    if (event.key === 'Escape') dismissed = true;
-  }
 </script>
-
-<svelte:window on:keydown={dismissOnEscape} />
 
 <button
   type="button"
@@ -27,7 +24,6 @@
   aria-label={`${name}: ${text}`}
   {disabled}
   on:click|stopPropagation={() => dispatch('seek')}
-  on:keydown|stopPropagation={dismissOnEscape}
   on:mouseenter={() => dismissed = false}
   on:focus={() => dismissed = false}
 >
