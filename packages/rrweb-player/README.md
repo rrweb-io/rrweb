@@ -74,10 +74,40 @@ new rrwebPlayer({
 | autoPlay       | true         | whether to autoplay                                                                                                 |
 | speed          | 1            | The default speed to play at                                                                                        |
 | speedOption    | [1, 2, 4, 8] | speed options in UI                                                                                                 |
+| showCaptions   | false        | display timed captions from custom event annotation payloads; viewers can toggle them with CC                      |
 | showController | true         | whether to show the controller UI                                                                                   |
 | tags           | {}           | customize the custom events style with a key-value map                                                              |
 | inactiveColor  | #D4D4D4      | Customize the color of inactive periods indicator in the progress bar with a valid CSS color string.                |
 | ...            | -            | all the [rrweb Replayer options](https://github.com/rrweb-io/rrweb/blob/master/guide.md#options-1) will be bypassed |
+
+## Custom event notes and captions
+
+Use custom events tagged `annotation` to set or clear captions and add independent
+hover notes. A caption stays visible until the next set or clear event, using
+recorded timestamps instead of a duration estimate. Omitted caption `action`
+defaults to `set`.
+
+```js
+record.addCustomEvent('annotation', {
+  kind: 'caption',
+  text: 'Choose a name for your project.',
+});
+record.addCustomEvent('annotation', {
+  kind: 'note',
+  text: 'Saving also creates a default workspace.',
+});
+record.addCustomEvent('annotation', { kind: 'caption', action: 'clear' });
+
+new rrwebPlayer({
+  target: document.body,
+  props: { events, showCaptions: true, skipInactive: false },
+});
+```
+
+The CC button toggles captions independently of notes. Captions remain in sync
+across pauses, seeks, and playback speed changes. Caption actions do not create
+timeline markers. See the [custom event recipe](../../docs/recipes/custom-event.md#notes-and-captions-in-rrweb-player)
+for payload types, validation, and keyboard interactions.
 
 ## Methods on the rrwebPlayer component
 

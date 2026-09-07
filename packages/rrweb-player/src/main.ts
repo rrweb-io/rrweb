@@ -15,3 +15,5 @@ export class Player extends _Player {
 }
 
 export default Player;
+
+export type { CustomEventAnnotation } from './annotations';

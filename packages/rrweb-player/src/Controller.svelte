@@ -1,6 +1,6 @@
 <script lang="ts">
   import { EventType } from '@rrweb/types';
-  import type { playerMetaData } from '@rrweb/types';
+  import type { playerMetaData, eventWithTime } from '@rrweb/types';
   import type {
     Replayer,
     PlayerMachineState,
@@ -14,10 +14,15 @@
   } from 'svelte';
   import { formatTime, getInactivePeriods } from './utils';
   import Switch from './components/Switch.svelte';
+  import CustomEventMarker from './components/CustomEventMarker.svelte';
+  import { parseAnnotation } from './annotations';
 
   const dispatch = createEventDispatcher();
 
   export let replayer: Replayer;
+  export let events: eventWithTime[];
+  export let showCaptions = false;
+  export let hasCaptions = false;
   export let showController: boolean;
   export let autoPlay: boolean;
   export let skipInactive: boolean;
@@ -26,7 +31,7 @@
   export let tags: Record<string, string> = {};
   export let inactiveColor: string;
 
-  let currentTime = 0;
+  export let currentTime = 0;
   $: {
     dispatch('ui-update-current-time', { payload: currentTime });
   }
@@ -58,6 +63,8 @@
     name: string;
     background: string;
     position: string;
+    timeOffset: number;
+    note: string | undefined;
   };
 
   /**
@@ -69,6 +76,7 @@
    */
   function position(startTime: number, endTime: number, tagTime: number) {
     const sessionDuration = endTime - startTime;
+    if (sessionDuration <= 0) return '0.00';
     const eventDuration = endTime - tagTime;
     const eventPosition = 100 - (eventDuration / sessionDuration) * 100;
     return eventPosition.toFixed(2);
@@ -76,21 +84,25 @@
 
   let customEvents: CustomEvent[];
   $: customEvents = (() => {
-    const { context } = replayer.service.state;
-    const totalEvents = context.events.length;
-    const start = context.events[0].timestamp;
-    const end = context.events[totalEvents - 1].timestamp;
+    if (!events.length) return [];
+    const start = events[0].timestamp;
+    const end = events[events.length - 1].timestamp;
     const customEvents: CustomEvent[] = [];
 
     // loop through all the events and find out custom event.
-    context.events.forEach((event) => {
+    events.forEach((event) => {
       /**
        * we are only interested in custom event and calculate it's position
        * to place it in player's timeline.
        */
       if (event.type === EventType.Custom) {
+        const annotation = parseAnnotation(event.data.tag, event.data.payload);
+        // Caption actions change playback state; only notes get a marker.
+        if (event.data.tag === 'annotation' && annotation?.kind !== 'note') return;
         const customEvent = {
-          name: event.data.tag,
+          name: annotation?.kind === 'note' ? 'Note' : event.data.tag,
+          timeOffset: event.timestamp - start,
+          note: annotation?.kind === 'note' ? annotation.text : undefined,
           background: tags[event.data.tag] || 'rgb(73, 80, 246)',
           position: `${position(start, end, event.timestamp)}%`,
         };
@@ -109,11 +121,10 @@
   }[];
   $: inactivePeriods = (() => {
     try {
-      const { context } = replayer.service.state;
-      const totalEvents = context.events.length;
-      const start = context.events[0].timestamp;
-      const end = context.events[totalEvents - 1].timestamp;
-      const periods = getInactivePeriods(context.events, replayer.config.inactivePeriodThreshold);
+      if (!events.length) return [];
+      const start = events[0].timestamp;
+      const end = events[events.length - 1].timestamp;
+      const periods = getInactivePeriods(events, replayer.config.inactivePeriodThreshold);
       // calculate the indicator width.
       const getWidth = (
         startTime: number,
@@ -452,12 +463,23 @@
           />
         {/each}
         {#each customEvents as event}
-          <div
-            title={event.name}
-            style="width: 10px;height: 5px;position: absolute;top:
-            2px;transform: translate(-50%, -50%);background: {event.background};left:
-            {event.position};"
-          />
+          {#if event.note}
+            <CustomEventMarker
+              name={event.name}
+              text={event.note}
+              background={event.background}
+              position={event.position}
+              disabled={speedState === 'skipping'}
+              on:seek={() => goto(event.timeOffset)}
+            />
+          {:else}
+            <div
+              title={event.name}
+              style="width: 10px;height: 5px;position: absolute;top:
+              2px;transform: translate(-50%, -50%);background: {event.background};left:
+              {event.position};"
+            />
+          {/if}
         {/each}
 
         <div class="rr-progress__handler" style="left: {percentage}" />
@@ -519,6 +541,18 @@
           {s}x
         </button>
       {/each}
+      {#if hasCaptions}
+        <button
+          type="button"
+          class:active={showCaptions}
+          aria-label={showCaptions ? 'Hide captions' : 'Show captions'}
+          aria-pressed={showCaptions}
+          title={showCaptions ? 'Hide captions' : 'Show captions'}
+          on:click={() => (showCaptions = !showCaptions)}
+        >
+          CC
+        </button>
+      {/if}
       <Switch
         id="skip"
         bind:checked={skipInactive}

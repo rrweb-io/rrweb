@@ -55,3 +55,94 @@ new rrwebPlayer({
   },
 });
 ```
+
+## Notes and captions in rrweb-player
+
+Use the `annotation` tag for player annotations. Captions persist until replaced
+or explicitly cleared; notes belong to a single moment on the timeline. The
+recording API and event format stay the same.
+
+### Set or clear a caption
+
+```js
+// Before starting an action. Omitted action defaults to 'set'.
+record.addCustomEvent('annotation', {
+  kind: 'caption',
+  text: 'Choose a name for your project.',
+});
+
+// Replace the caption when the action finishes. Explicit 'set' is also valid.
+record.addCustomEvent('annotation', {
+  kind: 'caption',
+  action: 'set',
+  text: 'Your project is ready.',
+});
+
+// Remove the current caption.
+record.addCustomEvent('annotation', {
+  kind: 'caption',
+  action: 'clear',
+});
+```
+
+No duration estimate is needed while recording. The recorded timestamps of set
+and clear events determine how long each caption is displayed. The latest valid
+caption action at or before the replay time determines the caption, including
+when seeking backward. At identical timestamps, the last action in event order
+wins. A clear takes effect at its timestamp and never restores an older caption.
+Without a later set or clear, a caption remains visible through the end of the
+recording. Pauses, playback speed changes, and restarts follow replay time.
+
+### Add a hover note
+
+```js
+record.addCustomEvent('annotation', {
+  kind: 'note',
+  text: 'Saving also creates a default workspace.',
+});
+```
+
+Notes appear on hover or keyboard focus. Click the marker, or press Enter or
+Space, to seek to its timestamp. Escape dismisses the note. Notes do not replace
+or clear captions. Caption actions do not create timeline markers; emit a
+separate note if the same moment should also have a hover note. Other custom
+event tags keep their existing tag tooltips.
+
+### Configure the player
+
+```js
+new rrwebPlayer({
+  target: document.body,
+  props: {
+    events,
+    showCaptions: true,
+    skipInactive: false,
+    tags: { annotation: '#159461' },
+  },
+});
+```
+
+`showCaptions` defaults to `false`. When caption set events exist, a CC button
+lets viewers show or hide captions without hiding notes. Captions also work
+with `showController: false`, but the CC button is then hidden. For walkthroughs,
+use `skipInactive: false` so otherwise inactive time is not sped through.
+
+Set captions and notes require non-empty string `text`. Clear requires no text.
+Unknown kinds or actions and malformed annotation payloads are ignored. Payloads
+under other tags are never interpreted as player annotations. Both captions and
+notes display plain text with line breaks; HTML and Markdown are not interpreted.
+`player.addEvent()` can add annotations after creation. Packed recordings are
+also supported.
+
+TypeScript recording authors can import the payload union:
+
+```ts
+import type { CustomEventAnnotation } from 'rrweb-player';
+
+const annotation = {
+  kind: 'caption',
+  text: 'Your project is ready.\nInvite your team next.',
+} satisfies CustomEventAnnotation;
+
+record.addCustomEvent('annotation', annotation);
+```
