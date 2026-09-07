@@ -44,6 +44,12 @@ export type metaEvent = {
   };
 };
 
+/** Payloads for custom events tagged `annotation`. Text is plain text. */
+export type CustomEventAnnotation =
+  | { kind: 'caption'; action?: 'set'; text: string }
+  | { kind: 'caption'; action: 'clear' }
+  | { kind: 'note'; text: string };
+
 export type customEvent<T = unknown> = {
   type: EventType.Custom;
   data: {

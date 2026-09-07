@@ -1,11 +1,5 @@
 import { EventType } from '@rrweb/types';
-import type { eventWithTime } from '@rrweb/types';
-
-/** Payloads for custom events with the tag `annotation`. Text is plain text. */
-export type CustomEventAnnotation =
-  | { kind: 'caption'; action?: 'set'; text: string }
-  | { kind: 'caption'; action: 'clear' }
-  | { kind: 'note'; text: string };
+import type { CustomEventAnnotation, eventWithTime } from '@rrweb/types';
 
 type CaptionSet = { start: number; action: 'set'; text: string };
 type Caption = CaptionSet | { start: number; action: 'clear' };

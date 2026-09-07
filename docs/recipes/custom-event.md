@@ -137,7 +137,7 @@ also supported.
 TypeScript recording authors can import the payload union:
 
 ```ts
-import type { CustomEventAnnotation } from 'rrweb-player';
+import type { CustomEventAnnotation } from '@rrweb/types';
 
 const annotation = {
   kind: 'caption',
