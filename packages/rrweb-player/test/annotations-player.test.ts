@@ -218,7 +218,9 @@ describe('player annotations', () => {
     window.addEventListener('keydown', onKey);
     try {
       for (const key of ['k', 'ArrowRight', 'Escape']) {
-        marker?.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+        marker?.dispatchEvent(
+          new KeyboardEvent('keydown', { key, bubbles: true }),
+        );
       }
       await tick();
       expect(keys).toEqual(['k', 'ArrowRight', 'Escape']);
@@ -227,7 +229,9 @@ describe('player annotations', () => {
       marker?.dispatchEvent(new Event('focus'));
       await tick();
       expect(target.querySelector('[role="tooltip"]')).not.toBeNull();
-      marker?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      marker?.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+      );
       await tick();
       expect(target.querySelector('[role="tooltip"]')).toBeNull();
     } finally {
