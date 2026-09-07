@@ -74,7 +74,7 @@ new rrwebPlayer({
 | autoPlay       | true         | whether to autoplay                                                                                                 |
 | speed          | 1            | The default speed to play at                                                                                        |
 | speedOption    | [1, 2, 4, 8] | speed options in UI                                                                                                 |
-| showCaptions   | false        | display timed captions from custom event annotation payloads; viewers can toggle them with CC                      |
+| showCaptions   | false        | display timed captions from custom event annotation payloads; viewers can toggle them with CC                       |
 | showController | true         | whether to show the controller UI                                                                                   |
 | tags           | {}           | customize the custom events style with a key-value map                                                              |
 | inactiveColor  | #D4D4D4      | Customize the color of inactive periods indicator in the progress bar with a valid CSS color string.                |
