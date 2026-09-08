@@ -141,9 +141,8 @@ export default class MutationBuffer {
   private frozen = false;
   private locked = false;
 
-  private texts: textCursor[] = [];
-  private attributes: attributeCursor[] = [];
-  private attributeMap = new WeakMap<Node, attributeCursor>();
+  private texts = new Map<Node, textCursor>();
+  private attributes = new Map<Node, attributeCursor>();
   private removes: removedNodeMutation[] = [];
   private mapRemoves: Node[] = [];
 
@@ -449,7 +448,7 @@ export default class MutationBuffer {
     }
 
     const payload = {
-      texts: this.texts
+      texts: Array.from(this.texts.values())
         .map((text) => {
           const n = text.node;
           const parent = dom.parentNode(n);
@@ -466,7 +465,7 @@ export default class MutationBuffer {
         .filter((text) => !addedIds.has(text.id))
         // text mutation's id was not in the mirror map means the target node has been removed
         .filter((text) => this.mirror.has(text.id)),
-      attributes: this.attributes
+      attributes: Array.from(this.attributes.values())
         .map((attribute) => {
           const { attributes } = attribute;
           if (typeof attributes.style === 'string') {
@@ -508,9 +507,8 @@ export default class MutationBuffer {
     }
 
     // reset
-    this.texts = [];
-    this.attributes = [];
-    this.attributeMap = new WeakMap<Node, attributeCursor>();
+    this.texts = new Map<Node, textCursor>();
+    this.attributes = new Map<Node, attributeCursor>();
     this.removes = [];
     this.addedSet = new Set<Node>();
     this.movedSet = new Set<Node>();
@@ -522,7 +520,7 @@ export default class MutationBuffer {
   };
 
   private genTextAreaValueMutation = (textarea: HTMLTextAreaElement) => {
-    let item = this.attributeMap.get(textarea);
+    let item = this.attributes.get(textarea);
     if (!item) {
       item = {
         node: textarea,
@@ -530,8 +528,7 @@ export default class MutationBuffer {
         styleDiff: {},
         _unchangedStyles: {},
       };
-      this.attributes.push(item);
-      this.attributeMap.set(textarea, item);
+      this.attributes.set(textarea, item);
     }
     const value = Array.from(
       dom.childNodes(textarea),
@@ -559,20 +556,26 @@ export default class MutationBuffer {
           !isBlocked(m.target, this.blockClass, this.blockSelector, false) &&
           value !== m.oldValue
         ) {
-          this.texts.push({
-            value:
-              needMaskingText(
-                m.target,
-                this.maskTextClass,
-                this.maskTextSelector,
-                true, // checkAncestors
-              ) && value
-                ? this.maskTextFn
-                  ? this.maskTextFn(value, closestElementOfNode(m.target))
-                  : value.replace(/[\S]/g, '*')
-                : value,
-            node: m.target,
-          });
+          const maskedValue =
+            needMaskingText(
+              m.target,
+              this.maskTextClass,
+              this.maskTextSelector,
+              true, // checkAncestors
+            ) && value
+              ? this.maskTextFn
+                ? this.maskTextFn(value, closestElementOfNode(m.target))
+                : value.replace(/[\S]/g, '*')
+              : value;
+          const item = this.texts.get(m.target);
+          if (item) {
+            item.value = maskedValue;
+          } else {
+            this.texts.set(m.target, {
+              value: maskedValue,
+              node: m.target,
+            });
+          }
         }
         break;
       }
@@ -601,7 +604,7 @@ export default class MutationBuffer {
           return;
         }
 
-        let item = this.attributeMap.get(m.target);
+        let item = this.attributes.get(m.target);
         if (
           tagNameLower === 'iframe' &&
           attributeName === 'src' &&
@@ -622,8 +625,7 @@ export default class MutationBuffer {
             styleDiff: {},
             _unchangedStyles: {},
           };
-          this.attributes.push(item);
-          this.attributeMap.set(m.target, item);
+          this.attributes.set(m.target, item);
         }
 
         // Keep this property on inputs that used to be password inputs
