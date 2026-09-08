@@ -1210,7 +1210,7 @@ describe('record integration tests', function (this: ISuite) {
     await assertSnapshot(snapshots);
   });
 
-  // https://github.com/webcomponents/polyfills/tree/master/packages/shadydom
+  // https://github.com/webcomponents/polyfills/tree/HEAD/packages/shadydom
   it('should record shadow doms polyfilled by shadydom', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
@@ -1244,7 +1244,7 @@ describe('record integration tests', function (this: ISuite) {
     await assertSnapshot(snapshots);
   });
 
-  // https://github.com/salesforce/lwc/tree/master/packages/%40lwc/synthetic-shadow
+  // https://github.com/salesforce/lwc/tree/HEAD/packages/%40lwc/synthetic-shadow
   it('should record shadow doms polyfilled by synthetic-shadow', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
