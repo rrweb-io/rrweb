@@ -261,9 +261,11 @@
 >
   <div class="rr-player__viewport" {style}>
     <div class="rr-player__frame" bind:this={frame} {style} />
-    {#if captionText !== undefined}
-      <div class="rr-player__caption" role="status" aria-live="polite">{captionText}</div>
-    {/if}
+    <div role="status" aria-live="polite" aria-atomic="true">
+      {#if captionText !== undefined}
+        <div class="rr-player__caption">{captionText}</div>
+      {/if}
+    </div>
   </div>
   {#if replayer}
     <Controller

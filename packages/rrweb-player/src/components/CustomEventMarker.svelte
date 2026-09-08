@@ -17,47 +17,60 @@
 
 </script>
 
-<button
-  type="button"
-  class="rr-custom-event"
-  style:left={position}
-  aria-label={`${name}: ${text}`}
-  {disabled}
-  on:click|stopPropagation={() => dispatch('seek')}
-  on:mouseenter={() => dismissed = false}
-  on:focus={() => dismissed = false}
->
-  <span class="rr-custom-event__tick" style:background />
+<div class="rr-custom-event-container" style:left={position}>
+  <button
+    type="button"
+    class="rr-custom-event"
+    aria-label={`${name}: ${text}`}
+    aria-haspopup="dialog"
+    {disabled}
+    on:click|stopPropagation={() => dispatch('seek')}
+    on:mouseenter={() => dismissed = false}
+    on:focus={() => dismissed = false}
+  >
+    <span class="rr-custom-event__tick" style:background />
+  </button>
   {#if !dismissed}
-    <span
+    <!-- The nonmodal note needs focus for native scrolling; its clicks must not seek. -->
+    <!-- svelte-ignore a11y-no-noninteractive-tabindex a11y-no-noninteractive-element-interactions -->
+    <div
       class="rr-custom-event__note"
       class:left={alignment === 'left'}
       class:right={alignment === 'right'}
-      role="tooltip"
+      role="dialog"
+      aria-label={name}
+      tabindex="0"
+      on:click|stopPropagation
+      on:keydown
     >
       <strong>{name}</strong>
       <span>{text}</span>
-    </span>
+    </div>
   {/if}
-</button>
+</div>
 
 <style>
-  .rr-custom-event {
+  .rr-custom-event-container {
     position: absolute;
     top: 2px;
     transform: translate(-50%, -50%);
     width: 20px;
     height: 24px;
+    z-index: 1;
+  }
+
+  .rr-custom-event {
+    width: 100%;
+    height: 100%;
     padding: 0;
     border: 0;
     background: transparent;
     cursor: pointer;
-    z-index: 1;
     font: inherit;
   }
 
-  .rr-custom-event:hover,
-  .rr-custom-event:focus-visible {
+  .rr-custom-event-container:hover,
+  .rr-custom-event-container:focus-within {
     z-index: 2;
   }
 
@@ -120,8 +133,8 @@
     transform: none;
   }
 
-  .rr-custom-event:hover .rr-custom-event__note,
-  .rr-custom-event:focus-visible .rr-custom-event__note {
+  .rr-custom-event-container:hover .rr-custom-event__note,
+  .rr-custom-event-container:focus-within .rr-custom-event__note {
     display: block;
   }
 </style>

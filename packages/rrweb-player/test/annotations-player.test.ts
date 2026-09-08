@@ -78,6 +78,36 @@ afterEach(() => {
 });
 
 describe('player annotations', () => {
+  it('keeps the caption announcement region mounted across set and clear', async () => {
+    const player = await mount();
+    const region = target.querySelector('[role="status"]');
+    expect(region).not.toBeNull();
+    expect(region?.textContent?.trim()).toBe('');
+    player.goto(2000, false);
+    await tick();
+    expect(target.querySelector('[role="status"]')).toBe(region);
+    expect(region?.textContent).toContain('Click Save');
+    player.goto(5000, false);
+    await tick();
+    expect(target.querySelector('[role="status"]')).toBe(region);
+    expect(region?.textContent?.trim()).toBe('');
+  });
+
+  it('keeps scrollable notes outside the seek button and prevents note clicks from seeking', async () => {
+    const player = await mount();
+    player.goto(3000, false);
+    await tick();
+    const tooltip = target.querySelector('[role="dialog"]');
+    expect(tooltip?.closest('button')).toBeNull();
+    expect(tooltip?.getAttribute('tabindex')).toBe('0');
+    tooltip?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    tooltip?.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }),
+    );
+    await tick();
+    expect(player.getReplayer().getCurrentTime()).toBe(3000);
+  });
+
   it('shows escaped captions on seek and clears them at their end', async () => {
     const player = await mount();
     expect(target.querySelector('.rr-player__caption')).toBeNull();
@@ -107,7 +137,7 @@ describe('player annotations', () => {
     player.goto(2500, false);
     await tick();
     expect(target.querySelector('.rr-player__caption')).toBeNull();
-    expect(target.querySelector('[role="tooltip"]')?.textContent).toContain(
+    expect(target.querySelector('[role="dialog"]')?.textContent).toContain(
       'Click Save',
     );
     expect(target.querySelector('[title="ordinary"]')).not.toBeNull();
@@ -222,15 +252,15 @@ describe('player annotations', () => {
 
   it('dismisses hover notes with Escape even when the marker is not focused', async () => {
     await mount();
-    expect(target.querySelector('[role="tooltip"]')).not.toBeNull();
+    expect(target.querySelector('[role="dialog"]')).not.toBeNull();
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     await tick();
-    expect(target.querySelector('[role="tooltip"]')).toBeNull();
+    expect(target.querySelector('[role="dialog"]')).toBeNull();
     target
       .querySelector('.rr-custom-event')
       ?.dispatchEvent(new Event('mouseenter'));
     await tick();
-    expect(target.querySelector('[role="tooltip"]')).not.toBeNull();
+    expect(target.querySelector('[role="dialog"]')).not.toBeNull();
   });
 
   it('lets marker shortcuts bubble without seeking and dismisses focused notes', async () => {
@@ -250,15 +280,15 @@ describe('player annotations', () => {
       await tick();
       expect(keys).toEqual(['k', 'ArrowRight', 'Escape']);
       expect(player.getReplayer().getCurrentTime()).toBe(2000);
-      expect(target.querySelector('[role="tooltip"]')).toBeNull();
+      expect(target.querySelector('[role="dialog"]')).toBeNull();
       marker?.dispatchEvent(new Event('focus'));
       await tick();
-      expect(target.querySelector('[role="tooltip"]')).not.toBeNull();
+      expect(target.querySelector('[role="dialog"]')).not.toBeNull();
       marker?.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
       );
       await tick();
-      expect(target.querySelector('[role="tooltip"]')).toBeNull();
+      expect(target.querySelector('[role="dialog"]')).toBeNull();
     } finally {
       window.removeEventListener('keydown', onKey);
     }
