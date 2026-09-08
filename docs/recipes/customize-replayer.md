@@ -71,4 +71,4 @@ rrwebPlayer.addEventListener('ui-update-progress', (event) => {
 
 ## Develop a new replayer UI with `Replayer`.
 
-Please refer [rrweb-player](https://github.com/rrweb-io/rrweb/tree/master/packages/rrweb-player/).
+Please refer [rrweb-player](../../packages/rrweb-player/).
