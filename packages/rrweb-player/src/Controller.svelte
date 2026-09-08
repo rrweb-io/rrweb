@@ -29,15 +29,20 @@
   // Index changes and seeks reconcile state; playback updates come from custom-event.
   $: restoreCaption(timeline);
 
+  let captionUpdatePending = false;
+
   function restoreCaption(index: ReturnType<typeof updateTimeline>) {
+    captionUpdatePending = false;
     activeCaptionText = getActiveCaption(index.captions, replayer.getCurrentTime())?.text;
   }
 
   function handleCustomEvent(event: unknown) {
     const annotation = parseAnnotationEvent(event);
-    if (annotation?.kind === 'caption') {
-      restoreCaption(timeline);
-    }
+    if (annotation?.kind !== 'caption' || captionUpdatePending) return;
+    captionUpdatePending = true;
+    void Promise.resolve().then(() => {
+      if (captionUpdatePending) restoreCaption(timeline);
+    });
   }
 
   function restoreCaptionOnSeek() {
@@ -329,6 +334,7 @@
   });
 
   onDestroy(() => {
+    captionUpdatePending = false;
     replayer.off('custom-event', handleCustomEvent);
     replayer.off('start', restoreCaptionOnSeek);
     replayer.pause();

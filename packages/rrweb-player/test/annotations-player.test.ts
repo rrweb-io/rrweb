@@ -192,6 +192,26 @@ describe('player annotations', () => {
     },
   );
 
+  it('coalesces caption lookups when seeking across 100,000 captions', async () => {
+    const events = [
+      recording()[0],
+      ...Array.from({ length: 100000 }, (_, i) => annotation(i + 1, String(i))),
+      { ...recording().at(-1)!, timestamp: start + 100001 },
+    ];
+    const player = await mount({ events });
+    const lookups = vi.spyOn(annotations, 'getActiveCaption');
+    try {
+      player.goto(100000, false);
+      await tick();
+      expect(target.querySelector('.rr-player__caption')?.textContent).toBe(
+        '99999',
+      );
+      expect(lookups).toHaveBeenCalledTimes(1);
+    } finally {
+      lookups.mockRestore();
+    }
+  });
+
   it('restores captions across a later snapshot boundary and clears before the first caption', async () => {
     const events = recording();
     events.splice(3, 0, { ...events[0], timestamp: start + 3000 });
