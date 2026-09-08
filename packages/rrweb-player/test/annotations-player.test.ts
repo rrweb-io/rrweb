@@ -5,6 +5,7 @@ import { tick } from 'svelte';
 import { EventType, IncrementalSource } from '@rrweb/types';
 import type { eventWithTime } from '@rrweb/types';
 import Player from '../src/Player.svelte';
+import * as annotations from '../src/annotations';
 
 const start = 1700000000000;
 const annotation = (offset: number, text: string): eventWithTime => ({
@@ -193,13 +194,31 @@ describe('player annotations', () => {
       player.goto(2100, false);
       await tick();
       const updates = vi.spyOn(player.$$, 'update');
+      const lookups = vi.spyOn(annotations, 'getActiveCaption');
       player.play();
+      lookups.mockClear();
       await vi.advanceTimersByTimeAsync(1000);
       await tick();
       expect(updates).not.toHaveBeenCalled();
+      expect(lookups).not.toHaveBeenCalled();
       updates.mockRestore();
+      lookups.mockRestore();
     },
   );
+
+  it('restores captions across a later snapshot boundary and clears before the first caption', async () => {
+    const events = recording();
+    events.splice(3, 0, { ...events[0], timestamp: start + 3000 });
+    const player = await mount({ events });
+    player.getReplayer().pause(4000);
+    await tick();
+    expect(target.querySelector('.rr-player__caption')?.textContent).toContain(
+      'Click Save',
+    );
+    player.getReplayer().pause(1000);
+    await tick();
+    expect(target.querySelector('.rr-player__caption')).toBeNull();
+  });
 
   it('follows playback speed and freezes captions while paused', async () => {
     vi.useFakeTimers({

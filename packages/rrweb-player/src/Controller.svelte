@@ -26,9 +26,29 @@
   const updateTimeline = createTimelineIndex();
   $: timeline = updateTimeline(events, replayer.config.inactivePeriodThreshold);
   export let captionText: string | undefined = undefined;
-  $: captionText = showCaptions
-    ? getActiveCaption(timeline.captions, currentTime)?.text
-    : undefined;
+  let activeCaptionText: string | undefined;
+  $: captionText = showCaptions ? activeCaptionText : undefined;
+  // Index changes and seeks reconcile state; playback updates come from custom-event.
+  $: restoreCaption(timeline);
+
+  function restoreCaption(index: ReturnType<typeof updateTimeline>) {
+    activeCaptionText = getActiveCaption(index.captions, replayer.getCurrentTime())?.text;
+  }
+
+  function handleCustomEvent(event: unknown) {
+    if (!event || typeof event !== 'object' || !('data' in event)) return;
+    const data = event.data;
+    if (!data || typeof data !== 'object' || !('tag' in data) ||
+        typeof data.tag !== 'string' || !('payload' in data)) return;
+    const annotation = parseAnnotation(data.tag, data.payload);
+    if (annotation?.kind === 'caption') {
+      activeCaptionText = annotation.action === 'clear' ? undefined : annotation.text;
+    }
+  }
+
+  function restoreCaptionOnSeek() {
+    restoreCaption(timeline);
+  }
   let noteDismissalVersion = 0;
 
   function dismissNotesOnEscape(event: KeyboardEvent) {
@@ -307,6 +327,8 @@
   };
 
   onMount(() => {
+    replayer.on('custom-event', handleCustomEvent);
+    replayer.on('start', restoreCaptionOnSeek);
     playerState = replayer.service.state.value;
     speedState = replayer.speedService.state.value;
     replayer.on(
@@ -351,6 +373,8 @@
   });
 
   onDestroy(() => {
+    replayer.off('custom-event', handleCustomEvent);
+    replayer.off('start', restoreCaptionOnSeek);
     replayer.pause();
     stopTimer();
   });
