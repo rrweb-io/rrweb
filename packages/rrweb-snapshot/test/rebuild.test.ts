@@ -411,6 +411,38 @@ describe('rebuild', function () {
     });
   });
 
+  describe('iframe srcdoc', function () {
+    it('omits the srcdoc attribute so the browser does not load its own document into the iframe', function () {
+      /**
+       * Setting `srcdoc` on a live iframe makes the browser asynchronously
+       * parse and load that markup into the iframe's contentDocument, racing
+       * against rrweb's own reconstruction of the iframe's document (built
+       * separately from recorded child nodes/mutations). That race can
+       * desync the mirror from the live DOM, later causing mutations to
+       * target nodes that no longer exist.
+       * @see https://github.com/rrweb-io/rrweb/issues/1736
+       */
+      const node = buildNodeWithSN(
+        {
+          id: 1,
+          tagName: 'iframe',
+          type: NodeType.Element,
+          attributes: {
+            srcdoc: '<html><body>hi</body></html>',
+          },
+          childNodes: [],
+        },
+        {
+          doc: document,
+          mirror,
+          hackCss: false,
+          cache,
+        },
+      ) as HTMLIFrameElement;
+      expect(node.hasAttribute('srcdoc')).toBe(false);
+    });
+  });
+
   describe('rr_width/rr_height', function () {
     it('rebuild blocked element with correct dimensions', function () {
       const node = buildNodeWithSN(
