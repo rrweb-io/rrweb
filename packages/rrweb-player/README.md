@@ -82,32 +82,20 @@ new rrwebPlayer({
 
 ## Custom event notes and captions
 
-Use custom events tagged `annotation` to set or clear captions and add independent
-hover notes. A caption stays visible until the next set or clear event, using
-recorded timestamps instead of a duration estimate. Omitted caption `action`
-defaults to `set`.
+Use custom events tagged `annotation` for captions and timeline notes. Set
+`showCaptions: true` to display captions by default.
 
 ```js
-record.addCustomEvent('annotation', {
-  kind: 'caption',
-  text: 'Choose a name for your project.',
-});
+record.addCustomEvent('annotation', { kind: 'caption', text: 'Click Save.' });
 record.addCustomEvent('annotation', {
   kind: 'note',
-  text: 'Saving also creates a default workspace.',
+  text: 'Creates a workspace.',
 });
 record.addCustomEvent('annotation', { kind: 'caption', action: 'clear' });
-
-new rrwebPlayer({
-  target: document.body,
-  props: { events, showCaptions: true, skipInactive: false },
-});
 ```
 
-The CC button toggles captions independently of notes. Captions remain in sync
-across pauses, seeks, and playback speed changes. Caption actions do not create
-timeline markers. See the [custom event recipe](../../docs/recipes/custom-event.md#notes-and-captions-in-rrweb-player)
-for payload types, validation, and keyboard interactions.
+See the [custom event recipe](../../docs/recipes/custom-event.md#notes-and-captions-in-rrweb-player)
+for payload types, player options, and keyboard controls.
 
 ## Methods on the rrwebPlayer component
 

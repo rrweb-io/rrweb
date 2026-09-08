@@ -121,32 +121,15 @@
     position: string;
     width: string;
   }[];
-  $: inactivePeriods = (() => {
-    try {
-      const { start, end, periods } = timeline;
-      // calculate the indicator width.
-      const getWidth = (
-        startTime: number,
-        endTime: number,
-        tagStart: number,
-        tagEnd: number,
-      ) => {
-        const sessionDuration = endTime - startTime;
-        const eventDuration = tagEnd - tagStart;
-        const width = (eventDuration / sessionDuration) * 100;
-        return width.toFixed(2);
-      };
-      return periods.map((period) => ({
-        name: 'inactive period',
-        background: inactiveColor,
-        position: `${position(start, end, period[0])}%`,
-        width: `${getWidth(start, end, period[0], period[1])}%`,
-      }));
-    } catch (e) {
-      // For safety concern, if there is any error, the main function won't be affected.
-      return [];
-    }
-  })();
+  $: inactivePeriods = timeline.periods.map(([start, end]) => ({
+    name: 'inactive period',
+    background: inactiveColor,
+    position: `${position(timeline.start, timeline.end, start)}%`,
+    width:
+      timeline.end > timeline.start
+        ? `${(((end - start) / (timeline.end - timeline.start)) * 100).toFixed(2)}%`
+        : '0.00%',
+  }));
 
   const loopTimer = () => {
     stopTimer();

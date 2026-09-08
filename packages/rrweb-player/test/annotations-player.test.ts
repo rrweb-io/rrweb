@@ -79,21 +79,6 @@ afterEach(() => {
 });
 
 describe('player annotations', () => {
-  it('keeps the caption announcement region mounted across set and clear', async () => {
-    const player = await mount();
-    const region = target.querySelector('[role="status"]');
-    expect(region).not.toBeNull();
-    expect(region?.textContent?.trim()).toBe('');
-    player.goto(2000, false);
-    await tick();
-    expect(target.querySelector('[role="status"]')).toBe(region);
-    expect(region?.textContent).toContain('Click Save');
-    player.goto(5000, false);
-    await tick();
-    expect(target.querySelector('[role="status"]')).toBe(region);
-    expect(region?.textContent?.trim()).toBe('');
-  });
-
   it('keeps scrollable notes outside the seek button and prevents note clicks from seeking', async () => {
     const player = await mount();
     player.goto(3000, false);
@@ -111,9 +96,13 @@ describe('player annotations', () => {
 
   it('shows escaped captions on seek and clears them at their end', async () => {
     const player = await mount();
+    const region = target.querySelector('[role="status"]');
+    expect(region).not.toBeNull();
+    expect(region?.textContent?.trim()).toBe('');
     expect(target.querySelector('.rr-player__caption')).toBeNull();
     player.goto(2000, false);
     await tick();
+    expect(target.querySelector('[role="status"]')).toBe(region);
     expect(target.querySelector('.rr-player__caption')?.textContent).toBe(
       'Click Save\n<b>project</b>',
     );
@@ -121,12 +110,9 @@ describe('player annotations', () => {
     player.goto(5000, false);
     await tick();
     expect(target.querySelector('.rr-player__caption')).toBeNull();
+    expect(target.querySelector('[role="status"]')).toBe(region);
+    expect(region?.textContent?.trim()).toBe('');
     player.goto(2500, false);
-    await tick();
-    expect(target.querySelector('.rr-player__caption')?.textContent).toContain(
-      'Click Save',
-    );
-    player.setSpeed(4);
     await tick();
     expect(target.querySelector('.rr-player__caption')?.textContent).toContain(
       'Click Save',

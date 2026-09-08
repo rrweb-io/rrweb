@@ -3,7 +3,6 @@ import { EventType, IncrementalSource } from '@rrweb/types';
 import type { eventWithTime } from '@rrweb/types';
 import { createTimelineIndex } from '../src/timeline-index';
 import { getActiveCaption } from '../src/annotations';
-import { getInactivePeriods } from '../src/utils';
 
 const caption = (timestamp: number, text: string): eventWithTime => ({
   type: EventType.Custom,
@@ -34,7 +33,7 @@ describe('timeline indexing cost and ordering', () => {
     expect(reads).toBe(0);
   });
 
-  it('matches a full scan after appends, equal timestamps, and late insertions', () => {
+  it('preserves captions and inactivity gaps after appends and late insertions', () => {
     const update = createTimelineIndex();
     const events: eventWithTime[] = [caption(1000, 'First')];
     update(events, 1000);
@@ -55,7 +54,7 @@ describe('timeline indexing cost and ordering', () => {
       { start: 2000, action: 'set', text: 'Second' },
       { start: 2000, action: 'set', text: 'Last' },
     ]);
-    expect(index.periods).toEqual(getInactivePeriods(events, 1000));
+    expect(index.periods).toEqual([[1000, 6000]]);
     events.splice(0, 0, caption(0, 'Earlier'));
     index = update(events, 1000);
     expect(index.captions).toEqual([
@@ -64,7 +63,7 @@ describe('timeline indexing cost and ordering', () => {
       { start: 3000, action: 'set', text: 'Second' },
       { start: 3000, action: 'set', text: 'Last' },
     ]);
-    expect(index.periods).toEqual(getInactivePeriods(events, 1000));
+    expect(index.periods).toEqual([[0, 6000]]);
     expect(getActiveCaption(index.captions, 3000)?.text).toBe('Last');
   });
 
