@@ -11,4 +11,7 @@ export {
   Mirror,
   isNodeMetaEqual,
   extractFileExtension,
+  cssRuleBoundaries,
+  nextCssRuleBoundary,
+  snapCssSplitsToRuleBoundaries,
 } from './utils';
