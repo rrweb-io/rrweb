@@ -16,7 +16,7 @@ import {
   isBlocked,
   legacy_isTouchEvent,
   StyleSheetMirror,
-  nowTimestamp
+  nowTimestamp,
 } from '../utils';
 import { patch } from '@rrweb/utils';
 import type { observerParam, MutationBufferParam } from '../types';
@@ -56,8 +56,6 @@ import dom, { mutationObserverCtor, getUntaintedProxy } from '@rrweb/utils';
 
 export const mutationBuffers: MutationBuffer[] = [];
 
-const Proxy = getUntaintedProxy();
- 
 // Event.path is non-standard and used in some older browsers
 type NonStandardEvent = Omit<Event, 'composedPath'> & {
   path: EventTarget[];
@@ -601,6 +599,8 @@ function initStyleSheetObserver(
     };
   }
 
+  const Proxy = getUntaintedProxy();
+
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const insertRule = win.CSSStyleSheet.prototype.insertRule;
   win.CSSStyleSheet.prototype.insertRule = new Proxy(insertRule, {
@@ -936,6 +936,8 @@ function initStyleDeclarationObserver(
   }: observerParam,
   { win }: { win: IWindow },
 ): listenerHandler {
+  const Proxy = getUntaintedProxy();
+
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const setProperty = win.CSSStyleDeclaration.prototype.setProperty;
   win.CSSStyleDeclaration.prototype.setProperty = new Proxy(setProperty, {

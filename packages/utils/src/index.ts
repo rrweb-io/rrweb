@@ -91,23 +91,28 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
     return defaultObj.prototype as BasePrototypeCache[T];
   }
 
+  const untaintedPrototype = getUntaintedIframeValue(key)?.prototype;
+  if (!untaintedPrototype) return defaultPrototype;
+
+  return (untaintedBasePrototype[key] =
+    untaintedPrototype as BasePrototypeCache[T]);
+}
+
+// Share the clean realm lookup for prototypes and constructors without a prototype.
+function getUntaintedIframeValue<K extends keyof BasePrototypeCache | 'Proxy'>(
+  key: K,
+): (typeof globalThis)[K] | undefined {
+  let iframeEl: HTMLIFrameElement | undefined;
   try {
-    const iframeEl = document.createElement('iframe');
-    document.body.appendChild(iframeEl);
-    const win = iframeEl.contentWindow;
-    if (!win) return defaultObj.prototype as BasePrototypeCache[T];
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-    const untaintedObject = (win as any)[key]
-      .prototype as BasePrototypeCache[T];
-    // cleanup
-    document.body.removeChild(iframeEl);
-
-    if (!untaintedObject) return defaultPrototype;
-
-    return (untaintedBasePrototype[key] = untaintedObject);
+    iframeEl = document.createElement('iframe');
+    iframeEl.style.display = 'none';
+    (document.body || document.documentElement).appendChild(iframeEl);
+    const win = iframeEl.contentWindow as (Window & typeof globalThis) | null;
+    return win?.[key];
   } catch {
-    return defaultPrototype;
+    return undefined;
+  } finally {
+    iframeEl?.parentNode?.removeChild(iframeEl);
   }
 }
 
@@ -232,27 +237,24 @@ export function mutationObserverCtor(): (typeof MutationObserver)['prototype']['
   return getUntaintedPrototype('MutationObserver').constructor;
 }
 
-// Some libraries (i.e. jsPDF v1.1.135) override window.Proxy with their own implementation
-// Try to pull a clean implementation from a newly created iframe
+let untaintedProxy: ProxyConstructor | undefined;
+
+// Proxy has no prototype, so cache the constructor itself.
 export function getUntaintedProxy(): ProxyConstructor {
-  let Proxy = window.Proxy;
-  try {
-    if (
-      typeof window.Proxy !== 'function' ||
-      !window.Proxy?.toString().includes('[native code]')
-    ) {
-      const cleanFrame = document.createElement('iframe');
-      cleanFrame.style.display = 'none';
-      document.documentElement.appendChild(cleanFrame);
-      Proxy =
-        (cleanFrame.contentWindow as Window & { Proxy: typeof Proxy })?.Proxy ||
-        window.Proxy;
-      document.documentElement.removeChild(cleanFrame);
-    }
-  } catch (err) {
-    console.debug('Unable to get untainted Proxy from iframe', err);
+  if (untaintedProxy) return untaintedProxy;
+
+  const defaultProxy = globalThis.Proxy;
+  if (
+    typeof defaultProxy === 'function' &&
+    defaultProxy.toString().includes('[native code]')
+  ) {
+    return (untaintedProxy = defaultProxy);
   }
-  return Proxy;
+
+  const cleanProxy = getUntaintedIframeValue('Proxy');
+  if (!cleanProxy) return defaultProxy;
+
+  return (untaintedProxy = cleanProxy);
 }
 
 // copy from https://github.com/getsentry/sentry-javascript/blob/b2109071975af8bf0316d3b5b38f519bdaf5dc15/packages/utils/src/object.ts
