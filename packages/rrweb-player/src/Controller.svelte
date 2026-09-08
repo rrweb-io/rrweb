@@ -36,7 +36,7 @@
   function handleCustomEvent(event: unknown) {
     const annotation = parseAnnotationEvent(event);
     if (annotation?.kind === 'caption') {
-      activeCaptionText = annotation.action === 'clear' ? undefined : annotation.text;
+      restoreCaption(timeline);
     }
   }
 

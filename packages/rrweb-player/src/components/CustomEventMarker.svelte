@@ -10,7 +10,14 @@
 
   const dispatch = createEventDispatcher<{ seek: void }>();
   let dismissed = false;
-  $: if (dismissalVersion) dismissed = true;
+  let marker: HTMLButtonElement;
+  let panel: HTMLDivElement;
+  $: if (dismissalVersion) dismiss();
+
+  function dismiss() {
+    if (panel?.contains(document.activeElement)) marker.focus();
+    dismissed = true;
+  }
   $: alignment =
     parseFloat(position) < 20 ? 'left' :
     parseFloat(position) > 80 ? 'right' : 'center';
@@ -19,6 +26,7 @@
 
 <div class="rr-custom-event-container" style:left={position}>
   <button
+    bind:this={marker}
     type="button"
     class="rr-custom-event"
     aria-label={`${name}: ${text}`}
@@ -34,6 +42,7 @@
     <!-- The nonmodal note needs focus for native scrolling; its clicks must not seek. -->
     <!-- svelte-ignore a11y-no-noninteractive-tabindex a11y-no-noninteractive-element-interactions -->
     <div
+      bind:this={panel}
       class="rr-custom-event__note"
       class:left={alignment === 'left'}
       class:right={alignment === 'right'}

@@ -237,6 +237,53 @@ describe('player annotations', () => {
     expect(target.querySelector('.rr-player__caption')).toBeNull();
   });
 
+  it('agrees with seeking after appending a caption at a queued timestamp', async () => {
+    vi.useFakeTimers({
+      toFake: [
+        'setTimeout',
+        'clearTimeout',
+        'requestAnimationFrame',
+        'cancelAnimationFrame',
+        'Date',
+        'performance',
+      ],
+    });
+    const events = recording();
+    events.splice(
+      2,
+      0,
+      ...Array.from({ length: 10 }, (_, i) => annotation(2000, String(i))),
+    );
+    const player = await mount({ events });
+    player.play();
+    await vi.advanceTimersByTimeAsync(1000);
+    player.addEvent(annotation(2000, 'Appended'));
+    await vi.advanceTimersByTimeAsync(1500);
+    await tick();
+    expect(target.querySelector('.rr-player__caption')?.textContent).toBe(
+      'Appended',
+    );
+    player.goto(2500, false);
+    await tick();
+    expect(target.querySelector('.rr-player__caption')?.textContent).toBe(
+      'Appended',
+    );
+  });
+
+  it('returns focus to the marker when Escape dismisses its focused panel', async () => {
+    await mount();
+    const marker = target.querySelector<HTMLButtonElement>('.rr-custom-event');
+    const panel = target.querySelector<HTMLDivElement>('[role="dialog"]');
+    panel?.focus();
+    expect(document.activeElement).toBe(panel);
+    panel?.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    );
+    await tick();
+    expect(document.activeElement).toBe(marker);
+    expect(target.querySelector('[role="dialog"]')).toBeNull();
+  });
+
   it('reads annotations from packed events', async () => {
     const player = await mount({
       events: recording().map((event) => pack(event)),
