@@ -1,5 +1,13 @@
 # rrweb-player
 
+## 2.1.4
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @rrweb/replay@2.1.4
+  - @rrweb/packer@2.1.4
+
 ## 2.1.3
 
 ### Patch Changes
