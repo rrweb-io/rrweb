@@ -6,7 +6,11 @@ import { mediaSelectorPlugin, pseudoClassPlugin } from '../src/css';
 import postcss, { type AcceptedPlugin } from 'postcss';
 import { JSDOM } from 'jsdom';
 import { splitCssText, stringifyStylesheet } from './../src/utils';
-import { applyCssSplits } from './../src/rebuild';
+import {
+  adaptCssForReplay,
+  applyCssSplits,
+  createCache,
+} from './../src/rebuild';
 import * as fs from 'fs';
 import * as path from 'path';
 import type {
@@ -432,5 +436,60 @@ describe('applyCssSplits css rejoiner', function () {
     expect((sn1.childNodes[0] as textNode).textContent).toEqual(
       halfCssText + otherHalfCssText,
     );
+  });
+
+  it('rejoins a split that lands inside a quoted attribute selector and adapts the whole text (#1692)', () => {
+    // the `.\:hover` variant only appears when the rejoined text is adapted as a whole
+    const firstHalf =
+      '.not-prose a:hover:not(:where([class~="not-prose"], [class~="not-prose"';
+    const secondHalf = '] *)) { color: inherit; }';
+    const markedCssText = [firstHalf, secondHalf].join('/* rr_split */');
+    const selector =
+      '.not-prose a:hover:not(:where([class~="not-prose"], [class~="not-prose"] *))';
+    expect(() =>
+      applyCssSplits(sn, markedCssText, true, mockLastUnusedArg),
+    ).not.toThrow();
+    expect(
+      (sn.childNodes[0] as textNode).textContent +
+        (sn.childNodes[1] as textNode).textContent,
+    ).toEqual(
+      (firstHalf + secondHalf).replace(
+        selector,
+        selector + ',\n' + selector.replace(/:hover/g, '.\\:hover'),
+      ),
+    );
+  });
+
+  it('rejoins a split that lands inside a quoted string value and adapts the whole text (#1734)', () => {
+    // a fragment ending mid-string reproduces #1734's "Unclosed string" when parsed alone
+    const firstHalf =
+      '.cl { border-top-style: ; border-top-width: ; border-color: var(--border-color); } ' +
+      '.btn:hover { content: "cli';
+    const secondHalf = 'ck me"; }';
+    const markedCssText = [firstHalf, secondHalf].join('/* rr_split */');
+    expect(() =>
+      applyCssSplits(sn, markedCssText, true, mockLastUnusedArg),
+    ).not.toThrow();
+    expect(
+      (sn.childNodes[0] as textNode).textContent +
+        (sn.childNodes[1] as textNode).textContent,
+    ).toEqual(
+      (firstHalf + secondHalf).replace(
+        '.btn:hover',
+        '.btn:hover,\n.btn.\\:hover',
+      ),
+    );
+  });
+});
+
+describe('adaptCssForReplay with unparseable css (#1734)', function () {
+  it('falls back to the original text, byte for byte, instead of throwing', () => {
+    const cssText = '.a { content: "unterminated }';
+    const cache = createCache();
+    let result = '';
+    expect(() => {
+      result = adaptCssForReplay(cssText, cache);
+    }).not.toThrow();
+    expect(result).toBe(cssText);
   });
 });
