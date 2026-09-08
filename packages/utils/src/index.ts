@@ -278,7 +278,10 @@ export function getUntaintedProxy(): ProxyConstructor {
   try {
     if (
       typeof defaultProxy === 'function' &&
-      Function.prototype.toString.call(defaultProxy).includes('[native code]')
+      // Bound functions also contain [native code], so require native Proxy's source.
+      /^function\s+Proxy\s*\(\s*\)\s*\{\s*\[native code\]\s*\}$/.test(
+        Function.prototype.toString.call(defaultProxy),
+      )
     ) {
       return (untaintedProxy = defaultProxy);
     }

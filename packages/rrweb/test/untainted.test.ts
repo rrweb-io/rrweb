@@ -100,6 +100,30 @@ describe('untainted constructors', () => {
     },
   );
 
+  it.each([false, true])(
+    'recovers a bound replacement with its name changed to Proxy: %s',
+    async (rename) => {
+      expect(
+        await page.evaluate((rename) => {
+          const { getUntaintedProxy } = (window as unknown as UtilsWindow)
+            .rrwebUtils;
+          window.Proxy = function brokenProxy() {
+            throw new Error('Bound replacement invoked');
+          }.bind(null) as unknown as ProxyConstructor;
+          if (rename)
+            Object.defineProperty(window.Proxy, 'name', { value: 'Proxy' });
+          const ProxyCtor = getUntaintedProxy();
+          return {
+            value: new ProxyCtor({ value: 42 }, {}).value,
+            recovered: ProxyCtor !== window.Proxy,
+            cached: getUntaintedProxy() === ProxyCtor,
+            iframes: document.querySelectorAll('iframe').length,
+          };
+        }, rename),
+      ).toEqual({ value: 42, recovered: true, cached: true, iframes: 0 });
+    },
+  );
+
   it('retries after iframe creation fails', async () => {
     expect(
       await page.evaluate(() => {
