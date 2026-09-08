@@ -17,7 +17,7 @@
     "directory": "packages/rrvideo"
   },
   "scripts": {
-    "install": "playwright install",
+    "install": "node -e \"process.exit(process.env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD?0:1)\" || playwright install",
     "build": "tsc",
     "test": "jest",
     "check-types": "tsc -noEmit",
