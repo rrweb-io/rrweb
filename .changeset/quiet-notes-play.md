@@ -3,8 +3,6 @@
 "@rrweb/types": minor
 ---
 
-Add independent hover notes and optional captions for custom events tagged annotation. Caption payloads use kind: 'caption' with set (the default action) or clear, so recorded timestamps determine their duration. Notes use kind: 'note'. Captions follow pauses, seeks, and speed changes and can be toggled with CC. Notes support keyboard focus and precise seeking. Refresh annotations when events are added to the player.
+Add captions and timeline notes through custom events tagged `annotation`. Captions stay visible until the next caption replaces or clears them. Notes appear when hovering or focusing their timeline marker. Clicking the marker seeks to the event's timestamp.
 
-Export the shared CustomEventAnnotation payload type from @rrweb/types for recording authors, and re-export it from rrweb-player.
-
-Drive captions through the replayer's custom-event listener, with indexed state restoration on seeks. Index appended events incrementally and keep playback ticks out of the parent player. Keep caption announcements mounted and allow keyboard scrolling within long notes without seeking.
+Set `showCaptions: true` to display captions by default. Recordings with captions also show a CC toggle. Import `CustomEventAnnotation` from `@rrweb/types` to type caption and note payloads.
