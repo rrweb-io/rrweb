@@ -71,6 +71,7 @@ new rrwebPlayer({
     events,
     showCaptions: true,
     skipInactive: false,
+    // configure the color of tag which will be displayed on the timeline
     tags: {
       annotation: '#159461',
       'submit-form': '#21e676',
