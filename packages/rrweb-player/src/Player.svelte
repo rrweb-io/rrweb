@@ -29,7 +29,6 @@
   export let inactiveColor: NonNullable<RRwebPlayerOptions['props']['inactiveColor']> = '#D4D4D4';
 
   let replayer: Replayer;
-  let replayEvents: eventWithTime[] = [];
   let captionText: string | undefined;
 
   export const getMirror = () => replayer.getMirror();
@@ -161,8 +160,6 @@
       ...$$props,
     });
 
-    replayEvents = replayer.service.state.context.events;
-
     replayer.on('resize', (dimension) => {
       updateScale(
         replayer.wrapper,
@@ -271,7 +268,6 @@
     <Controller
       bind:this={controller}
       {replayer}
-      events={replayEvents}
       bind:captionText
       bind:showCaptions
       {showController}

@@ -3,9 +3,13 @@ import { EventType } from '@rrweb/types';
 import type { eventWithTime } from '@rrweb/types';
 import {
   getActiveCaption,
-  getCaptions,
+  parseAnnotationEvent,
   parseAnnotation,
 } from '../src/annotations';
+import { createTimelineIndex } from '../src/timeline-index';
+
+const indexCaptions = (events: eventWithTime[]) =>
+  createTimelineIndex()(events, 10000).captions;
 
 const event = (
   timestamp: number,
@@ -18,6 +22,23 @@ const event = (
 });
 
 describe('custom event annotations', () => {
+  it('validates custom-event listener envelopes before parsing their payload', () => {
+    for (const value of [
+      null,
+      undefined,
+      5,
+      {},
+      { data: null },
+      { data: { tag: 1 } },
+      { data: { tag: 'annotation' } },
+    ]) {
+      expect(parseAnnotationEvent(value)).toBeUndefined();
+    }
+    expect(
+      parseAnnotationEvent(event(0, { kind: 'caption', text: 'Hello' })),
+    ).toEqual({ kind: 'caption', action: 'set', text: 'Hello' });
+  });
+
   it.each([undefined, 'set'])(
     'defaults caption action to set: %s',
     (action) => {
@@ -68,7 +89,7 @@ describe('custom event annotations', () => {
     ).toBeUndefined();
   });
   it('persists until replacement or clear, using recording-relative time', () => {
-    const captions = getCaptions([
+    const captions = indexCaptions([
       { type: EventType.Load, timestamp: 1000, data: {} },
       event(2000, { kind: 'caption', text: 'First' }),
       event(3000, { kind: 'note', text: 'A note' }),
@@ -87,7 +108,7 @@ describe('custom event annotations', () => {
     expect(getActiveCaption(captions, 0)).toBeUndefined();
   });
   it('uses the last caption action at identical timestamps and ignores invalid actions', () => {
-    const captions = getCaptions([
+    const captions = indexCaptions([
       event(1000, { kind: 'caption', text: 'First' }),
       event(1000, { kind: 'caption', action: 'clear' }),
       event(2000, { kind: 'caption', action: 'clear' }),
@@ -100,10 +121,10 @@ describe('custom event annotations', () => {
     expect(getActiveCaption(captions, 2000)?.text).toBe('Second');
   });
   it('handles empty recordings and clear before set', () => {
-    expect(getActiveCaption(getCaptions([]), 0)).toBeUndefined();
+    expect(getActiveCaption(indexCaptions([]), 0)).toBeUndefined();
     expect(
       getActiveCaption(
-        getCaptions([event(1000, { kind: 'caption', action: 'clear' })]),
+        indexCaptions([event(1000, { kind: 'caption', action: 'clear' })]),
         0,
       ),
     ).toBeUndefined();

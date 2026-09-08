@@ -103,7 +103,9 @@ record.addCustomEvent('annotation', {
 ```
 
 Notes appear on hover or keyboard focus. Click the marker, or press Enter or
-Space, to seek to its timestamp. Escape dismisses the note. Notes do not replace
+Space, to seek to its timestamp. Tab from the marker into a long note to scroll
+it with the keyboard. Clicking or scrolling inside a note does not seek.
+Escape dismisses the note. Notes do not replace
 or clear captions. Caption actions do not create timeline markers; emit a
 separate note if the same moment should also have a hover note. Other custom
 event tags keep their existing tag tooltips.

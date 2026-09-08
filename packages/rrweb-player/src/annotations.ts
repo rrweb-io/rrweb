@@ -1,5 +1,4 @@
-import { EventType } from '@rrweb/types';
-import type { CustomEventAnnotation, eventWithTime } from '@rrweb/types';
+import type { CustomEventAnnotation } from '@rrweb/types';
 
 type CaptionSet = { start: number; action: 'set'; text: string };
 export type Caption = CaptionSet | { start: number; action: 'clear' };
@@ -40,23 +39,21 @@ export function parseAnnotation(
   return undefined;
 }
 
-/** Replayer events are unpacked and sorted by timestamp. */
-export function getCaptions(events: eventWithTime[]): Caption[] {
-  const startTime = events[0]?.timestamp;
-  if (startTime === undefined) return [];
-  const captions: Caption[] = [];
-  for (const event of events) {
-    if (event.type !== EventType.Custom) continue;
-    const annotation = parseAnnotation(event.data.tag, event.data.payload);
-    if (annotation?.kind !== 'caption') continue;
-    const start = event.timestamp - startTime;
-    captions.push(
-      annotation.action === 'clear'
-        ? { start, action: 'clear' }
-        : { start, action: 'set', text: annotation.text },
-    );
-  }
-  return captions;
+/** Decode the untyped custom-event listener payload at the replay boundary. */
+export function parseAnnotationEvent(
+  event: unknown,
+): CustomEventAnnotation | undefined {
+  if (!event || typeof event !== 'object' || !('data' in event)) return;
+  const data = event.data;
+  if (
+    !data ||
+    typeof data !== 'object' ||
+    !('tag' in data) ||
+    typeof data.tag !== 'string' ||
+    !('payload' in data)
+  )
+    return;
+  return parseAnnotation(data.tag, data.payload);
 }
 
 /** Reconstruct caption state from the latest set or clear, including on seeks. */

@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { EventType } from '@rrweb/types';
-  import type { playerMetaData, eventWithTime } from '@rrweb/types';
+  import type { playerMetaData } from '@rrweb/types';
   import type {
     Replayer,
     PlayerMachineState,
@@ -15,16 +14,15 @@
   import { formatTime } from './utils';
   import Switch from './components/Switch.svelte';
   import CustomEventMarker from './components/CustomEventMarker.svelte';
-  import { parseAnnotation, getActiveCaption } from './annotations';
+  import { parseAnnotationEvent, getActiveCaption } from './annotations';
   import { createTimelineIndex } from './timeline-index';
 
   const dispatch = createEventDispatcher();
 
   export let replayer: Replayer;
-  export let events: eventWithTime[];
   export let showCaptions = false;
   const updateTimeline = createTimelineIndex();
-  $: timeline = updateTimeline(events, replayer.config.inactivePeriodThreshold);
+  $: timeline = updateTimeline(replayer.service.state.context.events, replayer.config.inactivePeriodThreshold);
   export let captionText: string | undefined = undefined;
   let activeCaptionText: string | undefined;
   $: captionText = showCaptions ? activeCaptionText : undefined;
@@ -36,11 +34,7 @@
   }
 
   function handleCustomEvent(event: unknown) {
-    if (!event || typeof event !== 'object' || !('data' in event)) return;
-    const data = event.data;
-    if (!data || typeof data !== 'object' || !('tag' in data) ||
-        typeof data.tag !== 'string' || !('payload' in data)) return;
-    const annotation = parseAnnotation(data.tag, data.payload);
+    const annotation = parseAnnotationEvent(event);
     if (annotation?.kind === 'caption') {
       activeCaptionText = annotation.action === 'clear' ? undefined : annotation.text;
     }
@@ -113,34 +107,13 @@
     return eventPosition.toFixed(2);
   }
 
-  let customEvents: CustomEvent[];
-  $: customEvents = (() => {
-    const { start, end } = timeline;
-    const customEvents: CustomEvent[] = [];
-
-    // loop through all the events and find out custom event.
-    timeline.markers.forEach((event) => {
-      /**
-       * we are only interested in custom event and calculate it's position
-       * to place it in player's timeline.
-       */
-      if (event.type === EventType.Custom) {
-        const annotation = parseAnnotation(event.data.tag, event.data.payload);
-        // Caption actions change playback state; only notes get a marker.
-        if (event.data.tag === 'annotation' && annotation?.kind !== 'note') return;
-        const customEvent = {
-          name: annotation?.kind === 'note' ? 'Note' : event.data.tag,
-          timeOffset: event.timestamp - start,
-          note: annotation?.kind === 'note' ? annotation.text : undefined,
-          background: tags[event.data.tag] || 'rgb(73, 80, 246)',
-          position: `${position(start, end, event.timestamp)}%`,
-        };
-        customEvents.push(customEvent);
-      }
-    });
-
-    return customEvents;
-  })();
+  $: customEvents = timeline.markers.map((marker): CustomEvent => ({
+    name: marker.text === undefined ? marker.tag : 'Note',
+    timeOffset: marker.timestamp - timeline.start,
+    note: marker.text,
+    background: tags[marker.tag] || 'rgb(73, 80, 246)',
+    position: `${position(timeline.start, timeline.end, marker.timestamp)}%`,
+  }));
 
   let inactivePeriods: {
     name: string;

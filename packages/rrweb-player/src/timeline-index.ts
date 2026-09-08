@@ -16,7 +16,7 @@ export function createTimelineIndex() {
     start: number;
     end: number;
     captions: Caption[];
-    markers: eventWithTime[];
+    markers: { timestamp: number; tag: string; text?: string }[];
     periods: [number, number][];
     hasCaptions: boolean;
   } {
@@ -60,7 +60,11 @@ export function createTimelineIndex() {
           event.data.tag !== 'annotation' ||
           annotation?.kind === 'note'
         ) {
-          state.markers.push(event);
+          state.markers.push({
+            timestamp: event.timestamp,
+            tag: event.data.tag,
+            text: annotation?.kind === 'note' ? annotation.text : undefined,
+          });
         }
       }
       if (isUserInteraction(event)) {

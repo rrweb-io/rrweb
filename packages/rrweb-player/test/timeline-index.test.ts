@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { EventType, IncrementalSource } from '@rrweb/types';
 import type { eventWithTime } from '@rrweb/types';
 import { createTimelineIndex } from '../src/timeline-index';
-import { getActiveCaption, getCaptions } from '../src/annotations';
+import { getActiveCaption } from '../src/annotations';
 import { getInactivePeriods } from '../src/utils';
 
 const caption = (timestamp: number, text: string): eventWithTime => ({
@@ -50,11 +50,20 @@ describe('timeline indexing cost and ordering', () => {
       },
     });
     let index = update(events, 1000);
-    expect(index.captions).toEqual(getCaptions(events));
+    expect(index.captions).toEqual([
+      { start: 0, action: 'set', text: 'First' },
+      { start: 2000, action: 'set', text: 'Second' },
+      { start: 2000, action: 'set', text: 'Last' },
+    ]);
     expect(index.periods).toEqual(getInactivePeriods(events, 1000));
     events.splice(0, 0, caption(0, 'Earlier'));
     index = update(events, 1000);
-    expect(index.captions).toEqual(getCaptions(events));
+    expect(index.captions).toEqual([
+      { start: 0, action: 'set', text: 'Earlier' },
+      { start: 1000, action: 'set', text: 'First' },
+      { start: 3000, action: 'set', text: 'Second' },
+      { start: 3000, action: 'set', text: 'Last' },
+    ]);
     expect(index.periods).toEqual(getInactivePeriods(events, 1000));
     expect(getActiveCaption(index.captions, 3000)?.text).toBe('Last');
   });
