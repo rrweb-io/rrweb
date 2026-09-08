@@ -272,8 +272,6 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
         <img style="padding: 8px" alt="Interactive product demos for small marketing teams" width="195px" src="https://assets-global.website-files.com/650afb446f1dd5bd410f00cc/650b2cec6188ff54dd9b01e1_Logo.svg">
       </a>
     </td>
-  </tr>
-  <tr>
     <td align="center">
       <a href="https://tracelane.cubenest.in" target="_blank">
         <img style="padding: 8px" alt="Embeds self-contained rrweb replays in E2E test-failure reports" width="195px" src="https://raw.githubusercontent.com/Cubenest/rrweb-stack/main/assets/brand/sub-tracelane.svg">
