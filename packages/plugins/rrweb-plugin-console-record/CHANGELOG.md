@@ -1,5 +1,11 @@
 # @rrweb/rrweb-plugin-console-record
 
+## 2.1.3
+
+### Patch Changes
+
+- [#1904](https://github.com/rrweb-io/rrweb/pull/1904) [`de0d013`](https://github.com/rrweb-io/rrweb/commit/de0d0131092081b416c9cf772425efe8898191d3) Thanks [@yashrao2607](https://github.com/yashrao2607)! - Fix wrapped console methods being called with the wrong `this`, which could throw "Illegal invocation" in strict contexts such as extension content scripts
+
 ## 2.1.2
 
 ## 2.1.1
