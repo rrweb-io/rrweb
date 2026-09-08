@@ -69,6 +69,37 @@ describe('untainted constructors', () => {
     },
   );
 
+  it.each(['throwing', 'non-callable', 'spoofed native'] as const)(
+    'recovers an overwritten Proxy with a %s toString',
+    async (override) => {
+      expect(
+        await page.evaluate((override) => {
+          const { getUntaintedProxy } = (window as unknown as UtilsWindow)
+            .rrwebUtils;
+          window.Proxy = function () {
+            throw new Error('Overwritten Proxy');
+          } as unknown as ProxyConstructor;
+          Object.defineProperty(window.Proxy, 'toString', {
+            value:
+              override === 'non-callable'
+                ? null
+                : () => {
+                    if (override === 'throwing')
+                      throw new Error('Broken toString');
+                    return 'function Proxy() { [native code] }';
+                  },
+          });
+          const ProxyCtor = getUntaintedProxy();
+          return {
+            value: new ProxyCtor({ value: 42 }, {}).value,
+            recovered: ProxyCtor !== window.Proxy,
+            iframes: document.querySelectorAll('iframe').length,
+          };
+        }, override),
+      ).toEqual({ value: 42, recovered: true, iframes: 0 });
+    },
+  );
+
   it('retries after iframe creation fails', async () => {
     expect(
       await page.evaluate(() => {

@@ -275,11 +275,15 @@ export function getUntaintedProxy(): ProxyConstructor {
   if (untaintedProxy) return untaintedProxy;
 
   const defaultProxy = globalThis.Proxy;
-  if (
-    typeof defaultProxy === 'function' &&
-    defaultProxy.toString().includes('[native code]')
-  ) {
-    return (untaintedProxy = defaultProxy);
+  try {
+    if (
+      typeof defaultProxy === 'function' &&
+      Function.prototype.toString.call(defaultProxy).includes('[native code]')
+    ) {
+      return (untaintedProxy = defaultProxy);
+    }
+  } catch {
+    // If native detection fails, recover the constructor from a clean realm.
   }
 
   const cleanProxy = getUntaintedIframeValue('Proxy');
