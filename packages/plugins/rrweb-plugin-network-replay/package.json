@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/rrweb-plugin-network-replay",
-  "version": "2.1.2",
+  "version": "2.1.4",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-network-replay.umd.cjs",
@@ -46,9 +46,9 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
-    "@rrweb/rrweb-plugin-network-record": "^2.1.2",
-    "@rrweb/types": "^2.1.2",
-    "rrweb": "^2.1.2",
+    "@rrweb/rrweb-plugin-network-record": "^2.1.4",
+    "@rrweb/types": "^2.1.4",
+    "rrweb": "^2.1.4",
     "typescript": "^5.4.5",
     "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1"
