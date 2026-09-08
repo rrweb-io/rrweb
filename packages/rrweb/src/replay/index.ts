@@ -203,6 +203,7 @@ export class Replayer {
       pauseAnimation: true,
       mouseTail: defaultMouseTailConfig,
       useVirtualDom: true, // Virtual-dom optimization is enabled by default.
+      adaptCssInTextMutations: true,
       logger: console,
     };
     this.config = Object.assign({}, defaultConfig, config);
@@ -1758,7 +1759,12 @@ export class Replayer {
       }
 
       const parentEl = target.parentElement as Element | RRElement;
-      if (mutation.value && parentEl && parentEl.tagName === 'STYLE') {
+      if (
+        mutation.value &&
+        parentEl &&
+        parentEl.tagName === 'STYLE' &&
+        this.config.adaptCssInTextMutations
+      ) {
         // assumes hackCss: true (which isn't currently configurable from rrweb)
         target.textContent = adaptCssForReplay(mutation.value, this.cache);
       } else {
