@@ -124,6 +124,36 @@ describe('untainted constructors', () => {
     },
   );
 
+  it.each(['Proxy', 'Node'] as const)(
+    'preserves recovered %s when iframe cleanup throws',
+    async (key) => {
+      expect(
+        await page.evaluate((key) => {
+          const utils = (window as unknown as UtilsWindow).rrwebUtils;
+          window.Proxy = function () {
+            throw new Error('Overwritten Proxy');
+          } as unknown as ProxyConstructor;
+          Object.defineProperty(window, 'Zone', { value: {} });
+          document.body.removeChild = () => {
+            throw new Error('Patched removeChild');
+          };
+          if (key === 'Proxy') {
+            const ProxyCtor = utils.getUntaintedProxy();
+            return {
+              recovered: ProxyCtor !== window.Proxy,
+              usable: new ProxyCtor({ value: 42 }, {}).value === 42,
+            };
+          }
+          const prototype = utils.getUntaintedPrototype('Node');
+          return {
+            recovered: prototype !== Node.prototype,
+            usable: prototype.contains.call(document.body, document.body),
+          };
+        }, key),
+      ).toEqual({ recovered: true, usable: true });
+    },
+  );
+
   it('retries after iframe creation fails', async () => {
     expect(
       await page.evaluate(() => {

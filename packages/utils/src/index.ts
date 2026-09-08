@@ -134,7 +134,11 @@ function getUntaintedIframeValue<K extends keyof BasePrototypeCache | 'Proxy'>(
   } catch {
     return undefined;
   } finally {
-    if (!keepAttached) iframeEl?.parentNode?.removeChild(iframeEl);
+    try {
+      if (!keepAttached) iframeEl?.parentNode?.removeChild(iframeEl);
+    } catch {
+      // Patched DOM cleanup must not override the lookup result or fallback.
+    }
   }
 }
 
