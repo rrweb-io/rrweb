@@ -10,6 +10,7 @@ const events = [];
 record({ emit: (event) => events.push(event) });
 
 record.addCustomEvent('submit-form', { name: 'Adam' });
+record.addCustomEvent('some-error', { message: 'Could not submit the form.' });
 ```
 
 Listen for custom events during replay:
@@ -73,6 +74,7 @@ new rrwebPlayer({
     tags: {
       annotation: '#159461',
       'submit-form': '#21e676',
+      'some-error': 'red',
     },
   },
 });
