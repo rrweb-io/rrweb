@@ -12,17 +12,23 @@
     createEventDispatcher,
     afterUpdate,
   } from 'svelte';
-  import { formatTime, getInactivePeriods } from './utils';
+  import { formatTime } from './utils';
   import Switch from './components/Switch.svelte';
   import CustomEventMarker from './components/CustomEventMarker.svelte';
-  import { parseAnnotation } from './annotations';
+  import { parseAnnotation, getActiveCaption } from './annotations';
+  import { createTimelineIndex } from './timeline-index';
 
   const dispatch = createEventDispatcher();
 
   export let replayer: Replayer;
   export let events: eventWithTime[];
   export let showCaptions = false;
-  export let hasCaptions = false;
+  const updateTimeline = createTimelineIndex();
+  $: timeline = updateTimeline(events, replayer.config.inactivePeriodThreshold);
+  export let captionText: string | undefined = undefined;
+  $: captionText = showCaptions
+    ? getActiveCaption(timeline.captions, currentTime)?.text
+    : undefined;
   let noteDismissalVersion = 0;
 
   function dismissNotesOnEscape(event: KeyboardEvent) {
@@ -36,7 +42,7 @@
   export let tags: Record<string, string> = {};
   export let inactiveColor: string;
 
-  export let currentTime = 0;
+  let currentTime = 0;
   $: {
     dispatch('ui-update-current-time', { payload: currentTime });
   }
@@ -89,13 +95,11 @@
 
   let customEvents: CustomEvent[];
   $: customEvents = (() => {
-    if (!events.length) return [];
-    const start = events[0].timestamp;
-    const end = events[events.length - 1].timestamp;
+    const { start, end } = timeline;
     const customEvents: CustomEvent[] = [];
 
     // loop through all the events and find out custom event.
-    events.forEach((event) => {
+    timeline.markers.forEach((event) => {
       /**
        * we are only interested in custom event and calculate it's position
        * to place it in player's timeline.
@@ -126,10 +130,7 @@
   }[];
   $: inactivePeriods = (() => {
     try {
-      if (!events.length) return [];
-      const start = events[0].timestamp;
-      const end = events[events.length - 1].timestamp;
-      const periods = getInactivePeriods(events, replayer.config.inactivePeriodThreshold);
+      const { start, end, periods } = timeline;
       // calculate the indicator width.
       const getWidth = (
         startTime: number,
@@ -301,6 +302,7 @@
   export const triggerUpdateMeta = () => {
     return Promise.resolve().then(() => {
       meta = replayer.getMetaData();
+      timeline = updateTimeline(replayer.service.state.context.events, replayer.config.inactivePeriodThreshold);
     });
   };
 
@@ -551,7 +553,7 @@
           {s}x
         </button>
       {/each}
-      {#if hasCaptions}
+      {#if timeline.hasCaptions}
         <button
           type="button"
           class:active={showCaptions}

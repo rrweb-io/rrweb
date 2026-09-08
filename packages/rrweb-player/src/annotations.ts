@@ -2,7 +2,7 @@ import { EventType } from '@rrweb/types';
 import type { CustomEventAnnotation, eventWithTime } from '@rrweb/types';
 
 type CaptionSet = { start: number; action: 'set'; text: string };
-type Caption = CaptionSet | { start: number; action: 'clear' };
+export type Caption = CaptionSet | { start: number; action: 'clear' };
 
 /** Other tags and malformed annotations have no effect on caption state. */
 export function parseAnnotation(
@@ -64,11 +64,13 @@ export function getActiveCaption(
   captions: Caption[],
   currentTime: number,
 ): CaptionSet | undefined {
-  for (let i = captions.length - 1; i >= 0; i--) {
-    const caption = captions[i];
-    if (caption.start <= currentTime) {
-      return caption.action === 'set' ? caption : undefined;
-    }
+  let low = 0;
+  let high = captions.length;
+  while (low < high) {
+    const mid = Math.floor((low + high) / 2);
+    if (captions[mid].start <= currentTime) low = mid + 1;
+    else high = mid;
   }
-  return undefined;
+  const caption = captions[low - 1];
+  return caption?.action === 'set' ? caption : undefined;
 }

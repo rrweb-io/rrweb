@@ -146,6 +146,31 @@ describe('player annotations', () => {
     );
   });
 
+  it.each([false, true])(
+    'keeps unchanged playback ticks out of Player (captions: %s)',
+    async (showCaptions) => {
+      vi.useFakeTimers({
+        toFake: [
+          'setTimeout',
+          'clearTimeout',
+          'requestAnimationFrame',
+          'cancelAnimationFrame',
+          'Date',
+          'performance',
+        ],
+      });
+      const player = await mount({ showCaptions });
+      player.goto(2100, false);
+      await tick();
+      const updates = vi.spyOn(player.$$, 'update');
+      player.play();
+      await vi.advanceTimersByTimeAsync(1000);
+      await tick();
+      expect(updates).not.toHaveBeenCalled();
+      updates.mockRestore();
+    },
+  );
+
   it('follows playback speed and freezes captions while paused', async () => {
     vi.useFakeTimers({
       toFake: [

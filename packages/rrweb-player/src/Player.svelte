@@ -12,7 +12,6 @@
     typeOf,
   } from './utils';
   import Controller from './Controller.svelte';
-  import { getCaptions, getActiveCaption } from './annotations';
   import type { RRwebPlayerOptions, RRwebPlayerExpose } from './types';
     
   export let width: NonNullable<RRwebPlayerOptions['props']['width']>  = 1024;
@@ -31,9 +30,7 @@
 
   let replayer: Replayer;
   let replayEvents: eventWithTime[] = [];
-  let currentTime = 0;
-  $: captions = getCaptions(replayEvents);
-  $: caption = showCaptions ? getActiveCaption(captions, currentTime) : undefined;
+  let captionText: string | undefined;
 
   export const getMirror = () => replayer.getMirror();
 
@@ -102,9 +99,7 @@
 
   export const addEvent: RRwebPlayerExpose['addEvent'] = (event: eventWithTime) => {
     replayer.addEvent(event);
-    void controller.triggerUpdateMeta().then(() => {
-      replayEvents = replayer.service.state.context.events;
-    });
+    void controller.triggerUpdateMeta();
   };
   export const getMetaData: RRwebPlayerExpose['getMetaData'] = () => replayer.getMetaData();
   export const getReplayer: RRwebPlayerExpose['getReplayer'] = () => replayer;
@@ -266,8 +261,8 @@
 >
   <div class="rr-player__viewport" {style}>
     <div class="rr-player__frame" bind:this={frame} {style} />
-    {#if caption}
-      <div class="rr-player__caption" role="status" aria-live="polite">{caption.text}</div>
+    {#if captionText !== undefined}
+      <div class="rr-player__caption" role="status" aria-live="polite">{captionText}</div>
     {/if}
   </div>
   {#if replayer}
@@ -275,9 +270,8 @@
       bind:this={controller}
       {replayer}
       events={replayEvents}
-      bind:currentTime
+      bind:captionText
       bind:showCaptions
-      hasCaptions={captions.some((caption) => caption.action === 'set')}
       {showController}
       {autoPlay}
       {speedOption}

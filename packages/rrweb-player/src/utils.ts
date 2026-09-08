@@ -155,7 +155,7 @@ export function typeOf(
  * @param event - event to be determined
  * @returns true if the event is a user interaction event
  */
-function isUserInteraction(event: eventWithTime): boolean {
+export function isUserInteraction(event: eventWithTime): boolean {
   if (event.type !== EventType.IncrementalSnapshot) {
     return false;
   }
