@@ -1,6 +1,6 @@
 # Recipes
 
-> You may also want to read the [guide](../../guide.md) to understand the APIs, or read the [design docs](../) to know more technical details of rrweb.
+You may also want to read the [guide](../../guide.md) to understand the APIs, or read the [Internal Design](../design/index.md) docs to know more technical details of rrweb.
 
 ## Scenarios
 
@@ -9,12 +9,6 @@
 Record and Replay is the most common use case, which is suitable for any scenario that needs to collect user behaviors and replay them.
 
 [link](./record-and-replay.md)
-
-### Dive Into Events
-
-The events recorded by rrweb are a set of strictly-typed JSON data. You may discover some flexible ways to use them when you are familiar with the details.
-
-[link](./dive-into-event.md)
 
 ### Load Events Asynchronous
 
@@ -73,8 +67,8 @@ This feature aims to provide developers with more information about the bug scen
 
 [link](./console.md)
 
-### Plugin
+### Plugin API
 
-The plugin API is designed to extend the function of rrweb without bump the size and complexity of rrweb's core part.
+The plugin API is designed to enable extending the functionality of rrweb without impacting regular use of the core packages.
 
-[link](./plugin.md)
+[link](./plugin-api.md)

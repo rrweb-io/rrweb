@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Monkey-patched MutationObserver</title>
+    <script>
+      // Emulates frameworks (e.g. salesforce LWC) that hijack MutationObserver
+      // before any other scripts run.  rrweb must use its iframe-based fallback
+      // to obtain the real native constructor.
+      MutationObserver = class {
+        constructor() {
+          throw new Error('MutationObserver was hijacked by framework');
+        }
+      };
+    </script>
+  </head>
+  <body>
+    <ul id="list">
+      <li>a</li>
+    </ul>
+  </body>
+</html>

@@ -1,6 +1,6 @@
 {
   "name": "rrdom-nodejs",
-  "version": "2.0.0-alpha.20",
+  "version": "2.1.2",
   "scripts": {
     "dev": "vite build --watch",
     "build": "yarn turbo run prepublish",
@@ -11,14 +11,23 @@
     "lint": "yarn eslint src/**/*.ts"
   },
   "keywords": [
+    "devtools",
+    "product-analytics",
+    "real-user-monitoring",
     "rrweb",
     "rrdom-nodejs"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb.git",
+    "directory": "packages/rrdom-nodejs"
+  },
   "license": "MIT",
   "type": "module",
   "main": "./dist/rrdom-nodejs.umd.cjs",
   "module": "./dist/rrdom-nodejs.js",
   "unpkg": "./dist/rrdom-nodejs.umd.cjs",
+  "jsdelivr": "./umd/rrdom-nodejs.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -49,14 +58,14 @@
     "puppeteer": "^9.1.1",
     "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1",
-    "vitest": "^1.4.0",
+    "vitest": "^1.6.1",
     "typescript": "^5.4.5"
   },
   "dependencies": {
     "cssom": "^0.5.0",
     "cssstyle": "^2.3.0",
     "nwsapi": "2.2.0",
-    "rrdom": "^2.0.0-alpha.20",
-    "@rrweb/types": "^2.0.0-alpha.20"
+    "rrdom": "^2.1.2",
+    "@rrweb/types": "^2.1.2"
   }
 }

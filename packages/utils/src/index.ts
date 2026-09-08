@@ -33,6 +33,9 @@ const testableMethods = {
 } as const;
 
 const untaintedBasePrototype: Partial<BasePrototypeCache> = {};
+const untaintedBaseIframeCleanup: Partial<
+  Record<keyof BasePrototypeCache, () => void>
+> = {};
 
 /*
  When angular patches things - particularly the MutationObserver -
@@ -103,16 +106,35 @@ function getUntaintedIframeValue<K extends keyof BasePrototypeCache | 'Proxy'>(
   key: K,
 ): (typeof globalThis)[K] | undefined {
   let iframeEl: HTMLIFrameElement | undefined;
+  let keepAttached = false;
   try {
     iframeEl = document.createElement('iframe');
     iframeEl.style.display = 'none';
     (document.body || document.documentElement).appendChild(iframeEl);
     const win = iframeEl.contentWindow as (Window & typeof globalThis) | null;
-    return win?.[key];
+    const value = win?.[key];
+    if (!value) return undefined;
+
+    // Preserve the live iframe context needed by MutationObserver in WebKit.
+    // Proxy constructors do not need a live context after retrieval.
+    const ua = navigator.userAgent;
+    const prototypeKey: keyof BasePrototypeCache | 'Proxy' = key;
+    if (
+      prototypeKey !== 'Proxy' &&
+      ua.includes('Safari') &&
+      !ua.includes('Chrome')
+    ) {
+      iframeEl.classList.add('rr-block');
+      iframeEl.setAttribute('__rrwebUntaintedMutationObserver', '');
+      const retainedIframe = iframeEl;
+      untaintedBaseIframeCleanup[prototypeKey] = () => retainedIframe.remove();
+      keepAttached = true;
+    }
+    return value;
   } catch {
     return undefined;
   } finally {
-    iframeEl?.parentNode?.removeChild(iframeEl);
+    if (!keepAttached) iframeEl?.parentNode?.removeChild(iframeEl);
   }
 }
 
@@ -233,8 +255,17 @@ export function querySelectorAll(
   return getUntaintedAccessor('Element', n, 'querySelectorAll')(selectors);
 }
 
-export function mutationObserverCtor(): (typeof MutationObserver)['prototype']['constructor'] {
-  return getUntaintedPrototype('MutationObserver').constructor;
+export function mutationObserverCtor(): [
+  (typeof MutationObserver)['prototype']['constructor'],
+  () => void,
+] {
+  return [
+    getUntaintedPrototype('MutationObserver').constructor,
+    untaintedBaseIframeCleanup['MutationObserver'] ??
+      (() => {
+        /* no-op; a cleanup function is only needed in Safari browsers */
+      }),
+  ];
 }
 
 let untaintedProxy: ProxyConstructor | undefined;
@@ -256,6 +287,15 @@ export function getUntaintedProxy(): ProxyConstructor {
 
   return (untaintedProxy = cleanProxy);
 }
+
+// guard against old third party libraries which redefine Date.now
+let nowTimestamp = Date.now;
+
+if (!(/*@__PURE__*/ /[1-9][0-9]{12}/.test(Date.now().toString()))) {
+  // they have already redefined it! use a fallback
+  nowTimestamp = () => new Date().getTime();
+}
+export { nowTimestamp };
 
 // copy from https://github.com/getsentry/sentry-javascript/blob/b2109071975af8bf0316d3b5b38f519bdaf5dc15/packages/utils/src/object.ts
 export function patch(
@@ -313,6 +353,7 @@ export default {
   shadowRoot,
   querySelector,
   querySelectorAll,
-  mutationObserver: mutationObserverCtor,
+  nowTimestamp,
+  mutationObserverCtor,
   patch,
 };

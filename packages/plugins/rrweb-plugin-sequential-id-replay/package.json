@@ -1,11 +1,12 @@
 {
   "name": "@rrweb/rrweb-plugin-sequential-id-replay",
-  "version": "2.0.0-alpha.20",
+  "version": "2.1.2",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-sequential-id-replay.umd.cjs",
   "module": "./dist/rrweb-plugin-sequential-id-replay.js",
   "unpkg": "./dist/rrweb-plugin-sequential-id-replay.umd.cjs",
+  "jsdelivr": "./umd/rrweb-plugin-sequential-id-replay.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -32,25 +33,29 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/rrweb-io/rrweb.git",
+    "directory": "packages/plugins/rrweb-plugin-sequential-id-replay"
   },
   "keywords": [
+    "devtools",
+    "product-analytics",
+    "real-user-monitoring",
     "rrweb"
   ],
-  "author": "yanzhen@smartx.com",
+  "author": "rrweb Core Team <maintainers@rrweb.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
-    "@rrweb/rrweb-plugin-sequential-id-record": "^2.0.0-alpha.20",
-    "rrweb": "^2.0.0-alpha.20",
+    "@rrweb/rrweb-plugin-sequential-id-record": "^2.1.2",
+    "rrweb": "^2.1.2",
     "typescript": "^5.4.5",
     "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1"
   },
   "peerDependencies": {
-    "rrweb": "^2.0.0-alpha.20"
+    "rrweb": "^2.1.1"
   }
 }

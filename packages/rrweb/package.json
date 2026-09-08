@@ -1,6 +1,6 @@
 {
   "name": "rrweb",
-  "version": "2.0.0-alpha.20",
+  "version": "2.1.2",
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",
@@ -21,19 +21,26 @@
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src",
-    "benchmark": "vitest run --maxConcurrency 1 --no-file-parallelism test/benchmark"
+    "benchmark": "vitest run --maxConcurrency 1 --no-file-parallelism test/benchmark",
+    "test:webkit": "yarn build && vitest run --config vitest.config.webkit.ts"
   },
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git"
+    "url": "git+ssh://git@github.com/rrweb-io/rrweb.git",
+    "directory": "packages/rrweb"
   },
   "keywords": [
+    "devtools",
+    "product-analytics",
+    "real-user-monitoring",
     "rrweb"
   ],
   "main": "./dist/rrweb.umd.cjs",
   "module": "./dist/rrweb.js",
   "unpkg": "./dist/rrweb.umd.cjs",
+  "jsdelivr": "./umd/rrweb.js",
+  "style": "./dist/style.css",
   "typings": "dist/rrweb.d.ts",
   "exports": {
     ".": {
@@ -54,7 +61,7 @@
     "package.json"
   ],
   "sideEffects": false,
-  "author": "yanzhen@smartx.com",
+  "author": "rrweb Core Team <maintainers@rrweb.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/rrweb-io/rrweb/issues"
@@ -72,6 +79,7 @@
     "ignore-styles": "^5.0.1",
     "inquirer": "^9.0.0",
     "jest-image-snapshot": "^6.2.0",
+    "playwright": "1.61.1",
     "puppeteer": "^20.9.0",
     "simple-peer-light": "^9.10.0",
     "ts-node": "^10.9.1",
@@ -81,13 +89,13 @@
     "vite-plugin-dts": "^3.9.1"
   },
   "dependencies": {
-    "@rrweb/types": "^2.0.0-alpha.20",
-    "@rrweb/utils": "^2.0.0-alpha.20",
+    "@rrweb/types": "^2.1.2",
+    "@rrweb/utils": "^2.1.2",
     "@types/css-font-loading-module": "0.0.7",
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",
     "mitt": "^3.0.0",
-    "rrdom": "^2.0.0-alpha.20",
-    "rrweb-snapshot": "^2.0.0-alpha.20"
+    "rrdom": "^2.1.2",
+    "rrweb-snapshot": "^2.1.2"
   }
 }

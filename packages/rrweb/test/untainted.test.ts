@@ -94,7 +94,8 @@ describe('untainted constructors', () => {
         window.MutationObserver = function () {
           throw new Error('Overwritten MutationObserver');
         } as unknown as typeof MutationObserver;
-        const Observer = mutationObserverCtor() as typeof MutationObserver;
+        const [ObserverCtor, cleanup] = mutationObserverCtor();
+        const Observer = ObserverCtor as typeof MutationObserver;
         const observed = new Promise<boolean>((resolve) => {
           const observer = new Observer(() => {
             observer.disconnect();
@@ -103,8 +104,10 @@ describe('untainted constructors', () => {
           observer.observe(document.body, { childList: true });
           document.body.appendChild(document.createElement('div'));
         });
+        const delivered = await observed;
+        cleanup();
         return {
-          observed: await observed,
+          observed: delivered,
           iframes: document.querySelectorAll('iframe').length,
         };
       }),

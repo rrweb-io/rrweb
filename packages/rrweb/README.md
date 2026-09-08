@@ -1,27 +1,23 @@
-<p align="center">
-  <img width="100px" height="100px" src="https://www.rrweb.io/favicon.png">
-</p>
-<p align="center">
-  <a href="https://www.rrweb.io/" style="font-weight: bold">Try rrweb</a>
-</p>
-
 # rrweb
 
-**This is a simpler version of the [original rrweb README](../../README.md) within this rrweb subpackage**
+## Overview
 
-[中文文档](../../README.zh_CN.md)
+> **Deprecated.** `rrweb` is kept for backward compatibility only. New projects should depend on [@rrweb/record](packages/record/) and [@rrweb/replay](packages/replay/) directly, or use [@rrweb/all](packages/all/) for a single convenience import. Moving to these entrypoints lets us slim down and eventually remove this package.
 
-rrweb refers to 'record and replay the web', which is a tool for recording and replaying users' interactions on the web.
+rrweb refers to 'record and replay the web', a tool for recording and replaying users' interactions on the web.
 
-## Guide
+In most production setups, the recorder and replayer are deployed to different pages/apps. Use [@rrweb/record](packages/record/) on recorded pages and [@rrweb/replay](packages/replay/) (or [rrweb-player](packages/rrweb-player/) to include UI) on replay pages.
 
-[**📚 Read the rrweb guide here. 📚**](../../guide.md)
+| Use case                                        | Package choice                    |
+| ----------------------------------------------- | --------------------------------- |
+| Most apps (explicit record/replay dependencies) | `@rrweb/record` + `@rrweb/replay` |
+| Single import for record, replay + packer       | `@rrweb/all`                      |
 
-[**🍳 Recipes 🍳**](../../docs/recipes/index.md)
+### Dev Note
+
+As this was the original rrweb package, typescript code for both @rrweb/record and @rrweb/replay still lives in src/record and src/replay in this package. These will be refactored into their respective packages in due course, but for now this package is the principal one for both record and replay related PRs. See [Contributing to rrweb](../../CONTRIBUTING.md) for more info.
 
 ## Installation
-
-`rrweb` is kept mainly for backward compatibility. For new integrations, prefer package-specific entrypoints (`@rrweb/record` and `@rrweb/replay`) first, or use `@rrweb/all` as a convenience package.
 
 ### 1) Bundler / npm (Recommended)
 
@@ -59,81 +55,37 @@ import { record, Replayer } from 'rrweb';
 import 'rrweb/dist/style.css';
 ```
 
-### 2) Browser Without Bundler (ESM + import maps)
+### 2) Browser Without Bundler (ESM)
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/dist/style.css"
+  href="https://cdn.rrweb.com/replay/current/dist/style.css"
 />
-<script type="importmap">
-  {
-    "imports": {
-      "@rrweb/record": "https://cdn.jsdelivr.net/npm/@rrweb/record@latest/+esm",
-      "@rrweb/replay": "https://cdn.jsdelivr.net/npm/@rrweb/replay@latest/+esm"
-    }
-  }
-</script>
 <script type="module">
-  import { record } from '@rrweb/record';
-  import { Replayer } from '@rrweb/replay';
+  import { record } from 'https://cdn.rrweb.com/record/current/dist/record.js';
+  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.js';
 </script>
 ```
+
+Use `current` for the latest stable release, or pin exact versions such as
+`https://cdn.rrweb.com/record/2.0.0/dist/record.js` and
+`https://cdn.rrweb.com/replay/2.0.0/dist/replay.js` for immutable
+production URLs.
 
 ### 3) Legacy Direct `<script>` Include (UMD fallback)
 
-Use this only for compatibility with non-module environments; modern browsers support the importmap method [since 2023](https://caniuse.com/?search=import+map)
+Use this only for compatibility with non-module environments; modern browsers
+support the ESM method above.
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
+  href="https://cdn.rrweb.com/replay/current/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/umd/rrweb.min.js"></script>
+<script src="https://cdn.rrweb.com/record/current/dist/record.umd.cjs"></script>
+<script src="https://cdn.rrweb.com/replay/current/dist/replay.umd.cjs"></script>
 ```
-
-## Project Structure
-
-**[rrweb](https://github.com/rrweb-io/rrweb)** mainly includes two funtions:
-
-- **Record**: The record function is used to record all the mutations in the DOM
-- **Replayer**: The replay function is to replay the recorded mutations one by one according to the corresponding timestamp.
-
-## Roadmap
-
-- storage engine: do deduplication on a large number of rrweb sessions
-- compact mutation data in common patterns
-- provide plugins via the new plugin API, including:
-  - XHR plugin
-  - fetch plugin
-  - GraphQL plugin
-  - ...
-
-## Internal Design
-
-- [serialization](../../docs/serialization.md)
-- [incremental snapshot](../../docs/observer.md)
-- [replay](../../docs/replay.md)
-- [sandbox](../../docs/sandbox.md)
-
-## Contribute Guide
-
-Since we want the record and replay sides to share a strongly typed data structure, rrweb is developed with typescript which provides stronger type support.
-
-[Typescript handbook](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
-
-1. Fork this repository.
-2. Run `yarn install` in the root to install required dependencies for all sub-packages (note: `npm install` is _not_ recommended).
-3. Run `yarn dev` in the root to get auto-building for all the sub-packages whenever you modify anything.
-4. Navigate to one of the sub-packages (in the `packages` folder) where you'd like to make a change.
-5. Patch the code and run `yarn test` to run the tests, make sure they pass before you commit anything.
-6. Push the code and create a pull request.
-
-Protip: You can run `yarn test` in the root folder to run all the tests.
-
-In addition to adding integration tests and unit tests, rrweb also provides a REPL testing tool.
-
-[Using the REPL tool](../../guide.md#REPL-tool)
 
 ## Sponsors
 
@@ -244,12 +196,12 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
   <tr>
     <td align="center">
       <a href="http://www.smartx.com/" target="_blank">
-        <img width="195px" src="https://www.rrweb.io/logos/smartx.png">
+        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/HEAD/static/logos/smartx.png" alt="SmartX">
       </a>
     </td>
     <td align="center">
       <a href="https://posthog.com?utm_source=rrweb&utm_medium=sponsorship&utm_campaign=open-source-sponsorship" target="_blank">
-        <img width="195px" src="https://www.rrweb.io/logos/posthog.png">
+        <img width="195px" src="https://rrweb.com/posthog.png" alt="PostHog">
       </a>
     </td>
     <td align="center">
@@ -263,7 +215,39 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
       </a>
     </td>
   </tr>
-    <tr>
+  <tr>
+    <td align="center">
+      <a href="https://sentry.io" target="_blank">
+        <img width="195px" src="https://rrweb.com/sentry.png" alt="Sentry">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://www.pendo.io" target="_blank">
+        <img width="195px" src="https://rrweb.com/pendo.png" alt="Pendo">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://mixpanel.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/mixpanel.png" alt="Mixpanel">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://www.datadoghq.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/datadog.png" alt="Datadog">
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="https://amplitude.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/amplitude.png" alt="Amplitude">
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://newrelic.com" target="_blank">
+        <img width="195px" src="https://rrweb.com/new%20relic.png" alt="New Relic">
+      </a>
+    </td>
     <td align="center">
       <a href="https://cux.io" target="_blank">
         <img style="padding: 8px" alt="The first ever UX automation tool" width="195px" src="https://cux.io/cux-logo.svg">
@@ -274,6 +258,8 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
         <img style="padding: 8px" alt="Remote Access & Co-Browsing" width="195px" src="https://remsupp.com/images/logo.png">
       </a>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <a href="https://highlight.io" target="_blank">
         <img style="padding: 8px" alt="The open source, fullstack Monitoring Platform." width="195px" src="https://github.com/highlight/highlight/raw/main/highlight.io/public/images/logo.png">
@@ -281,11 +267,9 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
     </td>
     <td align="center">
       <a href="https://analyzee.io" target="_blank">
-        <img style="padding: 8px" alt="Comprehensive data analytics platform that empowers businesses to gain valuable insights and make data-driven decisions." width="195px" src="https://cdn.analyzee.io/assets/analyzee-logo.png">
+        <img style="padding: 8px" alt="Comprehensive data analytics platform that empowers businesses to gain valuable insights and make data-driven decisions." width="195px" src="https://analyzee.io/img/analyzee-main-logo.webp">
       </a>
     </td>
-  </tr>
-  <tr>
     <td align="center">
       <a href="https://requestly.io" target="_blank">
         <img style="padding: 8px" alt="Intercept, Modify, Record & Replay HTTP Requests." width="195px" src="https://github.com/requestly/requestly/assets/16779465/652552db-c867-44cb-9bb5-94a2026e04ca">
@@ -296,6 +280,8 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
         <img style="padding: 8px" alt="In-app bug reporting & customer feedback platform." width="195px" src="https://assets-global.website-files.com/6506f3f29c68b1724807619d/6506f56010237164c6306591_GleapLogo.svg">
       </a>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <a href="https://uxwizz.com" target="_blank">
         <img style="padding: 8px" alt="Self-hosted website analytics with heatmaps and session recordings." width="195px" src="https://github.com/UXWizz/public-files/raw/main/assets/logo.png">
