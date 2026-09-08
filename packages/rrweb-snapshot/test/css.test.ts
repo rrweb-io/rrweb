@@ -6,7 +6,11 @@ import { mediaSelectorPlugin, pseudoClassPlugin } from '../src/css';
 import postcss, { type AcceptedPlugin } from 'postcss';
 import { JSDOM } from 'jsdom';
 import { splitCssText, stringifyStylesheet } from './../src/utils';
-import { adaptCssForReplay, applyCssSplits, createCache } from './../src/rebuild';
+import {
+  adaptCssForReplay,
+  applyCssSplits,
+  createCache,
+} from './../src/rebuild';
 import * as fs from 'fs';
 import * as path from 'path';
 import type {
