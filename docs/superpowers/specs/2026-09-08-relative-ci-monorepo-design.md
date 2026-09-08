@@ -42,7 +42,7 @@ The privileged `workflow_run` workflow will replace the custom base build, compa
 
 - Pull request code never receives RelativeCI keys.
 - The privileged job never checks out or executes pull request code.
-- The privileged job runs only after a successful pull request build.
+- The privileged job runs only after a successful pull request or push build, so RelativeCI receives both comparisons and default-branch baselines.
 - Each matrix job receives one package key rather than every project key.
 - The job's `GITHUB_TOKEN` has only `actions: read` permission.
 - New third-party actions are pinned to full commit SHAs.
