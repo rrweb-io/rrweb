@@ -438,13 +438,34 @@ describe('applyCssSplits css rejoiner', function () {
     );
   });
 
-  it('rejoins a split that lands inside a quoted attribute selector without corrupting it (#1692)', () => {
-    // reduced from the CssSyntaxError: <css input>:25:1093: Unclosed bracket
-    // report in https://github.com/rrweb-io/rrweb/issues/1692, where the
-    // split point fell inside a `[class~="..."]` attribute selector
+  it('rejoins a split that lands inside a quoted attribute selector and adapts the whole text (#1692)', () => {
+    // the `.\:hover` variant only appears when the rejoined text is adapted as a whole
     const firstHalf =
-      '.not-prose :where(blockquote strong):not(:where([class~="not-prose"], [class~="not-prose"';
+      '.not-prose a:hover:not(:where([class~="not-prose"], [class~="not-prose"';
     const secondHalf = '] *)) { color: inherit; }';
+    const markedCssText = [firstHalf, secondHalf].join('/* rr_split */');
+    const selector =
+      '.not-prose a:hover:not(:where([class~="not-prose"], [class~="not-prose"] *))';
+    expect(() =>
+      applyCssSplits(sn, markedCssText, true, mockLastUnusedArg),
+    ).not.toThrow();
+    expect(
+      (sn.childNodes[0] as textNode).textContent +
+        (sn.childNodes[1] as textNode).textContent,
+    ).toEqual(
+      (firstHalf + secondHalf).replace(
+        selector,
+        selector + ',\n' + selector.replace(/:hover/g, '.\\:hover'),
+      ),
+    );
+  });
+
+  it('rejoins a split that lands inside a quoted string value and adapts the whole text (#1734)', () => {
+    // a fragment ending mid-string reproduces #1734's "Unclosed string" when parsed alone
+    const firstHalf =
+      '.cl { border-top-style: ; border-top-width: ; border-color: var(--border-color); } ' +
+      '.btn:hover { content: "cli';
+    const secondHalf = 'ck me"; }';
     const markedCssText = [firstHalf, secondHalf].join('/* rr_split */');
     expect(() =>
       applyCssSplits(sn, markedCssText, true, mockLastUnusedArg),
@@ -452,32 +473,23 @@ describe('applyCssSplits css rejoiner', function () {
     expect(
       (sn.childNodes[0] as textNode).textContent +
         (sn.childNodes[1] as textNode).textContent,
-    ).toEqual(firstHalf + secondHalf);
+    ).toEqual(
+      (firstHalf + secondHalf).replace(
+        '.btn:hover',
+        '.btn:hover,\n.btn.\\:hover',
+      ),
+    );
   });
 });
 
-describe('adaptCssForReplay with malformed css (#1734)', function () {
-  it('does not throw on empty longhand declarations produced by the browser CSSOM', () => {
-    // captured from `style.sheet.rules[0].style.cssText` after setting a
-    // shorthand `border` alongside `border-color: var(...)`, per
-    // https://github.com/rrweb-io/rrweb/issues/1734
-    const cssText =
-      '.cl {border-top-style: ; border-top-width: ; border-right-style: ; ' +
-      'border-right-width: ; border-bottom-style: ; border-bottom-width: ; ' +
-      'border-left-style: ; border-left-width: ; border-image-source: ; ' +
-      'border-image-slice: ; border-image-width: ; border-image-outset: ; ' +
-      'border-image-repeat: ; border-color: var(--border-color);}';
+describe('adaptCssForReplay with unparseable css (#1734)', function () {
+  it('falls back to the original text, byte for byte, instead of throwing', () => {
+    const cssText = '.a { content: "unterminated }';
     const cache = createCache();
     let result = '';
     expect(() => {
       result = adaptCssForReplay(cssText, cache);
     }).not.toThrow();
-    expect(result).toContain('border-color: var(--border-color)');
-  });
-
-  it('falls back to the original text instead of throwing on genuinely unparseable css', () => {
-    const cssText = '.a { content: "unterminated }';
-    const cache = createCache();
-    expect(() => adaptCssForReplay(cssText, cache)).not.toThrow();
+    expect(result).toBe(cssText);
   });
 });
