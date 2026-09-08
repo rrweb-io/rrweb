@@ -116,18 +116,18 @@ function getUntaintedIframeValue<K extends keyof BasePrototypeCache | 'Proxy'>(
     if (!value) return undefined;
 
     // Preserve the live iframe context needed by MutationObserver in WebKit.
-    // Proxy constructors do not need a live context after retrieval.
+    // Other constructors do not need a live context after retrieval.
     const ua = navigator.userAgent;
-    const prototypeKey: keyof BasePrototypeCache | 'Proxy' = key;
     if (
-      prototypeKey !== 'Proxy' &&
+      key === 'MutationObserver' &&
       ua.includes('Safari') &&
       !ua.includes('Chrome')
     ) {
       iframeEl.classList.add('rr-block');
       iframeEl.setAttribute('__rrwebUntaintedMutationObserver', '');
       const retainedIframe = iframeEl;
-      untaintedBaseIframeCleanup[prototypeKey] = () => retainedIframe.remove();
+      untaintedBaseIframeCleanup.MutationObserver = () =>
+        retainedIframe.remove();
       keepAttached = true;
     }
     return value;
