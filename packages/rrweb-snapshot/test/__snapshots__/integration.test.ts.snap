@@ -361,17 +361,17 @@ exports[`integration tests > [html file]: form-fields.html 1`] = `
   </head>  <body>
     <form>
       <label for=\\"text\\">
-        <input type=\\"text\\" value=\\"1\\" />
+        <input type=\\"text\\" value=\\"1\\" autocomplete=\\"off\\" />
       </label>
       <label for=\\"radio\\">
-        <input type=\\"radio\\" checked=\\"\\" />
+        <input type=\\"radio\\" checked=\\"\\" autocomplete=\\"off\\" />
       </label>
       <label for=\\"checkbox\\">
-        <input type=\\"checkbox\\" checked=\\"\\" />
+        <input type=\\"checkbox\\" checked=\\"\\" autocomplete=\\"off\\" />
       </label>
       <label for=\\"textarea\\">
-        <textarea name=\\"\\" id=\\"\\" cols=\\"30\\" rows=\\"10\\">1234</textarea>
-        <textarea name=\\"\\" id=\\"\\" cols=\\"30\\" rows=\\"10\\">1234</textarea>
+        <textarea name=\\"\\" id=\\"\\" cols=\\"30\\" rows=\\"10\\" autocomplete=\\"off\\">1234</textarea>
+        <textarea name=\\"\\" id=\\"\\" cols=\\"30\\" rows=\\"10\\" autocomplete=\\"off\\">1234</textarea>
       </label>
       <label for=\\"select\\">
         <select name=\\"\\" id=\\"\\" value=\\"2\\">
@@ -380,7 +380,7 @@ exports[`integration tests > [html file]: form-fields.html 1`] = `
         </select>
       </label>
       <label>
-        <input name=\\"tagName\\" />
+        <input name=\\"tagName\\" autocomplete=\\"off\\" />
       </label>
     </form>
   

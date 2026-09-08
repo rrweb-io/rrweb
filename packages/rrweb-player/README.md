@@ -65,19 +65,19 @@ new rrwebPlayer({
 
 ## Options
 
-| key            | default      | description                                                                                                         |
-| -------------- | ------------ | ------------------------------------------------------------------------------------------------------------------- |
-| events         | []           | the events for replaying                                                                                            |
-| width          | 1024         | the width of the replayer                                                                                           |
-| height         | 576          | the height of the replayer                                                                                          |
-| maxScale       | 1            | the maximum scale of the replayer (1 = 100%), set to 0 for unlimited                                                |
-| autoPlay       | true         | whether to autoplay                                                                                                 |
-| speed          | 1            | The default speed to play at                                                                                        |
-| speedOption    | [1, 2, 4, 8] | speed options in UI                                                                                                 |
-| showController | true         | whether to show the controller UI                                                                                   |
-| tags           | {}           | customize the custom events style with a key-value map                                                              |
-| inactiveColor  | #D4D4D4      | Customize the color of inactive periods indicator in the progress bar with a valid CSS color string.                |
-| ...            | -            | all the [rrweb Replayer options](https://github.com/rrweb-io/rrweb/blob/master/guide.md#options-1) will be bypassed |
+| key            | default      | description                                                                                                       |
+| -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| events         | []           | the events for replaying                                                                                          |
+| width          | 1024         | the width of the replayer                                                                                         |
+| height         | 576          | the height of the replayer                                                                                        |
+| maxScale       | 1            | the maximum scale of the replayer (1 = 100%), set to 0 for unlimited                                              |
+| autoPlay       | true         | whether to autoplay                                                                                               |
+| speed          | 1            | The default speed to play at                                                                                      |
+| speedOption    | [1, 2, 4, 8] | speed options in UI                                                                                               |
+| showController | true         | whether to show the controller UI                                                                                 |
+| tags           | {}           | customize the custom events style with a key-value map                                                            |
+| inactiveColor  | #D4D4D4      | Customize the color of inactive periods indicator in the progress bar with a valid CSS color string.              |
+| ...            | -            | all the [rrweb Replayer options](https://github.com/rrweb-io/rrweb/blob/main/guide.md#options-1) will be bypassed |
 
 ## Methods on the rrwebPlayer component
 
@@ -267,7 +267,7 @@ playRange(
   <tr>
     <td align="center">
       <a href="http://www.smartx.com/" target="_blank">
-        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/master/static/logos/smartx.png" alt="SmartX">
+        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/HEAD/static/logos/smartx.png" alt="SmartX">
       </a>
     </td>
     <td align="center">
