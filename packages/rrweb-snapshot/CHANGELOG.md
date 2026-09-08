@@ -1,5 +1,19 @@
 # rrweb-snapshot
 
+## 2.1.2
+
+### Patch Changes
+
+- [#1712](https://github.com/rrweb-io/rrweb/pull/1712) [`129a805`](https://github.com/rrweb-io/rrweb/commit/129a8052364f062f134bbe717c7ee3be6105e808) Thanks [@pauldambra](https://github.com/pauldambra)! - Use the provided logger from player config instead of directly calling console.warn
+
+## 2.1.1
+
+## 2.1.0
+
+### Patch Changes
+
+- [#1865](https://github.com/rrweb-io/rrweb/pull/1865) [`b08a06f`](https://github.com/rrweb-io/rrweb/commit/b08a06f8f5445e7779fe0744d301a7ceb8d857c3) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fix conversion of absolute to relative urls if url contains a hash
+
 ## 2.0.1
 
 ### Patch Changes

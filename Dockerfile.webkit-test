@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.60.0-jammy
+FROM mcr.microsoft.com/playwright:v1.61.1-jammy
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 WORKDIR /work
 COPY . .

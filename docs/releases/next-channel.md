@@ -98,11 +98,39 @@ publishes prerelease packages to npm using the `next` dist-tag.
 Chrome extension publication is also branch-specific:
 
 - `main` publishes the production extension listing. Its extension ID is
-  hard-coded in `.github/workflows/release.yml`, and it uses the existing
-  `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, and `CWS_REFRESH_TOKEN` secrets.
+  hard-coded in `.github/workflows/release.yml`, and it uses the
+  `CWS_PUBLISHER_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, and
+  `CWS_REFRESH_TOKEN` secrets.
 - `next` publishes the prerelease extension listing with
-  `NEXT_CWS_EXTENSION_ID`, `NEXT_CWS_CLIENT_ID`, `NEXT_CWS_CLIENT_SECRET`, and
-  `NEXT_CWS_REFRESH_TOKEN`.
+  `NEXT_CWS_EXTENSION_ID`, `NEXT_CWS_PUBLISHER_ID`, `NEXT_CWS_CLIENT_ID`,
+  `NEXT_CWS_CLIENT_SECRET`, and `NEXT_CWS_REFRESH_TOKEN`.
 
 Keep those listings and credentials separate. Changes to the `next` listing
 should not affect the production Chrome Web Store listing used by `main`.
+
+## Manual Chrome extension recovery
+
+Use this fallback only when the npm release was recovered separately and the
+automatic Chrome step did not publish the matching extension version.
+
+1. Check out the exact `main` or `next` release commit whose extension version
+   should be published.
+2. Install dependencies and build the archive:
+
+   ```sh
+   yarn install --frozen-lockfile
+   NODE_OPTIONS='--max-old-space-size=4096' \
+     DISABLE_WORKER_INLINING=true \
+     yarn turbo run prepublish --filter=@rrweb/web-extension
+   unzip -t packages/web-extension/dist/chrome.zip
+   ```
+
+3. Confirm that `packages/web-extension/dist/chrome/manifest.json` contains the
+   intended version.
+4. In the Chrome Web Store developer dashboard, select the production listing
+   for `main` or the prerelease listing for `next`, upload
+   `packages/web-extension/dist/chrome.zip`, and submit it for review.
+
+GitHub Actions secrets cannot be read back for local CLI use, so dashboard upload
+is the supported manual recovery path. Keep production and prerelease listings
+separate.

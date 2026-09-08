@@ -1,5 +1,29 @@
 # @rrweb/web-extension
 
+## 2.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`956fc48`](https://github.com/rrweb-io/rrweb/commit/956fc48e4c7624d343dd456b4498563b1f6f90bb), [`129a805`](https://github.com/rrweb-io/rrweb/commit/129a8052364f062f134bbe717c7ee3be6105e808)]:
+  - rrweb@2.1.2
+  - rrweb-player@2.1.2
+
+## 2.1.1
+
+### Patch Changes
+
+- Updated dependencies [[`a11f8ef`](https://github.com/rrweb-io/rrweb/commit/a11f8ef7cedbfe0f39e3c8f806bad299aa50f50d)]:
+  - rrweb-player@2.1.1
+  - rrweb@2.1.1
+
+## 2.1.0
+
+### Patch Changes
+
+- Updated dependencies [[`7f0f75f`](https://github.com/rrweb-io/rrweb/commit/7f0f75f14d96fc7043ab6cfb52dfe8bbb73b499e)]:
+  - rrweb@2.1.0
+  - rrweb-player@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes

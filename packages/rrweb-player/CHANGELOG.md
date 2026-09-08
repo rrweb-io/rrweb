@@ -1,5 +1,32 @@
 # rrweb-player
 
+## 2.1.2
+
+### Patch Changes
+
+- [#1769](https://github.com/rrweb-io/rrweb/pull/1769) [`956fc48`](https://github.com/rrweb-io/rrweb/commit/956fc48e4c7624d343dd456b4498563b1f6f90bb) Thanks [@heathdutton](https://github.com/heathdutton)! - Emit custom events even when skipping over them, eg. when seeking to a specific time 
+- Updated dependencies [[`956fc48`](https://github.com/rrweb-io/rrweb/commit/956fc48e4c7624d343dd456b4498563b1f6f90bb)]:
+  - @rrweb/replay@2.1.2
+  - @rrweb/packer@2.1.2
+
+## 2.1.1
+
+### Patch Changes
+
+- [#1901](https://github.com/rrweb-io/rrweb/pull/1901) [`a11f8ef`](https://github.com/rrweb-io/rrweb/commit/a11f8ef7cedbfe0f39e3c8f806bad299aa50f50d) Thanks [@kevinvandijk](https://github.com/kevinvandijk)! - Fix the rrweb-player production build so Svelte lifecycle APIs resolve to the browser runtime instead of to stubs
+
+- Updated dependencies []:
+  - @rrweb/replay@2.1.1
+  - @rrweb/packer@2.1.1
+
+## 2.1.0
+
+### Patch Changes
+
+- Updated dependencies [[`7f0f75f`](https://github.com/rrweb-io/rrweb/commit/7f0f75f14d96fc7043ab6cfb52dfe8bbb73b499e)]:
+  - @rrweb/replay@2.1.0
+  - @rrweb/packer@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes
