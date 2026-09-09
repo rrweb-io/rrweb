@@ -1,5 +1,6 @@
 ---
 "rrweb": patch
+"@rrweb/record": patch
 "@rrweb/types": patch
 ---
 
