@@ -32,18 +32,23 @@ RelativeCI will track every Vite-built package covered by the existing bundle-si
 
 ## Build and artifact flow
 
-The shared Vite configuration will add `rollup-plugin-webpack-stats` when `RELATIVE_CI_STATS=true`. Each package build writes its own `webpack-stats.json`. The ESLint workflow already builds every package and will set that environment variable for the build.
+The shared Vite configuration will use `rollup-plugin-webpack-stats` when `RELATIVE_CI_STATS=true`. Each package build writes its own `webpack-stats.json`. The file uses the ESM output as the canonical chunk and module graph, avoiding false duplicate-module results from combining equivalent ESM and CommonJS graphs. Its asset list is finalized after all output hooks and includes every top-level `.js`, `.cjs`, `.mjs`, and `.css` distributable, including generated UMD, minified, and CSS files. The ESLint workflow already builds every package and will set that environment variable for the build. Turbo will pass the variable to `prepublish` tasks and include it in their cache keys.
 
-After the build, the unprivileged workflow uploads each stats file with `relative-ci/agent-upload-artifact-action`. Each artifact has a stable package-specific name. This workflow receives no RelativeCI keys and continues to run safely for forked pull requests.
+After the build, one pinned `actions/upload-artifact` step uploads `packages/**/dist/webpack-stats.json` as `relative-ci-stats`. The upload fails if no stats files exist. This workflow receives no RelativeCI keys and continues to run for forked pull requests.
 
-The privileged `workflow_run` workflow will replace the custom base build, comparison, comment renderer, and sticky-comment action with a matrix job. Each matrix entry identifies one artifact and one repository secret. `relative-ci/agent-action` downloads the corresponding artifact and sends it to the matching RelativeCI project.
+The privileged `workflow_run` workflow replaces the custom base build, comparison, comment renderer, and sticky-comment action with a static 19-entry matrix. Each entry contains the stats path inside the shared artifact, a display name, and the existing repository secret name. Every job passes `artifactName: relative-ci-stats` and its matrix stats path as `webpackStatsFile` to the pinned `relative-ci/agent-action`. The action reads that JSON entry from the triggering run's archive and sends it to the matching RelativeCI project.
+
+The upload glob preserves directories after its first wildcard and omits the `packages/` prefix. For example, the archive contains `record/dist/webpack-stats.json` and `plugins/rrweb-plugin-console-record/dist/webpack-stats.json`. The matrix is the only operational list of tracked packages and key mappings. Extra stats files in the archive do not add projects. A missing tracked package file fails its submission job.
+
+Each of the 19 submission jobs downloads the shared archive. This adds download traffic but avoids upload fan-out jobs, generated YAML, and executable configuration in the privileged workflow.
 
 ## Security boundaries
 
 - Pull request code never receives RelativeCI keys.
 - The privileged job never checks out or executes pull request code.
 - The privileged job runs only after a successful pull request or push build, so RelativeCI receives both comparisons and default-branch baselines.
-- Each matrix job receives one package key rather than every project key.
+- Each matrix job receives one package key.
+- Stats paths and secret names come only from the static trusted workflow, never from an artifact or pull request metadata.
 - The job's `GITHUB_TOKEN` has only `actions: read` permission.
 - New third-party actions are pinned to full commit SHAs.
 - The bundle-stats artifact remains attacker-controlled input. The pinned RelativeCI action is the only component that parses it in the privileged job.
@@ -56,4 +61,6 @@ Delete the custom measurement and Markdown-rendering scripts. Remove the base-br
 
 ## Validation
 
-Run a representative Vite build with `RELATIVE_CI_STATS=true` and verify that it creates a parseable stats file. Parse all changed workflow files with a YAML parser, run the repository formatter or focused lint checks for changed TypeScript/configuration files, scan for references to the deleted bundle-size implementation, and inspect the final diff.
+Run a representative Vite build with `RELATIVE_CI_STATS=true` and verify that it creates a parseable stats file whose asset names and sizes match every tracked top-level distributable. Verify that its chunk and module graph represents only the canonical ESM output. Parse both workflows as YAML 1.2, run Prettier and actionlint, scan for references to the deleted bundle-size implementation, and inspect the final diff. Ignore only actionlint's known outdated-version warning for the existing `actions/setup-node@v3` step.
+
+Verify that there is one shared stats upload, exactly 19 unique matrix paths and secret names, and that every path matches its package and the archive layout. Check both a top-level package and a nested plugin. Confirm the successful pull request and push conditions, the absence of RelativeCI keys in the build workflow, and the privileged job's `actions: read` permission and single pinned action step. Confirm the archive paths in the first GitHub Actions run; local checks do not submit to RelativeCI.
