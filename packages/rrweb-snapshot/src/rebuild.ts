@@ -417,11 +417,11 @@ function buildNode(
           ) {
             // ignore
           } else if (
+            name === 'srcset' &&
             tagName === 'img' &&
-            n.attributes.srcset &&
             n.attributes.rr_dataURL
           ) {
-            // backup original img srcset
+            // backup original img srcset; the inlined rr_dataURL is what renders
             node.setAttribute(
               'rrweb-original-srcset',
               n.attributes.srcset as string,
