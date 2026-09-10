@@ -255,6 +255,41 @@ describe('rebuild', function () {
       expect(node).toBe(document);
     });
 
+    it('keeps every other attribute on an inlined img that has a srcset', () => {
+      const detachedDocument = document.implementation.createHTMLDocument('');
+      const png =
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
+      const img = rebuild(
+        {
+          id: 4,
+          type: NodeType.Element,
+          tagName: 'img',
+          attributes: {
+            id: 'hero',
+            alt: 'hello',
+            class: 'c1',
+            style: 'width: 40px;',
+            src: png,
+            srcset: `${png} 1x`,
+            rr_dataURL: png,
+          },
+          childNodes: [],
+        },
+        { doc: detachedDocument, cache, mirror },
+      ) as HTMLImageElement;
+
+      // Only srcset is redirected into the backup attribute.
+      expect(img.getAttribute('rrweb-original-srcset')).toBe(`${png} 1x`);
+      expect(img.hasAttribute('srcset')).toBe(false);
+      // Everything else survives.
+      expect(img.getAttribute('id')).toBe('hero');
+      expect(img.getAttribute('alt')).toBe('hello');
+      expect(img.getAttribute('class')).toBe('c1');
+      expect(img.getAttribute('style')).toBe('width: 40px;');
+      expect(img.getAttribute('src')).toBe(png);
+    });
+
     it('allows rebuilding into a document without a defaultView', () => {
       const detachedDocument = document.implementation.createDocument(
         null,
