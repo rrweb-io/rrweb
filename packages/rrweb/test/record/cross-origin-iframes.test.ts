@@ -606,6 +606,59 @@ describe('same origin iframes', function (this: ISuite) {
     await assertSnapshot(events);
   });
 
+  it('should record canvas mutations in same-origin iframe', async () => {
+    const sameOriginIframe = ctx.page.mainFrame().childFrames()[0];
+    await sameOriginIframe.evaluate(async () => {
+      const sourceCanvas = document.createElement('canvas');
+      sourceCanvas.width = 10;
+      sourceCanvas.height = 10;
+      sourceCanvas.getContext('2d')!.fillRect(0, 0, 10, 10);
+
+      const imageBlob = await new Promise<Blob>((resolve) => {
+        sourceCanvas.toBlob((blob) => resolve(blob!), 'image/png');
+      });
+      const image = new Image();
+      image.src = URL.createObjectURL(imageBlob);
+      await image.decode();
+
+      const targetCanvas = document.createElement('canvas');
+      document.body.appendChild(targetCanvas);
+
+      const context = targetCanvas.getContext('2d')!;
+      context.drawImage(image, 0, 0);
+    });
+
+    await waitForRAF(ctx.page);
+    const snapshots = (await ctx.page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    const canvasMutation = snapshots.find(
+      (event) =>
+        event.type === EventType.IncrementalSnapshot &&
+        event.data.source === IncrementalSource.CanvasMutation &&
+        event.data.commands.some((command) => command.property === 'drawImage'),
+    );
+
+    expect(canvasMutation).toMatchObject({
+      data: {
+        source: IncrementalSource.CanvasMutation,
+        commands: [
+          {
+            property: 'drawImage',
+            args: [
+              {
+                rr_type: 'HTMLImageElement',
+                src: expect.stringMatching(/^data:image\/png;base64,/),
+              },
+              0,
+              0,
+            ],
+          },
+        ],
+      },
+    });
+  });
+
   it('should record cross-origin iframe in same-origin iframe', async () => {
     const sameOriginIframe = ctx.page.mainFrame().childFrames()[0];
     await sameOriginIframe.evaluate((serverUrl) => {
