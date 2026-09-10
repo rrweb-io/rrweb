@@ -1337,10 +1337,6 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
           \\"value\\": \\"body { color: yellow; }\\"
         },
         {
-          \\"id\\": 15,
-          \\"value\\": \\"body { color: yellow; }\\"
-        },
-        {
           \\"id\\": 38,
           \\"value\\": \\"body { background-color: purple; }\\"
         }
