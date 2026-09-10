@@ -32,7 +32,9 @@ RelativeCI will track every Vite-built package covered by the existing bundle-si
 
 ## Build and artifact flow
 
-The shared Vite configuration will use `rollup-plugin-webpack-stats` when `RELATIVE_CI_STATS=true`. Each package build writes its own `webpack-stats.json`. The file uses the ESM output as the canonical chunk and module graph, avoiding false duplicate-module results from combining equivalent ESM and CommonJS graphs. Its asset list is finalized after all output hooks and includes every top-level `.js`, `.cjs`, `.mjs`, and `.css` distributable, including generated UMD, minified, and CSS files. The ESLint workflow already builds every package and will set that environment variable for the build. Turbo will pass the variable to `prepublish` tasks and include it in their cache keys.
+Bundle reporting runs independently of lint and tests. `bundle-stats.yml` builds and uploads stats on pushes and pull requests; `relative-ci-upload.yml` consumes successful `Bundle Stats` runs. The ESLint workflow keeps its existing build and package-preview publishing but no longer generates or uploads bundle stats. This adds a dedicated build so lint, preview publishing, and test failures cannot block bundle feedback.
+
+The shared Vite configuration will use `rollup-plugin-webpack-stats` when `RELATIVE_CI_STATS=true`. Each package build writes its own `webpack-stats.json`. The file uses the ESM output as the canonical chunk and module graph, avoiding false duplicate-module results from combining equivalent ESM and CommonJS graphs. Its asset list is finalized after all output hooks and includes every top-level `.js`, `.cjs`, `.mjs`, and `.css` distributable, including generated UMD, minified, and CSS files. The Bundle Stats workflow sets that environment variable for the build. Turbo will pass the variable to `prepublish` tasks and include it in their cache keys.
 
 After the build, one pinned `actions/upload-artifact` step uploads `packages/**/dist/webpack-stats.json` as `relative-ci-stats`. The upload fails if no stats files exist. This workflow receives no RelativeCI keys and continues to run for forked pull requests.
 
