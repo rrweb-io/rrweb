@@ -23,11 +23,13 @@
   export let speedOption: NonNullable<RRwebPlayerOptions['props']['speedOption']> = [1, 2, 4, 8];
   export let speed: NonNullable<RRwebPlayerOptions['props']['speed']> = 1;
   export let showController: NonNullable<RRwebPlayerOptions['props']['showController']> = true;
+  export let showCaptions: NonNullable<RRwebPlayerOptions['props']['showCaptions']> = false;
   export let tags: NonNullable<RRwebPlayerOptions['props']['tags']> = {};
   // color of inactive periods indicator
   export let inactiveColor: NonNullable<RRwebPlayerOptions['props']['inactiveColor']> = '#D4D4D4';
 
   let replayer: Replayer;
+  let captionText: string | undefined;
 
   export const getMirror = () => replayer.getMirror();
 
@@ -96,7 +98,7 @@
 
   export const addEvent: RRwebPlayerExpose['addEvent'] = (event: eventWithTime) => {
     replayer.addEvent(event);
-    controller.triggerUpdateMeta();
+    void controller.triggerUpdateMeta();
   };
   export const getMetaData: RRwebPlayerExpose['getMetaData'] = () => replayer.getMetaData();
   export const getReplayer: RRwebPlayerExpose['getReplayer'] = () => replayer;
@@ -205,6 +207,31 @@
     box-shadow: 0 24px 48px rgba(17, 16, 62, 0.12);
   }
 
+  .rr-player__viewport {
+    position: relative;
+  }
+
+  .rr-player__caption {
+    bottom: 24px;
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    margin: 0 auto;
+    width: fit-content;
+    max-width: 84%;
+    max-height: 45%;
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 10px 16px;
+    border-radius: 6px;
+    background: rgba(24, 29, 40, 0.94);
+    color: #fff;
+    font: 16px/1.5 system-ui, sans-serif;
+    text-align: center;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
   .rr-player__frame {
     overflow: hidden;
   }
@@ -222,12 +249,27 @@
   }
 </style>
 
-<div class="rr-player" bind:this={player} style={playerStyle}>
-  <div class="rr-player__frame" bind:this={frame} {style} />
+<div
+  class="rr-player"
+  bind:this={player}
+  style={playerStyle}
+  style:--rr-note-width={`${Math.min(280, width * 0.7)}px`}
+  style:--rr-note-height={`${Math.max(48, height - 32)}px`}
+>
+  <div class="rr-player__viewport" {style}>
+    <div class="rr-player__frame" bind:this={frame} {style} />
+    <div role="status" aria-live="polite" aria-atomic="true">
+      {#if captionText !== undefined}
+        <div class="rr-player__caption">{captionText}</div>
+      {/if}
+    </div>
+  </div>
   {#if replayer}
     <Controller
       bind:this={controller}
       {replayer}
+      bind:captionText
+      bind:showCaptions
       {showController}
       {autoPlay}
       {speedOption}
