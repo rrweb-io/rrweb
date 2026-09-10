@@ -38,6 +38,32 @@ record({
 });
 ```
 
+### Cross-origin recording
+
+The plugin rejects cross-origin `postMessage` commands by default. This setting
+is separate from rrweb's `recordCrossOriginIframes` option. Enabling that option
+in `record()` does not enable cross-origin canvas streaming in this plugin.
+
+For cross-origin canvas streaming, set `recordCrossOriginIframes: true` in the
+plugin constructor in both the recording root page and each participating iframe.
+Also enable rrweb's `recordCrossOriginIframes` option for cross-origin event recording.
+
+```js
+const webRTCRecordPlugin = new RRWebPluginCanvasWebRTCRecord({
+  signalSendCallback: sendSignalToReplayer,
+  recordCrossOriginIframes: true,
+});
+```
+
+Enabling this option accepts commands from any origin. It does not authenticate
+the embedding page or restrict signaling to an allowlist. A page with this option
+enabled must restrict embedding to trusted origins, for example with a
+`Content-Security-Policy: frame-ancestors` response header. Leave the option
+disabled if the page may be embedded by untrusted sites.
+
+Same-origin commands continue to work without opt-in. Messages from opaque origins,
+such as sandboxed frames without `allow-same-origin`, require explicit opt-in.
+
 ### Replay Side
 
 ```js

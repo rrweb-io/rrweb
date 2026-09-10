@@ -7947,6 +7947,11 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
+pkg-pr-new@0.0.88:
+  version "0.0.88"
+  resolved "https://registry.yarnpkg.com/pkg-pr-new/-/pkg-pr-new-0.0.88.tgz#6bd135b80155612105847a5e286d7b604a809221"
+  integrity sha512-Xc6PMJ2gher0WZP+rtjefFk26hIb7V1PTLL30bmy1Z2vsRmSvqiss7Ag1XUdyplTGYzIlFNJp4L3vMNmK44N6g==
+
 pkg-types@^1.0.3, pkg-types@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/pkg-types/-/pkg-types-1.1.1.tgz#07b626880749beb607b0c817af63aac1845a73f2"
@@ -8568,6 +8573,11 @@ rimraf@~2.4.0:
   dependencies:
     glob "^6.0.1"
 
+rollup-plugin-stats@2.1.3:
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-stats/-/rollup-plugin-stats-2.1.3.tgz#213d9b6b6604bdcbeca3712d9f7fffe0aeb406af"
+  integrity sha512-0iWHSzcGMfZi+A9WhqHTydaPDFCWeR4KX4YqNDofqkfUyzqtKx8g7nHU7k6IddfUrd1BHkoiF+uCCj5TwxDu7Q==
+
 rollup-plugin-visualizer@^5.12.0:
   version "5.14.0"
   resolved "https://registry.yarnpkg.com/rollup-plugin-visualizer/-/rollup-plugin-visualizer-5.14.0.tgz#be82d43fb3c644e396e2d50ac8a53d354022d57c"
@@ -8577,6 +8587,13 @@ rollup-plugin-visualizer@^5.12.0:
     picomatch "^4.0.2"
     source-map "^0.7.4"
     yargs "^17.5.1"
+
+rollup-plugin-webpack-stats@3.1.3:
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/rollup-plugin-webpack-stats/-/rollup-plugin-webpack-stats-3.1.3.tgz#06f72708d92219b95030a4f22d3a142f785caf6b"
+  integrity sha512-g6hILvZevBgrTPSmtYsvSeEB9MU1Rc8CrHcJKEIH0J8vSATrdXPkl/Dne/6h/wMhy6hI6Ve2aL6bsCSof7NU2g==
+  dependencies:
+    rollup-plugin-stats "2.1.3"
 
 rollup@^4.13.0:
   version "4.18.0"

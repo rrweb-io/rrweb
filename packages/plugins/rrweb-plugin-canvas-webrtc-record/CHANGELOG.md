@@ -1,5 +1,13 @@
 # @rrweb/rrweb-plugin-canvas-webrtc-record
 
+## 2.1.4
+
+### Patch Changes
+
+- [`34806cc`](https://github.com/rrweb-io/rrweb/commit/34806cc1781b036b56c0493937fd8ee41803690f) Thanks [@Juice10](https://github.com/Juice10)! - Reject cross-origin canvas WebRTC commands by default. Cross-origin streaming now requires `recordCrossOriginIframes: true` in each participating recording plugin instance, separately from rrweb's recording option. Only enable this option for pages whose embedding origins are trusted.
+
+## 2.1.3
+
 ## 2.1.2
 
 ## 2.1.1
