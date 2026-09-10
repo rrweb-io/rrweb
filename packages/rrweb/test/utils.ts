@@ -60,7 +60,7 @@ export const startServer = (defaultPort = 3030) =>
 
       let pathname = path.join(__dirname, sanitizePath);
       if (/^\/rrweb.*\.c?js.*/.test(sanitizePath)) {
-        pathname = path.join(__dirname, `../dist/main`, sanitizePath);
+        pathname = path.join(__dirname, `../dist`, sanitizePath);
       }
 
       try {
@@ -301,6 +301,7 @@ function stringifyDomSnapshot(mhtml: string): string {
 
 export async function assertSnapshot(
   snapshotsOrPage: eventWithTime[] | puppeteer.Page,
+  useOwnFile: boolean | string = false,
 ) {
   let snapshots: eventWithTime[];
   if (!Array.isArray(snapshotsOrPage)) {
@@ -318,7 +319,21 @@ export async function assertSnapshot(
   }
 
   expect(snapshots).toBeDefined();
-  expect(stringifySnapshots(snapshots)).toMatchSnapshot();
+
+  if (useOwnFile) {
+    // e.g. 'mutation.test.ts > mutation > add elements at once'
+    const long_fname = expect.getState().currentTestName.split('/').pop();
+    const file = long_fname.split(' > ')[0].replace('.test.ts', '');
+    if (typeof useOwnFile !== 'string') {
+      useOwnFile = long_fname.substring(long_fname.indexOf(' > ') + 3);
+    }
+    useOwnFile = useOwnFile.replace(/ > /g, '.').replace(/\s/g, '_');
+
+    const fname = `./__${file}.snapshots__/${useOwnFile}.json`;
+    expect(stringifySnapshots(snapshots)).toMatchFileSnapshot(fname);
+  } else {
+    expect(stringifySnapshots(snapshots)).toMatchSnapshot();
+  }
 }
 
 export function replaceLast(str: string, find: string, replace: string) {
