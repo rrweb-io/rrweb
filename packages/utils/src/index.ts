@@ -94,39 +94,51 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
     return defaultObj.prototype as BasePrototypeCache[T];
   }
 
+  const untaintedPrototype = getUntaintedIframeValue(key)?.prototype;
+  if (!untaintedPrototype) return defaultPrototype;
+
+  return (untaintedBasePrototype[key] =
+    untaintedPrototype as BasePrototypeCache[T]);
+}
+
+// Share the clean realm lookup for prototypes and constructors without a prototype.
+function getUntaintedIframeValue<K extends keyof BasePrototypeCache | 'Proxy'>(
+  key: K,
+): (typeof globalThis)[K] | undefined {
+  let iframeEl: HTMLIFrameElement | undefined;
+  let keepAttached = false;
   try {
-    const iframeEl = document.createElement('iframe');
+    iframeEl = document.createElement('iframe');
     iframeEl.style.display = 'none';
-    document.body.appendChild(iframeEl);
-    const win = iframeEl.contentWindow;
-    if (!win) return defaultObj.prototype as BasePrototypeCache[T];
+    (document.body || document.documentElement).appendChild(iframeEl);
+    const win = iframeEl.contentWindow as (Window & typeof globalThis) | null;
+    const value = win?.[key];
+    if (!value) return undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-    const untaintedObject = (win as any)[key]
-      .prototype as BasePrototypeCache[T];
-
-    if (!untaintedObject) {
-      iframeEl.remove();
-      return defaultPrototype;
-    }
-
-    // WebKit/Safari: WebKit tears down an iframe's ScriptExecutionContext when it is
-    // detached from the DOM. MutationObserver.deliver() silently drops callbacks when
-    // m_callback->scriptExecutionContext() returns null (webkit.org/b/179224).
-    // Keep the iframe attached so its context stays live, and expose a cleanup fn.
+    // Preserve the live iframe context needed by MutationObserver in WebKit.
+    // Other constructors do not need a live context after retrieval.
     const ua = navigator.userAgent;
-    if (ua.includes('Safari') && !ua.includes('Chrome')) {
-      // rr-block prevents rrweb from serializing this iframe in subsequent snapshots
+    if (
+      key === 'MutationObserver' &&
+      ua.includes('Safari') &&
+      !ua.includes('Chrome')
+    ) {
       iframeEl.classList.add('rr-block');
       iframeEl.setAttribute('__rrwebUntaintedMutationObserver', '');
-      untaintedBaseIframeCleanup[key] = () => iframeEl.remove();
-    } else {
-      iframeEl.remove();
+      const retainedIframe = iframeEl;
+      untaintedBaseIframeCleanup.MutationObserver = () =>
+        retainedIframe.remove();
+      keepAttached = true;
     }
-
-    return (untaintedBasePrototype[key] = untaintedObject);
+    return value;
   } catch {
-    return defaultPrototype;
+    return undefined;
+  } finally {
+    try {
+      if (!keepAttached) iframeEl?.parentNode?.removeChild(iframeEl);
+    } catch {
+      // Patched DOM cleanup must not override the lookup result or fallback.
+    }
   }
 }
 
@@ -258,6 +270,33 @@ export function mutationObserverCtor(): [
         /* no-op; a cleanup function is only needed in Safari browsers */
       }),
   ];
+}
+
+let untaintedProxy: ProxyConstructor | undefined;
+
+// Proxy has no prototype, so cache the constructor itself.
+export function getUntaintedProxy(): ProxyConstructor {
+  if (untaintedProxy) return untaintedProxy;
+
+  const defaultProxy = globalThis.Proxy;
+  try {
+    if (
+      typeof defaultProxy === 'function' &&
+      // Bound functions also contain [native code], so require native Proxy's source.
+      /^function\s+Proxy\s*\(\s*\)\s*\{\s*\[native code\]\s*\}$/.test(
+        Function.prototype.toString.call(defaultProxy),
+      )
+    ) {
+      return (untaintedProxy = defaultProxy);
+    }
+  } catch {
+    // If native detection fails, recover the constructor from a clean realm.
+  }
+
+  const cleanProxy = getUntaintedIframeValue('Proxy');
+  if (!cleanProxy) return defaultProxy;
+
+  return (untaintedProxy = cleanProxy);
 }
 
 // guard against old third party libraries which redefine Date.now
