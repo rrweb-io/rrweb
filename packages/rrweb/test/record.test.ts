@@ -804,6 +804,60 @@ describe('record', function (this: ISuite) {
     await assertSnapshot(ctx.events);
   });
 
+  it('does not emit an attribute reverted to its pre-freeze value', async () => {
+    await ctx.page.evaluate(() => {
+      return new Promise((resolve) => {
+        const { record, freezePage } = (window as unknown as IWindow).rrweb;
+        // the element (and its baseline attribute) exist before recording, so
+        // the baseline is captured in the FullSnapshot
+        const div = document.createElement('div');
+        div.setAttribute('data-test', 'original');
+        document.body.appendChild(div);
+
+        record({
+          emit: (window as unknown as IWindow).emit,
+        });
+        freezePage();
+
+        // change the attribute then revert it, all while frozen
+        setTimeout(() => {
+          document
+            .querySelector('div[data-test]')
+            ?.setAttribute('data-test', 'changed');
+        }, 0);
+        setTimeout(() => {
+          document
+            .querySelector('div[data-test]')
+            ?.setAttribute('data-test', 'original');
+        }, 10);
+        // 'unfreeze' happens upon a user event, flushing the buffer
+        setTimeout(() => {
+          document.body.click();
+        }, 20);
+        setTimeout(() => {
+          resolve(null);
+        }, 25);
+      });
+    });
+    await waitForRAF(ctx.page); // wait till events get sent
+
+    // the attribute's net value is unchanged over the frozen window. With the
+    // read deferred to emit, it reads back the baseline and nothing is emitted;
+    // reading eagerly at mutation-observation time would instead record the
+    // intermediate 'changed'->'original' and emit a redundant mutation.
+    const attributeMutations = ctx.events
+      .filter(
+        (e) =>
+          e.type === EventType.IncrementalSnapshot &&
+          e.data.source === IncrementalSource.Mutation,
+      )
+      .filter(
+        (e) =>
+          ((e.data as { attributes: unknown[] }).attributes || []).length > 0,
+      );
+    expect(attributeMutations.length).toEqual(0);
+  });
+
   describe('loading stylesheets', () => {
     let server: Server;
     let serverURL: string;

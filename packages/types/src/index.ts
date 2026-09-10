@@ -353,10 +353,6 @@ export type mutationRecord = Readonly<{
   attributeName: string | null;
 }>;
 
-export type textCursor = {
-  node: Node;
-  value: string | null;
-};
 export type textMutation = {
   id: number;
   value: string | null;
@@ -368,14 +364,6 @@ export type styleOMValue = {
 
 export type styleValueWithPriority = [string, string];
 
-export type attributeCursor = {
-  node: Node;
-  attributes: {
-    [key: string]: string | styleOMValue | null;
-  };
-  styleDiff: styleOMValue;
-  _unchangedStyles: styleOMValue;
-};
 export type attributeMutation = {
   id: number;
   attributes: {

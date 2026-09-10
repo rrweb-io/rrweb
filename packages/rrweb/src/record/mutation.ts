@@ -13,10 +13,10 @@ import {
 import type { observerParam, MutationBufferParam } from '../types';
 import type {
   mutationRecord,
-  textCursor,
-  attributeCursor,
+  attributeMutation,
   removedNodeMutation,
   addedNodeMutation,
+  styleOMValue,
 } from '@rrweb/types';
 import {
   isBlocked,
@@ -32,6 +32,8 @@ import {
 } from '../utils';
 import dom from '@rrweb/utils';
 
+type MutatingAttributes = Map<string, string | true | null>;
+
 const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
 
 /**
@@ -41,8 +43,8 @@ export default class MutationBuffer {
   private frozen = false;
   private locked = false;
 
-  private texts = new Map<Node, textCursor>();
-  private attributes = new Map<Node, attributeCursor>();
+  private textsMap = new Map<Node, string | null>();
+  private attributesMap = new Map<HTMLElement, MutatingAttributes>();
   private removes: removedNodeMutation[] = [];
   private mapRemoves: Node[] = [];
 
@@ -286,7 +288,7 @@ export default class MutationBuffer {
       if (n.nodeType === Node.TEXT_NODE) {
         const parentTag = (parentNode as Element).tagName;
         if (parentTag === 'TEXTAREA') {
-          // genTextAreaValueMutation already called via parent
+          // enqueueTextAreaValueMutation already called via parent
           continue;
         } else if (parentTag === 'STYLE' && addedIds.has(parentId)) {
           // css content will be recorded via parent's _cssText attribute when
@@ -364,51 +366,31 @@ export default class MutationBuffer {
     }
 
     const payload = {
-      texts: Array.from(this.texts.values())
-        .map((text) => {
-          const n = text.node;
-          const parent = dom.parentNode(n);
-          if (parent && (parent as Element).tagName === 'TEXTAREA') {
-            // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
-            this.genTextAreaValueMutation(parent as HTMLTextAreaElement);
-          }
-          return {
-            id: this.mirror.getId(n),
-            value: text.value,
-          };
-        })
+      texts: Array.from(this.textsMap, ([target, value]) => {
+        const parent = dom.parentNode(target);
+        if (parent && (parent as Element).tagName === 'TEXTAREA') {
+          // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
+          // this will be immediately picked up in resolveAttributes below
+          this.enqueueTextAreaValueMutation(parent as HTMLTextAreaElement);
+        }
+        return {
+          id: this.mirror.getId(target),
+          value,
+        };
+      })
         // no need to include them on added elements, as they have just been serialized with up to date attribubtes
         .filter((text) => !addedIds.has(text.id))
         // text mutation's id was not in the mirror map means the target node has been removed
         .filter((text) => this.mirror.has(text.id)),
-      attributes: Array.from(this.attributes.values())
-        .map((attribute) => {
-          const { attributes } = attribute;
-          if (typeof attributes.style === 'string') {
-            const diffAsStr = JSON.stringify(attribute.styleDiff);
-            const unchangedAsStr = JSON.stringify(attribute._unchangedStyles);
-            // check if the style diff is actually shorter than the regular string based mutation
-            // (which was the whole point of #464 'compact style mutation').
-            if (diffAsStr.length < attributes.style.length) {
-              // also: CSSOM fails badly when var() is present on shorthand properties, so only proceed with
-              // the compact style mutation if these have all been accounted for
-              if (
-                (diffAsStr + unchangedAsStr).split('var(').length ===
-                attributes.style.split('var(').length
-              ) {
-                attributes.style = attribute.styleDiff;
-              }
-            }
-          }
-          return {
-            id: this.mirror.getId(attribute.node),
-            attributes: attributes,
-          };
-        })
+      attributes: Array.from(this.attributesMap, ([target, mutatingAttributes]) => ({
+        id: this.mirror.getId(target),
+        attributes: this.resolveAttributes(target, mutatingAttributes),
+      }))
         // no need to include them on added elements, as they have just been serialized with up to date attribubtes
         .filter((attribute) => !addedIds.has(attribute.id))
         // attribute mutation's id was not in the mirror map means the target node has been removed
-        .filter((attribute) => this.mirror.has(attribute.id)),
+        .filter((attribute) => this.mirror.has(attribute.id))
+        .filter((attribute) => Object.keys(attribute.attributes).length > 0),
       removes: this.removes,
       adds,
     };
@@ -423,8 +405,8 @@ export default class MutationBuffer {
     }
 
     // reset
-    this.texts = new Map<Node, textCursor>();
-    this.attributes = new Map<Node, attributeCursor>();
+    this.textsMap = new Map<Node, string | null>();
+    this.attributesMap = new Map<HTMLElement, MutatingAttributes>();
     this.removes = [];
     this.addedSet = new Set<Node>();
     this.movedSet = new Set<Node>();
@@ -435,29 +417,151 @@ export default class MutationBuffer {
     this.mutationCb(payload);
   };
 
-  private genTextAreaValueMutation = (textarea: HTMLTextAreaElement) => {
-    let item = this.attributes.get(textarea);
-    if (!item) {
-      item = {
-        node: textarea,
-        attributes: {},
-        styleDiff: {},
-        _unchangedStyles: {},
-      };
-      this.attributes.set(textarea, item);
+  private enqueueTextAreaValueMutation = (textarea: HTMLTextAreaElement) => {
+    let mutatingAttributes = this.attributesMap.get(textarea);
+    if (!mutatingAttributes) {
+      mutatingAttributes = new Map();
+      this.attributesMap.set(textarea, mutatingAttributes);
     }
-    const value = Array.from(
-      dom.childNodes(textarea),
-      (cn) => dom.textContent(cn) || '',
-    ).join('');
-    item.attributes.value = maskInputValue({
-      element: textarea,
-      maskInputOptions: this.maskInputOptions,
-      tagName: textarea.tagName,
-      type: getInputType(textarea),
-      value,
-      maskInputFn: this.maskInputFn,
-    });
+    // we don't know real 'oldValue' because it comes from childnodes, so this is a sentinel
+    mutatingAttributes.set('value', true);
+  };
+
+  private resolveAttributes = (
+    target: HTMLElement,
+    mutatingAttributes: MutatingAttributes,
+  ): attributeMutation['attributes'] => {
+    const tagNameLower = toLowerCase(target.tagName);
+    const attributes: attributeMutation['attributes'] = {};
+    const styleDiff: styleOMValue = {};
+    const unchangedStyles: styleOMValue = {};
+
+    for (let [name, maybeSentinel] of mutatingAttributes) {
+      const oldValue: string | null =
+        maybeSentinel === true ? '' : maybeSentinel;
+      let value = target.getAttribute(name);
+
+      if (name === 'value') {
+        if (target.tagName === 'TEXTAREA') {
+          if (maybeSentinel !== true) {
+            // an actual mutation on the value attribute doesn't affect
+            // the textarea content and needs to be ignored
+            continue;
+          }
+          value = Array.from(
+            dom.childNodes(target),
+            (cn) => dom.textContent(cn) || '',
+          ).join('');
+        }
+        value = maskInputValue({
+          element: target,
+          maskInputOptions: this.maskInputOptions,
+          tagName: target.tagName,
+          type: getInputType(target),
+          value,
+          maskInputFn: this.maskInputFn,
+        });
+      }
+
+      let rr_open_mode = null;
+      if (name === 'open' && tagNameLower === 'dialog') {
+        // we don't know what the oldValue was for rr_open_mode
+        // so always emit { open, rr_open_mode }
+        if (target.matches('dialog:modal')) {
+          rr_open_mode = 'modal';
+        } else {
+          rr_open_mode = 'non-modal';
+        }
+      } else if (name === 'value' && tagNameLower === 'textarea') {
+        // we don't have a good idea of oldValue as value is derived from childNodes so always emit
+      } else if (value === oldValue) {
+        // no net change
+        continue;
+      }
+
+      if (
+        tagNameLower === 'iframe' &&
+        name === 'src' &&
+        !this.keepIframeSrcFn(value as string)
+      ) {
+        if (!(target as HTMLIFrameElement).contentDocument) {
+          // we can't record it directly as we can't see into it
+          // preserve the src attribute so a decision can be taken at replay time
+          name = 'rr_src';
+        } else {
+          continue;
+        }
+      }
+      if (ignoreAttribute(tagNameLower, name, value)) {
+        continue;
+      }
+      attributes[name] = transformAttribute(
+        this.doc,
+        tagNameLower,
+        toLowerCase(name),
+        value,
+      );
+      if (name === 'style') {
+        if (!this.unattachedDoc) {
+          try {
+            // avoid upsetting original document from a Content Security point of view
+            this.unattachedDoc = document.implementation.createHTMLDocument();
+          } catch (e) {
+            // fallback to more direct method
+            this.unattachedDoc = this.doc;
+          }
+        }
+        const old = this.unattachedDoc.createElement('span');
+        if (oldValue) {
+          old.setAttribute('style', oldValue);
+        }
+        for (const pname of Array.from(target.style)) {
+          const newValue = target.style.getPropertyValue(pname);
+          const newPriority = target.style.getPropertyPriority(pname);
+          if (
+            newValue !== old.style.getPropertyValue(pname) ||
+            newPriority !== old.style.getPropertyPriority(pname)
+          ) {
+            if (newPriority === '') {
+              styleDiff[pname] = newValue;
+            } else {
+              styleDiff[pname] = [newValue, newPriority];
+            }
+          } else {
+            // for checking
+            unchangedStyles[pname] = [newValue, newPriority];
+          }
+        }
+        for (const pname of Array.from(old.style)) {
+          if (target.style.getPropertyValue(pname) === '') {
+            // "if not set, returns the empty string"
+            styleDiff[pname] = false; // delete
+          }
+        }
+      }
+      if (rr_open_mode) {
+        attributes['rr_open_mode'] = rr_open_mode;
+      }
+    }
+
+    if (typeof attributes.style === 'string') {
+      const diffAsStr = JSON.stringify(styleDiff);
+      const unchangedAsStr = JSON.stringify(unchangedStyles);
+      // check if the style diff is actually shorter than the regular string based mutation
+      // (which was the whole point of #464 'compact style mutation').
+      if (diffAsStr.length < attributes.style.length) {
+        // also: CSSOM fails badly when var() is present on shorthand properties, so only proceed with
+        // the compact style mutation if these have all been accounted for
+        if (
+          (diffAsStr + unchangedAsStr).split('var(').length ===
+          attributes.style.split('var(').length
+        ) {
+          attributes.style = styleDiff;
+        }
+      }
+    }
+
+    return attributes;
   };
 
   private processMutation = (m: mutationRecord) => {
@@ -483,65 +587,17 @@ export default class MutationBuffer {
                 ? this.maskTextFn(value, closestElementOfNode(m.target))
                 : value.replace(/[\S]/g, '*')
               : value;
-          const item = this.texts.get(m.target);
-          if (item) {
-            item.value = maskedValue;
-          } else {
-            this.texts.set(m.target, {
-              value: maskedValue,
-              node: m.target,
-            });
-          }
+          this.textsMap.set(m.target, maskedValue);
         }
         break;
       }
       case 'attributes': {
         const target = m.target as HTMLElement;
         const tagNameLower = toLowerCase(target.tagName);
-        let attributeName = m.attributeName as string;
-        let value = (m.target as HTMLElement).getAttribute(attributeName);
+        const attributeName = m.attributeName as string;
 
-        if (attributeName === 'value') {
-          const type = getInputType(target);
-
-          value = maskInputValue({
-            element: target,
-            maskInputOptions: this.maskInputOptions,
-            tagName: target.tagName,
-            type,
-            value,
-            maskInputFn: this.maskInputFn,
-          });
-        }
-        if (
-          isBlocked(m.target, this.blockClass, this.blockSelector, false) ||
-          value === m.oldValue
-        ) {
+        if (isBlocked(m.target, this.blockClass, this.blockSelector, false)) {
           return;
-        }
-
-        let item = this.attributes.get(m.target);
-        if (
-          tagNameLower === 'iframe' &&
-          attributeName === 'src' &&
-          !this.keepIframeSrcFn(value as string)
-        ) {
-          if (!(target as HTMLIFrameElement).contentDocument) {
-            // we can't record it directly as we can't see into it
-            // preserve the src attribute so a decision can be taken at replay time
-            attributeName = 'rr_src';
-          } else {
-            return;
-          }
-        }
-        if (!item) {
-          item = {
-            node: m.target,
-            attributes: {},
-            styleDiff: {},
-            _unchangedStyles: {},
-          };
-          this.attributes.set(m.target, item);
         }
 
         // Keep this property on inputs that used to be password inputs
@@ -554,59 +610,14 @@ export default class MutationBuffer {
           target.setAttribute('data-rr-is-password', 'true');
         }
 
-        if (!ignoreAttribute(tagNameLower, attributeName, value)) {
-          // overwrite attribute if the mutations was triggered in same time
-          item.attributes[attributeName] = transformAttribute(
-            this.doc,
-            tagNameLower,
-            toLowerCase(attributeName),
-            value,
-          );
-          if (attributeName === 'style') {
-            if (!this.unattachedDoc) {
-              try {
-                // avoid upsetting original document from a Content Security point of view
-                this.unattachedDoc =
-                  document.implementation.createHTMLDocument();
-              } catch (e) {
-                // fallback to more direct method
-                this.unattachedDoc = this.doc;
-              }
-            }
-            const old = this.unattachedDoc.createElement('span');
-            if (m.oldValue) {
-              old.setAttribute('style', m.oldValue);
-            }
-            for (const pname of Array.from(target.style)) {
-              const newValue = target.style.getPropertyValue(pname);
-              const newPriority = target.style.getPropertyPriority(pname);
-              if (
-                newValue !== old.style.getPropertyValue(pname) ||
-                newPriority !== old.style.getPropertyPriority(pname)
-              ) {
-                if (newPriority === '') {
-                  item.styleDiff[pname] = newValue;
-                } else {
-                  item.styleDiff[pname] = [newValue, newPriority];
-                }
-              } else {
-                // for checking
-                item._unchangedStyles[pname] = [newValue, newPriority];
-              }
-            }
-            for (const pname of Array.from(old.style)) {
-              if (target.style.getPropertyValue(pname) === '') {
-                // "if not set, returns the empty string"
-                item.styleDiff[pname] = false; // delete
-              }
-            }
-          } else if (attributeName === 'open' && target.tagName === 'DIALOG') {
-            if (target.matches('dialog:modal')) {
-              item.attributes['rr_open_mode'] = 'modal';
-            } else {
-              item.attributes['rr_open_mode'] = 'non-modal';
-            }
-          }
+        let mutatingAttributes = this.attributesMap.get(target);
+        if (!mutatingAttributes) {
+          mutatingAttributes = new Map();
+          this.attributesMap.set(target, mutatingAttributes);
+        }
+        // we're only interested in first old value while throttled/frozen
+        if (!mutatingAttributes.has(attributeName)) {
+          mutatingAttributes.set(attributeName, m.oldValue);
         }
         break;
       }
@@ -619,7 +630,7 @@ export default class MutationBuffer {
 
         if ((m.target as Element).tagName === 'TEXTAREA') {
           // children would be ignored in genAdds as they aren't in the mirror
-          this.genTextAreaValueMutation(m.target as HTMLTextAreaElement);
+          this.enqueueTextAreaValueMutation(m.target as HTMLTextAreaElement);
           return; // any removedNodes won't have been in mirror either
         }
 
