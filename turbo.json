@@ -15,6 +15,7 @@
   "tasks": {
     "prepublish": {
       "dependsOn": ["^prepublish", "//#references:update"],
+      "env": ["RELATIVE_CI_STATS"],
       "outputs": [
         "lib/**",
         "es/**",

@@ -7,6 +7,7 @@ import { resolve, dirname } from 'path';
 import { umdWrapper } from 'esbuild-plugin-umd-wrapper';
 import * as fs from 'node:fs';
 import { visualizer } from 'rollup-plugin-visualizer';
+import { bundleToWebpackStats } from 'rollup-plugin-webpack-stats/transform';
 
 // don't empty out dir if --watch flag is passed
 const emptyOutDir = !process.argv.includes('--watch');
@@ -15,6 +16,50 @@ const emptyOutDir = !process.argv.includes('--watch');
  * For chrome extension, we need to disable worker inlining to pass the review.
  */
 const disableWorkerInlining = process.env.DISABLE_WORKER_INLINING === 'true';
+
+function relativeCIStatsPlugin(outDir: string): Plugin {
+  type Stats = ReturnType<typeof bundleToWebpackStats>;
+  let canonicalStats: Stats | undefined;
+  let outputDirectory = resolve(outDir);
+
+  return {
+    name: 'relative-ci-stats',
+    buildStart() {
+      canonicalStats = undefined;
+    },
+    generateBundle(outputOptions, bundle) {
+      outputDirectory = resolve(outputOptions.dir || outDir);
+      // Use one module graph: combining equivalent output formats would make
+      // RelativeCI report every source module as duplicated.
+      if (outputOptions.format === 'es' || !canonicalStats) {
+        canonicalStats = bundleToWebpackStats(bundle);
+      }
+    },
+    closeBundle() {
+      if (!canonicalStats) return;
+      // writeBundle also creates UMD and minified files outside Rollup's bundle.
+      const assets = fs
+        .readdirSync(outputDirectory, { withFileTypes: true })
+        .filter(
+          (entry) => entry.isFile() && /\.(js|cjs|mjs|css)$/.test(entry.name),
+        )
+        .map(({ name }) => ({
+          name,
+          size: fs.statSync(resolve(outputDirectory, name)).size,
+        }));
+      const stats: Stats = {
+        builtAt: Date.now(),
+        assets,
+        chunks: canonicalStats.chunks,
+        modules: canonicalStats.modules,
+      };
+      fs.writeFileSync(
+        resolve(outputDirectory, 'webpack-stats.json'),
+        JSON.stringify(stats),
+      );
+    },
+  };
+}
 
 function minifyAndUMDPlugin({
   name,
@@ -124,9 +169,19 @@ async function buildFile({
 export default function (
   entry: LibraryOptions['entry'],
   name: LibraryOptions['name'],
-  options?: { outputDir?: string; fileName?: string; plugins?: Plugin[] },
+  options?: {
+    outputDir?: string;
+    fileName?: string;
+    plugins?: Plugin[];
+    bundleStats?: boolean;
+  },
 ) {
-  const { fileName, outputDir: outDir = 'dist', plugins = [] } = options || {};
+  const {
+    fileName,
+    outputDir: outDir = 'dist',
+    plugins = [],
+    bundleStats = true,
+  } = options || {};
 
   let formats: LibraryFormats[] = ['es', 'cjs'];
 
@@ -189,6 +244,9 @@ export default function (
         },
       },
       ...plugins,
+      ...(process.env.RELATIVE_CI_STATS === 'true' && bundleStats
+        ? [relativeCIStatsPlugin(outDir)]
+        : []),
     ],
   }));
 }
