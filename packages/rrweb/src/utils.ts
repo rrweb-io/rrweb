@@ -413,6 +413,20 @@ export function hasShadowRoot<T extends Node | RRNode>(
 }
 
 /**
+ * Whether a node can contain children, i.e. is an Element, Document or
+ * DocumentFragment which properly support appendChild or removeChild.
+ * Duck typing against those methods won't work as they are in fact present
+ * on leaf nodes, but throw a HierarchyRequestError/DOMException when used
+ */
+export function canContainChildren(node: Node | RRNode): boolean {
+  return (
+    node.nodeType === Node.ELEMENT_NODE ||
+    node.nodeType === Node.DOCUMENT_NODE ||
+    node.nodeType === Node.DOCUMENT_FRAGMENT_NODE
+  );
+}
+
+/**
  * Traverses a CSSRuleList to find a nested rule at the given position.
  *
  * Returns null instead of throwing if the rule doesn't exist. This is important
