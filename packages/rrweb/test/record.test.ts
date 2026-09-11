@@ -858,6 +858,62 @@ describe('record', function (this: ISuite) {
     expect(attributeMutations.length).toEqual(0);
   });
 
+  it('throttles repeated same-element mutations via sampling.mutation', async () => {
+    await ctx.page.evaluate(() => {
+      return new Promise((resolve) => {
+        const { record } = (window as unknown as IWindow).rrweb;
+        // the element exists before recording, so the rapid changes below are
+        // plain attribute mutations (captured in the FullSnapshot, not an add)
+        const div = document.createElement('div');
+        div.setAttribute('data-frame', 'initial');
+        document.body.appendChild(div);
+
+        record({
+          emit: (window as unknown as IWindow).emit,
+          // only emit mutations once per second
+          sampling: { mutation: 1000 },
+        });
+
+        // simulate a JS animation rewriting the same attribute every 10ms; all
+        // ten frames land inside a single 1000ms throttle window
+        let frame = 0;
+        const timer = setInterval(() => {
+          div.setAttribute('data-frame', String(frame));
+          frame += 1;
+          if (frame >= 10) {
+            clearInterval(timer);
+            resolve(null);
+          }
+        }, 10);
+      });
+    });
+    // wait past the throttle window so the trailing emit flushes
+    await ctx.page.waitForTimeout(1100);
+    await waitForRAF(ctx.page);
+
+    const frameValues = ctx.events
+      .filter(
+        (e) =>
+          e.type === EventType.IncrementalSnapshot &&
+          e.data.source === IncrementalSource.Mutation,
+      )
+      .flatMap(
+        (e) =>
+          (e.data as { attributes: { attributes: Record<string, unknown> }[] })
+            .attributes,
+      )
+      .filter((a) => 'data-frame' in a.attributes)
+      .map((a) => a.attributes['data-frame']);
+
+    // without throttling this would be ~10 separate mutations; throttled, the
+    // run collapses to the leading edge plus a single trailing emit, dropping
+    // every intermediate frame
+    expect(frameValues.length).toBeLessThanOrEqual(2);
+    expect(frameValues).not.toContain('5');
+    // the final frame is never lost
+    expect(frameValues[frameValues.length - 1]).toBe('9');
+  });
+
   describe('loading stylesheets', () => {
     let server: Server;
     let serverURL: string;
