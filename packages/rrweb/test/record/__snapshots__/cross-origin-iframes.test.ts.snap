@@ -1438,9 +1438,26 @@ exports[`cross origin iframes > form.html > should map input events correctly 1`
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"textContent\\": \\"\\\\n      \\",
                             \\"rootId\\": 11,
                             \\"id\\": 75
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"input\\",
+                            \\"attributes\\": {
+                              \\"type\\": \\"hidden\\",
+                              \\"value\\": \\"123456\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"rootId\\": 11,
+                            \\"id\\": 76
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
+                            \\"id\\": 77
                           }
                         ],
                         \\"rootId\\": 11,
@@ -1450,7 +1467,7 @@ exports[`cross origin iframes > form.html > should map input events correctly 1`
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
                         \\"rootId\\": 11,
-                        \\"id\\": 76
+                        \\"id\\": 78
                       }
                     ],
                     \\"rootId\\": 11,
@@ -2451,9 +2468,26 @@ exports[`cross origin iframes > form.html > should map scroll events correctly 1
                           },
                           {
                             \\"type\\": 3,
-                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"textContent\\": \\"\\\\n      \\",
                             \\"rootId\\": 11,
                             \\"id\\": 75
+                          },
+                          {
+                            \\"type\\": 2,
+                            \\"tagName\\": \\"input\\",
+                            \\"attributes\\": {
+                              \\"type\\": \\"hidden\\",
+                              \\"value\\": \\"123456\\"
+                            },
+                            \\"childNodes\\": [],
+                            \\"rootId\\": 11,
+                            \\"id\\": 76
+                          },
+                          {
+                            \\"type\\": 3,
+                            \\"textContent\\": \\"\\\\n    \\",
+                            \\"rootId\\": 11,
+                            \\"id\\": 77
                           }
                         ],
                         \\"rootId\\": 11,
@@ -2463,7 +2497,7 @@ exports[`cross origin iframes > form.html > should map scroll events correctly 1
                         \\"type\\": 3,
                         \\"textContent\\": \\"\\\\n  \\\\n\\\\n\\",
                         \\"rootId\\": 11,
-                        \\"id\\": 76
+                        \\"id\\": 78
                       }
                     ],
                     \\"rootId\\": 11,
