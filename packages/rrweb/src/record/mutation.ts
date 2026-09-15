@@ -179,8 +179,8 @@ export default class MutationBuffer {
     for (const n of this.movedSet) {
       const parentNode = dom.parentNode(n);
       if (
-        this.removesSubTreeCache.has(parentNode) &&
-        !this.movedSet.has(parentNode)
+        this.removesSubTreeCache.has(parentNode as Node) &&
+        !this.movedSet.has(parentNode as Node)
       ) {
         continue;
       }
