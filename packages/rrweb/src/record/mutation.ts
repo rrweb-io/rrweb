@@ -194,13 +194,21 @@ export default class MutationBuffer {
     let nextSibling: Node | null = null;
     let ancestorBad = false;
     const missingParents = new Set<Node>();
+    const iter = this.addedSet.values();
+    let curr = iter.next();
     while (this.addedSet.size) {
       if (n !== null && this.addedSet.has(n.previousSibling as Node)) {
         // reuse parentNode, parentId, ancestorBad
         nextSibling = n; // n is a good next sibling
         n = n.previousSibling as Node;
       } else {
-        n = this.addedSet.values().next().value as Node; // pop
+        if (!this.addedSet.has(curr.value as Node)) {
+          // having the `iter` here rather than picking directly from this.addedSet
+          // ensures we don't get caught re-traversing 'tombstones' in the Set
+          // (we reuse curr in multiple iterations until it's ancestors and nextSiblings are serialized)
+          curr = iter.next();
+        }
+        n = curr.value as Node;
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
