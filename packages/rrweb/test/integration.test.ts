@@ -1071,7 +1071,7 @@ describe('record integration tests', function (this: ISuite) {
   it('should record moved shadow DOM', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
-    page.on('console', (msg) => console.log(msg.text()));
+    // page.on('console', (msg) => console.log(msg.text()));
 
     await page.setContent(getHtml.call(this, 'blank.html'));
 

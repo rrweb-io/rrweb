@@ -1,21 +1,6 @@
 /**
  * @vitest-environment jsdom
  */
-//import MutationBuffer from '../mutation';
-//import type { MutationBufferParam } from '../../types';
-/*
-
-describe('Processing mutations', () => {
-
-  describe('Large list 1 perf', () => {
-    const mutationBuffer = new MutationBuffer();
-    const options: MutationBufferParam = {
-    };
-    mutationBuffer.init(options);
-
-    mutationBuffer.processMutations([]);
-  });
-*/
 
 import * as fs from 'fs';
 import * as path from 'path';
