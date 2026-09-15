@@ -196,10 +196,10 @@ export default class MutationBuffer {
     const iter = this.addedSet.values();
     let curr = iter.next();
     while (this.addedSet.size) {
-      if (n !== null && this.addedSet.has(n.previousSibling as Node)) {
+      if (n !== null && this.addedSet.has(dom.previousSibling(n) as Node)) {
         // reuse parentNode, parentId, ancestorBad
         nextSibling = n; // n is a good next sibling
-        n = n.previousSibling as Node;
+        n = dom.previousSibling(n) as Node;
       } else {
         if (!this.addedSet.has(curr.value as Node)) {
           // having the `iter` here rather than picking directly from this.addedSet
@@ -239,14 +239,14 @@ export default class MutationBuffer {
             }
           }
 
-          if (this.addedSet.has(parentNode.lastChild as Node)) {
+          if (this.addedSet.has(dom.lastChild(parentNode) as Node)) {
             // jump instead of crawling nextSibling to nextSibling
-            n = parentNode.lastChild as Node;
+            n = dom.lastChild(parentNode) as Node;
             nextSibling = null;
           } else {
             // eslint-disable-next-line no-constant-condition
             while (true) {
-              nextSibling = n.nextSibling;
+              nextSibling = dom.nextSibling(n);
               if (this.addedSet.has(nextSibling as Node)) {
                 // keep going as we can't serialize a node before it's next sibling (nextId requirement)
                 n = nextSibling as Node;
@@ -298,7 +298,7 @@ export default class MutationBuffer {
 
       let nextId = nextSibling ? this.mirror.getId(nextSibling) : null;
       while (nextId === IGNORED_NODE) {
-        nextSibling = nextSibling && nextSibling.nextSibling;
+        nextSibling = nextSibling && dom.nextSibling(nextSibling);
         nextId = nextSibling && this.mirror.getId(nextSibling);
       }
       if (nextId === -1) {

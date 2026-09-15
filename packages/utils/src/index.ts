@@ -19,6 +19,10 @@ const testableAccessors = {
     'parentElement',
     'textContent',
     'ownerDocument',
+    'firstChild',
+    'lastChild',
+    'nextSibling',
+    'previousSibling',
   ] as const,
   ShadowRoot: ['host', 'styleSheets'] as const,
   Element: ['shadowRoot', 'querySelector', 'querySelectorAll'] as const,
@@ -214,6 +218,22 @@ export function textContent(n: Node): string | null {
   return getUntaintedAccessor('Node', n, 'textContent');
 }
 
+export function firstChild(n: Node): ChildNode | null {
+  return getUntaintedAccessor('Node', n, 'firstChild');
+}
+
+export function lastChild(n: Node): ChildNode | null {
+  return getUntaintedAccessor('Node', n, 'lastChild');
+}
+
+export function nextSibling(n: Node): ChildNode | null {
+  return getUntaintedAccessor('Node', n, 'nextSibling');
+}
+
+export function previousSibling(n: Node): ChildNode | null {
+  return getUntaintedAccessor('Node', n, 'previousSibling');
+}
+
 export function contains(n: Node, other: Node): boolean {
   return getUntaintedMethod('Node', n, 'contains')(other);
 }
@@ -318,6 +338,10 @@ export default {
   parentNode,
   parentElement,
   textContent,
+  firstChild,
+  lastChild,
+  nextSibling,
+  previousSibling,
   contains,
   getRootNode,
   host,
