@@ -164,7 +164,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
   <tr>
     <td align="center">
       <a href="http://www.smartx.com/" target="_blank">
-        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/master/static/logos/smartx.png" alt="SmartX">
+        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/HEAD/static/logos/smartx.png" alt="SmartX">
       </a>
     </td>
     <td align="center">

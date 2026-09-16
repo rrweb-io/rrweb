@@ -265,7 +265,7 @@ export class Replayer {
               this.virtualDom.mirror,
             );
           } catch (e) {
-            console.warn(e);
+            this.warn(e);
           }
 
         this.virtualDom.destroyTree();
@@ -655,7 +655,6 @@ export class Replayer {
       switch (event.type) {
         case EventType.DomContentLoaded:
         case EventType.Load:
-        case EventType.Custom:
           continue;
         case EventType.FullSnapshot:
         case EventType.Meta:

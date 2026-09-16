@@ -34,7 +34,7 @@ const PSEUDO_CLASS_MIRRORS = {
 
 export type HackCssPseudoClass = keyof typeof PSEUDO_CLASS_MIRRORS;
 
-// Simplified from https://github.com/giuseppeg/postcss-pseudo-classes/blob/master/index.js
+// Simplified from https://github.com/giuseppeg/postcss-pseudo-classes/blob/HEAD/index.js
 const pseudoClassPlugin = (
   pseudoClasses: HackCssPseudoClass[],
 ): AcceptedPlugin => ({

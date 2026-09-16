@@ -1,8 +1,8 @@
 {
   "name": "rrweb-player",
-  "version": "2.1.0",
+  "version": "2.1.4",
   "devDependencies": {
-    "@rrweb/types": "^2.1.0",
+    "@rrweb/types": "^2.1.4",
     "@sveltejs/adapter-auto": "^3.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/package": "^2.0.0",
@@ -16,16 +16,18 @@
     "svelte-preprocess": "^5.0.3",
     "svelte2tsx": "^0.7.30",
     "tslib": "^2.0.0",
-    "vite": "^6.0.1"
+    "vite": "^6.0.1",
+    "vitest": "^1.6.1"
   },
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
-    "@rrweb/replay": "^2.1.0",
-    "@rrweb/packer": "^2.1.0"
+    "@rrweb/replay": "^2.1.4",
+    "@rrweb/packer": "^2.1.4"
   },
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build",
+    "test": "vitest run",
     "prepublishOnly": "yarn build",
     "start": "vite",
     "check-types": "svelte-check --tsconfig ./tsconfig.json",
@@ -60,7 +62,8 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/rrweb-io/rrweb.git",
+    "directory": "packages/rrweb-player"
   },
   "keywords": [
     "devtools",

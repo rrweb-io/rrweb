@@ -1,5 +1,51 @@
 # rrweb
 
+## 2.1.4
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb-snapshot@2.1.4
+  - rrdom@2.1.4
+  - @rrweb/types@2.1.4
+  - @rrweb/utils@2.1.4
+
+## 2.1.3
+
+### Patch Changes
+
+- [#1921](https://github.com/rrweb-io/rrweb/pull/1921) [`7b10fba`](https://github.com/rrweb-io/rrweb/commit/7b10fba6f9736acd89b60d26974eeeb7d7874597) Thanks [@roggernaut](https://github.com/roggernaut)! - Ignore `autoplay` attribute mutations on `<video>`/`<audio>` regardless of tag-name case.
+
+- Updated dependencies [[`7b10fba`](https://github.com/rrweb-io/rrweb/commit/7b10fba6f9736acd89b60d26974eeeb7d7874597), [`170e716`](https://github.com/rrweb-io/rrweb/commit/170e71672b3863789c79774fdbc4b0f61ea3af40)]:
+  - rrweb-snapshot@2.1.3
+  - rrdom@2.1.3
+  - @rrweb/types@2.1.3
+  - @rrweb/utils@2.1.3
+
+## 2.1.2
+
+### Patch Changes
+
+- [#1769](https://github.com/rrweb-io/rrweb/pull/1769) [`956fc48`](https://github.com/rrweb-io/rrweb/commit/956fc48e4c7624d343dd456b4498563b1f6f90bb) Thanks [@heathdutton](https://github.com/heathdutton)! - Emit custom events even when skipping over them, eg. when seeking to a specific time
+
+- [#1712](https://github.com/rrweb-io/rrweb/pull/1712) [`129a805`](https://github.com/rrweb-io/rrweb/commit/129a8052364f062f134bbe717c7ee3be6105e808) Thanks [@pauldambra](https://github.com/pauldambra)! - Use the provided logger from player config instead of directly calling console.warn
+
+- Updated dependencies [[`129a805`](https://github.com/rrweb-io/rrweb/commit/129a8052364f062f134bbe717c7ee3be6105e808)]:
+  - rrweb-snapshot@2.1.2
+  - rrdom@2.1.2
+  - @rrweb/types@2.1.2
+  - @rrweb/utils@2.1.2
+
+## 2.1.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb-snapshot@2.1.1
+  - rrdom@2.1.1
+  - @rrweb/types@2.1.1
+  - @rrweb/utils@2.1.1
+
 ## 2.1.0
 
 ### Patch Changes

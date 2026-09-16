@@ -2,7 +2,7 @@
 
 This feature aims to provide developers with more information about the bug scene. There are some options for recording and replaying network output.
 
-### Enable Recording Network
+## Enable Recording Network
 
 You can enable using default option like this:
 

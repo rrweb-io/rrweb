@@ -1,5 +1,23 @@
 # rrweb-snapshot
 
+## 2.1.4
+
+## 2.1.3
+
+### Patch Changes
+
+- [#1921](https://github.com/rrweb-io/rrweb/pull/1921) [`7b10fba`](https://github.com/rrweb-io/rrweb/commit/7b10fba6f9736acd89b60d26974eeeb7d7874597) Thanks [@roggernaut](https://github.com/roggernaut)! - Ignore `autoplay` attribute mutations on `<video>`/`<audio>` regardless of tag-name case.
+
+- [#1771](https://github.com/rrweb-io/rrweb/pull/1771) [`170e716`](https://github.com/rrweb-io/rrweb/commit/170e71672b3863789c79774fdbc4b0f61ea3af40) Thanks [@heathdutton](https://github.com/heathdutton)! - Disable autocomplete on input fields during replay
+
+## 2.1.2
+
+### Patch Changes
+
+- [#1712](https://github.com/rrweb-io/rrweb/pull/1712) [`129a805`](https://github.com/rrweb-io/rrweb/commit/129a8052364f062f134bbe717c7ee3be6105e808) Thanks [@pauldambra](https://github.com/pauldambra)! - Use the provided logger from player config instead of directly calling console.warn
+
+## 2.1.1
+
 ## 2.1.0
 
 ### Patch Changes

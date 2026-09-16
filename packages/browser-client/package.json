@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/browser-client",
-  "version": "2.1.0",
+  "version": "2.1.4",
   "publishConfig": {
     "access": "public"
   },
@@ -34,7 +34,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/rrweb-io/rrweb.git",
+    "directory": "packages/browser-client"
   },
   "license": "MIT",
   "type": "module",
@@ -65,13 +66,13 @@
     "typescript": "^5.4.5",
     "vite": "^6.0.1",
     "vite-plugin-dts": "^3.9.1",
-    "vitest": "^1.4.0"
+    "vitest": "^1.6.1"
   },
   "dependencies": {
-    "@rrweb/record": "^2.1.0",
-    "@rrweb/types": "^2.1.0",
-    "@rrweb/utils": "^2.1.0",
-    "rrweb": "^2.1.0",
+    "@rrweb/record": "^2.1.4",
+    "@rrweb/types": "^2.1.4",
+    "@rrweb/utils": "^2.1.4",
+    "rrweb": "^2.1.4",
     "websocket-ts": "^2.2.1"
   },
   "browserslist": [

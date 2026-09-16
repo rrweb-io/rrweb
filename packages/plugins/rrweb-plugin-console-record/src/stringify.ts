@@ -93,7 +93,7 @@ export function stringify(
     obj,
     function (key, value: string | bigint | object | null | undefined) {
       /**
-       * forked from https://github.com/moll/json-stringify-safe/blob/master/stringify.js
+       * forked from https://github.com/moll/json-stringify-safe/blob/HEAD/stringify.js
        * to deCycle the object
        */
       if (stack.length > 0) {
