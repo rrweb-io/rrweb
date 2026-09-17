@@ -220,8 +220,8 @@ async function postData(
   const keepaliveLimit = 65000;
   let done = false;
   const responses: Response[] = [];
-  const toSend: string[] = [];
   do {
+    const toSend: string[] = [];
     let body;
     if (buffer instanceof ArrayQueue) {
       // this clears the buffer so no need to call buffer.clear()

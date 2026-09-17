@@ -311,3 +311,64 @@ describe('@rrweb/browser-client load diagnostics', () => {
     });
   });
 });
+
+describe('@rrweb/browser-client HTTP fallback batching', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  async function queueEvents() {
+    vi.useFakeTimers();
+    const client = await importFreshClient();
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+    });
+    const [buffer] = mockState.buffers;
+    buffer.clear();
+    const events = Array.from({ length: 5 }, (_, id) =>
+      JSON.stringify({ id, payload: 'x'.repeat(30000) }),
+    );
+    events.forEach((event) => buffer.add(event));
+    return { buffer };
+  }
+
+  it('uploads each queued event once across successful batches', async () => {
+    const fetchMock = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>(
+      async () => new Response(null, { status: 202 }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const { buffer } = await queueEvents();
+
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(
+      fetchMock.mock.calls.map(([, init]) =>
+        String(init?.body)
+          .split('\n')
+          .map((event) => JSON.parse(event).id),
+      ),
+    ).toEqual([
+      [0, 1, 2],
+      [3, 4],
+    ]);
+    expect(buffer.length()).toBe(0);
+  });
+
+  it('requeues only the failed batch, not earlier successful batches', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(null, { status: 202 }))
+      .mockResolvedValueOnce(new Response('{}', { status: 502 }));
+    vi.stubGlobal('fetch', fetchMock);
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { buffer } = await queueEvents();
+
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(buffer.items.map((event) => JSON.parse(event).id)).toEqual([3, 4]);
+  });
+});
