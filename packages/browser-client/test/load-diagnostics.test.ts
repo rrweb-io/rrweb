@@ -371,4 +371,22 @@ describe('@rrweb/browser-client HTTP fallback batching', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(buffer.items.map((event) => JSON.parse(event).id)).toEqual([3, 4]);
   });
+
+  it('requeues the failed batch ahead of events buffered during the request', async () => {
+    const fetchMock = vi.fn(async () => {
+      const [buffer] = mockState.buffers;
+      buffer.add(JSON.stringify({ id: 99, payload: 'x'.repeat(30000) }));
+      return new Response('{}', { status: 502 });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { buffer } = await queueEvents();
+
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(buffer.items.map((event) => JSON.parse(event).id)).toEqual([
+      0, 1, 2, 3, 4, 99,
+    ]);
+  });
 });
