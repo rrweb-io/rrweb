@@ -274,7 +274,8 @@ export default class MutationBuffer {
     if (this.mutationQueueEnabled) {
       this.mutationQueue.enqueue([...mutations, this.emit]);
     } else {
-      mutations.forEach(this.processMutation);
+      mutations.forEach(this.processMutation); // adds mutations to the buffer
+      this.emit(); // clears buffer if not locked/frozen
     }
   };
 
