@@ -8,6 +8,7 @@ import snapshot, {
   needMaskingText,
   classMatchesRegex,
   IGNORED_NODE,
+  resetStylesheetLoadTracking,
   genId,
 } from './snapshot';
 import rebuild, {
@@ -39,5 +40,6 @@ export {
   needMaskingText,
   classMatchesRegex,
   IGNORED_NODE,
+  resetStylesheetLoadTracking,
   genId,
 };
