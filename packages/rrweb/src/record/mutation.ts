@@ -33,6 +33,7 @@ import {
   closestElementOfNode,
 } from '../utils';
 import dom from '@rrweb/utils';
+import { AutoProcessMutationQueue } from './auto-process-mutation-queue';
 
 type DoubleLinkedListNode = {
   previous: DoubleLinkedListNode | null;
@@ -193,6 +194,10 @@ export default class MutationBuffer {
   private canvasManager: observerParam['canvasManager'];
   private processedNodeManager: observerParam['processedNodeManager'];
   private unattachedDoc: HTMLDocument;
+  private mutationQueue: AutoProcessMutationQueue;
+  private mutationQueueBatchSize?: number;
+  private mutationQueueBatchInterval?: number;
+  private mutationQueueEnabled: boolean;
 
   public init(options: MutationBufferParam) {
     (
@@ -218,10 +223,19 @@ export default class MutationBuffer {
         'shadowDomManager',
         'canvasManager',
         'processedNodeManager',
+        'mutationQueueBatchSize',
+        'mutationQueueBatchInterval',
+        'mutationQueueEnabled',
       ] as const
     ).forEach((key) => {
       // just a type trick, the runtime result is correct
       this[key] = options[key] as never;
+    });
+
+    this.mutationQueue = new AutoProcessMutationQueue({
+      processFunction: this.processMutation,
+      batchSize: this.mutationQueueBatchSize,
+      batchInterval: this.mutationQueueBatchInterval,
     });
   }
 
@@ -257,8 +271,23 @@ export default class MutationBuffer {
   }
 
   public processMutations = (mutations: mutationRecord[]) => {
-    mutations.forEach(this.processMutation); // adds mutations to the buffer
-    this.emit(); // clears buffer if not locked/frozen
+    if (this.mutationQueueEnabled) {
+      this.mutationQueue.enqueue([...mutations, this.emit]);
+    } else {
+      mutations.forEach(this.processMutation);
+    }
+  };
+
+  public isQueueEmpty = (): boolean => {
+    return this.mutationQueue.size === 0;
+  };
+
+  public hasQueuedMutationBeforeTs = (timestamp: number) => {
+    const mutation = this.mutationQueue.getFirstMutation();
+    if (!mutation) {
+      return false;
+    }
+    return mutation.timestamp < timestamp;
   };
 
   public emit = () => {
@@ -494,7 +523,9 @@ export default class MutationBuffer {
         .filter((attribute) => !addedIds.has(attribute.id))
         // attribute mutation's id was not in the mirror map means the target node has been removed
         .filter((attribute) => this.mirror.has(attribute.id)),
-      removes: this.removes,
+      removes: this.removes.map((remove) => ({
+        ...remove,
+      })),
       adds,
     };
     // payload may be empty if the mutations happened in some blocked elements

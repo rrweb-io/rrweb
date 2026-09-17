@@ -99,6 +99,9 @@ function record<T = eventWithTime>(
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
     errorHandler,
+    mutationQueueBatchSize,
+    mutationQueueBatchInterval,
+    mutationQueueEnabled,
   } = options;
 
   registerErrorHandler(errorHandler);
@@ -534,6 +537,9 @@ function record<T = eventWithTime>(
           processedNodeManager,
           canvasManager,
           ignoreCSSAttributes,
+          mutationQueueBatchSize,
+          mutationQueueBatchInterval,
+          mutationQueueEnabled,
           plugins:
             plugins
               ?.filter((p) => p.observer)
@@ -646,6 +652,16 @@ record.takeFullSnapshot = (isCheckout?: boolean) => {
     throw new Error('please take full snapshot after start recording');
   }
   takeFullSnapshot(isCheckout);
+};
+
+record.areBuffersEmpty = () => {
+  return mutationBuffers.some((buf) => buf.isQueueEmpty);
+};
+
+record.hasPendingMutationsBeforeTs = (timestamp: number) => {
+  return mutationBuffers.some((buf) =>
+    buf.hasQueuedMutationBeforeTs(timestamp),
+  );
 };
 
 record.mirror = mirror;

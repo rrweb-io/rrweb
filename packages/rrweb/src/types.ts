@@ -82,6 +82,9 @@ export type recordOptions<T> = {
   mousemoveWait?: number;
   keepIframeSrcFn?: KeepIframeSrcFn;
   errorHandler?: ErrorHandler;
+  mutationQueueBatchSize?: number;
+  mutationQueueBatchInterval?: number;
+  mutationQueueEnabled?: boolean;
 };
 
 export type observerParam = {
@@ -134,6 +137,9 @@ export type observerParam = {
     callback: (...arg: Array<unknown>) => void;
     options: unknown;
   }>;
+  mutationQueueBatchSize?: number;
+  mutationQueueBatchInterval?: number;
+  mutationQueueEnabled?: boolean;
 };
 
 export type MutationBufferParam = Pick<
@@ -159,6 +165,9 @@ export type MutationBufferParam = Pick<
   | 'shadowDomManager'
   | 'canvasManager'
   | 'processedNodeManager'
+  | 'mutationQueueBatchSize'
+  | 'mutationQueueBatchInterval'
+  | 'mutationQueueEnabled'
 >;
 
 export type ReplayPlugin = {
