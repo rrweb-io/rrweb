@@ -1,0 +1,61 @@
+[
+  {
+    "type": 3,
+    "data": {
+      "source": 0,
+      "texts": [],
+      "attributes": [],
+      "removes": [],
+      "adds": [
+        {
+          "parentId": 7,
+          "nextId": null,
+          "node": {
+            "type": 2,
+            "tagName": "div",
+            "attributes": {},
+            "childNodes": [],
+            "id": 9
+          }
+        },
+        {
+          "parentId": 9,
+          "nextId": null,
+          "node": {
+            "type": 2,
+            "tagName": "div",
+            "attributes": {},
+            "childNodes": [],
+            "id": 10
+          }
+        },
+        {
+          "parentId": 9,
+          "nextId": 10,
+          "node": {
+            "type": 2,
+            "tagName": "div",
+            "attributes": {
+              "class": "rr-block",
+              "rr_width": "1904px",
+              "rr_height": "0px"
+            },
+            "childNodes": [],
+            "id": 11
+          }
+        },
+        {
+          "parentId": 9,
+          "nextId": 11,
+          "node": {
+            "type": 2,
+            "tagName": "div",
+            "attributes": {},
+            "childNodes": [],
+            "id": 12
+          }
+        }
+      ]
+    }
+  }
+]
