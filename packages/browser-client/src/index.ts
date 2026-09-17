@@ -220,8 +220,8 @@ async function postData(
   const keepaliveLimit = 65000;
   let done = false;
   const responses: Response[] = [];
-  const toSend: string[] = [];
   do {
+    const toSend: string[] = [];
     let body;
     if (buffer instanceof ArrayQueue) {
       // this clears the buffer so no need to call buffer.clear()
@@ -258,7 +258,15 @@ async function postData(
     if (!response.ok) {
       if (buffer instanceof ArrayQueue) {
         // re-queue events in case we can reconnect next time or with ws
-        toSend.forEach((eventStr) => buffer.add(eventStr));
+        const rest: string[] = [];
+        for (
+          let eventStr = buffer.read();
+          eventStr !== undefined;
+          eventStr = buffer.read()
+        ) {
+          rest.push(eventStr);
+        }
+        [...toSend, ...rest].forEach((eventStr) => buffer.add(eventStr));
       }
       break;
     } else if (done) {

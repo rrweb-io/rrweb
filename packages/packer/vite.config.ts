@@ -8,4 +8,7 @@ export default config(
     unpack: path.resolve(__dirname, 'src/unpack.ts'),
   },
   'rrwebPacker',
+  {
+    bundleStats: false,
+  },
 );

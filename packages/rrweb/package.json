@@ -1,6 +1,6 @@
 {
   "name": "rrweb",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "record and replay the web",
   "scripts": {
     "prepare": "npm run prepack",
@@ -15,13 +15,16 @@
     "test:update": "yarn test:headless --update",
     "retest:update": "cross-env PUPPETEER_HEADLESS=true yarn retest --update",
     "repl": "yarn build && node scripts/repl.js",
-    "live-stream": "yarn build && node scripts/stream.js",
+    "live-stream": "yarn turbo run prepublish --filter=rrweb --filter=@rrweb/rrweb-plugin-canvas-webrtc-record --filter=@rrweb/rrweb-plugin-canvas-webrtc-replay && node scripts/stream.js",
     "dev": "vite build --watch",
     "build": "yarn turbo run prepublish",
     "check-types": "tsc -noEmit",
     "prepublish": "tsc -noEmit && vite build",
     "lint": "yarn eslint src",
     "benchmark": "vitest run --maxConcurrency 1 --no-file-parallelism test/benchmark",
+    "benchmark:mutation": "vitest run --maxConcurrency 1 --no-file-parallelism test/benchmark/dom-mutation.test.ts",
+    "benchmark:mutation:firefox": "cross-env BROWSER=firefox yarn benchmark:mutation",
+    "benchmark:mutation:webkit": "cross-env BROWSER=webkit yarn benchmark:mutation",
     "test:webkit": "yarn build && vitest run --config vitest.config.webkit.ts"
   },
   "type": "module",
@@ -89,13 +92,13 @@
     "vite-plugin-dts": "^3.9.1"
   },
   "dependencies": {
-    "@rrweb/types": "^2.1.4",
-    "@rrweb/utils": "^2.1.4",
+    "@rrweb/types": "^2.1.5",
+    "@rrweb/utils": "^2.1.5",
     "@types/css-font-loading-module": "0.0.7",
     "@xstate/fsm": "^1.4.0",
     "base64-arraybuffer": "^1.0.1",
     "mitt": "^3.0.0",
-    "rrdom": "^2.1.4",
-    "rrweb-snapshot": "^2.1.4"
+    "rrdom": "^2.1.5",
+    "rrweb-snapshot": "^2.1.5"
   }
 }

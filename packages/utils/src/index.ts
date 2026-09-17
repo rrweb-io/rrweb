@@ -19,6 +19,10 @@ const testableAccessors = {
     'parentElement',
     'textContent',
     'ownerDocument',
+    'firstChild',
+    'lastChild',
+    'nextSibling',
+    'previousSibling',
   ] as const,
   ShadowRoot: ['host', 'styleSheets'] as const,
   Element: ['shadowRoot', 'querySelector', 'querySelectorAll'] as const,
@@ -132,7 +136,7 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
 
 const untaintedAccessorCache: Record<
   string,
-  (this: PrototypeOwner, ...args: unknown[]) => unknown
+  Record<string, (this: PrototypeOwner, ...args: unknown[]) => unknown>
 > = {};
 
 export function getUntaintedAccessor<
@@ -143,11 +147,8 @@ export function getUntaintedAccessor<
   instance: BasePrototypeCache[K],
   accessor: T,
 ): BasePrototypeCache[K][T] {
-  const cacheKey = `${key}.${String(accessor)}`;
-  if (untaintedAccessorCache[cacheKey])
-    return untaintedAccessorCache[cacheKey].call(
-      instance,
-    ) as BasePrototypeCache[K][T];
+  const cached = untaintedAccessorCache[key]?.[accessor as string];
+  if (cached) return cached.call(instance) as BasePrototypeCache[K][T];
 
   const untaintedPrototype = getUntaintedPrototype(key);
   // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -158,7 +159,7 @@ export function getUntaintedAccessor<
 
   if (!untaintedAccessor) return instance[accessor];
 
-  untaintedAccessorCache[cacheKey] = untaintedAccessor;
+  (untaintedAccessorCache[key] ||= {})[accessor as string] = untaintedAccessor;
 
   return untaintedAccessor.call(instance) as BasePrototypeCache[K][T];
 }
@@ -212,6 +213,22 @@ export function parentElement(n: Node): HTMLElement | null {
 
 export function textContent(n: Node): string | null {
   return getUntaintedAccessor('Node', n, 'textContent');
+}
+
+export function firstChild(n: Node): ChildNode | null {
+  return getUntaintedAccessor('Node', n, 'firstChild');
+}
+
+export function lastChild(n: Node): ChildNode | null {
+  return getUntaintedAccessor('Node', n, 'lastChild');
+}
+
+export function nextSibling(n: Node): ChildNode | null {
+  return getUntaintedAccessor('Node', n, 'nextSibling');
+}
+
+export function previousSibling(n: Node): ChildNode | null {
+  return getUntaintedAccessor('Node', n, 'previousSibling');
 }
 
 export function contains(n: Node, other: Node): boolean {
@@ -318,6 +335,10 @@ export default {
   parentNode,
   parentElement,
   textContent,
+  firstChild,
+  lastChild,
+  nextSibling,
+  previousSibling,
   contains,
   getRootNode,
   host,
