@@ -1,5 +1,18 @@
 # @rrweb/record
 
+## 2.1.5
+
+### Patch Changes
+
+- [#1652](https://github.com/rrweb-io/rrweb/pull/1652) [`5869344`](https://github.com/rrweb-io/rrweb/commit/5869344a16ec04873c2a0bef3ced0be9c906fcbb) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Improve performance of untainted `dom` accessors. Since [#1509](https://github.com/rrweb-io/rrweb/issues/1509) we use e.g. `dom.parentNode(el)` instead of `el.parentNode` to work around libraries that modify these accessors. Slight improvement to avoid a string allocation each time one of these is called; they are on every hot path.
+
+- [#1652](https://github.com/rrweb-io/rrweb/pull/1652) [`5869344`](https://github.com/rrweb-io/rrweb/commit/5869344a16ec04873c2a0bef3ced0be9c906fcbb) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Improvements in efficiency of mutation handling at record time; has been identified as a problem numerous times by @mdellanoce, @JonasBa and others. The new mutation ordering should also result in faster replay performance.
+
+- Updated dependencies [[`5869344`](https://github.com/rrweb-io/rrweb/commit/5869344a16ec04873c2a0bef3ced0be9c906fcbb), [`5869344`](https://github.com/rrweb-io/rrweb/commit/5869344a16ec04873c2a0bef3ced0be9c906fcbb)]:
+  - rrweb@2.1.5
+  - @rrweb/types@2.1.5
+  - @rrweb/utils@2.1.5
+
 ## 2.1.4
 
 ### Patch Changes
