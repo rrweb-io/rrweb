@@ -288,6 +288,42 @@ describe('css splitter', () => {
     }
   });
 
+  /*
+   * `0px` (authored) always comes out in the rule as `0` so we decided at one point that
+   * `normalizeCssString` should also do that transformation while it is stripping whitespace/comments.
+   * This test exercises a case where this comes into play, however it is very contrived
+   * (there are similar tests we could write which could exercise similar problems,
+   * e.g. #FFF being serialized to rgb(255, 255, 255), and a split landing in just the
+   * wrong place), so we could in future drop the '0px' normalization along with this test
+   */
+  it('finds a split point that lands on a `0` value, which requires 0px normalization', () => {
+    const window = new Window({ url: 'https://localhost:8080' });
+    const document = window.document;
+    document.head.innerHTML =
+      '<style>.aaaa { color: red; } .bbbb { margin: </style>';
+    const style = document.querySelector('style');
+    if (style) {
+      style.append('0; } .cccc { top: 0; }');
+
+      const expected = [
+        '.aaaa { color: red; }.bbbb { margin: ',
+        '0px; }.cccc { top: 0px; }',
+      ];
+      const browserSheet = expected.join('');
+      expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
+
+      let _testNoPxNorm = false;
+      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual(
+        expected,
+      );
+
+      _testNoPxNorm = true;
+      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual([
+        browserSheet,
+      ]);
+    }
+  });
+
   it('finds css textElement splits correctly, even with repeated sections', () => {
     const window = new Window({ url: 'https://localhost:8080' });
     const document = window.document;
