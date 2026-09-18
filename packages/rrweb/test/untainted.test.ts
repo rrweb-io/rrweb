@@ -1,0 +1,201 @@
+import * as path from 'path';
+import type * as puppeteer from 'puppeteer';
+import { launchPuppeteer } from './utils';
+
+interface UtilsWindow extends Window {
+  rrwebUtils: typeof import('../../utils/src');
+}
+
+describe('untainted constructors', () => {
+  let browser: puppeteer.Browser;
+  let page: puppeteer.Page;
+
+  beforeAll(async () => {
+    browser = await launchPuppeteer();
+  });
+
+  beforeEach(async () => {
+    page = await browser.newPage();
+    await page.addScriptTag({
+      path: path.resolve(__dirname, '../../utils/dist/utils.umd.cjs'),
+    });
+  });
+
+  afterEach(async () => {
+    await page.close();
+  });
+
+  afterAll(async () => {
+    await browser.close();
+  });
+
+  it('uses the native Proxy without creating an iframe', async () => {
+    expect(
+      await page.evaluate(() => {
+        const { getUntaintedProxy } = (window as unknown as UtilsWindow)
+          .rrwebUtils;
+        let attemptedIframe = false;
+        document.createElement = () => {
+          attemptedIframe = true;
+          throw new Error('Unexpected iframe');
+        };
+        const native = getUntaintedProxy() === window.Proxy;
+        return { native, attemptedIframe };
+      }),
+    ).toEqual({ native: true, attemptedIframe: false });
+  });
+
+  it.each([false, true])(
+    'recovers and caches an overwritten Proxy with body removed: %s',
+    async (removeBody) => {
+      expect(
+        await page.evaluate((removeBody) => {
+          const { getUntaintedProxy } = (window as unknown as UtilsWindow)
+            .rrwebUtils;
+          window.Proxy = function () {
+            throw new Error('Overwritten Proxy');
+          } as unknown as ProxyConstructor;
+          if (removeBody) document.body.remove();
+          const ProxyCtor = getUntaintedProxy();
+          const proxy = new ProxyCtor({ value: 42 }, {});
+          return {
+            value: proxy.value,
+            recovered: ProxyCtor !== window.Proxy,
+            cached: getUntaintedProxy() === ProxyCtor,
+            iframes: document.querySelectorAll('iframe').length,
+          };
+        }, removeBody),
+      ).toEqual({ value: 42, recovered: true, cached: true, iframes: 0 });
+    },
+  );
+
+  it.each(['throwing', 'non-callable', 'spoofed native'] as const)(
+    'recovers an overwritten Proxy with a %s toString',
+    async (override) => {
+      expect(
+        await page.evaluate((override) => {
+          const { getUntaintedProxy } = (window as unknown as UtilsWindow)
+            .rrwebUtils;
+          window.Proxy = function () {
+            throw new Error('Overwritten Proxy');
+          } as unknown as ProxyConstructor;
+          Object.defineProperty(window.Proxy, 'toString', {
+            value:
+              override === 'non-callable'
+                ? null
+                : () => {
+                    if (override === 'throwing')
+                      throw new Error('Broken toString');
+                    return 'function Proxy() { [native code] }';
+                  },
+          });
+          const ProxyCtor = getUntaintedProxy();
+          return {
+            value: new ProxyCtor({ value: 42 }, {}).value,
+            recovered: ProxyCtor !== window.Proxy,
+            iframes: document.querySelectorAll('iframe').length,
+          };
+        }, override),
+      ).toEqual({ value: 42, recovered: true, iframes: 0 });
+    },
+  );
+
+  it.each([false, true])(
+    'recovers a bound replacement with its name changed to Proxy: %s',
+    async (rename) => {
+      expect(
+        await page.evaluate((rename) => {
+          const { getUntaintedProxy } = (window as unknown as UtilsWindow)
+            .rrwebUtils;
+          window.Proxy = function brokenProxy() {
+            throw new Error('Bound replacement invoked');
+          }.bind(null) as unknown as ProxyConstructor;
+          if (rename)
+            Object.defineProperty(window.Proxy, 'name', { value: 'Proxy' });
+          const ProxyCtor = getUntaintedProxy();
+          return {
+            value: new ProxyCtor({ value: 42 }, {}).value,
+            recovered: ProxyCtor !== window.Proxy,
+            cached: getUntaintedProxy() === ProxyCtor,
+            iframes: document.querySelectorAll('iframe').length,
+          };
+        }, rename),
+      ).toEqual({ value: 42, recovered: true, cached: true, iframes: 0 });
+    },
+  );
+
+  it.each(['Proxy', 'Node'] as const)(
+    'preserves recovered %s when iframe cleanup throws',
+    async (key) => {
+      expect(
+        await page.evaluate((key) => {
+          const utils = (window as unknown as UtilsWindow).rrwebUtils;
+          window.Proxy = function () {
+            throw new Error('Overwritten Proxy');
+          } as unknown as ProxyConstructor;
+          Object.defineProperty(window, 'Zone', { value: {} });
+          document.body.removeChild = () => {
+            throw new Error('Patched removeChild');
+          };
+          if (key === 'Proxy') {
+            const ProxyCtor = utils.getUntaintedProxy();
+            return {
+              recovered: ProxyCtor !== window.Proxy,
+              usable: new ProxyCtor({ value: 42 }, {}).value === 42,
+            };
+          }
+          const prototype = utils.getUntaintedPrototype('Node');
+          return {
+            recovered: prototype !== Node.prototype,
+            usable: prototype.contains.call(document.body, document.body),
+          };
+        }, key),
+      ).toEqual({ recovered: true, usable: true });
+    },
+  );
+
+  it('retries after iframe creation fails', async () => {
+    expect(
+      await page.evaluate(() => {
+        const { getUntaintedProxy } = (window as unknown as UtilsWindow)
+          .rrwebUtils;
+        window.Proxy = function () {} as unknown as ProxyConstructor;
+        const createElement = document.createElement;
+        document.createElement = () => {
+          throw new Error('Cannot create iframe');
+        };
+        const fallback = getUntaintedProxy() === window.Proxy;
+        document.createElement = createElement;
+        return { fallback, recovered: getUntaintedProxy() !== window.Proxy };
+      }),
+    ).toEqual({ fallback: true, recovered: true });
+  });
+
+  it('still recovers an overwritten MutationObserver constructor', async () => {
+    expect(
+      await page.evaluate(async () => {
+        const { mutationObserverCtor } = (window as unknown as UtilsWindow)
+          .rrwebUtils;
+        window.MutationObserver = function () {
+          throw new Error('Overwritten MutationObserver');
+        } as unknown as typeof MutationObserver;
+        const [ObserverCtor, cleanup] = mutationObserverCtor();
+        const Observer = ObserverCtor as typeof MutationObserver;
+        const observed = new Promise<boolean>((resolve) => {
+          const observer = new Observer(() => {
+            observer.disconnect();
+            resolve(true);
+          });
+          observer.observe(document.body, { childList: true });
+          document.body.appendChild(document.createElement('div'));
+        });
+        const delivered = await observed;
+        cleanup();
+        return {
+          observed: delivered,
+          iframes: document.querySelectorAll('iframe').length,
+        };
+      }),
+    ).toEqual({ observed: true, iframes: 0 });
+  });
+});
