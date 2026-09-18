@@ -47,8 +47,8 @@ import '@rrweb/all/dist/style.css';
   href="https://cdn.rrweb.com/replay/current/dist/style.css"
 />
 <script type="module">
-  import { record } from 'https://cdn.rrweb.com/record/current/dist/record.js';
-  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.js';
+  import { record } from 'https://cdn.rrweb.com/record/current/dist/record.min.js';
+  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.min.js';
 
   record({
     emit(event) {
@@ -59,8 +59,9 @@ import '@rrweb/all/dist/style.css';
 ```
 
 `current` 指向最新稳定版本；生产环境也可以固定到不可变的精确版本，例如
-`https://cdn.rrweb.com/record/2.0.0/dist/record.js` 和
-`https://cdn.rrweb.com/replay/2.0.0/dist/replay.js`。
+`https://cdn.rrweb.com/record/2.0.0/dist/record.min.js` 和
+`https://cdn.rrweb.com/replay/2.0.0/dist/replay.min.js`。生产环境请使用 `.min.js`；
+未压缩的 `.js` 同级文件仍适合调试。
 
 `rrweb-player` 也提供浏览器 ESM 资源：
 
@@ -70,7 +71,7 @@ import '@rrweb/all/dist/style.css';
   href="https://cdn.rrweb.com/rrweb-player/current/style.css"
 />
 <script type="module">
-  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.js';
+  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.min.js';
 </script>
 ```
 
@@ -323,7 +324,7 @@ import '@rrweb/replay/dist/style.css';
   href="https://cdn.rrweb.com/replay/current/dist/style.css"
 />
 <script type="module">
-  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.js';
+  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.min.js';
 
   const events = YOUR_EVENTS;
 
@@ -331,6 +332,8 @@ import '@rrweb/replay/dist/style.css';
   replayer.play();
 </script>
 ```
+
+生产环境请使用 `.min.js`；调试时可改用未压缩的 `.js` 同级文件。
 
 #### 使用 API 控制回放
 
@@ -402,9 +405,11 @@ import 'rrweb-player/dist/style.css';
   href="https://cdn.rrweb.com/rrweb-player/current/style.css"
 />
 <script type="module">
-  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.js';
+  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.min.js';
 </script>
 ```
+
+生产环境请使用 `.min.js`；调试时可改用未压缩的 `.js` 同级文件。
 
 Legacy 直接 `<script>` 引入（UMD 兼容）：
 
