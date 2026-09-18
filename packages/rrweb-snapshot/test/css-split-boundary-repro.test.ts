@@ -69,6 +69,22 @@ describe('splitCssText snaps split points to css rule boundaries at record time'
     expect(everySplitOnBoundary(serialized, splits)).toBe(true);
   });
 
+  it('real styled-components output (with browser rewrites) splits into whole rules', () => {
+    const scChildTexts = [
+      '.bcMPWx{cursor:pointer;padding:0px 8px;margin:0px;border:outset 2px;background-color:rgba(0,0,0,0.05);color:rgba(0,0,0,0.84);}',
+      '.bcMPWx[aria-expanded="true"]{background-color:rgba(0,0,0,0.15);}',
+      '.bJCmFu{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;padding:0px;margin:0px;line-height:1.5;border-bottom:1px solid rgba(0,0,0,0.1);}',
+      '.eSbheu{border-radius:4px;padding:2px 6px;background:rgba(255,255,255,0.9);color:#333;width:100%;}',
+    ];
+    const serialized =
+      '.bcMPWx { cursor: pointer; padding: 0px 8px; margin: 0px; border: 2px outset; background-color: rgba(0, 0, 0, 0.05); color: rgba(0, 0, 0, 0.84); }.bcMPWx[aria-expanded="true"] { background-color: rgba(0, 0, 0, 0.15); }.bJCmFu { display: flex; padding: 0px; margin: 0px; line-height: 1.5; border-bottom: 1px solid rgba(0, 0, 0, 0.1); }.eSbheu { border-radius: 4px; padding: 2px 6px; background: rgba(255, 255, 255, 0.9); color: rgb(51, 51, 51); width: 100%; }';
+    const splits = splitCssText(serialized, stubStyle(scChildTexts));
+
+    expect(splits.join('')).toEqual(serialized);
+    expect(splits).toHaveLength(4);
+    expect(everySplitOnBoundary(serialized, splits)).toBe(true);
+  });
+
   it('happy-dom CSSOM: markCssSplits emits boundary-aligned, splice-safe parts', () => {
     const window = new Window({ url: 'https://localhost:8080' });
     const document = window.document;
