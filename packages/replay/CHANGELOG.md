@@ -1,5 +1,13 @@
 # @rrweb/replay
 
+## 2.1.6
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb@2.1.6
+  - @rrweb/types@2.1.6
+
 ## 2.1.5
 
 ### Patch Changes

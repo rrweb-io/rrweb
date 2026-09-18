@@ -1,5 +1,19 @@
 # @rrweb/browser-client
 
+## 2.1.6
+
+### Patch Changes
+
+- [#1946](https://github.com/rrweb-io/rrweb/pull/1946) [`2aad394`](https://github.com/rrweb-io/rrweb/commit/2aad394fe4de86438ed6e59592f0aeab3646f762) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Preserve event order when an HTTP fallback upload fails. The failed batch is now re-queued at the front of the buffer, ahead of events that were recorded while the request was in flight, instead of being appended to the back and arriving out of order.
+
+- [#1943](https://github.com/rrweb-io/rrweb/pull/1943) [`a5dbd21`](https://github.com/rrweb-io/rrweb/commit/a5dbd218b750b02ed3c96573d5abe79d6ef4636c) Thanks [@Juice10](https://github.com/Juice10)! - Fix HTTP fallback uploads resending earlier successful batches when flushing a large event buffer. Failed uploads now requeue only their own batch.
+
+- Updated dependencies []:
+  - rrweb@2.1.6
+  - @rrweb/record@2.1.6
+  - @rrweb/types@2.1.6
+  - @rrweb/utils@2.1.6
+
 ## 2.1.5
 
 ### Patch Changes

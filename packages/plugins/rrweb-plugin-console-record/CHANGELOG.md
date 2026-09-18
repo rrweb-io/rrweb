@@ -1,5 +1,7 @@
 # @rrweb/rrweb-plugin-console-record
 
+## 2.1.6
+
 ## 2.1.5
 
 ## 2.1.4
