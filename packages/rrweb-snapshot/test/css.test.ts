@@ -313,7 +313,9 @@ describe('css splitter', () => {
       expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
 
       let _testNoPxNorm = false;
-      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual(expected);
+      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual(
+        expected,
+      );
 
       _testNoPxNorm = true;
       expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual([

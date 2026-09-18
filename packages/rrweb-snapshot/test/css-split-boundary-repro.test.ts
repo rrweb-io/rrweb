@@ -98,10 +98,10 @@ describe('splitCssText snaps split points to css rule boundaries at record time'
 
   it('leaves authored mid-rule broken text nodes (browser-split) untouched', () => {
     const serialized = '.a { color: red; }.b { color: green; }';
-    const splits = splitCssText(serialized, stubStyle([
-      '.a { color: red; }.b { col',
-      'or: green; }',
-    ]));
+    const splits = splitCssText(
+      serialized,
+      stubStyle(['.a { color: red; }.b { col', 'or: green; }']),
+    );
     expect(splits.join('')).toEqual(serialized);
     expect(splits[0]).toEqual('.a { color: red; }.b { col');
   });
