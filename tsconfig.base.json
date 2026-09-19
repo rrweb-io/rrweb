@@ -7,7 +7,7 @@
     "esModuleInterop": true,
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "rootDir": "src",
     "outDir": "dist",
     "lib": ["es6", "dom"],
