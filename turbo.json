@@ -17,10 +17,9 @@
       "dependsOn": ["^prepublish", "//#references:update"],
       "env": ["RELATIVE_CI_STATS"],
       "outputs": [
-        "lib/**",
-        "es/**",
+        "build/**",
+        "umd/**",
         "dist/**",
-        "typings/**",
         ".svelte-kit/**",
         "types/**"
       ]
