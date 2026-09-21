@@ -219,16 +219,18 @@ export function applyCssSplits(
     adaptedCss = adaptCssForReplay(cssTextSplits.join(''), cache);
   }
   let startIndex = 0;
+  let errorOffset = -1;
   for (let i = 0; i < childTextNodes.length; i++) {
     if (i === cssTextSplits.length) {
       break;
     }
     const childTextNode = childTextNodes[i];
-    if (!hackCss) {
-      childTextNode.textContent = cssTextSplits[i];
-    } else if (i < cssTextSplits.length - 1) {
+    let cssTextSection = cssTextSplits[i];
+    const nextTextSection =
+      i < cssTextSplits.length - 1 ? cssTextSplits[i + 1] : null;
+    if (hackCss && nextTextSection) {
       let endIndex = startIndex;
-      let endSearch = cssTextSplits[i + 1].length;
+      let endSearch = nextTextSection.length;
 
       // don't do hundreds of searches, in case a mismatch
       // is caused close to start of string
@@ -236,7 +238,7 @@ export function applyCssSplits(
 
       let found = false;
       for (; endSearch > 2; endSearch--) {
-        const searchBit = cssTextSplits[i + 1].substring(0, endSearch);
+        const searchBit = nextTextSection.substring(0, endSearch);
         const searchIndex = adaptedCss.substring(startIndex).indexOf(searchBit);
         found = searchIndex !== -1;
         if (found) {
@@ -246,13 +248,29 @@ export function applyCssSplits(
       }
       if (!found) {
         // something went wrong, put a similar sized chunk in the right place
-        endIndex += cssTextSplits[i].length;
+        endIndex += cssTextSection.length;
       }
-      childTextNode.textContent = adaptedCss.substring(startIndex, endIndex);
+      cssTextSection = adaptedCss.substring(startIndex, endIndex);
       startIndex = endIndex;
-    } else {
-      childTextNode.textContent = adaptedCss.substring(startIndex);
+    } else if (hackCss) {
+      cssTextSection = adaptedCss.substring(startIndex);
     }
+    if (errorOffset !== -1) {
+      // #1920 correction
+      cssTextSection = cssTextSection.substring(errorOffset);
+    }
+    if (
+      nextTextSection &&
+      (errorOffset !== -1 ||
+        (cssTextSection.endsWith('0p') && nextTextSection.startsWith('x')))
+    ) {
+      errorOffset = nextTextSection.indexOf('}');
+      if (errorOffset !== -1) {
+        errorOffset += 1; // consume the bracket
+        cssTextSection += nextTextSection.substring(0, errorOffset);
+      }
+    }
+    childTextNode.textContent = cssTextSection;
   }
 }
 
