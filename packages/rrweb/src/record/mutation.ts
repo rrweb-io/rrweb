@@ -29,7 +29,7 @@ import {
   inDom,
   getShadowHost,
   closestElementOfNode,
-  throttle,
+  nowTimestamp,
 } from '../utils';
 import dom from '@rrweb/utils';
 
@@ -43,6 +43,10 @@ const moveKey = (id: number, parentId: number) => `${id}@${parentId}`;
 export default class MutationBuffer {
   private frozen = false;
   private locked = false;
+
+  private throttleMs = 0;
+  private lastEmit = new WeakMap<Node, number>();
+  private flushTimer: ReturnType<typeof setTimeout> | null = null;
 
   private textsMap = new Map<Node, string | null>();
   private attributesMap = new Map<HTMLElement, MutatingAttributes>();
@@ -128,9 +132,7 @@ export default class MutationBuffer {
       this[key] = options[key] as never;
     });
 
-    if (this.sampling.mutation) {
-      this.emit = throttle(this.emit, this.sampling.mutation);
-    }
+    this.throttleMs = this.sampling.mutation || 0;
   }
 
   public freeze() {
@@ -141,7 +143,7 @@ export default class MutationBuffer {
   public unfreeze() {
     this.frozen = false;
     this.canvasManager.unfreeze();
-    this.emit();
+    this.emit(true);
   }
 
   public isFrozen() {
@@ -156,10 +158,14 @@ export default class MutationBuffer {
   public unlock() {
     this.locked = false;
     this.canvasManager.unlock();
-    this.emit();
+    this.emit(true);
   }
 
   public reset() {
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer);
+      this.flushTimer = null;
+    }
     this.shadowDomManager.reset();
     this.canvasManager.reset();
   }
@@ -169,7 +175,7 @@ export default class MutationBuffer {
     this.emit(); // clears buffer if not locked/frozen
   };
 
-  public emit = () => {
+  public emit = (force = false) => {
     if (this.frozen || this.locked) {
       return;
     }
@@ -372,35 +378,95 @@ export default class MutationBuffer {
       }
     }
 
-    const payload = {
-      texts: Array.from(this.textsMap, ([target, value]) => {
+    const now = nowTimestamp();
+    const heldTextsMap = new Map<Node, string | null>();
+    const heldAttributesMap = new Map<HTMLElement, MutatingAttributes>();
+    const forceDueAttrs = new Set<Node>();
+    let nextDueAt = Infinity;
+
+    const isDue = (node: Node): boolean => {
+      if (force || !this.throttleMs) {
+        return true;
+      }
+      const last = this.lastEmit.get(node);
+      if (last === undefined || now - last >= this.throttleMs) {
+        return true;
+      }
+      nextDueAt = Math.min(nextDueAt, last + this.throttleMs);
+      return false;
+    };
+
+    const dueTexts: [Node, string | null][] = [];
+    for (const entry of this.textsMap) {
+      if (isDue(entry[0])) {
+        this.lastEmit.set(entry[0], now);
+        dueTexts.push(entry);
+      } else {
+        heldTextsMap.set(entry[0], entry[1]);
+      }
+    }
+
+    const texts = dueTexts
+      .map(([target, value]) => {
         const parent = dom.parentNode(target);
         if (parent && (parent as Element).tagName === 'TEXTAREA') {
           // the node is being ignored as it isn't in the mirror, so shift mutation to attributes on parent textarea
           // this will be immediately picked up in resolveAttributes below
           this.enqueueTextAreaValueMutation(parent as HTMLTextAreaElement);
+          forceDueAttrs.add(parent);
         }
         return {
           id: this.mirror.getId(target),
           value,
         };
       })
-        // no need to include them on added elements, as they have just been serialized with up to date attribubtes
-        .filter((text) => !addedIds.has(text.id))
-        // text mutation's id was not in the mirror map means the target node has been removed
-        .filter((text) => this.mirror.has(text.id)),
-      attributes: Array.from(this.attributesMap, ([target, mutatingAttributes]) => ({
+      // no need to include them on added elements, as they have just been serialized with up to date attribubtes
+      .filter((text) => !addedIds.has(text.id))
+      // text mutation's id was not in the mirror map means the target node has been removed
+      .filter((text) => this.mirror.has(text.id));
+
+    const dueAttributes: [HTMLElement, MutatingAttributes][] = [];
+    for (const entry of this.attributesMap) {
+      if (forceDueAttrs.has(entry[0]) || isDue(entry[0])) {
+        this.lastEmit.set(entry[0], now);
+        dueAttributes.push(entry);
+      } else {
+        heldAttributesMap.set(entry[0], entry[1]);
+      }
+    }
+
+    const attributes = dueAttributes
+      .map(([target, mutatingAttributes]) => ({
         id: this.mirror.getId(target),
         attributes: this.resolveAttributes(target, mutatingAttributes),
       }))
-        // no need to include them on added elements, as they have just been serialized with up to date attribubtes
-        .filter((attribute) => !addedIds.has(attribute.id))
-        // attribute mutation's id was not in the mirror map means the target node has been removed
-        .filter((attribute) => this.mirror.has(attribute.id))
-        .filter((attribute) => Object.keys(attribute.attributes).length > 0),
+      // no need to include them on added elements, as they have just been serialized with up to date attribubtes
+      .filter((attribute) => !addedIds.has(attribute.id))
+      // attribute mutation's id was not in the mirror map means the target node has been removed
+      .filter((attribute) => this.mirror.has(attribute.id))
+      .filter((attribute) => Object.keys(attribute.attributes).length > 0);
+
+    const payload = {
+      texts,
+      attributes,
       removes: this.removes,
       adds,
     };
+
+    this.textsMap = heldTextsMap;
+    this.attributesMap = heldAttributesMap;
+
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer);
+      this.flushTimer = null;
+    }
+    if (nextDueAt !== Infinity) {
+      this.flushTimer = setTimeout(() => {
+        this.flushTimer = null;
+        this.emit();
+      }, Math.max(0, nextDueAt - now));
+    }
+
     // payload may be empty if the mutations happened in some blocked elements
     if (
       !payload.texts.length &&
@@ -412,8 +478,6 @@ export default class MutationBuffer {
     }
 
     // reset
-    this.textsMap = new Map<Node, string | null>();
-    this.attributesMap = new Map<HTMLElement, MutatingAttributes>();
     this.removes = [];
     this.addedSet = new Set<Node>();
     this.movedSet = new Set<Node>();
@@ -689,6 +753,8 @@ export default class MutationBuffer {
             });
             processRemoves(n, this.removesSubTreeCache);
           }
+          this.textsMap.delete(n);
+          this.attributesMap.delete(n as HTMLElement);
           this.mapRemoves.push(n);
         });
         break;
