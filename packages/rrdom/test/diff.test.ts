@@ -12,6 +12,7 @@ import {
   Mirror as RRNodeMirror,
   RRDocument,
   RRMediaElement,
+  RRElement,
   printRRDom,
 } from '../src';
 import {
@@ -1155,6 +1156,77 @@ describe('diff algorithm for rrdom', () => {
       expect(mirror.getId(node.childNodes[1])).toEqual(3);
       expect(node.childNodes[0].childNodes.length).toEqual(1);
       expect(mirror.getId(node.childNodes[0].childNodes[0])).toEqual(2);
+    });
+
+    it('should maintain correct order when duplicate node is found causing nextSibling traversal desync', () => {
+      const oldList = [
+        { tagName: 'STYLE', id: 1 },
+        { tagName: 'STYLE', id: 2 },
+        { tagName: 'BASE', id: 3 },
+        { tagName: 'META', id: 4 },
+        { tagName: 'META', id: 5 },
+        { tagName: 'META', id: 6 },
+        { tagName: 'TITLE', id: 7 },
+        { tagName: 'STYLE', id: 8 },
+        { tagName: 'STYLE', id: 9 },
+        { tagName: 'LINK', id: 10 },
+        { tagName: 'STYLE', id: 11 },
+        { tagName: 'LINK', id: 12 },
+        { tagName: 'NOSCRIPT', id: 13 },
+      ];
+
+      // Duplicate STYLE#1 at index 1
+      const newList = [...oldList];
+      newList.splice(1, 0, { tagName: 'STYLE', id: 1 });
+
+      const mirror = createMirror();
+      const oldHead = createTree(
+        {
+          tagName: 'head',
+          id: 0,
+          children: oldList as unknown as ElementType[],
+        },
+        undefined,
+        mirror,
+      ) as Node;
+      expect(oldHead.childNodes.length).toBe(oldList.length);
+
+      const rrdom = new RRDocument();
+      const newHead = createTree(
+        {
+          tagName: 'head',
+          id: 0,
+          children: newList as unknown as ElementType[],
+        },
+        rrdom,
+      ) as RRNode;
+
+      // Add test attributes to each node in newHead
+      Array.from(newHead.childNodes).forEach((node, index) => {
+        if (node instanceof RRElement) {
+          node.setAttribute('data-test-id', `${newList[index].id}`);
+          node.setAttribute('data-test-tag', node.tagName);
+        }
+      });
+
+      const replayer: ReplayerHandler = {
+        mirror,
+        applyCanvas: () => {},
+        applyInput: () => {},
+        applyScroll: () => {},
+        applyStyleSheetMutation: () => {},
+      };
+
+      // Run diff
+      diff(oldHead, newHead, replayer);
+
+      // Extract final IDs from real DOM
+      const finalIds = Array.from(oldHead.childNodes)
+        .filter((n): n is Element => n.nodeType === Node.ELEMENT_NODE)
+        .map((el) => el.getAttribute('data-test-id') || el.getAttribute('id'));
+
+      // Assert the real DOM now matches the RR DOM list
+      expect(finalIds).toEqual(oldList.map((n) => String(n.id)));
     });
   });
 
