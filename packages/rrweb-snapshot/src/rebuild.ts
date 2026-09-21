@@ -226,7 +226,7 @@ export function applyCssSplits(
     }
     const childTextNode = childTextNodes[i];
     let cssTextSection = cssTextSplits[i];
-    let nextTextSection =
+    const nextTextSection =
       i < cssTextSplits.length - 1 ? cssTextSplits[i + 1] : null;
     if (hackCss && nextTextSection) {
       let endIndex = startIndex;
