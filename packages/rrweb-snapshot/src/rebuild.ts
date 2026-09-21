@@ -219,7 +219,7 @@ export function applyCssSplits(
     adaptedCss = adaptCssForReplay(cssTextSplits.join(''), cache);
   }
   let startIndex = 0;
-  let errorOffset = 0;
+  let errorOffset = -1;
   for (let i = 0; i < childTextNodes.length; i++) {
     if (i === cssTextSplits.length) {
       break;
@@ -255,21 +255,19 @@ export function applyCssSplits(
     } else if (hackCss) {
       cssTextSection = adaptedCss.substring(startIndex);
     }
-    if (errorOffset !== 0) {
+    if (errorOffset !== -1) {
       // #1920 correction
       cssTextSection = cssTextSection.substring(errorOffset);
     }
-    if (nextTextSection) {
-      if (
-        errorOffset !== 0 ||
-        (cssTextSection.endsWith('0p') && nextTextSection.startsWith('x'))
-      ) {
-        let err = nextTextSection.indexOf('}');
-        if (err !== -1) {
-          errorOffset = err;
-          errorOffset += 1; // consume the bracket
-          cssTextSection += nextTextSection.substring(0, errorOffset);
-        }
+    if (
+      nextTextSection &&
+      (errorOffset !== -1 ||
+        (cssTextSection.endsWith('0p') && nextTextSection.startsWith('x')))
+    ) {
+      errorOffset = nextTextSection.indexOf('}');
+      if (errorOffset !== -1) {
+        errorOffset += 1; // consume the bracket
+        cssTextSection += nextTextSection.substring(0, errorOffset);
       }
     }
     childTextNode.textContent = cssTextSection;
