@@ -39,6 +39,7 @@ import {
   registerErrorHandler,
   unregisterErrorHandler,
 } from './error-handler';
+import { buildAllowedOriginSet } from './cross-origin-utils';
 import dom from '@rrweb/utils';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
@@ -89,6 +90,7 @@ function record<T = eventWithTime>(
     recordDOM = true,
     recordCanvas = false,
     recordCrossOriginIframes = false,
+    allowedIframeOrigins,
     recordAfter = options.recordAfter === 'DOMContentLoaded'
       ? options.recordAfter
       : 'load',
@@ -102,6 +104,18 @@ function record<T = eventWithTime>(
   } = options;
 
   registerErrorHandler(errorHandler);
+
+  let validatedOrigins: ReadonlySet<string> | undefined;
+  if (
+    recordCrossOriginIframes &&
+    allowedIframeOrigins &&
+    allowedIframeOrigins.length > 0
+  ) {
+    validatedOrigins = buildAllowedOriginSet(allowedIframeOrigins);
+    if (validatedOrigins.size === 0) {
+      validatedOrigins = undefined;
+    }
+  }
 
   const inEmittingFrame = recordCrossOriginIframes
     ? window.parent === window
@@ -207,7 +221,13 @@ function record<T = eventWithTime>(
         origin: window.location.origin,
         isCheckout,
       };
-      window.parent.postMessage(message, '*');
+      if (validatedOrigins) {
+        for (const targetOrigin of validatedOrigins) {
+          window.parent.postMessage(message, targetOrigin);
+        }
+      } else {
+        window.parent.postMessage(message, '*');
+      }
     }
 
     if (e.type === EventType.FullSnapshot) {
