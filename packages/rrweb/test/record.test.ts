@@ -82,6 +82,26 @@ const setup = function (this: ISuite, content: string): ISuite {
   return ctx;
 };
 
+function assertWeaklyAscendingEmission(events: eventWithTime[]) {
+  let previous = 0;
+  for (const e of events) {
+    if (
+      e.type === EventType.IncrementalSnapshot &&
+      (e.data.source === IncrementalSource.MouseMove ||
+        e.data.source === IncrementalSource.TouchMove ||
+        e.data.source === IncrementalSource.Drag)
+    ) {
+      for (const p of e.data.positions) {
+        expect(e.timestamp + p.timeOffset).toBeGreaterThanOrEqual(previous);
+        previous = e.timestamp + p.timeOffset;
+      }
+    } else {
+      expect(e.timestamp).toBeGreaterThanOrEqual(previous);
+      previous = e.timestamp;
+    }
+  }
+}
+
 describe('record', function (this: ISuite) {
   vi.setConfig({ testTimeout: 10_000 });
 
@@ -1010,6 +1030,64 @@ describe('record', function (this: ISuite) {
     await ctx.page.evaluate(() => {
       (window as any).stopRecord?.();
     });
+  });
+
+  it('emits a throttled mouse move before an interrupting keystroke with weakly ascending timestamps', async () => {
+    await ctx.page.evaluate(() => {
+      const { record } = (window as unknown as IWindow).rrweb;
+      record({
+        emit: (window as unknown as IWindow).emit,
+      });
+    });
+    await waitForRAF(ctx.page);
+
+    await ctx.page.mouse.move(20, 20);
+    await ctx.page.waitForTimeout(80);
+    await ctx.page.mouse.move(40, 60);
+    await ctx.page.waitForTimeout(80);
+    await ctx.page.mouse.move(80, 120);
+    await ctx.page.type('input', 'a');
+    await ctx.page.waitForTimeout(600);
+    await waitForRAF(ctx.page);
+
+    const moveEvents = ctx.events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.MouseMove,
+    );
+    expect(moveEvents.length).toBeGreaterThan(0);
+    assertWeaklyAscendingEmission(ctx.events);
+  });
+
+  it('flushes buffered mutations and a throttled mouse move in weakly ascending timestamp order', async () => {
+    await ctx.page.evaluate(() => {
+      const { record, freezePage } = (window as unknown as IWindow).rrweb;
+      record({
+        emit: (window as unknown as IWindow).emit,
+      });
+      freezePage();
+      const div = document.createElement('div');
+      div.setAttribute('id', 'frozen-add');
+      document.body.appendChild(div);
+    });
+    await waitForRAF(ctx.page);
+
+    await ctx.page.mouse.move(20, 20);
+    await ctx.page.waitForTimeout(80);
+    await ctx.page.mouse.move(60, 80);
+    await ctx.page.waitForTimeout(80);
+    await ctx.page.mouse.move(100, 140);
+    await ctx.page.evaluate(() => document.body.click());
+    await ctx.page.waitForTimeout(600);
+    await waitForRAF(ctx.page);
+
+    const mutationEvents = ctx.events.filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.Mutation,
+    );
+    expect(mutationEvents.length).toBeGreaterThan(0);
+    assertWeaklyAscendingEmission(ctx.events);
   });
 });
 
