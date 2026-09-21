@@ -384,6 +384,62 @@ describe('applyCssSplits css rejoiner', function () {
     );
   });
 
+  it('heals a recorded 0px split so the text nodes are whole rules', () => {
+    const sn3 = {
+      type: NodeType.Element,
+      tagName: 'style',
+      childNodes: [
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+      ],
+    } as serializedElementNodeWithId;
+    const recorded = [
+      '.a { margin: 0p',
+      'x; }.b { color: re',
+      'd; }.c { color: blue; }',
+    ].join('/* rr_split */');
+    applyCssSplits(sn3, recorded, false, mockLastUnusedArg);
+    //expect((sn3.childNodes[0] as textNode).textContent).toEqual(
+    //  '.a { margin: 0px; }',
+    //);
+    expect((sn3.childNodes[1] as textNode).textContent).toEqual(
+      '.b { color: red; }',
+    );
+    expect((sn3.childNodes[2] as textNode).textContent).toEqual(
+      '.c { color: blue; }',
+    );
+  });
+
+  it('heals a 0px chain whose offset compounds (4 then 7) so the text nodes are whole rules', () => {
+    const sn5 = {
+      type: NodeType.Element,
+      tagName: 'style',
+      childNodes: [
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+      ],
+    } as serializedElementNodeWithId;
+    const recorded = [
+      '.a { background: rgb(255, 255, 255); }',
+      '.ab { padding: 0px 0px; }',
+      '.abc { margin: 0px 0px 0px 0p',
+      'x; }.abcd { top: 0px; left:',
+      ' 0px; }.e { color: blue; }',
+    ].join('/* rr_split */');
+    applyCssSplits(sn5, recorded, false, mockLastUnusedArg);
+    expect((sn5.childNodes as textNode[]).map((n) => n.textContent)).toEqual([
+      '.a { background: rgb(255, 255, 255); }',
+      '.ab { padding: 0px 0px; }',
+      '.abc { margin: 0px 0px 0px 0px; }',
+      '.abcd { top: 0px; left: 0px; }',
+      '.e { color: blue; }',
+    ]);
+  });
+
   it('applies css splits correctly even when there are too many child nodes', () => {
     let sn3 = {
       type: NodeType.Element,
