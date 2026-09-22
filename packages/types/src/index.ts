@@ -279,7 +279,9 @@ export type SamplingStrategy = Partial<{
    */
   scroll: number;
   /**
-   * number is the throttle threshold of mutation emission in ms
+   * per-element throttle threshold for mutation emission in ms: a given
+   * element's repeated text/attribute changes emit at most once per interval,
+   * while structural changes (adds/removes) still emit promptly
    * off by default
    */
   mutation: number;

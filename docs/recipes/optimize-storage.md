@@ -37,8 +37,9 @@ record({
     mouseInteraction: false
     // set the interval of scrolling event
     scroll: 150 // do not emit twice in 150ms
-    // set the interval of mutation events (page changes)
-    mutation: 50 // do not emit more than 20 mutations per second
+    // throttle rapidly-changing elements: a given element's repeated text/attribute
+    // changes emit at most once per interval (structural changes still emit promptly)
+    mutation: 50 // per element, do not emit more than once per 50ms
     // set the interval of media interaction event
     media: 800
     // set the timing of record input
