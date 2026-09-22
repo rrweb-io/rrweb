@@ -495,6 +495,7 @@ export default class MutationBuffer {
     const styleDiff: styleOMValue = {};
     const unchangedStyles: styleOMValue = {};
 
+    // eslint-disable-next-line prefer-const
     for (let [name, maybeSentinel] of mutatingAttributes) {
       const oldValue: string | null =
         maybeSentinel === true ? '' : maybeSentinel;
