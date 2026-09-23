@@ -426,6 +426,19 @@ function buildNode(
               'rrweb-original-srcset',
               n.attributes.srcset as string,
             );
+          } else if (tagName === 'iframe' && name === 'srcdoc') {
+            /**
+             * Setting `srcdoc` makes the browser asynchronously parse and load
+             * its own document into the iframe, racing against (and getting
+             * clobbered by or clobbering) the document we reconstruct for this
+             * iframe from its separately-recorded child nodes/mutations. That
+             * race can leave the mirror out of sync with the live DOM, causing
+             * later mutations to target nodes that no longer exist (e.g.
+             * insertBefore throwing "parameter 1 is not of type 'Node'").
+             * Omit it; our own reconstruction is the source of truth.
+             * @see https://github.com/rrweb-io/rrweb/issues/1736
+             */
+            // ignore
           } else {
             node.setAttribute(name, value.toString());
           }
