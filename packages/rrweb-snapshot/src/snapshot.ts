@@ -946,6 +946,7 @@ export function serializeNodeWithId(
     onSerialize?: (n: Node) => unknown;
     onIframeLoad?: (
       iframeNode: HTMLIFrameElement,
+      iframeId: number,
       node: serializedElementNodeWithId,
     ) => unknown;
     iframeLoadTimeout?: number;
@@ -1138,6 +1139,7 @@ export function serializeNodeWithId(
     serializedNode.type === NodeType.Element &&
     serializedNode.tagName === 'iframe'
   ) {
+    const iframeId = serializedNode.id;
     onceIframeLoaded(
       n as HTMLIFrameElement,
       () => {
@@ -1170,8 +1172,10 @@ export function serializeNodeWithId(
           });
 
           if (serializedIframeNode) {
+            // n may have lost it's __sn attribute by the time we get to this callback
             onIframeLoad(
               n as HTMLIFrameElement,
+              iframeId,
               serializedIframeNode as serializedElementNodeWithId,
             );
           }
@@ -1256,6 +1260,7 @@ function snapshot(
     onSerialize?: (n: Node) => unknown;
     onIframeLoad?: (
       iframeNode: HTMLIFrameElement,
+      iframeId: number,
       node: serializedElementNodeWithId,
     ) => unknown;
     iframeLoadTimeout?: number;
