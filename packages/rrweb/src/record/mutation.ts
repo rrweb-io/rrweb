@@ -405,6 +405,7 @@ export default class MutationBuffer {
         heldTextsMap.set(entry[0], entry[1]);
       }
     }
+    this.textsMap = heldTextsMap;
 
     const texts = dueTexts
       .map(([target, value]) => {
@@ -434,6 +435,7 @@ export default class MutationBuffer {
         heldAttributesMap.set(entry[0], entry[1]);
       }
     }
+    this.attributesMap = heldAttributesMap;
 
     const attributes = dueAttributes
       .map(([target, mutatingAttributes]) => ({
@@ -452,9 +454,6 @@ export default class MutationBuffer {
       removes: this.removes,
       adds,
     };
-
-    this.textsMap = heldTextsMap;
-    this.attributesMap = heldAttributesMap;
 
     if (this.flushTimer) {
       clearTimeout(this.flushTimer);
