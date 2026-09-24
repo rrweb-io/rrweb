@@ -685,6 +685,7 @@ record.addAnnotation = (annotation: annotationData) => {
 };
 
 record.freezePage = () => {
+  if (ongoingMove) ongoingMove(nowTimestamp(), true);
   canvasManager.freeze();
   mutationBuffers.forEach((buf) => buf.freeze());
   frozen = true;

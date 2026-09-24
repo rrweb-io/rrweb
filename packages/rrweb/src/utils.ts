@@ -75,7 +75,7 @@ export function throttle<T>(
 ) {
   let timeout: ReturnType<typeof setTimeout> | null = null;
   let previous = 0;
-  return function (...args: T[]) {
+  const throttled = function (...args: T[]) {
     const now = Date.now();
     if (!previous && options.leading === false) {
       previous = now;
@@ -97,7 +97,15 @@ export function throttle<T>(
         func.apply(context, args);
       }, remaining);
     }
+  } as ((...args: T[]) => void) & { cancel: () => void };
+  throttled.cancel = () => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+    previous = 0;
   };
+  return throttled;
 }
 
 export function hookSetter<T>(
