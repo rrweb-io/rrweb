@@ -560,3 +560,77 @@ describe('shadow DOM integration tests', function (this: ISuite) {
     await assertSnapshot(snapshotResult);
   });
 });
+
+describe('adopted stylesheet integration tests', function (this: ISuite) {
+  vi.setConfig({ testTimeout: 30_000 });
+  let server: ISuite['server'];
+  let serverURL: ISuite['serverURL'];
+  let browser: ISuite['browser'];
+  let code: ISuite['code'];
+  let page: ISuite['page'];
+
+  beforeAll(async () => {
+    server = await startServer();
+    serverURL = getServerURL(server);
+    browser = await puppeteer.launch({
+      // headless: false,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
+
+    code = fs.readFileSync(
+      path.resolve(__dirname, '../dist/rrweb-snapshot.umd.cjs'),
+      'utf-8',
+    );
+  });
+
+  beforeEach(async () => {
+    page = await browser.newPage();
+    page.on('console', (msg) => console.log(msg.text()));
+    await page.goto(`${serverURL}/html/adopted-style-sheet.html`, {
+      waitUntil: 'load',
+    });
+  });
+
+  afterAll(async () => {
+    await browser.close();
+    await server.close();
+  });
+
+  it('snapshot captures document and shadow root adoptedStyleSheets', async () => {
+    const snapshotResult = await snapshot(page, code);
+    await assertSnapshot(snapshotResult);
+  });
+
+  it('rebuild restores document-level adoptedStyleSheets styling', async () => {
+    const color = await page.evaluate(`${code}
+const snap = rrwebSnapshot.snapshot(document);
+const { iframe } = rrwebSnapshot.rebuildIntoSandboxedIframe(snap, {
+  root: document.body,
+});
+getComputedStyle(iframe.contentDocument.getElementById('doc-target')).color
+`);
+    assert(
+      color === 'rgb(255, 0, 0)',
+      `expected rebuilt #doc-target to be rgb(255, 0, 0), got: ${String(
+        color,
+      )}`,
+    );
+  });
+
+  it('rebuild restores shadow-root-level adoptedStyleSheets styling', async () => {
+    const color = await page.evaluate(`${code}
+const snap = rrwebSnapshot.snapshot(document);
+const { iframe } = rrwebSnapshot.rebuildIntoSandboxedIframe(snap, {
+  root: document.body,
+});
+const host = iframe.contentDocument.querySelector('shadow-target');
+getComputedStyle(host.shadowRoot.getElementById('shadow-target-text')).color
+`);
+    assert(
+      color === 'rgb(0, 0, 255)',
+      `expected rebuilt shadow #shadow-target-text to be rgb(0, 0, 255), got: ${String(
+        color,
+      )}`,
+    );
+  });
+});
