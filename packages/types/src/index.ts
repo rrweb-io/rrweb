@@ -545,6 +545,10 @@ export type adoptedStyleSheetParam = {
 
 export type adoptedStyleSheetCallback = (a: adoptedStyleSheetParam) => void;
 
+export type serializedAdoptedStyleSheet = {
+  rules: styleSheetAddRule[];
+};
+
 export type styleDeclarationParam = {
   id?: number;
   styleId?: number;
@@ -906,6 +910,12 @@ export type serializedNode = (
   rootId?: number;
   isShadowHost?: boolean;
   isShadow?: boolean;
+  /**
+   * Present on a Document node, or an Element with `isShadowHost`, when
+   * that document/shadow root has constructed stylesheets assigned via
+   * `adoptedStyleSheets`.
+   */
+  adoptedStyleSheets?: serializedAdoptedStyleSheet[];
 };
 
 export type serializedNodeWithId = serializedNode & { id: number };

@@ -2,6 +2,8 @@ import { mediaSelectorPlugin, pseudoClassPlugin } from './css';
 import {
   type serializedNodeWithId,
   type serializedElementNodeWithId,
+  type serializedAdoptedStyleSheet,
+  type IWindow,
   NodeType,
   type elementNode,
   type legacyAttributes,
@@ -290,6 +292,38 @@ export function buildStyleNode(
   }
 }
 
+/**
+ * Rebuilds a serialized `adoptedStyleSheets` list as constructed
+ * CSSStyleSheets, owned by `hostWindow`. Constructed stylesheets can't be
+ * shared across documents, so a fresh one is always created.
+ */
+function buildAdoptedStyleSheets(
+  sheets: serializedAdoptedStyleSheet[],
+  hostWindow: IWindow,
+): CSSStyleSheet[] {
+  return sheets
+    .map((sheetData) => {
+      let sheet: CSSStyleSheet | null = null;
+      try {
+        sheet = new hostWindow.CSSStyleSheet();
+        sheetData.rules.forEach(({ rule, index }) => {
+          try {
+            sheet!.insertRule(
+              rule,
+              typeof index === 'number' ? index : sheet!.cssRules.length,
+            );
+          } catch (e) {
+            // skip invalid/unsupported rules, e.g. browser-specific at-rules
+          }
+        });
+      } catch (e) {
+        // in case some browsers don't support constructing StyleSheet
+      }
+      return sheet;
+    })
+    .filter((sheet): sheet is CSSStyleSheet => sheet !== null);
+}
+
 function buildNode(
   n: serializedNodeWithId,
   options: {
@@ -523,6 +557,17 @@ function buildNode(
             node.shadowRoot.removeChild(node.shadowRoot.firstChild);
           }
         }
+        if (n.adoptedStyleSheets?.length) {
+          const hostWindow: IWindow | null =
+            node.ownerDocument?.defaultView || null;
+          if (hostWindow) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            node.shadowRoot!.adoptedStyleSheets = buildAdoptedStyleSheets(
+              n.adoptedStyleSheets,
+              hostWindow,
+            );
+          }
+        }
       }
       // Disable autocomplete on input fields to prevent the viewer's
       // personal data from appearing during replay
@@ -618,6 +663,13 @@ export function buildNodeWithSN(
       }
     }
     node = doc;
+    const docWindow: IWindow | null = doc.defaultView;
+    if (n.adoptedStyleSheets?.length && docWindow) {
+      doc.adoptedStyleSheets = buildAdoptedStyleSheets(
+        n.adoptedStyleSheets,
+        docWindow,
+      );
+    }
   }
 
   mirror.add(node, n);
