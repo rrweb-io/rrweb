@@ -15,6 +15,10 @@ if (!argv.input) {
 type FileConfig = Record<string, unknown>;
 
 const CAPTURE_KEYS = new Set([
+  'browserPath',
+  'captureTimeoutMs',
+  'replayMode',
+  'frameDelayMs',
   'fps',
   'capture',
   'quality',
@@ -67,6 +71,15 @@ if (argv.capture !== undefined)
 if (argv.quality !== undefined) options.quality = Number(argv.quality);
 if (argv.crf !== undefined) options.crf = Number(argv.crf);
 if (argv.pixelRatio !== undefined) options.pixelRatio = Number(argv.pixelRatio);
+
+if (argv.browserPath !== undefined)
+  options.browserPath = String(argv.browserPath);
+if (argv.captureTimeoutMs !== undefined)
+  options.captureTimeoutMs = Number(argv.captureTimeoutMs);
+if (argv.replayMode !== undefined)
+  options.replayMode = argv.replayMode as RRvideoConfig['replayMode'];
+if (argv.frameDelayMs !== undefined)
+  options.frameDelayMs = Number(argv.frameDelayMs);
 
 transformToVideo(options)
   .then((file) => {

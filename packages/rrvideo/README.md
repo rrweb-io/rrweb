@@ -45,10 +45,11 @@ Playwright `recordVideo` (the default for `.webm` output) is CDP
 screencast. Chromium typically delivers ~10–25fps and Playwright's
 bundled encoder writes VP8 WebM, so this path cannot do high-fps MP4.
 
-The ffmpeg backend does **not** record the page in real time. It seeks
-`rrweb-player` to each output-frame timestamp, takes a JPEG screenshot,
-and pipes the stills into ffmpeg (`libx264`). Output fps is exact (60,
-120, …) even when capture is slower than real time.
+The ffmpeg backend starts playback once, advances a controlled JavaScript clock,
+takes a JPEG screenshot, and writes it to ffmpeg (`libx264`). It waits for each
+write before advancing. Output fps is fixed even when capture is slower than
+real time. JavaScript playback follows the output timeline; ordinary screenshots
+do not synchronize native CSS animations, audio, video, or animated images.
 
 ```shell
 # 60fps MP4. Requires ffmpeg on PATH.
@@ -288,3 +289,53 @@ MP4 limits as Playwright `recordVideo`.
     </td>
   </tr>
 </table>
+
+### Experimental compositor capture
+
+On Linux or Windows, `--capture compositor` uses Chrome headless shell's
+`HeadlessExperimental.beginFrame` with native virtual time to advance rendering,
+JavaScript, and CSS animation together. It shares the FFmpeg encoder and settings
+with `--capture ffmpeg`.
+Compositor capture supports up to 1000 FPS. Frame timestamps use whole
+milliseconds, matching rrweb recordings; sampling rounds down by less than one
+millisecond while the encoded frame rate stays exact. Missing compositor images
+are retried at strictly increasing one-microsecond drawing timestamps, with the
+replay clock paused. Recovery is limited to ten attempts and less than the next
+frame timestamp; later frames keep their original timing.
+It requires a headless shell with begin-frame support. Playwright installs one
+with `playwright install chromium`. Use `--browserPath /path/to/chrome-headless-shell`
+to select another binary. Regular Chrome and new-headless mode are unsupported.
+
+```shell
+rrvideo --input events.json --capture compositor --output session.mp4 --fps 30
+```
+
+macOS users should use `--capture ffmpeg`, or run both modes inside Linux Docker.
+Compositor capture fails explicitly on macOS; it does not silently fall back.
+The viewport stays fixed at the recording's maximum size. Neither mode guarantees
+deterministic network resources or native media playback.
+
+Both frame modes reject `skipInactive: true`, since skipping time conflicts with
+the fixed output timeline. They support these additional CLI/config options:
+
+| Option             | Default               | Purpose                                                                                     |
+| ------------------ | --------------------- | ------------------------------------------------------------------------------------------- |
+| `captureTimeoutMs` | `30000`               | Deadline for initialization, each frame/write, and encoder finalization                     |
+| `browserPath`      | Playwright executable | Choose a Chromium executable; compositor requires headless shell                            |
+| `replayMode`       | `incremental`         | Use `seek` with the ffmpeg backend to compare per-frame seeking and screenshots             |
+| `frameDelayMs`     | `0`                   | Artificial wall-clock delay per frame for diagnostics; must be less than `captureTimeoutMs` |
+
+`captureTimeoutMs` also covers encoder finalization. Large outputs on slow disks
+may need a larger value while FFmpeg prepares the MP4 for playback.
+
+Unavailable media rejections and unrelated page errors are logged. A synchronous
+error in the controlled replay animation loop fails conversion with its original
+diagnostic. With `--capture ffmpeg`, a failed Playwright clock advance also fails
+conversion, including exceptions from timer callbacks. Compositor mode logs
+unrelated native timer errors and continues. Native media playback remains
+best-effort.
+
+A failed frame conversion removes its temporary video and preserves any existing
+output. Encoder errors propagate to the caller, including premature successful
+exit. See [the benchmark guide](benchmark/README.md) to compare both modes on the
+same machine and inspect the resulting videos.

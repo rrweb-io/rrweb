@@ -53,6 +53,11 @@ export function getHtml(
           props: {
             ...userConfig,
             events,
+            skipInactive: ${
+              config?.capture === 'playwright'
+                ? '(userConfig.skipInactive ?? true)'
+                : 'false'
+            },
             showController: false,
             autoPlay: false,
           },

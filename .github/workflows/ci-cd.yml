@@ -40,6 +40,9 @@ jobs:
       - name: Install Playwright browsers
         run: cd packages/rrvideo && yarn playwright install chromium
 
+      - name: Install rrvideo encoder tools
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
       - name: Read Puppeteer browser revision
         id: puppeteer-browser
         run: |

@@ -2,7 +2,7 @@
   "width": 1920,
   "height": 1080,
   "speed": 2,
-  "skipInactive": true,
+  "skipInactive": false,
   "fps": 60,
   "capture": "ffmpeg",
   "quality": 90,
@@ -12,5 +12,7 @@
   "mouseTail": {
     "strokeStyle": "green",
     "lineWidth": 2
-  }
+  },
+  "replayMode": "incremental",
+  "captureTimeoutMs": 30000
 }

@@ -1,107 +1,59 @@
-import { chromium } from 'playwright';
+import * as fs from 'fs-extra';
+import * as path from 'path';
 import type { eventWithTime } from '@rrweb/types';
 import { FfmpegJpegPipe } from './ffmpeg';
-import { getHtml } from './replay-html';
-import { getFrameTimeOffsets, getSessionDurationMs } from './timeline';
+import { FrameSource, launchCaptureBrowser } from './frame-source';
+import { estimateFrameCount, getSessionDurationMs } from './timeline';
 import type { ResolvedRRvideoConfig, ViewportSize } from './types';
-
-export const CHROMIUM_LAUNCH_ARGS = [
-  '--disable-frame-rate-limit',
-  '--disable-gpu-vsync',
-  '--autoplay-policy=no-user-gesture-required',
-  '--font-render-hinting=none',
-  '--hide-scrollbars',
-];
-
-type ReplayerWindow = {
-  replayer: {
-    goto: (timeOffset: number, play?: boolean) => void;
-  };
-};
+export { CHROMIUM_LAUNCH_ARGS } from './frame-source';
 
 export async function captureWithFfmpeg(
   events: eventWithTime[],
   viewport: ViewportSize,
   config: ResolvedRRvideoConfig,
 ): Promise<string> {
-  const speed = config.rrwebPlayer.speed || 1;
-  const durationMs = getSessionDurationMs(events);
-  const offsets = getFrameTimeOffsets(durationMs, config.fps, speed);
-  const encoder = new FfmpegJpegPipe({
-    fps: config.fps,
-    outputPath: config.output,
-    ffmpegPath: config.ffmpegPath,
-    crf: config.crf,
-    preset: config.x264Preset,
-  });
-
-  const browser = await chromium.launch({
-    headless: config.headless,
-    args: CHROMIUM_LAUNCH_ARGS,
-  });
-
+  const count = estimateFrameCount(
+    getSessionDurationMs(events),
+    config.fps,
+    config.rrwebPlayer.speed ?? 1,
+  );
+  const browser = await launchCaptureBrowser(config);
+  let encoder: FfmpegJpegPipe | undefined;
+  let tempDir: string | undefined;
   try {
-    const context = await browser.newContext({
-      viewport,
-      deviceScaleFactor: config.pixelRatio,
-    });
-    const page = await context.newPage();
-    page.on('console', (msg) => {
-      console.log('[PAGE CONSOLE]', msg.type(), msg.text());
-    });
-    page.on('pageerror', (error) => {
-      console.error('[PAGE ERROR]', error.message);
-    });
-
-    await page.setContent(
-      getHtml(events, config, { scale: 1, startPlayback: false }),
+    await fs.ensureDir(path.dirname(config.output));
+    tempDir = await fs.mkdtemp(
+      path.join(path.dirname(config.output), '.rrvideo-'),
     );
-    await page.waitForFunction(() => {
-      const w = window as unknown as {
-        replayer?: unknown;
-        __rrvideoInitError?: string | null;
-      };
-      return Boolean(w.replayer) || Boolean(w.__rrvideoInitError);
+    const tempOutput = path.join(tempDir, path.basename(config.output));
+    encoder = new FfmpegJpegPipe({
+      fps: config.fps,
+      outputPath: tempOutput,
+      ffmpegPath: config.ffmpegPath,
+      crf: config.crf,
+      preset: config.x264Preset,
+      timeoutMs: config.captureTimeoutMs,
     });
-    const initError = await page.evaluate(() => {
-      return (window as unknown as { __rrvideoInitError?: string | null })
-        .__rrvideoInitError;
-    });
-    if (initError) {
-      throw new Error(`Failed to initialize rrweb-player: ${initError}`);
-    }
-    await page.waitForFunction(() => {
-      const replayer = (window as unknown as ReplayerWindow).replayer;
-      return typeof replayer?.goto === 'function';
-    });
-    // Let rrweb-player's mount setTimeout(0) resize land before the first frame.
-    await page.evaluate(
-      () => new Promise<void>((resolve) => setTimeout(resolve, 0)),
+    const source = await encoder.guard(
+      FrameSource.create(browser, events, viewport, config),
+      'replay initialization',
     );
-
-    for (let i = 0; i < offsets.length; i++) {
-      const timeOffset = offsets[i];
-      await page.evaluate((offset) => {
-        (window as unknown as ReplayerWindow).replayer.goto(offset, false);
-      }, timeOffset);
-      const frame = await page.screenshot({
-        type: 'jpeg',
-        quality: config.quality,
-      });
+    for (let i = 0; i < count; i++) {
+      const frame = await encoder.guard(source.frame(i), `capture frame ${i}`);
       await encoder.write(frame);
-      if (offsets.length > 1) {
-        config.onProgressUpdate(i / (offsets.length - 1));
-      }
+      config.onProgressUpdate((i + 1) / (count + 1));
     }
-
+    await encoder.guard(source.finish(), 'replay completion');
     await encoder.end();
-    await context.close();
-  } catch (error) {
-    encoder.kill();
-    throw error;
+    await fs.move(tempOutput, config.output, { overwrite: true });
+    config.onProgressUpdate(1);
+    return config.output;
   } finally {
-    await browser.close();
+    try {
+      await encoder?.dispose();
+    } finally {
+      await browser.close();
+      if (tempDir) await fs.remove(tempDir);
+    }
   }
-
-  return config.output;
 }

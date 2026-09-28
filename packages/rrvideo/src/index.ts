@@ -23,7 +23,7 @@ function viewportForCapture(
   config: ResolvedRRvideoConfig,
 ): ViewportSize {
   const maxViewport = getMaxViewport(events);
-  if (config.capture === 'ffmpeg') {
+  if (config.capture !== 'playwright') {
     const playerWidth = config.rrwebPlayer.width;
     const playerHeight = config.rrwebPlayer.height;
     if (typeof playerWidth === 'number' && typeof playerHeight === 'number') {
@@ -39,14 +39,25 @@ function viewportForCapture(
 
 export async function transformToVideo(options: RRvideoConfig) {
   const config = resolveConfig(options);
-  const events = JSON.parse(
+  const recording = JSON.parse(
     fs.readFileSync(config.input, 'utf-8'),
   ) as eventWithTime[];
-
+  if (
+    !Array.isArray(recording) ||
+    recording.length < 2 ||
+    !recording.some((event) => event?.type === 2)
+  )
+    throw new Error(
+      'Recording must contain at least two events and a full snapshot',
+    );
+  if (recording.some((event) => !Number.isFinite(event?.timestamp)))
+    throw new Error('Recording timestamps must be finite');
+  // Match Replayer's ordering while calculating duration from the same timeline.
+  const events = [...recording].sort((a, b) => a.timestamp - b.timestamp);
   const viewport = viewportForCapture(events, config);
   Object.assign(config.rrwebPlayer, viewport);
 
-  if (config.capture === 'ffmpeg') {
+  if (config.capture !== 'playwright') {
     return captureWithFfmpeg(events, viewport, config);
   }
   return captureWithPlaywrightVideo(events, viewport, config);

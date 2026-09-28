@@ -1,6 +1,6 @@
 import type Player from 'rrweb-player';
 
-export type CaptureBackend = 'ffmpeg' | 'playwright';
+export type CaptureBackend = 'ffmpeg' | 'playwright' | 'compositor';
 
 export type RRwebPlayerProps = Omit<
   ConstructorParameters<typeof Player>[0]['props'],
@@ -8,6 +8,14 @@ export type RRwebPlayerProps = Omit<
 >;
 
 export type RRvideoConfig = {
+  /** Experimental compositor capture requires Linux/Windows chrome-headless-shell. */
+  browserPath?: string;
+  /** Per-operation timeout, including encoder writes and shutdown. Default: 30000. */
+  captureTimeoutMs?: number;
+  /** Seek is retained only as a comparison baseline. Default: incremental. */
+  replayMode?: 'incremental' | 'seek';
+  /** Artificial wall-clock delay before each frame. Must be below captureTimeoutMs. Default: 0. */
+  frameDelayMs?: number;
   input: string;
   output?: string;
   headless?: boolean;
@@ -19,23 +27,24 @@ export type RRvideoConfig = {
   /**
    * How to capture frames.
    *
-   * - `ffmpeg`: seek the replayer per output frame, screenshot, pipe JPEGs to
+   * - `ffmpeg`: advance controlled playback per output frame, screenshot, pipe JPEGs to
    *   ffmpeg. Use this for high fps / high resolution / MP4.
+   * - `compositor`: controlled playback plus headless-shell beginFrame capture.
    * - `playwright`: Playwright `recordVideo` (CDP screencast). Caps around
    *   25fps and writes WebM. Kept for compatibility.
    */
   capture?: CaptureBackend;
-  /** Output frames per second. Only used by the ffmpeg backend. Default: 60. */
+  /** Output frames per second. Used by the ffmpeg and compositor backends. Default: 60. */
   fps?: number;
-  /** JPEG screenshot quality 0-100. Only used by the ffmpeg backend. Default: 90. */
+  /** JPEG screenshot quality 0-100. Used by the ffmpeg and compositor backends. Default: 90. */
   quality?: number;
-  /** libx264 CRF. Only used by the ffmpeg backend. Default: 18. */
+  /** libx264 CRF. Used by the ffmpeg and compositor backends. Default: 18. */
   crf?: number;
-  /** libx264 preset. Only used by the ffmpeg backend. Default: veryfast. */
+  /** libx264 preset. Used by the ffmpeg and compositor backends. Default: veryfast. */
   x264Preset?: string;
   /**
    * Device pixel ratio used when screenshotting. 2 captures at 2× resolution.
-   * Only used by the ffmpeg backend. Default: 1.
+   * Used by the ffmpeg and compositor backends. Default: 1.
    */
   pixelRatio?: number;
   /** ffmpeg binary. Default: ffmpeg on PATH. */
@@ -47,6 +56,9 @@ export type RRvideoConfig = {
 export type ResolvedRRvideoConfig = Required<
   Pick<
     RRvideoConfig,
+    | 'captureTimeoutMs'
+    | 'replayMode'
+    | 'frameDelayMs'
     | 'input'
     | 'output'
     | 'headless'
@@ -61,7 +73,8 @@ export type ResolvedRRvideoConfig = Required<
     | 'onProgressUpdate'
     | 'rrwebPlayer'
   >
->;
+> &
+  Pick<RRvideoConfig, 'browserPath'>;
 
 export type ViewportSize = {
   width: number;
