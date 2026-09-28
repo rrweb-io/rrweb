@@ -114,6 +114,12 @@ export function hookSetter<T>(
     isRevoked
       ? d
       : {
+          // Pass the original getter and configurable explicitly: where defineProperty
+          // does not merge with the existing descriptor (e.g. Firefox Xray wrappers in
+          // extension content scripts) they would otherwise default to undefined/false.
+          // eslint-disable-next-line @typescript-eslint/unbound-method
+          get: original?.get,
+          configurable: true,
           set(value) {
             // put hooked setter into event loop to avoid of set latency
             setTimeout(() => {
