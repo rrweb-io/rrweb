@@ -505,6 +505,7 @@ it.each(
   'applies %s mutations at %sfps frame %s with speed %s',
   (capture, fps, frame, speed, expected) => {
     const script = `
+      const assert = require('assert');
     const { FrameSource, launchCaptureBrowser } = require('./build/frame-source');
     const { resolveConfig } = require('./build/config');
     const events = require('./benchmark/fixtures.cjs')['dom-mutations'];
@@ -516,7 +517,8 @@ it.each(
         const source = await FrameSource.create(browser, events, {width:640,height:360}, config);
         await source.frame(0);
         await source.frame(${frame});
-        console.log(await source.page.frameLocator('iframe').locator('p').textContent());
+        const text = await source.page.frameLocator('iframe').locator('p').textContent();
+        assert.strictEqual(text, ${JSON.stringify(expected)});
       } finally { await browser.close(); }
     })().catch(e => {console.error(e);process.exitCode=1});
   `;
@@ -525,8 +527,8 @@ it.each(
       encoding: 'utf8',
       timeout: 10000,
     });
-    expect(result.status).toBe(0);
-    expect(result.stdout.trim()).toBe(expected);
+    if (result.status !== 0)
+      throw new Error(result.stderr || result.stdout || String(result.error));
   },
 );
 

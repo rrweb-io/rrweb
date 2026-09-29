@@ -937,11 +937,13 @@ describe('replayer', function () {
   it('replays same timestamp events in correct order', async () => {
     await page.evaluate(`events = ${JSON.stringify(orderingEvents)}`);
     await page.evaluate(`
-      const { Replayer } = rrweb;
-      const replayer = new Replayer(events);
-      replayer.play();
+      new Promise(resolve => {
+        const { Replayer } = rrweb;
+        const replayer = new Replayer(events);
+        replayer.on('${ReplayerEvents.Finish}', resolve);
+        replayer.play();
+      });
     `);
-    await page.waitForTimeout(50);
 
     await assertDomSnapshot(page);
   });
@@ -949,13 +951,15 @@ describe('replayer', function () {
   it('replays same timestamp events in correct order (with addAction)', async () => {
     await page.evaluate(`events = ${JSON.stringify(orderingEvents)}`);
     await page.evaluate(`
-      const { Replayer } = rrweb;
-      const replayer = new Replayer(events.slice(0, events.length-2));
-      replayer.play();
-      replayer.addEvent(events[events.length-2]);
-      replayer.addEvent(events[events.length-1]);
+      new Promise(resolve => {
+        const { Replayer } = rrweb;
+        const replayer = new Replayer(events.slice(0, events.length-2));
+        replayer.on('${ReplayerEvents.Finish}', resolve);
+        replayer.play();
+        replayer.addEvent(events[events.length-2]);
+        replayer.addEvent(events[events.length-1]);
+      });
     `);
-    await page.waitForTimeout(50);
 
     await assertDomSnapshot(page);
   });
