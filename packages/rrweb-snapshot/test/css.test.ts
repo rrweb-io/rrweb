@@ -288,6 +288,42 @@ describe('css splitter', () => {
     }
   });
 
+  /*
+   * `0px` (authored) always comes out in the rule as `0` so we decided at one point that
+   * `normalizeCssString` should also do that transformation while it is stripping whitespace/comments.
+   * This test exercises a case where this comes into play, however it is very contrived
+   * (there are similar tests we could write which could exercise similar problems,
+   * e.g. #FFF being serialized to rgb(255, 255, 255), and a split landing in just the
+   * wrong place), so we could in future drop the '0px' normalization along with this test
+   */
+  it('finds a split point that lands on a `0` value, which requires 0px normalization', () => {
+    const window = new Window({ url: 'https://localhost:8080' });
+    const document = window.document;
+    document.head.innerHTML =
+      '<style>.aaaa { color: red; } .bbbb { margin: </style>';
+    const style = document.querySelector('style');
+    if (style) {
+      style.append('0; } .cccc { top: 0; }');
+
+      const expected = [
+        '.aaaa { color: red; }.bbbb { margin: ',
+        '0px; }.cccc { top: 0px; }',
+      ];
+      const browserSheet = expected.join('');
+      expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
+
+      let _testNoPxNorm = false;
+      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual(
+        expected,
+      );
+
+      _testNoPxNorm = true;
+      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual([
+        browserSheet,
+      ]);
+    }
+  });
+
   it('finds css textElement splits correctly, even with repeated sections', () => {
     const window = new Window({ url: 'https://localhost:8080' });
     const document = window.document;
@@ -346,6 +382,62 @@ describe('applyCssSplits css rejoiner', function () {
     expect((sn.childNodes[1] as textNode).textContent).toEqual(
       otherHalfCssText,
     );
+  });
+
+  it('heals a recorded 0px split so the text nodes are whole rules', () => {
+    const sn3 = {
+      type: NodeType.Element,
+      tagName: 'style',
+      childNodes: [
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+      ],
+    } as serializedElementNodeWithId;
+    const recorded = [
+      '.a { margin: 0p',
+      'x; }.b { color: re',
+      'd; }.c { color: blue; }',
+    ].join('/* rr_split */');
+    applyCssSplits(sn3, recorded, false, mockLastUnusedArg);
+    //expect((sn3.childNodes[0] as textNode).textContent).toEqual(
+    //  '.a { margin: 0px; }',
+    //);
+    expect((sn3.childNodes[1] as textNode).textContent).toEqual(
+      '.b { color: red; }',
+    );
+    expect((sn3.childNodes[2] as textNode).textContent).toEqual(
+      '.c { color: blue; }',
+    );
+  });
+
+  it('heals a 0px chain whose offset compounds (4 then 7) so the text nodes are whole rules', () => {
+    const sn5 = {
+      type: NodeType.Element,
+      tagName: 'style',
+      childNodes: [
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+      ],
+    } as serializedElementNodeWithId;
+    const recorded = [
+      '.a { background: rgb(255, 255, 255); }',
+      '.ab { padding: 0px 0px; }',
+      '.abc { margin: 0px 0px 0px 0p',
+      'x; }.abcd { top: 0px; left:',
+      ' 0px; }.e { color: blue; }',
+    ].join('/* rr_split */');
+    applyCssSplits(sn5, recorded, false, mockLastUnusedArg);
+    expect((sn5.childNodes as textNode[]).map((n) => n.textContent)).toEqual([
+      '.a { background: rgb(255, 255, 255); }',
+      '.ab { padding: 0px 0px; }',
+      '.abc { margin: 0px 0px 0px 0px; }',
+      '.abcd { top: 0px; left: 0px; }',
+      '.e { color: blue; }',
+    ]);
   });
 
   it('applies css splits correctly even when there are too many child nodes', () => {
