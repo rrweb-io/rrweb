@@ -2665,7 +2665,8 @@ exports[`record integration tests > can record form interactions 1`] = `
                             \\"type\\": 2,
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"type\\": \\"text\\"
+                              \\"type\\": \\"text\\",
+                              \\"placeholder\\": \\"Enter your email\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 22
@@ -2806,7 +2807,8 @@ exports[`record integration tests > can record form interactions 1`] = `
                               \\"id\\": \\"\\",
                               \\"cols\\": \\"30\\",
                               \\"rows\\": \\"10\\",
-                              \\"data-unmask-example\\": \\"true\\"
+                              \\"data-unmask-example\\": \\"true\\",
+                              \\"placeholder\\": \\"Tell us about yourself\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 42
@@ -4649,7 +4651,8 @@ exports[`record integration tests > can use maskInputOptions to configure which 
                             \\"type\\": 2,
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"type\\": \\"text\\"
+                              \\"type\\": \\"text\\",
+                              \\"placeholder\\": \\"Enter your email\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 22
@@ -4790,7 +4793,8 @@ exports[`record integration tests > can use maskInputOptions to configure which 
                               \\"id\\": \\"\\",
                               \\"cols\\": \\"30\\",
                               \\"rows\\": \\"10\\",
-                              \\"data-unmask-example\\": \\"true\\"
+                              \\"data-unmask-example\\": \\"true\\",
+                              \\"placeholder\\": \\"Tell us about yourself\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 42
@@ -6477,7 +6481,8 @@ exports[`record integration tests > should mask inputs via function call 1`] = `
                             \\"type\\": 2,
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"type\\": \\"text\\"
+                              \\"type\\": \\"text\\",
+                              \\"placeholder\\": \\"****************\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 22
@@ -6618,7 +6623,8 @@ exports[`record integration tests > should mask inputs via function call 1`] = `
                               \\"id\\": \\"\\",
                               \\"cols\\": \\"30\\",
                               \\"rows\\": \\"10\\",
-                              \\"data-unmask-example\\": \\"true\\"
+                              \\"data-unmask-example\\": \\"true\\",
+                              \\"placeholder\\": \\"Tell us about yourself\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 42
@@ -10305,7 +10311,8 @@ exports[`record integration tests > should not record input values if maskAllInp
                             \\"type\\": 2,
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"type\\": \\"text\\"
+                              \\"type\\": \\"text\\",
+                              \\"placeholder\\": \\"****************\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 22
@@ -10446,7 +10453,8 @@ exports[`record integration tests > should not record input values if maskAllInp
                               \\"id\\": \\"\\",
                               \\"cols\\": \\"30\\",
                               \\"rows\\": \\"10\\",
-                              \\"data-unmask-example\\": \\"true\\"
+                              \\"data-unmask-example\\": \\"true\\",
+                              \\"placeholder\\": \\"**********************\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 42
@@ -13418,7 +13426,8 @@ exports[`record integration tests > should record input userTriggered values if 
                             \\"type\\": 2,
                             \\"tagName\\": \\"input\\",
                             \\"attributes\\": {
-                              \\"type\\": \\"text\\"
+                              \\"type\\": \\"text\\",
+                              \\"placeholder\\": \\"Enter your email\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 22
@@ -13559,7 +13568,8 @@ exports[`record integration tests > should record input userTriggered values if 
                               \\"id\\": \\"\\",
                               \\"cols\\": \\"30\\",
                               \\"rows\\": \\"10\\",
-                              \\"data-unmask-example\\": \\"true\\"
+                              \\"data-unmask-example\\": \\"true\\",
+                              \\"placeholder\\": \\"Tell us about yourself\\"
                             },
                             \\"childNodes\\": [],
                             \\"id\\": 42
