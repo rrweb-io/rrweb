@@ -1,5 +1,14 @@
 # @rrweb/all
 
+## 2.1.7
+
+### Patch Changes
+
+- Updated dependencies [[`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804), [`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804)]:
+  - rrweb@2.1.7
+  - @rrweb/types@2.1.7
+  - @rrweb/packer@2.1.7
+
 ## 2.1.6
 
 ### Patch Changes
