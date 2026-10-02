@@ -19,7 +19,7 @@ import {
 import type { recordOptions } from '../types';
 import {
   EventType,
-  type Annotation,
+  type annotationData,
   type eventWithoutTime,
   type eventWithTime,
   IncrementalSource,
@@ -638,9 +638,9 @@ record.addCustomEvent = <T>(tag: string, payload: T) => {
   });
 };
 
-record.addAnnotation = (annotation: Annotation) => {
+record.addAnnotation = (annotation: annotationData) => {
   if (!recording) {
-    throw new Error('please add annotation after start recording');
+    throw new Error('please add annotation after recording started');
   }
   wrappedEmit({ type: EventType.Annotation, data: annotation });
 };

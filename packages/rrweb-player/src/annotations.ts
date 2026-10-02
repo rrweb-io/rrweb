@@ -1,11 +1,11 @@
 import { EventType } from '@rrweb/types';
-import type { Annotation } from '@rrweb/types';
+import type { annotationData } from '@rrweb/types';
 
 type CaptionSet = { start: number; action: 'set'; text: string };
 export type Caption = CaptionSet | { start: number; action: 'clear' };
 
 /** Malformed annotations have no effect on caption state. */
-export function parseAnnotation(payload: unknown): Annotation | undefined {
+export function parseAnnotation(payload: unknown): annotationData | undefined {
   if (
     typeof payload !== 'object' ||
     payload === null ||
@@ -22,7 +22,9 @@ export function parseAnnotation(payload: unknown): Annotation | undefined {
 }
 
 /** Decode the untyped annotation listener payload at the replay boundary. */
-export function parseAnnotationEvent(event: unknown): Annotation | undefined {
+export function parseAnnotationEvent(
+  event: unknown,
+): annotationData | undefined {
   if (
     !event ||
     typeof event !== 'object' ||

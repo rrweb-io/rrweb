@@ -99,7 +99,7 @@ Captions persist until replaced or cleared with `''`, `null`, or `false`.
 `timelineMarkerColor` controls annotation marker colors independently of custom
 event `tags`. Text is plain text; HTML is not interpreted.
 
-See the [annotation recipe](../../docs/recipes/custom-event.md#annotations)
+See the [annotation recipe](../../docs/recipes/annotations.md)
 for replay callbacks, keyboard interactions, seeking, and TypeScript usage.
 
 ## Methods on the rrwebPlayer component

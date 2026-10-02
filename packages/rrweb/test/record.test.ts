@@ -3,7 +3,7 @@ import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
 import { vi } from 'vitest';
 import 'construct-style-sheets-polyfill';
-import type { Annotation } from '@rrweb/types';
+import type { annotationData } from '@rrweb/types';
 import type { recordOptions } from '../src/types';
 import {
   listenerHandler,
@@ -34,7 +34,7 @@ interface IWindow extends Window {
     record: ((
       options: recordOptions<eventWithTime>,
     ) => listenerHandler | undefined) & {
-      addAnnotation: (annotation: Annotation) => void;
+      addAnnotation: (annotation: annotationData) => void;
       takeFullSnapshot: (isCheckout?: boolean | undefined) => void;
     };
 

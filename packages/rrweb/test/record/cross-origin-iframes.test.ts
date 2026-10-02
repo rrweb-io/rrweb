@@ -4,7 +4,7 @@ import type * as puppeteer from 'puppeteer';
 import { vi } from 'vitest';
 import type { recordOptions } from '../../src/types';
 import type {
-  Annotation,
+  annotationData,
   listenerHandler,
   eventWithTime,
   mutationData,
@@ -33,7 +33,7 @@ interface IWindow extends Window {
     record: ((
       options: recordOptions<eventWithTime>,
     ) => listenerHandler | undefined) & {
-      addAnnotation(annotation: Annotation): void;
+      addAnnotation(annotation: annotationData): void;
     };
     addCustomEvent<T>(tag: string, payload: T): void;
     pack: (e: eventWithTime) => string;

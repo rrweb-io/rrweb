@@ -15,7 +15,7 @@ export {
   MouseInteractions,
   ReplayerEvents,
   type eventWithTime,
-  type Annotation,
+  type annotationData,
   type annotationEvent,
 } from '@rrweb/types';
 

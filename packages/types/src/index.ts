@@ -46,13 +46,13 @@ export type metaEvent = {
 };
 
 /** Annotation text is plain text. Empty caption text, null, or false clears it. */
-export type Annotation =
+export type annotationData =
   | { type: 'caption'; text: string | null | false }
   | { type: 'timelineMarker'; text: string };
 
 export type annotationEvent = {
   type: EventType.Annotation;
-  data: Annotation;
+  data: annotationData;
 };
 
 export type customEvent<T = unknown> = {
