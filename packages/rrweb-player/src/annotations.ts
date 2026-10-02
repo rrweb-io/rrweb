@@ -1,59 +1,37 @@
-import type { CustomEventAnnotation } from '@rrweb/types';
+import { EventType } from '@rrweb/types';
+import type { Annotation } from '@rrweb/types';
 
 type CaptionSet = { start: number; action: 'set'; text: string };
 export type Caption = CaptionSet | { start: number; action: 'clear' };
 
-/** Other tags and malformed annotations have no effect on caption state. */
-export function parseAnnotation(
-  tag: string,
-  payload: unknown,
-): CustomEventAnnotation | undefined {
+/** Malformed annotations have no effect on caption state. */
+export function parseAnnotation(payload: unknown): Annotation | undefined {
   if (
-    tag !== 'annotation' ||
     typeof payload !== 'object' ||
     payload === null ||
-    !('kind' in payload)
-  ) {
-    return undefined;
-  }
-  const action = 'action' in payload ? payload.action : undefined;
-  if (payload.kind === 'caption' && action === 'clear') {
-    return { kind: 'caption', action: 'clear' };
-  }
-  if (
-    !('text' in payload) ||
-    typeof payload.text !== 'string' ||
-    !payload.text.trim()
-  ) {
-    return undefined;
-  }
-  if (
-    payload.kind === 'caption' &&
-    (action === undefined || action === 'set')
-  ) {
-    return { kind: 'caption', action: 'set', text: payload.text };
-  }
-  if (payload.kind === 'note' && action === undefined) {
-    return { kind: 'note', text: payload.text };
-  }
-  return undefined;
-}
-
-/** Decode the untyped custom-event listener payload at the replay boundary. */
-export function parseAnnotationEvent(
-  event: unknown,
-): CustomEventAnnotation | undefined {
-  if (!event || typeof event !== 'object' || !('data' in event)) return;
-  const data = event.data;
-  if (
-    !data ||
-    typeof data !== 'object' ||
-    !('tag' in data) ||
-    typeof data.tag !== 'string' ||
-    !('payload' in data)
+    !('type' in payload) ||
+    !('text' in payload)
   )
     return;
-  return parseAnnotation(data.tag, data.payload);
+  const { type, text } = payload;
+  if (type === 'caption' && (text === '' || text === null || text === false)) {
+    return { type, text };
+  }
+  if (typeof text !== 'string' || !text.trim()) return;
+  if (type === 'caption' || type === 'timelineMarker') return { type, text };
+}
+
+/** Decode the untyped annotation listener payload at the replay boundary. */
+export function parseAnnotationEvent(event: unknown): Annotation | undefined {
+  if (
+    !event ||
+    typeof event !== 'object' ||
+    !('type' in event) ||
+    event.type !== EventType.Annotation ||
+    !('data' in event)
+  )
+    return;
+  return parseAnnotation(event.data);
 }
 
 /** Reconstruct caption state from the latest set or clear, including on seeks. */

@@ -5,9 +5,9 @@ import { createTimelineIndex } from '../src/timeline-index';
 import { getActiveCaption } from '../src/annotations';
 
 const caption = (timestamp: number, text: string): eventWithTime => ({
-  type: EventType.Custom,
+  type: EventType.Annotation,
   timestamp,
-  data: { tag: 'annotation', payload: { kind: 'caption', text } },
+  data: { type: 'caption', text },
 });
 
 describe('timeline indexing cost and ordering', () => {

@@ -9,19 +9,19 @@ import * as annotations from '../src/annotations';
 
 const start = 1700000000000;
 const annotation = (offset: number, text: string): eventWithTime => ({
-  type: EventType.Custom,
+  type: EventType.Annotation,
   timestamp: start + offset,
-  data: { tag: 'annotation', payload: { kind: 'caption', text } },
+  data: { type: 'caption', text },
 });
 const note = (offset: number, text: string): eventWithTime => ({
-  type: EventType.Custom,
+  type: EventType.Annotation,
   timestamp: start + offset,
-  data: { tag: 'annotation', payload: { kind: 'note', text } },
+  data: { type: 'timelineMarker', text },
 });
 const clear = (offset: number): eventWithTime => ({
-  type: EventType.Custom,
+  type: EventType.Annotation,
   timestamp: start + offset,
-  data: { tag: 'annotation', payload: { kind: 'caption', action: 'clear' } },
+  data: { type: 'caption', text: null },
 });
 const recording = (): eventWithTime[] => [
   {
@@ -317,7 +317,9 @@ describe('player annotations', () => {
 
   it('omits the caption toggle when there are no annotations', async () => {
     await mount({
-      events: recording().filter((event) => event.type !== EventType.Custom),
+      events: recording().filter(
+        (event) => event.type !== EventType.Annotation,
+      ),
     });
     expect(target.querySelector('button[aria-pressed]')).toBeNull();
   });
@@ -374,17 +376,52 @@ describe('player annotations', () => {
     expect(target.querySelector('button[aria-pressed]')).toBeNull();
   });
 
+  it('colors annotation markers separately from custom event tags', async () => {
+    await mount({
+      timelineMarkerColor: 'red',
+      tags: { annotation: 'blue', ordinary: 'green' },
+    });
+    expect(
+      (target.querySelector('.rr-custom-event__tick') as HTMLElement).style
+        .background,
+    ).toBe('red');
+    expect(
+      (target.querySelector('[title="ordinary"]') as HTMLElement).style
+        .background,
+    ).toBe('green');
+  });
+
+  it('emits annotation events separately from custom events during seeks', async () => {
+    const player = await mount();
+    const seen: eventWithTime[] = [];
+    const custom: eventWithTime[] = [];
+    player
+      .getReplayer()
+      .on('annotation', (event) => seen.push(event as eventWithTime));
+    player
+      .getReplayer()
+      .on('custom-event', (event) => custom.push(event as eventWithTime));
+    player.goto(6500, false);
+    expect(
+      seen.map(({ type, timestamp, data }) => ({ type, timestamp, data })),
+    ).toEqual([
+      annotation(2000, 'Click Save\n<b>project</b>'),
+      note(2000, 'Click Save to create your project.'),
+      clear(5000),
+    ]);
+    expect(
+      custom.map(({ type, timestamp, data }) => ({ type, timestamp, data })),
+    ).toEqual([recording()[4]]);
+  });
+
   it('never creates timeline markers for caption set, clear, or invalid annotation events', async () => {
     const player = await mount();
     expect(target.querySelectorAll('.rr-custom-event')).toHaveLength(1);
     expect(target.querySelector('[title="annotation"]')).toBeNull();
     player.addEvent({
-      type: EventType.Custom,
+      type: EventType.Annotation,
       timestamp: start + 7000,
-      data: {
-        tag: 'annotation',
-        payload: { kind: 'caption', action: 'invalid', text: 'Wrong' },
-      },
+      data: { type: 'caption', text: 123 } as never,
     });
     await Promise.resolve();
     await tick();

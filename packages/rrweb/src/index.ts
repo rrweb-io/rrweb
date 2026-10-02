@@ -15,6 +15,8 @@ export {
   MouseInteractions,
   ReplayerEvents,
   type eventWithTime,
+  type Annotation,
+  type annotationEvent,
 } from '@rrweb/types';
 
 // exports style.css from replay
@@ -22,13 +24,14 @@ import './replay/styles/style.css';
 
 export type { recordOptions, ReplayPlugin } from './types';
 
-const { addCustomEvent } = record;
+const { addCustomEvent, addAnnotation } = record;
 const { freezePage } = record;
 const { takeFullSnapshot } = record;
 
 export {
   record,
   addCustomEvent,
+  addAnnotation,
   freezePage,
   takeFullSnapshot,
   Replayer,

@@ -16,7 +16,7 @@ export function createTimelineIndex() {
     start: number;
     end: number;
     captions: Caption[];
-    markers: { timestamp: number; tag: string; text?: string }[];
+    markers: { timestamp: number; tag?: string; text?: string }[];
     periods: [number, number][];
     hasCaptions: boolean;
   } {
@@ -46,26 +46,24 @@ export function createTimelineIndex() {
     }
     for (; count < events.length; count++) {
       const event = events[count];
-      if (event.type === EventType.Custom) {
-        const annotation = parseAnnotation(event.data.tag, event.data.payload);
-        if (annotation?.kind === 'caption') {
+      if (event.type === EventType.Annotation) {
+        const annotation = parseAnnotation(event.data);
+        if (annotation?.type === 'caption') {
           const start = event.timestamp - state.start;
           state.captions.push(
-            annotation.action === 'clear'
-              ? { start, action: 'clear' }
-              : { start, action: 'set', text: annotation.text },
+            annotation.text
+              ? { start, action: 'set', text: annotation.text }
+              : { start, action: 'clear' },
           );
-          if (annotation.action !== 'clear') state.hasCaptions = true;
-        } else if (
-          event.data.tag !== 'annotation' ||
-          annotation?.kind === 'note'
-        ) {
+          if (annotation.text) state.hasCaptions = true;
+        } else if (annotation?.type === 'timelineMarker') {
           state.markers.push({
             timestamp: event.timestamp,
-            tag: event.data.tag,
-            text: annotation?.kind === 'note' ? annotation.text : undefined,
+            text: annotation.text,
           });
         }
+      } else if (event.type === EventType.Custom) {
+        state.markers.push({ timestamp: event.timestamp, tag: event.data.tag });
       }
       if (isUserInteraction(event)) {
         if (event.timestamp - lastActiveTime > inactiveThreshold) {

@@ -26,7 +26,7 @@
   export let captionText: string | undefined = undefined;
   let activeCaptionText: string | undefined;
   $: captionText = showCaptions ? activeCaptionText : undefined;
-  // Index changes and seeks reconcile state; playback updates come from custom-event.
+  // Index changes and seeks reconcile state; playback updates come from annotation events.
   $: restoreCaption(timeline);
 
   let captionUpdatePending = false;
@@ -36,9 +36,9 @@
     activeCaptionText = getActiveCaption(index.captions, replayer.getCurrentTime())?.text;
   }
 
-  function handleCustomEvent(event: unknown) {
+  function handleAnnotation(event: unknown) {
     const annotation = parseAnnotationEvent(event);
-    if (annotation?.kind !== 'caption' || captionUpdatePending) return;
+    if (annotation?.type !== 'caption' || captionUpdatePending) return;
     captionUpdatePending = true;
     void Promise.resolve().then(() => {
       if (captionUpdatePending) restoreCaption(timeline);
@@ -59,6 +59,7 @@
   export let speedOption: number[];
   export let speed = speedOption.length ? speedOption[0] : 1;
   export let tags: Record<string, string> = {};
+  export let timelineMarkerColor = 'rgb(73, 80, 246)';
   export let inactiveColor: string;
 
   let currentTime = 0;
@@ -113,10 +114,10 @@
   }
 
   $: customEvents = timeline.markers.map((marker): CustomEvent => ({
-    name: marker.text === undefined ? marker.tag : 'Note',
+    name: marker.tag ?? 'Timeline marker',
     timeOffset: marker.timestamp - timeline.start,
     note: marker.text,
-    background: tags[marker.tag] || 'rgb(73, 80, 246)',
+    background: marker.tag === undefined ? timelineMarkerColor : tags[marker.tag] || 'rgb(73, 80, 246)',
     position: `${position(timeline.start, timeline.end, marker.timestamp)}%`,
   }));
 
@@ -288,7 +289,7 @@
   };
 
   onMount(() => {
-    replayer.on('custom-event', handleCustomEvent);
+    replayer.on('annotation', handleAnnotation);
     replayer.on('start', restoreCaptionOnSeek);
     playerState = replayer.service.state.value;
     speedState = replayer.speedService.state.value;
@@ -335,7 +336,7 @@
 
   onDestroy(() => {
     captionUpdatePending = false;
-    replayer.off('custom-event', handleCustomEvent);
+    replayer.off('annotation', handleAnnotation);
     replayer.off('start', restoreCaptionOnSeek);
     replayer.pause();
     stopTimer();

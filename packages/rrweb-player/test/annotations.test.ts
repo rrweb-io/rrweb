@@ -7,61 +7,51 @@ import {
   parseAnnotation,
 } from '../src/annotations';
 import { createTimelineIndex } from '../src/timeline-index';
-
 const indexCaptions = (events: eventWithTime[]) =>
   createTimelineIndex()(events, 10000).captions;
+const event = (timestamp: number, data: unknown): eventWithTime =>
+  ({
+    type: EventType.Annotation,
+    timestamp,
+    data,
+  } as eventWithTime);
 
-const event = (
-  timestamp: number,
-  payload: unknown,
-  tag = 'annotation',
-): eventWithTime => ({
-  type: EventType.Custom,
-  timestamp,
-  data: { tag, payload },
-});
-
-describe('custom event annotations', () => {
-  it('validates custom-event listener envelopes before parsing their payload', () => {
+describe('annotations', () => {
+  it('validates the annotation event envelope', () => {
     for (const value of [
       null,
       undefined,
       5,
       {},
       { data: null },
-      { data: { tag: 1 } },
-      { data: { tag: 'annotation' } },
+      { type: EventType.Custom, data: { type: 'caption', text: 'Wrong' } },
+      { data: { type: 'caption', text: 'Wrong' } },
     ]) {
       expect(parseAnnotationEvent(value)).toBeUndefined();
     }
     expect(
-      parseAnnotationEvent(event(0, { kind: 'caption', text: 'Hello' })),
-    ).toEqual({ kind: 'caption', action: 'set', text: 'Hello' });
+      parseAnnotationEvent(event(0, { type: 'caption', text: 'Hello' })),
+    ).toEqual({ type: 'caption', text: 'Hello' });
   });
-
-  it.each([undefined, 'set'])(
-    'defaults caption action to set: %s',
-    (action) => {
-      expect(
-        parseAnnotation('annotation', {
-          kind: 'caption',
-          action,
-          text: 'Save\n<b>project</b>',
-        }),
-      ).toEqual({
-        kind: 'caption',
-        action: 'set',
+  it('accepts plain caption and timeline marker text', () => {
+    for (const type of ['caption', 'timelineMarker']) {
+      expect(parseAnnotation({ type, text: 'Save\n<b>project</b>' })).toEqual({
+        type,
         text: 'Save\n<b>project</b>',
       });
-    },
-  );
-  it('accepts explicit clearing without text and independent notes', () => {
-    expect(
-      parseAnnotation('annotation', { kind: 'caption', action: 'clear' }),
-    ).toEqual({ kind: 'caption', action: 'clear' });
-    expect(
-      parseAnnotation('annotation', { kind: 'note', text: 'A note' }),
-    ).toEqual({ kind: 'note', text: 'A note' });
+    }
+  });
+  it.each(['', null, false])('accepts caption clearing with %j', (text) => {
+    expect(parseAnnotation({ type: 'caption', text })).toEqual({
+      type: 'caption',
+      text,
+    });
+    const captions = indexCaptions([
+      event(0, { type: 'caption', text: 'Hello' }),
+      event(1000, { type: 'caption', text }),
+    ]);
+    expect(getActiveCaption(captions, 999)?.text).toBe('Hello');
+    expect(getActiveCaption(captions, 1000)).toBeUndefined();
   });
   it.each([
     undefined,
@@ -70,32 +60,28 @@ describe('custom event annotations', () => {
     'note',
     [],
     {},
-    { text: 'legacy', durationMs: 4000 },
-    { kind: 'unknown', text: 'note' },
-    { kind: 'caption' },
-    { kind: 'caption', text: '' },
-    { kind: 'caption', text: ' \n ' },
-    { kind: 'caption', text: 1 },
-    { kind: 'caption', action: 'unknown', text: 'note' },
-    { kind: 'caption', action: null, text: 'note' },
-    { kind: 'note', text: '' },
-    { kind: 'note', action: 'clear', text: 'note' },
-  ])('ignores malformed annotation payloads: %j', (payload) => {
-    expect(parseAnnotation('annotation', payload)).toBeUndefined();
-  });
-  it('requires the annotation tag', () => {
-    expect(
-      parseAnnotation('ordinary', { kind: 'caption', text: 'Unrelated' }),
-    ).toBeUndefined();
+    { text: 'legacy' },
+    { type: 'unknown', text: 'note' },
+    { type: 'caption' },
+    { type: 'caption', text: ' \n ' },
+    { type: 'caption', text: 1 },
+    { type: 'caption', text: 0 },
+    { type: 'caption', text: true },
+    { kind: 'caption', action: 'clear' },
+    { type: 'timelineMarker', text: '' },
+    { type: 'timelineMarker', text: null },
+    { type: 'timelineMarker', text: false },
+  ])('ignores malformed annotations: %j', (payload) => {
+    expect(parseAnnotation(payload)).toBeUndefined();
   });
   it('persists until replacement or clear, using recording-relative time', () => {
     const captions = indexCaptions([
       { type: EventType.Load, timestamp: 1000, data: {} },
-      event(2000, { kind: 'caption', text: 'First' }),
-      event(3000, { kind: 'note', text: 'A note' }),
-      event(4000, { kind: 'caption', text: 'Second' }),
-      event(5000, { kind: 'caption', action: 'clear' }),
-      event(6000, { kind: 'caption', text: 'Third' }),
+      event(2000, { type: 'caption', text: 'First' }),
+      event(3000, { type: 'timelineMarker', text: 'A note' }),
+      event(4000, { type: 'caption', text: 'Second' }),
+      event(5000, { type: 'caption', text: null }),
+      event(6000, { type: 'caption', text: 'Third' }),
     ]);
     expect(getActiveCaption(captions, 999)).toBeUndefined();
     expect(getActiveCaption(captions, 1000)?.text).toBe('First');
@@ -109,12 +95,16 @@ describe('custom event annotations', () => {
   });
   it('uses the last caption action at identical timestamps and ignores invalid actions', () => {
     const captions = indexCaptions([
-      event(1000, { kind: 'caption', text: 'First' }),
-      event(1000, { kind: 'caption', action: 'clear' }),
-      event(2000, { kind: 'caption', action: 'clear' }),
-      event(2000, { kind: 'caption', text: 'Second' }),
-      event(2500, { kind: 'caption', action: 'invalid', text: 'Wrong' }),
-      event(2600, { kind: 'caption', action: 'clear' }, 'ordinary'),
+      event(1000, { type: 'caption', text: 'First' }),
+      event(1000, { type: 'caption', text: null }),
+      event(2000, { type: 'caption', text: null }),
+      event(2000, { type: 'caption', text: 'Second' }),
+      event(2500, { type: 'caption', text: 123 }),
+      {
+        type: EventType.Custom,
+        timestamp: 2600,
+        data: { tag: 'annotation', payload: { type: 'caption', text: null } },
+      },
     ]);
     expect(getActiveCaption(captions, 0)).toBeUndefined();
     expect(getActiveCaption(captions, 1000)?.text).toBe('Second');
@@ -124,7 +114,7 @@ describe('custom event annotations', () => {
     expect(getActiveCaption(indexCaptions([]), 0)).toBeUndefined();
     expect(
       getActiveCaption(
-        indexCaptions([event(1000, { kind: 'caption', action: 'clear' })]),
+        indexCaptions([event(1000, { type: 'caption', text: null })]),
         0,
       ),
     ).toBeUndefined();

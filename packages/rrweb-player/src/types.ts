@@ -46,7 +46,7 @@ export type RRwebPlayerOptions = {
      */
     showController?: boolean;
     /**
-     * Display timed captions from custom event annotation payloads.
+     * Display timed captions from annotation events.
      * @defaultValue `false`
      */
     showCaptions?: boolean;
@@ -55,6 +55,11 @@ export type RRwebPlayerOptions = {
      * @defaultValue `{}`
      */
     tags?: Record<string, string>;
+    /**
+     * Color of timeline marker annotations, as a valid CSS color string.
+     * @defaultValue `rgb(73, 80, 246)`
+     */
+    timelineMarkerColor?: string;
     /**
      * Customize the color of inactive periods indicator in the progress bar with a valid CSS color string.
      * @defaultValue `#D4D4D4`

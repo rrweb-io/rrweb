@@ -24,6 +24,7 @@
   export let speed: NonNullable<RRwebPlayerOptions['props']['speed']> = 1;
   export let showController: NonNullable<RRwebPlayerOptions['props']['showController']> = true;
   export let showCaptions: NonNullable<RRwebPlayerOptions['props']['showCaptions']> = false;
+  export let timelineMarkerColor: NonNullable<RRwebPlayerOptions['props']['timelineMarkerColor']> = 'rgb(73, 80, 246)';
   export let tags: NonNullable<RRwebPlayerOptions['props']['tags']> = {};
   // color of inactive periods indicator
   export let inactiveColor: NonNullable<RRwebPlayerOptions['props']['inactiveColor']> = '#D4D4D4';
@@ -275,6 +276,7 @@
       {speedOption}
       {skipInactive}
       {tags}
+      {timelineMarkerColor}
       {inactiveColor}
       on:fullscreen={() => toggleFullscreen()}
     />

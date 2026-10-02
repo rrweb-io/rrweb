@@ -675,6 +675,9 @@ export class Replayer {
       case EventType.DomContentLoaded:
       case EventType.Load:
         break;
+      case EventType.Annotation:
+        castFn = () => this.emitter.emit(ReplayerEvents.Annotation, event);
+        break;
       case EventType.Custom:
         castFn = () => {
           /**
