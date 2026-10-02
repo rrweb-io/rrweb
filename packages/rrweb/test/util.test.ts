@@ -337,4 +337,75 @@ describe('Utilities for other modules', () => {
       document.head.removeChild(style);
     });
   });
+
+  describe('getUntaintedMethod for EventTarget', () => {
+    let originalAdd: typeof EventTarget.prototype.addEventListener;
+
+    beforeEach(() => {
+      originalAdd = EventTarget.prototype.addEventListener;
+    });
+
+    afterEach(() => {
+      EventTarget.prototype.addEventListener = originalAdd;
+      vi.resetModules();
+    });
+
+    it('getUntaintedMethod returns a callable addEventListener bound to the target', async () => {
+      const { getUntaintedMethod } = await import('@rrweb/utils');
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+
+      try {
+        let called = false;
+        const addFn = getUntaintedMethod('EventTarget', el, 'addEventListener');
+        addFn.call(el, 'click', () => {
+          called = true;
+        });
+        el.dispatchEvent(new Event('click'));
+
+        expect(called).toBe(true);
+      } finally {
+        document.body.removeChild(el);
+      }
+    });
+
+    it('getUntaintedMethod bypasses an addEventListener patched before first use', async () => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+
+      try {
+        let patchCallCount = 0;
+        EventTarget.prototype.addEventListener = function (
+          this: EventTarget,
+          ...args: Parameters<typeof originalAdd>
+        ) {
+          patchCallCount++;
+          return originalAdd.apply(this, args);
+        } as typeof originalAdd;
+
+        // Load a fresh copy of @rrweb/utils so its module-level caches are
+        // empty and the prototype is already patched on first lookup, as
+        // when a framework patches it before rrweb starts.
+        vi.resetModules();
+        const { getUntaintedMethod } = await import('@rrweb/utils');
+
+        const untaintedAdd = getUntaintedMethod(
+          'EventTarget',
+          el,
+          'addEventListener',
+        );
+
+        let called = false;
+        untaintedAdd.call(el, 'custom-test', () => {
+          called = true;
+        });
+        el.dispatchEvent(new Event('custom-test'));
+
+        expect(called).toBe(true);
+        expect(patchCallCount).toBe(0);
+      } finally {
+        document.body.removeChild(el);
+      }
+    });
+  });
 });
