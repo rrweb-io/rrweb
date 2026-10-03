@@ -119,6 +119,34 @@ describe('player annotations', () => {
     );
   });
 
+  it('shows a caption at the recording start immediately when mounted paused', async () => {
+    const events: eventWithTime[] = [
+      recording()[0],
+      annotation(0, 'Intro caption'),
+      { ...recording().at(-1)!, timestamp: start + 10000 },
+    ];
+    await mount({ events, autoPlay: false, showCaptions: true });
+    expect(target.querySelector('.rr-player__caption')?.textContent).toBe(
+      'Intro caption',
+    );
+  });
+
+  it('shows a caption queued before meta immediately when mounted paused', async () => {
+    const events: eventWithTime[] = [
+      annotation(0, 'Queued intro caption'),
+      {
+        type: EventType.Meta,
+        timestamp: start + 5,
+        data: { href: 'https://example.com', width: 800, height: 400 },
+      },
+      { ...recording().at(-1)!, timestamp: start + 10000 },
+    ];
+    await mount({ events, autoPlay: false, showCaptions: true });
+    expect(target.querySelector('.rr-player__caption')?.textContent).toBe(
+      'Queued intro caption',
+    );
+  });
+
   it('toggles captions independently of notes and preserves ordinary markers', async () => {
     const player = await mount({ showCaptions: false });
     player.goto(2500, false);
@@ -195,6 +223,29 @@ describe('player annotations', () => {
     await tick();
     expect(descendantKey.defaultPrevented).toBe(false);
     expect(player.getReplayer().getCurrentTime()).toBe(10000);
+  });
+
+  it('seeks to the exact recording end with a whole-second accessible range', async () => {
+    const events = recording();
+    events[events.length - 1] = {
+      ...events.at(-1)!,
+      timestamp: start + 10543,
+    };
+    const player = await mount({ events });
+    const timeline = target.querySelector<HTMLElement>('[role="slider"]');
+    expect(timeline?.getAttribute('aria-valuemax')).toBe('10000');
+
+    timeline?.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'End',
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    await tick();
+
+    expect(player.getReplayer().getCurrentTime()).toBe(10543);
+    expect(timeline?.getAttribute('aria-valuenow')).toBe('10000');
   });
 
   it('focuses the timeline slider after scrubbing so keyboard seeking works', async () => {

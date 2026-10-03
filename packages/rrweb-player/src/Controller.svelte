@@ -33,7 +33,7 @@
 
   function resolveCaption(index: ReturnType<typeof updateTimeline>) {
     captionUpdatePending = false;
-    return getActiveCaption(index.captions, replayer.getCurrentTime())?.text;
+    return getActiveCaption(index.captions, Math.max(0, replayer.getCurrentTime()))?.text;
   }
 
   function restoreCaption(index: ReturnType<typeof updateTimeline>) {
@@ -487,7 +487,7 @@
           tabindex="0"
           aria-label="Playback position"
           aria-valuemin="0"
-          aria-valuemax={meta.totalTime}
+          aria-valuemax={Math.floor(meta.totalTime / 1000) * 1000}
           aria-valuenow={accessibleTime}
           aria-valuetext={`${formatTime(accessibleTime)} of ${formatTime(meta.totalTime)}`}
           aria-disabled={speedState === 'skipping'}
