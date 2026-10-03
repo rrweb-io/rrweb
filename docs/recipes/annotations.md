@@ -98,8 +98,7 @@ and unknown annotation types are ignored by the player.
 
 Text supports line breaks and is rendered as plain text. HTML and Markdown are
 not interpreted. The player renders captions outside the replay iframe, so they
-remain readable as the replay scales. HTML content and configurable placement
-are outside the scope of this API.
+remain readable as the replay scales.
 
 ## TypeScript
 
