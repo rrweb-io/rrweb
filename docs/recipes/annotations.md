@@ -19,8 +19,8 @@ record.addAnnotation({
   text: 'Choose a name for your project.',
 });
 
-// Clear the caption. An empty string or false also clears it.
-record.addAnnotation({ type: 'caption', text: null });
+// Clear the caption. Use an empty string or false.
+record.addAnnotation({ type: 'caption', text: '' });
 ```
 
 A caption stays visible until the next caption replaces or clears it. Seeking
@@ -40,6 +40,10 @@ Hover or focus the timeline marker to open its text panel. Click the marker, or
 press Enter or Space, to seek to its timestamp. Tab into the open text panel to
 scroll with the keyboard; interacting with that panel does not seek. Escape
 dismisses it.
+
+The playback position slider is also keyboard accessible. Tab to it and use the
+Left and Right arrow keys to seek five seconds, or Home and End to jump to the
+start or end of the recording.
 
 Timeline markers do not change captions. Caption events do not create timeline
 markers.
@@ -73,11 +77,6 @@ new rrwebPlayer({
     showCaptions: true,
     skipInactive: false,
     timelineMarkerColor: '#159461',
-    // Colors for ordinary custom-event tags.
-    tags: {
-      'submit-form': '#21e676',
-      'some-error': 'red',
-    },
   },
 });
 ```
@@ -89,8 +88,8 @@ user activity, so skipping inactive periods can shorten the time a caption is
 visible.
 
 `timelineMarkerColor` sets annotation marker colors and defaults to
-`rgb(73, 80, 246)`. The `tags` option controls ordinary custom-event marker colors.
-A custom event whose tag is `annotation` is also an ordinary custom event.
+`rgb(73, 80, 246)`. For ordinary custom-event marker colors, see the
+[custom-event recipe](./custom-event.md#display-in-rrweb-player).
 
 To clear captions, use `text: ''` or `text: false`. Timeline markers
 require nonempty text. Missing text, whitespace-only strings, other value types,

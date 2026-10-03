@@ -128,12 +128,73 @@ describe('player annotations', () => {
       'Click Save',
     );
     expect(target.querySelector('[title="ordinary"]')).not.toBeNull();
-    click('button[aria-label="Show captions"]');
+    const captionsToggle = target.querySelector<HTMLButtonElement>(
+      'button[aria-label="Captions"]',
+    );
+    expect(captionsToggle?.getAttribute('aria-pressed')).toBe('false');
+    captionsToggle?.click();
     await tick();
+    expect(captionsToggle?.getAttribute('aria-pressed')).toBe('true');
     expect(target.querySelector('.rr-player__caption')).not.toBeNull();
-    click('button[aria-label="Hide captions"]');
+    captionsToggle?.click();
     await tick();
+    expect(captionsToggle?.getAttribute('aria-pressed')).toBe('false');
     expect(target.querySelector('.rr-player__caption')).toBeNull();
+  });
+
+  it('supports accessible keyboard seeking on the timeline slider', async () => {
+    const player = await mount();
+    player.goto(3000, false);
+    await tick();
+
+    const timeline = target.querySelector<HTMLElement>('[role="slider"]');
+    expect(timeline).not.toBeNull();
+    expect(timeline?.getAttribute('aria-label')).toBe('Playback position');
+    expect(timeline?.tabIndex).toBe(0);
+    expect(timeline?.getAttribute('aria-valuemin')).toBe('0');
+    expect(timeline?.getAttribute('aria-valuemax')).toBe('10000');
+    expect(timeline?.getAttribute('aria-valuenow')).toBe('3000');
+    const marker = target.querySelector<HTMLElement>('.rr-custom-event');
+    expect(timeline?.contains(marker)).toBe(false);
+
+    const press = async (key: string, handled: boolean) => {
+      const event = new KeyboardEvent('keydown', {
+        key,
+        bubbles: true,
+        cancelable: true,
+      });
+      timeline?.dispatchEvent(event);
+      await tick();
+      expect(event.defaultPrevented).toBe(handled);
+    };
+
+    await press('ArrowRight', true);
+    expect(player.getReplayer().getCurrentTime()).toBe(8000);
+    expect(timeline?.getAttribute('aria-valuenow')).toBe('8000');
+    await press('ArrowRight', true);
+    expect(player.getReplayer().getCurrentTime()).toBe(10000);
+    await press('ArrowRight', true);
+    expect(player.getReplayer().getCurrentTime()).toBe(10000);
+    await press('ArrowLeft', true);
+    expect(player.getReplayer().getCurrentTime()).toBe(5000);
+    await press('Home', true);
+    expect(player.getReplayer().getCurrentTime()).toBe(0);
+    await press('ArrowLeft', true);
+    expect(player.getReplayer().getCurrentTime()).toBe(0);
+    await press('End', true);
+    expect(player.getReplayer().getCurrentTime()).toBe(10000);
+
+    await press('x', false);
+    expect(player.getReplayer().getCurrentTime()).toBe(10000);
+    const descendantKey = new KeyboardEvent('keydown', {
+      key: 'ArrowLeft',
+      bubbles: true,
+      cancelable: true,
+    });
+    marker?.dispatchEvent(descendantKey);
+    await tick();
+    expect(descendantKey.defaultPrevented).toBe(false);
+    expect(player.getReplayer().getCurrentTime()).toBe(10000);
   });
 
   it('seeks exactly to a note and supports captions without controls', async () => {

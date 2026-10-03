@@ -258,11 +258,25 @@
     if (speedState === 'skipping') {
       return;
     }
-    if (event.key === 'ArrowLeft') {
-      goto(currentTime - 5);
-    } else if (event.key === 'ArrowRight') {
-      goto(currentTime + 5);
+    let timeOffset: number;
+    switch (event.key) {
+      case 'ArrowLeft':
+        timeOffset = currentTime - 5000;
+        break;
+      case 'ArrowRight':
+        timeOffset = currentTime + 5000;
+        break;
+      case 'Home':
+        timeOffset = 0;
+        break;
+      case 'End':
+        timeOffset = meta.totalTime;
+        break;
+      default:
+        return;
     }
+    event.preventDefault();
+    goto(Math.max(0, Math.min(meta.totalTime, timeOffset)));
   };
 
   export const setSpeed = (newSpeed: number) => {
@@ -382,6 +396,16 @@
     border-bottom: solid 4px #fff;
   }
 
+  .rr-progress__slider {
+    position: absolute;
+    inset: -4px 0;
+    pointer-events: none;
+    border-radius: 3px;
+  }
+  .rr-progress__slider:focus-visible {
+    outline: 2px solid rgb(73, 80, 246);
+    outline-offset: 2px;
+  }
   .rr-progress.disabled {
     cursor: not-allowed;
   }
@@ -449,6 +473,18 @@
         on:click={handleProgressClick}
         on:keydown={handleProgressKeydown}
       >
+        <div
+          class="rr-progress__slider"
+          role="slider"
+          tabindex="0"
+          aria-label="Playback position"
+          aria-valuemin="0"
+          aria-valuemax={meta.totalTime}
+          aria-valuenow={Math.max(0, Math.min(meta.totalTime, currentTime))}
+          aria-valuetext={`${formatTime(currentTime)} of ${formatTime(meta.totalTime)}`}
+          aria-disabled={speedState === 'skipping'}
+          on:keydown={handleProgressKeydown}
+        />
         <div
           class="rr-progress__step"
           style="width: {percentage}"
@@ -544,7 +580,7 @@
         <button
           type="button"
           class:active={showCaptions}
-          aria-label={showCaptions ? 'Hide captions' : 'Show captions'}
+          aria-label="Captions"
           aria-pressed={showCaptions}
           title={showCaptions ? 'Hide captions' : 'Show captions'}
           on:click={() => (showCaptions = !showCaptions)}

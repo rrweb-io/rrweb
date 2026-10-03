@@ -24,5 +24,25 @@ replayer.on('custom-event', (event) => {
 });
 ```
 
+## Display in rrweb-player
+
+Custom events appear as timeline markers in rrweb-player. Hover over a marker to
+see its tag. Use the `tags` option to configure a color for each custom-event tag.
+
+```js
+import rrwebPlayer from 'rrweb-player';
+
+new rrwebPlayer({
+  target: document.body,
+  props: {
+    events,
+    tags: {
+      'submit-form': '#21e676',
+      'some-error': 'red',
+    },
+  },
+});
+```
+
 For captions and timeline markers, use the separate
 [annotations API](./annotations.md).

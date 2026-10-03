@@ -92,10 +92,10 @@ record.addAnnotation({
   type: 'timelineMarker',
   text: 'Saving also creates a default workspace.',
 });
-record.addAnnotation({ type: 'caption', text: null });
+record.addAnnotation({ type: 'caption', text: '' });
 ```
 
-Captions persist until replaced or cleared with `''`, `null`, or `false`.
+Captions persist until replaced or cleared with `''` or `false`.
 `timelineMarkerColor` controls annotation marker colors independently of custom
 event `tags`. Text is plain text; HTML is not interpreted.
 
