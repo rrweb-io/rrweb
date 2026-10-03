@@ -65,19 +65,45 @@ new rrwebPlayer({
 
 ## Options
 
-| key            | default      | description                                                                                                       |
-| -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------- |
-| events         | []           | the events for replaying                                                                                          |
-| width          | 1024         | the width of the replayer                                                                                         |
-| height         | 576          | the height of the replayer                                                                                        |
-| maxScale       | 1            | the maximum scale of the replayer (1 = 100%), set to 0 for unlimited                                              |
-| autoPlay       | true         | whether to autoplay                                                                                               |
-| speed          | 1            | The default speed to play at                                                                                      |
-| speedOption    | [1, 2, 4, 8] | speed options in UI                                                                                               |
-| showController | true         | whether to show the controller UI                                                                                 |
-| tags           | {}           | customize the custom events style with a key-value map                                                            |
-| inactiveColor  | #D4D4D4      | Customize the color of inactive periods indicator in the progress bar with a valid CSS color string.              |
-| ...            | -            | all the [rrweb Replayer options](https://github.com/rrweb-io/rrweb/blob/main/guide.md#options-1) will be bypassed |
+| key                 | default          | description                                                                                                       |
+| ------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------- |
+| events              | []               | the events for replaying                                                                                          |
+| width               | 1024             | the width of the replayer                                                                                         |
+| height              | 576              | the height of the replayer                                                                                        |
+| maxScale            | 1                | the maximum scale of the replayer (1 = 100%), set to 0 for unlimited                                              |
+| autoPlay            | true             | whether to autoplay                                                                                               |
+| speed               | 1                | The default speed to play at                                                                                      |
+| speedOption         | [1, 2, 4, 8]     | speed options in UI                                                                                               |
+| showCaptions        | false            | display timed captions from annotation events; viewers can toggle them with CC                                    |
+| showController      | true             | whether to show the controller UI                                                                                 |
+| timelineMarkerColor | rgb(73, 80, 246) | color of timeline marker annotations                                                                              |
+| tags                | {}               | customize the custom events style with a key-value map                                                            |
+| inactiveColor       | #D4D4D4          | Customize the color of inactive periods indicator in the progress bar with a valid CSS color string.              |
+| ...                 | -                | all the [rrweb Replayer options](https://github.com/rrweb-io/rrweb/blob/main/guide.md#options-1) will be bypassed |
+
+## Captions and timeline markers
+
+Use `record.addAnnotation()` to add captions and timeline markers. Set
+`showCaptions: true` to display captions by default; viewers can toggle them with CC.
+
+```js
+record.addAnnotation({ type: 'caption', text: 'Click Save.' });
+record.addAnnotation({
+  type: 'timelineMarker',
+  text: 'Saving also creates a default workspace.',
+});
+record.addAnnotation({ type: 'caption', text: '' });
+```
+
+Captions persist until replaced or cleared with `''` or `false`.
+`timelineMarkerColor` controls annotation marker colors independently of custom
+event `tags`. Text is plain text; HTML is not interpreted.
+
+Tab to the playback position slider to seek with the arrow keys in five-second
+steps, or use Home/End to jump to the start/end.
+
+See the [annotation recipe](../../docs/recipes/annotations.md)
+for replay callbacks, keyboard interactions, seeking, and TypeScript usage.
 
 ## Methods on the rrwebPlayer component
 

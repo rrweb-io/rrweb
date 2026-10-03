@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { EventType } from '@rrweb/types';
   import type { playerMetaData } from '@rrweb/types';
   import type {
     Replayer,
@@ -12,18 +11,59 @@
     createEventDispatcher,
     afterUpdate,
   } from 'svelte';
-  import { formatTime, getInactivePeriods } from './utils';
+  import { formatTime } from './utils';
   import Switch from './components/Switch.svelte';
+  import CustomEventMarker from './components/CustomEventMarker.svelte';
+  import { parseAnnotationEvent, getActiveCaption } from './annotations';
+  import { createTimelineIndex } from './timeline-index';
 
   const dispatch = createEventDispatcher();
 
   export let replayer: Replayer;
+  export let showCaptions = false;
+  const updateTimeline = createTimelineIndex();
+  $: timeline = updateTimeline(replayer.service.state.context.events, replayer.config.inactivePeriodThreshold);
+  export let captionText: string | undefined = undefined;
+  let activeCaptionText: string | undefined;
+  $: captionText = showCaptions ? activeCaptionText : undefined;
+  // Index changes and seeks reconcile state; playback updates come from annotation events.
+  $: activeCaptionText = resolveCaption(timeline);
+
+  let captionUpdatePending = false;
+
+  function resolveCaption(index: ReturnType<typeof updateTimeline>) {
+    captionUpdatePending = false;
+    return getActiveCaption(index.captions, Math.max(0, replayer.getCurrentTime()))?.text;
+  }
+
+  function restoreCaption(index: ReturnType<typeof updateTimeline>) {
+    activeCaptionText = resolveCaption(index);
+  }
+
+  function handleAnnotation(event: unknown) {
+    const annotation = parseAnnotationEvent(event);
+    if (annotation?.type !== 'caption' || captionUpdatePending) return;
+    captionUpdatePending = true;
+    void Promise.resolve().then(() => {
+      if (captionUpdatePending) restoreCaption(timeline);
+    });
+  }
+
+  function restoreCaptionOnSeek() {
+    restoreCaption(timeline);
+  }
+  let noteDismissalVersion = 0;
+
+  function dismissNotesOnEscape(event: KeyboardEvent) {
+    if (event.key === 'Escape') noteDismissalVersion += 1;
+  }
   export let showController: boolean;
   export let autoPlay: boolean;
   export let skipInactive: boolean;
   export let speedOption: number[];
   export let speed = speedOption.length ? speedOption[0] : 1;
   export let tags: Record<string, string> = {};
+  export let timelineMarkerColor = 'rgb(73, 80, 246)';
   export let inactiveColor: string;
 
   let currentTime = 0;
@@ -37,6 +77,7 @@
   }
   let speedState: 'normal' | 'skipping';
   let progress: HTMLElement;
+  let progressSlider: HTMLElement;
   let finished: boolean;
 
   let pauseAt: number | false = false;
@@ -48,6 +89,7 @@
 
   let meta: playerMetaData;
   $: meta = replayer.getMetaData();
+  $: accessibleTime = Math.max(0, Math.min(meta.totalTime, Math.floor(currentTime / 1000) * 1000));
   let percentage: string;
   $: {
     const percent = Math.min(1, currentTime / meta.totalTime);
@@ -58,6 +100,8 @@
     name: string;
     background: string;
     position: string;
+    timeOffset: number;
+    note: string | undefined;
   };
 
   /**
@@ -69,37 +113,19 @@
    */
   function position(startTime: number, endTime: number, tagTime: number) {
     const sessionDuration = endTime - startTime;
+    if (sessionDuration <= 0) return '0.00';
     const eventDuration = endTime - tagTime;
     const eventPosition = 100 - (eventDuration / sessionDuration) * 100;
     return eventPosition.toFixed(2);
   }
 
-  let customEvents: CustomEvent[];
-  $: customEvents = (() => {
-    const { context } = replayer.service.state;
-    const totalEvents = context.events.length;
-    const start = context.events[0].timestamp;
-    const end = context.events[totalEvents - 1].timestamp;
-    const customEvents: CustomEvent[] = [];
-
-    // loop through all the events and find out custom event.
-    context.events.forEach((event) => {
-      /**
-       * we are only interested in custom event and calculate it's position
-       * to place it in player's timeline.
-       */
-      if (event.type === EventType.Custom) {
-        const customEvent = {
-          name: event.data.tag,
-          background: tags[event.data.tag] || 'rgb(73, 80, 246)',
-          position: `${position(start, end, event.timestamp)}%`,
-        };
-        customEvents.push(customEvent);
-      }
-    });
-
-    return customEvents;
-  })();
+  $: customEvents = timeline.markers.map((marker): CustomEvent => ({
+    name: marker.tag ?? 'Timeline marker',
+    timeOffset: marker.timestamp - timeline.start,
+    note: marker.text,
+    background: marker.tag === undefined ? timelineMarkerColor : tags[marker.tag] || 'rgb(73, 80, 246)',
+    position: `${position(timeline.start, timeline.end, marker.timestamp)}%`,
+  }));
 
   let inactivePeriods: {
     name: string;
@@ -107,36 +133,15 @@
     position: string;
     width: string;
   }[];
-  $: inactivePeriods = (() => {
-    try {
-      const { context } = replayer.service.state;
-      const totalEvents = context.events.length;
-      const start = context.events[0].timestamp;
-      const end = context.events[totalEvents - 1].timestamp;
-      const periods = getInactivePeriods(context.events, replayer.config.inactivePeriodThreshold);
-      // calculate the indicator width.
-      const getWidth = (
-        startTime: number,
-        endTime: number,
-        tagStart: number,
-        tagEnd: number,
-      ) => {
-        const sessionDuration = endTime - startTime;
-        const eventDuration = tagEnd - tagStart;
-        const width = (eventDuration / sessionDuration) * 100;
-        return width.toFixed(2);
-      };
-      return periods.map((period) => ({
-        name: 'inactive period',
-        background: inactiveColor,
-        position: `${position(start, end, period[0])}%`,
-        width: `${getWidth(start, end, period[0], period[1])}%`,
-      }));
-    } catch (e) {
-      // For safety concern, if there is any error, the main function won't be affected.
-      return [];
-    }
-  })();
+  $: inactivePeriods = timeline.periods.map(([start, end]) => ({
+    name: 'inactive period',
+    background: inactiveColor,
+    position: `${position(timeline.start, timeline.end, start)}%`,
+    width:
+      timeline.end > timeline.start
+        ? `${(((end - start) / (timeline.end - timeline.start)) * 100).toFixed(2)}%`
+        : '0.00%',
+  }));
 
   const loopTimer = () => {
     stopTimer();
@@ -241,6 +246,7 @@
     if (speedState === 'skipping') {
       return;
     }
+    progressSlider.focus();
     const progressRect = progress.getBoundingClientRect();
     const x = event.clientX - progressRect.left;
     let percent = x / progressRect.width;
@@ -254,14 +260,30 @@
   };
 
   const handleProgressKeydown = (event: KeyboardEvent) => { 
+    // Ignore marker keys and the slider event bubbling to the progress wrapper.
+    if (event.target !== event.currentTarget) return;
     if (speedState === 'skipping') {
       return;
     }
-    if (event.key === 'ArrowLeft') {
-      goto(currentTime - 5);
-    } else if (event.key === 'ArrowRight') {
-      goto(currentTime + 5);
+    let timeOffset: number;
+    switch (event.key) {
+      case 'ArrowLeft':
+        timeOffset = currentTime - 5000;
+        break;
+      case 'ArrowRight':
+        timeOffset = currentTime + 5000;
+        break;
+      case 'Home':
+        timeOffset = 0;
+        break;
+      case 'End':
+        timeOffset = meta.totalTime;
+        break;
+      default:
+        return;
     }
+    event.preventDefault();
+    goto(Math.max(0, Math.min(meta.totalTime, timeOffset)));
   };
 
   export const setSpeed = (newSpeed: number) => {
@@ -283,10 +305,13 @@
   export const triggerUpdateMeta = () => {
     return Promise.resolve().then(() => {
       meta = replayer.getMetaData();
+      timeline = updateTimeline(replayer.service.state.context.events, replayer.config.inactivePeriodThreshold);
     });
   };
 
   onMount(() => {
+    replayer.on('annotation', handleAnnotation);
+    replayer.on('start', restoreCaptionOnSeek);
     playerState = replayer.service.state.value;
     speedState = replayer.speedService.state.value;
     replayer.on(
@@ -331,10 +356,15 @@
   });
 
   onDestroy(() => {
+    captionUpdatePending = false;
+    replayer.off('annotation', handleAnnotation);
+    replayer.off('start', restoreCaptionOnSeek);
     replayer.pause();
     stopTimer();
   });
 </script>
+
+<svelte:window on:keydown={dismissNotesOnEscape} />
 
 <style>
   .rr-controller {
@@ -373,6 +403,16 @@
     border-bottom: solid 4px #fff;
   }
 
+  .rr-progress__slider {
+    position: absolute;
+    inset: -4px 0;
+    pointer-events: none;
+    border-radius: 3px;
+  }
+  .rr-progress__slider:focus-visible {
+    outline: 2px solid rgb(73, 80, 246);
+    outline-offset: 2px;
+  }
   .rr-progress.disabled {
     cursor: not-allowed;
   }
@@ -441,6 +481,19 @@
         on:keydown={handleProgressKeydown}
       >
         <div
+          class="rr-progress__slider"
+          bind:this={progressSlider}
+          role="slider"
+          tabindex="0"
+          aria-label="Playback position"
+          aria-valuemin="0"
+          aria-valuemax={Math.floor(meta.totalTime / 1000) * 1000}
+          aria-valuenow={accessibleTime}
+          aria-valuetext={`${formatTime(accessibleTime)} of ${formatTime(meta.totalTime)}`}
+          aria-disabled={speedState === 'skipping'}
+          on:keydown={handleProgressKeydown}
+        />
+        <div
           class="rr-progress__step"
           style="width: {percentage}"
         />
@@ -452,12 +505,25 @@
           />
         {/each}
         {#each customEvents as event}
-          <div
-            title={event.name}
-            style="width: 10px;height: 5px;position: absolute;top:
-            2px;transform: translate(-50%, -50%);background: {event.background};left:
-            {event.position};"
-          />
+          {#if event.note}
+            <CustomEventMarker
+              dismissalVersion={noteDismissalVersion}
+              name={event.name}
+              text={event.note}
+              background={event.background}
+              position={event.position}
+              disabled={speedState === 'skipping'}
+              on:seek={() => goto(event.timeOffset)}
+              on:focus-timeline={() => progressSlider.focus()}
+            />
+          {:else}
+            <div
+              title={event.name}
+              style="width: 10px;height: 5px;position: absolute;top:
+              2px;transform: translate(-50%, -50%);background: {event.background};left:
+              {event.position};"
+            />
+          {/if}
         {/each}
 
         <div class="rr-progress__handler" style="left: {percentage}" />
@@ -519,6 +585,18 @@
           {s}x
         </button>
       {/each}
+      {#if timeline.hasCaptions}
+        <button
+          type="button"
+          class:active={showCaptions}
+          aria-label="CC captions"
+          aria-pressed={showCaptions}
+          title={showCaptions ? 'Hide captions' : 'Show captions'}
+          on:click={() => (showCaptions = !showCaptions)}
+        >
+          CC
+        </button>
+      {/if}
       <Switch
         id="skip"
         bind:checked={skipInactive}

@@ -3,6 +3,7 @@ import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
 import { vi } from 'vitest';
 import 'construct-style-sheets-polyfill';
+import type { annotationData } from '@rrweb/types';
 import type { recordOptions } from '../src/types';
 import {
   listenerHandler,
@@ -33,6 +34,7 @@ interface IWindow extends Window {
     record: ((
       options: recordOptions<eventWithTime>,
     ) => listenerHandler | undefined) & {
+      addAnnotation: (annotation: annotationData) => void;
       takeFullSnapshot: (isCheckout?: boolean | undefined) => void;
     };
 
@@ -265,6 +267,76 @@ describe('record', function (this: ISuite) {
     expect(selectionData.length).toEqual(1);
     expect(selectionData[0].ranges[0].startOffset).toEqual(10);
     expect(selectionData[0].ranges[0].endOffset).toEqual(2);
+  });
+
+  it('records annotations separately from custom events and requires an active recording', async () => {
+    const result = await ctx.page.evaluate(() => {
+      const { record } = (window as unknown as IWindow).rrweb;
+      const events: eventWithTime[] = [];
+      let beforeStart = false;
+      try {
+        record.addAnnotation({ type: 'caption', text: 'Too early' });
+      } catch {
+        beforeStart = true;
+      }
+      const stop = record({ emit: (event) => events.push(event) });
+      record.addAnnotation({ type: 'caption', text: 'Hello' });
+      record.addAnnotation({ type: 'caption', text: false });
+      record.addAnnotation({ type: 'caption', text: null });
+      record.addAnnotation({ type: 'caption', text: '' });
+      record.addAnnotation({ type: 'timelineMarker', text: 'Here' });
+      (window as unknown as IWindow).rrweb.addCustomEvent('annotation', {
+        text: 'Custom',
+      });
+      stop?.();
+      let afterStop = false;
+      try {
+        record.addAnnotation({ type: 'caption', text: 'Too late' });
+      } catch {
+        afterStop = true;
+      }
+      return { events, beforeStart, afterStop };
+    });
+    expect(result.beforeStart).toBe(true);
+    expect(result.afterStop).toBe(true);
+    expect(
+      result.events.filter((event) => event.type === EventType.Annotation),
+    ).toEqual([
+      {
+        type: EventType.Annotation,
+        timestamp: expect.any(Number),
+        data: { type: 'caption', text: 'Hello' },
+      },
+      {
+        type: EventType.Annotation,
+        timestamp: expect.any(Number),
+        data: { type: 'caption', text: false },
+      },
+      {
+        type: EventType.Annotation,
+        timestamp: expect.any(Number),
+        data: { type: 'caption', text: null },
+      },
+      {
+        type: EventType.Annotation,
+        timestamp: expect.any(Number),
+        data: { type: 'caption', text: '' },
+      },
+      {
+        type: EventType.Annotation,
+        timestamp: expect.any(Number),
+        data: { type: 'timelineMarker', text: 'Here' },
+      },
+    ]);
+    expect(
+      result.events.filter((event) => event.type === EventType.Custom),
+    ).toEqual([
+      {
+        type: EventType.Custom,
+        timestamp: expect.any(Number),
+        data: { tag: 'annotation', payload: { text: 'Custom' } },
+      },
+    ]);
   });
 
   it('can add custom event', async () => {
