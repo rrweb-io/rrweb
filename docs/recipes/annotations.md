@@ -92,7 +92,7 @@ visible.
 `rgb(73, 80, 246)`. The `tags` option controls ordinary custom-event marker colors.
 A custom event whose tag is `annotation` is also an ordinary custom event.
 
-To clear captions, use `text: ''`, `text: null`, or `text: false`. Timeline markers
+To clear captions, use `text: ''` or `text: false`. Timeline markers
 require nonempty text. Missing text, whitespace-only strings, other value types,
 and unknown annotation types are ignored by the player.
 
