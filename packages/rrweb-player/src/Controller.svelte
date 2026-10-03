@@ -27,13 +27,17 @@
   let activeCaptionText: string | undefined;
   $: captionText = showCaptions ? activeCaptionText : undefined;
   // Index changes and seeks reconcile state; playback updates come from annotation events.
-  $: restoreCaption(timeline);
+  $: activeCaptionText = resolveCaption(timeline);
 
   let captionUpdatePending = false;
 
-  function restoreCaption(index: ReturnType<typeof updateTimeline>) {
+  function resolveCaption(index: ReturnType<typeof updateTimeline>) {
     captionUpdatePending = false;
-    activeCaptionText = getActiveCaption(index.captions, replayer.getCurrentTime())?.text;
+    return getActiveCaption(index.captions, replayer.getCurrentTime())?.text;
+  }
+
+  function restoreCaption(index: ReturnType<typeof updateTimeline>) {
+    activeCaptionText = resolveCaption(index);
   }
 
   function handleAnnotation(event: unknown) {
@@ -584,7 +588,7 @@
         <button
           type="button"
           class:active={showCaptions}
-          aria-label="Captions"
+          aria-label="CC captions"
           aria-pressed={showCaptions}
           title={showCaptions ? 'Hide captions' : 'Show captions'}
           on:click={() => (showCaptions = !showCaptions)}

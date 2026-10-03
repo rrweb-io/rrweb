@@ -129,7 +129,7 @@ describe('player annotations', () => {
     );
     expect(target.querySelector('[title="ordinary"]')).not.toBeNull();
     const captionsToggle = target.querySelector<HTMLButtonElement>(
-      'button[aria-label="Captions"]',
+      'button[aria-label="CC captions"]',
     );
     expect(captionsToggle?.getAttribute('aria-pressed')).toBe('false');
     captionsToggle?.click();
@@ -274,6 +274,60 @@ describe('player annotations', () => {
     expect(target.querySelector('.rr-player__caption')?.textContent).toBe(
       'Added later',
     );
+  });
+
+  async function expectPausedCaptionUpdate(
+    addedEvent: eventWithTime,
+    expectedCaption: string | null,
+  ) {
+    const endSnapshot: eventWithTime = {
+      ...recording().at(-1)!,
+      timestamp: start + 10000,
+    };
+    const player = await mount({
+      events: [
+        recording()[0],
+        annotation(1000, 'Existing caption'),
+        endSnapshot,
+      ],
+    });
+    player.getReplayer().pause(7000);
+    await tick();
+    expect(target.querySelector('.rr-player__caption')?.textContent).toBe(
+      'Existing caption',
+    );
+
+    player.addEvent(addedEvent);
+    await Promise.resolve();
+    await tick();
+    await tick();
+
+    expect(player.getReplayer().getCurrentTime()).toBe(7000);
+    expect(
+      target.querySelector('.rr-player__caption')?.textContent ?? null,
+    ).toBe(expectedCaption);
+  }
+
+  it('refreshes a paused caption when a caption is appended before the playhead', async () => {
+    await expectPausedCaptionUpdate(
+      annotation(6000, 'Updated caption'),
+      'Updated caption',
+    );
+  });
+
+  it('refreshes a paused caption when a caption is appended at the playhead', async () => {
+    await expectPausedCaptionUpdate(
+      annotation(7000, 'Updated caption'),
+      'Updated caption',
+    );
+  });
+
+  it('clears a paused caption when a clear event is appended before the playhead', async () => {
+    await expectPausedCaptionUpdate(clear(6000), null);
+  });
+
+  it('clears a paused caption when a clear event is appended at the playhead', async () => {
+    await expectPausedCaptionUpdate(clear(7000), null);
   });
 
   it.each([false, true])(
