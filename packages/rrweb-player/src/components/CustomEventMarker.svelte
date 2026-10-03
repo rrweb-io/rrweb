@@ -8,14 +8,17 @@
   export let disabled = false;
   export let dismissalVersion = 0;
 
-  const dispatch = createEventDispatcher<{ seek: void }>();
+  const dispatch = createEventDispatcher<{ seek: void; 'focus-timeline': void }>();
   let dismissed = false;
   let marker: HTMLButtonElement;
   let panel: HTMLDivElement;
   $: if (dismissalVersion) dismiss();
 
   function dismiss() {
-    if (panel?.contains(document.activeElement)) marker.focus();
+    if (panel?.contains(document.activeElement)) {
+      if (disabled) dispatch('focus-timeline');
+      else marker.focus();
+    }
     dismissed = true;
   }
   $: alignment =

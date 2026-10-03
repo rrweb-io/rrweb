@@ -67,7 +67,7 @@ rrwebBrowserClient.start({
 - `addMeta(payload)`: adds or updates recording metadata after recording has started.
 - `addPageviewMeta(payload)`: adds metadata for the current page view.
 - `addCustomEvent(tag, payload)`: queues a custom rrweb event.
-- `addAnnotation(annotation)`: records a caption or timeline marker annotation. Before recording starts, the client queues it with a timestamp and sends it when recording begins.
+- `addAnnotation(annotation)`: records a caption or timeline marker annotation. Before recording starts, the client queues it with a timestamp and sends it when recording begins. Queued annotations are sent directly to the server and do not pass through the local `emit` callback; annotations added during active recording do.
 - `stop(resetRecordingId)`: stops rrweb recording and closes the WebSocket. Pass `true` to clear the stored recording id before a future `start()`.
 
 ## Further Reading

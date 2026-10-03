@@ -471,6 +471,34 @@ describe('player annotations', () => {
     expect(target.querySelector('[role="dialog"]')).toBeNull();
   });
 
+  it('returns focus to the timeline when Escape dismisses a panel during skipping', async () => {
+    const player = await mount();
+    player.goto(2000, false);
+    await tick();
+    const marker = target.querySelector<HTMLButtonElement>('.rr-custom-event');
+    const panel = target.querySelector<HTMLDivElement>('[role="dialog"]');
+    const timeline = target.querySelector<HTMLElement>('[role="slider"]');
+
+    panel?.focus();
+    expect(document.activeElement).toBe(panel);
+    player.getReplayer().speedService.send({
+      type: 'FAST_FORWARD',
+      payload: { speed: 5 },
+    });
+    await tick();
+    expect(player.getReplayer().speedService.state.value).toBe('skipping');
+    expect(marker?.disabled).toBe(true);
+
+    panel?.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+    );
+    await tick();
+
+    expect(target.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.activeElement).toBe(timeline);
+    expect(player.getReplayer().getCurrentTime()).toBe(2000);
+  });
+
   it('reads annotations from packed events', async () => {
     const player = await mount({
       events: recording().map((event) => pack(event)),

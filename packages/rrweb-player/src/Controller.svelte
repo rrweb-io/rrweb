@@ -514,6 +514,7 @@
               position={event.position}
               disabled={speedState === 'skipping'}
               on:seek={() => goto(event.timeOffset)}
+              on:focus-timeline={() => progressSlider.focus()}
             />
           {:else}
             <div
