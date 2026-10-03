@@ -16,11 +16,13 @@ type MockState = {
   buffers: QueueLike[];
   lastRecordOptions?: Record<string, unknown>;
   lastWebsocketUrl?: string;
+  addAnnotation: ReturnType<typeof vi.fn>;
 };
 
 const mockState = vi.hoisted(
   (): MockState => ({
     buffers: [],
+    addAnnotation: vi.fn(),
   }),
 );
 
@@ -39,6 +41,7 @@ vi.mock('@rrweb/record', () => {
     return vi.fn();
   });
   record.addCustomEvent = vi.fn();
+  record.addAnnotation = mockState.addAnnotation;
   record.freezePage = vi.fn();
   return { record };
 });
@@ -170,6 +173,54 @@ afterEach(() => {
 });
 
 describe('@rrweb/browser-client load diagnostics', () => {
+  it('emits annotations immediately while recording', async () => {
+    const client = await importFreshClient();
+    const annotation = { type: 'caption', text: 'Save the project' } as const;
+
+    expect(client.default).toHaveProperty(
+      'addAnnotation',
+      client.addAnnotation,
+    );
+
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      emit: () => undefined,
+    });
+    client.addAnnotation(annotation);
+
+    expect(mockState.addAnnotation).toHaveBeenCalledWith(annotation);
+    expect(mockState.buffers[0].items).not.toContainEqual(
+      expect.stringContaining('Save the project'),
+    );
+  });
+
+  it('queues annotations while stopped and flushes them when recording starts', async () => {
+    const client = await importFreshClient();
+    const annotation = { type: 'timelineMarker', text: 'Checkpoint' } as const;
+
+    client.addAnnotation(annotation);
+
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      emit: () => undefined,
+    });
+
+    expect(mockState.addAnnotation).not.toHaveBeenCalled();
+
+    const queuedEvent = mockState.buffers[0].items
+      .map((item) => JSON.parse(item) as Record<string, unknown>)
+      .find((event) => event.type === EventType.Annotation);
+    expect(queuedEvent).toMatchObject({
+      type: EventType.Annotation,
+      data: annotation,
+      timestamp: expect.any(Number),
+    });
+  });
+
   it('adds programmatic diagnostics without jsSource by default', async () => {
     const client = await importFreshClient();
 
