@@ -197,6 +197,58 @@ describe('player annotations', () => {
     expect(player.getReplayer().getCurrentTime()).toBe(10000);
   });
 
+  it('focuses the timeline slider after scrubbing so keyboard seeking works', async () => {
+    const player = await mount();
+    const progress = target.querySelector<HTMLElement>('.rr-progress');
+    const timeline = target.querySelector<HTMLElement>('[role="slider"]');
+    expect(progress).not.toBeNull();
+    expect(timeline).not.toBeNull();
+    if (!progress || !timeline) return;
+
+    vi.spyOn(progress, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      width: 100,
+    } as DOMRect);
+    progress.dispatchEvent(
+      new MouseEvent('click', { bubbles: true, clientX: 20 }),
+    );
+    await tick();
+
+    expect(player.getReplayer().getCurrentTime()).toBe(2000);
+    expect(document.activeElement).toBe(timeline);
+
+    timeline.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'ArrowRight',
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    await tick();
+    expect(player.getReplayer().getCurrentTime()).toBe(7000);
+  });
+
+  it('reports the floored whole-second timeline value while keeping exact replay time', async () => {
+    const player = await mount();
+    const timeline = target.querySelector<HTMLElement>('[role="slider"]');
+
+    player.goto(3000, false);
+    await tick();
+    expect(timeline?.getAttribute('aria-valuenow')).toBe('3000');
+    player.goto(3100, false);
+    await tick();
+    expect(player.getReplayer().getCurrentTime()).toBe(3100);
+    expect(timeline?.getAttribute('aria-valuenow')).toBe('3000');
+    player.goto(3200, false);
+    await tick();
+    expect(player.getReplayer().getCurrentTime()).toBe(3200);
+    expect(timeline?.getAttribute('aria-valuenow')).toBe('3000');
+    player.goto(4000, false);
+    await tick();
+    expect(player.getReplayer().getCurrentTime()).toBe(4000);
+    expect(timeline?.getAttribute('aria-valuenow')).toBe('4000');
+  });
+
   it('seeks exactly to a note and supports captions without controls', async () => {
     const player = await mount();
     click('.rr-custom-event');

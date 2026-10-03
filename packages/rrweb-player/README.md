@@ -99,6 +99,9 @@ Captions persist until replaced or cleared with `''` or `false`.
 `timelineMarkerColor` controls annotation marker colors independently of custom
 event `tags`. Text is plain text; HTML is not interpreted.
 
+Tab to the playback position slider to seek with the arrow keys in five-second
+steps, or use Home/End to jump to the start/end.
+
 See the [annotation recipe](../../docs/recipes/annotations.md)
 for replay callbacks, keyboard interactions, seeking, and TypeScript usage.
 

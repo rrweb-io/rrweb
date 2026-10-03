@@ -41,10 +41,6 @@ press Enter or Space, to seek to its timestamp. Tab into the open text panel to
 scroll with the keyboard; interacting with that panel does not seek. Escape
 dismisses it.
 
-The playback position slider is also keyboard accessible. Tab to it and use the
-Left and Right arrow keys to seek five seconds, or Home and End to jump to the
-start or end of the recording.
-
 Timeline markers do not change captions. Caption events do not create timeline
 markers.
 
@@ -98,6 +94,12 @@ and unknown annotation types are ignored by the player.
 Text supports line breaks and is rendered as plain text. HTML and Markdown are
 not interpreted. The player renders captions outside the replay iframe, so they
 remain readable as the replay scales.
+
+## Keyboard controls
+
+The playback position slider is also keyboard accessible. Tab to it and use the
+Left and Right arrow keys to seek five seconds, or Home and End to jump to the
+start or end of the recording.
 
 ## TypeScript
 

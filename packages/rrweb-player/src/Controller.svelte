@@ -73,6 +73,7 @@
   }
   let speedState: 'normal' | 'skipping';
   let progress: HTMLElement;
+  let progressSlider: HTMLElement;
   let finished: boolean;
 
   let pauseAt: number | false = false;
@@ -84,6 +85,7 @@
 
   let meta: playerMetaData;
   $: meta = replayer.getMetaData();
+  $: accessibleTime = Math.max(0, Math.min(meta.totalTime, Math.floor(currentTime / 1000) * 1000));
   let percentage: string;
   $: {
     const percent = Math.min(1, currentTime / meta.totalTime);
@@ -240,6 +242,7 @@
     if (speedState === 'skipping') {
       return;
     }
+    progressSlider.focus();
     const progressRect = progress.getBoundingClientRect();
     const x = event.clientX - progressRect.left;
     let percent = x / progressRect.width;
@@ -253,7 +256,7 @@
   };
 
   const handleProgressKeydown = (event: KeyboardEvent) => { 
-    // Marker keys may reach host shortcuts without also seeking the timeline.
+    // Ignore marker keys and the slider event bubbling to the progress wrapper.
     if (event.target !== event.currentTarget) return;
     if (speedState === 'skipping') {
       return;
@@ -475,13 +478,14 @@
       >
         <div
           class="rr-progress__slider"
+          bind:this={progressSlider}
           role="slider"
           tabindex="0"
           aria-label="Playback position"
           aria-valuemin="0"
           aria-valuemax={meta.totalTime}
-          aria-valuenow={Math.max(0, Math.min(meta.totalTime, currentTime))}
-          aria-valuetext={`${formatTime(currentTime)} of ${formatTime(meta.totalTime)}`}
+          aria-valuenow={accessibleTime}
+          aria-valuetext={`${formatTime(accessibleTime)} of ${formatTime(meta.totalTime)}`}
           aria-disabled={speedState === 'skipping'}
           on:keydown={handleProgressKeydown}
         />
