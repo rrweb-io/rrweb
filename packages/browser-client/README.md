@@ -19,6 +19,7 @@ import rrwebBrowserClient, {
   start,
   stop,
   addMeta,
+  addAnnotation,
   getRecordingId,
 } from '@rrweb/browser-client';
 
@@ -32,6 +33,7 @@ start({
 });
 
 addMeta({ plan: 'pro' });
+addAnnotation({ type: 'timelineMarker', text: 'Checkout started' });
 
 console.log('recording id', getRecordingId());
 stop(false);
@@ -65,6 +67,7 @@ rrwebBrowserClient.start({
 - `addMeta(payload)`: adds or updates recording metadata after recording has started.
 - `addPageviewMeta(payload)`: adds metadata for the current page view.
 - `addCustomEvent(tag, payload)`: queues a custom rrweb event.
+- `addAnnotation(annotation)`: records a caption or timeline marker annotation. Before recording starts, the client queues it with a timestamp and sends it when recording begins.
 - `stop(resetRecordingId)`: stops rrweb recording and closes the WebSocket. Pass `true` to clear the stored recording id before a future `start()`.
 
 ## Further Reading

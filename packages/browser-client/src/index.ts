@@ -1,7 +1,12 @@
 import { record } from '@rrweb/record';
 
 import { EventType } from '@rrweb/types';
-import type { customEvent, eventWithTime, listenerHandler } from '@rrweb/types';
+import type {
+  annotationData,
+  customEvent,
+  eventWithTime,
+  listenerHandler,
+} from '@rrweb/types';
 import { nowTimestamp } from '@rrweb/utils';
 import type { recordOptions } from 'rrweb';
 
@@ -44,6 +49,12 @@ type ServerMessage =
 
 export type customEventWithTime = customEvent & {
   timestamp: number;
+};
+
+type annotationEventWithTime = {
+  timestamp: number;
+  type: EventType.Annotation;
+  data: annotationData;
 };
 
 const defaultServerUrl =
@@ -532,6 +543,20 @@ export const addCustomEvent = <T>(tag: string, payload: T) => {
   }
 };
 
+export const addAnnotation = (annotation: annotationData) => {
+  if (rrwebStopFn !== undefined) {
+    record.addAnnotation(annotation);
+  } else {
+    const annotationEvent: annotationEventWithTime = {
+      timestamp: nowTimestamp(),
+      type: EventType.Annotation,
+      data: annotation,
+    };
+    // Let the websocket buffer send it after recording starts.
+    buffer.add(JSON.stringify(annotationEvent));
+  }
+};
+
 export function addMeta(payload: nameValues) {
   addCustomEvent('recording-meta', payload);
 }
@@ -604,5 +629,6 @@ export default {
   addMeta,
   addPageviewMeta,
   addCustomEvent,
+  addAnnotation,
   getRecordingId,
 };
