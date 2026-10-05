@@ -69,6 +69,17 @@ export type recordOptions<T> = {
   recordDOM?: boolean;
   recordCanvas?: boolean;
   recordCrossOriginIframes?: boolean;
+  /**
+   * Whether this frame is the one that emits events (the "root" of the recording).
+   *
+   * Defaults to `window.parent === window` when `recordCrossOriginIframes` is on,
+   * and to `true` when it is off. Set it to `true` when rrweb runs in a frame whose
+   * parent does not run rrweb (e.g. it was injected into an iframe by a third party),
+   * so the frame emits its own events and still collects events from its
+   * cross-origin child iframes.
+   * If a parent frame also runs rrweb as a root, both will emit.
+   */
+  isRootFrame?: boolean;
   recordAfter?: 'DOMContentLoaded' | 'load';
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;

@@ -89,6 +89,7 @@ function record<T = eventWithTime>(
     recordDOM = true,
     recordCanvas = false,
     recordCrossOriginIframes = false,
+    isRootFrame,
     recordAfter = options.recordAfter === 'DOMContentLoaded'
       ? options.recordAfter
       : 'load',
@@ -103,9 +104,8 @@ function record<T = eventWithTime>(
 
   registerErrorHandler(errorHandler);
 
-  const inEmittingFrame = recordCrossOriginIframes
-    ? window.parent === window
-    : true;
+  const inEmittingFrame =
+    isRootFrame ?? (recordCrossOriginIframes ? window.parent === window : true);
 
   let passEmitsToParent = false;
   if (!inEmittingFrame) {

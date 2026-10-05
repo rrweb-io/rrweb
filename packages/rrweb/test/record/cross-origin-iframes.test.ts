@@ -40,6 +40,7 @@ interface IWindow extends Window {
 }
 type ExtraOptions = {
   usePackFn?: boolean;
+  isRootFrame?: boolean;
 };
 
 async function injectRecordScript(
@@ -67,6 +68,7 @@ async function injectRecordScript(
     const { record } = (window as unknown as IWindow).rrweb;
     const config: recordOptions<eventWithTime> = {
       recordCrossOriginIframes: true,
+      isRootFrame: options.isRootFrame,
       recordCanvas: true,
       emit(event) {
         (window as unknown as IWindow).snapshots.push(event);
@@ -628,5 +630,94 @@ describe('same origin iframes', function (this: ISuite) {
       'window.snapshots',
     )) as eventWithTime[];
     await assertSnapshot(snapshots);
+  });
+});
+
+describe('cross origin iframes with isRootFrame', function () {
+  vi.setConfig({ testTimeout: 100_000 });
+
+  let browser: puppeteer.Browser;
+  let server: http.Server;
+  let serverB: http.Server;
+  let page: puppeteer.Page;
+  let events: eventWithTime[];
+
+  beforeAll(async () => {
+    browser = await launchPuppeteer();
+    server = await startServer();
+    serverB = await startServer();
+  });
+
+  beforeEach(async () => {
+    page = await browser.newPage();
+    await page.goto('about:blank');
+    // The top level page does not run rrweb, like a page that is not under our control.
+    // Frame A is cross-origin to it, so it can not reach into the parent.
+    await page.setContent(`
+      <!DOCTYPE html>
+      <html>
+        <body>
+          <iframe src="${getServerURL(server)}/html/blank.html"></iframe>
+        </body>
+      </html>
+    `);
+    events = [];
+    await page.exposeFunction('emit', (e: eventWithTime) => {
+      if (e.type === EventType.DomContentLoaded || e.type === EventType.Load) {
+        return;
+      }
+      events.push(e);
+    });
+  });
+
+  afterEach(async () => {
+    await page.close();
+  });
+
+  afterAll(async () => {
+    await browser.close();
+    server.close();
+    serverB.close();
+  });
+
+  async function recordFrameWithCrossOriginChild(options: ExtraOptions) {
+    const frameA = page.mainFrame().childFrames()[0];
+    await injectRecordScript(frameA, options);
+
+    const childURL = `${getServerURL(serverB)}/html/form.html`;
+    await frameA.evaluate((childURL) => {
+      const iframe = document.createElement('iframe');
+      iframe.src = childURL;
+      document.body.appendChild(iframe);
+    }, childURL);
+    await page.waitForFrame(childURL);
+    // the child does not set `isRootFrame`, it relays to its parent
+    await injectRecordScript(frameA.childFrames()[0]);
+    await waitForRAF(frameA);
+    await waitForRAF(frameA);
+  }
+
+  it('emits its own events and those of a cross-origin child when isRootFrame is true', async () => {
+    await recordFrameWithCrossOriginChild({ isRootFrame: true });
+
+    expect(
+      events.filter((e) => e.type === EventType.FullSnapshot),
+    ).toHaveLength(1);
+    const attachedChild = events.find(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.Mutation &&
+        e.data.isAttachIframe,
+    );
+    expect(attachedChild).toBeDefined();
+    const childMutation = attachedChild!.data as mutationData;
+    // the child's <form> was merged into the root frame's recording
+    expect(JSON.stringify(childMutation.adds)).toContain('"tagName":"form"');
+  });
+
+  it('emits nothing when a framed recorder does not set isRootFrame', async () => {
+    await recordFrameWithCrossOriginChild({});
+
+    expect(events).toHaveLength(0);
   });
 });

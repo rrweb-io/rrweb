@@ -33,10 +33,29 @@ When cross origin iframe recording is turned on rrweb will check to see if it is
 If it isn't it'll send the events to the parent window via `postMessage`.
 
 If you don't have rrweb running in the top level window, the events will be lost when `recordCrossOriginIframes` is turned on.
+See [recording when rrweb only runs in an iframe](#recording-when-rrweb-only-runs-in-an-iframe) if that is your setup.
 
 If the top level window is a malicious website it can listen to the events and send them to a server of its choosing.
 
 Or if a malicious script is running in on your page they can listen in on `postMessage` and as communication between the child and parent window is not encrypted. And they can see the events.
+
+## Recording when rrweb only runs in an iframe
+
+Sometimes rrweb is injected into an iframe of a page you don't control, so there is no rrweb in the top level window.
+Set `isRootFrame` in that iframe, so it emits its own events rather than relaying them to a parent that isn't listening, and still collects the events of its own cross-origin child iframes:
+
+```js
+import { record } from '@rrweb/record';
+
+record({
+  emit(event) {},
+  recordCrossOriginIframes: true,
+  isRootFrame: true,
+});
+```
+
+The cross-origin child iframes use the same options as above (`recordCrossOriginIframes: true` without `isRootFrame`).
+Don't set `isRootFrame` in a frame whose parent also runs rrweb as a root, or both will emit the same content.
 
 ## Options for injecting rrweb into cross origin iframes
 
