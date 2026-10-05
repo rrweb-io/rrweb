@@ -22,6 +22,7 @@ import shadowDomEvents from './events/shadow-dom';
 import badTextareaEvents from './events/bad-textarea';
 import badStyleEvents from './events/bad-style';
 import StyleSheetTextMutation from './events/style-sheet-text-mutation';
+import styleTextMutationHover from './events/style-text-mutation-hover';
 import canvasInIframe from './events/canvas-in-iframe';
 import adoptedStyleSheet from './events/adopted-style-sheet';
 import adoptedStyleSheetModification from './events/adopted-style-sheet-modification';
@@ -476,6 +477,28 @@ describe('replayer', function () {
       rules.some((x) => x.selectorText === '.css-added-at-1000-overwritten-at-1500');
     `);
     expect(result).toEqual(false);
+  });
+
+  it('should adapt css in a text mutation on a style element by default', async () => {
+    await page.evaluate(`events = ${JSON.stringify(styleTextMutationHover)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.pause(600);
+      replayer.getMirror().getNode(101).textContent;
+    `);
+    expect(result).toEqual('.mutated:hover,\n.mutated.\\:hover {color: red;}');
+  });
+
+  it('should not adapt css in a text mutation when adaptCssInTextMutations is false', async () => {
+    await page.evaluate(`events = ${JSON.stringify(styleTextMutationHover)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events, { adaptCssInTextMutations: false });
+      replayer.pause(600);
+      replayer.getMirror().getNode(101).textContent;
+    `);
+    expect(result).toEqual('.mutated:hover {color: red;}');
   });
 
   it('should apply fast-forwarded StyleSheetRules that came after appending text node to stylesheet element', async () => {
