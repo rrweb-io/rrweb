@@ -804,6 +804,116 @@ describe('record', function (this: ISuite) {
     await assertSnapshot(ctx.events);
   });
 
+  it('does not emit an attribute reverted to its pre-freeze value', async () => {
+    await ctx.page.evaluate(() => {
+      return new Promise((resolve) => {
+        const { record, freezePage } = (window as unknown as IWindow).rrweb;
+        // the element (and its baseline attribute) exist before recording, so
+        // the baseline is captured in the FullSnapshot
+        const div = document.createElement('div');
+        div.setAttribute('data-test', 'original');
+        document.body.appendChild(div);
+
+        record({
+          emit: (window as unknown as IWindow).emit,
+        });
+        freezePage();
+
+        // change the attribute then revert it, all while frozen
+        setTimeout(() => {
+          document
+            .querySelector('div[data-test]')
+            ?.setAttribute('data-test', 'changed');
+        }, 0);
+        setTimeout(() => {
+          document
+            .querySelector('div[data-test]')
+            ?.setAttribute('data-test', 'original');
+        }, 10);
+        // 'unfreeze' happens upon a user event, flushing the buffer
+        setTimeout(() => {
+          document.body.click();
+        }, 20);
+        setTimeout(() => {
+          resolve(null);
+        }, 25);
+      });
+    });
+    await waitForRAF(ctx.page); // wait till events get sent
+
+    // the attribute's net value is unchanged over the frozen window. With the
+    // read deferred to emit, it reads back the baseline and nothing is emitted;
+    // reading eagerly at mutation-observation time would instead record the
+    // intermediate 'changed'->'original' and emit a redundant mutation.
+    const attributeMutations = ctx.events
+      .filter(
+        (e) =>
+          e.type === EventType.IncrementalSnapshot &&
+          e.data.source === IncrementalSource.Mutation,
+      )
+      .filter(
+        (e) =>
+          ((e.data as { attributes: unknown[] }).attributes || []).length > 0,
+      );
+    expect(attributeMutations.length).toEqual(0);
+  });
+
+  it('throttles repeated same-element mutations via sampling.mutation', async () => {
+    await ctx.page.evaluate(() => {
+      return new Promise((resolve) => {
+        const { record } = (window as unknown as IWindow).rrweb;
+        // the element exists before recording, so the rapid changes below are
+        // plain attribute mutations (captured in the FullSnapshot, not an add)
+        const div = document.createElement('div');
+        div.setAttribute('data-frame', 'initial');
+        document.body.appendChild(div);
+
+        record({
+          emit: (window as unknown as IWindow).emit,
+          // only emit mutations once per second
+          sampling: { mutation: 1000 },
+        });
+
+        // simulate a JS animation rewriting the same attribute every 10ms; all
+        // ten frames land inside a single 1000ms throttle window
+        let frame = 0;
+        const timer = setInterval(() => {
+          div.setAttribute('data-frame', String(frame));
+          frame += 1;
+          if (frame >= 10) {
+            clearInterval(timer);
+            resolve(null);
+          }
+        }, 10);
+      });
+    });
+    // wait past the throttle window so the trailing emit flushes
+    await ctx.page.waitForTimeout(1100);
+    await waitForRAF(ctx.page);
+
+    const frameValues = ctx.events
+      .filter(
+        (e) =>
+          e.type === EventType.IncrementalSnapshot &&
+          e.data.source === IncrementalSource.Mutation,
+      )
+      .flatMap(
+        (e) =>
+          (e.data as { attributes: { attributes: Record<string, unknown> }[] })
+            .attributes,
+      )
+      .filter((a) => 'data-frame' in a.attributes)
+      .map((a) => a.attributes['data-frame']);
+
+    // without throttling this would be ~10 separate mutations; throttled, the
+    // run collapses to the leading edge plus a single trailing emit, dropping
+    // every intermediate frame
+    expect(frameValues.length).toBeLessThanOrEqual(2);
+    expect(frameValues).not.toContain('5');
+    // the final frame is never lost
+    expect(frameValues[frameValues.length - 1]).toBe('9');
+  });
+
   describe('loading stylesheets', () => {
     let server: Server;
     let serverURL: string;

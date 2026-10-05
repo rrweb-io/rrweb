@@ -412,7 +412,7 @@ describe('error-handler', function (this: ISuite) {
     const element = await ctx.page.$('#out');
     const text = await element!.evaluate((el) => el.textContent);
 
-    expect(text).toEqual('TypeError: m.target.getAttribute is not a function');
+    expect(text).toEqual('TypeError: target.getAttribute is not a function');
   });
 });
 

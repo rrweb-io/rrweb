@@ -1337,10 +1337,6 @@ exports[`record integration tests > can record and replay style mutations 1`] = 
           \\"value\\": \\"body { color: yellow; }\\"
         },
         {
-          \\"id\\": 15,
-          \\"value\\": \\"body { color: yellow; }\\"
-        },
-        {
           \\"id\\": 38,
           \\"value\\": \\"body { background-color: purple; }\\"
         }
@@ -10118,12 +10114,6 @@ exports[`record integration tests > should not record input values if dynamicall
           \\"id\\": 22,
           \\"attributes\\": {
             \\"value\\": \\"**********************************************************************************************\\"
-          }
-        },
-        {
-          \\"id\\": 21,
-          \\"attributes\\": {
-            \\"value\\": \\"*************************************************************************************************\\"
           }
         }
       ],
