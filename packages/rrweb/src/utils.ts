@@ -13,7 +13,7 @@ import type {
 import type { Mirror, SlimDOMOptions } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
 import { RRNode, RRIFrameElement, BaseRRNode } from 'rrdom';
-import dom from '@rrweb/utils';
+import dom, { getUntaintedProxy } from '@rrweb/utils';
 export { nowTimestamp } from '@rrweb/utils';
 
 export function on(
@@ -55,7 +55,9 @@ export let _mirror: DeprecatedMirror = {
     console.error(DEPARTED_MIRROR_ACCESS_WARNING);
   },
 };
+
 if (typeof window !== 'undefined' && window.Proxy && window.Reflect) {
+  const Proxy = getUntaintedProxy();
   _mirror = new Proxy(_mirror, {
     get(target, prop, receiver) {
       if (prop === 'map') {

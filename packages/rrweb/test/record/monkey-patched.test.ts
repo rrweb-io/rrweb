@@ -46,6 +46,46 @@ describe('WebKit: monkey-patched MutationObserver', () => {
     await server.close();
   });
 
+  it.each(['Node', 'Element', 'ShadowRoot'] as const)(
+    'removes the %s iframe while keeping its prototype usable',
+    async (key) => {
+      const page = await browser.newPage();
+      try {
+        await page.addScriptTag({
+          path: path.resolve(__dirname, '../../../utils/dist/utils.umd.cjs'),
+        });
+        const result = await page.evaluate((key) => {
+          const { rrwebUtils: utils } = window as unknown as Window & {
+            rrwebUtils: typeof import('../../../utils/src');
+          };
+          // Zone forces the clean-realm path even when native APIs are intact.
+          Object.defineProperty(window, 'Zone', { value: {} });
+          const host = document.createElement('div');
+          const child = document.createElement('span');
+          host.appendChild(child);
+          const root = host.attachShadow({ mode: 'open' });
+          document.body.appendChild(host);
+
+          const prototype = utils.getUntaintedPrototype(key);
+          const usable =
+            key === 'Node'
+              ? utils.contains(host, child)
+              : key === 'Element'
+              ? utils.shadowRoot(host) === root
+              : utils.host(root) === host;
+          return {
+            recovered: prototype !== globalThis[key].prototype,
+            usable,
+            iframes: document.querySelectorAll('iframe').length,
+          };
+        }, key);
+        expect(result).toEqual({ recovered: true, usable: true, iframes: 0 });
+      } finally {
+        await page.close();
+      }
+    },
+  );
+
   it('should record DOM mutations when MutationObserver is monkey-patched', async () => {
     const page = await browser.newPage();
     page.on('console', (msg) => console.log('[webkit]', msg.text()));
