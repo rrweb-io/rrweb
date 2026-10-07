@@ -13,7 +13,9 @@
   } from 'svelte';
   import { formatTime } from './utils';
   import Switch from './components/Switch.svelte';
-  import CustomEventMarker from './components/CustomEventMarker.svelte';
+  import TimelineMarkers from './components/TimelineMarkers.svelte';
+  import type { TimelineMarker, TimelineMarkerSelection } from './types';
+  import type { DisplayTimelineMarker } from './timeline-markers';
   import { parseAnnotationEvent, getActiveCaption } from './annotations';
   import { createTimelineIndex } from './timeline-index';
 
@@ -64,6 +66,28 @@
   export let speed = speedOption.length ? speedOption[0] : 1;
   export let tags: Record<string, string> = {};
   export let timelineMarkerColor = 'rgb(73, 80, 246)';
+  export let timelineMarkers: readonly TimelineMarker[] = [];
+  export let activeTimelineMarker: string | null = null;
+  export let onTimelineMarkerSelect: ((selection: TimelineMarkerSelection) => void) | undefined = undefined;
+
+  function selectTimelineMarker(marker: DisplayTimelineMarker) {
+    let prevented = false;
+    const selection: TimelineMarkerSelection = {
+      id: marker.id, timeOffset: marker.timeOffset, text: marker.text,
+      label: marker.label, color: marker.color, source: marker.source,
+      get defaultPrevented() { return prevented; },
+      preventDefault() { prevented = true; },
+    };
+    onTimelineMarkerSelect?.(selection);
+    if (!prevented) goto(Math.max(0, Math.min(meta.totalTime, marker.timeOffset)));
+  }
+  $: displayMarkers = [
+    ...timeline.markers.filter((marker) => marker.text !== undefined).map((marker): DisplayTimelineMarker => ({
+      id: marker.id, source: 'recorded', timeOffset: marker.timestamp - timeline.start,
+      text: marker.text ?? '',
+    })),
+    ...timelineMarkers.map((marker): DisplayTimelineMarker => ({ ...marker, source: 'external' })),
+  ];
   export let inactiveColor: string;
 
   let currentTime = 0;
@@ -100,8 +124,6 @@
     name: string;
     background: string;
     position: string;
-    timeOffset: number;
-    timelineMarkerText: string | undefined;
   };
 
   /**
@@ -119,10 +141,8 @@
     return eventPosition.toFixed(2);
   }
 
-  $: customEvents = timeline.markers.map((marker): CustomEvent => ({
+  $: customEvents = timeline.markers.filter((marker) => marker.tag !== undefined).map((marker): CustomEvent => ({
     name: marker.tag ?? 'Timeline marker',
-    timeOffset: marker.timestamp - timeline.start,
-    timelineMarkerText: marker.text,
     background: marker.tag === undefined ? timelineMarkerColor : tags[marker.tag] || 'rgb(73, 80, 246)',
     position: `${position(timeline.start, timeline.end, marker.timestamp)}%`,
   }));
@@ -505,26 +525,23 @@
           />
         {/each}
         {#each customEvents as event}
-          {#if event.timelineMarkerText}
-            <CustomEventMarker
-              dismissalVersion={timelineMarkerDismissalVersion}
-              name={event.name}
-              text={event.timelineMarkerText}
-              background={event.background}
-              position={event.position}
-              disabled={speedState === 'skipping'}
-              on:seek={() => goto(event.timeOffset)}
-              on:focus-timeline={() => progressSlider.focus()}
-            />
-          {:else}
-            <div
-              title={event.name}
-              style="width: 10px;height: 5px;position: absolute;top:
-              2px;transform: translate(-50%, -50%);background: {event.background};left:
-              {event.position};"
-            />
-          {/if}
+          <div
+            title={event.name}
+            style="width: 10px;height: 5px;position: absolute;top:
+            2px;transform: translate(-50%, -50%);background: {event.background};left:
+            {event.position};"
+          />
         {/each}
+        <TimelineMarkers
+          markers={displayMarkers}
+          totalTime={meta.totalTime}
+          activeId={activeTimelineMarker}
+          defaultColor={timelineMarkerColor}
+          disabled={speedState === 'skipping'}
+          dismissalVersion={timelineMarkerDismissalVersion}
+          on:select={({ detail }) => selectTimelineMarker(detail)}
+          on:focus-timeline={() => progressSlider.focus()}
+        />
 
         <div class="rr-progress__handler" style="left: {percentage}" />
       </div>

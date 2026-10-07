@@ -7,6 +7,16 @@ import { isUserInteraction } from './utils';
 /** Consume appended events once. Late insertions rebuild to preserve replay order. */
 export function createTimelineIndex() {
   let count = 0;
+  const markerIds = new WeakMap<eventWithTime, string>();
+  let nextMarkerId = 0;
+  function markerId(event: eventWithTime) {
+    let id = markerIds.get(event);
+    if (id === undefined) {
+      id = String(nextMarkerId++);
+      markerIds.set(event, id);
+    }
+    return id;
+  }
   let lastEvent: eventWithTime | undefined;
   let threshold: number | undefined;
   let lastActiveTime = 0;
@@ -16,7 +26,7 @@ export function createTimelineIndex() {
     start: number;
     end: number;
     captions: Caption[];
-    markers: { timestamp: number; tag?: string; text?: string }[];
+    markers: { id: string; timestamp: number; tag?: string; text?: string }[];
     periods: [number, number][];
     hasCaptions: boolean;
   } {
@@ -58,12 +68,17 @@ export function createTimelineIndex() {
           if (annotation.text) state.hasCaptions = true;
         } else if (annotation?.type === 'timelineMarker') {
           state.markers.push({
+            id: markerId(event),
             timestamp: event.timestamp,
             text: annotation.text,
           });
         }
       } else if (event.type === EventType.Custom) {
-        state.markers.push({ timestamp: event.timestamp, tag: event.data.tag });
+        state.markers.push({
+          id: markerId(event),
+          timestamp: event.timestamp,
+          tag: event.data.tag,
+        });
       }
       if (isUserInteraction(event)) {
         if (event.timestamp - lastActiveTime > inactiveThreshold) {

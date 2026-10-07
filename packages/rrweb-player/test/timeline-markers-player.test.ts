@@ -1,0 +1,247 @@
+// @vitest-environment happy-dom
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { tick } from 'svelte';
+import { EventType } from '@rrweb/types';
+import type { eventWithTime } from '@rrweb/types';
+import Player from '../src/Player.svelte';
+import type { TimelineMarkerSelection } from '../src/types';
+
+const start = 1700000000000;
+const recording: eventWithTime[] = [
+  {
+    type: EventType.Meta,
+    timestamp: start,
+    data: { href: 'https://example.com', width: 800, height: 400 },
+  },
+  {
+    type: EventType.Annotation,
+    timestamp: start + 2000,
+    data: { type: 'timelineMarker', text: 'Recorded' },
+  },
+  {
+    type: EventType.Custom,
+    timestamp: start + 10000,
+    data: { tag: 'end', payload: {} },
+  },
+];
+let player: Player;
+let target: HTMLDivElement;
+async function mount(props = {}) {
+  target = document.createElement('div');
+  document.body.append(target);
+  player = new Player({
+    target,
+    props: {
+      events: recording,
+      autoPlay: false,
+      skipInactive: false,
+      ...props,
+    },
+  });
+  await tick();
+  return player;
+}
+function button(text: string) {
+  const found = [...target.querySelectorAll<HTMLButtonElement>('button')].find(
+    (el) => el.getAttribute('aria-label') === `Timeline marker: ${text}`,
+  );
+  if (!found) throw new Error(`Missing marker ${text}`);
+  return found;
+}
+afterEach(() => {
+  if (target?.isConnected) player?.$destroy();
+  target?.remove();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
+
+describe('external timeline markers', () => {
+  it('replaces external markers, preserves recorded events and stable focused buttons', async () => {
+    const original = JSON.stringify(recording);
+    await mount();
+    player.setTimelineMarkers([{ id: 'one', timeOffset: 4000, text: 'First' }]);
+    await tick();
+    const first = button('First');
+    first.focus();
+    player.setTimelineMarkers([
+      { id: 'one', timeOffset: 4500, text: 'Updated', color: 'red' },
+    ]);
+    await tick();
+    expect(button('Updated')).toBe(first);
+    expect(document.activeElement).toBe(first);
+    expect(button('Recorded')).toBeTruthy();
+    player.setTimelineMarkers([]);
+    await tick();
+    expect(target.textContent).not.toContain('Updated');
+    expect(button('Recorded')).toBeTruthy();
+    expect(JSON.stringify(recording)).toBe(original);
+  });
+
+  it('rejects invalid replacements atomically and copies supplied values', async () => {
+    await mount();
+    const markers = [{ id: 'one', timeOffset: 4000, text: 'Original' }];
+    player.setTimelineMarkers(markers);
+    markers[0].text = 'Mutated';
+    await tick();
+    expect(button('Original')).toBeTruthy();
+    for (const timeOffset of [-1, NaN, Infinity]) {
+      expect(() =>
+        player.setTimelineMarkers([{ id: 'bad', timeOffset, text: 'Bad' }]),
+      ).toThrow();
+    }
+    expect(() =>
+      player.setTimelineMarkers([{ id: '', timeOffset: 1, text: 'Bad' }]),
+    ).toThrow();
+    expect(() => player.setTimelineMarkers([markers[0], markers[0]])).toThrow();
+    await tick();
+    expect(button('Original')).toBeTruthy();
+  });
+
+  it('notifies selection, preserves pause/play, and clamps default seeking', async () => {
+    const selections: TimelineMarkerSelection[] = [];
+    await mount({
+      onTimelineMarkerSelect: (selection: TimelineMarkerSelection) =>
+        selections.push(selection),
+      timelineMarkers: [{ id: 'last', timeOffset: 12000, text: 'After end' }],
+    });
+    button('Recorded').click();
+    expect(player.getReplayer().getCurrentTime()).toBe(2000);
+    expect(player.getReplayer().service.state.value).toBe('paused');
+    expect(selections[0]).toMatchObject({
+      source: 'recorded',
+      timeOffset: 2000,
+      text: 'Recorded',
+      defaultPrevented: false,
+    });
+    button('After end').click();
+    expect(player.getReplayer().getCurrentTime()).toBe(10000);
+    expect(selections[1]).toMatchObject({
+      source: 'external',
+      id: 'last',
+      timeOffset: 12000,
+    });
+    player.play();
+    button('Recorded').click();
+    expect(player.getReplayer().service.state.value).toBe('playing');
+  });
+
+  it('lets applications cancel default seeking and play with a lead-in', async () => {
+    const selected = vi.fn((selection: TimelineMarkerSelection) => {
+      selection.preventDefault();
+      player.goto(Math.max(0, selection.timeOffset - 300), true);
+    });
+    await mount({
+      timelineMarkers: [{ id: 'one', timeOffset: 4000, text: 'First' }],
+      onTimelineMarkerSelect: selected,
+    });
+    button('First').click();
+    expect(selected).toHaveBeenCalledOnce();
+    expect(player.getReplayer().service.state.value).toBe('playing');
+    expect(player.getReplayer().getCurrentTime()).toBeGreaterThanOrEqual(3700);
+    expect(player.getReplayer().getCurrentTime()).toBeLessThan(3800);
+  });
+
+  it('clears removed active IDs and does not accumulate regenerated markers', async () => {
+    await mount({
+      timelineMarkers: [
+        { id: 'one', timeOffset: 4000, text: 'First' },
+        { id: 'two', timeOffset: 6000, text: 'Second' },
+      ],
+    });
+    player.setActiveTimelineMarker('two');
+    await tick();
+    expect(button('Second').getAttribute('aria-current')).toBe('true');
+    expect(button('First').getAttribute('aria-current')).toBeNull();
+    player.setTimelineMarkers([{ id: 'one', timeOffset: 4000, text: 'First' }]);
+    await tick();
+    expect(target.querySelector('[aria-current="true"]')).toBeNull();
+    for (let revision = 0; revision < 3; revision++)
+      player.setTimelineMarkers([
+        { id: 'one', timeOffset: 4000, text: 'First' },
+      ]);
+    await tick();
+    expect(target.querySelectorAll('.rr-custom-event')).toHaveLength(2);
+  });
+});
+
+it('regroups dense recorded/external markers on resize and keeps every member selectable', async () => {
+  let resize = () => {};
+  const disconnect = vi.fn();
+  class TestResizeObserver implements ResizeObserver {
+    constructor(callback: ResizeObserverCallback) {
+      resize = () => callback([], this);
+    }
+    observe() {}
+    unobserve() {}
+    disconnect = disconnect;
+  }
+  vi.stubGlobal('ResizeObserver', TestResizeObserver);
+  const selected: TimelineMarkerSelection[] = [];
+  await mount({
+    onTimelineMarkerSelect: (selection: TimelineMarkerSelection) => {
+      selected.push(selection);
+      selection.preventDefault();
+    },
+  });
+  const layer = target.querySelector<HTMLElement>('.rr-timeline-markers')!;
+  let width = 100;
+  Object.defineProperty(layer, 'clientWidth', { get: () => width });
+  player.setTimelineMarkers(
+    Array.from({ length: 100 }, (_, i) => ({
+      id: String(i),
+      timeOffset: 2000 + i * 10,
+      text: `Step ${i}`,
+    })),
+  );
+  resize();
+  await tick();
+  expect(target.querySelectorAll('.rr-custom-event')).toHaveLength(2);
+  player.goto(0, false);
+  button('Step 40').click();
+  expect(selected[0]).toMatchObject({
+    source: 'external',
+    id: '40',
+    timeOffset: 2400,
+  });
+  expect(player.getReplayer().getCurrentTime()).toBe(0);
+  button('Step 99').focus();
+  width = 10000;
+  resize();
+  await tick();
+  expect(target.querySelectorAll('.rr-custom-event')).toHaveLength(100);
+  expect(document.activeElement).toBe(button('Step 99'));
+  expect(button('Step 99').type).toBe('button');
+  player.setTimelineMarkers([]);
+  await tick();
+  expect(document.activeElement).toBe(target.querySelector('[role="slider"]'));
+  expect(button('Recorded')).toBeTruthy();
+  player.$destroy();
+  target.remove();
+  expect(disconnect).toHaveBeenCalledOnce();
+});
+
+it('keeps external IDs separate from recorded IDs and safely renders plain text', async () => {
+  const selected: TimelineMarkerSelection[] = [];
+  await mount({
+    onTimelineMarkerSelect: (selection: TimelineMarkerSelection) =>
+      selected.push(selection),
+  });
+  button('Recorded').click();
+  const id = selected[0].id;
+  player.setTimelineMarkers([
+    {
+      id,
+      timeOffset: 4000,
+      label: '<b>label</b>',
+      text: '<img src=x onerror=alert(1)>',
+    },
+  ]);
+  await tick();
+  expect(target.querySelector('b, img')).toBeNull();
+  expect(button('Recorded')).toBeTruthy();
+  expect(target.textContent).toContain('<img src=x onerror=alert(1)>');
+  player.setTimelineMarkers([]);
+  await tick();
+  button('Recorded').click();
+  expect(selected[1].id).toBe(id);
+});
