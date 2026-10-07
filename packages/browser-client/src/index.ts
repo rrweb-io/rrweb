@@ -3,6 +3,7 @@ import { record } from '@rrweb/record';
 import { EventType } from '@rrweb/types';
 import type {
   annotationData,
+  annotationEvent,
   customEvent,
   eventWithTime,
   listenerHandler,
@@ -51,11 +52,7 @@ export type customEventWithTime = customEvent & {
   timestamp: number;
 };
 
-type annotationEventWithTime = {
-  timestamp: number;
-  type: EventType.Annotation;
-  data: annotationData;
-};
+type ClientEvent = customEvent | annotationEvent;
 
 const defaultServerUrl =
   'https://api.rrweb.com/recordings/{recordingId}/events/ws';
@@ -73,13 +70,14 @@ let wsConnectionPaused = false;
 
 const buffer: ArrayQueue<string> = new ArrayQueue();
 let rrwebStopFn: listenerHandler | undefined;
-let annotationsCanRecord = false;
-let cancelAnnotationStartListener: listenerHandler | undefined;
+let recorderReady = false;
+const pendingEvents: (ClientEvent & { timestamp: number })[] = [];
+let cancelRecordingStartListener: listenerHandler | undefined;
 
-function resetAnnotationRecordingState() {
-  annotationsCanRecord = false;
-  cancelAnnotationStartListener?.();
-  cancelAnnotationStartListener = undefined;
+function resetRecordingState() {
+  recorderReady = false;
+  cancelRecordingStartListener?.();
+  cancelRecordingStartListener = undefined;
 }
 
 function hasDocument(): boolean {
@@ -110,7 +108,8 @@ function scriptSourceFromElement(
 
 export function stop(resetRecordingId: boolean) {
   // reset all state so that start() can start afresh
-  resetAnnotationRecordingState();
+  resetRecordingState();
+  pendingEvents.length = 0;
   if (rrwebStopFn !== undefined) {
     rrwebStopFn();
     rrwebStopFn = undefined;
@@ -432,7 +431,7 @@ export function start(
   // metadata event should be the first seen server side
   buffer.add(JSON.stringify(metaEvent));
 
-  recordOptions.emit = (event: eventWithTime) => {
+  const emitEvent = (event: eventWithTime) => {
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
       ws = connect(serverUrl, postUrl, publicApiKey, handleMessage);
@@ -478,8 +477,21 @@ export function start(
     }
   };
 
+  recordOptions.emit = emitEvent;
+
+  const markRecorderReady = () => {
+    recorderReady = true;
+    cancelRecordingStartListener = undefined;
+    // Preserve call-time timestamps and use the same callback and transport as
+    // recorder events. Remove each event before emitting to avoid redelivery.
+    while (recorderReady && pendingEvents.length) {
+      const event = pendingEvents.shift();
+      if (event) emitEvent(event);
+    }
+  };
+
   const startRrwebRecording = () => {
-    resetAnnotationRecordingState();
+    resetRecordingState();
     const startsImmediately =
       document.readyState === 'interactive' ||
       document.readyState === 'complete';
@@ -488,7 +500,7 @@ export function start(
       return;
     }
     if (startsImmediately) {
-      annotationsCanRecord = true;
+      markRecorderReady();
       return;
     }
 
@@ -496,22 +508,18 @@ export function start(
       recordOptions.recordAfter === 'DOMContentLoaded'
         ? { target: document, type: 'DOMContentLoaded' }
         : { target: window, type: 'load' };
-    const markAnnotationsRecordable = () => {
-      annotationsCanRecord = true;
-      cancelAnnotationStartListener = undefined;
-    };
     const listenerOptions = { capture: true, once: true };
     // rrweb installs its capture listener during record(). Registering after it
     // waits for rrweb's initializer to set its internal recording flag.
     startEvent.target.addEventListener(
       startEvent.type,
-      markAnnotationsRecordable,
+      markRecorderReady,
       listenerOptions,
     );
-    cancelAnnotationStartListener = () =>
+    cancelRecordingStartListener = () =>
       startEvent.target.removeEventListener(
         startEvent.type,
-        markAnnotationsRecordable,
+        markRecorderReady,
         listenerOptions,
       );
   };
@@ -567,42 +575,51 @@ export function start(
       ws = undefined; // so `emit` can restart it again if page is unfrozen
     }
     if (rrwebStopFn !== undefined) {
-      resetAnnotationRecordingState();
+      resetRecordingState();
       rrwebStopFn();
       startWhenVisible = true;
     }
   });
 }
 
-export const addCustomEvent = <T>(tag: string, payload: T) => {
-  if (rrwebStopFn !== undefined) {
-    record.addCustomEvent(tag, payload);
-  } else {
-    const customEvent: customEventWithTime = {
-      timestamp: nowTimestamp(),
-      type: EventType.Custom,
-      data: {
-        tag,
-        payload,
-      },
-    };
-    // let websocket buffer handle it
-    buffer.add(JSON.stringify(customEvent));
+function addClientEvent(event: ClientEvent) {
+  if (!recorderReady) {
+    const timestamp = nowTimestamp();
+    // Snapshot queued data at call time, as the transport buffer did before.
+    if (event.type === EventType.Custom) {
+      const serialized = JSON.stringify(event.data.payload);
+      const payload: unknown =
+        serialized === undefined ? undefined : JSON.parse(serialized);
+      pendingEvents.push({
+        type: event.type,
+        timestamp,
+        data: { tag: event.data.tag, payload },
+      });
+    } else {
+      pendingEvents.push({
+        type: event.type,
+        timestamp,
+        data: { ...event.data },
+      });
+    }
+    return;
   }
+  switch (event.type) {
+    case EventType.Custom:
+      record.addCustomEvent(event.data.tag, event.data.payload);
+      break;
+    case EventType.Annotation:
+      record.addAnnotation(event.data);
+      break;
+  }
+}
+
+export const addCustomEvent = <T>(tag: string, payload: T) => {
+  addClientEvent({ type: EventType.Custom, data: { tag, payload } });
 };
 
 export const addAnnotation = (annotation: annotationData) => {
-  if (annotationsCanRecord) {
-    record.addAnnotation(annotation);
-  } else {
-    const annotationEvent: annotationEventWithTime = {
-      timestamp: nowTimestamp(),
-      type: EventType.Annotation,
-      data: annotation,
-    };
-    // Let the websocket buffer send it after recording starts.
-    buffer.add(JSON.stringify(annotationEvent));
-  }
+  addClientEvent({ type: EventType.Annotation, data: annotation });
 };
 
 export function addMeta(payload: nameValues) {

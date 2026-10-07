@@ -66,9 +66,16 @@ rrwebBrowserClient.start({
 - `getRecordingId()`: returns the current recording id, creating it before `start()` if needed. Recording ids are stored in `sessionStorage`, so separate tabs get separate recording contexts.
 - `addMeta(payload)`: adds or updates recording metadata after recording has started.
 - `addPageviewMeta(payload)`: adds metadata for the current page view.
-- `addCustomEvent(tag, payload)`: queues a custom rrweb event.
-- `addAnnotation(annotation)`: records a caption or timeline marker annotation. Before recording starts, the client queues it with a timestamp and sends it when recording begins. Queued annotations are sent directly to the server and do not pass through the local `emit` callback; annotations added during active recording do.
+- `addCustomEvent(tag, payload)`: records a custom rrweb event.
+- `addAnnotation(annotation)`: records a caption or timeline marker annotation.
 - `stop(resetRecordingId)`: stops rrweb recording and closes the WebSocket. Pass `true` to clear the stored recording id before a future `start()`.
+
+Both `addCustomEvent()` and `addAnnotation()` queue events until the recorder is ready,
+including calls made before `start()` or while the document is still loading.
+When recording starts, queued events pass through the configured `emit` callback
+and are sent to the server with their original call-time timestamps. Events added
+during active recording use the same callback and delivery path. Calling `stop()`
+discards events still waiting for the recorder to start.
 
 ## Further Reading
 
