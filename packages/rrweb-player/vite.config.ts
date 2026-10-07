@@ -25,43 +25,45 @@ async function generateDts(inputPath: string) {
     svelteShimsPath: svelteShimsPath,
   };
 
-  try {
-    await emitDts(config);
-  } catch (error) {
-    console.error(`Error generating .d.ts for ${inputPath}:`, error);
-  }
+  await emitDts(config);
 }
 
 function viteSvelteDts(): Plugin {
   return {
     name: 'vite-plugin-svelte-dts',
     apply: 'build',
-    async buildStart(options) {
-      console.log('Generating .d.ts files for Svelte components...');
+    // Declaration bundling must see the generated Svelte types on a clean build.
+    // buildStart hooks run in parallel unless explicitly ordered and sequential.
+    buildStart: {
+      order: 'pre',
+      sequential: true,
+      async handler(options) {
+        console.log('Generating .d.ts files for Svelte components...');
 
-      const { input } = options;
-      if (typeof input === 'string') {
-        await generateDts(input);
-      } else if (Array.isArray(input)) {
-        for (const file of input) {
-          await generateDts(file);
+        const { input } = options;
+        if (typeof input === 'string') {
+          await generateDts(input);
+        } else if (Array.isArray(input)) {
+          for (const file of input) {
+            await generateDts(file);
+          }
+        } else {
+          for (const file of Object.values(input)) {
+            await generateDts(file);
+          }
         }
-      } else {
-        for (const file of Object.values(input)) {
-          await generateDts(file);
-        }
-      }
 
-      // copy .d.ts files to src directory
-      const files = await glob('**/*.svelte.d.ts', {
-        cwd: declarationDir,
-        absolute: true,
-      });
-      for (const file of files) {
-        // resolve the path relative to the src directory
-        const dest = path.resolve('src', path.relative(declarationDir, file));
-        copyFileSync(file, dest);
-      }
+        // copy .d.ts files to src directory
+        const files = await glob('**/*.svelte.d.ts', {
+          cwd: declarationDir,
+          absolute: true,
+        });
+        for (const file of files) {
+          // resolve the path relative to the src directory
+          const dest = path.resolve('src', path.relative(declarationDir, file));
+          copyFileSync(file, dest);
+        }
+      },
     },
   };
 }
