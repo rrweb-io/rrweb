@@ -20,7 +20,7 @@
   const dispatch = createEventDispatcher();
 
   export let replayer: Replayer;
-  export let showCaptions = false;
+  export let showCaptions = true;
   const updateTimeline = createTimelineIndex();
   $: timeline = updateTimeline(replayer.service.state.context.events, replayer.config.inactivePeriodThreshold);
   export let captionText: string | undefined = undefined;

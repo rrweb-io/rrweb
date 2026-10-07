@@ -23,7 +23,7 @@
   export let speedOption: NonNullable<RRwebPlayerOptions['props']['speedOption']> = [1, 2, 4, 8];
   export let speed: NonNullable<RRwebPlayerOptions['props']['speed']> = 1;
   export let showController: NonNullable<RRwebPlayerOptions['props']['showController']> = true;
-  export let showCaptions: NonNullable<RRwebPlayerOptions['props']['showCaptions']> = false;
+  export let showCaptions: NonNullable<RRwebPlayerOptions['props']['showCaptions']> = true;
   export let timelineMarkerColor: NonNullable<RRwebPlayerOptions['props']['timelineMarkerColor']> = 'rgb(73, 80, 246)';
   export let tags: NonNullable<RRwebPlayerOptions['props']['tags']> = {};
   // color of inactive periods indicator

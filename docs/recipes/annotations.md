@@ -77,7 +77,8 @@ new rrwebPlayer({
 });
 ```
 
-`showCaptions` defaults to `false`. Recordings with nonempty captions show a CC
+`showCaptions` defaults to `true`; set it to `false` to hide captions initially.
+Recordings with nonempty captions show a CC
 button when the controls are visible. For tutorials, use `skipInactive: false`
 to preserve pauses that give viewers time to read. Annotations do not count as
 user activity, so skipping inactive periods can shorten the time a caption is

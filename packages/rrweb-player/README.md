@@ -74,7 +74,7 @@ new rrwebPlayer({
 | autoPlay            | true             | whether to autoplay                                                                                               |
 | speed               | 1                | The default speed to play at                                                                                      |
 | speedOption         | [1, 2, 4, 8]     | speed options in UI                                                                                               |
-| showCaptions        | false            | display timed captions from annotation events; viewers can toggle them with CC                                    |
+| showCaptions        | true             | display timed captions from annotation events; viewers can toggle them with CC                                    |
 | showController      | true             | whether to show the controller UI                                                                                 |
 | timelineMarkerColor | rgb(73, 80, 246) | color of timeline marker annotations                                                                              |
 | tags                | {}               | customize the custom events style with a key-value map                                                            |
@@ -83,8 +83,9 @@ new rrwebPlayer({
 
 ## Captions and timeline markers
 
-Use `record.addAnnotation()` to add captions and timeline markers. Set
-`showCaptions: true` to display captions by default; viewers can toggle them with CC.
+Use `record.addAnnotation()` to add captions and timeline markers. Captions are
+shown by default; set `showCaptions: false` to hide them initially. Viewers can
+toggle them with CC.
 
 ```js
 record.addAnnotation({ type: 'caption', text: 'Click Save.' });

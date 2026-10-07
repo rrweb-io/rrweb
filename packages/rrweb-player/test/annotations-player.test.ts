@@ -60,7 +60,6 @@ async function mount(props = {}) {
       events: recording(),
       autoPlay: false,
       skipInactive: false,
-      showCaptions: true,
       ...props,
     },
   });
@@ -119,13 +118,13 @@ describe('player annotations', () => {
     );
   });
 
-  it('shows a caption at the recording start immediately when mounted paused', async () => {
+  it('shows captions by default at the recording start when mounted paused', async () => {
     const events: eventWithTime[] = [
       recording()[0],
       annotation(0, 'Intro caption'),
       { ...recording().at(-1)!, timestamp: start + 10000 },
     ];
-    await mount({ events, autoPlay: false, showCaptions: true });
+    await mount({ events, autoPlay: false });
     expect(target.querySelector('.rr-player__caption')?.textContent).toBe(
       'Intro caption',
     );
@@ -141,7 +140,7 @@ describe('player annotations', () => {
       },
       { ...recording().at(-1)!, timestamp: start + 10000 },
     ];
-    await mount({ events, autoPlay: false, showCaptions: true });
+    await mount({ events, autoPlay: false });
     expect(target.querySelector('.rr-player__caption')?.textContent).toBe(
       'Queued intro caption',
     );

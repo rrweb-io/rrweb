@@ -47,7 +47,7 @@ export type RRwebPlayerOptions = {
     showController?: boolean;
     /**
      * Display timed captions from annotation events.
-     * @defaultValue `false`
+     * @defaultValue `true`
      */
     showCaptions?: boolean;
     /**
