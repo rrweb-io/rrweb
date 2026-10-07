@@ -45,7 +45,7 @@ export type metaEvent = {
   };
 };
 
-/** Annotation text is plain text. Empty caption text or false clears it. */
+/** Annotation text is plain text. Empty caption text, null, or false clears it. */
 export type annotationData =
   | { type: 'caption'; text: string | null | false }
   | { type: 'timelineMarker'; text: string };

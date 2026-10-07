@@ -19,7 +19,7 @@ record.addAnnotation({
   text: 'Choose a name for your project.',
 });
 
-// Clear the caption. Use an empty string or false.
+// Clear the caption. Use an empty string, null, or false.
 record.addAnnotation({ type: 'caption', text: '' });
 ```
 
@@ -87,7 +87,7 @@ visible.
 `rgb(73, 80, 246)`. For ordinary custom-event marker colors, see the
 [custom-event recipe](./custom-event.md#display-in-rrweb-player).
 
-To clear captions, use `text: ''` or `text: false`. Timeline markers
+To clear captions, use `text: ''`, `text: null`, or `text: false`. Timeline markers
 require nonempty text. Missing text, whitespace-only strings, other value types,
 and unknown annotation types are ignored by the player.
 
