@@ -2,7 +2,6 @@
   "name": "rrweb-player",
   "version": "2.1.7",
   "devDependencies": {
-    "@rrweb/types": "^2.1.7",
     "@sveltejs/adapter-auto": "^3.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/package": "^2.0.0",
@@ -11,7 +10,6 @@
     "@typescript-eslint/parser": "^7.0.0",
     "eslint-plugin-svelte": "^2.37.0",
     "prettier-plugin-svelte": "^3.1.2",
-    "svelte": "^4.2.14",
     "svelte-check": "^3.4.3",
     "svelte-preprocess": "^5.0.3",
     "svelte2tsx": "^0.7.30",
@@ -23,13 +21,17 @@
   "dependencies": {
     "@tsconfig/svelte": "^1.0.0",
     "@rrweb/replay": "^2.1.7",
-    "@rrweb/packer": "^2.1.7"
+    "@rrweb/packer": "^2.1.7",
+    "@rrweb/types": "^2.1.7",
+    "svelte": "^4.2.14",
+    "rrweb-snapshot": "^2.1.7"
   },
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build",
-    "test": "vitest run",
+    "test": "vitest run && yarn test:types",
     "test:browser": "yarn build && node test/timeline-markers.browser.mjs",
+    "test:types": "node test/public-types.mjs",
     "prepublishOnly": "yarn build",
     "start": "vite",
     "check-types": "svelte-check --tsconfig ./tsconfig.json",
