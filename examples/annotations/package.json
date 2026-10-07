@@ -1,0 +1,21 @@
+{
+  "name": "rrweb-annotations-playground",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@rrweb/types": "https://pkg.pr.new/rrweb-io/rrweb/@rrweb/types@8fbd401",
+    "rrweb-player": "https://pkg.pr.new/rrweb-io/rrweb/rrweb-player@8fbd401"
+  },
+  "devDependencies": {
+    "vite": "8.3.3"
+  },
+  "stackblitz": {
+    "startCommand": "npm run dev"
+  }
+}
