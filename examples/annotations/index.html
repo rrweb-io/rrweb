@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Try rrweb captions and clickable timeline markers. Edit the annotations, then replay a short demo."
+    />
+    <title>Annotations playground · rrweb</title>
+  </head>
+  <body>
+    <div class="page">
+      <header class="masthead">
+        <a
+          class="wordmark"
+          href="https://github.com/rrweb-io/rrweb"
+          target="_blank"
+          rel="noreferrer"
+          >rrweb<span>/ annotations</span></a
+        >
+        <a
+          class="preview-badge"
+          href="https://github.com/rrweb-io/rrweb/pull/1928"
+          target="_blank"
+          rel="noreferrer"
+          ><span></span> PR #1928 preview ↗</a
+        >
+      </header>
+      <main>
+        <section class="intro">
+          <p class="eyebrow">A LITTLE CONTEXT GOES A LONG WAY</p>
+          <h1>Tell the story behind the replay.</h1>
+          <p class="lede">
+            Add captions that follow playback and timeline markers that take you
+            straight to the moment. Try them on this short, fictional recording.
+          </p>
+        </section>
+        <div class="workspace">
+          <section class="replay-card" aria-labelledby="replay-heading">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">THE RECORDING</p>
+                <h2 id="replay-heading">Create a project, step by step.</h2>
+              </div>
+              <button id="restart" class="button secondary" disabled>
+                ↻ Replay from start
+              </button>
+            </div>
+            <div class="player-surround">
+              <div id="player" aria-label="Session replay"></div>
+            </div>
+            <div class="replay-hints">
+              <span><b>CC</b> Captions are on by default</span
+              ><span
+                ><i class="marker-dot"></i> Hover a marker, then click to
+                seek</span
+              >
+            </div>
+            <div class="event-feed">
+              <span class="feed-label">REPLAY CALLBACK</span
+              ><code id="last-event" aria-live="polite"
+                >Press play to see annotation events here.</code
+              >
+            </div>
+          </section>
+          <section class="editor-card" aria-labelledby="editor-heading">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">MAKE IT YOURS</p>
+                <h2 id="editor-heading">Edit the annotations</h2>
+              </div>
+              <span class="count" id="count"></span>
+            </div>
+            <p class="editor-help">
+              Change the text or timing, then apply your edits. Times are
+              seconds into the recording.
+            </p>
+            <div id="annotations"></div>
+            <div class="add-actions">
+              <button id="add-caption" class="button text-button">
+                + Caption</button
+              ><button id="add-marker" class="button text-button">
+                + Timeline marker
+              </button>
+            </div>
+            <div class="editor-footer">
+              <button id="reset" class="button text-button">
+                Reset example</button
+              ><button id="apply" class="button primary" disabled>
+                Apply edits →
+              </button>
+            </div>
+            <p id="status" class="status" role="status">
+              Loading the recording…
+            </p>
+          </section>
+        </div>
+        <section class="how-it-works" aria-labelledby="how-heading">
+          <div>
+            <p class="eyebrow">TWO TYPES. ONE API.</p>
+            <h2 id="how-heading">Record the context with the event.</h2>
+            <p>
+              Call <code>record.addAnnotation()</code> at the moment you want to
+              explain. Captions stay until replaced or cleared; markers open a
+              text panel and seek on click.
+            </p>
+            <a
+              href="https://github.com/rrweb-io/rrweb/blob/codex/player-annotations/docs/recipes/annotations.md"
+              target="_blank"
+              rel="noreferrer"
+              >Read the annotation recipe ↗</a
+            >
+          </div>
+          <pre><code><span class="code-comment">// While recording</span>
+record.addAnnotation({
+  type: <span class="code-string">'caption'</span>,
+  text: <span class="code-string">'Give your project a name.'</span>,
+});
+
+record.addAnnotation({
+  type: <span class="code-string">'timelineMarker'</span>,
+  text: <span class="code-string">'This is where setup begins.'</span>,
+});
+
+<span class="code-comment">// Clear the current caption</span>
+record.addAnnotation({ type: <span class="code-string">'caption'</span>, text: <span class="code-string">''</span> });</code></pre>
+        </section>
+      </main>
+      <footer>
+        <span
+          >Runs in your browser. No account, API key, or recording
+          backend.</span
+        ><span>Preview package <code>8fbd401</code></span>
+      </footer>
+    </div>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>
