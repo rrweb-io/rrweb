@@ -1,14 +1,23 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { markerKey } from '../timeline-markers';
+  import type { DisplayTimelineMarker, TimelineMarkerGroup } from '../timeline-markers';
 
-  export let name: string;
-  export let text: string;
-  export let background: string;
-  export let position: string;
+  export let group: TimelineMarkerGroup;
+  export let activeId: string | null = null;
+  export let activeTime: number | undefined = undefined;
+  export let defaultColor: string;
   export let disabled = false;
   export let dismissalVersion = 0;
 
-  const dispatch = createEventDispatcher<{ seek: void; 'focus-timeline': void }>();
+  $: first = group.markers[0];
+  $: active = group.markers.find((item) => item.source === 'external' && item.id === activeId);
+  $: name = group.markers.length === 1 ? first.label ?? 'Timeline marker' : `${group.markers.length} timeline markers`;
+  $: text = first.text;
+  $: background = (active ?? first).color ?? defaultColor;
+  $: position = `${group.position}%`;
+  $: upcoming = activeTime !== undefined && !active && first.timeOffset > activeTime;
+  const dispatch = createEventDispatcher<{ select: DisplayTimelineMarker; 'focus-timeline': void }>();
   let dismissed = false;
   let marker: HTMLButtonElement;
   let panel: HTMLDivElement;
@@ -33,13 +42,17 @@
     type="button"
     class="rr-custom-event"
     aria-label={`${name}: ${text}`}
+    aria-current={active ? 'true' : undefined}
+    data-marker-key={markerKey(first)}
+    class:rr-custom-event--active={!!active}
+    class:rr-custom-event--upcoming={upcoming}
     aria-haspopup="dialog"
     {disabled}
-    on:click|stopPropagation={() => dispatch('seek')}
+    on:click|stopPropagation={() => dispatch('select', first)}
     on:mouseenter={() => dismissed = false}
     on:focus={() => dismissed = false}
   >
-    <span class="rr-custom-event__tick" style:background />
+    <span class="rr-custom-event__tick" class:rr-custom-event__tick--group={group.markers.length > 1} style:background />
   </button>
   {#if !dismissed}
     <!-- The nonmodal timeline marker panel needs focus for native scrolling; its clicks must not seek. -->
@@ -56,7 +69,24 @@
       on:keydown
     >
       <strong>{name}</strong>
-      <span>{text}</span>
+      {#if group.markers.length === 1}
+        <span>{text}</span>
+      {:else}
+        {#each group.markers as item (markerKey(item))}
+          <button
+            type="button"
+            class="rr-custom-event__choice"
+            data-marker-key={markerKey(item)}
+            aria-label={`${item.label ?? 'Timeline marker'}: ${item.text}`}
+            aria-current={item.source === 'external' && item.id === activeId ? 'true' : undefined}
+            {disabled}
+            on:click|stopPropagation={() => dispatch('select', item)}
+          >
+            <strong>{item.label ?? 'Timeline marker'}</strong>
+            <span>{item.text}</span>
+          </button>
+        {/each}
+      {/if}
     </div>
   {/if}
 </div>
@@ -66,7 +96,7 @@
     position: absolute;
     top: 2px;
     transform: translate(-50%, -50%);
-    width: 20px;
+    width: 9px;
     height: 24px;
     z-index: 1;
   }
@@ -98,10 +128,34 @@
 
   .rr-custom-event__tick {
     display: block;
-    width: 10px;
-    height: 5px;
+    width: 4px;
+    height: 14px;
+    border-radius: 3px;
     margin: auto;
   }
+
+  .rr-custom-event__tick--group { width: 6px; }
+  .rr-custom-event--active .rr-custom-event__tick {
+    height: 20px;
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+  .rr-custom-event--upcoming { opacity: 0.45; }
+  .rr-custom-event:hover, .rr-custom-event:focus-visible { opacity: 1; }
+  .rr-custom-event__choice {
+    display: block;
+    width: 100%;
+    border: 0;
+    border-radius: 3px;
+    padding: 8px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .rr-custom-event__choice:hover, .rr-custom-event__choice:focus-visible,
+  .rr-custom-event__choice[aria-current="true"] { background: #414859; }
 
   .rr-custom-event__timeline-marker-panel {
     display: none;

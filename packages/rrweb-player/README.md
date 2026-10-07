@@ -106,6 +106,88 @@ steps, or use Home/End to jump to the start/end.
 See the [annotation recipe](../../docs/recipes/annotations.md)
 for replay callbacks, keyboard interactions, seeking, and TypeScript usage.
 
+## External timeline markers
+
+Applications can supply point markers without changing the recording. These use
+exactly the same panels, grouping and selection behavior as recorded
+`timelineMarker` annotations. Captions and custom-event tags remain independent.
+
+```ts
+import rrwebPlayer, { type TimelineMarker } from 'rrweb-player';
+
+const markers: TimelineMarker[] = [
+  {
+    id: 'action:42',
+    timeOffset: 4200,
+    label: 'Step 2',
+    text: 'Opened the settings panel',
+    color: '#f59e0b',
+  },
+];
+const player = new rrwebPlayer({
+  target: document.getElementById('replay')!,
+  props: {
+    events,
+    timelineMarkers: markers,
+    activeTimelineMarker: null,
+    onTimelineMarkerSelect(selection) {
+      if (selection.source !== 'external') return;
+      selection.preventDefault();
+      // The application can also select evidence or update its sidebar here.
+      player.goto(Math.max(0, selection.timeOffset - 300), true);
+    },
+  },
+});
+
+// Replace the external collection whenever analysis arrives or is regenerated.
+player.setTimelineMarkers(markers);
+player.setActiveTimelineMarker('action:42'); // highlight only; does not seek
+player.setActiveTimelineMarker(null);
+player.setTimelineMarkers([]); // recorded annotations remain visible
+```
+
+`TimelineMarker` has `id`, `timeOffset`, and `text`, with optional `label` and
+`color`. Offsets are **milliseconds from the recording start**, the same origin
+as `goto()` and `getMetaData().startTime`. They are not absolute timestamps or
+seconds. Negative and nonfinite offsets are rejected. Positions and default
+seeks clamp to the recording boundaries, including zero-duration recordings;
+the selection payload retains the original offset. Markers past the current end
+remain stored, so their positions update if more recorded events arrive.
+
+IDs must be nonempty strings unique within one player's external collection.
+Reusing an ID updates that marker; omitting an ID removes it. The setter replaces
+the whole collection, validates it before applying changes, and copies its
+values. Duplicate IDs or invalid fields throw `TypeError` without changing the
+current collection. Mutating an input object later has no effect. Use another
+replacement to add, update, or remove markers. Removing the active marker clears
+its highlight. An unknown active ID has no visible effect. Applications with
+multiple marker producers should combine their lists and namespace their IDs.
+
+`label` defaults to "Timeline marker" and names the button/panel. `text` is the
+panel content. Both are plain text. `color` is a CSS color and falls back to
+`timelineMarkerColor`. An active external marker gets a visible highlight and
+`aria-current`; markers after it fade. The application decides which ID is
+active, including any narration lead-in, using its existing playback listeners.
+
+`onTimelineMarkerSelect` receives a `TimelineMarkerSelection`: the marker fields,
+`source` (`'recorded'` or `'external'`), `defaultPrevented`, and `preventDefault()`.
+Recorded IDs are opaque and scoped separately from external IDs; they remain
+stable for the same recorded event object during this player's lifetime. Treat
+`(source, id)` as the identity. Selection runs synchronously before seeking.
+Without cancellation, selecting either source seeks to its exact offset and
+preserves play/pause state. Call `preventDefault()` synchronously to replace
+that action; returning a value or a Promise does not cancel it.
+
+The player groups points less than 9 pixels from the first point of each group,
+recalculating on resize. The group uses its active member's color, otherwise its
+first member's color. Activating a group tick selects its first marker; its
+hover/focus panel exposes a separate button for every member. Tab navigates the
+buttons, Enter/Space selects, and Escape dismisses the panel and returns focus
+to the tick. Long panels scroll. Recorded and external markers can share groups,
+but replacing external markers never removes recorded annotations or alters the
+recording's event order or evidence indexes. The player does not turn markers
+into captions, infer narration steps, or store application evidence links.
+
 ## Methods on the rrwebPlayer component
 
 ```ts
