@@ -254,8 +254,8 @@
   class="rr-player"
   bind:this={player}
   style={playerStyle}
-  style:--rr-note-width={`${Math.min(280, width * 0.7)}px`}
-  style:--rr-note-height={`${Math.max(48, height - 32)}px`}
+  style:--rr-timeline-marker-panel-width={`${Math.min(280, width * 0.7)}px`}
+  style:--rr-timeline-marker-panel-height={`${Math.max(48, height - 32)}px`}
 >
   <div class="rr-player__viewport" {style}>
     <div class="rr-player__frame" bind:this={frame} {style} />

@@ -13,7 +13,7 @@ const annotation = (offset: number, text: string): eventWithTime => ({
   timestamp: start + offset,
   data: { type: 'caption', text },
 });
-const note = (offset: number, text: string): eventWithTime => ({
+const timelineMarker = (offset: number, text: string): eventWithTime => ({
   type: EventType.Annotation,
   timestamp: start + offset,
   data: { type: 'timelineMarker', text },
@@ -30,7 +30,7 @@ const recording = (): eventWithTime[] => [
     data: { href: 'https://example.com', width: 800, height: 400 },
   },
   annotation(2000, 'Click Save\n<b>project</b>'),
-  note(2000, 'Click Save to create your project.'),
+  timelineMarker(2000, 'Click Save to create your project.'),
   clear(5000),
   {
     type: EventType.Custom,
@@ -79,7 +79,7 @@ afterEach(() => {
 });
 
 describe('player annotations', () => {
-  it('keeps scrollable notes outside the seek button and prevents note clicks from seeking', async () => {
+  it('keeps scrollable timeline marker panels outside the seek button and prevents timeline marker panel clicks from seeking', async () => {
     const player = await mount();
     player.goto(3000, false);
     await tick();
@@ -147,7 +147,7 @@ describe('player annotations', () => {
     );
   });
 
-  it('toggles captions independently of notes and preserves ordinary markers', async () => {
+  it('toggles captions independently of timeline markers and preserves ordinary markers', async () => {
     const player = await mount({ showCaptions: false });
     player.goto(2500, false);
     await tick();
@@ -300,7 +300,7 @@ describe('player annotations', () => {
     expect(timeline?.getAttribute('aria-valuenow')).toBe('4000');
   });
 
-  it('seeks exactly to a note and supports captions without controls', async () => {
+  it('seeks exactly to a timeline marker and supports captions without controls', async () => {
     const player = await mount();
     click('.rr-custom-event');
     await tick();
@@ -315,7 +315,7 @@ describe('player annotations', () => {
   it('refreshes annotations when events are added after mounting', async () => {
     const player = await mount();
     player.addEvent(annotation(7000, 'Added later'));
-    player.addEvent(note(7000, 'A new note'));
+    player.addEvent(timelineMarker(7000, 'A new timeline marker'));
     await Promise.resolve();
     await tick();
     await tick();
@@ -570,7 +570,7 @@ describe('player annotations', () => {
     expect(target.querySelector('button[aria-pressed]')).toBeNull();
   });
 
-  it('dismisses hover notes with Escape even when the marker is not focused', async () => {
+  it('dismisses hover timeline marker panels with Escape even when the marker is not focused', async () => {
     await mount();
     expect(target.querySelector('[role="dialog"]')).not.toBeNull();
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
@@ -583,7 +583,7 @@ describe('player annotations', () => {
     expect(target.querySelector('[role="dialog"]')).not.toBeNull();
   });
 
-  it('lets marker shortcuts bubble without seeking and dismisses focused notes', async () => {
+  it('lets marker shortcuts bubble without seeking and dismisses focused timeline marker panels', async () => {
     const player = await mount();
     player.goto(2000, false);
     await tick();
@@ -614,9 +614,13 @@ describe('player annotations', () => {
     }
   });
 
-  it('shows notes without a CC toggle when no caption set events exist', async () => {
+  it('shows timeline markers without a CC toggle when no caption set events exist', async () => {
     await mount({
-      events: [recording()[0], note(2000, 'Just a note'), clear(5000)],
+      events: [
+        recording()[0],
+        timelineMarker(2000, 'Just a timeline marker'),
+        clear(5000),
+      ],
     });
     expect(target.querySelectorAll('.rr-custom-event')).toHaveLength(1);
     expect(target.querySelector('button[aria-pressed]')).toBeNull();
@@ -652,7 +656,7 @@ describe('player annotations', () => {
       seen.map(({ type, timestamp, data }) => ({ type, timestamp, data })),
     ).toEqual([
       annotation(2000, 'Click Save\n<b>project</b>'),
-      note(2000, 'Click Save to create your project.'),
+      timelineMarker(2000, 'Click Save to create your project.'),
       clear(5000),
     ]);
     expect(

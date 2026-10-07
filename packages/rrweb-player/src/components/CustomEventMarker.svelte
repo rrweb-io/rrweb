@@ -42,11 +42,11 @@
     <span class="rr-custom-event__tick" style:background />
   </button>
   {#if !dismissed}
-    <!-- The nonmodal note needs focus for native scrolling; its clicks must not seek. -->
+    <!-- The nonmodal timeline marker panel needs focus for native scrolling; its clicks must not seek. -->
     <!-- svelte-ignore a11y-no-noninteractive-tabindex a11y-no-noninteractive-element-interactions -->
     <div
       bind:this={panel}
-      class="rr-custom-event__note"
+      class="rr-custom-event__timeline-marker-panel"
       class:left={alignment === 'left'}
       class:right={alignment === 'right'}
       role="dialog"
@@ -103,13 +103,13 @@
     margin: auto;
   }
 
-  .rr-custom-event__note {
+  .rr-custom-event__timeline-marker-panel {
     display: none;
     position: absolute;
     bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
-    width: var(--rr-note-width, 280px);
+    width: var(--rr-timeline-marker-panel-width, 280px);
     box-sizing: border-box;
     padding: 12px 14px;
     background: #242936;
@@ -120,33 +120,33 @@
     text-align: left;
     white-space: normal;
     overflow-wrap: anywhere;
-    max-height: var(--rr-note-height, 240px);
+    max-height: var(--rr-timeline-marker-panel-height, 240px);
     overflow-y: auto;
   }
 
-  .rr-custom-event__note strong,
-  .rr-custom-event__note span {
+  .rr-custom-event__timeline-marker-panel strong,
+  .rr-custom-event__timeline-marker-panel span {
     display: block;
     white-space: pre-wrap;
   }
 
-  .rr-custom-event__note strong {
+  .rr-custom-event__timeline-marker-panel strong {
     margin-bottom: 4px;
   }
 
-  .rr-custom-event__note.left {
+  .rr-custom-event__timeline-marker-panel.left {
     left: 0;
     transform: none;
   }
 
-  .rr-custom-event__note.right {
+  .rr-custom-event__timeline-marker-panel.right {
     left: auto;
     right: 0;
     transform: none;
   }
 
-  .rr-custom-event-container:hover .rr-custom-event__note,
-  .rr-custom-event-container:focus-within .rr-custom-event__note {
+  .rr-custom-event-container:hover .rr-custom-event__timeline-marker-panel,
+  .rr-custom-event-container:focus-within .rr-custom-event__timeline-marker-panel {
     display: block;
   }
 </style>

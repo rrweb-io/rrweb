@@ -52,10 +52,10 @@
   function restoreCaptionOnSeek() {
     restoreCaption(timeline);
   }
-  let noteDismissalVersion = 0;
+  let timelineMarkerDismissalVersion = 0;
 
-  function dismissNotesOnEscape(event: KeyboardEvent) {
-    if (event.key === 'Escape') noteDismissalVersion += 1;
+  function dismissTimelineMarkersOnEscape(event: KeyboardEvent) {
+    if (event.key === 'Escape') timelineMarkerDismissalVersion += 1;
   }
   export let showController: boolean;
   export let autoPlay: boolean;
@@ -101,7 +101,7 @@
     background: string;
     position: string;
     timeOffset: number;
-    note: string | undefined;
+    timelineMarkerText: string | undefined;
   };
 
   /**
@@ -122,7 +122,7 @@
   $: customEvents = timeline.markers.map((marker): CustomEvent => ({
     name: marker.tag ?? 'Timeline marker',
     timeOffset: marker.timestamp - timeline.start,
-    note: marker.text,
+    timelineMarkerText: marker.text,
     background: marker.tag === undefined ? timelineMarkerColor : tags[marker.tag] || 'rgb(73, 80, 246)',
     position: `${position(timeline.start, timeline.end, marker.timestamp)}%`,
   }));
@@ -364,7 +364,7 @@
   });
 </script>
 
-<svelte:window on:keydown={dismissNotesOnEscape} />
+<svelte:window on:keydown={dismissTimelineMarkersOnEscape} />
 
 <style>
   .rr-controller {
@@ -505,11 +505,11 @@
           />
         {/each}
         {#each customEvents as event}
-          {#if event.note}
+          {#if event.timelineMarkerText}
             <CustomEventMarker
-              dismissalVersion={noteDismissalVersion}
+              dismissalVersion={timelineMarkerDismissalVersion}
               name={event.name}
-              text={event.note}
+              text={event.timelineMarkerText}
               background={event.background}
               position={event.position}
               disabled={speedState === 'skipping'}
