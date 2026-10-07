@@ -9,6 +9,6 @@ Add a top-level annotation event with `record.addAnnotation()` and `replayer.on(
 
 Set `showCaptions: true` to display captions by default. Recordings with captions also show a CC toggle. Use `timelineMarkerColor` to configure annotation marker colors separately from custom-event `tags`. Import `annotationData` from `@rrweb/types` to type annotation data.
 
-Make the playback timeline keyboard accessible with five-second arrow-key seeking and Home/End navigation. Give the captions toggle a stable accessible name.
+Make the playback timeline keyboard accessible with Home/End navigation. Give the captions toggle a stable accessible name.
 
 `@rrweb/browser-client` also exports `addAnnotation()`, which records annotations immediately during an active session or queues them with a timestamp until recording starts.
