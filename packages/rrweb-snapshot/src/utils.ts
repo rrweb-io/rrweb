@@ -414,6 +414,7 @@ const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
 const URL_PROTOCOL_MATCH = /^(?:[a-z+]+:)?\/\//i;
 const URL_WWW_MATCH = /^www\..*/i;
 const DATA_URI = /^(data:)([^,]*),(.*)/i;
+const BLOB_URI = /^blob:/i;
 export function absolutifyURLs(cssText: string | null, href: string): string {
   return (cssText || '').replace(
     URL_IN_CSS_REF,
@@ -433,7 +434,7 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
       if (URL_PROTOCOL_MATCH.test(filePath) || URL_WWW_MATCH.test(filePath)) {
         return `url(${maybeQuote}${filePath}${maybeQuote})`;
       }
-      if (DATA_URI.test(filePath)) {
+      if (DATA_URI.test(filePath) || BLOB_URI.test(filePath)) {
         return `url(${maybeQuote}${filePath}${maybeQuote})`;
       }
       if (filePath[0] === '/') {
