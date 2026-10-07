@@ -132,6 +132,25 @@ describe('absolute url to stylesheet', () => {
   it('can handle empty path', () => {
     expect(absolutifyURLs(`url('')`, href)).toEqual(`url('')`);
   });
+
+  it('can handle blob url', () => {
+    expect(
+      absolutifyURLs(
+        'url(blob:http://localhost/0d2e6c0c-5b1f-4a39-9d3f-2b5a1b8b7c11)',
+        href,
+      ),
+    ).toEqual(
+      'url(blob:http://localhost/0d2e6c0c-5b1f-4a39-9d3f-2b5a1b8b7c11)',
+    );
+    expect(
+      absolutifyURLs(
+        'background-image: url("blob:http://localhost/0d2e6c0c-5b1f-4a39-9d3f-2b5a1b8b7c11");',
+        href,
+      ),
+    ).toEqual(
+      'background-image: url("blob:http://localhost/0d2e6c0c-5b1f-4a39-9d3f-2b5a1b8b7c11");',
+    );
+  });
 });
 
 describe('isBlockedElement()', () => {
