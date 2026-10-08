@@ -13,8 +13,9 @@ export function copyTimelineMarkers(
   markers: readonly TimelineMarker[],
 ): TimelineMarker[] {
   const ids = new Set<string>();
-  return markers.map((marker) => {
+  return Array.from(markers, (marker) => {
     if (
+      marker == null ||
       typeof marker.id !== 'string' ||
       !marker.id ||
       ids.has(marker.id) ||

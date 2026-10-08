@@ -9,13 +9,18 @@ export function createTimelineIndex() {
   let count = 0;
   const markerIds = new WeakMap<eventWithTime, string>();
   let nextMarkerId = 0;
+  let markerOccurrences = new WeakMap<eventWithTime, number>();
   function markerId(event: eventWithTime) {
     let id = markerIds.get(event);
     if (id === undefined) {
       id = String(nextMarkerId++);
       markerIds.set(event, id);
     }
-    return id;
+    // Re-adding the same event object is legal. Keep each occurrence distinct,
+    // and reproduce the same suffixes when the timeline index is rebuilt.
+    const occurrence = markerOccurrences.get(event) ?? 0;
+    markerOccurrences.set(event, occurrence + 1);
+    return `${id}:${occurrence}`;
   }
   let lastEvent: eventWithTime | undefined;
   let threshold: number | undefined;
@@ -44,9 +49,15 @@ export function createTimelineIndex() {
     if (
       threshold !== inactiveThreshold ||
       events.length < count ||
+      // A repeated tail object can hide a late insertion at the old boundary.
+      // Rebuild this uncommon case rather than counting an occurrence twice.
+      (events.length > count &&
+        lastEvent !== undefined &&
+        (markerOccurrences.get(lastEvent) ?? 0) > 1) ||
       (count > 0 && events[count - 1] !== lastEvent)
     ) {
       count = 0;
+      markerOccurrences = new WeakMap();
       state = empty();
     }
     threshold = inactiveThreshold;

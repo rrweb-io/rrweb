@@ -258,6 +258,32 @@ try {
     ),
     true,
   );
+  // The same recorded event object may be supplied again by a streaming caller.
+  await page.evaluate(() => {
+    selections.length = 0;
+    player.addEvent(events[1]);
+  });
+  await page
+    .getByRole('button', { name: '2 timeline markers: Recorded', exact: true })
+    .focus();
+  await page.waitForFunction(
+    () => document.querySelectorAll('.rr-custom-event__choice').length === 2,
+  );
+  const repeatedChoices = page.locator('.rr-custom-event__choice');
+  await repeatedChoices.nth(0).press('Enter');
+  await repeatedChoices.nth(1).press('Enter');
+  assert.equal(
+    await page.evaluate(
+      () => new Set(selections.map((selection) => selection.id)).size,
+    ),
+    2,
+  );
+  assert.equal(
+    await page.evaluate(() =>
+      selections.every((selection) => selection.source === 'recorded'),
+    ),
+    true,
+  );
   assert.deepEqual(errors, []);
   console.log(
     `Browser checks passed: native Enter/Space/Tab/Escape, ${wideCount} dense groups -> ${narrowCount} on resize, regeneration, coexistence, selection override, seek boundaries, unchanged events.`,
