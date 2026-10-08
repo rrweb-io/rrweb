@@ -74,6 +74,62 @@ try {
   );
   assert.equal(await page.getByRole('dialog').count(), 0);
 
+  // Regeneration can move a keyed node without disconnecting it.
+  await page.evaluate(() =>
+    player.setTimelineMarkers([
+      { id: 'reorder-a', timeOffset: 1000, text: 'Reorder A' },
+      { id: 'reorder-b', timeOffset: 4000, text: 'Reorder B' },
+      { id: 'reorder-c', timeOffset: 7000, text: 'Reorder C' },
+    ]),
+  );
+  const reordered = page.getByRole('button', {
+    name: 'Timeline marker: Reorder A',
+    exact: true,
+  });
+  await reordered.focus();
+  await page.evaluate(() => {
+    window.originalTrigger = document.activeElement;
+    player.setTimelineMarkers([
+      { id: 'reorder-a', timeOffset: 7000, text: 'Reorder A' },
+      { id: 'reorder-b', timeOffset: 4000, text: 'Reorder B' },
+      { id: 'reorder-c', timeOffset: 1000, text: 'Reorder C' },
+    ]);
+  });
+  assert.equal(
+    await reordered.evaluate(
+      (el) => el === document.activeElement && el === window.originalTrigger,
+    ),
+    true,
+  );
+  assert.equal(
+    await reordered.evaluate((el) => el.getBoundingClientRect().width),
+    20,
+  );
+  await page.keyboard.press('Tab');
+  assert.equal(
+    await page.evaluate(() => document.activeElement.getAttribute('role')),
+    'dialog',
+  );
+  // A new first member replaces the focused panel's component.
+  await page.evaluate(() =>
+    player.setTimelineMarkers([
+      { id: 'panel-first', timeOffset: 6990, text: 'Panel first' },
+      { id: 'reorder-a', timeOffset: 7000, text: 'Reorder A' },
+    ]),
+  );
+  assert.equal(
+    await page.evaluate(() => document.activeElement.getAttribute('role')),
+    'dialog',
+  );
+  await page.keyboard.press('Tab');
+  assert.equal(
+    await page.evaluate(() =>
+      document.activeElement.getAttribute('aria-label'),
+    ),
+    'Timeline marker: Panel first',
+  );
+  await page.keyboard.press('Escape');
+
   await page.evaluate(() => {
     window.dense = Array.from({ length: 100 }, (_, i) => ({
       id: `step:${i}`,
@@ -89,6 +145,19 @@ try {
   );
   const wideCount = await page.locator('.rr-custom-event').count();
   assert.ok(wideCount < 101);
+  assert.equal(
+    await page.locator('.rr-custom-event').evaluateAll((buttons) => {
+      const bounds = buttons
+        .map((button) => button.getBoundingClientRect())
+        .sort((a, b) => a.left - b.left);
+      return bounds.every(
+        (bound, index) =>
+          index === 0 || bound.left >= bounds[index - 1].right - 0.01,
+      );
+    }),
+    true,
+  );
+
   const member = page.getByRole('button', {
     name: 'Timeline marker: Step 55',
     exact: true,

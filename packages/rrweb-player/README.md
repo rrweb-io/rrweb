@@ -159,7 +159,9 @@ Reusing an ID updates that marker; omitting an ID removes it. The setter replace
 the whole collection, validates it before applying changes, and copies its
 values. Duplicate IDs or invalid fields throw `TypeError` without changing the
 current collection. Mutating an input object later has no effect. Use another
-replacement to add, update, or remove markers. Removing the active marker clears
+replacement to add, update, or remove markers. The public player's
+`$set({ timelineMarkers })` follows the same synchronous validation, copying,
+and active-marker clearing rules. Removing the active marker clears
 its highlight. An unknown active ID has no visible effect. Applications with
 multiple marker producers should combine their lists and namespace their IDs.
 
