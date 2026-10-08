@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { groupTimelineMarkers, markerKey } from '../src/timeline-markers';
+import {
+  copyTimelineMarkers,
+  groupTimelineMarkers,
+  markerKey,
+} from '../src/timeline-markers';
 import type { DisplayTimelineMarker } from '../src/timeline-markers';
 const marker = (
   id: string,
@@ -41,4 +45,10 @@ describe('timeline marker layout', () => {
       [0],
     );
   });
+});
+
+it('rejects sparse marker arrays instead of preserving holes', () => {
+  const sparse = [marker('one', 100), marker('two', 200)];
+  delete sparse[0];
+  expect(() => copyTimelineMarkers(sparse)).toThrow(TypeError);
 });

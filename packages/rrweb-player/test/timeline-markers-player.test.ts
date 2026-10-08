@@ -292,3 +292,56 @@ it('mounts and selects markers without ResizeObserver', async () => {
   button('Updated fallback').click();
   expect(player.getReplayer().getCurrentTime()).toBe(5000);
 });
+
+it('rejects sparse replacements atomically through both public update paths', async () => {
+  await mount({
+    timelineMarkers: [{ id: 'one', timeOffset: 4000, text: 'Original' }],
+  });
+  const sparse = [{ id: 'bad', timeOffset: 3000, text: 'Missing' }];
+  delete sparse[0];
+  expect(() => player.setTimelineMarkers(sparse)).toThrow(TypeError);
+  expect(() => player.$set({ timelineMarkers: sparse })).toThrow(TypeError);
+  await tick();
+  expect(button('Original')).toBeTruthy();
+  player.setTimelineMarkers([
+    { id: 'two', timeOffset: 5000, text: 'Recovered' },
+  ]);
+  player.$set({ width: 640 });
+  await tick();
+  expect(button('Recovered')).toBeTruthy();
+  expect(target.querySelector<HTMLElement>('.rr-player')?.style.width).toBe(
+    '640px',
+  );
+});
+
+it('renders repeated recorded event objects and retains each occurrence when re-added', async () => {
+  const selected: TimelineMarkerSelection[] = [];
+  const repeatedEvents = [
+    recording[0],
+    recording[1],
+    recording[1],
+    recording[2],
+  ];
+  await mount({
+    events: repeatedEvents,
+    onTimelineMarkerSelect: (selection: TimelineMarkerSelection) =>
+      selected.push(selection),
+  });
+  const choices = () => [
+    ...target.querySelectorAll<HTMLButtonElement>('.rr-custom-event__choice'),
+  ];
+  expect(choices()).toHaveLength(2);
+  choices().forEach((choice) => choice.click());
+  expect(new Set(selected.map(({ id }) => id)).size).toBe(2);
+  const firstIds = selected.map(({ id }) => id);
+  player.addEvent(recording[1]);
+  await vi.waitFor(() => expect(choices()).toHaveLength(3));
+  selected.length = 0;
+  choices().forEach((choice) => choice.click());
+  expect(new Set(selected.map(({ id }) => id)).size).toBe(3);
+  expect(selected.slice(0, 2).map(({ id }) => id)).toEqual(firstIds);
+  expect(selected.every(({ source }) => source === 'recorded')).toBe(true);
+  expect(repeatedEvents.filter((event) => event === recording[1])).toHaveLength(
+    2,
+  );
+});

@@ -174,7 +174,8 @@ active, including any narration lead-in, using its existing playback listeners.
 `onTimelineMarkerSelect` receives a `TimelineMarkerSelection`: the marker fields,
 `source` (`'recorded'` or `'external'`), `defaultPrevented`, and `preventDefault()`.
 Recorded IDs are opaque and scoped separately from external IDs; they remain
-stable for the same recorded event object during this player's lifetime. Treat
+stable for each occurrence of the same recorded event object during this player's
+lifetime. Repeated event references remain separate markers. Treat
 `(source, id)` as the identity. Selection runs synchronously before seeking.
 Without cancellation, selecting either source seeks to its exact offset and
 preserves play/pause state. Call `preventDefault()` synchronously to replace
