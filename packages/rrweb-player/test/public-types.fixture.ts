@@ -6,6 +6,13 @@ declare const player: Player;
 const markers: TimelineMarker[] = [{ id: 'a', timeOffset: 100, text: 'A' }];
 player.setTimelineMarkers(markers);
 player.setActiveTimelineMarker('a');
+player.$set({
+  timelineMarkers: markers,
+  activeTimelineMarker: 'a',
+  width: 800,
+});
+// @ts-expect-error prop replacement requires marker IDs too
+player.$set({ timelineMarkers: [{ timeOffset: 100, text: 'Missing ID' }] });
 player.goto(100, true);
 player.getReplayer().pause();
 player.addEventListener('ui-update-current-time', () => {});

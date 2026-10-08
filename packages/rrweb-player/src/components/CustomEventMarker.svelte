@@ -4,6 +4,7 @@
   import type { DisplayTimelineMarker, TimelineMarkerGroup } from '../timeline-markers';
 
   export let group: TimelineMarkerGroup;
+  export let hitWidth = 20;
   export let activeId: string | null = null;
   export let activeTime: number | undefined = undefined;
   export let defaultColor: string;
@@ -36,7 +37,7 @@
 
 </script>
 
-<div class="rr-custom-event-container" style:left={position}>
+<div class="rr-custom-event-container" style:left={position} style:width={`${hitWidth}px`}>
   <button
     bind:this={marker}
     type="button"
@@ -63,6 +64,7 @@
       class:left={alignment === 'left'}
       class:right={alignment === 'right'}
       role="dialog"
+      data-marker-key={markerKey(first)}
       aria-label={name}
       tabindex="0"
       on:click|stopPropagation
@@ -96,7 +98,6 @@
     position: absolute;
     top: 2px;
     transform: translate(-50%, -50%);
-    width: 9px;
     height: 24px;
     z-index: 1;
   }

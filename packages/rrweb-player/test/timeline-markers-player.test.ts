@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { tick } from 'svelte';
 import { EventType } from '@rrweb/types';
 import type { eventWithTime } from '@rrweb/types';
-import Player from '../src/Player.svelte';
+import Player from '../src/main';
 import type { TimelineMarkerSelection } from '../src/types';
 
 const start = 1700000000000;
@@ -244,4 +244,51 @@ it('keeps external IDs separate from recorded IDs and safely renders plain text'
   await tick();
   button('Recorded').click();
   expect(selected[1].id).toBe(id);
+});
+
+it('validates public $set markers synchronously and keeps later updates working', async () => {
+  await mount({
+    timelineMarkers: [{ id: 'one', timeOffset: 4000, text: 'Original' }],
+    activeTimelineMarker: 'one',
+  });
+  expect(() =>
+    player.$set({
+      timelineMarkers: [{ id: 'bad', timeOffset: -1, text: 'Invalid' }],
+      showController: false,
+    }),
+  ).toThrow(TypeError);
+  await tick();
+  expect(button('Original').getAttribute('aria-current')).toBe('true');
+  const replacement = [{ id: 'two', timeOffset: 5000, text: 'Replacement' }];
+  player.$set({ timelineMarkers: replacement });
+  replacement[0].text = 'Mutated';
+  await tick();
+  expect(button('Replacement')).toBeTruthy();
+  expect(target.querySelector('[aria-current="true"]')).toBeNull();
+  player.$set({
+    timelineMarkers: [{ id: 'one', timeOffset: 4000, text: 'Returned' }],
+  });
+  await tick();
+  expect(button('Returned').getAttribute('aria-current')).toBeNull();
+  player.$set({ showController: false });
+  await tick();
+  expect(target.querySelector('.rr-controller')).toBeNull();
+  player.$set({ showController: true });
+  await tick();
+  expect(button('Returned')).toBeTruthy();
+});
+
+it('mounts and selects markers without ResizeObserver', async () => {
+  vi.stubGlobal('ResizeObserver', undefined);
+  await mount({
+    timelineMarkers: [{ id: 'one', timeOffset: 4000, text: 'Fallback' }],
+  });
+  button('Fallback').click();
+  expect(player.getReplayer().getCurrentTime()).toBe(4000);
+  player.setTimelineMarkers([
+    { id: 'one', timeOffset: 5000, text: 'Updated fallback' },
+  ]);
+  await tick();
+  button('Updated fallback').click();
+  expect(player.getReplayer().getCurrentTime()).toBe(5000);
 });
