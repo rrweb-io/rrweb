@@ -81,3 +81,23 @@ describe('timeline indexing cost and ordering', () => {
     expect(reads).toBeLessThan(20);
   });
 });
+
+it('gives each repeated recorded occurrence a stable unique ID across appends and rebuilds', () => {
+  const update = createTimelineIndex();
+  const marker: eventWithTime = {
+    type: EventType.Annotation,
+    timestamp: 1000,
+    data: { type: 'timelineMarker', text: 'Repeated' },
+  };
+  const events = [marker, marker];
+  const firstIds = update(events, 1000).markers.map(({ id }) => id);
+  expect(new Set(firstIds).size).toBe(2);
+  events.push(marker);
+  const appendedIds = update(events, 1000).markers.map(({ id }) => id);
+  expect(new Set(appendedIds).size).toBe(3);
+  expect(appendedIds.slice(0, 2)).toEqual(firstIds);
+  events.unshift(caption(0, 'Earlier'));
+  expect(update(events, 1000).markers.map(({ id }) => id)).toEqual(appendedIds);
+  expect(update(events, 2000).markers.map(({ id }) => id)).toEqual(appendedIds);
+  expect(events.filter((event) => event === marker)).toHaveLength(3);
+});

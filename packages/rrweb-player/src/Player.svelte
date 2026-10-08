@@ -12,6 +12,7 @@
     typeOf,
   } from './utils';
   import Controller from './Controller.svelte';
+  import { copyTimelineMarkers } from './timeline-markers';
   import type { RRwebPlayerOptions, RRwebPlayerExpose } from './types';
     
   export let width: NonNullable<RRwebPlayerOptions['props']['width']>  = 1024;
@@ -25,6 +26,20 @@
   export let showController: NonNullable<RRwebPlayerOptions['props']['showController']> = true;
   export let showCaptions: NonNullable<RRwebPlayerOptions['props']['showCaptions']> = true;
   export let timelineMarkerColor: NonNullable<RRwebPlayerOptions['props']['timelineMarkerColor']> = 'rgb(73, 80, 246)';
+  export let timelineMarkers: NonNullable<RRwebPlayerOptions['props']['timelineMarkers']> = [];
+  export let activeTimelineMarker: string | null = null;
+  export let onTimelineMarkerSelect: RRwebPlayerOptions['props']['onTimelineMarkerSelect'] = undefined;
+  $: externalMarkers = copyTimelineMarkers(timelineMarkers);
+
+  export const setTimelineMarkers: RRwebPlayerExpose['setTimelineMarkers'] = (markers) => {
+    const replacement = copyTimelineMarkers(markers);
+    timelineMarkers = replacement;
+    if (!replacement.some(({ id }) => id === activeTimelineMarker)) activeTimelineMarker = null;
+  };
+  export const setActiveTimelineMarker: RRwebPlayerExpose['setActiveTimelineMarker'] = (id) => {
+    activeTimelineMarker = id;
+  };
+
   export let tags: NonNullable<RRwebPlayerOptions['props']['tags']> = {};
   // color of inactive periods indicator
   export let inactiveColor: NonNullable<RRwebPlayerOptions['props']['inactiveColor']> = '#D4D4D4';
@@ -277,6 +292,9 @@
       {skipInactive}
       {tags}
       {timelineMarkerColor}
+      timelineMarkers={externalMarkers}
+      {activeTimelineMarker}
+      {onTimelineMarkerSelect}
       {inactiveColor}
       on:fullscreen={() => toggleFullscreen()}
     />
