@@ -59,6 +59,7 @@ const wsLimit = 10e5; // this is approximate and depends on the browser, also on
 
 let ws: Websocket | undefined;
 let wsConnectionPaused = false;
+let disposeFallback: (() => void) | undefined;
 
 const buffer: ArrayQueue<string> = new ArrayQueue();
 let rrwebStopFn: listenerHandler | undefined;
@@ -109,6 +110,8 @@ export function stop(resetRecordingId: boolean) {
     buffer.clear();
     ws.send(JSON.stringify(closeEvent));
     ws.close();
+    disposeFallback?.();
+    disposeFallback = undefined;
     wsConnectionPaused = false;
     ws = undefined; // so `emit` can restart it again if page is unfrozen
   } else {
@@ -195,20 +198,40 @@ function connect(
     ) // retry around every 1s, 2s, 4s, 8s, maxing out with a retry every ~1minute
     .build();
 
-  const fallbackPosting = setInterval(() => {
-    if (buffer.length()) {
-      void postData(postUrl, publicApiKey, buffer).catch((error) => {
-        clearInterval(fallbackPosting);
-        console.error('Error periodically POSTing events:', error);
-      });
+  let disposed = false;
+  let posting = false;
+  const postBufferedEvents = async () => {
+    if (posting || !buffer.length()) return;
+    posting = true;
+    try {
+      await postData(postUrl, publicApiKey, buffer);
+    } catch (error) {
+      console.error('Error periodically POSTing events:', error);
+    } finally {
+      posting = false;
     }
+  };
+  const fallbackPosting = setInterval(() => {
+    void postBufferedEvents();
   }, 5 * 1000);
-
-  // Add event listeners
-  ws.addEventListener(WebsocketEvent.open, () => {
+  disposeFallback = () => {
+    disposed = true;
     clearInterval(fallbackPosting);
+    // Deliver the close event buffered by websocket-ts while disconnected.
+    void postBufferedEvents();
+  };
+
+  ws.addEventListener(WebsocketEvent.open, () => {
+    if (disposed) return;
+    wsConnectionPaused = false;
   });
-  ws.addEventListener(WebsocketEvent.message, messageHandler);
+  ws.addEventListener(WebsocketEvent.close, () => {
+    if (disposed) return;
+    wsConnectionPaused = true;
+  });
+  ws.addEventListener(WebsocketEvent.message, (socket, event) => {
+    if (!disposed) messageHandler(socket, event);
+  });
   return ws;
 }
 
@@ -244,30 +267,37 @@ async function postData(
       body = buffer;
       done = true;
     }
-    // eslint-disable-next-line compat/compat -- fetch is the runtime transport for POST fallback in supported browsers.
-    const response = await fetch(postUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-ndjson',
-        Authorization: `Bearer ${publicApiKey}`,
-      },
-      body,
-      keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
-    });
+    const requeue = () => {
+      if (!(buffer instanceof ArrayQueue)) return;
+      const rest: string[] = [];
+      for (
+        let event = buffer.read();
+        event !== undefined;
+        event = buffer.read()
+      ) {
+        rest.push(event);
+      }
+      [...toSend, ...rest].forEach((event) => buffer.add(event));
+    };
+    let response: Response;
+    try {
+      // eslint-disable-next-line compat/compat -- fetch is the runtime transport for POST fallback in supported browsers.
+      response = await fetch(postUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-ndjson',
+          Authorization: `Bearer ${publicApiKey}`,
+        },
+        body,
+        keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
+      });
+    } catch (error) {
+      requeue();
+      throw error;
+    }
     responses.push(response);
     if (!response.ok) {
-      if (buffer instanceof ArrayQueue) {
-        // re-queue events in case we can reconnect next time or with ws
-        const rest: string[] = [];
-        for (
-          let eventStr = buffer.read();
-          eventStr !== undefined;
-          eventStr = buffer.read()
-        ) {
-          rest.push(eventStr);
-        }
-        [...toSend, ...rest].forEach((eventStr) => buffer.add(eventStr));
-      }
+      requeue();
       break;
     } else if (done) {
       break;
@@ -416,11 +446,6 @@ export function start(
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
       ws = connect(serverUrl, postUrl, publicApiKey, handleMessage);
-
-      ws.addEventListener(WebsocketEvent.close, () => {
-        // fallback to postData while backoff algorithm is in effect
-        wsConnectionPaused = true;
-      });
     }
     if (configEmit !== undefined) {
       if (typeof configEmit === 'function') {
@@ -505,6 +530,8 @@ export function start(
     // "In particular, it's important that you ... close any open Web Socket connections
     if (ws) {
       ws.close();
+      disposeFallback?.();
+      disposeFallback = undefined;
       wsConnectionPaused = false;
       ws = undefined; // so `emit` can restart it again if page is unfrozen
     }
