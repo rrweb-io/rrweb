@@ -30,12 +30,11 @@ interface ISuite {
 
 interface IWindow extends Window {
   rrweb: {
-    record: ((
+    record: (
       options: recordOptions<eventWithTime>,
-    ) => listenerHandler | undefined) & {
-      addAnnotation(annotation: annotationData): void;
-    };
+    ) => listenerHandler | undefined;
     addCustomEvent<T>(tag: string, payload: T): void;
+    addAnnotation(annotation: annotationData): void;
     pack: (e: eventWithTime) => string;
   };
   emit: (e: eventWithTime) => undefined;
@@ -184,9 +183,9 @@ describe('cross origin iframes', function (this: ISuite) {
     it('should forward annotation events from a cross-origin iframe', async () => {
       const frame = ctx.page.mainFrame().childFrames()[0];
       await frame.evaluate(() => {
-        const { record } = (window as unknown as IWindow).rrweb;
-        record.addAnnotation({ type: 'caption', text: 'Iframe caption' });
-        record.addAnnotation({ type: 'timelineMarker', text: 'Iframe marker' });
+        const { addAnnotation } = (window as unknown as IWindow).rrweb;
+        addAnnotation({ type: 'caption', text: 'Iframe caption' });
+        addAnnotation({ type: 'timelineMarker', text: 'Iframe marker' });
       });
 
       await ctx.page.waitForFunction(
