@@ -345,8 +345,8 @@ export default class MutationBuffer {
             );
           }
         },
-        onIframeLoad: (iframe, childSn) => {
-          this.iframeManager.attachIframe(iframe, childSn);
+        onIframeLoad: (iframe, iframeId, childSn) => {
+          this.iframeManager.attachIframe(iframe, iframeId, childSn);
           this.shadowDomManager.observeAttachShadow(iframe);
         },
         onStylesheetLoad: (link, childSn) => {
