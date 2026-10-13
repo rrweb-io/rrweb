@@ -225,6 +225,10 @@ export class Mirror implements IMirror<Node> {
         this.removeNodeFromMap(childNode as unknown as Node),
       );
     }
+
+    if (isElement(n) && n.shadowRoot) {
+      this.removeNodeFromMap(n.shadowRoot);
+    }
   }
   has(id: number): boolean {
     return this.idNodeMap.has(id);
