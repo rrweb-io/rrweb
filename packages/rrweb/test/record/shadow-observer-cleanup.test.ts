@@ -5,7 +5,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Mirror, snapshot } from 'rrweb-snapshot';
 import MutationBuffer from '../../src/record/mutation';
 import { ShadowDomManager } from '../../src/record/shadow-dom-manager';
-import { mutationBuffers, forEachMutationBuffer } from '../../src/record/observer';
+import {
+  mutationBuffers,
+  forEachMutationBuffer,
+} from '../../src/record/observer';
 import type { MutationBufferParam } from '../../src/types';
 
 type BypassOptions = ConstructorParameters<

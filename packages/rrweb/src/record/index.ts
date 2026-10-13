@@ -4,7 +4,11 @@ import {
   type MaskInputOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import { initObservers, mutationBuffers, forEachMutationBuffer } from './observer';
+import {
+  initObservers,
+  mutationBuffers,
+  forEachMutationBuffer,
+} from './observer';
 import {
   on,
   getWindowWidth,
