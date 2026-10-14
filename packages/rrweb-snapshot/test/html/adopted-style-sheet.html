@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>adopted stylesheet</title>
+  </head>
+  <body>
+    <p id="doc-target">document adopted stylesheet</p>
+    <shadow-target></shadow-target>
+    <script>
+      const docSheet = new CSSStyleSheet();
+      docSheet.replaceSync('#doc-target { color: rgb(255, 0, 0); }');
+      document.adoptedStyleSheets = [docSheet];
+
+      customElements.define(
+        'shadow-target',
+        class extends HTMLElement {
+          constructor() {
+            super();
+            const shadowRoot = this.attachShadow({ mode: 'open' });
+            const shadowSheet = new CSSStyleSheet();
+            shadowSheet.replaceSync('p { color: rgb(0, 0, 255); }');
+            shadowRoot.adoptedStyleSheets = [shadowSheet];
+            const p = document.createElement('p');
+            p.id = 'shadow-target-text';
+            p.textContent = 'shadow adopted stylesheet';
+            shadowRoot.appendChild(p);
+          }
+        },
+      );
+    </script>
+  </body>
+</html>
