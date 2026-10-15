@@ -7,6 +7,7 @@ export enum EventType {
   Custom,
   Plugin,
   Asset,
+  Annotation,
 }
 
 export type domContentLoadedEvent = {
@@ -42,6 +43,16 @@ export type metaEvent = {
     width: number;
     height: number;
   };
+};
+
+/** Annotation text is plain text. Empty caption text, null, or false clears it. */
+export type annotationData =
+  | { type: 'caption'; text: string | null | false }
+  | { type: 'timelineMarker'; text: string };
+
+export type annotationEvent = {
+  type: EventType.Annotation;
+  data: annotationData;
 };
 
 export type customEvent<T = unknown> = {
@@ -235,6 +246,7 @@ export type eventWithoutTime =
   | incrementalSnapshotEvent
   | metaEvent
   | customEvent
+  | annotationEvent
   | pluginEvent
   | assetEvent;
 
@@ -770,6 +782,7 @@ export enum ReplayerEvents {
   MouseInteraction = 'mouse-interaction',
   EventCast = 'event-cast',
   CustomEvent = 'custom-event',
+  Annotation = 'annotation',
   Flush = 'flush',
   StateChange = 'state-change',
   PlayBack = 'play-back',

@@ -72,3 +72,9 @@ rrwebPlayer.addEventListener('ui-update-progress', (event) => {
 ## Develop a new replayer UI with `Replayer`.
 
 Please refer [rrweb-player](../../packages/rrweb-player/).
+
+## Render annotations
+
+Use the [annotation replay callback](./annotations.md#replay-callbacks) to render
+captions or timeline markers in your own UI. The recipe also explains restoring
+persistent caption state when seeking.

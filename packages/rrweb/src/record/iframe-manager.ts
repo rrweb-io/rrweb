@@ -161,6 +161,7 @@ export class IframeManager {
       case EventType.DomContentLoaded: {
         return false;
       }
+      case EventType.Annotation:
       case EventType.Plugin: {
         return e;
       }
