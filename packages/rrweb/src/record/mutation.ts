@@ -151,11 +151,6 @@ export default class MutationBuffer {
     this.emit();
   }
 
-  public reset() {
-    this.shadowDomManager.reset();
-    this.canvasManager.reset();
-  }
-
   public processMutations = (mutations: mutationRecord[]) => {
     mutations.forEach(this.processMutation); // adds mutations to the buffer
     this.emit(); // clears buffer if not locked/frozen
