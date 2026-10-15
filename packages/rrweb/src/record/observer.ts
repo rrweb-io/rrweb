@@ -81,9 +81,8 @@ function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
 export function initMutationObserver(
   options: MutationBufferParam,
   rootEl: Node,
-): [MutationObserver, () => void] {
+): { stop: () => void; cleanupIframe: () => void } {
   const mutationBuffer = new MutationBuffer();
-  mutationBuffers.push(mutationBuffer);
   // see mutation.ts for details
   mutationBuffer.init(options);
   const [ObserverCtor, iframeCleanup] = mutationObserverCtor();
@@ -100,7 +99,18 @@ export function initMutationObserver(
     childList: true,
     subtree: true,
   });
-  return [observer, iframeCleanup];
+  mutationBuffers.push(mutationBuffer);
+  return {
+    stop: () => {
+      observer.disconnect();
+      // Other observers may have stopped first, so look up this buffer by identity.
+      const index = mutationBuffers.indexOf(mutationBuffer);
+      if (index !== -1) mutationBuffers.splice(index, 1);
+    },
+    // The constructor iframe is shared. Keep it alive until document teardown,
+    // including while shadow observers are replaced during a full snapshot.
+    cleanupIframe: iframeCleanup,
+  };
 }
 
 function initMoveObserver({
@@ -1308,12 +1318,9 @@ export function initObservers(
   }
 
   mergeHooks(o, hooks);
-  let mutationObserver: MutationObserver | undefined;
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  let cleanupMutationIframe: () => void = () => {};
-  if (o.recordDOM) {
-    [mutationObserver, cleanupMutationIframe] = initMutationObserver(o, o.doc);
-  }
+  const mutationObserver = o.recordDOM
+    ? initMutationObserver(o, o.doc)
+    : undefined;
   const mousemoveHandler = initMoveObserver(o);
   const mouseInteractionHandler = initMouseInteractionObserver(o);
   const scrollHandler = initScrollObserver(o);
@@ -1353,9 +1360,10 @@ export function initObservers(
   }
 
   return callbackWrapper(() => {
-    mutationBuffers.forEach((b) => b.reset());
-    mutationObserver?.disconnect();
-    cleanupMutationIframe();
+    mutationObserver?.stop();
+    o.shadowDomManager.reset();
+    o.canvasManager.reset();
+    mutationObserver?.cleanupIframe();
     mousemoveHandler();
     mouseInteractionHandler();
     scrollHandler();

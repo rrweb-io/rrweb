@@ -165,7 +165,7 @@ function record<T = eventWithTime>(
 
   polyfill();
 
-  let lastFullSnapshotEvent: eventWithTime;
+  let lastFullSnapshotTimestamp: number;
   let incrementalSnapshotCount = 0;
 
   const eventProcessor = (e: eventWithTime): T => {
@@ -196,7 +196,7 @@ function record<T = eventWithTime>(
     ) {
       // we've got a user initiated event so first we need to apply
       // all DOM changes that have been buffering during paused state
-      mutationBuffers.forEach((buf) => buf.unfreeze());
+      mutationBuffers.slice().forEach((buf) => buf.unfreeze());
     }
 
     if (inEmittingFrame) {
@@ -212,7 +212,7 @@ function record<T = eventWithTime>(
     }
 
     if (e.type === EventType.FullSnapshot) {
-      lastFullSnapshotEvent = e;
+      lastFullSnapshotTimestamp = e.timestamp;
       incrementalSnapshotCount = 0;
     } else if (e.type === EventType.IncrementalSnapshot) {
       // attach iframe should be considered as full snapshot
@@ -228,7 +228,7 @@ function record<T = eventWithTime>(
         checkoutEveryNth && incrementalSnapshotCount >= checkoutEveryNth;
       const exceedTime =
         checkoutEveryNms &&
-        e.timestamp - lastFullSnapshotEvent.timestamp > checkoutEveryNms;
+        e.timestamp - lastFullSnapshotTimestamp > checkoutEveryNms;
       if (exceedCount || exceedTime) {
         takeFullSnapshot(true);
       }
@@ -356,7 +356,7 @@ function record<T = eventWithTime>(
 
     shadowDomManager.init();
 
-    mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
+    mutationBuffers.slice().forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
       mirror,
       blockClass,
@@ -407,7 +407,7 @@ function record<T = eventWithTime>(
       },
       isCheckout,
     );
-    mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
+    mutationBuffers.slice().forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
 
     // Some old browsers don't support adoptedStyleSheets.
     if (document.adoptedStyleSheets && document.adoptedStyleSheets.length > 0)
@@ -646,7 +646,7 @@ record.addAnnotation = (annotation: annotationData) => {
 };
 
 record.freezePage = () => {
-  mutationBuffers.forEach((buf) => buf.freeze());
+  mutationBuffers.slice().forEach((buf) => buf.freeze());
 };
 
 record.takeFullSnapshot = (isCheckout?: boolean) => {

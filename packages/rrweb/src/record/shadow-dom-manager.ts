@@ -53,7 +53,7 @@ export class ShadowDomManager {
     if (!isNativeShadowDom(shadowRoot)) return;
     if (this.shadowDoms.has(shadowRoot)) return;
     this.shadowDoms.add(shadowRoot);
-    const [observer] = initMutationObserver(
+    const { stop } = initMutationObserver(
       {
         ...this.bypassOptions,
         doc,
@@ -63,7 +63,7 @@ export class ShadowDomManager {
       },
       shadowRoot,
     );
-    this.restoreHandlers.push(() => observer.disconnect());
+    this.restoreHandlers.push(stop);
     this.restoreHandlers.push(
       initScrollObserver({
         ...this.bypassOptions,
@@ -75,7 +75,7 @@ export class ShadowDomManager {
       }),
     );
     // Defer this to avoid adoptedStyleSheet events being created before the full snapshot is created or attachShadow action is recorded.
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       if (
         shadowRoot.adoptedStyleSheets &&
         shadowRoot.adoptedStyleSheets.length > 0
@@ -94,6 +94,7 @@ export class ShadowDomManager {
         ),
       );
     }, 0);
+    this.restoreHandlers.push(() => clearTimeout(timeout));
   }
 
   /**
