@@ -1,5 +1,23 @@
 # @rrweb/browser-client
 
+## 2.2.0
+
+### Minor Changes
+
+- [#1928](https://github.com/rrweb-io/rrweb/pull/1928) [`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80) Thanks [@Juice10](https://github.com/Juice10)! - Expose `addAnnotation()` through named and default exports. Calls record annotations immediately during an active session or queue them with their call-time timestamp until the recorder is ready, including calls immediately after `start()` while the document is still loading.
+
+### Patch Changes
+
+- [#1928](https://github.com/rrweb-io/rrweb/pull/1928) [`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80) Thanks [@Juice10](https://github.com/Juice10)! - Deliver queued custom events and annotations through the configured `emit` callback when the recorder is ready, preserving their original call-time timestamps. Previously, queued events bypassed the callback and were sent only to the server.
+
+  Queue custom events added while the document is still loading instead of calling the recorder before it is ready and throwing an error.
+
+- Updated dependencies [[`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80)]:
+  - rrweb@2.2.0
+  - @rrweb/types@2.2.0
+  - @rrweb/record@2.2.0
+  - @rrweb/utils@2.2.0
+
 ## 2.1.7
 
 ### Patch Changes
