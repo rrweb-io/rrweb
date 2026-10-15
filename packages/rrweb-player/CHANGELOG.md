@@ -1,5 +1,23 @@
 # rrweb-player
 
+## 2.2.0
+
+### Minor Changes
+
+- [#1928](https://github.com/rrweb-io/rrweb/pull/1928) [`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80) Thanks [@Juice10](https://github.com/Juice10)! - Display annotation events as captions and timeline markers. Captions stay visible until replaced or cleared with `text: ''`, `text: null`, or `text: false`. Seeking restores the caption for that replay time. Hovering or focusing timeline markers reveals their text, and clicking seeks to their timestamp.
+
+  Captions are shown by default; set `showCaptions: false` to hide them initially. Recordings with nonempty captions show a CC toggle when the controls are visible. Use `timelineMarkerColor` to configure annotation marker colors separately from custom-event `tags`.
+
+- [#1928](https://github.com/rrweb-io/rrweb/pull/1928) [`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80) Thanks [@Juice10](https://github.com/Juice10)! - Make the playback timeline a keyboard-focusable slider with an accessible playback position. Use Home and End to seek to the start and end of the recording. Clicking the timeline focuses the slider so keyboard seeking can continue after scrubbing.
+
+### Patch Changes
+
+- [#1928](https://github.com/rrweb-io/rrweb/pull/1928) [`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80) Thanks [@Juice10](https://github.com/Juice10)! - Fix the playback timeline's ArrowLeft and ArrowRight keys to seek backward and forward by five seconds instead of five milliseconds.
+
+- Updated dependencies [[`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80), [`0d6fc66`](https://github.com/rrweb-io/rrweb/commit/0d6fc6685a0e99eb0cc7fd310e1d7e8164c74568)]:
+  - @rrweb/replay@2.2.0
+  - @rrweb/packer@2.2.0
+
 ## 2.1.7
 
 ### Patch Changes
