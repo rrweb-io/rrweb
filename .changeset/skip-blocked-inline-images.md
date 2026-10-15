@@ -2,4 +2,4 @@
 "rrweb-snapshot": patch
 ---
 
-Skip inlining blocked images so their pixels are never captured, including after a pending image loads.
+Skip image inlining and load listeners for images that are blocked when serialized.
