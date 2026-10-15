@@ -56,6 +56,16 @@ import dom, { mutationObserverCtor } from '@rrweb/utils';
 
 export const mutationBuffers: MutationBuffer[] = [];
 
+/** Lets per-shadow-root observers be fully torn down when their root detaches. */
+const observerBuffers = new WeakMap<MutationObserver, MutationBuffer>();
+
+/** Iterates over a copy: callbacks may add or remove buffers. */
+export function forEachMutationBuffer(
+  cb: (buffer: MutationBuffer) => void,
+): void {
+  [...mutationBuffers].forEach(cb);
+}
+
 // Event.path is non-standard and used in some older browsers
 type NonStandardEvent = Omit<Event, 'composedPath'> & {
   path: EventTarget[];
@@ -100,7 +110,21 @@ export function initMutationObserver(
     childList: true,
     subtree: true,
   });
+  observerBuffers.set(observer, mutationBuffer);
   return [observer, iframeCleanup];
+}
+
+/** Disconnects an observer and drops its buffer from the registry. */
+export function removeMutationBuffer(observer: MutationObserver): void {
+  observer.disconnect();
+  const buffer = observerBuffers.get(observer);
+  if (buffer) {
+    const index = mutationBuffers.indexOf(buffer);
+    if (index !== -1) {
+      mutationBuffers.splice(index, 1);
+    }
+    observerBuffers.delete(observer);
+  }
 }
 
 function initMoveObserver({
@@ -1353,7 +1377,7 @@ export function initObservers(
   }
 
   return callbackWrapper(() => {
-    mutationBuffers.forEach((b) => b.reset());
+    forEachMutationBuffer((b) => b.reset());
     mutationObserver?.disconnect();
     cleanupMutationIframe();
     mousemoveHandler();
