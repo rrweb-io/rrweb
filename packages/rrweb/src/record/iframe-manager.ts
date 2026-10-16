@@ -1,6 +1,9 @@
 import type { Mirror } from 'rrweb-snapshot';
 import { genId } from 'rrweb-snapshot';
-import type { CrossOriginIframeMessageEvent } from '../types';
+import type {
+  CrossOriginIframeMessageEvent,
+  CrossOriginIframeSnapshotRequest,
+} from '../types';
 import CrossOriginIframeMirror from './cross-origin-iframe-mirror';
 import { EventType, NodeType, IncrementalSource } from '@rrweb/types';
 import type {
@@ -25,6 +28,8 @@ export class IframeManager {
   private loadListener?: (iframeEl: HTMLIFrameElement) => unknown;
   private stylesheetManager: StylesheetManager;
   private recordCrossOriginIframes: boolean;
+  private messageHandler = this.handleMessage.bind(this);
+  private messageListenerWindows: Set<Window> = new Set();
 
   constructor(options: {
     mirror: Mirror;
@@ -44,7 +49,7 @@ export class IframeManager {
     );
     this.mirror = options.mirror;
     if (this.recordCrossOriginIframes) {
-      window.addEventListener('message', this.handleMessage.bind(this));
+      this.addMessageListener(window);
     }
   }
 
@@ -52,6 +57,45 @@ export class IframeManager {
     this.iframes.set(iframeEl, true);
     if (iframeEl.contentWindow)
       this.crossOriginIframeMap.set(iframeEl.contentWindow, iframeEl);
+  }
+
+  /**
+   * Asks the recorder in a cross-origin iframe for a new full snapshot.
+   * It only sends one when it starts, so without this the iframe replays blank
+   * after every full snapshot of this frame.
+   */
+  public requestFullSnapshot(iframeEl: HTMLIFrameElement) {
+    if (
+      !this.recordCrossOriginIframes ||
+      iframeEl.contentDocument ||
+      !iframeEl.contentWindow
+    )
+      return;
+    const message: CrossOriginIframeSnapshotRequest = {
+      type: 'rrweb-snapshot-request',
+    };
+    iframeEl.contentWindow.postMessage(message, '*');
+  }
+
+  /**
+   * Stops handling messages from cross-origin iframes, so a stopped recording
+   * no longer emits their events.
+   */
+  public destroy() {
+    this.messageListenerWindows.forEach((win) => {
+      try {
+        win.removeEventListener('message', this.messageHandler);
+      } catch (error) {
+        // The iframe may have navigated to another origin since.
+      }
+    });
+    this.messageListenerWindows.clear();
+  }
+
+  private addMessageListener(win: Window) {
+    if (this.messageListenerWindows.has(win)) return;
+    win.addEventListener('message', this.messageHandler);
+    this.messageListenerWindows.add(win);
   }
 
   public addLoadListener(cb: (iframeEl: HTMLIFrameElement) => unknown) {
@@ -77,11 +121,8 @@ export class IframeManager {
     });
 
     // Receive messages (events) coming from cross-origin iframes that are nested in this same-origin iframe.
-    if (this.recordCrossOriginIframes)
-      iframeEl.contentWindow?.addEventListener(
-        'message',
-        this.handleMessage.bind(this),
-      );
+    if (this.recordCrossOriginIframes && iframeEl.contentWindow)
+      this.addMessageListener(iframeEl.contentWindow);
 
     this.loadListener?.(iframeEl);
 
