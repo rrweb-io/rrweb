@@ -20,6 +20,7 @@ export type PlayerContext = {
   timeOffset: number;
   baselineTime: number;
   lastPlayedEvent: eventWithTime | null;
+  cappedAtFrontier: number | null;
 };
 export type PlayerEvent =
   | {
@@ -43,6 +44,18 @@ export type PlayerEvent =
       };
     }
   | {
+      type: 'BUFFER';
+    }
+  | {
+      type: 'RESCHEDULE';
+      payload: {
+        timeOffset: number;
+      };
+    }
+  | {
+      type: 'FINISHED';
+    }
+  | {
       type: 'END';
     };
 export type PlayerState =
@@ -55,9 +68,36 @@ export type PlayerState =
       context: PlayerContext;
     }
   | {
+      value: 'buffering';
+      context: PlayerContext;
+    }
+  | {
       value: 'live';
       context: PlayerContext;
     };
+
+export function injectEvent(
+  events: eventWithTime[],
+  event: eventWithTime,
+): void {
+  let end = events.length - 1;
+  if (!events[end] || events[end].timestamp <= event.timestamp) {
+    // fast track
+    events.push(event);
+    return;
+  }
+  // binary search - events can arrive out of order in a realtime context
+  let start = 0;
+  while (start <= end) {
+    const mid = Math.floor((start + end) / 2);
+    if (events[mid].timestamp <= event.timestamp) {
+      start = mid + 1;
+    } else {
+      end = mid - 1;
+    }
+  }
+  events.splice(start, 0, event);
+}
 
 /**
  * If the array have multiple meta and fullsnapshot events,
@@ -82,10 +122,18 @@ type PlayerAssets = {
   emitter: Emitter;
   applyEventsSynchronously(events: Array<eventWithTime>): void;
   getCastFn(event: eventWithTime, isSync: boolean): () => void;
+  onEnterBuffering(): void;
+  onExitBuffering(): void;
 };
 export function createPlayerService(
   context: PlayerContext,
-  { getCastFn, applyEventsSynchronously, emitter }: PlayerAssets,
+  {
+    getCastFn,
+    applyEventsSynchronously,
+    emitter,
+    onEnterBuffering,
+    onExitBuffering,
+  }: PlayerAssets,
 ) {
   const playerMachine = createMachine<PlayerContext, PlayerEvent, PlayerState>(
     {
@@ -102,6 +150,23 @@ export function createPlayerService(
             CAST_EVENT: {
               target: 'playing',
               actions: 'castEvent',
+            },
+            FINISHED: [
+              {
+                target: 'buffering',
+                cond: (ctx) => ctx.cappedAtFrontier !== null,
+              },
+              {
+                target: 'paused',
+                actions: ['resetLastPlayedEvent', 'pause'],
+              },
+            ],
+            BUFFER: {
+              target: 'buffering',
+            },
+            RESCHEDULE: {
+              target: 'playing',
+              actions: ['recordTimeOffset', 'play'],
             },
             END: {
               target: 'paused',
@@ -123,12 +188,35 @@ export function createPlayerService(
               target: 'paused',
               actions: 'castEvent',
             },
+            BUFFER: {
+              target: 'buffering',
+            },
             TO_LIVE: {
               target: 'live',
               actions: ['startLive'],
             },
             ADD_EVENT: {
               target: 'paused',
+              actions: ['addEvent'],
+            },
+          },
+        },
+        buffering: {
+          entry: ['pause', 'bufferingEntry'],
+          exit: ['bufferingExit'],
+          on: {
+            PLAY: {
+              target: 'playing',
+              actions: ['recordTimeOffset', 'play'],
+            },
+            PAUSE: {
+              target: 'paused',
+              actions: ['pause'],
+            },
+            CAST_EVENT: {
+              actions: 'castEvent',
+            },
+            ADD_EVENT: {
               actions: ['addEvent'],
             },
           },
@@ -149,6 +237,8 @@ export function createPlayerService(
     },
     {
       actions: {
+        bufferingEntry: onEnterBuffering,
+        bufferingExit: onExitBuffering,
         castEvent: assign({
           lastPlayedEvent: (ctx, event) => {
             if (event.type === 'CAST_EVENT') {
@@ -171,6 +261,7 @@ export function createPlayerService(
         play(ctx) {
           const { timer, events, baselineTime, lastPlayedEvent } = ctx;
           timer.clear();
+          ctx.cappedAtFrontier = null;
 
           for (const event of events) {
             // TODO: improve this API
@@ -200,6 +291,17 @@ export function createPlayerService(
                 event === lastPlayedEvent)
             ) {
               continue;
+            }
+            if (
+              event.type === EventType.Custom &&
+              event.data.tag === 'chunk-start'
+            ) {
+              ctx.cappedAtFrontier = event.timestamp;
+              timer.addAction({
+                doAction: () => undefined, // keep the timer alive
+                delay: event.delay!,
+              });
+              break;
             }
             if (event.timestamp < baselineTime) {
               syncEvents.push(event);
@@ -241,26 +343,7 @@ export function createPlayerService(
             const { event } = machineEvent.payload;
             addDelay(event, baselineTime);
 
-            let end = events.length - 1;
-            if (!events[end] || events[end].timestamp <= event.timestamp) {
-              // fast track
-              events.push(event);
-            } else {
-              let insertionIndex = -1;
-              let start = 0;
-              while (start <= end) {
-                const mid = Math.floor((start + end) / 2);
-                if (events[mid].timestamp <= event.timestamp) {
-                  start = mid + 1;
-                } else {
-                  end = mid - 1;
-                }
-              }
-              if (insertionIndex === -1) {
-                insertionIndex = start;
-              }
-              events.splice(insertionIndex, 0, event);
-            }
+            injectEvent(events, event);
 
             const isSync = event.timestamp < baselineTime;
             const castFn = getCastFn(event, isSync);

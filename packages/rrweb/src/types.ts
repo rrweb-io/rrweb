@@ -204,7 +204,13 @@ export type playerConfig = {
     warn: (...args: Parameters<typeof console.warn>) => void;
   };
   plugins?: ReplayPlugin[];
+  fetchEvents?: BufferFetchFn;
+  bufferAheadMs: number;
 };
+
+export type BufferFetchFn = (
+  chunkStart: number,
+) => Promise<Array<eventWithTime | string>>;
 
 export type missingNode = {
   node: Node | RRNode;

@@ -32,6 +32,7 @@ import { Timer } from './timer';
 import {
   createPlayerService,
   createSpeedService,
+  injectEvent,
   type PlayerMachineState,
   type SpeedMachineState,
 } from './machine';
@@ -114,6 +115,33 @@ function indicatesTouchDevice(e: eventWithTime) {
   );
 }
 
+type ChunkInfo = {
+  chunkStart: number;
+  keyframe: boolean;
+  fetched: boolean;
+  fetching: boolean;
+  attempts: number;
+  markerInserted: boolean;
+};
+
+const maxChunkFetchAttempts = 3;
+
+function isChunkStartMarker(event: eventWithTime): boolean {
+  return event.type === EventType.Custom && event.data.tag === 'chunk-start';
+}
+
+function markerChunkStart(event: eventWithTime): number {
+  const payload = (event.data as { payload?: { chunkStart?: number } }).payload;
+  return typeof payload?.chunkStart === 'number'
+    ? payload.chunkStart
+    : event.timestamp;
+}
+
+function markerIsKeyframe(event: eventWithTime): boolean {
+  const payload = (event.data as { payload?: { keyframe?: boolean } }).payload;
+  return payload?.keyframe === true;
+}
+
 export class Replayer {
   public wrapper: HTMLDivElement;
   public iframe: HTMLIFrameElement;
@@ -178,6 +206,10 @@ export class Replayer {
   // Similar to the reason for constructedStyleMutations.
   private adoptedStyleSheets: adoptedStyleSheetData[] = [];
 
+  private chunks = new Map<number, ChunkInfo>();
+  private recordingEndTs = 0;
+  private bufferingTarget: { offset: number; play: boolean } | null = null;
+
   constructor(
     events: Array<eventWithTime | string>,
     config?: Partial<playerConfig>,
@@ -203,6 +235,7 @@ export class Replayer {
       mouseTail: defaultMouseTailConfig,
       useVirtualDom: true, // Virtual-dom optimization is enabled by default.
       logger: console,
+      bufferAheadMs: 30 * 1000,
     };
     this.config = Object.assign({}, defaultConfig, config);
 
@@ -342,26 +375,30 @@ export class Replayer {
 
     const timer = new Timer([], {
       speed: this.config.speed,
+      onExhausted: this.onTimerExhausted,
+      onNearEnd: this.onPrefetchAlarm,
+      nearEndLead: this.config.bufferAheadMs,
     });
+    const unpackFn = config && config.unpackFn;
+    const initialEvents = (
+      unpackFn ? events.map((e) => unpackFn(e as string)) : (events as eventWithTime[])
+    ).sort((a1, a2) => a1.timestamp - a2.timestamp);
+    this.indexInitialEvents(initialEvents);
     this.service = createPlayerService(
       {
-        events: events
-          .map((e) => {
-            if (config && config.unpackFn) {
-              return config.unpackFn(e as string);
-            }
-            return e as eventWithTime;
-          })
-          .sort((a1, a2) => a1.timestamp - a2.timestamp),
+        events: initialEvents,
         timer,
         timeOffset: 0,
         baselineTime: 0,
         lastPlayedEvent: null,
+        cappedAtFrontier: null,
       },
       {
         getCastFn: this.getCastFn,
         applyEventsSynchronously: this.applyEventsSynchronously,
         emitter: this.emitter,
+        onEnterBuffering: this.onEnterBuffering,
+        onExitBuffering: this.onExitBuffering,
       },
     );
     this.service.start();
@@ -420,9 +457,6 @@ export class Replayer {
           (firstFullsnapshot as fullSnapshotEvent).data.initialOffset,
         );
       }, 1);
-    }
-    if (this.service.state.context.events.find(indicatesTouchDevice)) {
-      this.mouse.classList.add('touch-device');
     }
   }
 
@@ -517,7 +551,17 @@ export class Replayer {
    * @param timeOffset - number
    */
   public play(timeOffset = 0) {
-    if (this.service.state.matches('paused')) {
+    if (this.config.fetchEvents) {
+      const targetTimestamp = this.timestampFromOffset(timeOffset);
+      if (this.needsBuffering(targetTimestamp)) {
+        this.enterBuffering(timeOffset, true);
+        return;
+      }
+    }
+    if (
+      this.service.state.matches('paused') ||
+      this.service.state.matches('buffering')
+    ) {
       this.service.send({ type: 'PLAY', payload: { timeOffset } });
     } else {
       this.service.send({ type: 'PAUSE' });
@@ -530,6 +574,13 @@ export class Replayer {
   }
 
   public pause(timeOffset?: number) {
+    if (this.config.fetchEvents && typeof timeOffset === 'number') {
+      const targetTimestamp = this.timestampFromOffset(timeOffset);
+      if (this.needsBuffering(targetTimestamp)) {
+        this.enterBuffering(timeOffset, false);
+        return;
+      }
+    }
     if (timeOffset === undefined && this.service.state.matches('playing')) {
       this.service.send({ type: 'PAUSE' });
     }
@@ -572,12 +623,262 @@ export class Replayer {
     const event = this.config.unpackFn
       ? this.config.unpackFn(rawEvent as string)
       : (rawEvent as eventWithTime);
-    if (indicatesTouchDevice(event)) {
-      this.mouse.classList.add('touch-device');
+    this.registerEvent(event);
+    if (isChunkStartMarker(event)) {
+      const info = this.chunks.get(markerChunkStart(event))!;
+      if (info.markerInserted) {
+        return;
+      }
+      info.markerInserted = true;
     }
     void Promise.resolve().then(() =>
       this.service.send({ type: 'ADD_EVENT', payload: { event } }),
     );
+  }
+
+  private timestampFromOffset(timeOffset: number): number {
+    return this.service.state.context.events[0].timestamp + timeOffset;
+  }
+
+  private sortedChunkStarts(): number[] {
+    return [...this.chunks.keys()].sort((a, b) => a - b);
+  }
+
+  private indexInitialEvents(events: eventWithTime[]) {
+    for (const event of events) {
+      this.registerEvent(event);
+      if (isChunkStartMarker(event)) {
+        this.chunks.get(markerChunkStart(event))!.markerInserted = true;
+      }
+    }
+  }
+
+  private registerEvent(event: eventWithTime) {
+    if (event.timestamp > this.recordingEndTs) {
+      this.recordingEndTs = event.timestamp;
+    }
+    if (indicatesTouchDevice(event)) {
+      this.mouse.classList.add('touch-device');
+    }
+    if (isChunkStartMarker(event)) {
+      const chunkStart = markerChunkStart(event);
+      if (!this.chunks.has(chunkStart)) {
+        this.chunks.set(chunkStart, {
+          chunkStart,
+          keyframe: markerIsKeyframe(event),
+          fetched: false,
+          fetching: false,
+          attempts: 0,
+          markerInserted: false,
+        });
+      }
+    }
+  }
+
+  private spliceChunkMarker(chunkStart: number) {
+    const events = this.service.state.context.events;
+    for (let i = 0; i < events.length; i++) {
+      const event = events[i];
+      if (isChunkStartMarker(event) && markerChunkStart(event) === chunkStart) {
+        events.splice(i, 1);
+        return;
+      }
+    }
+  }
+
+  private chunkIndexContaining(sorted: number[], timestamp: number): number {
+    let start = 0;
+    let end = sorted.length - 1;
+    let result = -1;
+    while (start <= end) {
+      const mid = Math.floor((start + end) / 2);
+      if (sorted[mid] <= timestamp) {
+        result = mid;
+        start = mid + 1;
+      } else {
+        end = mid - 1;
+      }
+    }
+    return result;
+  }
+
+  private needsBuffering(targetTimestamp: number): boolean {
+    return (
+      targetTimestamp < this.recordingEndTs &&
+      this.neededChunks(targetTimestamp).length > 0
+    );
+  }
+
+  private neededChunks(targetTimestamp: number): number[] {
+    const sorted = this.sortedChunkStarts();
+    const index = this.chunkIndexContaining(sorted, targetTimestamp);
+    if (index < 0) return [];
+    let keyframe = index;
+    while (keyframe > 0 && !this.chunks.get(sorted[keyframe])!.keyframe) {
+      keyframe--;
+    }
+    const needed: number[] = [];
+    for (let i = keyframe; i <= index; i++) {
+      const info = this.chunks.get(sorted[i])!;
+      if (!info.fetched) needed.push(info.chunkStart);
+    }
+    return needed;
+  }
+
+  private enterBuffering(timeOffset: number, play: boolean) {
+    const alreadyBuffering = this.service.state.matches('buffering');
+    this.bufferingTarget = { offset: timeOffset, play };
+    if (alreadyBuffering) {
+      this.requestNeededChunks();
+    } else {
+      this.service.send({ type: 'BUFFER' });
+    }
+  }
+
+  private onEnterBuffering = () => {
+    for (const info of this.chunks.values()) {
+      info.attempts = 0;
+    }
+    this.emitter.emit(ReplayerEvents.BufferingStart);
+    this.requestNeededChunks();
+  };
+
+  private onExitBuffering = () => {
+    this.bufferingTarget = null;
+    this.emitter.emit(ReplayerEvents.BufferingEnd);
+  };
+
+  private requestNeededChunks() {
+    if (!this.bufferingTarget) return;
+    const targetTimestamp = this.timestampFromOffset(
+      this.bufferingTarget.offset,
+    );
+    const needed = this.neededChunks(targetTimestamp);
+    if (needed.length === 0) {
+      this.resumeFromBuffering();
+      return;
+    }
+    const fetchable = needed.filter((chunkStart) => this.canFetch(chunkStart));
+    if (fetchable.length === 0 && !this.hasPendingFetches()) {
+      this.giveUpBuffering();
+      return;
+    }
+    for (const chunkStart of fetchable) {
+      this.fetchChunk(chunkStart);
+    }
+  }
+
+  private canFetch(chunkStart: number): boolean {
+    const info = this.chunks.get(chunkStart);
+    if (!info || info.fetched || info.fetching) return false;
+    return info.attempts < maxChunkFetchAttempts;
+  }
+
+  private giveUpBuffering() {
+    this.warn('[replayer] buffering aborted: chunk fetch failed repeatedly');
+    this.service.send({ type: 'PAUSE' });
+  }
+
+  private onTimerExhausted = () => {
+    if (!this.config.fetchEvents) return;
+    if (!this.service.state.matches('playing')) return;
+    this.bufferingTarget = { offset: this.getCurrentTime(), play: true };
+    this.service.send({ type: 'FINISHED' });
+    if (this.service.state.matches('buffering')) {
+      return;
+    }
+    this.bufferingTarget = null;
+    this.backToNormal();
+    this.emitter.emit(ReplayerEvents.Finish);
+  };
+
+  private onPrefetchAlarm = () => {
+    if (!this.config.fetchEvents) return;
+    if (!this.service.state.matches('playing')) return;
+    const playhead = this.timestampFromOffset(this.getCurrentTime());
+    const horizon = playhead + this.config.bufferAheadMs * this.timer.speed;
+    for (const chunkStart of this.sortedChunkStarts()) {
+      if (chunkStart > horizon) break;
+      if (chunkStart < playhead) continue;
+      this.fetchChunk(chunkStart);
+    }
+  };
+
+  private fetchChunk(chunkStart: number) {
+    if (!this.config.fetchEvents) return;
+    if (!this.canFetch(chunkStart)) return;
+    const info = this.chunks.get(chunkStart)!;
+    info.attempts += 1;
+    info.fetching = true;
+    void this.config.fetchEvents(chunkStart).then(
+      (batch) => {
+        info.fetching = false;
+        info.fetched = true;
+        for (const raw of batch) {
+          this.ingestFetched(raw);
+        }
+        this.spliceChunkMarker(chunkStart);
+        this.onChunkSettled();
+      },
+      (error) => {
+        info.fetching = false;
+        this.warn('[replayer] fetchEvents failed', error);
+        this.onChunkSettled();
+      },
+    );
+  }
+
+  private ingestFetched(rawEvent: eventWithTime | string) {
+    const event = this.config.unpackFn
+      ? this.config.unpackFn(rawEvent as string)
+      : (rawEvent as eventWithTime);
+    this.registerEvent(event);
+    if (isChunkStartMarker(event)) {
+      const info = this.chunks.get(markerChunkStart(event))!;
+      if (info.markerInserted) {
+        return;
+      }
+      info.markerInserted = true;
+    }
+    injectEvent(this.service.state.context.events, event);
+  }
+
+  private onChunkSettled() {
+    if (this.service.state.matches('buffering')) {
+      this.resumeFromBuffering();
+    } else if (this.service.state.matches('playing')) {
+      this.extendSchedule();
+    }
+  }
+
+  private hasPendingFetches(): boolean {
+    for (const info of this.chunks.values()) {
+      if (info.fetching) return true;
+    }
+    return false;
+  }
+
+  private resumeFromBuffering() {
+    const target = this.bufferingTarget;
+    if (!target) return;
+    const targetTimestamp = this.timestampFromOffset(target.offset);
+    if (this.neededChunks(targetTimestamp).length > 0) {
+      this.requestNeededChunks();
+      return;
+    }
+    if (target.play) {
+      this.play(target.offset);
+    } else {
+      this.pause(target.offset);
+    }
+  }
+
+  private extendSchedule() {
+    if (!this.service.state.matches('playing')) return;
+    this.service.send({
+      type: 'RESCHEDULE',
+      payload: { timeOffset: this.getCurrentTime() },
+    });
   }
 
   public enableInteract() {
@@ -773,6 +1074,9 @@ export class Replayer {
         const finish = () => {
           if (lastIndex < this.service.state.context.events.length - 1) {
             // more events have been added since the setTimeout
+            return;
+          }
+          if (this.config.fetchEvents) {
             return;
           }
           this.backToNormal();
