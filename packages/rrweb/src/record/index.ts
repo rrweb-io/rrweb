@@ -28,6 +28,7 @@ import {
   type scrollCallback,
   type canvasMutationParam,
   type adoptedStyleSheetParam,
+  type IWindow,
 } from '@rrweb/types';
 import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
@@ -558,6 +559,9 @@ function record<T = eventWithTime>(
     iframeManager.addLoadListener((iframeEl) => {
       try {
         handlers.push(observe(iframeEl.contentDocument!));
+        if (iframeEl.contentWindow) {
+          canvasManager.addWindow(iframeEl.contentWindow as IWindow);
+        }
       } catch (error) {
         // TODO: handle internal error
         console.warn(error);
