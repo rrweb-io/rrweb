@@ -50,6 +50,12 @@ vi.mock('@rrweb/record', () => {
 vi.mock('websocket-ts', () => {
   class ArrayQueue {
     items: string[] = [];
+    constructor() {
+      mockState.buffers.push(this);
+    }
+    peek() {
+      return this.items[0];
+    }
     add(value: string) {
       this.items.push(value);
     }
@@ -73,6 +79,7 @@ vi.mock('websocket-ts', () => {
 
   class Websocket {
     send = vi.fn();
+    bufferedAmount = 0;
     close = vi.fn();
     private listeners = new Map<
       string,
@@ -92,7 +99,7 @@ vi.mock('websocket-ts', () => {
   class WebsocketBuilder {
     constructor(private readonly url: string) {}
     withBuffer(buffer: QueueLike) {
-      mockState.buffers.push(buffer);
+      void buffer;
       return this;
     }
     withBackoff() {
@@ -133,12 +140,15 @@ function setCurrentScript(script: HTMLScriptElement | null) {
   });
 }
 
+let currentClient: typeof import('../src/index') | undefined;
+
 async function importFreshClient() {
   vi.resetModules();
   mockState.buffers = [];
   mockState.lastRecordOptions = undefined;
   mockState.lastWebsocketUrl = undefined;
-  return await import('../src/index');
+  currentClient = await import('../src/index');
+  return currentClient;
 }
 
 function latestRecordingMetaPayload(): Record<string, unknown> {
@@ -177,13 +187,24 @@ function expectBrowserClientDiagnostics(
 }
 
 beforeEach(() => {
+  vi.useFakeTimers();
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => new Response(null, { status: 202 })),
+  );
   sessionStorage.clear();
   document.body.innerHTML = '';
   setCurrentScript(null);
   window.history.replaceState({}, '', 'http://localhost/');
 });
 
-afterEach(() => {
+afterEach(async () => {
+  currentClient?.stop(false);
+  currentClient = undefined;
+  await vi.advanceTimersByTimeAsync(0);
+  vi.clearAllTimers();
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
   vi.clearAllMocks();
 });
 
@@ -332,8 +353,6 @@ describe('@rrweb/browser-client load diagnostics', () => {
 
 describe('@rrweb/browser-client HTTP fallback batching', () => {
   afterEach(() => {
-    vi.useRealTimers();
-    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
@@ -368,10 +387,7 @@ describe('@rrweb/browser-client HTTP fallback batching', () => {
           .split('\n')
           .map((event) => JSON.parse(event).id),
       ),
-    ).toEqual([
-      [0, 1, 2],
-      [3, 4],
-    ]);
+    ).toEqual([[0, 1], [2, 3], [4]]);
     expect(buffer.length()).toBe(0);
   });
 
@@ -387,7 +403,9 @@ describe('@rrweb/browser-client HTTP fallback batching', () => {
     await vi.advanceTimersByTimeAsync(5000);
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(buffer.items.map((event) => JSON.parse(event).id)).toEqual([3, 4]);
+    expect(buffer.items.map((event) => JSON.parse(event).id)).toEqual([
+      2, 3, 4,
+    ]);
   });
 
   it('requeues the failed batch ahead of events buffered during the request', async () => {
@@ -412,8 +430,6 @@ describe('@rrweb/browser-client HTTP fallback batching', () => {
 describe('@rrweb/browser-client transport recovery', () => {
   afterEach(() => {
     vi.clearAllTimers();
-    vi.useRealTimers();
-    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
@@ -430,7 +446,7 @@ describe('@rrweb/browser-client transport recovery', () => {
     const socket = mockState.socket!;
     const buffer = mockState.buffers[0];
     socket.fire('open');
-    // websocket-ts drains its buffer on open; only test events after connection.
+    // This helper isolates post-start events; startup backlog is covered separately.
     buffer.clear();
     socket.send.mockClear();
     const emit = mockState.lastRecordOptions!.emit as (event: unknown) => void;
@@ -448,6 +464,53 @@ describe('@rrweb/browser-client transport recovery', () => {
       emit: () => emit(event),
     };
   }
+
+  it('delivers initial metadata and snapshot backlog before direct WebSocket events', async () => {
+    const client = await importFreshClient();
+    client.start({ publicApiKey: 'synthetic' });
+    const socket = mockState.socket!;
+    socket.fire('open');
+    expect(socket.send).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(5000);
+    const calls = vi.mocked(fetch).mock.calls;
+    const payload = String(calls[0][1]?.body)
+      .split('\n')
+      .map((value) => JSON.parse(value));
+    expect(payload[0].data.tag).toBe('recording-meta');
+    expect(payload[1].type).toBe(EventType.Meta);
+    const emit = mockState.lastRecordOptions!.emit as (event: unknown) => void;
+    emit({ type: 5, timestamp: 2, data: { tag: 'after-start', payload: {} } });
+    expect(socket.send).toHaveBeenCalledTimes(1);
+  });
+
+  it('retains one ordered transport across freeze and visible resume during a POST', async () => {
+    const { socket: oldSocket, buffer, fetchMock, emit } = await setup();
+    let resolveRequest!: (response: Response) => void;
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRequest = resolve;
+        }),
+    );
+    oldSocket.fire('close');
+    emit();
+    await vi.advanceTimersByTimeAsync(5000);
+    document.dispatchEvent(new Event('freeze'));
+    document.dispatchEvent(new Event('visibilitychange'));
+    const newSocket = mockState.socket!;
+    expect(newSocket).not.toBe(oldSocket);
+    newSocket.fire('open');
+    oldSocket.fire('close');
+    oldSocket.fire('message', JSON.stringify({ type: 'error' }));
+    emit();
+    expect(newSocket.send).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    resolveRequest(new Response(null, { status: 202 }));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(buffer.length()).toBe(0);
+    emit();
+    expect(newSocket.send).toHaveBeenCalledTimes(1);
+  });
 
   it('sends new events over the socket after reconnecting', async () => {
     const { socket, buffer, event, emit } = await setup();
@@ -478,6 +541,34 @@ describe('@rrweb/browser-client transport recovery', () => {
       expect(fetchMock.mock.calls[0][1]?.body).toBe(JSON.stringify(event));
     },
   );
+
+  it('bounds repeated network failures', async () => {
+    const { socket, fetchMock, emit } = await setup();
+    fetchMock.mockRejectedValue(new TypeError('offline'));
+    socket.fire('close');
+    emit();
+    await vi.advanceTimersByTimeAsync(120000);
+    expect(fetchMock.mock.calls.length).toBeLessThanOrEqual(4);
+  });
+
+  it('does not overlap lifecycle and periodic uploads', async () => {
+    const { socket, fetchMock, emit } = await setup();
+    fetchMock.mockImplementation(() => new Promise(() => {}));
+    socket.fire('close');
+    emit();
+    await vi.advanceTimersByTimeAsync(5000);
+    emit();
+    Object.defineProperty(document, 'hidden', {
+      configurable: true,
+      value: true,
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+    Object.defineProperty(document, 'hidden', {
+      configurable: true,
+      value: false,
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
 
   it('keeps retrying fallback after an HTTP error', async () => {
     const { socket, fetchMock, event, emit } = await setup();
@@ -529,6 +620,7 @@ describe('@rrweb/browser-client transport recovery', () => {
     const { client, socket } = await setup();
     socket.fire('close');
     client.stop(false);
+    await vi.advanceTimersByTimeAsync(0);
     expect(vi.getTimerCount()).toBe(0);
   });
   it('retries an in-flight failed POST even if the socket reconnected', async () => {
@@ -555,6 +647,7 @@ describe('@rrweb/browser-client transport recovery', () => {
     client.start({ publicApiKey: 'test' });
     const socket = mockState.socket!;
     socket.fire('open');
+    await vi.advanceTimersByTimeAsync(5000);
     oldSocket.fire('close');
     oldSocket.fire('message', JSON.stringify({ type: 'error' }));
     socket.send.mockClear();
@@ -567,6 +660,7 @@ describe('@rrweb/browser-client transport recovery', () => {
     emit(event);
     expect(socket.send).toHaveBeenCalledWith(JSON.stringify(event));
     client.stop(false);
+    await vi.advanceTimersByTimeAsync(0);
     expect(vi.getTimerCount()).toBe(0);
   });
 });

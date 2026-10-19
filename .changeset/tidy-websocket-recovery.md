@@ -2,4 +2,4 @@
 "@rrweb/browser-client": patch
 ---
 
-Resume recording uploads after WebSocket reconnections and keep HTTP fallback retries active after disconnects or server errors. Preserve buffered events when a fallback network request fails, prevent overlapping periodic uploads, and clean up polling when recording stops or freezes.
+Resume uploads after WebSocket reconnects and coordinate HTTP fallback across periodic and lifecycle flushes. Bound retries, request duration, and retained event data; preserve failed-batch ordering, prevent overlapping uploads and unhandled fetch rejections, and retain retry state across freeze/resume.
