@@ -7,7 +7,13 @@ import {
 } from './transport';
 
 import { EventType } from '@rrweb/types';
-import type { customEvent, eventWithTime, listenerHandler } from '@rrweb/types';
+import type {
+  annotationData,
+  annotationEvent,
+  customEvent,
+  eventWithTime,
+  listenerHandler,
+} from '@rrweb/types';
 import { nowTimestamp } from '@rrweb/utils';
 import type { recordOptions } from 'rrweb';
 
@@ -51,6 +57,8 @@ export type customEventWithTime = customEvent & {
   timestamp: number;
 };
 
+type ClientEvent = customEvent | annotationEvent;
+
 const defaultServerUrl =
   'https://api.rrweb.com/recordings/{recordingId}/events/ws';
 let defaultClientConfig: clientConfig = {
@@ -69,6 +77,16 @@ let removeLifecycleListeners: (() => void) | undefined;
 
 let buffer = new EventBuffer();
 let rrwebStopFn: listenerHandler | undefined;
+let recorderReady = false;
+const pendingEvents: (ClientEvent & { timestamp: number })[] = [];
+let pendingEventBytes = 0;
+let cancelRecordingStartListener: listenerHandler | undefined;
+
+function resetRecordingState() {
+  recorderReady = false;
+  cancelRecordingStartListener?.();
+  cancelRecordingStartListener = undefined;
+}
 
 function hasDocument(): boolean {
   return typeof document !== 'undefined';
@@ -100,6 +118,9 @@ export function stop(resetRecordingId: boolean) {
   removeLifecycleListeners?.();
   removeLifecycleListeners = undefined;
   // reset all state so that start() can start afresh
+  resetRecordingState();
+  pendingEvents.length = 0;
+  pendingEventBytes = 0;
   if (rrwebStopFn !== undefined) {
     rrwebStopFn();
     rrwebStopFn = undefined;
@@ -219,6 +240,13 @@ function connect(
   ws.addEventListener(WebsocketEvent.open, () => {
     if (!isCurrent()) return;
     wsConnectionPaused = false;
+    connectionTransport.drain((event) => {
+      const size = byteLength(event);
+      if (size > wsLimit || ws.bufferedAmount + size > MAX_BUFFER_BYTES)
+        return false;
+      ws.send(event);
+      return true;
+    });
   });
   ws.addEventListener(WebsocketEvent.close, () => {
     if (!isCurrent()) return;
@@ -309,6 +337,7 @@ export function start(
   if (sURL.pathname.endsWith('/ws')) {
     sURL.pathname = sURL.pathname.slice(0, -3);
   }
+  sURL.protocol = sURL.protocol.replace('ws', 'http');
   const postUrl = sURL.href;
 
   if (includePii) {
@@ -359,7 +388,7 @@ export function start(
   // metadata event should be the first seen server side
   buffer.add(JSON.stringify(metaEvent));
 
-  recordOptions.emit = (event: eventWithTime) => {
+  const emitEvent = (event: eventWithTime) => {
     if (!ws && !buffer.failed) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
       ws = connect(serverUrl, postUrl, publicApiKey, handleMessage);
@@ -409,15 +438,65 @@ export function start(
     }
   };
 
+  recordOptions.emit = emitEvent;
+
+  const markRecorderReady = () => {
+    recorderReady = true;
+    cancelRecordingStartListener = undefined;
+    // Preserve call-time timestamps and use the same callback and transport as
+    // recorder events. Remove each event before emitting to avoid redelivery.
+    while (recorderReady && pendingEvents.length) {
+      const event = pendingEvents.shift();
+      if (event) {
+        pendingEventBytes -= byteLength(JSON.stringify(event)) + 1;
+        emitEvent(event);
+      }
+    }
+  };
+
+  const startRrwebRecording = () => {
+    resetRecordingState();
+    const startsImmediately =
+      document.readyState === 'interactive' ||
+      document.readyState === 'complete';
+    rrwebStopFn = record(recordOptions as recordOptions<eventWithTime>);
+    if (rrwebStopFn === undefined) {
+      return;
+    }
+    if (startsImmediately) {
+      markRecorderReady();
+      return;
+    }
+
+    const startEvent =
+      recordOptions.recordAfter === 'DOMContentLoaded'
+        ? { target: document, type: 'DOMContentLoaded' }
+        : { target: window, type: 'load' };
+    const listenerOptions = { capture: true, once: true };
+    // rrweb installs its capture listener during record(). Registering after it
+    // waits for rrweb's initializer to set its internal recording flag.
+    startEvent.target.addEventListener(
+      startEvent.type,
+      markRecorderReady,
+      listenerOptions,
+    );
+    cancelRecordingStartListener = () =>
+      startEvent.target.removeEventListener(
+        startEvent.type,
+        markRecorderReady,
+        listenerOptions,
+      );
+  };
+
   let startWhenVisible = false;
   if (!document.hidden) {
-    rrwebStopFn = record(recordOptions as recordOptions<eventWithTime>);
+    startRrwebRecording();
   } else {
     startWhenVisible = true;
   }
   const onVisibilityChange = () => {
     if (!document.hidden && startWhenVisible) {
-      rrwebStopFn = record(recordOptions as recordOptions<eventWithTime>);
+      startRrwebRecording();
       startWhenVisible = false;
       return;
     }
@@ -455,6 +534,7 @@ export function start(
       ws = undefined; // so `emit` can restart it again if page is unfrozen
     }
     if (rrwebStopFn !== undefined) {
+      resetRecordingState();
       rrwebStopFn();
       rrwebStopFn = undefined;
       startWhenVisible = true;
@@ -468,21 +548,61 @@ export function start(
   };
 }
 
-export const addCustomEvent = <T>(tag: string, payload: T) => {
-  if (rrwebStopFn !== undefined) {
-    record.addCustomEvent(tag, payload);
-  } else {
-    const customEvent: customEventWithTime = {
-      timestamp: nowTimestamp(),
-      type: EventType.Custom,
-      data: {
-        tag,
-        payload,
-      },
-    };
-    // let websocket buffer handle it
-    buffer.add(JSON.stringify(customEvent));
+function queueClientEvent(event: ClientEvent & { timestamp: number }) {
+  const size = byteLength(JSON.stringify(event)) + 1;
+  if (
+    pendingEvents.length >= 10000 ||
+    pendingEventBytes + size + buffer.bytes + buffer.reservedBytes >
+      MAX_BUFFER_BYTES
+  ) {
+    pendingEvents.length = 0;
+    pendingEventBytes = 0;
+    buffer.fail();
+    return;
   }
+  pendingEventBytes += size;
+  pendingEvents.push(event);
+}
+
+function addClientEvent(event: ClientEvent) {
+  if (buffer.failed) return;
+  if (!recorderReady) {
+    const timestamp = nowTimestamp();
+    // Snapshot queued data at call time, as the transport buffer did before.
+    if (event.type === EventType.Custom) {
+      const serialized = JSON.stringify(event.data.payload);
+      const payload: unknown =
+        serialized === undefined ? undefined : JSON.parse(serialized);
+      queueClientEvent({
+        type: event.type,
+        timestamp,
+        data: { tag: event.data.tag, payload },
+      });
+    } else {
+      queueClientEvent({
+        type: event.type,
+        timestamp,
+        data: { ...event.data },
+      });
+    }
+    return;
+  }
+  switch (event.type) {
+    case EventType.Custom:
+      record.addCustomEvent(event.data.tag, event.data.payload);
+      break;
+    case EventType.Annotation:
+      record.addAnnotation(event.data);
+      break;
+  }
+}
+
+export const addCustomEvent = <T>(tag: string, payload: T) => {
+  addClientEvent({ type: EventType.Custom, data: { tag, payload } });
+};
+
+export const addAnnotation = (annotation: annotationData) => {
+  addClientEvent({ type: EventType.Annotation, data: annotation });
 };
 
 export function addMeta(payload: nameValues) {
@@ -557,5 +677,6 @@ export default {
   addMeta,
   addPageviewMeta,
   addCustomEvent,
+  addAnnotation,
   getRecordingId,
 };

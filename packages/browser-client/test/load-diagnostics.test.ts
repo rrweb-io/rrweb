@@ -20,13 +20,26 @@ type MockState = {
     send: ReturnType<typeof vi.fn>;
     fire(name: string, data?: string): void;
   };
+  addAnnotation: ReturnType<typeof vi.fn>;
+  addCustomEvent: ReturnType<typeof vi.fn>;
+  send: ReturnType<typeof vi.fn>;
+  timestamp: number;
 };
 
 const mockState = vi.hoisted(
   (): MockState => ({
     buffers: [],
+    addAnnotation: vi.fn(),
+    addCustomEvent: vi.fn(),
+    send: vi.fn(),
+    timestamp: 100,
   }),
 );
+
+vi.mock('@rrweb/utils', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@rrweb/utils')>()),
+  nowTimestamp: () => mockState.timestamp,
+}));
 
 vi.mock('@rrweb/record', () => {
   const record = vi.fn((options: { emit?: (event: unknown) => void }) => {
@@ -42,7 +55,8 @@ vi.mock('@rrweb/record', () => {
     });
     return vi.fn();
   });
-  record.addCustomEvent = vi.fn();
+  record.addCustomEvent = mockState.addCustomEvent;
+  record.addAnnotation = mockState.addAnnotation;
   record.freezePage = vi.fn();
   return { record };
 });
@@ -78,7 +92,7 @@ vi.mock('websocket-ts', () => {
   }
 
   class Websocket {
-    send = vi.fn();
+    send = vi.fn((value: string) => mockState.send(value));
     bufferedAmount = 0;
     close = vi.fn();
     private listeners = new Map<
@@ -147,6 +161,8 @@ async function importFreshClient() {
   mockState.buffers = [];
   mockState.lastRecordOptions = undefined;
   mockState.lastWebsocketUrl = undefined;
+  mockState.socket = undefined;
+  mockState.timestamp = 100;
   currentClient = await import('../src/index');
   return currentClient;
 }
@@ -209,6 +225,126 @@ afterEach(async () => {
 });
 
 describe('@rrweb/browser-client load diagnostics', () => {
+  it('bounds custom events and annotations queued before recording starts', async () => {
+    const client = await importFreshClient();
+    client.addCustomEvent('too-large', 'x'.repeat(5 * 1024 * 1024));
+    for (let i = 0; i < 10; i++)
+      client.addAnnotation({ type: 'caption', text: 'later' });
+    client.start({ publicApiKey: 'synthetic' });
+    await vi.advanceTimersByTimeAsync(120000);
+    expect(fetch).not.toHaveBeenCalled();
+    expect(mockState.socket).toBeUndefined();
+  });
+
+  it('emits annotations immediately while recording', async () => {
+    const client = await importFreshClient();
+    const annotation = { type: 'caption', text: 'Save the project' } as const;
+
+    expect(client.default).toHaveProperty(
+      'addAnnotation',
+      client.addAnnotation,
+    );
+
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      emit: () => undefined,
+    });
+    client.addAnnotation(annotation);
+
+    expect(mockState.addAnnotation).toHaveBeenCalledWith(annotation);
+    expect(mockState.buffers[0].items).not.toContainEqual(
+      expect.stringContaining('Save the project'),
+    );
+  });
+
+  it.each(['function', 'global'])(
+    'delivers queued custom events and annotations once through %s emit',
+    async (callbackType) => {
+      const client = await importFreshClient();
+      const emit = vi.fn();
+      const annotation = {
+        type: 'timelineMarker' as const,
+        text: 'Checkpoint',
+      };
+      const payload = { value: 1 };
+      client.addCustomEvent('before-start', payload);
+      client.addAnnotation(annotation);
+      payload.value = 2;
+      annotation.text = 'Changed after enqueue';
+      expect(emit).not.toHaveBeenCalled();
+      mockState.timestamp = 200;
+      Object.defineProperty(window, 'queuedEventEmit', {
+        configurable: true,
+        value: emit,
+      });
+      client.start({
+        serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+        publicApiKey: 'public_key_rr_test',
+        includePii: false,
+        emit: callbackType === 'function' ? emit : 'queuedEventEmit',
+      });
+      const expected = [
+        {
+          type: EventType.Custom,
+          timestamp: 100,
+          data: { tag: 'before-start', payload: { value: 1 } },
+        },
+        {
+          type: EventType.Annotation,
+          timestamp: 100,
+          data: { type: 'timelineMarker', text: 'Checkpoint' },
+        },
+      ];
+      expect(
+        emit.mock.calls
+          .map(([event]) => event)
+          .filter((event) => event.type !== EventType.Meta),
+      ).toEqual(expected);
+      expect(
+        mockState.buffers[0].items.slice(2).map((event) => JSON.parse(event)),
+      ).toEqual(expected);
+      expect(mockState.addAnnotation).not.toHaveBeenCalled();
+      expect(mockState.addCustomEvent).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(mockState.buffers[0].length()).toBe(0);
+      client.stop(false);
+      delete (window as unknown as Record<string, unknown>).queuedEventEmit;
+    },
+  );
+
+  it('clears queued events on stop and delivers new events only to the next recording', async () => {
+    const client = await importFreshClient();
+    client.addCustomEvent('discarded', {});
+    client.addAnnotation({ type: 'caption', text: 'Discarded' });
+    client.stop(false);
+    const emit = vi.fn();
+    const options = {
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      emit,
+    };
+    client.start(options);
+    expect(emit.mock.calls.map(([event]) => event.type)).toEqual([
+      EventType.Meta,
+    ]);
+    client.stop(false);
+    emit.mockClear();
+    mockState.send.mockClear();
+    client.addCustomEvent('next-session', {});
+    client.addAnnotation({ type: 'caption', text: 'Next session' });
+    client.start(options);
+    expect(emit.mock.calls.map(([event]) => event.type)).toEqual([
+      EventType.Meta,
+      EventType.Custom,
+      EventType.Annotation,
+    ]);
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(mockState.buffers.at(-1)!.length()).toBe(0);
+    client.stop(false);
+  });
+
   it('adds programmatic diagnostics without jsSource by default', async () => {
     const client = await importFreshClient();
 
@@ -470,17 +606,13 @@ describe('@rrweb/browser-client transport recovery', () => {
     client.start({ publicApiKey: 'synthetic' });
     const socket = mockState.socket!;
     socket.fire('open');
-    expect(socket.send).not.toHaveBeenCalled();
-    await vi.advanceTimersByTimeAsync(5000);
-    const calls = vi.mocked(fetch).mock.calls;
-    const payload = String(calls[0][1]?.body)
-      .split('\n')
-      .map((value) => JSON.parse(value));
+    const payload = socket.send.mock.calls.map(([value]) => JSON.parse(value));
     expect(payload[0].data.tag).toBe('recording-meta');
     expect(payload[1].type).toBe(EventType.Meta);
     const emit = mockState.lastRecordOptions!.emit as (event: unknown) => void;
     emit({ type: 5, timestamp: 2, data: { tag: 'after-start', payload: {} } });
-    expect(socket.send).toHaveBeenCalledTimes(1);
+    expect(socket.send).toHaveBeenCalledTimes(3);
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it('retains one ordered transport across freeze and visible resume during a POST', async () => {

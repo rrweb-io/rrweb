@@ -1,53 +1,41 @@
-# Custom Event
+# Custom events
 
-You may need to record some custom events along with the rrweb events, and let them be played as other events. The custom event API was designed for this.
-
-After starting the recording, we can call the `record.addCustomEvent` API to add a custom event.
+After recording starts, call `record.addCustomEvent(tag, payload)` to add an event.
+The tag is a string; the payload can be any serializable value.
 
 ```js
 import { record } from '@rrweb/record';
 
-// start recording
-record({
-  emit(event) {
-    ...
-  }
-})
+const events = [];
+record({ emit: (event) => events.push(event) });
 
-// record some custom events at any time
-record.addCustomEvent('submit-form', {
-  name: 'Adam',
-  age: 18
-})
-record.addCustomEvent('some-error', {
-  error
-})
+record.addCustomEvent('submit-form', { name: 'Adam' });
+record.addCustomEvent('some-error', { message: 'Could not submit the form.' });
 ```
 
-`addCustomEvent` accepts two parameters. The first one is a string-type `tag`, while the second one is an any-type `payload`.
-
-During the replay, we can add an event listener to custom events, or configure the style of custom events in rrweb-player's timeline.
-
-**Listen to custom events**
+Listen for custom events during replay:
 
 ```js
 import { Replayer } from '@rrweb/replay';
 
 const replayer = new Replayer(events);
-
 replayer.on('custom-event', (event) => {
-  console.log(event.tag, event.payload);
+  console.log(event.data.tag, event.data.payload);
 });
 ```
 
-**Display in rrweb-player**
+## Display in rrweb-player
+
+Custom events appear as timeline markers in rrweb-player. Hover over a marker to
+see its tag. Use the `tags` option to configure a color for each custom-event tag.
 
 ```js
+import rrwebPlayer from 'rrweb-player';
+
 new rrwebPlayer({
   target: document.body,
   props: {
     events,
-    // configure the color of tag which will be displayed on the timeline
     tags: {
       'submit-form': '#21e676',
       'some-error': 'red',
@@ -55,3 +43,6 @@ new rrwebPlayer({
   },
 });
 ```
+
+For captions and timeline markers, use the separate
+[annotations API](./annotations.md).

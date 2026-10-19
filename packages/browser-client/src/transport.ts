@@ -89,6 +89,29 @@ export class UploadTransport {
     );
   }
 
+  drain(send: (event: string) => boolean): void {
+    if (
+      activeFlushes ||
+      this.posting ||
+      this.disposed ||
+      this.buffer.failed ||
+      this.failures
+    )
+      return;
+    for (
+      let event = this.buffer.peek();
+      event !== undefined;
+      event = this.buffer.peek()
+    ) {
+      try {
+        if (!send(event)) return;
+      } catch {
+        return;
+      }
+      this.buffer.read();
+    }
+  }
+
   resume(): void {
     this.disposed = false;
     if (!this.polling && !this.buffer.failed)
