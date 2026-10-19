@@ -1,5 +1,16 @@
 # @rrweb/record
 
+## 2.1.7
+
+### Patch Changes
+
+- [#1948](https://github.com/rrweb-io/rrweb/pull/1948) [`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fix [#1920](https://github.com/rrweb-io/rrweb/issues/1920) - normalization of '0px' in style sheets caused problems with the styled-components library, which built style elements text element by text element. Bug introduced in [#1640](https://github.com/rrweb-io/rrweb/issues/1640)
+
+- Updated dependencies [[`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804), [`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804)]:
+  - rrweb@2.1.7
+  - @rrweb/types@2.1.7
+  - @rrweb/utils@2.1.7
+
 ## 2.1.6
 
 ### Patch Changes
