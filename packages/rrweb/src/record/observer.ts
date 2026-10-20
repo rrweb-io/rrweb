@@ -54,7 +54,21 @@ import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
 import dom, { mutationObserverCtor } from '@rrweb/utils';
 
+/**
+ * Buffers of all live mutation observers, so that the recorder can freeze, lock and unlock them together.
+ * A buffer is registered when its observer starts and unregistered when its observer is stopped.
+ */
 export const mutationBuffers: MutationBuffer[] = [];
+
+/**
+ * Iterates over a copy of the registry: callbacks may cause buffers to be added or removed, e.g. unlocking a
+ * buffer emits pending mutations, which can stop the observer of a removed shadow root.
+ */
+export function forEachMutationBuffer(
+  cb: (buffer: MutationBuffer) => void,
+): void {
+  mutationBuffers.slice().forEach(cb);
+}
 
 // Event.path is non-standard and used in some older browsers
 type NonStandardEvent = Omit<Event, 'composedPath'> & {
@@ -78,10 +92,14 @@ function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
   return event && event.target;
 }
 
+/**
+ * Observes mutations below `rootEl`. Returns a handler that stops the observer and unregisters its buffer, and
+ * the cleanup of the shared untainted `MutationObserver` iframe (only needed in Safari).
+ */
 export function initMutationObserver(
   options: MutationBufferParam,
   rootEl: Node,
-): [MutationObserver, () => void] {
+): [listenerHandler, () => void] {
   const mutationBuffer = new MutationBuffer();
   mutationBuffers.push(mutationBuffer);
   // see mutation.ts for details
@@ -100,7 +118,16 @@ export function initMutationObserver(
     childList: true,
     subtree: true,
   });
-  return [observer, iframeCleanup];
+  const stop = () => {
+    observer.disconnect();
+    // A stopped buffer must leave the registry: it references its document, mirror and recording callbacks, and
+    // `record()` freezes, locks and unlocks every registered buffer.
+    const index = mutationBuffers.indexOf(mutationBuffer);
+    if (index !== -1) {
+      mutationBuffers.splice(index, 1);
+    }
+  };
+  return [stop, iframeCleanup];
 }
 
 function initMoveObserver({
@@ -1308,11 +1335,14 @@ export function initObservers(
   }
 
   mergeHooks(o, hooks);
-  let mutationObserver: MutationObserver | undefined;
+  let stopMutationObserver: listenerHandler | undefined;
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   let cleanupMutationIframe: () => void = () => {};
   if (o.recordDOM) {
-    [mutationObserver, cleanupMutationIframe] = initMutationObserver(o, o.doc);
+    [stopMutationObserver, cleanupMutationIframe] = initMutationObserver(
+      o,
+      o.doc,
+    );
   }
   const mousemoveHandler = initMoveObserver(o);
   const mouseInteractionHandler = initMouseInteractionObserver(o);
@@ -1353,9 +1383,13 @@ export function initObservers(
   }
 
   return callbackWrapper(() => {
-    mutationBuffers.forEach((b) => b.reset());
-    mutationObserver?.disconnect();
-    cleanupMutationIframe();
+    // Observers of same-origin iframe documents are also stopped when the document unloads, while recording goes
+    // on. Only the recorded document's teardown may reset state shared by all documents.
+    if (o.doc === document) {
+      forEachMutationBuffer((b) => b.reset());
+      cleanupMutationIframe();
+    }
+    stopMutationObserver?.();
     mousemoveHandler();
     mouseInteractionHandler();
     scrollHandler();

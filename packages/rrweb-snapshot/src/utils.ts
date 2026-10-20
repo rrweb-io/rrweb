@@ -225,6 +225,12 @@ export class Mirror implements IMirror<Node> {
         this.removeNodeFromMap(childNode as unknown as Node),
       );
     }
+
+    // Shadow trees are not child nodes of their host, but go away with it.
+    const shadowRoot = dom.shadowRoot(n);
+    if (shadowRoot) {
+      this.removeNodeFromMap(shadowRoot);
+    }
   }
   has(id: number): boolean {
     return this.idNodeMap.has(id);

@@ -4,7 +4,11 @@ import {
   type MaskInputOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import { initObservers, mutationBuffers } from './observer';
+import {
+  initObservers,
+  mutationBuffers,
+  forEachMutationBuffer,
+} from './observer';
 import {
   on,
   getWindowWidth,
@@ -196,7 +200,7 @@ function record<T = eventWithTime>(
     ) {
       // we've got a user initiated event so first we need to apply
       // all DOM changes that have been buffering during paused state
-      mutationBuffers.forEach((buf) => buf.unfreeze());
+      forEachMutationBuffer((buf) => buf.unfreeze());
     }
 
     if (inEmittingFrame) {
@@ -356,7 +360,7 @@ function record<T = eventWithTime>(
 
     shadowDomManager.init();
 
-    mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
+    forEachMutationBuffer((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
       mirror,
       blockClass,
@@ -407,7 +411,7 @@ function record<T = eventWithTime>(
       },
       isCheckout,
     );
-    mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
+    forEachMutationBuffer((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
 
     // Some old browsers don't support adoptedStyleSheets.
     if (document.adoptedStyleSheets && document.adoptedStyleSheets.length > 0)
@@ -555,13 +559,25 @@ function record<T = eventWithTime>(
       );
     };
 
+    // Observers of same-origin iframe documents, stopped when the document unloads.
+    const iframeObservers = new Map<Document, listenerHandler>();
     iframeManager.addLoadListener((iframeEl) => {
       try {
-        handlers.push(observe(iframeEl.contentDocument!));
+        const doc = iframeEl.contentDocument!;
+        // Iframes are attached again on every full snapshot, but each document needs to be observed only once.
+        if (iframeObservers.has(doc)) return;
+        iframeObservers.set(doc, observe(doc));
       } catch (error) {
         // TODO: handle internal error
         console.warn(error);
       }
+    });
+    iframeManager.addUnloadListener((doc) => {
+      const stopObserving = iframeObservers.get(doc);
+      if (!stopObserving) return;
+      iframeObservers.delete(doc);
+      stopObserving();
+      mirror.removeNodeFromMap(doc);
     });
 
     const init = () => {
@@ -596,7 +612,7 @@ function record<T = eventWithTime>(
       );
     }
     return () => {
-      handlers.forEach((handler) => {
+      [...handlers, ...iframeObservers.values()].forEach((handler) => {
         try {
           handler();
         } catch (error) {
@@ -615,6 +631,8 @@ function record<T = eventWithTime>(
           }
         }
       });
+      iframeObservers.clear();
+      iframeManager.destroy();
       processedNodeManager.destroy();
       recording = false;
       unregisterErrorHandler();
@@ -646,7 +664,7 @@ record.addAnnotation = (annotation: annotationData) => {
 };
 
 record.freezePage = () => {
-  mutationBuffers.forEach((buf) => buf.freeze());
+  forEachMutationBuffer((buf) => buf.freeze());
 };
 
 record.takeFullSnapshot = (isCheckout?: boolean) => {
