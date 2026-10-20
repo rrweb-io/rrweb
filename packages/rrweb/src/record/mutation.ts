@@ -173,9 +173,9 @@ export default class MutationBuffer {
     const addedIds = new Set<number>();
 
     while (this.mapRemoves.length) {
-      const removedNode = this.mapRemoves.shift()!;
-      this.mirror.removeNodeFromMap(removedNode);
-      this.shadowDomManager.removeShadowRootsFor(removedNode);
+      const removed = this.mapRemoves.shift()!;
+      this.mirror.removeNodeFromMap(removed);
+      this.shadowDomManager.removeShadowRootsIn(removed);
     }
 
     for (const n of this.movedSet) {
@@ -437,10 +437,6 @@ export default class MutationBuffer {
     this.movedMap = {};
 
     this.mutationCb(payload);
-  };
-
-  public bufferBelongsToIframe = (iframeEl: HTMLIFrameElement) => {
-    return this.doc === iframeEl.contentDocument;
   };
 
   private genTextAreaValueMutation = (textarea: HTMLTextAreaElement) => {

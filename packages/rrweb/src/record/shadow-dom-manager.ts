@@ -1,16 +1,16 @@
 import type { MutationBufferParam } from '../types';
 import type {
+  listenerHandler,
   mutationCallBack,
   scrollCallback,
   SamplingStrategy,
 } from '@rrweb/types';
 import {
   initMutationObserver,
-  removeMutationBuffer,
   initScrollObserver,
   initAdoptedStyleSheetObserver,
 } from './observer';
-import { inDom, hasShadowRoot } from '../utils';
+import { inDom } from '../utils';
 import type { Mirror } from 'rrweb-snapshot';
 import { isNativeShadowDom } from 'rrweb-snapshot';
 import dom, { patch } from '@rrweb/utils';
@@ -23,9 +23,8 @@ type BypassOptions = Omit<
 };
 
 export class ShadowDomManager {
-  private shadowDoms = new WeakSet<ShadowRoot>();
-  /** Per-root teardowns, so one detached root can be released alone. */
-  private shadowRootTeardowns = new Map<ShadowRoot, (() => void)[]>();
+  /** Observed shadow roots and the handlers that stop observing them. */
+  private shadowDoms = new Map<ShadowRoot, listenerHandler[]>();
   private mutationCb: mutationCallBack;
   private scrollCb: scrollCallback;
   private bypassOptions: BypassOptions;
@@ -55,10 +54,9 @@ export class ShadowDomManager {
   public addShadowRoot(shadowRoot: ShadowRoot, doc: Document) {
     if (!isNativeShadowDom(shadowRoot)) return;
     if (this.shadowDoms.has(shadowRoot)) return;
-    this.shadowDoms.add(shadowRoot);
-    const teardowns: (() => void)[] = [];
-    this.shadowRootTeardowns.set(shadowRoot, teardowns);
-    const [observer] = initMutationObserver(
+    const handlers: listenerHandler[] = [];
+    this.shadowDoms.set(shadowRoot, handlers);
+    const [stopMutationObserver] = initMutationObserver(
       {
         ...this.bypassOptions,
         doc,
@@ -68,8 +66,8 @@ export class ShadowDomManager {
       },
       shadowRoot,
     );
-    teardowns.push(() => removeMutationBuffer(observer));
-    teardowns.push(
+    handlers.push(stopMutationObserver);
+    handlers.push(
       initScrollObserver({
         ...this.bypassOptions,
         scrollCb: this.scrollCb,
@@ -81,6 +79,8 @@ export class ShadowDomManager {
     );
     // Defer this to avoid adoptedStyleSheet events being created before the full snapshot is created or attachShadow action is recorded.
     setTimeout(() => {
+      // The shadow root was released, or the manager reset, in the meantime.
+      if (this.shadowDoms.get(shadowRoot) !== handlers) return;
       if (
         shadowRoot.adoptedStyleSheets &&
         shadowRoot.adoptedStyleSheets.length > 0
@@ -89,48 +89,38 @@ export class ShadowDomManager {
           shadowRoot.adoptedStyleSheets,
           this.mirror.getId(dom.host(shadowRoot)),
         );
-      const restore = initAdoptedStyleSheetObserver(
-        {
-          mirror: this.mirror,
-          stylesheetManager: this.bypassOptions.stylesheetManager,
-        },
-        shadowRoot,
+      handlers.push(
+        initAdoptedStyleSheetObserver(
+          {
+            mirror: this.mirror,
+            stylesheetManager: this.bypassOptions.stylesheetManager,
+          },
+          shadowRoot,
+        ),
       );
-      const pending = this.shadowRootTeardowns.get(shadowRoot);
-      if (pending) {
-        pending.push(restore);
-      } else {
-        restore();
-      }
     }, 0);
   }
 
-  /** Disconnects one shadow root and forgets it. */
-  public removeShadowRoot(shadowRoot: ShadowRoot) {
-    const teardowns = this.shadowRootTeardowns.get(shadowRoot);
-    if (teardowns) {
-      teardowns.forEach((teardown) => {
-        try {
-          teardown();
-        } catch (e) {
-          //
-        }
-      });
-      this.shadowRootTeardowns.delete(shadowRoot);
-    }
-    this.shadowDoms.delete(shadowRoot);
-  }
-
-  public removeShadowRootsFor(node: Node) {
-    if (hasShadowRoot(node)) {
-      const shadowRoot = node.shadowRoot;
-      // Attached at emit time means moved or reinserted: keep observing.
-      if (this.shadowDoms.has(shadowRoot) && !inDom(node)) {
+  /**
+   * Stops observing the shadow roots in a removed subtree, including nested ones. Hosts that are back in the
+   * document by now were moved rather than removed and stay observed.
+   */
+  public removeShadowRootsIn(n: Node) {
+    if (this.shadowDoms.size === 0) return;
+    const shadowRoot = dom.shadowRoot(n);
+    if (shadowRoot) {
+      if (this.shadowDoms.has(shadowRoot) && !inDom(n)) {
         this.removeShadowRoot(shadowRoot);
       }
-      this.removeShadowRootsFor(shadowRoot);
+      this.removeShadowRootsIn(shadowRoot);
     }
-    node.childNodes?.forEach((child) => this.removeShadowRootsFor(child));
+    dom.childNodes(n).forEach((child) => this.removeShadowRootsIn(child));
+  }
+
+  private removeShadowRoot(shadowRoot: ShadowRoot) {
+    const handlers = this.shadowDoms.get(shadowRoot);
+    this.shadowDoms.delete(shadowRoot);
+    handlers?.forEach(runHandler);
   }
 
   /**
@@ -181,24 +171,18 @@ export class ShadowDomManager {
   }
 
   public reset() {
-    this.restoreHandlers.forEach((handler) => {
-      try {
-        handler();
-      } catch (e) {
-        //
-      }
-    });
+    this.restoreHandlers.forEach(runHandler);
     this.restoreHandlers = [];
-    this.shadowRootTeardowns.forEach((teardowns) => {
-      teardowns.forEach((teardown) => {
-        try {
-          teardown();
-        } catch (e) {
-          //
-        }
-      });
-    });
-    this.shadowRootTeardowns = new Map();
-    this.shadowDoms = new WeakSet();
+    const shadowDoms = this.shadowDoms;
+    this.shadowDoms = new Map();
+    shadowDoms.forEach((handlers) => handlers.forEach(runHandler));
+  }
+}
+
+function runHandler(handler: listenerHandler) {
+  try {
+    handler();
+  } catch (e) {
+    //
   }
 }
