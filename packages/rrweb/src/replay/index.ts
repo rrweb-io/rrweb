@@ -115,8 +115,8 @@ function indicatesTouchDevice(e: eventWithTime) {
   );
 }
 
-type ChunkInfo = {
-  chunkStart: number;
+type SegmentInfo = {
+  segmentStart: number;
   keyframe: boolean;
   fetched: boolean;
   fetching: boolean;
@@ -124,16 +124,17 @@ type ChunkInfo = {
   markerInserted: boolean;
 };
 
-const maxChunkFetchAttempts = 3;
+const maxSegmentFetchAttempts = 3;
+const maxConcurrentFetches = 3;
 
-function isChunkStartMarker(event: eventWithTime): boolean {
-  return event.type === EventType.Custom && event.data.tag === 'chunk-start';
+function isSegmentStartMarker(event: eventWithTime): boolean {
+  return event.type === EventType.Custom && event.data.tag === 'segment-start';
 }
 
-function markerChunkStart(event: eventWithTime): number {
-  const payload = (event.data as { payload?: { chunkStart?: number } }).payload;
-  return typeof payload?.chunkStart === 'number'
-    ? payload.chunkStart
+function markerSegmentStart(event: eventWithTime): number {
+  const payload = (event.data as { payload?: { segmentStart?: number } }).payload;
+  return typeof payload?.segmentStart === 'number'
+    ? payload.segmentStart
     : event.timestamp;
 }
 
@@ -206,7 +207,7 @@ export class Replayer {
   // Similar to the reason for constructedStyleMutations.
   private adoptedStyleSheets: adoptedStyleSheetData[] = [];
 
-  private chunks = new Map<number, ChunkInfo>();
+  private segments = new Map<number, SegmentInfo>();
   private recordingEndTs = 0;
   private bufferingTarget: { offset: number; play: boolean } | null = null;
 
@@ -391,7 +392,6 @@ export class Replayer {
         timeOffset: 0,
         baselineTime: 0,
         lastPlayedEvent: null,
-        cappedAtFrontier: null,
       },
       {
         getCastFn: this.getCastFn,
@@ -624,8 +624,8 @@ export class Replayer {
       ? this.config.unpackFn(rawEvent as string)
       : (rawEvent as eventWithTime);
     this.registerEvent(event);
-    if (isChunkStartMarker(event)) {
-      const info = this.chunks.get(markerChunkStart(event))!;
+    if (isSegmentStartMarker(event)) {
+      const info = this.segments.get(markerSegmentStart(event))!;
       if (info.markerInserted) {
         return;
       }
@@ -640,15 +640,15 @@ export class Replayer {
     return this.service.state.context.events[0].timestamp + timeOffset;
   }
 
-  private sortedChunkStarts(): number[] {
-    return [...this.chunks.keys()].sort((a, b) => a - b);
+  private sortedSegmentStarts(): number[] {
+    return [...this.segments.keys()].sort((a, b) => a - b);
   }
 
   private indexInitialEvents(events: eventWithTime[]) {
     for (const event of events) {
       this.registerEvent(event);
-      if (isChunkStartMarker(event)) {
-        this.chunks.get(markerChunkStart(event))!.markerInserted = true;
+      if (isSegmentStartMarker(event)) {
+        this.segments.get(markerSegmentStart(event))!.markerInserted = true;
       }
     }
   }
@@ -660,11 +660,11 @@ export class Replayer {
     if (indicatesTouchDevice(event)) {
       this.mouse.classList.add('touch-device');
     }
-    if (isChunkStartMarker(event)) {
-      const chunkStart = markerChunkStart(event);
-      if (!this.chunks.has(chunkStart)) {
-        this.chunks.set(chunkStart, {
-          chunkStart,
+    if (isSegmentStartMarker(event)) {
+      const segmentStart = markerSegmentStart(event);
+      if (!this.segments.has(segmentStart)) {
+        this.segments.set(segmentStart, {
+          segmentStart,
           keyframe: markerIsKeyframe(event),
           fetched: false,
           fetching: false,
@@ -675,18 +675,18 @@ export class Replayer {
     }
   }
 
-  private spliceChunkMarker(chunkStart: number) {
+  private spliceSegmentMarker(segmentStart: number) {
     const events = this.service.state.context.events;
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
-      if (isChunkStartMarker(event) && markerChunkStart(event) === chunkStart) {
+      if (isSegmentStartMarker(event) && markerSegmentStart(event) === segmentStart) {
         events.splice(i, 1);
         return;
       }
     }
   }
 
-  private chunkIndexContaining(sorted: number[], timestamp: number): number {
+  private segmentIndexContaining(sorted: number[], timestamp: number): number {
     let start = 0;
     let end = sorted.length - 1;
     let result = -1;
@@ -705,22 +705,22 @@ export class Replayer {
   private needsBuffering(targetTimestamp: number): boolean {
     return (
       targetTimestamp < this.recordingEndTs &&
-      this.neededChunks(targetTimestamp).length > 0
+      this.neededSegments(targetTimestamp).length > 0
     );
   }
 
-  private neededChunks(targetTimestamp: number): number[] {
-    const sorted = this.sortedChunkStarts();
-    const index = this.chunkIndexContaining(sorted, targetTimestamp);
+  private neededSegments(targetTimestamp: number): number[] {
+    const sorted = this.sortedSegmentStarts();
+    const index = this.segmentIndexContaining(sorted, targetTimestamp);
     if (index < 0) return [];
     let keyframe = index;
-    while (keyframe > 0 && !this.chunks.get(sorted[keyframe])!.keyframe) {
+    while (keyframe > 0 && !this.segments.get(sorted[keyframe])!.keyframe) {
       keyframe--;
     }
     const needed: number[] = [];
     for (let i = keyframe; i <= index; i++) {
-      const info = this.chunks.get(sorted[i])!;
-      if (!info.fetched) needed.push(info.chunkStart);
+      const info = this.segments.get(sorted[i])!;
+      if (!info.fetched) needed.push(info.segmentStart);
     }
     return needed;
   }
@@ -729,18 +729,18 @@ export class Replayer {
     const alreadyBuffering = this.service.state.matches('buffering');
     this.bufferingTarget = { offset: timeOffset, play };
     if (alreadyBuffering) {
-      this.requestNeededChunks();
+      this.requestNeededSegments();
     } else {
       this.service.send({ type: 'BUFFER' });
     }
   }
 
   private onEnterBuffering = () => {
-    for (const info of this.chunks.values()) {
+    for (const info of this.segments.values()) {
       info.attempts = 0;
     }
     this.emitter.emit(ReplayerEvents.BufferingStart);
-    this.requestNeededChunks();
+    this.requestNeededSegments();
   };
 
   private onExitBuffering = () => {
@@ -748,34 +748,42 @@ export class Replayer {
     this.emitter.emit(ReplayerEvents.BufferingEnd);
   };
 
-  private requestNeededChunks() {
+  private requestNeededSegments() {
     if (!this.bufferingTarget) return;
     const targetTimestamp = this.timestampFromOffset(
       this.bufferingTarget.offset,
     );
-    const needed = this.neededChunks(targetTimestamp);
+    const needed = this.neededSegments(targetTimestamp);
     if (needed.length === 0) {
       this.resumeFromBuffering();
       return;
     }
-    const fetchable = needed.filter((chunkStart) => this.canFetch(chunkStart));
+    const fetchable = needed.filter((segmentStart) => this.canFetch(segmentStart));
     if (fetchable.length === 0 && !this.hasPendingFetches()) {
       this.giveUpBuffering();
       return;
     }
-    for (const chunkStart of fetchable) {
-      this.fetchChunk(chunkStart);
+    for (const segmentStart of fetchable) {
+      this.fetchSegment(segmentStart);
     }
   }
 
-  private canFetch(chunkStart: number): boolean {
-    const info = this.chunks.get(chunkStart);
+  private canFetch(segmentStart: number): boolean {
+    const info = this.segments.get(segmentStart);
     if (!info || info.fetched || info.fetching) return false;
-    return info.attempts < maxChunkFetchAttempts;
+    return info.attempts < maxSegmentFetchAttempts;
   }
 
   private giveUpBuffering() {
-    this.warn('[replayer] buffering aborted: chunk fetch failed repeatedly');
+    this.warn('[replayer] buffering aborted: segment fetch failed repeatedly');
+    if (this.bufferingTarget) {
+      const targetTimestamp = this.timestampFromOffset(
+        this.bufferingTarget.offset,
+      );
+      this.emitter.emit(ReplayerEvents.BufferingError, {
+        segmentStarts: this.neededSegments(targetTimestamp),
+      });
+    }
     this.service.send({ type: 'PAUSE' });
   }
 
@@ -797,53 +805,91 @@ export class Replayer {
     if (!this.service.state.matches('playing')) return;
     const playhead = this.timestampFromOffset(this.getCurrentTime());
     const horizon = playhead + this.config.bufferAheadMs * this.timer.speed;
-    for (const chunkStart of this.sortedChunkStarts()) {
-      if (chunkStart > horizon) break;
-      if (chunkStart < playhead) continue;
-      this.fetchChunk(chunkStart);
+    for (const segmentStart of this.sortedSegmentStarts()) {
+      if (segmentStart > horizon) break;
+      if (segmentStart < playhead) continue;
+      this.fetchSegment(segmentStart);
     }
   };
 
-  private fetchChunk(chunkStart: number) {
+  private fetchSegment(segmentStart: number) {
     if (!this.config.fetchEvents) return;
-    if (!this.canFetch(chunkStart)) return;
-    const info = this.chunks.get(chunkStart)!;
+    if (!this.canFetch(segmentStart)) return;
+    if (this.inFlightFetches() >= maxConcurrentFetches) return;
+    const info = this.segments.get(segmentStart)!;
     info.attempts += 1;
     info.fetching = true;
-    void this.config.fetchEvents(chunkStart).then(
+    void this.config.fetchEvents(segmentStart).then(
       (batch) => {
         info.fetching = false;
-        info.fetched = true;
-        for (const raw of batch) {
-          this.ingestFetched(raw);
+        if (!this.acceptFetchedBatch(segmentStart, batch)) {
+          this.warn('[replayer] empty or out-of-range segment response', {
+            segmentStart,
+          });
         }
-        this.spliceChunkMarker(chunkStart);
-        this.onChunkSettled();
+        this.onSegmentSettled();
       },
       (error) => {
         info.fetching = false;
         this.warn('[replayer] fetchEvents failed', error);
-        this.onChunkSettled();
+        this.onSegmentSettled();
       },
     );
   }
 
-  private ingestFetched(rawEvent: eventWithTime | string) {
-    const event = this.config.unpackFn
-      ? this.config.unpackFn(rawEvent as string)
-      : (rawEvent as eventWithTime);
-    this.registerEvent(event);
-    if (isChunkStartMarker(event)) {
-      const info = this.chunks.get(markerChunkStart(event))!;
-      if (info.markerInserted) {
-        return;
+  private acceptFetchedBatch(
+    segmentStart: number,
+    batch: Array<eventWithTime | string>,
+  ): boolean {
+    const events = batch.map((raw) =>
+      this.config.unpackFn
+        ? this.config.unpackFn(raw as string)
+        : (raw as eventWithTime),
+    );
+    let frontier: number | null = null;
+    for (const event of events) {
+      if (isSegmentStartMarker(event)) {
+        this.registerEvent(event);
+        const cs = markerSegmentStart(event);
+        if (cs > segmentStart && (frontier === null || cs > frontier)) {
+          frontier = cs;
+        }
       }
-      info.markerInserted = true;
     }
-    injectEvent(this.service.state.context.events, event);
+    const nextKnown = this.sortedSegmentStarts().find((cs) => cs > segmentStart);
+    const bound = frontier ?? nextKnown ?? Infinity;
+
+    let accepted = 0;
+    for (const event of events) {
+      if (isSegmentStartMarker(event)) {
+        const cs = markerSegmentStart(event);
+        const info = this.segments.get(cs)!;
+        if (cs >= bound && !info.markerInserted) {
+          info.markerInserted = true;
+          injectEvent(this.service.state.context.events, event);
+        }
+        continue;
+      }
+      if (event.timestamp < segmentStart || event.timestamp >= bound) {
+        continue;
+      }
+      this.registerEvent(event);
+      injectEvent(this.service.state.context.events, event);
+      accepted += 1;
+    }
+    if (accepted === 0) {
+      return false;
+    }
+    for (const cs of this.sortedSegmentStarts()) {
+      if (cs >= segmentStart && cs < bound) {
+        this.segments.get(cs)!.fetched = true;
+        this.spliceSegmentMarker(cs);
+      }
+    }
+    return true;
   }
 
-  private onChunkSettled() {
+  private onSegmentSettled() {
     if (this.service.state.matches('buffering')) {
       this.resumeFromBuffering();
     } else if (this.service.state.matches('playing')) {
@@ -851,19 +897,24 @@ export class Replayer {
     }
   }
 
-  private hasPendingFetches(): boolean {
-    for (const info of this.chunks.values()) {
-      if (info.fetching) return true;
+  private inFlightFetches(): number {
+    let count = 0;
+    for (const info of this.segments.values()) {
+      if (info.fetching) count += 1;
     }
-    return false;
+    return count;
+  }
+
+  private hasPendingFetches(): boolean {
+    return this.inFlightFetches() > 0;
   }
 
   private resumeFromBuffering() {
     const target = this.bufferingTarget;
     if (!target) return;
     const targetTimestamp = this.timestampFromOffset(target.offset);
-    if (this.neededChunks(targetTimestamp).length > 0) {
-      this.requestNeededChunks();
+    if (this.neededSegments(targetTimestamp).length > 0) {
+      this.requestNeededSegments();
       return;
     }
     if (target.play) {
@@ -875,10 +926,7 @@ export class Replayer {
 
   private extendSchedule() {
     if (!this.service.state.matches('playing')) return;
-    this.service.send({
-      type: 'RESCHEDULE',
-      payload: { timeOffset: this.getCurrentTime() },
-    });
+    this.service.send({ type: 'RESCHEDULE' });
   }
 
   public enableInteract() {

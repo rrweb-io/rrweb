@@ -209,7 +209,7 @@ export type playerConfig = {
 };
 
 export type BufferFetchFn = (
-  chunkStart: number,
+  segmentStart: number,
 ) => Promise<Array<eventWithTime | string>>;
 
 export type missingNode = {

@@ -20,7 +20,6 @@ export type PlayerContext = {
   timeOffset: number;
   baselineTime: number;
   lastPlayedEvent: eventWithTime | null;
-  cappedAtFrontier: number | null;
 };
 export type PlayerEvent =
   | {
@@ -48,9 +47,6 @@ export type PlayerEvent =
     }
   | {
       type: 'RESCHEDULE';
-      payload: {
-        timeOffset: number;
-      };
     }
   | {
       type: 'FINISHED';
@@ -135,6 +131,33 @@ export function createPlayerService(
     onExitBuffering,
   }: PlayerAssets,
 ) {
+  let nextSegmentStart: number | null = null;
+  const scheduleEvents = (
+    ctx: PlayerContext,
+    events: eventWithTime[],
+    startIndex: number,
+  ) => {
+    const { timer, baselineTime } = ctx;
+    for (let i = startIndex; i < events.length; i++) {
+      const event = events[i];
+      addDelay(event, baselineTime);
+      if (event.type === EventType.Custom && event.data.tag === 'segment-start') {
+        nextSegmentStart = event.timestamp;
+        timer.addAction({
+          doAction: () => undefined, // keep the timer alive
+          delay: event.delay!,
+        });
+        return;
+      }
+      const castFn = getCastFn(event, false);
+      timer.addAction({
+        doAction: () => {
+          castFn();
+        },
+        delay: event.delay!,
+      });
+    }
+  };
   const playerMachine = createMachine<PlayerContext, PlayerEvent, PlayerState>(
     {
       id: 'player',
@@ -154,7 +177,7 @@ export function createPlayerService(
             FINISHED: [
               {
                 target: 'buffering',
-                cond: (ctx) => ctx.cappedAtFrontier !== null,
+                cond: () => nextSegmentStart !== null,
               },
               {
                 target: 'paused',
@@ -166,7 +189,7 @@ export function createPlayerService(
             },
             RESCHEDULE: {
               target: 'playing',
-              actions: ['recordTimeOffset', 'play'],
+              actions: ['extendPlay'],
             },
             END: {
               target: 'paused',
@@ -261,7 +284,7 @@ export function createPlayerService(
         play(ctx) {
           const { timer, events, baselineTime, lastPlayedEvent } = ctx;
           timer.clear();
-          ctx.cappedAtFrontier = null;
+          nextSegmentStart = null;
 
           for (const event of events) {
             // TODO: improve this API
@@ -283,7 +306,9 @@ export function createPlayerService(
           }
 
           const syncEvents = new Array<eventWithTime>();
-          for (const event of neededEvents) {
+          let tailStart = neededEvents.length;
+          for (let i = 0; i < neededEvents.length; i++) {
+            const event = neededEvents[i];
             if (
               lastPlayedTimestamp &&
               lastPlayedTimestamp < baselineTime &&
@@ -294,30 +319,42 @@ export function createPlayerService(
             }
             if (
               event.type === EventType.Custom &&
-              event.data.tag === 'chunk-start'
+              event.data.tag === 'segment-start'
             ) {
-              ctx.cappedAtFrontier = event.timestamp;
-              timer.addAction({
-                doAction: () => undefined, // keep the timer alive
-                delay: event.delay!,
-              });
+              tailStart = i;
               break;
             }
             if (event.timestamp < baselineTime) {
               syncEvents.push(event);
             } else {
-              const castFn = getCastFn(event, false);
-              timer.addAction({
-                doAction: () => {
-                  castFn();
-                },
-                delay: event.delay!,
-              });
+              tailStart = i;
+              break;
             }
           }
           applyEventsSynchronously(syncEvents);
+          scheduleEvents(ctx, neededEvents, tailStart);
           emitter.emit(ReplayerEvents.Flush);
           timer.start();
+          return;
+        },
+        extendPlay(ctx) {
+          const { events } = ctx;
+          const from = nextSegmentStart;
+          if (from === null) {
+            return;
+          }
+          nextSegmentStart = null;
+          let lo = 0;
+          let hi = events.length;
+          while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (events[mid].timestamp < from) {
+              lo = mid + 1;
+            } else {
+              hi = mid;
+            }
+          }
+          scheduleEvents(ctx, events, lo);
         },
         pause(ctx) {
           ctx.timer.clear();
