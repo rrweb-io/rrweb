@@ -34,7 +34,12 @@ const segmentStart = (ts: number, keyframe = false): eventWithTime =>
     data: { tag: 'segment-start', payload: { segmentStart: ts, keyframe } },
   } as unknown as eventWithTime);
 
-const head: eventWithTime[] = [DCL, at(META, T), at(FULLSNAPSHOT, T), click(T + 50)];
+const head: eventWithTime[] = [
+  DCL,
+  at(META, T),
+  at(FULLSNAPSHOT, T),
+  click(T + 50),
+];
 
 const noMarkers: eventWithTime[] = [...head, click(T + 100)];
 
@@ -363,13 +368,7 @@ describe('buffered-dom replay', function () {
         return { calls: Array.from(new Set(calls)).sort((a, b) => a - b), finished };
       })();
     `);
-    expect(result.calls).toEqual([
-      T + 100,
-      T + 200,
-      T + 300,
-      T + 400,
-      T + 500,
-    ]);
+    expect(result.calls).toEqual([T + 100, T + 200, T + 300, T + 400, T + 500]);
     expect(result.finished).toBe(true);
   });
 

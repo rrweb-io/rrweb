@@ -132,7 +132,8 @@ function isSegmentStartMarker(event: eventWithTime): boolean {
 }
 
 function markerSegmentStart(event: eventWithTime): number {
-  const payload = (event.data as { payload?: { segmentStart?: number } }).payload;
+  const payload = (event.data as { payload?: { segmentStart?: number } })
+    .payload;
   return typeof payload?.segmentStart === 'number'
     ? payload.segmentStart
     : event.timestamp;
@@ -382,7 +383,9 @@ export class Replayer {
     });
     const unpackFn = config && config.unpackFn;
     const initialEvents = (
-      unpackFn ? events.map((e) => unpackFn(e as string)) : (events as eventWithTime[])
+      unpackFn
+        ? events.map((e) => unpackFn(e as string))
+        : (events as eventWithTime[])
     ).sort((a1, a2) => a1.timestamp - a2.timestamp);
     this.indexInitialEvents(initialEvents);
     this.service = createPlayerService(
@@ -679,7 +682,10 @@ export class Replayer {
     const events = this.service.state.context.events;
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
-      if (isSegmentStartMarker(event) && markerSegmentStart(event) === segmentStart) {
+      if (
+        isSegmentStartMarker(event) &&
+        markerSegmentStart(event) === segmentStart
+      ) {
         events.splice(i, 1);
         return;
       }
@@ -758,7 +764,9 @@ export class Replayer {
       this.resumeFromBuffering();
       return;
     }
-    const fetchable = needed.filter((segmentStart) => this.canFetch(segmentStart));
+    const fetchable = needed.filter((segmentStart) =>
+      this.canFetch(segmentStart),
+    );
     if (fetchable.length === 0 && !this.hasPendingFetches()) {
       this.giveUpBuffering();
       return;
@@ -856,7 +864,9 @@ export class Replayer {
         }
       }
     }
-    const nextKnown = this.sortedSegmentStarts().find((cs) => cs > segmentStart);
+    const nextKnown = this.sortedSegmentStarts().find(
+      (cs) => cs > segmentStart,
+    );
     const bound = frontier ?? nextKnown ?? Infinity;
 
     let accepted = 0;

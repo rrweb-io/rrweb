@@ -141,7 +141,10 @@ export function createPlayerService(
     for (let i = startIndex; i < events.length; i++) {
       const event = events[i];
       addDelay(event, baselineTime);
-      if (event.type === EventType.Custom && event.data.tag === 'segment-start') {
+      if (
+        event.type === EventType.Custom &&
+        event.data.tag === 'segment-start'
+      ) {
         nextSegmentStart = event.timestamp;
         timer.addAction({
           doAction: () => undefined, // keep the timer alive
