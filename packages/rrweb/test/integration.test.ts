@@ -181,6 +181,64 @@ describe('record integration tests', function (this: ISuite) {
     ]);
   });
 
+  it('ignores value attribute set/removal on a textarea (records only child-text changes)', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'empty.html'));
+    await waitForRAF(page); // keep the setup out of the FullSnapshot
+
+    await page.evaluate(() => {
+      const ta = document.createElement('textarea');
+      ta.id = 'ta';
+      ta.textContent = 'initial';
+      document.body.append(ta);
+    });
+    await waitForRAF(page);
+
+    // a textarea has no functional `value` content attribute, so setting or
+    // removing it must not be recorded as a value mutation. Each op is in its
+    // own emit window so they're resolved independently (not collapsed with the
+    // child-text change below).
+    await page.evaluate(() => {
+      document
+        .getElementById('ta')!
+        .setAttribute('value', 'ignored attribute set');
+    });
+    await waitForRAF(page);
+    await page.evaluate(() => {
+      document.getElementById('ta')!.removeAttribute('value');
+    });
+    await waitForRAF(page);
+
+    // only a real child-text change should be recorded (read from childNodes)
+    await page.evaluate(() => {
+      document.getElementById('ta')!.textContent = 'child text changed';
+    });
+    await waitForRAF(page);
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+
+    const valueMutations = snapshots
+      .filter(
+        (e) =>
+          e.type === EventType.IncrementalSnapshot &&
+          (e.data as { source?: number }).source === 0, // 0 = Mutation
+      )
+      .flatMap(
+        (e) =>
+          (e.data as { attributes: { attributes: Record<string, unknown> }[] })
+            .attributes,
+      )
+      .filter((a) => 'value' in a.attributes)
+      .map((a) => a.attributes.value);
+
+    // the setAttribute/removeAttribute produced nothing; only the child-text
+    // change was recorded
+    expect(valueMutations).toEqual(['child text changed']);
+  });
+
   it('can record and replay style mutations', async () => {
     // This test shows that the `isStyle` attribute on textContent is not needed in a mutation
     // TODO: we could get a lot more elaborate here with mixed textContent and insertRule mutations
@@ -809,12 +867,6 @@ describe('record integration tests', function (this: ISuite) {
       el.setAttribute(
         'value',
         "input attribute mutation should also be masked (even though the new value doesn't take effect)",
-      );
-
-      const ta = document.querySelector('textarea');
-      ta.setAttribute(
-        'value',
-        "textarea attribute mutation should also be masked (even though the new value doesn't take effect)",
       );
     });
 
