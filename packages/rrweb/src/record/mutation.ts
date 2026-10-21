@@ -141,9 +141,10 @@ export default class MutationBuffer {
   }
 
   public unfreeze() {
+    const now = nowTimestamp();
     this.frozen = false;
     this.canvasManager.unfreeze();
-    this.emit(true);
+    this.emit(now);
   }
 
   public isFrozen() {
@@ -156,9 +157,10 @@ export default class MutationBuffer {
   }
 
   public unlock() {
+    const now = nowTimestamp();
     this.locked = false;
     this.canvasManager.unlock();
-    this.emit(true);
+    this.emit(now);
   }
 
   public reset() {
@@ -175,9 +177,16 @@ export default class MutationBuffer {
     this.emit(); // clears buffer if not locked/frozen
   };
 
-  public emit = (force = false) => {
+  public emit = (now?: number) => {
     if (this.frozen || this.locked) {
       return;
+    }
+
+    let throttleMs = this.throttleMs;
+    if (typeof now !== 'undefined') {
+      throttleMs = 0; // we explicitly want to force an emission 'now'
+    } else {
+      now = nowTimestamp();
     }
 
     // delay any modification of the mirror until this function
@@ -378,21 +387,20 @@ export default class MutationBuffer {
       }
     }
 
-    const now = nowTimestamp();
     const heldTextsMap = new Map<Node, string | null>();
     const heldAttributesMap = new Map<HTMLElement, MutatingAttributes>();
     const forceDueAttrs = new Set<Node>();
     let nextDueAt = Infinity;
 
     const isDue = (node: Node): boolean => {
-      if (force || !this.throttleMs) {
+      if (!throttleMs) {
         return true;
       }
       const last = this.lastEmit.get(node);
-      if (last === undefined || now - last >= this.throttleMs) {
+      if (last === undefined || now - last >= throttleMs) {
         return true;
       }
-      nextDueAt = Math.min(nextDueAt, last + this.throttleMs);
+      nextDueAt = Math.min(nextDueAt, last + throttleMs);
       return false;
     };
 
