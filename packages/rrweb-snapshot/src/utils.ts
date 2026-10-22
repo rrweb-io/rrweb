@@ -226,8 +226,9 @@ export class Mirror implements IMirror<Node> {
       );
     }
 
-    if (isElement(n) && n.shadowRoot) {
-      this.removeNodeFromMap(n.shadowRoot);
+    const shadowRoot = dom.shadowRoot(n);
+    if (shadowRoot) {
+      this.removeNodeFromMap(shadowRoot);
     }
   }
   has(id: number): boolean {
