@@ -81,7 +81,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "fflate": "^0.4.4",
+    "fflate": "^0.4.9",
     "@rrweb/types": "^2.1.7"
   },
   "browserslist": [

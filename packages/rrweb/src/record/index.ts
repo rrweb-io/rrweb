@@ -8,6 +8,7 @@ import {
   initObservers,
   mutationBuffers,
   forEachMutationBuffer,
+  findAndRemoveIframeBuffer,
 } from './observer';
 import {
   on,
@@ -23,6 +24,7 @@ import {
 import type { recordOptions } from '../types';
 import {
   EventType,
+  type annotationData,
   type eventWithoutTime,
   type eventWithTime,
   IncrementalSource,
@@ -422,6 +424,7 @@ function record<T = eventWithTime>(
 
   try {
     const handlers: listenerHandler[] = [];
+    const iframeHandlersMap = new Map<HTMLIFrameElement, listenerHandler>();
 
     const observe = (doc: Document) => {
       return callbackWrapper(initObservers)(
@@ -560,11 +563,20 @@ function record<T = eventWithTime>(
 
     iframeManager.addLoadListener((iframeEl) => {
       try {
-        handlers.push(observe(iframeEl.contentDocument!));
+        iframeHandlersMap.set(iframeEl, observe(iframeEl.contentDocument!));
       } catch (error) {
         // TODO: handle internal error
         console.warn(error);
       }
+    });
+
+    iframeManager.addPageHideListener((iframeEl) => {
+      const iframeHandler = iframeHandlersMap.get(iframeEl);
+      if (iframeHandler) {
+        iframeHandler();
+        iframeHandlersMap.delete(iframeEl);
+      }
+      findAndRemoveIframeBuffer(iframeEl);
     });
 
     const init = () => {
@@ -599,6 +611,7 @@ function record<T = eventWithTime>(
       );
     }
     return () => {
+      iframeHandlersMap.forEach((h) => h());
       handlers.forEach((handler) => {
         try {
           handler();
@@ -639,6 +652,13 @@ record.addCustomEvent = <T>(tag: string, payload: T) => {
       payload,
     },
   });
+};
+
+record.addAnnotation = (annotation: annotationData) => {
+  if (!recording) {
+    throw new Error('please add annotation after recording started');
+  }
+  wrappedEmit({ type: EventType.Annotation, data: annotation });
 };
 
 record.freezePage = () => {
