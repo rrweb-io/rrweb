@@ -1,5 +1,6 @@
 ---
 "rrweb": patch
+"@rrweb/record": patch
 ---
 
 fix: disconnect shadow-DOM observers when their host is removed
