@@ -259,6 +259,21 @@ export function createMirror(): Mirror {
   return new Mirror();
 }
 
+export function maskInputChecked({
+  maskInputOptions,
+  type,
+  checked,
+}: {
+  maskInputOptions: MaskInputOptions;
+  type: string;
+  checked: boolean | null;
+}): boolean | null {
+  if (maskInputOptions[type.toLowerCase() as keyof MaskInputOptions]) {
+    return null;
+  }
+  return checked;
+}
+
 export function maskInputValue({
   element,
   maskInputOptions,

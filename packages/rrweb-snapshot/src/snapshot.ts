@@ -32,6 +32,7 @@ import {
   markCssSplits,
 } from './snapshot-utils';
 import dom from '@rrweb/utils';
+import { maskInputChecked } from "./utils";
 
 let _id = 1;
 const tagNameRegex = new RegExp('[^a-z0-9-_:]');
@@ -618,9 +619,19 @@ function serializeElementNode(
   if (['input', 'textarea', 'select'].includes(tagName)) {
     const value = (n as HTMLInputElement | HTMLTextAreaElement).value;
     const checked = (n as HTMLInputElement).checked;
-    if (
-      attributes.type !== 'radio' &&
-      attributes.type !== 'checkbox' &&
+    const type = getInputType(n);
+    if (type === 'radio' || type === 'checkbox') {
+      const maskedChecked = maskInputChecked({
+        type,
+        checked,
+        maskInputOptions,
+      });
+      if (maskedChecked) {
+        attributes.checked = true;
+      } else {
+        delete attributes.checked;
+      }
+    } else if (
       attributes.type !== 'submit' &&
       attributes.type !== 'button' &&
       value
@@ -633,8 +644,6 @@ function serializeElementNode(
         maskInputOptions,
         maskInputFn,
       });
-    } else if (checked) {
-      attributes.checked = checked;
     }
   }
   if (tagName === 'option') {
@@ -1308,6 +1317,8 @@ function snapshot(
           textarea: true,
           select: true,
           password: true,
+          checkbox: true,
+          radio: true,
         }
       : maskAllInputs === false
       ? {
