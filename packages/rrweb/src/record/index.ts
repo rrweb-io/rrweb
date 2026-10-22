@@ -7,6 +7,7 @@ import {
 import {
   initObservers,
   mutationBuffers,
+  forEachMutationBuffer,
   findAndRemoveIframeBuffer,
 } from './observer';
 import {
@@ -214,7 +215,7 @@ function record<T = eventWithTime>(
     ) {
       // we've got a user initiated event so first we need to apply
       // all DOM changes that have been buffering during paused state
-      mutationBuffers.forEach((buf) => buf.unfreeze());
+      forEachMutationBuffer((buf) => buf.unfreeze());
     }
 
     if (inEmittingFrame) {
@@ -374,7 +375,7 @@ function record<T = eventWithTime>(
 
     shadowDomManager.init();
 
-    mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
+    forEachMutationBuffer((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const iframes: HTMLIFrameElement[] = [];
     const node = snapshot(document, {
       mirror,
@@ -427,7 +428,7 @@ function record<T = eventWithTime>(
       },
       isCheckout,
     );
-    mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
+    forEachMutationBuffer((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
 
     // The snapshot above replaces cross-origin iframes with empty ones, so ask them for their content again.
     iframes.forEach((iframe) => iframeManager.requestFullSnapshot(iframe));
@@ -700,7 +701,7 @@ record.addAnnotation = (annotation: annotationData) => {
 };
 
 record.freezePage = () => {
-  mutationBuffers.forEach((buf) => buf.freeze());
+  forEachMutationBuffer((buf) => buf.freeze());
 };
 
 record.takeFullSnapshot = (isCheckout?: boolean) => {

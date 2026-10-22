@@ -6,10 +6,11 @@ import type {
 } from '@rrweb/types';
 import {
   initMutationObserver,
+  removeMutationBuffer,
   initScrollObserver,
   initAdoptedStyleSheetObserver,
 } from './observer';
-import { inDom } from '../utils';
+import { inDom, hasShadowRoot } from '../utils';
 import type { Mirror } from 'rrweb-snapshot';
 import { isNativeShadowDom } from 'rrweb-snapshot';
 import dom, { patch } from '@rrweb/utils';
@@ -23,6 +24,8 @@ type BypassOptions = Omit<
 
 export class ShadowDomManager {
   private shadowDoms = new WeakSet<ShadowRoot>();
+  /** Per-root teardowns, so one detached root can be released alone. */
+  private shadowRootTeardowns = new Map<ShadowRoot, (() => void)[]>();
   private mutationCb: mutationCallBack;
   private scrollCb: scrollCallback;
   private bypassOptions: BypassOptions;
@@ -53,6 +56,8 @@ export class ShadowDomManager {
     if (!isNativeShadowDom(shadowRoot)) return;
     if (this.shadowDoms.has(shadowRoot)) return;
     this.shadowDoms.add(shadowRoot);
+    const teardowns: (() => void)[] = [];
+    this.shadowRootTeardowns.set(shadowRoot, teardowns);
     const [observer] = initMutationObserver(
       {
         ...this.bypassOptions,
@@ -63,8 +68,8 @@ export class ShadowDomManager {
       },
       shadowRoot,
     );
-    this.restoreHandlers.push(() => observer.disconnect());
-    this.restoreHandlers.push(
+    teardowns.push(() => removeMutationBuffer(observer));
+    teardowns.push(
       initScrollObserver({
         ...this.bypassOptions,
         scrollCb: this.scrollCb,
@@ -84,16 +89,48 @@ export class ShadowDomManager {
           shadowRoot.adoptedStyleSheets,
           this.mirror.getId(dom.host(shadowRoot)),
         );
-      this.restoreHandlers.push(
-        initAdoptedStyleSheetObserver(
-          {
-            mirror: this.mirror,
-            stylesheetManager: this.bypassOptions.stylesheetManager,
-          },
-          shadowRoot,
-        ),
+      const restore = initAdoptedStyleSheetObserver(
+        {
+          mirror: this.mirror,
+          stylesheetManager: this.bypassOptions.stylesheetManager,
+        },
+        shadowRoot,
       );
+      const pending = this.shadowRootTeardowns.get(shadowRoot);
+      if (pending) {
+        pending.push(restore);
+      } else {
+        restore();
+      }
     }, 0);
+  }
+
+  /** Disconnects one shadow root and forgets it. */
+  public removeShadowRoot(shadowRoot: ShadowRoot) {
+    const teardowns = this.shadowRootTeardowns.get(shadowRoot);
+    if (teardowns) {
+      teardowns.forEach((teardown) => {
+        try {
+          teardown();
+        } catch (e) {
+          //
+        }
+      });
+      this.shadowRootTeardowns.delete(shadowRoot);
+    }
+    this.shadowDoms.delete(shadowRoot);
+  }
+
+  public removeShadowRootsFor(node: Node) {
+    if (hasShadowRoot(node)) {
+      const shadowRoot = node.shadowRoot;
+      // Attached at emit time means moved or reinserted: keep observing.
+      if (this.shadowDoms.has(shadowRoot) && !inDom(node)) {
+        this.removeShadowRoot(shadowRoot);
+      }
+      this.removeShadowRootsFor(shadowRoot);
+    }
+    node.childNodes?.forEach((child) => this.removeShadowRootsFor(child));
   }
 
   /**
@@ -152,6 +189,16 @@ export class ShadowDomManager {
       }
     });
     this.restoreHandlers = [];
+    this.shadowRootTeardowns.forEach((teardowns) => {
+      teardowns.forEach((teardown) => {
+        try {
+          teardown();
+        } catch (e) {
+          //
+        }
+      });
+    });
+    this.shadowRootTeardowns = new Map();
     this.shadowDoms = new WeakSet();
   }
 }
