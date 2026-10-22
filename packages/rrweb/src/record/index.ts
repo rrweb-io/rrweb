@@ -561,6 +561,8 @@ function record<T = eventWithTime>(
     };
 
     iframeManager.addLoadListener((iframeEl) => {
+      // full snapshots re-attach iframes that are already being observed
+      if (iframeHandlersMap.has(iframeEl)) return;
       try {
         iframeHandlersMap.set(iframeEl, observe(iframeEl.contentDocument!));
       } catch (error) {

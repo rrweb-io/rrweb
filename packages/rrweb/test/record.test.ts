@@ -677,6 +677,39 @@ describe('record', function (this: ISuite) {
     await assertSnapshot(ctx.events);
   });
 
+  it('observes a same-origin iframe only once across full snapshots', async () => {
+    await ctx.page.evaluate(() => {
+      return new Promise((resolve) => {
+        document.body.innerHTML = '<iframe></iframe>';
+        const iframe = document.querySelector('iframe')!;
+        iframe.contentDocument!.body.innerHTML = '<p>before</p>';
+
+        const { rrweb, emit } = window as unknown as IWindow;
+        rrweb.record({ emit });
+        rrweb.record.takeFullSnapshot(true);
+        rrweb.record.takeFullSnapshot(true);
+
+        setTimeout(() => {
+          iframe.contentDocument!.querySelector('p')!.textContent = 'after';
+          setTimeout(() => resolve(undefined), 10);
+        }, 0);
+      });
+    });
+    await waitForRAF(ctx.page);
+    const lastFullSnapshot = ctx.events
+      .map((e) => e.type)
+      .lastIndexOf(EventType.FullSnapshot);
+    const mutations = ctx.events
+      .slice(lastFullSnapshot)
+      .filter(
+        (e) =>
+          e.type === EventType.IncrementalSnapshot &&
+          e.data.source === IncrementalSource.Mutation &&
+          !e.data.isAttachIframe,
+      );
+    expect(mutations.length).toBe(1);
+  });
+
   it('captures adopted stylesheets in nested shadow doms and iframes', async () => {
     await ctx.page.evaluate(() => {
       document.body.innerHTML = `
