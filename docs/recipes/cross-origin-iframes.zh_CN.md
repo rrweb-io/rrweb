@@ -2,7 +2,10 @@
 
 浏览器会阻止父页面访问跨域 iframe 的内容。要录制这些内容，需要在父页面和子页面中运行 rrweb，并启用 `recordCrossOriginIframes`。iframe 会将录制事件发送给父窗口。
 
-在子页面中设置 `crossOriginIframeParentOrigin`，可以限制只有受信任的父窗口来源才能接收事件。默认值为 `'*'`，允许任何父窗口接收事件，包括嵌入您页面的恶意网站。
+> **安全警告：** 除非您严格限制哪些网站可以嵌入您的页面，并信任这些网站接收页面的录制内容，否则不建议启用跨域 iframe 录制。
+> 浏览器的跨域限制用于保护敏感信息。使用默认的 `crossOriginIframeParentOrigin: '*'` 时，恶意网站可以嵌入您的页面并收集其录制内容。
+
+在子页面中设置 `crossOriginIframeParentOrigin`，可以限制只有受信任的父窗口来源才能接收事件。此选项控制事件的接收方，不会限制哪些网站可以嵌入您的页面。
 
 ## 如何记录跨源 iframe
 
