@@ -23,6 +23,7 @@ import {
   isElement,
   isShadowRoot,
   maskInputValue,
+  maskInputChecked,
   isNativeShadowDom,
   stringifyStylesheet,
   getInputType,
@@ -32,7 +33,6 @@ import {
   markCssSplits,
 } from './snapshot-utils';
 import dom from '@rrweb/utils';
-import { maskInputChecked } from "./utils";
 
 let _id = 1;
 const tagNameRegex = new RegExp('[^a-z0-9-_:]');
