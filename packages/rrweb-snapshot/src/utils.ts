@@ -33,6 +33,8 @@ export function isElement(n: Node): n is Element {
   return n.nodeType === n.ELEMENT_NODE;
 }
 
+export { registerShadowRoot } from '@rrweb/utils';
+
 export function isShadowRoot(n: Node): n is ShadowRoot {
   const hostEl: Element | null =
     // anchor and textarea elements also have a `host` property

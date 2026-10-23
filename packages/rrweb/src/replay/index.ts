@@ -28,6 +28,7 @@ import type {
   Mirror as RRDOMMirror,
 } from 'rrdom';
 import * as mittProxy from 'mitt';
+import dom from '@rrweb/utils';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
 import {
@@ -1450,8 +1451,11 @@ export class Replayer {
       if (!parent) {
         return this.warnNodeNotFound(d, mutation.parentId);
       }
-      if (mutation.isShadow && hasShadowRoot(parent as Node)) {
-        parent = (parent as Element | RRElement).shadowRoot;
+      if (mutation.isShadow) {
+        const root = this.usingVirtualDom
+          ? (parent as RRElement).shadowRoot
+          : dom.shadowRoot(parent as Node);
+        if (root) parent = root as Node | RRNode;
       }
       // target may be removed with its parents before
       mirror.removeNodeFromMap(target as Node & RRNode);
@@ -1523,10 +1527,13 @@ export class Replayer {
 
       if (mutation.node.isShadow) {
         // If the parent is attached a shadow dom after it's created, it won't have a shadow root.
-        if (!hasShadowRoot(parent)) {
-          (parent as Element | RRElement).attachShadow({ mode: 'open' });
-          parent = (parent as Element | RRElement).shadowRoot! as Node | RRNode;
-        } else parent = parent.shadowRoot as Node | RRNode;
+        const root = this.usingVirtualDom
+          ? (parent as RRElement).shadowRoot
+          : dom.shadowRoot(parent as Node);
+        parent = (root ||
+          (parent as Element | RRElement).attachShadow({ mode: 'open' })) as
+          | Node
+          | RRNode;
       }
 
       let previous: Node | RRNode | null = null;
@@ -2134,10 +2141,8 @@ export class Replayer {
       const stylesToAdopt = styleIds
         .map((styleId) => this.styleMirror.getStyle(styleId))
         .filter((style) => style !== null) as CSSStyleSheet[];
-      if (hasShadowRoot(targetHost))
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        (targetHost as HTMLElement).shadowRoot!.adoptedStyleSheets =
-          stylesToAdopt;
+      const root = dom.shadowRoot(targetHost);
+      if (root) root.adoptedStyleSheets = stylesToAdopt;
       else if (targetHost.nodeName === '#document')
         (targetHost as Document).adoptedStyleSheets = stylesToAdopt;
 
