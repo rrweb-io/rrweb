@@ -88,11 +88,10 @@ export default class MutationBuffer {
   private doc: observerParam['doc'];
   private mirror: observerParam['mirror'];
 
-  // managers: references to per-recording singletons
+  // managers: convenience references to per-recording singletons
   private iframeManager: observerParam['iframeManager'];
   private stylesheetManager: observerParam['stylesheetManager'];
   private shadowDomManager: observerParam['shadowDomManager'];
-  private canvasManager: observerParam['canvasManager'];
   private processedNodeManager: observerParam['processedNodeManager'];
 
   private unattachedDoc: HTMLDocument;
@@ -119,7 +118,6 @@ export default class MutationBuffer {
         'iframeManager',
         'stylesheetManager',
         'shadowDomManager',
-        'canvasManager',
         'processedNodeManager',
       ] as const
     ).forEach((key) => {
