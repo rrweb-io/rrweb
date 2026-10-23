@@ -105,6 +105,7 @@ function record<T = eventWithTime>(
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
     errorHandler,
+    crossOriginIframeParentOrigin = '*',
   } = options;
 
   registerErrorHandler(errorHandler);
@@ -213,7 +214,7 @@ function record<T = eventWithTime>(
         origin: window.location.origin,
         isCheckout,
       };
-      window.parent.postMessage(message, '*');
+      window.parent.postMessage(message, crossOriginIframeParentOrigin);
     }
 
     if (e.type === EventType.FullSnapshot) {
