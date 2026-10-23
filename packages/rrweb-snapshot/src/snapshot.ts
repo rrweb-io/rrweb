@@ -307,11 +307,69 @@ export function needMaskingText(
 }
 
 // https://stackoverflow.com/a/36155560
+const loadListenerCleanups = new WeakMap<AbortSignal, Map<Node, () => void>>();
+
+function getLoadListenerCleanups(signal: AbortSignal) {
+  const existing = loadListenerCleanups.get(signal);
+  if (existing) return existing;
+  const cleanups = new Map<Node, () => void>();
+  loadListenerCleanups.set(signal, cleanups);
+  signal.addEventListener(
+    'abort',
+    () => {
+      cleanups.forEach((release) => release());
+      loadListenerCleanups.delete(signal);
+    },
+    { once: true },
+  );
+  return cleanups;
+}
+
+/** Release deferred loads in a removed subtree or an unloaded document. */
+export function cleanupSnapshotLoadListeners(
+  roots: Node | ReadonlySet<Node>,
+  signal?: AbortSignal,
+) {
+  if (!signal) return;
+  const cleanups = loadListenerCleanups.get(signal);
+  if (!cleanups || cleanups.size === 0) return;
+  const removed = 'nodeType' in roots ? new Set([roots]) : roots;
+  for (const [target, release] of cleanups) {
+    let current: Node | null = target;
+    while (current) {
+      if (removed.has(current)) {
+        release();
+        break;
+      }
+      current =
+        dom.parentNode(current) ??
+        (isShadowRoot(current) ? dom.host(current) : null);
+    }
+  }
+}
+
+function registerLoadListenerCleanup(
+  target: Node,
+  cleanup: () => void,
+  signal?: AbortSignal,
+) {
+  if (!signal) return;
+  const cleanups = getLoadListenerCleanups(signal);
+  cleanups.get(target)?.();
+  const release = () => {
+    cleanup();
+    cleanups.delete(target);
+  };
+  cleanups.set(target, release);
+}
+
 function onceIframeLoaded(
   iframeEl: HTMLIFrameElement,
   listener: () => unknown,
   iframeLoadTimeout: number,
+  signal?: AbortSignal,
 ) {
+  if (signal?.aborted) return;
   const win = iframeEl.contentWindow;
   if (!win) {
     return;
@@ -325,18 +383,25 @@ function onceIframeLoaded(
   } catch (error) {
     return;
   }
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const onLoad = () => {
+    if (signal?.aborted) return;
+    clearTimeout(timer);
+    fired = true;
+    listener();
+  };
+  const cleanup = () => {
+    clearTimeout(timer);
+    iframeEl.removeEventListener('load', onLoad);
+  };
+  registerLoadListenerCleanup(iframeEl, cleanup, signal);
   if (readyState !== 'complete') {
-    const timer = setTimeout(() => {
+    timer = setTimeout(() => {
       if (!fired) {
-        listener();
-        fired = true;
+        onLoad();
       }
     }, iframeLoadTimeout);
-    iframeEl.addEventListener('load', () => {
-      clearTimeout(timer);
-      fired = true;
-      listener();
-    });
+    iframeEl.addEventListener('load', onLoad);
     return;
   }
   // check blank frame for Chrome
@@ -348,19 +413,21 @@ function onceIframeLoaded(
   ) {
     // iframe was already loaded, make sure we wait to trigger the listener
     // till _after_ the mutation that found this iframe has had time to process
-    setTimeout(listener, 0);
+    timer = setTimeout(onLoad, 0);
 
-    return iframeEl.addEventListener('load', listener); // keep listing for future loads
+    return iframeEl.addEventListener('load', onLoad); // keep listing for future loads
   }
   // use default listener
-  iframeEl.addEventListener('load', listener);
+  iframeEl.addEventListener('load', onLoad);
 }
 
 function onceStylesheetLoaded(
   link: HTMLLinkElement,
   listener: () => unknown,
   styleSheetLoadTimeout: number,
+  signal?: AbortSignal,
 ) {
+  if (signal?.aborted) return;
   let fired = false;
   let styleSheetLoaded: StyleSheet | null;
   try {
@@ -371,18 +438,24 @@ function onceStylesheetLoaded(
 
   if (styleSheetLoaded) return;
 
-  const timer = setTimeout(() => {
-    if (!fired) {
-      listener();
-      fired = true;
-    }
-  }, styleSheetLoadTimeout);
-
-  link.addEventListener('load', () => {
+  const onLoad = () => {
+    if (signal?.aborted) return;
     clearTimeout(timer);
     fired = true;
     listener();
-  });
+  };
+  const cleanup = () => {
+    clearTimeout(timer);
+    link.removeEventListener('load', onLoad);
+  };
+  const timer = setTimeout(() => {
+    if (!fired) {
+      onLoad();
+    }
+  }, styleSheetLoadTimeout);
+
+  link.addEventListener('load', onLoad);
+  registerLoadListenerCleanup(link, cleanup, signal);
 }
 
 function serializeNode(
@@ -924,6 +997,7 @@ function slimDOMExcluded(
 export function serializeNodeWithId(
   n: Node,
   options: {
+    signal?: AbortSignal;
     doc: Document;
     mirror: Mirror;
     blockClass: string | RegExp;
@@ -957,7 +1031,9 @@ export function serializeNodeWithId(
     cssCaptured?: boolean;
   },
 ): serializedNodeWithId | null {
+  if (options.signal?.aborted) return null;
   const {
+    signal,
     doc,
     mirror,
     blockClass,
@@ -1068,6 +1144,7 @@ export function serializeNodeWithId(
       preserveWhiteSpace = false;
     }
     const bypassOptions = {
+      signal,
       doc,
       mirror,
       blockClass,
@@ -1144,6 +1221,7 @@ export function serializeNodeWithId(
         const iframeDoc = (n as HTMLIFrameElement).contentDocument;
         if (iframeDoc && onIframeLoad) {
           const serializedIframeNode = serializeNodeWithId(iframeDoc, {
+            signal,
             doc: iframeDoc,
             mirror,
             blockClass,
@@ -1178,6 +1256,7 @@ export function serializeNodeWithId(
         }
       },
       iframeLoadTimeout,
+      signal,
     );
   }
 
@@ -1196,6 +1275,7 @@ export function serializeNodeWithId(
       () => {
         if (onStylesheetLoad) {
           const serializedLinkNode = serializeNodeWithId(n, {
+            signal,
             doc,
             mirror,
             blockClass,
@@ -1230,6 +1310,7 @@ export function serializeNodeWithId(
         }
       },
       stylesheetLoadTimeout,
+      signal,
     );
   }
 
@@ -1239,6 +1320,7 @@ export function serializeNodeWithId(
 function snapshot(
   n: Document,
   options?: {
+    signal?: AbortSignal;
     mirror?: Mirror;
     blockClass?: string | RegExp;
     blockSelector?: string | null;
@@ -1268,6 +1350,7 @@ function snapshot(
   },
 ): serializedNodeWithId | null {
   const {
+    signal,
     mirror = new Mirror(),
     blockClass = 'rr-block',
     blockSelector = null,
@@ -1317,6 +1400,7 @@ function snapshot(
   const slimDOMOptions = slimDOMDefaults(slimDOM);
 
   return serializeNodeWithId(n, {
+    signal,
     doc: n,
     mirror,
     blockClass,

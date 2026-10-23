@@ -3,6 +3,7 @@ import {
   slimDOMDefaults,
   type MaskInputOptions,
   createMirror,
+  cleanupSnapshotLoadListeners,
 } from 'rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
 import {
@@ -45,7 +46,6 @@ import dom from '@rrweb/utils';
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
 
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
-let canvasManager!: CanvasManager;
 let recording = false;
 
 // Multiple tools (i.e. MooTools, Prototype.js) override Array.from and drop support for the 2nd parameter
@@ -302,8 +302,11 @@ function record<T = eventWithTime>(
   }
 
   const processedNodeManager = new ProcessedNodeManager();
+  const snapshotController = new AbortController();
+  let stopped = false;
+  let cleanupRecording: listenerHandler | undefined;
 
-  canvasManager = new CanvasManager({
+  const canvasManager = new CanvasManager({
     recordCanvas,
     mutationCb: wrappedCanvasMutationEmit,
     win: window,
@@ -336,6 +339,7 @@ function record<T = eventWithTime>(
       canvasManager,
       keepIframeSrcFn,
       processedNodeManager,
+      snapshotSignal: snapshotController.signal,
     },
     mirror,
   });
@@ -363,6 +367,7 @@ function record<T = eventWithTime>(
 
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
+      signal: snapshotController.signal,
       mirror,
       blockClass,
       blockSelector,
@@ -385,12 +390,12 @@ function record<T = eventWithTime>(
         }
         if (hasShadowRoot(n)) {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          shadowDomManager.addShadowRoot(dom.shadowRoot(n as Node)!, document);
+          shadowDomManager.addShadowRoot(dom.shadowRoot(n as Node)!);
         }
       },
       onIframeLoad: (iframe, childSn) => {
-        iframeManager.attachIframe(iframe, childSn);
         shadowDomManager.observeAttachShadow(iframe);
+        iframeManager.attachIframe(iframe, childSn);
       },
       onStylesheetLoad: (linkEl, childSn) => {
         stylesheetManager.attachLinkElement(linkEl, childSn);
@@ -538,6 +543,7 @@ function record<T = eventWithTime>(
           stylesheetManager,
           shadowDomManager,
           processedNodeManager,
+          snapshotSignal: snapshotController.signal,
           canvasManager,
           ignoreCSSAttributes,
           plugins:
@@ -575,16 +581,60 @@ function record<T = eventWithTime>(
     });
     iframeManager.addUnloadListener((doc) => {
       const stopObserving = iframeObservers.get(doc);
-      if (!stopObserving) return;
       iframeObservers.delete(doc);
-      stopObserving();
-      mirror.removeNodeFromMap(doc);
+      try {
+        stopObserving?.();
+      } finally {
+        try {
+          cleanupSnapshotLoadListeners(doc, snapshotController.signal);
+          shadowDomManager.removeDocument(doc);
+        } finally {
+          mirror.removeNodeFromMap(doc);
+        }
+      }
     });
 
+    cleanupRecording = () => {
+      if (stopped) return;
+      stopped = true;
+      snapshotController.abort();
+      [...handlers, ...iframeObservers.values()].forEach((handler) => {
+        try {
+          handler();
+        } catch (error) {
+          const msg = String(error).toLowerCase();
+          /**
+           * https://github.com/rrweb-io/rrweb/pull/1695
+           * This error can occur in a known scenario:
+           * If an iframe is initially same-origin and observed, but later its
+           location is changed in an opaque way to a cross-origin URL (perhaps within the iframe via its `document.location` or a redirect)
+           * attempting to execute the handler in the stop record function will
+           throw a "cannot access cross-origin frame" error.
+           * This error is expected and can be safely ignored.
+           */
+          if (!msg.includes('cross-origin')) {
+            console.warn(error);
+          }
+        }
+      });
+      iframeObservers.clear();
+      shadowDomManager.reset();
+      canvasManager.reset();
+      iframeManager.destroy();
+      processedNodeManager.destroy();
+      recording = false;
+      unregisterErrorHandler();
+    };
+
     const init = () => {
-      takeFullSnapshot();
-      handlers.push(observe(document));
-      recording = true;
+      try {
+        takeFullSnapshot();
+        handlers.push(observe(document));
+        recording = true;
+      } catch (error) {
+        cleanupRecording?.();
+        throw error;
+      }
     };
     if (['interactive', 'complete'].includes(document.readyState)) {
       init();
@@ -612,33 +662,13 @@ function record<T = eventWithTime>(
         ),
       );
     }
-    return () => {
-      [...handlers, ...iframeObservers.values()].forEach((handler) => {
-        try {
-          handler();
-        } catch (error) {
-          const msg = String(error).toLowerCase();
-          /**
-           * https://github.com/rrweb-io/rrweb/pull/1695
-           * This error can occur in a known scenario:
-           * If an iframe is initially same-origin and observed, but later its 
-           location is changed in an opaque way to a cross-origin URL (perhaps within the iframe via its `document.location` or a redirect) 
-           * attempting to execute the handler in the stop record function will 
-           throw a "cannot access cross-origin frame" error.
-           * This error is expected and can be safely ignored.
-           */
-          if (!msg.includes('cross-origin')) {
-            console.warn(error);
-          }
-        }
-      });
-      iframeObservers.clear();
-      iframeManager.destroy();
-      processedNodeManager.destroy();
-      recording = false;
-      unregisterErrorHandler();
-    };
+    return cleanupRecording;
   } catch (error) {
+    try {
+      cleanupRecording?.();
+    } catch (cleanupError) {
+      console.warn(cleanupError);
+    }
     // TODO: handle internal error
     console.warn(error);
   }

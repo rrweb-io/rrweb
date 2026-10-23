@@ -51,6 +51,7 @@ import type {
   customElementCallback,
 } from '@rrweb/types';
 import MutationBuffer from './mutation';
+import { cleanupSnapshotLoadListeners } from 'rrweb-snapshot';
 import { callbackWrapper } from './error-handler';
 import dom, { mutationObserverCtor } from '@rrweb/utils';
 
@@ -82,30 +83,43 @@ function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
 export function initMutationObserver(
   options: MutationBufferParam,
   rootEl: Node,
-): [listenerHandler, () => void] {
+): listenerHandler {
   const mutationBuffer = new MutationBuffer();
-  mutationBuffers.add(mutationBuffer);
   // see mutation.ts for details
   mutationBuffer.init(options);
   const [ObserverCtor, iframeCleanup] = mutationObserverCtor();
-  const observer = new (ObserverCtor as new (
-    callback: MutationCallback,
-  ) => MutationObserver)(
-    callbackWrapper(mutationBuffer.processMutations.bind(mutationBuffer)),
-  );
-  observer.observe(rootEl, {
-    attributes: true,
-    attributeOldValue: true,
-    characterData: true,
-    characterDataOldValue: true,
-    childList: true,
-    subtree: true,
-  });
-  const stop = () => {
-    observer.disconnect();
-    mutationBuffers.delete(mutationBuffer);
-  };
-  return [stop, iframeCleanup];
+  let observer: MutationObserver | undefined;
+  try {
+    observer = new (ObserverCtor as new (
+      callback: MutationCallback,
+    ) => MutationObserver)(
+      callbackWrapper(mutationBuffer.processMutations.bind(mutationBuffer)),
+    );
+    const activeObserver = observer;
+    activeObserver.observe(rootEl, {
+      attributes: true,
+      attributeOldValue: true,
+      characterData: true,
+      characterDataOldValue: true,
+      childList: true,
+      subtree: true,
+    });
+    const state = mutationBuffers.values().next();
+    if (!state.done) {
+      if (state.value.isFrozen()) mutationBuffer.freeze();
+      if (state.value.isLocked()) mutationBuffer.lock();
+    }
+    mutationBuffers.add(mutationBuffer);
+    return () => {
+      activeObserver.disconnect();
+      mutationBuffers.delete(mutationBuffer);
+      iframeCleanup();
+    };
+  } catch (error) {
+    observer?.disconnect();
+    iframeCleanup();
+    throw error;
+  }
 }
 
 function initMoveObserver({
@@ -1312,74 +1326,56 @@ export function initObservers(
     };
   }
 
-  mergeHooks(o, hooks);
-  let stopMutationObserver: listenerHandler | undefined;
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  let cleanupMutationIframe: () => void = () => {};
-  if (o.recordDOM) {
-    [stopMutationObserver, cleanupMutationIframe] = initMutationObserver(
-      o,
-      o.doc,
-    );
-  }
-  const mousemoveHandler = initMoveObserver(o);
-  const mouseInteractionHandler = initMouseInteractionObserver(o);
-  const scrollHandler = initScrollObserver(o);
-  const viewportResizeHandler = initViewportResizeObserver(o, {
-    win: currentWindow,
-  });
-  const inputHandler = initInputObserver(o);
-  const mediaInteractionHandler = initMediaInteractionObserver(o);
-
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  let styleSheetObserver = () => {};
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  let adoptedStyleSheetObserver = () => {};
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  let styleDeclarationObserver = () => {};
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  let fontObserver = () => {};
-  if (o.recordDOM) {
-    styleSheetObserver = initStyleSheetObserver(o, { win: currentWindow });
-    adoptedStyleSheetObserver = initAdoptedStyleSheetObserver(o, o.doc);
-    styleDeclarationObserver = initStyleDeclarationObserver(o, {
-      win: currentWindow,
-    });
-    if (o.collectFonts) {
-      fontObserver = initFontObserver(o);
+  const handlers: listenerHandler[] = [
+    () => cleanupSnapshotLoadListeners(o.doc, o.snapshotSignal),
+    () => o.shadowDomManager.removeDocument(o.doc),
+  ];
+  let stopped = false;
+  const stop = callbackWrapper(() => {
+    if (stopped) return;
+    stopped = true;
+    const errors: unknown[] = [];
+    for (const handler of handlers) {
+      try {
+        handler();
+      } catch (error) {
+        errors.push(error);
+      }
     }
-  }
-  const selectionObserver = initSelectionObserver(o);
-  const customElementObserver = initCustomElementObserver(o);
-
-  // plugins
-  const pluginHandlers: listenerHandler[] = [];
-  for (const plugin of o.plugins) {
-    pluginHandlers.push(
-      plugin.observer(plugin.callback, currentWindow, plugin.options),
-    );
-  }
-
-  return callbackWrapper(() => {
-    if (o.doc === document) {
-      mutationBuffers.forEach((b) => b.reset());
-      cleanupMutationIframe();
-    }
-    stopMutationObserver?.();
-    mousemoveHandler();
-    mouseInteractionHandler();
-    scrollHandler();
-    viewportResizeHandler();
-    inputHandler();
-    mediaInteractionHandler();
-    styleSheetObserver();
-    adoptedStyleSheetObserver();
-    styleDeclarationObserver();
-    fontObserver();
-    selectionObserver();
-    customElementObserver();
-    pluginHandlers.forEach((h) => h());
+    if (errors.length) throw errors[0];
   });
+
+  try {
+    mergeHooks(o, hooks);
+    if (o.recordDOM) handlers.push(initMutationObserver(o, o.doc));
+    handlers.push(initMoveObserver(o));
+    handlers.push(initMouseInteractionObserver(o));
+    handlers.push(initScrollObserver(o));
+    handlers.push(initViewportResizeObserver(o, { win: currentWindow }));
+    handlers.push(initInputObserver(o));
+    handlers.push(initMediaInteractionObserver(o));
+    if (o.recordDOM) {
+      handlers.push(initStyleSheetObserver(o, { win: currentWindow }));
+      handlers.push(initAdoptedStyleSheetObserver(o, o.doc));
+      handlers.push(initStyleDeclarationObserver(o, { win: currentWindow }));
+      if (o.collectFonts) handlers.push(initFontObserver(o));
+    }
+    handlers.push(initSelectionObserver(o));
+    handlers.push(initCustomElementObserver(o));
+    for (const plugin of o.plugins) {
+      handlers.push(
+        plugin.observer(plugin.callback, currentWindow, plugin.options),
+      );
+    }
+    return stop;
+  } catch (error) {
+    try {
+      stop();
+    } catch {
+      // Keep the setup error after attempting every cleanup handler.
+    }
+    throw error;
+  }
 }
 
 type CSSGroupingProp =

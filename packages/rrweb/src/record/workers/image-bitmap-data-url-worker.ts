@@ -8,12 +8,15 @@ import type {
 const lastBlobMap: Map<number, string> = new Map();
 const transparentBlobMap: Map<string, string> = new Map();
 
-export interface ImageBitmapDataURLRequestWorker {
+export interface ImageBitmapDataURLRequestWorker
+  extends Pick<Worker, 'terminate'> {
   postMessage: (
     message: ImageBitmapDataURLWorkerParams,
     transfer?: [ImageBitmap],
   ) => void;
-  onmessage: (message: MessageEvent<ImageBitmapDataURLWorkerResponse>) => void;
+  onmessage:
+    | null
+    | ((message: MessageEvent<ImageBitmapDataURLWorkerResponse>) => void);
 }
 
 interface ImageBitmapDataURLResponseWorker {
