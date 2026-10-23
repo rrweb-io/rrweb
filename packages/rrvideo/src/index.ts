@@ -57,22 +57,27 @@ function getHtml(events: Array<eventWithTime>, config?: RRvideoConfig): string {
       )};
       /*-->*/
       const userConfig = ${JSON.stringify(config?.rrwebPlayer || {})};
-      window.replayer = new rrwebPlayer.Player({
-        target: document.body,
-        width: userConfig.width,
-        height: userConfig.height,
-        props: {
-          ...userConfig,
-          events,
-          showController: false,          
-        },
-      });
-      window.replayer.addEventListener('finish', () => window.onReplayFinish());
-      window.replayer.addEventListener('ui-update-progress', (payload)=> window.onReplayProgressUpdate
-      (payload));
-      window.replayer.addEventListener('resize',()=>document.querySelector('.replayer-wrapper').style.transform = 'scale(${
-        (config?.resolutionRatio ?? 1) * MaxScaleValue
-      }) translate(-50%, -50%)');
+      try {
+        window.replayer = new rrwebPlayer({
+          target: document.body,
+          props: {
+            ...userConfig,
+            events,
+            showController: false,
+            autoPlay: false,
+          },
+        });
+        window.replayer.addEventListener('finish', () => window.onReplayFinish());
+        window.replayer.addEventListener('ui-update-progress', (payload)=> window.onReplayProgressUpdate(payload));
+        window.replayer.addEventListener('resize', () => document.querySelector('.replayer-wrapper').style.transform = 'scale(${
+          (config?.resolutionRatio ?? 1) * MaxScaleValue
+        }) translate(-50%, -50%)');
+        // Start playback after event listeners are attached
+        window.replayer.play();
+      } catch (error) {
+        console.error('Error initializing replayer:', error);
+        window.onReplayFinish();
+      }
     </script>
   </body>
 </html>
@@ -139,6 +144,16 @@ export async function transformToVideo(options: RRvideoConfig) {
   });
   const page = await context.newPage();
   await page.goto('about:blank');
+  // Listen to console messages from the page
+  page.on('console', (msg) => {
+    console.log('[PAGE CONSOLE]', msg.type(), msg.text());
+  });
+
+  // Listen to page errors
+  page.on('pageerror', (error) => {
+    console.error('[PAGE ERROR]', error.message);
+  });
+
   await page.exposeFunction(
     'onReplayProgressUpdate',
     (data: { payload: number }) => {
@@ -147,12 +162,41 @@ export async function transformToVideo(options: RRvideoConfig) {
   );
 
   // Wait for the replay to finish
-  await new Promise<void>(
-    (resolve) =>
-      void page
-        .exposeFunction('onReplayFinish', () => resolve())
-        .then(() => page.setContent(getHtml(events, config))),
-  );
+  await new Promise<void>((resolve, reject) => {
+    const timeoutBuffer = 120000; // 2 minute timeout buffer
+    const videoStartTime = events[0]?.timestamp;
+    const videoEndTime = events[events.length - 1]?.timestamp;
+    const videoDuration = videoEndTime - videoStartTime;
+    const videoPlaybackSpeed = options.rrwebPlayer?.speed || 1;
+    const expectedPlaybackTime = videoDuration / videoPlaybackSpeed;
+    console.log(
+      `[DEBUG] Expected playback time: ${expectedPlaybackTime}ms (video duration: ${videoDuration}ms, playback speed: ${videoPlaybackSpeed}x)`,
+    );
+    const totalTimeout = expectedPlaybackTime + timeoutBuffer;
+    const timeout = setTimeout(() => {
+      console.error('[DEBUG] Replay timeout - finish event never fired');
+      reject(new Error('Replay timeout'));
+    }, totalTimeout); // playback + 2 minute timeout
+
+    void page
+      .exposeFunction('onReplayFinish', () => {
+        console.log('[DEBUG] Replay finished');
+        clearTimeout(timeout);
+        resolve();
+      })
+      .then(() => {
+        console.log('[DEBUG] Setting page content');
+        return page.setContent(getHtml(events, config));
+      })
+      .then(() => {
+        console.log('[DEBUG] Page content set successfully');
+      })
+      .catch((err) => {
+        console.error('[DEBUG] Error setting page content:', err);
+        clearTimeout(timeout);
+        reject(err);
+      });
+  });
   const videoPath = (await page.video()?.path()) || '';
   const cleanFiles = async (videoPath: string) => {
     await fs.remove(videoPath);

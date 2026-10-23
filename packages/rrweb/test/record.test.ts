@@ -3,6 +3,7 @@ import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
 import { vi } from 'vitest';
 import 'construct-style-sheets-polyfill';
+import type { annotationData } from '@rrweb/types';
 import type { recordOptions } from '../src/types';
 import {
   listenerHandler,
@@ -33,6 +34,7 @@ interface IWindow extends Window {
     record: ((
       options: recordOptions<eventWithTime>,
     ) => listenerHandler | undefined) & {
+      addAnnotation: (annotation: annotationData) => void;
       takeFullSnapshot: (isCheckout?: boolean | undefined) => void;
     };
 
@@ -265,6 +267,76 @@ describe('record', function (this: ISuite) {
     expect(selectionData.length).toEqual(1);
     expect(selectionData[0].ranges[0].startOffset).toEqual(10);
     expect(selectionData[0].ranges[0].endOffset).toEqual(2);
+  });
+
+  it('records annotations separately from custom events and requires an active recording', async () => {
+    const result = await ctx.page.evaluate(() => {
+      const { record } = (window as unknown as IWindow).rrweb;
+      const events: eventWithTime[] = [];
+      let beforeStart = false;
+      try {
+        record.addAnnotation({ type: 'caption', text: 'Too early' });
+      } catch {
+        beforeStart = true;
+      }
+      const stop = record({ emit: (event) => events.push(event) });
+      record.addAnnotation({ type: 'caption', text: 'Hello' });
+      record.addAnnotation({ type: 'caption', text: false });
+      record.addAnnotation({ type: 'caption', text: null });
+      record.addAnnotation({ type: 'caption', text: '' });
+      record.addAnnotation({ type: 'timelineMarker', text: 'Here' });
+      (window as unknown as IWindow).rrweb.addCustomEvent('annotation', {
+        text: 'Custom',
+      });
+      stop?.();
+      let afterStop = false;
+      try {
+        record.addAnnotation({ type: 'caption', text: 'Too late' });
+      } catch {
+        afterStop = true;
+      }
+      return { events, beforeStart, afterStop };
+    });
+    expect(result.beforeStart).toBe(true);
+    expect(result.afterStop).toBe(true);
+    expect(
+      result.events.filter((event) => event.type === EventType.Annotation),
+    ).toEqual([
+      {
+        type: EventType.Annotation,
+        timestamp: expect.any(Number),
+        data: { type: 'caption', text: 'Hello' },
+      },
+      {
+        type: EventType.Annotation,
+        timestamp: expect.any(Number),
+        data: { type: 'caption', text: false },
+      },
+      {
+        type: EventType.Annotation,
+        timestamp: expect.any(Number),
+        data: { type: 'caption', text: null },
+      },
+      {
+        type: EventType.Annotation,
+        timestamp: expect.any(Number),
+        data: { type: 'caption', text: '' },
+      },
+      {
+        type: EventType.Annotation,
+        timestamp: expect.any(Number),
+        data: { type: 'timelineMarker', text: 'Here' },
+      },
+    ]);
+    expect(
+      result.events.filter((event) => event.type === EventType.Custom),
+    ).toEqual([
+      {
+        type: EventType.Custom,
+        timestamp: expect.any(Number),
+        data: { tag: 'annotation', payload: { text: 'Custom' } },
+      },
+    ]);
   });
 
   it('can add custom event', async () => {
@@ -989,6 +1061,27 @@ describe('record', function (this: ISuite) {
     await waitForRAF(ctx.page); // wait till events get sent
 
     await assertSnapshot(ctx.events);
+  });
+
+  it('does not throw error when stopping recording after iframe becomes cross-origin', async () => {
+    await ctx.page.evaluate(async () => {
+      const { record } = (window as unknown as IWindow).rrweb;
+      const stopRecord = record({
+        emit: (window as unknown as IWindow).emit,
+      });
+      const iframe = document.createElement('iframe');
+      (window as any).stopRecord = stopRecord;
+      (window as any).iframe = iframe;
+      document.body.appendChild(iframe);
+    });
+    await waitForRAF(ctx.page);
+    await ctx.page.evaluate(async () => {
+      (window as any).iframe.src = 'https://www.example.com'; // Change the same origin iframe to a cross origin iframe after it's recorded
+    });
+    await waitForRAF(ctx.page);
+    await ctx.page.evaluate(() => {
+      (window as any).stopRecord?.();
+    });
   });
 });
 

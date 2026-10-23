@@ -16,6 +16,8 @@ const mediaSelectorPlugin: AcceptedPlugin = {
     };
   },
 };
+
+// Simplified from https://github.com/giuseppeg/postcss-pseudo-classes/blob/HEAD/index.js
 const pseudoClassPlugin: AcceptedPlugin = {
   postcssPlugin: 'postcss-hover-classes',
   prepare: function () {

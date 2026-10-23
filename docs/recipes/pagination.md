@@ -5,7 +5,9 @@ When the size of the recorded events increased, load them in one request is not 
 rrweb's API for loading async events is quite simple:
 
 ```js
-const replayer = new rrweb.Replayer(events);
+import { Replayer } from '@rrweb/replay';
+
+const replayer = new Replayer(events);
 
 replayer.addEvent(NEW_EVENT);
 ```
@@ -15,7 +17,9 @@ When calling the `addEvent` API to add a new event, rrweb will resolve its times
 If you need to load several events, you can do a loop like this:
 
 ```js
-const replayer = new rrweb.Replayer(events);
+import { Replayer } from '@rrweb/replay';
+
+const replayer = new Replayer(events);
 
 for (const event of NEW_EVENTS) {
   replayer.addEvent(event);

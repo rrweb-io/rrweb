@@ -56,6 +56,16 @@ import dom, { mutationObserverCtor } from '@rrweb/utils';
 
 export const mutationBuffers: MutationBuffer[] = [];
 
+/** Lets per-shadow-root observers be fully torn down when their root detaches. */
+const observerBuffers = new WeakMap<MutationObserver, MutationBuffer>();
+
+/** Iterates over a copy: callbacks may add or remove buffers. */
+export function forEachMutationBuffer(
+  cb: (buffer: MutationBuffer) => void,
+): void {
+  [...mutationBuffers].forEach(cb);
+}
+
 // Event.path is non-standard and used in some older browsers
 type NonStandardEvent = Omit<Event, 'composedPath'> & {
   path: EventTarget[];
@@ -81,12 +91,13 @@ function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
 export function initMutationObserver(
   options: MutationBufferParam,
   rootEl: Node,
-): MutationObserver {
+): [MutationObserver, () => void] {
   const mutationBuffer = new MutationBuffer();
   mutationBuffers.push(mutationBuffer);
   // see mutation.ts for details
   mutationBuffer.init(options);
-  const observer = new (mutationObserverCtor() as new (
+  const [ObserverCtor, iframeCleanup] = mutationObserverCtor();
+  const observer = new (ObserverCtor as new (
     callback: MutationCallback,
   ) => MutationObserver)(
     callbackWrapper(mutationBuffer.processMutations.bind(mutationBuffer)),
@@ -99,7 +110,21 @@ export function initMutationObserver(
     childList: true,
     subtree: true,
   });
-  return observer;
+  observerBuffers.set(observer, mutationBuffer);
+  return [observer, iframeCleanup];
+}
+
+/** Disconnects an observer and drops its buffer from the registry. */
+export function removeMutationBuffer(observer: MutationObserver): void {
+  observer.disconnect();
+  const buffer = observerBuffers.get(observer);
+  if (buffer) {
+    const index = mutationBuffers.indexOf(buffer);
+    if (index !== -1) {
+      mutationBuffers.splice(index, 1);
+    }
+    observerBuffers.delete(observer);
+  }
 }
 
 function initMoveObserver({
@@ -376,6 +401,16 @@ function initViewportResizeObserver(
   return on('resize', updateDimension, win);
 }
 
+export function findAndRemoveIframeBuffer(iframeEl: HTMLIFrameElement) {
+  for (let i = mutationBuffers.length - 1; i >= 0; i--) {
+    const buf = mutationBuffers[i];
+    if (buf.bufferBelongsToIframe(iframeEl)) {
+      buf.reset();
+      mutationBuffers.splice(i, 1);
+    }
+  }
+}
+
 export const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
 const lastInputValueMap: WeakMap<EventTarget, inputValue> = new WeakMap();
 function initInputObserver({
@@ -555,6 +590,7 @@ function getNestedCSSRulePositions(rule: CSSRule): number[] {
       );
       const index = rules.indexOf(childRule);
       pos.unshift(index);
+      return recurse(childRule.parentRule, pos);
     } else if (childRule.parentStyleSheet) {
       const rules = Array.from(childRule.parentStyleSheet.cssRules);
       const index = rules.indexOf(childRule);
@@ -1307,8 +1343,10 @@ export function initObservers(
 
   mergeHooks(o, hooks);
   let mutationObserver: MutationObserver | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  let cleanupMutationIframe: () => void = () => {};
   if (o.recordDOM) {
-    mutationObserver = initMutationObserver(o, o.doc);
+    [mutationObserver, cleanupMutationIframe] = initMutationObserver(o, o.doc);
   }
   const mousemoveHandler = initMoveObserver(o);
   const mouseInteractionHandler = initMouseInteractionObserver(o);
@@ -1349,8 +1387,9 @@ export function initObservers(
   }
 
   return callbackWrapper(() => {
-    mutationBuffers.forEach((b) => b.reset());
+    forEachMutationBuffer((b) => b.reset());
     mutationObserver?.disconnect();
+    cleanupMutationIframe();
     mousemoveHandler();
     mouseInteractionHandler();
     scrollHandler();

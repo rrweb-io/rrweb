@@ -1,10 +1,20 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { vi } from 'vitest';
-import type { Page } from 'puppeteer';
+import { chromium, firefox, webkit } from 'playwright';
+import type { Browser, Page } from 'playwright';
 import type { eventWithTime } from '@rrweb/types';
 import type { recordOptions } from '../../src/types';
-import { startServer, launchPuppeteer, ISuite, getServerURL } from '../utils';
+import { startServer, getServerURL } from '../utils';
+
+const browserName = process.env.BROWSER ?? 'chromium';
+const browserType =
+  browserName === 'firefox'
+    ? firefox
+    : browserName === 'webkit'
+    ? webkit
+    : chromium;
+const isChromium = browserType === chromium;
 
 const suites: Array<
   {
@@ -61,17 +71,25 @@ function avg(v: number[]): number {
   return v.reduce((prev, cur) => prev + cur, 0) / v.length;
 }
 
-describe('benchmark: mutation observer', () => {
+describe(`benchmark: mutation observer [${browserName}]`, () => {
   vi.setConfig({ testTimeout: 240000 });
-  let page: ISuite['page'];
-  let browser: ISuite['browser'];
-  let server: ISuite['server'];
+  let page: Page;
+  let browser: Browser;
+  let server: Awaited<ReturnType<typeof startServer>>;
 
   beforeAll(async () => {
     server = await startServer();
-    browser = await launchPuppeteer({
-      dumpio: true,
-      headless: 'new',
+    browser = await browserType.launch({
+      headless: true,
+      ...(isChromium
+        ? {
+            executablePath: process.env.BENCH_EXECUTABLE || undefined,
+            args: [
+              '--disable-web-security',
+              '--disable-features=BlockInsecurePrivateNetworkRequests',
+            ],
+          }
+        : {}),
     });
   });
 
@@ -90,7 +108,6 @@ describe('benchmark: mutation observer', () => {
   };
 
   const addRecordingScript = async (page: Page) => {
-    // const scriptUrl = `${getServerURL(server)}/rrweb-1.1.3.js`;
     const scriptUrl = `${getServerURL(server)}/rrweb.umd.cjs`;
     await page.evaluate((url) => {
       const scriptEl = document.createElement('script');
@@ -150,38 +167,52 @@ describe('benchmark: mutation observer', () => {
         }, suite.eval)) as number;
       };
 
-      // generate profile.json file
-      const profileFilename = `profile-${new Date().toISOString()}.json`;
+      // A CPU-throttled, traced warm-up run whose duration is discarded; it
+      // produces a devtools timeline profile. Chromium-only (needs CDP).
+      const profileFilename = `profile-${browserName}-${new Date().toISOString()}.json`;
       const tempDirectory = path.resolve(path.join(__dirname, '../../temp'));
       fs.mkdirSync(tempDirectory, { recursive: true });
       const profilePath = path.resolve(tempDirectory, profileFilename);
 
-      const client = await page.target().createCDPSession();
-      await client.send('Emulation.setCPUThrottlingRate', { rate: 6 });
-
-      await page.tracing.start({
-        path: profilePath,
-        screenshots: true,
-        categories: [
-          '-*',
-          'devtools.timeline',
-          'v8.execute',
-          'disabled-by-default-devtools.timeline',
-          'disabled-by-default-devtools.timeline.frame',
-          'toplevel',
-          'blink.console',
-          'blink.user_timing',
-          'latencyInfo',
-          'disabled-by-default-devtools.timeline.stack',
-          'disabled-by-default-v8.cpu_profiler',
-          'disabled-by-default-v8.cpu_profiler.hires',
-        ],
-      });
-      await loadPage();
-      await getDuration();
-      await page.waitForTimeout(1000);
-      await page.tracing.stop();
-      await client.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+      if (isChromium) {
+        const client = await page.context().newCDPSession(page);
+        await client.send('Emulation.setCPUThrottlingRate', { rate: 6 });
+        const traceEvents: unknown[] = [];
+        client.on('Tracing.dataCollected', (data: { value: unknown[] }) => {
+          traceEvents.push(...data.value);
+        });
+        await client.send('Tracing.start', {
+          transferMode: 'ReportEvents',
+          categories: [
+            '-*',
+            'devtools.timeline',
+            'v8.execute',
+            'disabled-by-default-devtools.timeline',
+            'disabled-by-default-devtools.timeline.frame',
+            'toplevel',
+            'blink.console',
+            'blink.user_timing',
+            'latencyInfo',
+            'disabled-by-default-devtools.timeline.stack',
+            'disabled-by-default-v8.cpu_profiler',
+            'disabled-by-default-v8.cpu_profiler.hires',
+          ].join(','),
+        });
+        await loadPage();
+        await getDuration();
+        await new Promise((r) => setTimeout(r, 1000));
+        const tracingComplete = new Promise<void>((resolve) =>
+          client.once('Tracing.tracingComplete', () => resolve()),
+        );
+        await client.send('Tracing.end');
+        await tracingComplete;
+        fs.writeFileSync(profilePath, JSON.stringify({ traceEvents }));
+        await client.send('Emulation.setCPUThrottlingRate', { rate: 1 });
+      } else {
+        // no CDP on firefox/webkit: plain warm-up so the JIT is hot before timing
+        await loadPage();
+        await getDuration();
+      }
 
       // calculate durations
       const times = suite.times ?? 5;
@@ -194,12 +225,13 @@ describe('benchmark: mutation observer', () => {
 
       console.table([
         {
+          browser: browserName,
           ...suite,
           duration: avg(durations),
           durations: durations.join(', '),
         },
       ]);
-      console.log('profile: ', profilePath);
+      if (isChromium) console.log('profile: ', profilePath);
     });
   }
 });

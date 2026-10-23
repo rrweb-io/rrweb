@@ -2,15 +2,15 @@
 
 从 v1.0.0 版本开始，我们以插件的形式增加了录制和播放控制台输出的功能。这个功能旨在为开发者提供更多的 bug 信息。对这项功能我们还提供了一些设置选项。
 
-### 开启录制 console 功能
+## 开启录制 console 功能
 
 可以通过如下代码使用默认的配置选项
 
 ```js
-import rrweb from 'rrweb';
+import { record } from '@rrweb/record';
 import { getRecordConsolePlugin } from '@rrweb/rrweb-plugin-console-record';
 
-rweb.record({
+record({
   emit: function emit(event) {
     // 如果要使用console来输出信息，请使用如下的写法
     const defaultLog = console.log['__rrweb_original__']
@@ -29,10 +29,10 @@ rweb.record({
 你也可以定制录制 console 的选项
 
 ```js
-import rrweb from 'rrweb';
+import { record } from '@rrweb/record';
 import { getRecordConsolePlugin } from '@rrweb/rrweb-plugin-console-record';
 
-rrweb.record({
+record({
   emit: function emit(event) {
     // 如果要使用console来输出信息，请使用如下的写法
     const defaultLog = console.log['__rrweb_original__']
@@ -69,10 +69,10 @@ rrweb.record({
 如果 replayer 传入的 events 中包含了 console 类型的数据，我们将自动播放这些数据。
 
 ```js
-import rrweb from 'rrweb';
+import { Replayer } from '@rrweb/replay';
 import { getReplayConsolePlugin } from '@rrweb/rrweb-plugin-console-replay';
 
-const replayer = new rrweb.Replayer(events, {
+const replayer = new Replayer(events, {
   plugins: [
     getReplayConsolePlugin({
       level: ['info', 'log', 'warn', 'error'],
@@ -84,7 +84,7 @@ replayer.play();
 
 如下是对 replay 选项的描述：
 
-| key          | 默认值                                                                                                      | 功能                                                                                                        |
-| ------------ | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| level        | ['log','warn','error',...]                                                                                  | 你可以只播放想要的 console 函数类型                                                                         |
-| replayLogger | 一个基于 console 的对接口[ReplayLogger](../../packages/rrweb/src/plugins/console/replay/index.ts#L13)的实现 | 你也可以通过传入一个`ReplayLogger`接口的自己的实现，用 html 模拟一个浏览器控制台，来播放录制的 console 数据 |
+| key          | 默认值                                                                                                             | 功能                                                                                                        |
+| ------------ | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| level        | ['log','warn','error',...]                                                                                         | 你可以只播放想要的 console 函数类型                                                                         |
+| replayLogger | 一个基于 console 的对接口[ReplayLogger](../../packages/plugins/rrweb-plugin-console-replay/src/index.ts#L14)的实现 | 你也可以通过传入一个`ReplayLogger`接口的自己的实现，用 html 模拟一个浏览器控制台，来播放录制的 console 数据 |
