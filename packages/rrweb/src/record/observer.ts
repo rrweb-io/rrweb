@@ -79,10 +79,6 @@ function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
   return event && event.target;
 }
 
-/**
- * Observes mutations below `rootEl`. Returns a handler that stops the observer and unregisters its buffer, and
- * the cleanup of the shared untainted `MutationObserver` iframe (only needed in Safari).
- */
 export function initMutationObserver(
   options: MutationBufferParam,
   rootEl: Node,
@@ -107,8 +103,6 @@ export function initMutationObserver(
   });
   const stop = () => {
     observer.disconnect();
-    // A stopped buffer must leave the registry: it references its document, mirror and recording callbacks, and
-    // `record()` freezes, locks and unlocks every registered buffer.
     mutationBuffers.delete(mutationBuffer);
   };
   return [stop, iframeCleanup];
