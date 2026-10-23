@@ -1063,6 +1063,7 @@ function initMediaInteractionObserver({
         const target = getEventTarget(event);
         if (
           !target ||
+          !(target instanceof HTMLMediaElement) ||
           isBlocked(target as Node, blockClass, blockSelector, true)
         ) {
           return;
