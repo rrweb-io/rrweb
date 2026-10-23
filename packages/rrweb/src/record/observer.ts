@@ -54,17 +54,11 @@ import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
 import dom, { mutationObserverCtor } from '@rrweb/utils';
 
-export const mutationBuffers: MutationBuffer[] = [];
+// one principal mutation buffer, but also one per shadowRoot/iframe on the page
+export const mutationBuffers = new Set<MutationBuffer>();
 
 /** Lets per-shadow-root observers be fully torn down when their root detaches. */
 const observerBuffers = new WeakMap<MutationObserver, MutationBuffer>();
-
-/** Iterates over a copy: callbacks may add or remove buffers. */
-export function forEachMutationBuffer(
-  cb: (buffer: MutationBuffer) => void,
-): void {
-  [...mutationBuffers].forEach(cb);
-}
 
 // Event.path is non-standard and used in some older browsers
 type NonStandardEvent = Omit<Event, 'composedPath'> & {
@@ -93,7 +87,7 @@ export function initMutationObserver(
   rootEl: Node,
 ): [MutationObserver, () => void] {
   const mutationBuffer = new MutationBuffer();
-  mutationBuffers.push(mutationBuffer);
+  mutationBuffers.add(mutationBuffer);
   // see mutation.ts for details
   mutationBuffer.init(options);
   const [ObserverCtor, iframeCleanup] = mutationObserverCtor();
@@ -119,10 +113,7 @@ export function removeMutationBuffer(observer: MutationObserver): void {
   observer.disconnect();
   const buffer = observerBuffers.get(observer);
   if (buffer) {
-    const index = mutationBuffers.indexOf(buffer);
-    if (index !== -1) {
-      mutationBuffers.splice(index, 1);
-    }
+    mutationBuffers.delete(buffer);
     observerBuffers.delete(observer);
   }
 }
@@ -399,16 +390,6 @@ function initViewportResizeObserver(
     ),
   );
   return on('resize', updateDimension, win);
-}
-
-export function findAndRemoveIframeBuffer(iframeEl: HTMLIFrameElement) {
-  for (let i = mutationBuffers.length - 1; i >= 0; i--) {
-    const buf = mutationBuffers[i];
-    if (buf.bufferBelongsToIframe(iframeEl)) {
-      buf.reset();
-      mutationBuffers.splice(i, 1);
-    }
-  }
 }
 
 export const INPUT_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
@@ -1387,7 +1368,7 @@ export function initObservers(
   }
 
   return callbackWrapper(() => {
-    forEachMutationBuffer((b) => b.reset());
+    mutationBuffers.forEach((b) => b.reset());
     mutationObserver?.disconnect();
     cleanupMutationIframe();
     mousemoveHandler();
