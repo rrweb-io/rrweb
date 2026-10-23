@@ -1,0 +1,88 @@
+{
+  "type": 0,
+  "childNodes": [
+    {
+      "type": 2,
+      "tagName": "html",
+      "attributes": {},
+      "childNodes": [
+        {
+          "type": 2,
+          "tagName": "head",
+          "attributes": {},
+          "childNodes": [
+            {
+              "type": 2,
+              "tagName": "style",
+              "attributes": {
+                "_cssText": ".Icon > span { color: blue; }"
+              },
+              "childNodes": [
+                {
+                  "type": 3,
+                  "textContent": "",
+                  "id": 5
+                }
+              ],
+              "id": 4
+            }
+          ],
+          "id": 3
+        },
+        {
+          "type": 2,
+          "tagName": "body",
+          "attributes": {},
+          "childNodes": [
+            {
+              "type": 2,
+              "tagName": "svg",
+              "attributes": {
+                "xmlns": "http://www.w3.org/2000/svg",
+                "version": "1.1"
+              },
+              "childNodes": [
+                {
+                  "type": 2,
+                  "tagName": "style",
+                  "attributes": {
+                    "_cssText": ".Icon > span { color: red; }"
+                  },
+                  "childNodes": [
+                    {
+                      "type": 4,
+                      "textContent": "",
+                      "id": 9
+                    }
+                  ],
+                  "isSVG": true,
+                  "id": 8
+                },
+                {
+                  "type": 2,
+                  "tagName": "div",
+                  "attributes": {},
+                  "childNodes": [
+                    {
+                      "type": 4,
+                      "textContent": "</svg>& this is not markup<svg/>",
+                      "id": 11
+                    }
+                  ],
+                  "isSVG": true,
+                  "id": 10
+                }
+              ],
+              "isSVG": true,
+              "id": 7
+            }
+          ],
+          "id": 6
+        }
+      ],
+      "id": 2
+    }
+  ],
+  "compatMode": "BackCompat",
+  "id": 1
+}
