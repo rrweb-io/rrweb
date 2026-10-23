@@ -5,10 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Mirror, snapshot } from 'rrweb-snapshot';
 import MutationBuffer from '../../src/record/mutation';
 import { ShadowDomManager } from '../../src/record/shadow-dom-manager';
-import {
-  mutationBuffers,
-  forEachMutationBuffer,
-} from '../../src/record/observer';
+import { mutationBuffers } from '../../src/record/observer';
 import type { MutationBufferParam } from '../../src/types';
 
 type BypassOptions = ConstructorParameters<
@@ -163,11 +160,11 @@ describe('Shadow observer lifecycle (regression)', () => {
   });
 
   it('disconnects the shadow observer when its host is removed', () => {
-    const pushSpy = vi.spyOn(mutationBuffers, 'push');
+    const addSpy = vi.spyOn(mutationBuffers, 'add');
     const { host } = createDropdown(doc);
     doc.body.appendChild(host);
     buffer.processMutations([childListMutation(doc.body, [host])]);
-    const [shadowBuffer] = pushSpy.mock.calls.map((call) => call[0]);
+    const [shadowBuffer] = addSpy.mock.calls.map((call) => call[0]);
     expect(mutationBuffers).toContain(shadowBuffer);
 
     host.remove();
@@ -177,7 +174,7 @@ describe('Shadow observer lifecycle (regression)', () => {
   });
 
   it('does not accumulate one mutation buffer per removed component', () => {
-    const baseline = mutationBuffers.length;
+    const baseline = mutationBuffers.size;
     const cycles = 5;
     for (let i = 0; i < cycles; i++) {
       const { host } = createDropdown(doc);
@@ -187,20 +184,20 @@ describe('Shadow observer lifecycle (regression)', () => {
       buffer.processMutations([childListMutation(doc.body, [], [host])]);
     }
     // Mirror entries are released, so observer state must not grow either.
-    expect(mutationBuffers.length - baseline).toBeLessThan(cycles);
+    expect(mutationBuffers.size - baseline).toBeLessThan(cycles);
   });
 
   it('releases nested shadow observers when an ancestor host is removed', () => {
-    const pushSpy = vi.spyOn(mutationBuffers, 'push');
+    const addSpy = vi.spyOn(mutationBuffers, 'add');
     const { host } = createDropdown(doc);
     const nestedHost = doc.createElement('inner-box');
     nestedHost.attachShadow({ mode: 'open' }).innerHTML = '<b>nested</b>';
     host.shadowRoot!.appendChild(nestedHost);
     doc.body.appendChild(host);
     buffer.processMutations([childListMutation(doc.body, [host])]);
-    const baseline = mutationBuffers.length;
+    const baseline = mutationBuffers.size;
     expect(baseline).toBeGreaterThan(0);
-    const shadowBuffers = pushSpy.mock.calls.map((call) => call[0]);
+    const shadowBuffers = addSpy.mock.calls.map((call) => call[0]);
 
     host.remove();
     buffer.processMutations([childListMutation(doc.body, [], [host])]);
@@ -209,7 +206,7 @@ describe('Shadow observer lifecycle (regression)', () => {
     shadowBuffers.forEach((shadowBuffer) =>
       expect(mutationBuffers).not.toContain(shadowBuffer),
     );
-    expect(mutationBuffers.length).toBe(baseline - 2);
+    expect(mutationBuffers).toHaveLength(baseline - 2);
   });
 
   it('keeps observing a host that is moved instead of removed', () => {
@@ -225,7 +222,7 @@ describe('Shadow observer lifecycle (regression)', () => {
       childListMutation(doc.body, [other]),
       childListMutation(doc.body, [host]),
     ]);
-    const baseline = mutationBuffers.length;
+    const baseline = mutationBuffers.size;
     disconnectSpy.mockClear();
 
     // Move the host under `other`: removal + addition in one batch.
@@ -236,41 +233,41 @@ describe('Shadow observer lifecycle (regression)', () => {
     ]);
 
     expect(disconnectSpy).not.toHaveBeenCalled();
-    expect(mutationBuffers.length).toBe(baseline);
+    expect(mutationBuffers).toHaveLength(baseline);
   });
 
   it('observes a reinserted host again after release', () => {
     const { host } = createDropdown(doc);
     doc.body.appendChild(host);
     buffer.processMutations([childListMutation(doc.body, [host])]);
-    const baseline = mutationBuffers.length;
+    const baseline = mutationBuffers.size;
 
     host.remove();
     buffer.processMutations([childListMutation(doc.body, [], [host])]);
-    expect(mutationBuffers.length).toBe(baseline - 1);
+    expect(mutationBuffers).toHaveLength(baseline - 1);
 
     doc.body.appendChild(host);
     buffer.processMutations([childListMutation(doc.body, [host])]);
-    expect(mutationBuffers.length).toBe(baseline);
+    expect(mutationBuffers).toHaveLength(baseline);
   });
 
   it('unlocks every buffer when an earlier buffer is removed mid-loop', () => {
-    const pushSpy = vi.spyOn(mutationBuffers, 'push');
+    const addSpy = vi.spyOn(mutationBuffers, 'add');
     const { host: hostA } = createDropdown(doc);
     doc.body.appendChild(hostA);
     buffer.processMutations([childListMutation(doc.body, [hostA])]);
     const { slot: slotB, host: hostB } = createDropdown(doc);
     doc.body.appendChild(hostB);
     buffer.processMutations([childListMutation(doc.body, [hostB])]);
-    const [shadowABuffer, shadowBBuffer] = pushSpy.mock.calls.map(
+    const [shadowABuffer, shadowBBuffer] = addSpy.mock.calls.map(
       (call) => call[0],
     );
     expect(shadowBBuffer).toBeDefined();
 
-    forEachMutationBuffer((b) => b.lock());
+    mutationBuffers.forEach((b) => b.lock());
     hostA.remove();
     shadowABuffer.processMutations([childListMutation(doc.body, [], [hostA])]);
-    forEachMutationBuffer((b) => b.unlock());
+    mutationBuffers.forEach((b) => b.unlock());
 
     expect(mutationBuffers).not.toContain(shadowABuffer);
     mutationCb.mockClear();
