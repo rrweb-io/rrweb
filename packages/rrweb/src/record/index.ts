@@ -4,11 +4,7 @@ import {
   type MaskInputOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import {
-  initObservers,
-  mutationBuffers,
-  findAndRemoveIframeBuffer,
-} from './observer';
+import { initObservers, mutationBuffers } from './observer';
 import {
   on,
   getWindowWidth,
@@ -580,7 +576,12 @@ function record<T = eventWithTime>(
         iframeHandler();
         iframeHandlersMap.delete(iframeEl);
       }
-      findAndRemoveIframeBuffer(iframeEl);
+      for (const buf of mutationBuffers) {
+        if (buf.bufferBelongsToIframe(iframeEl)) {
+          buf.reset();
+          mutationBuffers.delete(buf);
+        }
+      }
     });
 
     const init = () => {
