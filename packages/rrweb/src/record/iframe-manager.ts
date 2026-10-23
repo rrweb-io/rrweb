@@ -67,9 +67,6 @@ export class IframeManager {
     this.loadListener = cb;
   }
 
-  /**
-   * Called with the document of an attached iframe when it unloads for good: the iframe was removed or navigated.
-   */
   public addUnloadListener(cb: (doc: Document) => unknown) {
     this.unloadListener = cb;
   }

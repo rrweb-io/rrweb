@@ -54,10 +54,7 @@ import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
 import dom, { mutationObserverCtor } from '@rrweb/utils';
 
-/**
- * Buffers of all live mutation observers, so that the recorder can freeze, lock and unlock them together.
- * A buffer is registered when its observer starts and unregistered when its observer is stopped.
- */
+// one main page mutation buffer, but also one per shadowDOM and each iframe
 export const mutationBuffers = new Set<MutationBuffer>();
 
 // Event.path is non-standard and used in some older browsers
@@ -82,10 +79,6 @@ function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
   return event && event.target;
 }
 
-/**
- * Observes mutations below `rootEl`. Returns a handler that stops the observer and unregisters its buffer, and
- * the cleanup of the shared untainted `MutationObserver` iframe (only needed in Safari).
- */
 export function initMutationObserver(
   options: MutationBufferParam,
   rootEl: Node,
@@ -110,8 +103,6 @@ export function initMutationObserver(
   });
   const stop = () => {
     observer.disconnect();
-    // A stopped buffer must leave the registry: it references its document, mirror and recording callbacks, and
-    // `record()` freezes, locks and unlocks every registered buffer.
     mutationBuffers.delete(mutationBuffer);
   };
   return [stop, iframeCleanup];
@@ -1370,8 +1361,6 @@ export function initObservers(
   }
 
   return callbackWrapper(() => {
-    // Observers of same-origin iframe documents are also stopped when the document unloads, while recording goes
-    // on. Only the recorded document's teardown may reset state shared by all documents.
     if (o.doc === document) {
       mutationBuffers.forEach((b) => b.reset());
       cleanupMutationIframe();
