@@ -98,12 +98,16 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
     return defaultObj.prototype as BasePrototypeCache[T];
   }
 
+  let iframeEl: HTMLIFrameElement | undefined;
   try {
-    const iframeEl = document.createElement('iframe');
+    iframeEl = document.createElement('iframe');
     iframeEl.style.display = 'none';
     document.body.appendChild(iframeEl);
     const win = iframeEl.contentWindow;
-    if (!win) return defaultObj.prototype as BasePrototypeCache[T];
+    if (!win) {
+      iframeEl.remove();
+      return defaultObj.prototype as BasePrototypeCache[T];
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
     const untaintedObject = (win as any)[key]
@@ -123,13 +127,14 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
       // rr-block prevents rrweb from serializing this iframe in subsequent snapshots
       iframeEl.classList.add('rr-block');
       iframeEl.setAttribute('__rrwebUntaintedMutationObserver', '');
-      untaintedBaseIframeCleanup[key] = () => iframeEl.remove();
+      untaintedBaseIframeCleanup[key] = () => iframeEl?.remove();
     } else {
       iframeEl.remove();
     }
 
     return (untaintedBasePrototype[key] = untaintedObject);
   } catch {
+    iframeEl?.remove();
     return defaultPrototype;
   }
 }
