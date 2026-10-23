@@ -1,6 +1,11 @@
 ---
 "rrweb": patch
 "@rrweb/record": patch
+"@rrweb/utils": patch
 ---
 
-Fix record side memory leaks: release observers, mutation buffers and listeners that the recorder no longer needs. Stopping a recording, taking a full snapshot, removing a shadow host, and removing or navigating a same-origin iframe each left mutation buffers registered and observers attached, so memory grew with every stop/start cycle and every checkout, and mutations inside same-origin iframes were recorded once more for every full snapshot taken. Cross-origin iframe message listeners are now also removed when recording stops.
+Fix record-side memory leaks and duplicate mutation emission:
+
+- Stopping a recording now releases the root document's mutation buffer and observer — previously the document observer was only disconnected, so each start/stop cycle leaked one buffer — and removes the cross-origin iframe `message` listener.
+- A same-origin iframe is observed once instead of re-observed on every full snapshot (`checkoutEveryNth`/`checkoutEveryNms`/manual `takeFullSnapshot`), so a single iframe mutation is no longer emitted once per checkout; its observers are also released when the iframe is removed or navigates away.
+- The untainted-`MutationObserver` helper iframe used on WebKit/Safari is reference-counted, so it is torn down only when the last observer stops and will get rebuilt for a later recording.
