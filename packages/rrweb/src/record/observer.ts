@@ -52,7 +52,7 @@ import type {
 } from '@rrweb/types';
 import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
-import dom, { mutationObserverCtor } from '@rrweb/utils';
+import dom, { mutationObserverCtor, getUntaintedProxy } from '@rrweb/utils';
 
 export const mutationBuffers: MutationBuffer[] = [];
 
@@ -634,6 +634,8 @@ function initStyleSheetObserver(
     };
   }
 
+  const Proxy = getUntaintedProxy();
+
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const insertRule = win.CSSStyleSheet.prototype.insertRule;
   win.CSSStyleSheet.prototype.insertRule = new Proxy(insertRule, {
@@ -969,6 +971,8 @@ function initStyleDeclarationObserver(
   }: observerParam,
   { win }: { win: IWindow },
 ): listenerHandler {
+  const Proxy = getUntaintedProxy();
+
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const setProperty = win.CSSStyleDeclaration.prototype.setProperty;
   win.CSSStyleDeclaration.prototype.setProperty = new Proxy(setProperty, {
