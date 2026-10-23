@@ -4,7 +4,12 @@ import {
   type MaskInputOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import { initObservers, mutationBuffers } from './observer';
+import {
+  initObservers,
+  mutationBuffers,
+  forEachMutationBuffer,
+  findAndRemoveIframeBuffer,
+} from './observer';
 import {
   on,
   getWindowWidth,
@@ -196,7 +201,7 @@ function record<T = eventWithTime>(
     ) {
       // we've got a user initiated event so first we need to apply
       // all DOM changes that have been buffering during paused state
-      mutationBuffers.forEach((buf) => buf.unfreeze());
+      forEachMutationBuffer((buf) => buf.unfreeze());
     }
 
     if (inEmittingFrame) {
@@ -356,7 +361,7 @@ function record<T = eventWithTime>(
 
     shadowDomManager.init();
 
-    mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
+    forEachMutationBuffer((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
       mirror,
       blockClass,
@@ -407,7 +412,7 @@ function record<T = eventWithTime>(
       },
       isCheckout,
     );
-    mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
+    forEachMutationBuffer((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
 
     // Some old browsers don't support adoptedStyleSheets.
     if (document.adoptedStyleSheets && document.adoptedStyleSheets.length > 0)
@@ -419,6 +424,7 @@ function record<T = eventWithTime>(
 
   try {
     const handlers: listenerHandler[] = [];
+    const iframeHandlersMap = new Map<HTMLIFrameElement, listenerHandler>();
 
     const observe = (doc: Document) => {
       return callbackWrapper(initObservers)(
@@ -557,11 +563,20 @@ function record<T = eventWithTime>(
 
     iframeManager.addLoadListener((iframeEl) => {
       try {
-        handlers.push(observe(iframeEl.contentDocument!));
+        iframeHandlersMap.set(iframeEl, observe(iframeEl.contentDocument!));
       } catch (error) {
         // TODO: handle internal error
         console.warn(error);
       }
+    });
+
+    iframeManager.addPageHideListener((iframeEl) => {
+      const iframeHandler = iframeHandlersMap.get(iframeEl);
+      if (iframeHandler) {
+        iframeHandler();
+        iframeHandlersMap.delete(iframeEl);
+      }
+      findAndRemoveIframeBuffer(iframeEl);
     });
 
     const init = () => {
@@ -596,6 +611,7 @@ function record<T = eventWithTime>(
       );
     }
     return () => {
+      iframeHandlersMap.forEach((h) => h());
       handlers.forEach((handler) => {
         try {
           handler();
@@ -646,7 +662,7 @@ record.addAnnotation = (annotation: annotationData) => {
 };
 
 record.freezePage = () => {
-  mutationBuffers.forEach((buf) => buf.freeze());
+  forEachMutationBuffer((buf) => buf.freeze());
 };
 
 record.takeFullSnapshot = (isCheckout?: boolean) => {
