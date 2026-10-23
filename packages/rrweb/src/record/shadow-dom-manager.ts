@@ -56,7 +56,7 @@ export class ShadowDomManager {
     if (this.shadowDoms.has(shadowRoot)) return;
     const handlers: listenerHandler[] = [];
     this.shadowDoms.set(shadowRoot, handlers);
-    const [stopMutationObserver] = initMutationObserver(
+    const stopMutationObserver = initMutationObserver(
       {
         ...this.bypassOptions,
         doc,

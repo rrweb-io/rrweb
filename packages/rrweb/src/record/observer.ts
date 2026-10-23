@@ -82,12 +82,12 @@ function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
 export function initMutationObserver(
   options: MutationBufferParam,
   rootEl: Node,
-): [listenerHandler, () => void] {
+): listenerHandler {
   const mutationBuffer = new MutationBuffer();
   mutationBuffers.add(mutationBuffer);
   // see mutation.ts for details
   mutationBuffer.init(options);
-  const [ObserverCtor, iframeCleanup] = mutationObserverCtor();
+  const [ObserverCtor, releaseObserverConstructor] = mutationObserverCtor();
   const observer = new (ObserverCtor as new (
     callback: MutationCallback,
   ) => MutationObserver)(
@@ -104,8 +104,9 @@ export function initMutationObserver(
   const stop = () => {
     observer.disconnect();
     mutationBuffers.delete(mutationBuffer);
+    releaseObserverConstructor();
   };
-  return [stop, iframeCleanup];
+  return stop;
 }
 
 function initMoveObserver({
@@ -1359,11 +1360,6 @@ export function initObservers(
   }
 
   return callbackWrapper(() => {
-    // Observers of same-origin iframe documents are also stopped when the document unloads, while recording goes
-    // on. Only the recorded document's teardown may reset state shared by all documents.
-    if (o.doc === document) {
-      cleanupMutationIframe();
-    }
     stopMutationObserver?.();
     mousemoveHandler();
     mouseInteractionHandler();
