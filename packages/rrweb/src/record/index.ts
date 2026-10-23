@@ -29,7 +29,10 @@ import {
   type canvasMutationParam,
   type adoptedStyleSheetParam,
 } from '@rrweb/types';
-import type { CrossOriginIframeMessageEventContent } from '../types';
+import type {
+  CrossOriginIframeMessageEventContent,
+  CrossOriginIframeSnapshotRequest,
+} from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
 import { CanvasManager } from './observers/canvas/canvas-manager';
@@ -63,6 +66,17 @@ try {
 }
 
 const mirror = createMirror();
+
+// Whether `source` is a frame above this one. A cross-origin iframe nested in same-origin iframes is asked for snapshots by the topmost of them.
+function isAncestorWindow(source: MessageEventSource | null) {
+  let win: Window = window;
+  while (win !== win.parent) {
+    win = win.parent;
+    if (win === source) return true;
+  }
+  return false;
+}
+
 function record<T = eventWithTime>(
   options: recordOptions<T> = {},
 ): listenerHandler | undefined {
@@ -362,6 +376,7 @@ function record<T = eventWithTime>(
     shadowDomManager.init();
 
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
+    const iframes: HTMLIFrameElement[] = [];
     const node = snapshot(document, {
       mirror,
       blockClass,
@@ -379,6 +394,7 @@ function record<T = eventWithTime>(
       onSerialize: (n) => {
         if (isSerializedIframe(n, mirror)) {
           iframeManager.addIframe(n as HTMLIFrameElement);
+          iframes.push(n as HTMLIFrameElement);
         }
         if (isSerializedStylesheet(n, mirror)) {
           stylesheetManager.trackLinkElement(n as HTMLLinkElement);
@@ -413,6 +429,9 @@ function record<T = eventWithTime>(
       isCheckout,
     );
     mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
+
+    // The snapshot above replaces cross-origin iframes with empty ones, so ask them for their content again.
+    iframes.forEach((iframe) => iframeManager.requestFullSnapshot(iframe));
 
     // Some old browsers don't support adoptedStyleSheets.
     if (document.adoptedStyleSheets && document.adoptedStyleSheets.length > 0)
@@ -570,6 +589,25 @@ function record<T = eventWithTime>(
       }
     });
 
+    if (passEmitsToParent) {
+      handlers.push(
+        on(
+          'message',
+          (event: MessageEvent) => {
+            if (
+              !recording ||
+              (event.data as CrossOriginIframeSnapshotRequest | undefined)
+                ?.type !== 'rrweb-snapshot-request' ||
+              !isAncestorWindow(event.source)
+            )
+              return;
+            takeFullSnapshot();
+          },
+          window,
+        ),
+      );
+    }
+
     iframeManager.addPageHideListener((iframeEl) => {
       const iframeHandler = iframeHandlersMap.get(iframeEl);
       if (iframeHandler) {
@@ -637,6 +675,7 @@ function record<T = eventWithTime>(
         }
       });
       processedNodeManager.destroy();
+      iframeManager.destroy();
       recording = false;
       unregisterErrorHandler();
     };
