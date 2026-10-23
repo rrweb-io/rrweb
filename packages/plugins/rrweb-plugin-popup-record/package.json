@@ -1,0 +1,63 @@
+{
+  "name": "@rrweb/rrweb-plugin-popup-record",
+  "version": "2.1.0",
+  "description": "",
+  "type": "module",
+  "main": "./dist/rrweb-plugin-popup-record.umd.cjs",
+  "module": "./dist/rrweb-plugin-popup-record.js",
+  "unpkg": "./dist/rrweb-plugin-popup-record.umd.cjs",
+  "jsdelivr": "./umd/rrweb-plugin-popup-record.js",
+  "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/rrweb-plugin-popup-record.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/rrweb-plugin-popup-record.umd.cjs"
+      }
+    }
+  },
+  "files": [
+    "umd",
+    "dist",
+    "package.json"
+  ],
+  "scripts": {
+    "dev": "vite build --watch",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "build": "yarn turbo run prepublish",
+    "check-types": "tsc -noEmit",
+    "prepublish": "tsc -noEmit && vite build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb.git"
+  },
+  "keywords": [
+    "rrweb"
+  ],
+  "author": "rrweb Core Team <maintainers@rrweb.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rrweb-io/rrweb/issues"
+  },
+  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "devDependencies": {
+    "@rrweb/types": "^2.1.0",
+    "@rrweb/utils": "^2.1.0",
+    "rrweb": "^2.1.0",
+    "typescript": "^5.4.5",
+    "vite": "^6.0.1",
+    "vite-plugin-dts": "^3.9.1",
+    "vitest": "^1.4.0"
+  },
+  "peerDependencies": {
+    "rrweb": "^2.1.0",
+    "@rrweb/types": "^2.1.0",
+    "@rrweb/utils": "^2.1.0"
+  }
+}
