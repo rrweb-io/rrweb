@@ -4,7 +4,9 @@ import {
   type MaskInputOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import { initObservers, mutationBuffers,
+import {
+  initObservers,
+  mutationBuffers,
   findAndRemoveIframeBuffer,
 } from './observer';
 import {
