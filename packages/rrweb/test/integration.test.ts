@@ -14,7 +14,12 @@ import {
   ISuite,
 } from './utils';
 import type { recordOptions } from '../src/types';
-import { eventWithTime, NodeType, EventType } from '@rrweb/types';
+import {
+  eventWithTime,
+  NodeType,
+  EventType,
+  serializedNodeWithId,
+} from '@rrweb/types';
 import { visitSnapshot } from 'rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
@@ -615,6 +620,43 @@ describe('record integration tests', function (this: ISuite) {
       'window.snapshots',
     )) as eventWithTime[];
     await assertSnapshot(snapshots);
+  });
+
+  it('should mask placeholder values if maskAllInputs is enabled', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.setContent(
+      getHtml.call(this, 'form.html', { maskAllInputs: true }),
+    );
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+
+    const fullSnapshot = snapshots.find(
+      (s) => s.type === EventType.FullSnapshot,
+    );
+    expect(fullSnapshot).toBeDefined();
+
+    let foundMaskedPlaceholder = false;
+    visitSnapshot(
+      (fullSnapshot as eventWithTime & { data: { node: serializedNodeWithId } })
+        .data.node,
+      (node) => {
+        if (
+          node.type === NodeType.Element &&
+          (node.tagName === 'input' || node.tagName === 'textarea') &&
+          node.attributes.placeholder
+        ) {
+          const placeholder = node.attributes.placeholder as string;
+          expect(placeholder).not.toContain('Enter your email');
+          expect(placeholder).not.toContain('Tell us about yourself');
+          expect(placeholder).toMatch(/^\*+$/);
+          foundMaskedPlaceholder = true;
+        }
+      },
+    );
+    expect(foundMaskedPlaceholder).toBe(true);
   });
 
   it('should record input userTriggered values if userTriggeredOnInput is enabled', async () => {
