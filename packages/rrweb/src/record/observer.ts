@@ -1316,10 +1316,7 @@ export function initObservers(
   mergeHooks(o, hooks);
   let stopMutationObserver: listenerHandler | undefined;
   if (o.recordDOM) {
-    stopMutationObserver = initMutationObserver(
-      o,
-      o.doc,
-    );
+    stopMutationObserver = initMutationObserver(o, o.doc);
   }
   const mousemoveHandler = initMoveObserver(o);
   const mouseInteractionHandler = initMouseInteractionObserver(o);
