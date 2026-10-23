@@ -226,4 +226,24 @@ describe('recorder lifecycle', () => {
       expect(mutationEvents()).toHaveLength(1);
     });
   });
+
+  describe('when a same-origin iframe unloads', () => {
+    it('releases the document and shadow buffers inside the removed iframe', async () => {
+      const iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      const frameDoc = iframe.contentDocument!;
+      const frameHost = frameDoc.createElement('x-card');
+      frameHost
+        .attachShadow({ mode: 'open' })
+        .appendChild(frameDoc.createElement('span'));
+      frameDoc.body.appendChild(frameHost);
+      start();
+      await vi.waitFor(() => expect(mutationBuffers.size).toBe(3));
+
+      iframe.contentWindow!.dispatchEvent(new PageTransitionEvent('pagehide'));
+      await flush();
+
+      expect(mutationBuffers.size).toBe(1);
+    });
+  });
 });

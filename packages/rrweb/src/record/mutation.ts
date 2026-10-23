@@ -167,7 +167,10 @@ export default class MutationBuffer {
     while (this.mapRemoves.length) {
       const removedNode = this.mapRemoves.shift()!;
       this.mirror.removeNodeFromMap(removedNode);
-      this.shadowDomManager.removeShadowRootsIn(removedNode);
+      if (!inDom(removedNode)) {
+        // if later re-added to DOM, they'll be picked up again by shadowDomManager
+        this.shadowDomManager.removeShadowRootsIn(removedNode);
+      }
     }
 
     for (const n of this.movedSet) {

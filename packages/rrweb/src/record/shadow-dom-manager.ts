@@ -101,15 +101,11 @@ export class ShadowDomManager {
     }, 0);
   }
 
-  /**
-   * Stops observing the shadow roots in a removed subtree, including nested ones. Hosts that are back in the
-   * document by now were moved rather than removed and stay observed.
-   */
   public removeShadowRootsIn(n: Node) {
     if (this.shadowDoms.size === 0) return;
     const shadowRoot = dom.shadowRoot(n);
     if (shadowRoot) {
-      if (this.shadowDoms.has(shadowRoot) && !inDom(n)) {
+      if (this.shadowDoms.has(shadowRoot)) {
         this.removeShadowRoot(shadowRoot);
       }
       this.removeShadowRootsIn(shadowRoot);

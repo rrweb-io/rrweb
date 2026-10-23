@@ -581,6 +581,7 @@ function record<T = eventWithTime>(
       if (!stopObserving) return;
       iframeObservers.delete(doc);
       stopObserving();
+      shadowDomManager.removeShadowRootsIn(doc);
       mirror.removeNodeFromMap(doc);
     });
 
