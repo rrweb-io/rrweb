@@ -1,0 +1,89 @@
+name: RelativeCI Upload
+
+# Runs in the base-repo context after the secret-free bundle build completes.
+# Downloads pre-built artifacts and sends reports to trusted services.
+# Never checks out or executes fork code.
+on:
+  workflow_run:
+    workflows: ['Bundle Stats']
+    types: [completed]
+
+jobs:
+  relative_ci:
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      (github.event.workflow_run.event == 'pull_request' ||
+      github.event.workflow_run.event == 'push')
+    name: RelativeCI (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - stats: all/dist/webpack-stats.json
+            name: '@rrweb/all'
+            secret: RELATIVE_CI_KEY_ALL
+          - stats: browser-client/dist/webpack-stats.json
+            name: '@rrweb/browser-client'
+            secret: RELATIVE_CI_KEY_BROWSER_CLIENT
+          - stats: record/dist/webpack-stats.json
+            name: '@rrweb/record'
+            secret: RELATIVE_CI_KEY_RECORD
+          - stats: replay/dist/webpack-stats.json
+            name: '@rrweb/replay'
+            secret: RELATIVE_CI_KEY_REPLAY
+          - stats: rrdom/dist/webpack-stats.json
+            name: rrdom
+            secret: RELATIVE_CI_KEY_RRDOM
+          - stats: rrdom-nodejs/dist/webpack-stats.json
+            name: rrdom-nodejs
+            secret: RELATIVE_CI_KEY_RRDOM_NODEJS
+          - stats: rrweb-player/dist/webpack-stats.json
+            name: rrweb-player
+            secret: RELATIVE_CI_KEY_RRWEB_PLAYER
+          - stats: rrweb-snapshot/dist/webpack-stats.json
+            name: rrweb-snapshot
+            secret: RELATIVE_CI_KEY_RRWEB_SNAPSHOT
+          - stats: rrweb/dist/webpack-stats.json
+            name: rrweb
+            secret: RELATIVE_CI_KEY_RRWEB
+          - stats: types/dist/webpack-stats.json
+            name: '@rrweb/types'
+            secret: RELATIVE_CI_KEY_TYPES
+          - stats: utils/dist/webpack-stats.json
+            name: '@rrweb/utils'
+            secret: RELATIVE_CI_KEY_UTILS
+          - stats: plugins/rrweb-plugin-canvas-webrtc-record/dist/webpack-stats.json
+            name: '@rrweb/rrweb-plugin-canvas-webrtc-record'
+            secret: RELATIVE_CI_KEY_PLUGIN_CANVAS_WEBRTC_RECORD
+          - stats: plugins/rrweb-plugin-canvas-webrtc-replay/dist/webpack-stats.json
+            name: '@rrweb/rrweb-plugin-canvas-webrtc-replay'
+            secret: RELATIVE_CI_KEY_PLUGIN_CANVAS_WEBRTC_REPLAY
+          - stats: plugins/rrweb-plugin-console-record/dist/webpack-stats.json
+            name: '@rrweb/rrweb-plugin-console-record'
+            secret: RELATIVE_CI_KEY_PLUGIN_CONSOLE_RECORD
+          - stats: plugins/rrweb-plugin-console-replay/dist/webpack-stats.json
+            name: '@rrweb/rrweb-plugin-console-replay'
+            secret: RELATIVE_CI_KEY_PLUGIN_CONSOLE_REPLAY
+          - stats: plugins/rrweb-plugin-network-record/dist/webpack-stats.json
+            name: '@rrweb/rrweb-plugin-network-record'
+            secret: RELATIVE_CI_KEY_PLUGIN_NETWORK_RECORD
+          - stats: plugins/rrweb-plugin-network-replay/dist/webpack-stats.json
+            name: '@rrweb/rrweb-plugin-network-replay'
+            secret: RELATIVE_CI_KEY_PLUGIN_NETWORK_REPLAY
+          - stats: plugins/rrweb-plugin-sequential-id-record/dist/webpack-stats.json
+            name: '@rrweb/rrweb-plugin-sequential-id-record'
+            secret: RELATIVE_CI_KEY_PLUGIN_SEQUENTIAL_ID_RECORD
+          - stats: plugins/rrweb-plugin-sequential-id-replay/dist/webpack-stats.json
+            name: '@rrweb/rrweb-plugin-sequential-id-replay'
+            secret: RELATIVE_CI_KEY_PLUGIN_SEQUENTIAL_ID_REPLAY
+    steps:
+      - name: Send ${{ matrix.name }} bundle stats to RelativeCI
+        uses: relative-ci/agent-action@fcf45416581928e8dd62eded78ce98c78e5149f8 # v3
+        with:
+          artifactName: relative-ci-stats
+          webpackStatsFile: ${{ matrix.stats }}
+          key: ${{ secrets[matrix.secret] }}
+          token: ${{ secrets.GITHUB_TOKEN }}
