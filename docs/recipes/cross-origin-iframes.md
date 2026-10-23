@@ -5,8 +5,9 @@ iframe. To record those contents, run rrweb in both pages and enable
 `recordCrossOriginIframes`. The iframe sends its recording events to its parent.
 
 > **Security warning:** Cross-origin iframe recording is not recommended unless
-> you strictly restrict which sites can embed your page and trust those sites
-> with its recorded contents. The browser's cross-origin restrictions protect
+> you [strictly restrict](https://stackoverflow.com/a/21629575) which sites can
+> embed your page and trust those sites with its recorded contents.
+> The browser's cross-origin restrictions protect
 > sensitive information. With the default `crossOriginIframeParentOrigin: '*'`,
 > a malicious website can embed your page and collect its recorded contents.
 
