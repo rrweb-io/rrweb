@@ -225,6 +225,11 @@ export class Mirror implements IMirror<Node> {
         this.removeNodeFromMap(childNode as unknown as Node),
       );
     }
+
+    const shadowRoot = dom.shadowRoot(n);
+    if (shadowRoot) {
+      this.removeNodeFromMap(shadowRoot);
+    }
   }
   has(id: number): boolean {
     return this.idNodeMap.has(id);
@@ -441,8 +446,10 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
           extractOrigin(href) + filePath
         }${maybeQuote})`;
       }
-      const stack = href.split('/');
-      const parts = filePath.split('/');
+      const filePathNoHash = filePath.split('#')[0];
+      const maybeHash = filePath.substring(filePathNoHash.length);
+      const stack = href.split('#')[0].split('/');
+      const parts = filePathNoHash.split('/');
       stack.pop();
       for (const part of parts) {
         if (part === '.') {
@@ -453,10 +460,14 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
           stack.push(part);
         }
       }
-      return `url(${maybeQuote}${stack.join('/')}${maybeQuote})`;
+      return `url(${maybeQuote}${stack.join('/')}${maybeHash}${maybeQuote})`;
     },
   );
 }
+
+const cssNormalizeBase = '(?:/\\*[^*]*\\*/)|[\\s;]'; // whitespace
+const cssNormalizeRe = new RegExp(`${cssNormalizeBase}|\\b(0)px?`, 'g');
+const cssNormalizeReNoPx = new RegExp(cssNormalizeBase, 'g');
 
 /**
  * Intention is to normalize by remove spaces, semicolons and CSS comments
@@ -470,11 +481,9 @@ export function normalizeCssString(
    */
   _testNoPxNorm = false,
 ): string {
-  if (_testNoPxNorm) {
-    return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '');
-  } else {
-    return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '').replace(/0px/g, '0');
-  }
+  return _testNoPxNorm
+    ? cssText.replace(cssNormalizeReNoPx, '')
+    : cssText.replace(cssNormalizeRe, '$1');
 }
 
 /**

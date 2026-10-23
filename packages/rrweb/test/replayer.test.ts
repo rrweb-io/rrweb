@@ -902,8 +902,8 @@ describe('replayer', function () {
     expect(status).toEqual('live');
   });
 
-  it("shouldn't trigger ReplayerEvents.Finish in live mode", async () => {
-    const status = await page.evaluate((FinishState) => {
+  it("shouldn't finish in live mode", async () => {
+    const { status, timeProgress } = await page.evaluate((FinishState) => {
       return new Promise((resolve) => {
         const win = window as IWindow;
         let triggeredFinish = false;
@@ -917,12 +917,21 @@ describe('replayer', function () {
         replayer.startLive();
         replayer.addEvent(win.events[0]);
         requestAnimationFrame(() => {
-          resolve(triggeredFinish);
+          const afterLastEventTime = replayer.getCurrentTime();
+          requestAnimationFrame(() => {
+            const aff = replayer.getCurrentTime();
+            const timeProgress = aff - afterLastEventTime;
+            resolve({
+              status: triggeredFinish,
+              timeProgress,
+            });
+          });
         });
       });
     }, ReplayerEvents.Finish);
 
     expect(status).toEqual(false);
+    expect(timeProgress).toBeGreaterThan(0);
   });
 
   it('replays same timestamp events in correct order', async () => {

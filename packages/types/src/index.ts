@@ -7,6 +7,7 @@ export enum EventType {
   Custom,
   Plugin,
   Asset,
+  Annotation,
 }
 
 export type domContentLoadedEvent = {
@@ -44,6 +45,16 @@ export type metaEvent = {
   };
 };
 
+/** Annotation text is plain text. Empty caption text, null, or false clears it. */
+export type annotationData =
+  | { type: 'caption'; text: string | null | false }
+  | { type: 'timelineMarker'; text: string };
+
+export type annotationEvent = {
+  type: EventType.Annotation;
+  data: annotationData;
+};
+
 export type customEvent<T = unknown> = {
   type: EventType.Custom;
   data: {
@@ -59,6 +70,68 @@ export type pluginEvent<T = unknown> = {
     payload: T;
   };
 };
+
+export type NetworkInitiatorType =
+  | 'audio'
+  | 'beacon'
+  | 'body'
+  | 'css'
+  | 'early-hint'
+  | 'embed'
+  | 'fetch'
+  | 'frame'
+  | 'iframe'
+  | 'icon'
+  | 'image'
+  | 'img'
+  | 'input'
+  | 'link'
+  | 'navigation'
+  | 'object'
+  | 'ping'
+  | 'script'
+  | 'track'
+  | 'video'
+  | 'xmlhttprequest';
+
+export type NetworkHeaders = Record<string, string>;
+export type NetworkBody = string | null;
+
+export type NetworkRequest = Omit<
+  PerformanceEntry,
+  'toJSON' | 'startTime' | 'endTime' | 'duration' | 'entryType'
+> & {
+  method?: string;
+  initiatorType?: NetworkInitiatorType;
+  status?: number;
+  startTime?: number;
+  endTime?: number;
+  duration?: number;
+  entryType?: string;
+  requestHeaders?: NetworkHeaders;
+  requestBody?: NetworkBody;
+  responseHeaders?: NetworkHeaders;
+  responseBody?: NetworkBody;
+  isInitial?: boolean;
+};
+
+export type NetworkData = {
+  requests: NetworkRequest[];
+  isInitial?: boolean;
+};
+
+export type NetworkRecordOptions = {
+  initiatorTypes?: NetworkInitiatorType[];
+  transformRequestFn?: (request: NetworkRequest) => NetworkRequest | undefined;
+  recordHeaders?: boolean | { request: boolean; response: boolean };
+  recordBody?:
+    | boolean
+    | string[]
+    | { request: boolean | string[]; response: boolean | string[] };
+  recordInitialRequests?: boolean;
+};
+
+export type NetworkEvent = pluginEvent<NetworkData>;
 
 export type assetEvent = {
   type: EventType.Asset;
@@ -173,6 +246,7 @@ export type eventWithoutTime =
   | incrementalSnapshotEvent
   | metaEvent
   | customEvent
+  | annotationEvent
   | pluginEvent
   | assetEvent;
 
@@ -708,6 +782,7 @@ export enum ReplayerEvents {
   MouseInteraction = 'mouse-interaction',
   EventCast = 'event-cast',
   CustomEvent = 'custom-event',
+  Annotation = 'annotation',
   Flush = 'flush',
   StateChange = 'state-change',
   PlayBack = 'play-back',

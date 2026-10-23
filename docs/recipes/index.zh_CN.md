@@ -1,6 +1,6 @@
 # 场景示例
 
-> 除场景示例外，你可能还想通过[使用指南](../../guide.zh_CN.md)掌握 rrweb 常用 API，或是通过[设计文档](../)深入 rrweb 的技术细节。
+> 除场景示例外，你可能还想通过[使用指南](../../guide.zh_CN.md)掌握 rrweb 常用 API，或是通过[设计文档](../design/index.md)深入 rrweb 的技术细节。
 
 ## 场景列表
 
@@ -9,12 +9,6 @@
 录制与回放是最常用的使用方式，适用于任何需要采集用户行为数据并重新查看的场景。
 
 [链接](./record-and-replay.zh_CN.md)
-
-### 深入录制数据
-
-录制数据是一组类型严格的 JSON 数据，通过熟悉其格式，可以更灵活的使用录制数据。
-
-[链接](./dive-into-event.zh_CN.md)
 
 ### 异步加载数据
 
@@ -70,8 +64,8 @@ Canvas 是一种特殊的 HTML 元素，默认情况下其内容不会被 rrweb 
 
 [链接](./console.zh_CN.md)
 
-### 插件
+### 插件 API
 
-插件 API 的设计目标是在不增加 rrweb 核心部分大小和复杂性的前提下，扩展 rrweb 的功能。
+插件 API 旨在扩展 rrweb 的功能，同时不影响核心包的正常使用。
 
-[链接](./plugin.zh_CN.md)
+[链接](./plugin-api.zh_CN.md)
