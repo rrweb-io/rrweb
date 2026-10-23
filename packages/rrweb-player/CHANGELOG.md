@@ -215,6 +215,9 @@ Patch Changes only following changes to rrweb
 
 ## 1.0.0-alpha.4
 
+This was the last `rrweb-player` release with an independent version number. From
+`2.0.0-alpha.5`, it uses the shared monorepo version.
+
 ### Major Changes
 
 - [#1031](https://github.com/rrweb-io/rrweb/pull/1031) [`ad9bc3e`](https://github.com/rrweb-io/rrweb/commit/ad9bc3ed16d9172490bd8350c6922e3726a7f585) Thanks [@Juice10](https://github.com/Juice10)! - Move shared rrweb event and recorder types into the new `@rrweb/types` package.

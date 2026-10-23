@@ -202,6 +202,9 @@ Patch Changes only following changes to rrweb-snapshot and rrdom
 
 ## 0.1.7
 
+This was the last `rrdom-nodejs` release with an independent version number. From
+`2.0.0-alpha.5`, it uses the shared monorepo version.
+
 ### Patch Changes
 
 - Updated dependencies [[`ad9bc3e`](https://github.com/rrweb-io/rrweb/commit/ad9bc3ed16d9172490bd8350c6922e3726a7f585), [`2a80949`](https://github.com/rrweb-io/rrweb/commit/2a809499739ed2068bf6d9c614142f9dc8cb09ab)]:
