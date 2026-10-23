@@ -34,10 +34,25 @@ export class CanvasManager {
   private resetObservers?: listenerHandler;
   private frozen = false;
   private locked = false;
+  private stopped = false;
+  private animationFrames = new Set<number>();
 
   public reset() {
+    if (this.stopped) return;
+    this.stopped = true;
+    this.animationFrames.forEach((id) => cancelAnimationFrame(id));
+    this.animationFrames.clear();
     this.pendingCanvasMutations.clear();
     this.resetObservers && this.resetObservers();
+  }
+
+  private requestFrame(callback: FrameRequestCallback) {
+    if (this.stopped) return;
+    const id = requestAnimationFrame((timestamp) => {
+      this.animationFrames.delete(id);
+      if (!this.stopped) callback(timestamp);
+    });
+    this.animationFrames.add(id);
   }
 
   public freeze() {
@@ -89,6 +104,7 @@ export class CanvasManager {
     target,
     mutation,
   ) => {
+    if (this.stopped) return;
     const newFrame =
       this.rafStamps.invokeId &&
       this.rafStamps.latestId !== this.rafStamps.invokeId;
@@ -121,6 +137,7 @@ export class CanvasManager {
     const worker =
       new ImageBitmapDataURLWorker() as ImageBitmapDataURLRequestWorker;
     worker.onmessage = (e) => {
+      if (this.stopped) return;
       const { id } = e.data;
       snapshotInProgressMap.set(id, false);
 
@@ -158,7 +175,6 @@ export class CanvasManager {
 
     const timeBetweenSnapshots = 1000 / fps;
     let lastSnapshotTime = 0;
-    let rafId: number;
 
     const getCanvas = (): HTMLCanvasElement[] => {
       const matchedCanvas: HTMLCanvasElement[] = [];
@@ -175,7 +191,7 @@ export class CanvasManager {
         lastSnapshotTime &&
         timestamp - lastSnapshotTime < timeBetweenSnapshots
       ) {
-        rafId = requestAnimationFrame(takeCanvasSnapshots);
+        this.requestFrame(takeCanvasSnapshots);
         return;
       }
       lastSnapshotTime = timestamp;
@@ -215,6 +231,10 @@ export class CanvasManager {
             }
           }
           const bitmap = await createImageBitmap(canvas);
+          if (this.stopped) {
+            bitmap.close();
+            return;
+          }
           worker.postMessage(
             {
               id,
@@ -226,14 +246,15 @@ export class CanvasManager {
             [bitmap],
           );
         });
-      rafId = requestAnimationFrame(takeCanvasSnapshots);
+      this.requestFrame(takeCanvasSnapshots);
     };
 
-    rafId = requestAnimationFrame(takeCanvasSnapshots);
+    this.requestFrame(takeCanvasSnapshots);
 
     this.resetObservers = () => {
       canvasContextReset();
-      cancelAnimationFrame(rafId);
+      worker.onmessage = null;
+      worker.terminate();
     };
   }
 
@@ -273,15 +294,15 @@ export class CanvasManager {
   }
 
   private startPendingCanvasMutationFlusher() {
-    requestAnimationFrame(() => this.flushPendingCanvasMutations());
+    this.requestFrame(() => this.flushPendingCanvasMutations());
   }
 
   private startRAFTimestamping() {
     const setLatestRAFTimestamp = (timestamp: DOMHighResTimeStamp) => {
       this.rafStamps.latestId = timestamp;
-      requestAnimationFrame(setLatestRAFTimestamp);
+      this.requestFrame(setLatestRAFTimestamp);
     };
-    requestAnimationFrame(setLatestRAFTimestamp);
+    this.requestFrame(setLatestRAFTimestamp);
   }
 
   flushPendingCanvasMutations() {
@@ -291,7 +312,7 @@ export class CanvasManager {
         this.flushPendingCanvasMutationFor(canvas, id);
       },
     );
-    requestAnimationFrame(() => this.flushPendingCanvasMutations());
+    this.requestFrame(() => this.flushPendingCanvasMutations());
   }
 
   flushPendingCanvasMutationFor(canvas: HTMLCanvasElement, id: number) {

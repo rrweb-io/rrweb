@@ -111,6 +111,7 @@ export type observerParam = {
   fontCb: fontCallback;
   sampling: SamplingStrategy;
   recordDOM: boolean;
+  snapshotSignal?: AbortSignal;
   recordCanvas: boolean;
   inlineImages: boolean;
   userTriggeredOnInput: boolean;
@@ -159,6 +160,7 @@ export type MutationBufferParam = Pick<
   | 'shadowDomManager'
   | 'canvasManager'
   | 'processedNodeManager'
+  | 'snapshotSignal'
 >;
 
 export type ReplayPlugin = {

@@ -7,7 +7,11 @@ export default mergeConfig(
   defineProject({
     test: {
       globals: true,
-      include: ['test/record/monkey-patched.test.ts'],
+      env: { BROWSER: 'webkit' },
+      include: [
+        'test/record/monkey-patched.test.ts',
+        'test/record/observer-document-cleanup.browser.test.ts',
+      ],
     },
   }),
 );

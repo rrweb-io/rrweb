@@ -1,5 +1,6 @@
 import {
   serializeNodeWithId,
+  cleanupSnapshotLoadListeners,
   transformAttribute,
   IGNORED_NODE,
   ignoreAttribute,
@@ -86,6 +87,7 @@ export default class MutationBuffer {
   private slimDOMOptions: observerParam['slimDOMOptions'];
   private dataURLOptions: observerParam['dataURLOptions'];
   private doc: observerParam['doc'];
+  private snapshotSignal: observerParam['snapshotSignal'];
   private mirror: observerParam['mirror'];
   private iframeManager: observerParam['iframeManager'];
   private stylesheetManager: observerParam['stylesheetManager'];
@@ -112,6 +114,7 @@ export default class MutationBuffer {
         'slimDOMOptions',
         'dataURLOptions',
         'doc',
+        'snapshotSignal',
         'mirror',
         'iframeManager',
         'stylesheetManager',
@@ -140,6 +143,10 @@ export default class MutationBuffer {
     return this.frozen;
   }
 
+  public isLocked() {
+    return this.locked;
+  }
+
   public lock() {
     this.locked = true;
     this.canvasManager.lock();
@@ -149,11 +156,6 @@ export default class MutationBuffer {
     this.locked = false;
     this.canvasManager.unlock();
     this.emit();
-  }
-
-  public reset() {
-    this.shadowDomManager.reset();
-    this.canvasManager.reset();
   }
 
   public processMutations = (mutations: mutationRecord[]) => {
@@ -172,10 +174,17 @@ export default class MutationBuffer {
     const adds: addedNodeMutation[] = [];
     const addedIds = new Set<number>();
 
+    const removedRoots = new Set<Node>();
     while (this.mapRemoves.length) {
       const removed = this.mapRemoves.shift()!;
+      if (!inDom(removed)) {
+        removedRoots.add(removed);
+      }
       this.mirror.removeNodeFromMap(removed);
       this.shadowDomManager.removeShadowRootsIn(removed);
+    }
+    if (removedRoots.size) {
+      cleanupSnapshotLoadListeners(removedRoots, this.snapshotSignal);
     }
 
     for (const n of this.movedSet) {
@@ -314,6 +323,7 @@ export default class MutationBuffer {
         continue;
       }
       const sn = serializeNodeWithId(n, {
+        signal: this.snapshotSignal,
         doc: this.doc,
         mirror: this.mirror,
         blockClass: this.blockClass,
@@ -341,15 +351,12 @@ export default class MutationBuffer {
           }
           if (hasShadowRoot(n as Node)) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.shadowDomManager.addShadowRoot(
-              dom.shadowRoot(n as Node)!,
-              this.doc,
-            );
+            this.shadowDomManager.addShadowRoot(dom.shadowRoot(n as Node)!);
           }
         },
         onIframeLoad: (iframe, childSn) => {
-          this.iframeManager.attachIframe(iframe, childSn);
           this.shadowDomManager.observeAttachShadow(iframe);
+          this.iframeManager.attachIframe(iframe, childSn);
         },
         onStylesheetLoad: (link, childSn) => {
           this.stylesheetManager.attachLinkElement(link, childSn);

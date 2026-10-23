@@ -40,6 +40,7 @@ const untaintedBasePrototype: Partial<BasePrototypeCache> = {};
 const untaintedBaseIframeCleanup: Partial<
   Record<keyof BasePrototypeCache, () => void>
 > = {};
+let mutationObserverUsers = 0;
 
 /*
  When angular patches things - particularly the MutationObserver -
@@ -264,16 +265,31 @@ export function querySelectorAll(
   return getUntaintedAccessor('Element', n, 'querySelectorAll')(selectors);
 }
 
+/** Acquire an observer constructor and release it when that observer stops. */
 export function mutationObserverCtor(): [
   (typeof MutationObserver)['prototype']['constructor'],
   () => void,
 ] {
+  const prototype = getUntaintedPrototype('MutationObserver');
+  mutationObserverUsers++;
+  let released = false;
   return [
-    getUntaintedPrototype('MutationObserver').constructor,
-    untaintedBaseIframeCleanup['MutationObserver'] ??
-      (() => {
-        /* no-op; a cleanup function is only needed in Safari browsers */
-      }),
+    prototype.constructor,
+    () => {
+      if (released) return;
+      released = true;
+      if (--mutationObserverUsers !== 0) return;
+      const cleanup = untaintedBaseIframeCleanup.MutationObserver;
+      if (!cleanup) return;
+      // Safari observers share this iframe's execution context. Release it only
+      // after the last observer stops, and acquire a live constructor next time.
+      try {
+        cleanup();
+      } finally {
+        delete untaintedBasePrototype.MutationObserver;
+        delete untaintedBaseIframeCleanup.MutationObserver;
+      }
+    },
   ];
 }
 

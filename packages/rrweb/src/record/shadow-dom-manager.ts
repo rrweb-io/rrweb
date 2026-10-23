@@ -24,12 +24,15 @@ type BypassOptions = Omit<
 
 export class ShadowDomManager {
   /** Observed shadow roots and the handlers that stop observing them. */
-  private shadowDoms = new Map<ShadowRoot, listenerHandler[]>();
+  private shadowDoms = new Map<
+    ShadowRoot,
+    { doc: Document; handlers: listenerHandler[] }
+  >();
   private mutationCb: mutationCallBack;
   private scrollCb: scrollCallback;
   private bypassOptions: BypassOptions;
   private mirror: Mirror;
-  private restoreHandlers: (() => void)[] = [];
+  private restoreHandlers = new Map<Document, listenerHandler>();
 
   constructor(options: {
     mutationCb: mutationCallBack;
@@ -41,8 +44,6 @@ export class ShadowDomManager {
     this.scrollCb = options.scrollCb;
     this.bypassOptions = options.bypassOptions;
     this.mirror = options.mirror;
-
-    this.init();
   }
 
   public init() {
@@ -51,12 +52,17 @@ export class ShadowDomManager {
     this.patchAttachShadow(Element, document);
   }
 
-  public addShadowRoot(shadowRoot: ShadowRoot, doc: Document) {
+  public addShadowRoot(shadowRoot: ShadowRoot) {
+    if (this.bypassOptions.snapshotSignal?.aborted) return;
     if (!isNativeShadowDom(shadowRoot)) return;
-    if (this.shadowDoms.has(shadowRoot)) return;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const doc = dom.ownerDocument(shadowRoot)!;
+    const existing = this.shadowDoms.get(shadowRoot);
+    if (existing?.doc === doc) return;
+    if (existing) this.removeShadowRoot(shadowRoot);
     const handlers: listenerHandler[] = [];
-    this.shadowDoms.set(shadowRoot, handlers);
-    const [stopMutationObserver] = initMutationObserver(
+    const entry = { doc, handlers };
+    const stopMutationObserver = initMutationObserver(
       {
         ...this.bypassOptions,
         doc,
@@ -67,20 +73,25 @@ export class ShadowDomManager {
       shadowRoot,
     );
     handlers.push(stopMutationObserver);
-    handlers.push(
-      initScrollObserver({
-        ...this.bypassOptions,
-        scrollCb: this.scrollCb,
-        // https://gist.github.com/praveenpuglia/0832da687ed5a5d7a0907046c9ef1813
-        // scroll is not allowed to pass the boundary, so we need to listen the shadow document
-        doc: shadowRoot as unknown as Document,
-        mirror: this.mirror,
-      }),
-    );
+    try {
+      handlers.push(
+        initScrollObserver({
+          ...this.bypassOptions,
+          scrollCb: this.scrollCb,
+          // Scroll events do not cross the shadow boundary.
+          doc: shadowRoot as unknown as Document,
+          mirror: this.mirror,
+        }),
+      );
+    } catch (error) {
+      stopMutationObserver();
+      throw error;
+    }
+    this.shadowDoms.set(shadowRoot, entry);
     // Defer this to avoid adoptedStyleSheet events being created before the full snapshot is created or attachShadow action is recorded.
     setTimeout(() => {
       // The shadow root was released, or the manager reset, in the meantime.
-      if (this.shadowDoms.get(shadowRoot) !== handlers) return;
+      if (this.shadowDoms.get(shadowRoot) !== entry) return;
       if (
         shadowRoot.adoptedStyleSheets &&
         shadowRoot.adoptedStyleSheets.length > 0
@@ -118,9 +129,28 @@ export class ShadowDomManager {
   }
 
   private removeShadowRoot(shadowRoot: ShadowRoot) {
-    const handlers = this.shadowDoms.get(shadowRoot);
+    const entry = this.shadowDoms.get(shadowRoot);
     this.shadowDoms.delete(shadowRoot);
-    handlers?.forEach(runHandler);
+    entry?.handlers.forEach(runHandler);
+  }
+
+  public removeDocument(doc: Document) {
+    const errors: unknown[] = [];
+    for (const [shadowRoot, entry] of this.shadowDoms) {
+      if (entry.doc !== doc) continue;
+      this.removeShadowRoot(shadowRoot);
+      if (dom.ownerDocument(shadowRoot) !== doc && inDom(shadowRoot)) {
+        try {
+          this.addShadowRoot(shadowRoot);
+        } catch (error) {
+          errors.push(error);
+        }
+      }
+    }
+    const restore = this.restoreHandlers.get(doc);
+    this.restoreHandlers.delete(doc);
+    if (restore) runHandler(restore);
+    if (errors.length) throw errors[0];
   }
 
   /**
@@ -148,9 +178,12 @@ export class ShadowDomManager {
     },
     doc: Document,
   ) {
+    if (this.bypassOptions.snapshotSignal?.aborted) return;
+    if (this.restoreHandlers.has(doc)) return;
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const manager = this;
-    this.restoreHandlers.push(
+    this.restoreHandlers.set(
+      doc,
       patch(
         element.prototype,
         'attachShadow',
@@ -162,7 +195,7 @@ export class ShadowDomManager {
             // we start monitoring them once their shadow dom host is appended to the document.
             const shadowRootEl = dom.shadowRoot(this);
             if (shadowRootEl && inDom(this))
-              manager.addShadowRoot(shadowRootEl, doc);
+              manager.addShadowRoot(shadowRootEl);
             return sRoot;
           };
         },
@@ -172,10 +205,10 @@ export class ShadowDomManager {
 
   public reset() {
     this.restoreHandlers.forEach(runHandler);
-    this.restoreHandlers = [];
+    this.restoreHandlers.clear();
     const shadowDoms = this.shadowDoms;
     this.shadowDoms = new Map();
-    shadowDoms.forEach((handlers) => handlers.forEach(runHandler));
+    shadowDoms.forEach(({ handlers }) => handlers.forEach(runHandler));
   }
 }
 
