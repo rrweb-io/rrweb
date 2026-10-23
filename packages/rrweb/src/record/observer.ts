@@ -113,7 +113,7 @@ export function removeMutationBuffer(observer: MutationObserver): void {
   observer.disconnect();
   const buffer = observerBuffers.get(observer);
   if (buffer) {
-    mutationBuffers.delete(mutationBuffer);
+    mutationBuffers.delete(buffer);
     observerBuffers.delete(observer);
   }
 }
