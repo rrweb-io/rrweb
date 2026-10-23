@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Browser from 'webextension-polyfill';
 import {
   Box,
   Flex,
@@ -10,18 +11,11 @@ import {
 } from '@chakra-ui/react';
 import { FiSettings, FiList, FiPause, FiPlay } from 'react-icons/fi';
 import Channel from '~/utils/channel';
-import type {
-  LocalData,
-  RecordStartedMessage,
-  RecordStoppedMessage,
-  Session,
-} from '~/types';
-import { LocalDataKey, RecorderStatus, ServiceName, EventName } from '~/types';
-import Browser from 'webextension-polyfill';
+import { LocalDataKey, RecorderStatus, EventName } from '~/types';
+import type { LocalData, Session } from '~/types';
+
 import { CircleButton } from '~/components/CircleButton';
 import { Timer } from './Timer';
-import { pauseRecording, resumeRecording } from '~/utils/recording';
-import { saveSession } from '~/utils/storage';
 const RECORD_BUTTON_SIZE = 3;
 
 const channel = new Channel();
@@ -33,15 +27,26 @@ export function App() {
   const [newSession, setNewSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    void Browser.storage.local.get(LocalDataKey.recorderStatus).then((data) => {
-      const localData = data as LocalData;
-      if (!localData || !localData[LocalDataKey.recorderStatus]) return;
-      const { status, startTimestamp, pausedTimestamp } =
-        localData[LocalDataKey.recorderStatus];
+    const parseStatusData = (data: LocalData[LocalDataKey.recorderStatus]) => {
+      const { status, startTimestamp, pausedTimestamp } = data;
       setStatus(status);
       if (startTimestamp && pausedTimestamp)
-        setStartTime(Date.now() - pausedTimestamp + startTimestamp || 0);
+        setStartTime(Date.now() - pausedTimestamp + startTimestamp);
       else if (startTimestamp) setStartTime(startTimestamp);
+    };
+    void Browser.storage.local.get(LocalDataKey.recorderStatus).then((data) => {
+      if (!data || !data[LocalDataKey.recorderStatus]) return;
+      parseStatusData((data as LocalData)[LocalDataKey.recorderStatus]);
+    });
+    void Browser.storage.local.onChanged.addListener((changes) => {
+      if (!changes[LocalDataKey.recorderStatus]) return;
+      const data = changes[LocalDataKey.recorderStatus]
+        .newValue as LocalData[LocalDataKey.recorderStatus];
+      parseStatusData(data);
+      if (data.errorMessage) setErrorMessage(data.errorMessage);
+    });
+    channel.on(EventName.SessionUpdated, (data) => {
+      setNewSession((data as { session: Session }).session);
     });
   }, []);
 
@@ -80,7 +85,7 @@ export function App() {
         />
       )}
       <Flex justify="center" gap="10" mt="5" mb="5">
-        {[RecorderStatus.IDLE, RecorderStatus.RECORDING].includes(status) && (
+        {
           <CircleButton
             diameter={RECORD_BUTTON_SIZE}
             title={
@@ -89,63 +94,9 @@ export function App() {
                 : 'Stop Recording'
             }
             onClick={() => {
-              if (status === RecorderStatus.RECORDING) {
-                // stop recording
-                setErrorMessage('');
-                void channel.getCurrentTabId().then((tabId) => {
-                  if (tabId === -1) return;
-                  void channel
-                    .requestToTab(tabId, ServiceName.StopRecord, {})
-                    .then(async (res: RecordStoppedMessage) => {
-                      if (!res) return;
-
-                      setStatus(RecorderStatus.IDLE);
-                      const status: LocalData[LocalDataKey.recorderStatus] = {
-                        status: RecorderStatus.IDLE,
-                        activeTabId: tabId,
-                      };
-                      await Browser.storage.local.set({
-                        [LocalDataKey.recorderStatus]: status,
-                      });
-                      if (res.session) {
-                        setNewSession(res.session);
-                        await saveSession(res.session, res.events).catch(
-                          (e) => {
-                            setErrorMessage((e as { message: string }).message);
-                          },
-                        );
-                        channel.emit(EventName.SessionUpdated, {});
-                      }
-                    })
-                    .catch((error: Error) => {
-                      setErrorMessage(error.message);
-                    });
-                });
-              } else {
-                // start recording
-                void channel.getCurrentTabId().then((tabId) => {
-                  if (tabId === -1) return;
-                  void channel
-                    .requestToTab(tabId, ServiceName.StartRecord, {})
-                    .then(async (res: RecordStartedMessage | undefined) => {
-                      if (res) {
-                        setStatus(RecorderStatus.RECORDING);
-                        setStartTime(res.startTimestamp);
-                        const status: LocalData[LocalDataKey.recorderStatus] = {
-                          status: RecorderStatus.RECORDING,
-                          activeTabId: tabId,
-                          startTimestamp: res.startTimestamp,
-                        };
-                        await Browser.storage.local.set({
-                          [LocalDataKey.recorderStatus]: status,
-                        });
-                      }
-                    })
-                    .catch((error: Error) => {
-                      setErrorMessage(error.message);
-                    });
-                });
-              }
+              if (status === RecorderStatus.IDLE)
+                void channel.emit(EventName.StartButtonClicked, {});
+              else void channel.emit(EventName.StopButtonClicked, {});
             }}
           >
             <Box
@@ -156,7 +107,7 @@ export function App() {
               bgColor="red.500"
             />
           </CircleButton>
-        )}
+        }
         {status !== RecorderStatus.IDLE && (
           <CircleButton
             diameter={RECORD_BUTTON_SIZE}
@@ -167,26 +118,9 @@ export function App() {
             }
             onClick={() => {
               if (status === RecorderStatus.RECORDING) {
-                void pauseRecording(channel, RecorderStatus.PAUSED).then(
-                  (result) => {
-                    if (!result) return;
-                    setStatus(result?.status.status);
-                  },
-                );
+                void channel.emit(EventName.PauseButtonClicked, {});
               } else {
-                void channel.getCurrentTabId().then((tabId) => {
-                  if (tabId === -1) return;
-                  resumeRecording(channel, tabId)
-                    .then((statusData) => {
-                      if (!statusData) return;
-                      setStatus(statusData.status);
-                      if (statusData.startTimestamp)
-                        setStartTime(statusData.startTimestamp);
-                    })
-                    .catch((error: Error) => {
-                      setErrorMessage(error.message);
-                    });
-                });
+                void channel.emit(EventName.ResumeButtonClicked, {});
               }
             }}
           >

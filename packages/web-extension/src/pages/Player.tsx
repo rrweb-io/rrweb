@@ -29,6 +29,7 @@ export default function Player() {
     getEvents(sessionId)
       .then((events) => {
         if (!playerElRef.current) return;
+        if (playerRef.current) return;
 
         const manifest = chrome.runtime.getManifest();
         const rrwebPlayerVersion = manifest.version_name || manifest.version;
@@ -50,6 +51,8 @@ export default function Player() {
     return () => {
       // eslint-disable-next-line
       playerRef.current?.pause();
+      // eslint-disable-next-line
+      playerRef.current?.$destroy();
     };
   }, [sessionId]);
 

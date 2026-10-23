@@ -4,6 +4,7 @@ import type * as puppeteer from 'puppeteer';
 import { vi } from 'vitest';
 import type { recordOptions } from '../../src/types';
 import type {
+  annotationData,
   listenerHandler,
   eventWithTime,
   mutationData,
@@ -33,6 +34,7 @@ interface IWindow extends Window {
       options: recordOptions<eventWithTime>,
     ) => listenerHandler | undefined;
     addCustomEvent<T>(tag: string, payload: T): void;
+    addAnnotation(annotation: annotationData): void;
     pack: (e: eventWithTime) => string;
   };
   emit: (e: eventWithTime) => undefined;
@@ -54,7 +56,7 @@ async function injectRecordScript(
     // we get this error: `Protocol error (DOM.resolveNode): Node with given id does not belong to the document`
     // then the page wasn't loaded yet and we try again
     if (
-      !e.message.includes('DOM.resolveNode') ||
+      !e.message.includes('DOM.resolveNode') &&
       !e.message.includes('DOM.describeNode')
     )
       throw e;
@@ -178,6 +180,43 @@ describe('cross origin iframes', function (this: ISuite) {
       expect(events.length).toBe(3);
     });
 
+    it('should forward annotation events from a cross-origin iframe', async () => {
+      const frame = ctx.page.mainFrame().childFrames()[0];
+      await frame.evaluate(() => {
+        const { addAnnotation } = (window as unknown as IWindow).rrweb;
+        addAnnotation({ type: 'caption', text: 'Iframe caption' });
+        addAnnotation({ type: 'timelineMarker', text: 'Iframe marker' });
+      });
+
+      await ctx.page.waitForFunction(
+        (annotationType) =>
+          (window as unknown as IWindow).snapshots.filter(
+            (event) => event.type === annotationType,
+          ).length >= 2,
+        {},
+        EventType.Annotation,
+      );
+
+      const annotationEvents = await ctx.page.evaluate(
+        (annotationType) =>
+          (window as unknown as IWindow).snapshots.filter(
+            (event) => event.type === annotationType,
+          ),
+        EventType.Annotation,
+      );
+
+      expect(annotationEvents).toMatchObject([
+        {
+          type: EventType.Annotation,
+          data: { type: 'caption', text: 'Iframe caption' },
+        },
+        {
+          type: EventType.Annotation,
+          data: { type: 'timelineMarker', text: 'Iframe marker' },
+        },
+      ]);
+    });
+
     it('should emit full snapshot event from iframe as mutation event', async () => {
       const events = await ctx.page.evaluate(
         () => (window as unknown as IWindow).snapshots,
@@ -213,15 +252,22 @@ describe('cross origin iframes', function (this: ISuite) {
     it('should replace the existing DOM nodes on iframe navigation with `isAttachIframe`', async () => {
       await ctx.page.evaluate((url) => {
         const iframe = document.querySelector('iframe') as HTMLIFrameElement;
-        iframe.src = `${url}/html/form.html?2`;
+        iframe.src = `${url}/html/empty.html`;
       }, ctx.serverURL);
-      await waitForRAF(ctx.page); // loads iframe
+      await waitForRAF(ctx.page); // should load iframe (but sometimes doesn't)
+      const frame = ctx.page.mainFrame().childFrames()[0];
+      await frame.waitForSelector('#one'); // ensure frame has changed
 
       await injectRecordScript(ctx.page.mainFrame().childFrames()[0]); // injects script into new iframe
 
       const events: eventWithTime[] = await ctx.page.evaluate(
         () => (window as unknown as IWindow).snapshots,
       );
+
+      // for future detailed debugging of this test, the full output is available
+      // 'out of band' in test/record/__snapshots__/cross-origin-iframes.test.ts.snap.extra
+      // assertSnapshot(events);
+
       expect(
         (events[events.length - 1].data as mutationData).removes,
       ).toMatchObject([]);

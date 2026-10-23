@@ -26,7 +26,7 @@ export async function launchPuppeteer(
       width: 1920,
       height: 1080,
     },
-    args: ['--no-sandbox'],
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
     ...options,
   });
 }
@@ -60,7 +60,7 @@ export const startServer = (defaultPort = 3030) =>
 
       let pathname = path.join(__dirname, sanitizePath);
       if (/^\/rrweb.*\.c?js.*/.test(sanitizePath)) {
-        pathname = path.join(__dirname, `../dist/main`, sanitizePath);
+        pathname = path.join(__dirname, `../dist`, sanitizePath);
       }
 
       try {
@@ -301,6 +301,7 @@ function stringifyDomSnapshot(mhtml: string): string {
 
 export async function assertSnapshot(
   snapshotsOrPage: eventWithTime[] | puppeteer.Page,
+  useOwnFile: boolean | string = false,
 ) {
   let snapshots: eventWithTime[];
   if (!Array.isArray(snapshotsOrPage)) {
@@ -318,7 +319,21 @@ export async function assertSnapshot(
   }
 
   expect(snapshots).toBeDefined();
-  expect(stringifySnapshots(snapshots)).toMatchSnapshot();
+
+  if (useOwnFile) {
+    // e.g. 'mutation.test.ts > mutation > add elements at once'
+    const longFname = expect.getState().currentTestName.split('/').pop();
+    const file = longFname.split(' > ')[0].replace('.test.ts', '');
+    if (typeof useOwnFile !== 'string') {
+      useOwnFile = longFname.substring(longFname.indexOf(' > ') + 3);
+    }
+    useOwnFile = useOwnFile.replace(/ > /g, '.').replace(/\s/g, '-');
+
+    const fname = `./__${file}.snapshots__/${useOwnFile}.json`;
+    expect(stringifySnapshots(snapshots)).toMatchFileSnapshot(fname);
+  } else {
+    expect(stringifySnapshots(snapshots)).toMatchSnapshot();
+  }
 }
 
 export function replaceLast(str: string, find: string, replace: string) {
@@ -561,6 +576,98 @@ export const sampleStyleSheetRemoveEvents: eventWithTime[] = [
   },
 ];
 
+export const sampleRemoteStyleSheetEvents: eventWithTime[] = [
+  {
+    type: EventType.DomContentLoaded,
+    data: {},
+    timestamp: now,
+  },
+  {
+    type: EventType.Load,
+    data: {},
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.Meta,
+    data: {
+      href: 'http://localhost',
+      width: 1000,
+      height: 800,
+    },
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.FullSnapshot,
+    data: {
+      node: {
+        type: 0,
+        childNodes: [
+          {
+            type: 2,
+            tagName: 'html',
+            attributes: {},
+            childNodes: [
+              {
+                type: 2,
+                tagName: 'head',
+                attributes: {},
+                childNodes: [
+                  {
+                    type: 2,
+                    tagName: 'link',
+                    attributes: {
+                      rel: 'stylesheet',
+                      href: '',
+                    },
+                    childNodes: [],
+                    id: 4,
+                  },
+                ],
+                id: 3,
+              },
+              {
+                type: 2,
+                tagName: 'body',
+                attributes: {},
+                childNodes: [],
+                id: 6,
+              },
+            ],
+            id: 2,
+          },
+        ],
+        id: 1,
+      },
+      initialOffset: {
+        top: 0,
+        left: 0,
+      },
+    },
+    timestamp: now + 1000,
+  },
+  {
+    type: EventType.IncrementalSnapshot,
+    data: {
+      source: IncrementalSource.Mutation,
+      texts: [],
+      attributes: [
+        {
+          id: 4,
+          attributes: {
+            href: null,
+            rel: null,
+            _cssText:
+              '.OverlayDrawer-modal-187 { }.OverlayDrawer-paper-188 { width: 100%; }@media (min-width: 48em) {\n  .OverlayDrawer-paper-188 { width: 38rem; }\n}@media (min-width: 48em) {\n}@media (min-width: 48em) {\n}',
+          },
+        },
+      ],
+      removes: [],
+      adds: [],
+    },
+    timestamp: now + 2000,
+  },
+];
+
 export const polyfillWebGLGlobals = () => {
   // polyfill as jsdom does not have support for these classes
   // consider replacing with https://www.npmjs.com/package/canvas
@@ -634,9 +741,11 @@ export const polyfillWebGLGlobals = () => {
   global.WebGL2RenderingContext = WebGL2RenderingContext as any;
 };
 
-export async function waitForRAF(
-  pageOrFrame: puppeteer.Page | puppeteer.Frame,
-) {
+interface PageOrFrameWithEvaluate {
+  evaluate<T>(pageFunction: () => T | Promise<T>): Promise<T>;
+}
+
+export async function waitForRAF(pageOrFrame: PageOrFrameWithEvaluate) {
   return await pageOrFrame.evaluate(() => {
     return new Promise((resolve) => {
       requestAnimationFrame(() => {

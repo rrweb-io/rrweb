@@ -103,6 +103,7 @@ describe('integration tests', function (this: ISuite) {
     serverURL = getServerURL(server);
     browser = await puppeteer.launch({
       // headless: false,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     code = fs.readFileSync(
@@ -162,7 +163,7 @@ describe('integration tests', function (this: ISuite) {
         (await page.evaluate(`${code}
         const x = new XMLSerializer();
         const snap = rrwebSnapshot.snapshot(document);
-        let out = x.serializeToString(rrwebSnapshot.rebuild(snap, { doc: document }));
+        let out = x.serializeToString(rrwebSnapshot.rebuild(snap, { doc: document, UNSAFE_allowUnprotectedRebuild: true }));
         if (document.querySelector('html').getAttribute('xmlns') !== 'http://www.w3.org/1999/xhtml') {
           // this is just an artefact of serializeToString
           out = out.replace(' xmlns=\"http://www.w3.org/1999/xhtml\"', '');
@@ -204,13 +205,14 @@ describe('integration tests', function (this: ISuite) {
     );
     const rebuildRenderedHeight = await page.evaluate(`${code}
 const snap = rrwebSnapshot.snapshot(document);
-const iframe = document.createElement('iframe');
-iframe.setAttribute('width', document.body.clientWidth)
-iframe.setAttribute('height', document.body.clientHeight)
+const { iframe } = rrwebSnapshot.rebuildIntoSandboxedIframe(snap, {
+  root: document.body,
+  iframeAttributes: {
+    width: document.body.clientWidth,
+    height: document.body.clientHeight,
+  },
+});
 iframe.style.transform = 'scale(0.3)'; // mini-me
-document.body.appendChild(iframe);
-// magic here! rebuild in a new iframe
-const rebuildNode = rrwebSnapshot.rebuild(snap, { doc: iframe.contentDocument })[0];
 iframe.contentDocument.querySelector('center').clientHeight
 `);
     const rebuildCompatMode = await page.evaluate(
@@ -435,6 +437,7 @@ describe('iframe integration tests', function (this: ISuite) {
     serverURL = getServerURL(server);
     browser = await puppeteer.launch({
       // headless: false,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     code = fs.readFileSync(
@@ -479,6 +482,7 @@ describe('dialog integration tests', function (this: ISuite) {
     serverURL = getServerURL(server);
     browser = await puppeteer.launch({
       // headless: false,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     code = fs.readFileSync(
@@ -525,6 +529,7 @@ describe('shadow DOM integration tests', function (this: ISuite) {
     serverURL = getServerURL(server);
     browser = await puppeteer.launch({
       // headless: false,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     code = fs.readFileSync(

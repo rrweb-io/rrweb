@@ -242,7 +242,9 @@ describe('RRDocument for browser environment', () => {
     let page: puppeteer.Page;
 
     beforeAll(async () => {
-      browser = await puppeteer.launch();
+      browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      });
       code = fs.readFileSync(
         path.resolve(__dirname, '../dist/rrdom.umd.cjs'),
         'utf8',

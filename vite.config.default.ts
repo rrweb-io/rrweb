@@ -1,10 +1,13 @@
 /// <reference types="vite/client" />
 import dts from 'vite-plugin-dts';
-import { copyFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, existsSync } from 'node:fs';
 import { defineConfig, LibraryOptions, LibraryFormats, Plugin } from 'vite';
 import { build, Format } from 'esbuild';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
 import { umdWrapper } from 'esbuild-plugin-umd-wrapper';
+import * as fs from 'node:fs';
+import { visualizer } from 'rollup-plugin-visualizer';
+import { bundleToWebpackStats } from 'rollup-plugin-webpack-stats/transform';
 
 // don't empty out dir if --watch flag is passed
 const emptyOutDir = !process.argv.includes('--watch');
@@ -13,6 +16,50 @@ const emptyOutDir = !process.argv.includes('--watch');
  * For chrome extension, we need to disable worker inlining to pass the review.
  */
 const disableWorkerInlining = process.env.DISABLE_WORKER_INLINING === 'true';
+
+function relativeCIStatsPlugin(outDir: string): Plugin {
+  type Stats = ReturnType<typeof bundleToWebpackStats>;
+  let canonicalStats: Stats | undefined;
+  let outputDirectory = resolve(outDir);
+
+  return {
+    name: 'relative-ci-stats',
+    buildStart() {
+      canonicalStats = undefined;
+    },
+    generateBundle(outputOptions, bundle) {
+      outputDirectory = resolve(outputOptions.dir || outDir);
+      // Use one module graph: combining equivalent output formats would make
+      // RelativeCI report every source module as duplicated.
+      if (outputOptions.format === 'es' || !canonicalStats) {
+        canonicalStats = bundleToWebpackStats(bundle);
+      }
+    },
+    closeBundle() {
+      if (!canonicalStats) return;
+      // writeBundle also creates UMD and minified files outside Rollup's bundle.
+      const assets = fs
+        .readdirSync(outputDirectory, { withFileTypes: true })
+        .filter(
+          (entry) => entry.isFile() && /\.(js|cjs|mjs|css)$/.test(entry.name),
+        )
+        .map(({ name }) => ({
+          name,
+          size: fs.statSync(resolve(outputDirectory, name)).size,
+        }));
+      const stats: Stats = {
+        builtAt: Date.now(),
+        assets,
+        chunks: canonicalStats.chunks,
+        modules: canonicalStats.modules,
+      };
+      fs.writeFileSync(
+        resolve(outputDirectory, 'webpack-stats.json'),
+        JSON.stringify(stats),
+      );
+    },
+  };
+}
 
 function minifyAndUMDPlugin({
   name,
@@ -49,22 +96,32 @@ function minifyAndUMDPlugin({
               outDir,
             });
           } else {
+            const umdDir = resolve(dirname(outputOptions.dir!), 'umd');
+            if (!existsSync(umdDir)) {
+              mkdirSync(umdDir);
+            }
+            const outUmd = `${outputFilePath}.umd.cjs`;
             await buildFile({
               name,
               input: inputFilePath,
-              output: `${outputFilePath}.umd.cjs`,
+              output: outUmd,
               minify: false,
               isCss: false,
               outDir,
             });
+            // Workaround because jsDelivr does not use correct MIME types for .umd.cjs.
+            // More info: https://github.com/jsdelivr/jsdelivr/issues/18584 https://github.com/rrweb-io/rrweb/pull/1704
+            copyFileSync(outUmd, resolve(umdDir, `${baseFileName}.js`));
+            const outUmdMin = `${outputFilePath}.umd.min.cjs`;
             await buildFile({
               name,
               input: inputFilePath,
-              output: `${outputFilePath}.umd.min.cjs`,
+              output: outUmdMin,
               minify: true,
               isCss: false,
               outDir,
             });
+            copyFileSync(outUmdMin, resolve(umdDir, `${baseFileName}.min.js`));
           }
         }
       }
@@ -101,7 +158,10 @@ async function buildFile({
       }),
     ],
   });
-  const filename = output.replace(new RegExp(`^.+/(${outDir}/)`), '$1');
+  const filename = output.replace(
+    new RegExp(`^.+[/\\\\](${outDir}[/\\\\])`),
+    '$1',
+  );
   console.log(filename);
   console.log(`${filename}.map`);
 }
@@ -109,9 +169,19 @@ async function buildFile({
 export default function (
   entry: LibraryOptions['entry'],
   name: LibraryOptions['name'],
-  options?: { outputDir?: string; fileName?: string; plugins?: Plugin[] },
+  options?: {
+    outputDir?: string;
+    fileName?: string;
+    plugins?: Plugin[];
+    bundleStats?: boolean;
+  },
 ) {
-  const { fileName, outputDir: outDir = 'dist', plugins = [] } = options || {};
+  const {
+    fileName,
+    outputDir: outDir = 'dist',
+    plugins = [],
+    bundleStats = true,
+  } = options || {};
 
   let formats: LibraryFormats[] = ['es', 'cjs'];
 
@@ -119,6 +189,7 @@ export default function (
     build: {
       // See https://vitejs.dev/guide/build.html#library-mode
       lib: {
+        cssFileName: 'style', // maintain same file output name as Vite 5 after upgrade to 6
         entry,
         name,
         fileName,
@@ -137,12 +208,6 @@ export default function (
       minify: false,
 
       sourcemap: true,
-
-      // rollupOptions: {
-      //   output: {
-      //     manualChunks: {},
-      //   },
-      // },
     },
     plugins: [
       dts({
@@ -161,6 +226,10 @@ export default function (
         },
       }),
       minifyAndUMDPlugin({ name, outDir }),
+      visualizer({
+        filename: resolve(__dirname, name + '-bundle-analysis.html'), // Path for the HTML report
+        open: false, // don't Automatically open the report in the browser
+      }),
       {
         name: 'remove-worker-inline',
         enforce: 'pre',
@@ -175,6 +244,9 @@ export default function (
         },
       },
       ...plugins,
+      ...(process.env.RELATIVE_CI_STATS === 'true' && bundleStats
+        ? [relativeCIStatsPlugin(outDir)]
+        : []),
     ],
   }));
 }

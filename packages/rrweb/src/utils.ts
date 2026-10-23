@@ -14,6 +14,7 @@ import type { Mirror, SlimDOMOptions } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
 import { RRNode, RRIFrameElement, BaseRRNode } from 'rrdom';
 import dom from '@rrweb/utils';
+export { nowTimestamp } from '@rrweb/utils';
 
 export function on(
   type: string,
@@ -126,58 +127,6 @@ export function hookSetter<T>(
   );
   return () => hookSetter(target, key, original || {}, true);
 }
-
-// copy from https://github.com/getsentry/sentry-javascript/blob/b2109071975af8bf0316d3b5b38f519bdaf5dc15/packages/utils/src/object.ts
-export function patch(
-  source: { [key: string]: any },
-  name: string,
-  replacement: (...args: unknown[]) => unknown,
-): () => void {
-  try {
-    if (!(name in source)) {
-      return () => {
-        //
-      };
-    }
-
-    const original = source[name] as () => unknown;
-    const wrapped = replacement(original);
-
-    // Make sure it's a function first, as we need to attach an empty prototype for `defineProperties` to work
-    // otherwise it'll throw "TypeError: Object.defineProperties called on non-object"
-    if (typeof wrapped === 'function') {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      wrapped.prototype = wrapped.prototype || {};
-      Object.defineProperties(wrapped, {
-        __rrweb_original__: {
-          enumerable: false,
-          value: original,
-        },
-      });
-    }
-
-    source[name] = wrapped;
-
-    return () => {
-      source[name] = original;
-    };
-  } catch {
-    return () => {
-      //
-    };
-    // This can throw if multiple fill happens on a global object like XMLHttpRequest
-    // Fixes https://github.com/getsentry/sentry-javascript/issues/2043
-  }
-}
-
-// guard against old third party libraries which redefine Date.now
-let nowTimestamp = Date.now;
-
-if (!(/*@__PURE__*/ /[1-9][0-9]{12}/.test(Date.now().toString()))) {
-  // they have already redefined it! use a fallback
-  nowTimestamp = () => new Date().getTime();
-}
-export { nowTimestamp };
 
 export function getWindowScroll(win: Window) {
   const doc = win.document;
@@ -463,18 +412,32 @@ export function hasShadowRoot<T extends Node | RRNode>(
   return Boolean(dom.shadowRoot(n as unknown as Element));
 }
 
+/**
+ * Traverses a CSSRuleList to find a nested rule at the given position.
+ *
+ * Returns null instead of throwing if the rule doesn't exist. This is important
+ * because during replay:
+ * - StyleDeclaration events may reference rules added dynamically that don't
+ *   exist yet due to timing/ordering issues
+ * - StyleSheetRule events that create rules may not have been processed yet
+ * - Constructed/adopted stylesheets may not be fully synchronized
+ *
+ * @param rules - The CSSRuleList to traverse
+ * @param position - Array of indices, e.g., [0, 1, 0] for rules[0].cssRules[1].cssRules[0]
+ * @returns The nested rule, or null if not found
+ */
 export function getNestedRule(
   rules: CSSRuleList,
   position: number[],
-): CSSGroupingRule {
-  const rule = rules[position[0]] as CSSGroupingRule;
+): CSSGroupingRule | null {
+  const rule = rules?.[position[0]] as CSSGroupingRule | null;
+  if (!rule) {
+    return null;
+  }
   if (position.length === 1) {
     return rule;
   } else {
-    return getNestedRule(
-      (rule.cssRules[position[1]] as CSSGroupingRule).cssRules,
-      position.slice(2),
-    );
+    return getNestedRule(rule.cssRules, position.slice(1));
   }
 }
 
@@ -575,14 +538,14 @@ export function getRootShadowHost(n: Node): Node {
 }
 
 export function shadowHostInDom(n: Node): boolean {
-  const doc = n.ownerDocument;
+  const doc = dom.ownerDocument(n);
   if (!doc) return false;
   const shadowHost = getRootShadowHost(n);
   return dom.contains(doc, shadowHost);
 }
 
 export function inDom(n: Node): boolean {
-  const doc = n.ownerDocument;
+  const doc = dom.ownerDocument(n);
   if (!doc) return false;
   return dom.contains(doc, n) || shadowHostInDom(n);
 }

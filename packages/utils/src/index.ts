@@ -13,7 +13,17 @@ type BasePrototypeCache = {
 };
 
 const testableAccessors = {
-  Node: ['childNodes', 'parentNode', 'parentElement', 'textContent'] as const,
+  Node: [
+    'childNodes',
+    'parentNode',
+    'parentElement',
+    'textContent',
+    'ownerDocument',
+    'firstChild',
+    'lastChild',
+    'nextSibling',
+    'previousSibling',
+  ] as const,
   ShadowRoot: ['host', 'styleSheets'] as const,
   Element: ['shadowRoot', 'querySelector', 'querySelectorAll'] as const,
   MutationObserver: [] as const,
@@ -27,6 +37,9 @@ const testableMethods = {
 } as const;
 
 const untaintedBasePrototype: Partial<BasePrototypeCache> = {};
+const untaintedBaseIframeCleanup: Partial<
+  Record<keyof BasePrototypeCache, () => void>
+> = {};
 
 type WindowWithZone = typeof globalThis & {
   Zone?: {
@@ -97,40 +110,50 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
       ),
   );
 
-  const isUntainted = isUntaintedAccessors && isUntaintedMethods;
-  // we're going to default to what we do have
-  let impl: BasePrototypeCache[T] =
-    defaultObj.prototype as BasePrototypeCache[T];
-  // but if it is tainted
-  if (!isUntainted) {
-    // try to load a fresh copy from a sandbox iframe
-    let iframeEl: HTMLIFrameElement | undefined = undefined;
-    try {
-      iframeEl = document.createElement('iframe');
-      iframeEl.hidden = true;
-      document.body.appendChild(iframeEl);
-      const win = iframeEl.contentWindow;
-      if (win) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-        const candidate = (win as any)[key].prototype as BasePrototypeCache[T];
-        if (candidate) {
-          impl = candidate;
-        }
-      }
-    } finally {
-      if (iframeEl) {
-        document.body.removeChild(iframeEl);
-      }
-    }
+  if (isUntaintedAccessors && isUntaintedMethods) {
+    untaintedBasePrototype[key] = defaultObj.prototype as BasePrototypeCache[T];
+    return defaultObj.prototype as BasePrototypeCache[T];
   }
 
-  untaintedBasePrototype[key] = impl;
-  return impl;
+  try {
+    const iframeEl = document.createElement('iframe');
+    iframeEl.style.display = 'none';
+    document.body.appendChild(iframeEl);
+    const win = iframeEl.contentWindow;
+    if (!win) return defaultObj.prototype as BasePrototypeCache[T];
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+    const untaintedObject = (win as any)[key]
+      .prototype as BasePrototypeCache[T];
+
+    if (!untaintedObject) {
+      iframeEl.remove();
+      return defaultPrototype;
+    }
+
+    // WebKit/Safari: WebKit tears down an iframe's ScriptExecutionContext when it is
+    // detached from the DOM. MutationObserver.deliver() silently drops callbacks when
+    // m_callback->scriptExecutionContext() returns null (webkit.org/b/179224).
+    // Keep the iframe attached so its context stays live, and expose a cleanup fn.
+    const ua = navigator.userAgent;
+    if (ua.includes('Safari') && !ua.includes('Chrome')) {
+      // rr-block prevents rrweb from serializing this iframe in subsequent snapshots
+      iframeEl.classList.add('rr-block');
+      iframeEl.setAttribute('__rrwebUntaintedMutationObserver', '');
+      untaintedBaseIframeCleanup[key] = () => iframeEl.remove();
+    } else {
+      iframeEl.remove();
+    }
+
+    return (untaintedBasePrototype[key] = untaintedObject);
+  } catch {
+    return defaultPrototype;
+  }
 }
 
 const untaintedAccessorCache: Record<
   string,
-  (this: PrototypeOwner, ...args: unknown[]) => unknown
+  Record<string, (this: PrototypeOwner, ...args: unknown[]) => unknown>
 > = {};
 
 export function getUntaintedAccessor<
@@ -141,11 +164,8 @@ export function getUntaintedAccessor<
   instance: BasePrototypeCache[K],
   accessor: T,
 ): BasePrototypeCache[K][T] {
-  const cacheKey = `${key}.${String(accessor)}`;
-  if (untaintedAccessorCache[cacheKey])
-    return untaintedAccessorCache[cacheKey].call(
-      instance,
-    ) as BasePrototypeCache[K][T];
+  const cached = untaintedAccessorCache[key]?.[accessor as string];
+  if (cached) return cached.call(instance) as BasePrototypeCache[K][T];
 
   const untaintedPrototype = getUntaintedPrototype(key);
   // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -156,7 +176,7 @@ export function getUntaintedAccessor<
 
   if (!untaintedAccessor) return instance[accessor];
 
-  untaintedAccessorCache[cacheKey] = untaintedAccessor;
+  (untaintedAccessorCache[key] ||= {})[accessor as string] = untaintedAccessor;
 
   return untaintedAccessor.call(instance) as BasePrototypeCache[K][T];
 }
@@ -192,6 +212,10 @@ export function getUntaintedMethod<
   return untaintedMethod.bind(instance) as BasePrototypeCache[K][T];
 }
 
+export function ownerDocument(n: Node): Document | null {
+  return getUntaintedAccessor('Node', n, 'ownerDocument');
+}
+
 export function childNodes(n: Node): NodeListOf<Node> {
   return getUntaintedAccessor('Node', n, 'childNodes');
 }
@@ -206,6 +230,22 @@ export function parentElement(n: Node): HTMLElement | null {
 
 export function textContent(n: Node): string | null {
   return getUntaintedAccessor('Node', n, 'textContent');
+}
+
+export function firstChild(n: Node): ChildNode | null {
+  return getUntaintedAccessor('Node', n, 'firstChild');
+}
+
+export function lastChild(n: Node): ChildNode | null {
+  return getUntaintedAccessor('Node', n, 'lastChild');
+}
+
+export function nextSibling(n: Node): ChildNode | null {
+  return getUntaintedAccessor('Node', n, 'nextSibling');
+}
+
+export function previousSibling(n: Node): ChildNode | null {
+  return getUntaintedAccessor('Node', n, 'previousSibling');
 }
 
 export function contains(n: Node, other: Node): boolean {
@@ -241,15 +281,81 @@ export function querySelectorAll(
   return getUntaintedAccessor('Element', n, 'querySelectorAll')(selectors);
 }
 
-export function mutationObserverCtor(): (typeof MutationObserver)['prototype']['constructor'] {
-  return getUntaintedPrototype('MutationObserver').constructor;
+export function mutationObserverCtor(): [
+  (typeof MutationObserver)['prototype']['constructor'],
+  () => void,
+] {
+  return [
+    getUntaintedPrototype('MutationObserver').constructor,
+    untaintedBaseIframeCleanup['MutationObserver'] ??
+      (() => {
+        /* no-op; a cleanup function is only needed in Safari browsers */
+      }),
+  ];
+}
+
+// guard against old third party libraries which redefine Date.now
+let nowTimestamp = Date.now;
+
+if (!(/*@__PURE__*/ /[1-9][0-9]{12}/.test(Date.now().toString()))) {
+  // they have already redefined it! use a fallback
+  nowTimestamp = () => new Date().getTime();
+}
+export { nowTimestamp };
+
+// copy from https://github.com/getsentry/sentry-javascript/blob/b2109071975af8bf0316d3b5b38f519bdaf5dc15/packages/utils/src/object.ts
+export function patch(
+  source: { [key: string]: any },
+  name: string,
+  replacement: (...args: unknown[]) => unknown,
+): () => void {
+  try {
+    if (!(name in source)) {
+      return () => {
+        //
+      };
+    }
+
+    const original = source[name] as () => unknown;
+    const wrapped = replacement(original);
+
+    // Make sure it's a function first, as we need to attach an empty prototype for `defineProperties` to work
+    // otherwise it'll throw "TypeError: Object.defineProperties called on non-object"
+    if (typeof wrapped === 'function') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      wrapped.prototype = wrapped.prototype || {};
+      Object.defineProperties(wrapped, {
+        __rrweb_original__: {
+          enumerable: false,
+          value: original,
+        },
+      });
+    }
+
+    source[name] = wrapped;
+
+    return () => {
+      source[name] = original;
+    };
+  } catch {
+    return () => {
+      //
+    };
+    // This can throw if multiple fill happens on a global object like XMLHttpRequest
+    // Fixes https://github.com/getsentry/sentry-javascript/issues/2043
+  }
 }
 
 export default {
+  ownerDocument,
   childNodes,
   parentNode,
   parentElement,
   textContent,
+  firstChild,
+  lastChild,
+  nextSibling,
+  previousSibling,
   contains,
   getRootNode,
   host,
@@ -257,5 +363,7 @@ export default {
   shadowRoot,
   querySelector,
   querySelectorAll,
-  mutationObserver: mutationObserverCtor,
+  nowTimestamp,
+  mutationObserverCtor,
+  patch,
 };

@@ -1,5 +1,9 @@
 export function isFirefox(): boolean {
-  return window.navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+  return (
+    (typeof window !== 'undefined' &&
+      window.navigator?.userAgent.toLowerCase().includes('firefox')) ||
+    false
+  );
 }
 
 export function isInCrossOriginIFrame(): boolean {

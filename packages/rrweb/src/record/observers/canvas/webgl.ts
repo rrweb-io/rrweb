@@ -6,7 +6,8 @@ import {
   type IWindow,
   type listenerHandler,
 } from '@rrweb/types';
-import { hookSetter, isBlocked, patch } from '../../../utils';
+import { hookSetter, isBlocked } from '../../../utils';
+import { patch } from '@rrweb/utils';
 import { saveWebGLVar, serializeArgs } from './serialize-args';
 
 function patchGLPrototype(
@@ -94,16 +95,18 @@ export default function initCanvasWebGLMutationObserver(
 ): listenerHandler {
   const handlers: listenerHandler[] = [];
 
-  handlers.push(
-    ...patchGLPrototype(
-      win.WebGLRenderingContext.prototype,
-      CanvasContext.WebGL,
-      cb,
-      blockClass,
-      blockSelector,
-      win,
-    ),
-  );
+  if (typeof win.WebGLRenderingContext !== 'undefined') {
+    handlers.push(
+      ...patchGLPrototype(
+        win.WebGLRenderingContext.prototype,
+        CanvasContext.WebGL,
+        cb,
+        blockClass,
+        blockSelector,
+        win,
+      ),
+    );
+  }
 
   if (typeof win.WebGL2RenderingContext !== 'undefined') {
     handlers.push(

@@ -6,7 +6,11 @@ import { mediaSelectorPlugin, pseudoClassPlugin } from '../src/css';
 import postcss, { type AcceptedPlugin } from 'postcss';
 import { JSDOM } from 'jsdom';
 import { splitCssText, stringifyStylesheet } from './../src/utils';
-import { applyCssSplits } from './../src/rebuild';
+import {
+  adaptCssForReplay,
+  applyCssSplits,
+  createCache,
+} from './../src/rebuild';
 import * as fs from 'fs';
 import * as path from 'path';
 import type {
@@ -178,7 +182,6 @@ describe('css splitter', () => {
   transition: all 4s ease;
 }`),
       );
-      // TODO: splitCssText can't handle it yet if both start with .x
       style.appendChild(
         JSDOM.fragment(`.y {
   -moz-transition: all 5s ease;
@@ -227,6 +230,125 @@ describe('css splitter', () => {
     }
     expect(splitCssText(cssText, style)).toEqual(sections);
   });
+
+  it('finds css textElement splits correctly, with substring matching going from many to none', () => {
+    const window = new Window({ url: 'https://localhost:8080' });
+    const document = window.document;
+    document.head.innerHTML = `<style>
+.section-news-v3-detail .news-cnt-wrapper :where(p):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+
+.section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 :where(figure):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+    margin-top: 2em;
+    margin-bottom: 2em;
+}
+
+.section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 :where(.prose > :first-child):not(:where([class~="not-prose"],[cl</style>`;
+    const style = document.querySelector('style');
+    if (style) {
+      // happydom? bug avoid: strangely a greater than symbol in the template string below
+      // e.g. '.prose > :last-child' causes more than one child to be appended
+      style.append(`ass~="not-prose"] *)) {
+    margin-top: 0;  /* cssRules transforms this to '0px' which was preventing matching prior to normalization */
+}
+
+.section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 :where(.prose :last-child):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+    margin-bottom: 0;
+}
+
+.section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 {
+    width: 100%;
+    overflow-wrap: break-word;
+}
+
+.section-home {
+    height: 100%;
+    overflow-y: auto;
+}
+`);
+
+      expect(style.childNodes.length).toEqual(2);
+
+      const expected = [
+        '.section-news-v3-detail .news-cnt-wrapper :where(p):not(:where([class~="not-prose"], [class~="not-prose"] *)) { margin-top: 0px; margin-bottom: 0px; }.section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 :where(figure):not(:where([class~="not-prose"],[class~="not-prose"] *)) { margin-top: 2em; margin-bottom: 2em; }.section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 :where(.prose > :first-child):not(:where([class~="not-prose"],[cl',
+        'ass~="not-prose"] *)) { margin-top: 0px; }.section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 :where(.prose :last-child):not(:where([class~="not-prose"],[class~="not-prose"] *)) { margin-bottom: 0px; }.section-news-v3-detail .news-cnt-wrapper .plugins-wrapper2 { width: 100%; overflow-wrap: break-word; }.section-home { height: 100%; overflow-y: auto; }',
+      ];
+      const browserSheet = expected.join('');
+      expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
+      let _testNoPxNorm = true; // trigger the original motivating scenario for this test
+      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual(
+        expected,
+      );
+      _testNoPxNorm = false; // this case should also be solved by normalizing '0px' -> '0'
+      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual(
+        expected,
+      );
+    }
+  });
+
+  /*
+   * `0px` (authored) always comes out in the rule as `0` so we decided at one point that
+   * `normalizeCssString` should also do that transformation while it is stripping whitespace/comments.
+   * This test exercises a case where this comes into play, however it is very contrived
+   * (there are similar tests we could write which could exercise similar problems,
+   * e.g. #FFF being serialized to rgb(255, 255, 255), and a split landing in just the
+   * wrong place), so we could in future drop the '0px' normalization along with this test
+   */
+  it('finds a split point that lands on a `0` value, which requires 0px normalization', () => {
+    const window = new Window({ url: 'https://localhost:8080' });
+    const document = window.document;
+    document.head.innerHTML =
+      '<style>.aaaa { color: red; } .bbbb { margin: </style>';
+    const style = document.querySelector('style');
+    if (style) {
+      style.append('0; } .cccc { top: 0; }');
+
+      const expected = [
+        '.aaaa { color: red; }.bbbb { margin: ',
+        '0px; }.cccc { top: 0px; }',
+      ];
+      const browserSheet = expected.join('');
+      expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
+
+      let _testNoPxNorm = false;
+      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual(
+        expected,
+      );
+
+      _testNoPxNorm = true;
+      expect(splitCssText(browserSheet, style, _testNoPxNorm)).toEqual([
+        browserSheet,
+      ]);
+    }
+  });
+
+  it('finds css textElement splits correctly, even with repeated sections', () => {
+    const window = new Window({ url: 'https://localhost:8080' });
+    const document = window.document;
+    document.head.innerHTML =
+      '<style>.a{background-color: black; }        </style>';
+    const style = document.querySelector('style');
+    if (style) {
+      style.append('.x{background-color:red;}');
+      style.append('.b      {background-color:black;}');
+      style.append('.x{background-color:red;}');
+      style.append('.c{      background-color:                     black}');
+
+      const expected = [
+        '.a { background-color: black; }',
+        '.x { background-color: red; }',
+        '.b { background-color: black; }',
+        '.x { background-color: red; }',
+        '.c { background-color: black; }',
+      ];
+      const browserSheet = expected.join('');
+      expect(stringifyStylesheet(style.sheet!)).toEqual(browserSheet);
+
+      expect(splitCssText(browserSheet, style)).toEqual(expected);
+    }
+  });
 });
 
 describe('applyCssSplits css rejoiner', function () {
@@ -262,6 +384,62 @@ describe('applyCssSplits css rejoiner', function () {
     );
   });
 
+  it('heals a recorded 0px split so the text nodes are whole rules', () => {
+    const sn3 = {
+      type: NodeType.Element,
+      tagName: 'style',
+      childNodes: [
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+      ],
+    } as serializedElementNodeWithId;
+    const recorded = [
+      '.a { margin: 0p',
+      'x; }.b { color: re',
+      'd; }.c { color: blue; }',
+    ].join('/* rr_split */');
+    applyCssSplits(sn3, recorded, false, mockLastUnusedArg);
+    //expect((sn3.childNodes[0] as textNode).textContent).toEqual(
+    //  '.a { margin: 0px; }',
+    //);
+    expect((sn3.childNodes[1] as textNode).textContent).toEqual(
+      '.b { color: red; }',
+    );
+    expect((sn3.childNodes[2] as textNode).textContent).toEqual(
+      '.c { color: blue; }',
+    );
+  });
+
+  it('heals a 0px chain whose offset compounds (4 then 7) so the text nodes are whole rules', () => {
+    const sn5 = {
+      type: NodeType.Element,
+      tagName: 'style',
+      childNodes: [
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+        { type: NodeType.Text, textContent: '' },
+      ],
+    } as serializedElementNodeWithId;
+    const recorded = [
+      '.a { background: rgb(255, 255, 255); }',
+      '.ab { padding: 0px 0px; }',
+      '.abc { margin: 0px 0px 0px 0p',
+      'x; }.abcd { top: 0px; left:',
+      ' 0px; }.e { color: blue; }',
+    ].join('/* rr_split */');
+    applyCssSplits(sn5, recorded, false, mockLastUnusedArg);
+    expect((sn5.childNodes as textNode[]).map((n) => n.textContent)).toEqual([
+      '.a { background: rgb(255, 255, 255); }',
+      '.ab { padding: 0px 0px; }',
+      '.abc { margin: 0px 0px 0px 0px; }',
+      '.abcd { top: 0px; left: 0px; }',
+      '.e { color: blue; }',
+    ]);
+  });
+
   it('applies css splits correctly even when there are too many child nodes', () => {
     let sn3 = {
       type: NodeType.Element,
@@ -289,6 +467,52 @@ describe('applyCssSplits css rejoiner', function () {
     expect((sn3.childNodes[2] as textNode).textContent).toEqual('');
   });
 
+  it('applies css splits correctly when split parts are invalid by themselves', () => {
+    const badFirstHalf = 'a:hov';
+    const badSecondHalf = 'er { color: red; }';
+    const markedCssText = [badFirstHalf, badSecondHalf].join('/* rr_split */');
+    applyCssSplits(sn, markedCssText, true, mockLastUnusedArg);
+    expect(
+      (sn.childNodes[0] as textNode).textContent +
+        (sn.childNodes[1] as textNode).textContent,
+    ).toEqual('a:hover,\na.\\:hover { color: red; }');
+  });
+
+  it('applies css splits correctly when split parts are invalid by themselves x3', () => {
+    let sn3 = {
+      type: NodeType.Element,
+      tagName: 'style',
+      childNodes: [
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+        {
+          type: NodeType.Text,
+          textContent: '',
+        },
+      ],
+    } as serializedElementNodeWithId;
+    const badStartThird = '.a:hover { background-color';
+    const badMidThird = ': red; } input:hover {';
+    const badEndThird = 'border: 1px solid purple; }';
+    const markedCssText = [badStartThird, badMidThird, badEndThird].join(
+      '/* rr_split */',
+    );
+    applyCssSplits(sn3, markedCssText, true, mockLastUnusedArg);
+    expect((sn3.childNodes[0] as textNode).textContent).toEqual(
+      badStartThird.replace('.a:hover', '.a:hover,\n.a.\\:hover'),
+    );
+    expect((sn3.childNodes[1] as textNode).textContent).toEqual(
+      badMidThird.replace('input:hover', 'input:hover,\ninput.\\:hover'),
+    );
+    expect((sn3.childNodes[2] as textNode).textContent).toEqual(badEndThird);
+  });
+
   it('maintains entire css text when there are too few child nodes', () => {
     let sn1 = {
       type: NodeType.Element,
@@ -304,5 +528,60 @@ describe('applyCssSplits css rejoiner', function () {
     expect((sn1.childNodes[0] as textNode).textContent).toEqual(
       halfCssText + otherHalfCssText,
     );
+  });
+
+  it('rejoins a split that lands inside a quoted attribute selector and adapts the whole text (#1692)', () => {
+    // the `.\:hover` variant only appears when the rejoined text is adapted as a whole
+    const firstHalf =
+      '.not-prose a:hover:not(:where([class~="not-prose"], [class~="not-prose"';
+    const secondHalf = '] *)) { color: inherit; }';
+    const markedCssText = [firstHalf, secondHalf].join('/* rr_split */');
+    const selector =
+      '.not-prose a:hover:not(:where([class~="not-prose"], [class~="not-prose"] *))';
+    expect(() =>
+      applyCssSplits(sn, markedCssText, true, mockLastUnusedArg),
+    ).not.toThrow();
+    expect(
+      (sn.childNodes[0] as textNode).textContent +
+        (sn.childNodes[1] as textNode).textContent,
+    ).toEqual(
+      (firstHalf + secondHalf).replace(
+        selector,
+        selector + ',\n' + selector.replace(/:hover/g, '.\\:hover'),
+      ),
+    );
+  });
+
+  it('rejoins a split that lands inside a quoted string value and adapts the whole text (#1734)', () => {
+    // a fragment ending mid-string reproduces #1734's "Unclosed string" when parsed alone
+    const firstHalf =
+      '.cl { border-top-style: ; border-top-width: ; border-color: var(--border-color); } ' +
+      '.btn:hover { content: "cli';
+    const secondHalf = 'ck me"; }';
+    const markedCssText = [firstHalf, secondHalf].join('/* rr_split */');
+    expect(() =>
+      applyCssSplits(sn, markedCssText, true, mockLastUnusedArg),
+    ).not.toThrow();
+    expect(
+      (sn.childNodes[0] as textNode).textContent +
+        (sn.childNodes[1] as textNode).textContent,
+    ).toEqual(
+      (firstHalf + secondHalf).replace(
+        '.btn:hover',
+        '.btn:hover,\n.btn.\\:hover',
+      ),
+    );
+  });
+});
+
+describe('adaptCssForReplay with unparseable css (#1734)', function () {
+  it('falls back to the original text, byte for byte, instead of throwing', () => {
+    const cssText = '.a { content: "unterminated }';
+    const cache = createCache();
+    let result = '';
+    expect(() => {
+      result = adaptCssForReplay(cssText, cache);
+    }).not.toThrow();
+    expect(result).toBe(cssText);
   });
 });
