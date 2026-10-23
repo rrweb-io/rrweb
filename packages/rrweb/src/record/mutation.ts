@@ -87,11 +87,14 @@ export default class MutationBuffer {
   private dataURLOptions: observerParam['dataURLOptions'];
   private doc: observerParam['doc'];
   private mirror: observerParam['mirror'];
+
+  // managers: references to per-recording singletons
   private iframeManager: observerParam['iframeManager'];
   private stylesheetManager: observerParam['stylesheetManager'];
   private shadowDomManager: observerParam['shadowDomManager'];
   private canvasManager: observerParam['canvasManager'];
   private processedNodeManager: observerParam['processedNodeManager'];
+
   private unattachedDoc: HTMLDocument;
 
   public init(options: MutationBufferParam) {
@@ -127,12 +130,10 @@ export default class MutationBuffer {
 
   public freeze() {
     this.frozen = true;
-    this.canvasManager.freeze();
   }
 
   public unfreeze() {
     this.frozen = false;
-    this.canvasManager.unfreeze();
     this.emit();
   }
 
@@ -142,18 +143,11 @@ export default class MutationBuffer {
 
   public lock() {
     this.locked = true;
-    this.canvasManager.lock();
   }
 
   public unlock() {
     this.locked = false;
-    this.canvasManager.unlock();
     this.emit();
-  }
-
-  public reset() {
-    this.shadowDomManager.reset();
-    this.canvasManager.reset();
   }
 
   public processMutations = (mutations: mutationRecord[]) => {

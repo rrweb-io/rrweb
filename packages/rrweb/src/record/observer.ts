@@ -1314,10 +1314,8 @@ export function initObservers(
 
   mergeHooks(o, hooks);
   let stopMutationObserver: listenerHandler | undefined;
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  let cleanupMutationIframe: () => void = () => {};
   if (o.recordDOM) {
-    [stopMutationObserver, cleanupMutationIframe] = initMutationObserver(
+    stopMutationObserver = initMutationObserver(
       o,
       o.doc,
     );
@@ -1364,7 +1362,6 @@ export function initObservers(
     // Observers of same-origin iframe documents are also stopped when the document unloads, while recording goes
     // on. Only the recorded document's teardown may reset state shared by all documents.
     if (o.doc === document) {
-      mutationBuffers.forEach((b) => b.reset());
       cleanupMutationIframe();
     }
     stopMutationObserver?.();
