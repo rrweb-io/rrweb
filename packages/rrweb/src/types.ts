@@ -82,7 +82,11 @@ export type recordOptions<T> = {
   mousemoveWait?: number;
   keepIframeSrcFn?: KeepIframeSrcFn;
   errorHandler?: ErrorHandler;
-  postMessageTargetOrigin?: string;
+  /**
+   * Parent window origin allowed to receive events from this cross-origin
+   * iframe when recordCrossOriginIframes is enabled. Defaults to '*'.
+   */
+  crossOriginIframeParentOrigin?: string;
 };
 
 export type observerParam = {
