@@ -277,3 +277,30 @@ describe('jsdom snapshot', () => {
     });
   });
 });
+describe('Masking', () => {
+  it.each(['checkbox', 'radio'])(
+    'does not capture masked %s checked state when snapshotting',
+    (type) => {
+      document.write(`<form><input type="${type}" checked></form>`);
+      const input = document.querySelector('input')!;
+      const mirror = new Mirror();
+      snapshot(document, { maskAllInputs: true, mirror });
+
+      const serialized = mirror.getMeta(input) as elementNode;
+      expect(serialized.attributes).not.toHaveProperty('checked');
+    },
+  );
+
+  it.each(['checkbox', 'radio'])(
+    'preserves unmasked %s checked state when snapshotting',
+    (type) => {
+      document.write(`<form><input type="${type}" checked></form>`);
+      const input = document.querySelector('input')!;
+      const mirror = new Mirror();
+      snapshot(document, { maskAllInputs: false, mirror });
+
+      const serialized = mirror.getMeta(input) as elementNode;
+      expect(serialized.attributes.checked).toBe(true);
+    },
+  );
+});

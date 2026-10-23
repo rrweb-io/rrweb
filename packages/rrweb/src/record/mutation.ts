@@ -504,6 +504,16 @@ export default class MutationBuffer {
         let attributeName = m.attributeName as string;
         let value = (m.target as HTMLElement).getAttribute(attributeName);
 
+        if (tagNameLower === 'input' && attributeName === 'checked') {
+          const type = getInputType(target);
+          if (
+            (type === 'checkbox' || type === 'radio') &&
+            this.maskInputOptions[type as 'checkbox' | 'radio']
+          ) {
+            return;
+          }
+        }
+
         if (attributeName === 'value') {
           const type = getInputType(target);
 

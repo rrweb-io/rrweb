@@ -56,9 +56,8 @@ describe('mutation', () => {
 
   const setup = async (htmlfile) => {
     page = await browser.newPage();
-    page.on('console', (msg) => {
-      console.log(msg.text());
-    });
+
+    page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
 
     await page.goto(`${serverURL}/html/${htmlfile}`);
     await page.addScriptTag({
@@ -73,8 +72,6 @@ describe('mutation', () => {
       }
       events.push(e);
     });
-
-    page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
 
     await page.evaluate(() => {
       const { record } = (window as unknown as IWindow).rrweb;

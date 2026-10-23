@@ -14,7 +14,12 @@ import {
   ISuite,
 } from './utils';
 import type { recordOptions } from '../src/types';
-import { eventWithTime, NodeType, EventType } from '@rrweb/types';
+import {
+  eventWithTime,
+  NodeType,
+  EventType,
+  IncrementalSource,
+} from '@rrweb/types';
 import { visitSnapshot } from 'rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
@@ -536,6 +541,48 @@ describe('record integration tests', function (this: ISuite) {
     )) as eventWithTime[];
     await assertSnapshot(snapshots);
   });
+
+  // Run the same masking checks for both input types.
+  it.each(['checkbox', 'radio'])(
+    'ignores masked %s input changes and checked mutations',
+    async (type) => {
+      const page = await browser.newPage();
+      await page.setContent(getHtml('form.html', { maskAllInputs: true }));
+      await waitForRAF(page);
+      const selector = `input[type="${type}"]`;
+
+      // Mouse and keyboard interactions must not record the masked state.
+      await page.click(selector);
+      await page.focus(selector);
+      await page.keyboard.press('Space');
+      await page.$eval(selector, (input: HTMLInputElement) => {
+        input.checked = true;
+        input.setAttribute('checked', 'false');
+        input.setAttribute('title', 'still recorded');
+      });
+      await waitForRAF(page);
+      await page.$eval(selector, (input) => input.removeAttribute('checked'));
+      await waitForRAF(page);
+
+      const events = (await page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      const attributes = [];
+      for (const event of events) {
+        if (event.type !== EventType.IncrementalSnapshot) continue;
+        expect(event.data.source).not.toBe(IncrementalSource.Input);
+        if (event.data.source === IncrementalSource.Mutation) {
+          attributes.push(...event.data.attributes.map((m) => m.attributes));
+        }
+      }
+      expect(attributes).toContainEqual({ title: 'still recorded' });
+      for (const attrs of attributes) {
+        // Omit checked entirely, including removal events with a null value.
+        expect(attrs).not.toHaveProperty('checked');
+      }
+      await page.close();
+    },
+  );
 
   it('can use maskInputOptions to configure which type of inputs should be masked', async () => {
     const page: puppeteer.Page = await browser.newPage();
