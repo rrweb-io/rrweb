@@ -57,6 +57,9 @@ import dom, { mutationObserverCtor } from '@rrweb/utils';
 // one principal mutation buffer, but also one per shadowRoot/iframe on the page
 export const mutationBuffers = new Set<MutationBuffer>();
 
+/** Lets per-shadow-root observers be fully torn down when their root detaches. */
+const observerBuffers = new WeakMap<MutationObserver, MutationBuffer>();
+
 // Event.path is non-standard and used in some older browsers
 type NonStandardEvent = Omit<Event, 'composedPath'> & {
   path: EventTarget[];
