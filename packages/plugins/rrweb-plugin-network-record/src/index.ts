@@ -414,6 +414,9 @@ function initXhrObserver(
               // https://github.com/rrweb-io/rrweb/pull/1105#issuecomment-1953808336
               const requests = prepareRequestWithoutPerformance(
                 req,
+                xhr.status,
+                after,
+                before,
                 networkRequest,
               );
               cb({ requests });
@@ -501,12 +504,16 @@ function initFetchObserver(
         }
         return res;
       } finally {
+        before ??= win.performance.now();
         getRequestPerformanceEntry(win, 'fetch', req.url, after, before)
           .then((entry) => {
             if (!entry) {
               // https://github.com/rrweb-io/rrweb/pull/1105#issuecomment-1953808336
               const requests = prepareRequestWithoutPerformance(
                 req,
+                res?.status ?? 0,
+                after,
+                before,
                 networkRequest,
               );
               cb({ requests });
@@ -601,11 +608,19 @@ function prepareRequest(
 
 function prepareRequestWithoutPerformance(
   req: Request,
+  status: number,
+  after: number | undefined,
+  before: number | undefined,
   networkRequest: Partial<NetworkRequest>,
 ): NetworkRequest[] {
   const request: NetworkRequest = {
     name: req.url,
     method: req.method,
+    status,
+    startTime: after === undefined ? undefined : Math.round(after),
+    endTime: before === undefined ? undefined : Math.round(before),
+    duration:
+      after === undefined || before === undefined ? undefined : before - after,
     requestHeaders: networkRequest.requestHeaders,
     requestBody: networkRequest.requestBody,
     responseHeaders: networkRequest.responseHeaders,
