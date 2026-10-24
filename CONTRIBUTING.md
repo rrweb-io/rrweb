@@ -19,6 +19,20 @@ We actively welcome your pull requests (PRs)!
 5. If you've changed APIs, update the documentation.
 6. Make sure your code lints and typechecks.
 
+Create changesets with `yarn changeset`. When a changeset releases `rrweb`, this
+command also adds `@rrweb/record` or `@rrweb/replay` if the corresponding source in
+`packages/rrweb/src/record/` or `packages/rrweb/src/replay/` changed. The added entry
+uses the `rrweb` release type and preserves any existing wrapper entries.
+Adding entries normalizes the YAML header; put explanatory notes in the summary.
+Changes are compared with the merge base of `origin/main` when available, otherwise
+`main`, including local changes. Use `yarn changeset --since <branch>` when
+targeting another branch, such as `next`.
+If `origin` is your fork, fetch the upstream repository and use
+`yarn changeset --since upstream/main` to compare with its current base.
+If you create a changeset another way, run `yarn changeset:sync` before committing.
+It accepts the same `--since <branch>` option. CI checks pull requests for missing
+entries without modifying the branch. Empty changesets remain empty.
+
 ## Issues
 
 We use GitHub issues to track public bugs. Please ensure your description is
