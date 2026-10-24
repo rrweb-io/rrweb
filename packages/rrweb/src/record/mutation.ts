@@ -151,7 +151,12 @@ export default class MutationBuffer {
     this.emit();
   }
 
-  public reset() {
+  public reset(doc?: Document) {
+    if (doc && this.doc !== doc) return;
+    if (doc && doc !== document) {
+      this.shadowDomManager.reset(doc);
+      return;
+    }
     this.shadowDomManager.reset();
     this.canvasManager.reset();
   }

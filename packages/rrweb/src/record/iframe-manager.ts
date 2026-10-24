@@ -91,7 +91,7 @@ export class IframeManager {
     iframeEl.contentWindow?.addEventListener('pagehide', () => {
       this.pageHideListener?.(iframeEl);
       this.mirror.removeNodeFromMap(iframeEl.contentDocument!);
-      this.crossOriginIframeMap.delete(iframeEl.contentWindow!);
+      // 导航保留 iframe 的 WindowProxy，后续跨域消息仍使用此关联。
     });
     this.loadListener?.(iframeEl);
 

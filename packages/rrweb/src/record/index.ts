@@ -576,10 +576,13 @@ function record<T = eventWithTime>(
         iframeHandler();
         iframeHandlersMap.delete(iframeEl);
       }
-      for (const buf of mutationBuffers) {
-        if (buf.bufferBelongsToIframe(iframeEl)) {
-          buf.reset();
-          mutationBuffers.delete(buf);
+      const doc = iframeEl.contentDocument;
+      if (doc) {
+        for (const buf of mutationBuffers) {
+          if (buf.bufferBelongsToIframe(iframeEl)) {
+            buf.reset(doc);
+            mutationBuffers.delete(buf);
+          }
         }
       }
     });

@@ -1368,7 +1368,7 @@ export function initObservers(
   }
 
   return callbackWrapper(() => {
-    mutationBuffers.forEach((b) => b.reset());
+    mutationBuffers.forEach((b) => b.reset(o.doc));
     mutationObserver?.disconnect();
     cleanupMutationIframe();
     mousemoveHandler();
