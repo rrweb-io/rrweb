@@ -180,7 +180,14 @@ export class ShadowDomManager {
     );
   }
 
-  public reset() {
+  public reset(doc?: Document) {
+    if (doc) {
+      // 子文档导航时，只释放该文档中的根，保留其他文档的监听。
+      for (const root of this.shadowRootTeardowns.keys()) {
+        if (root.ownerDocument === doc) this.removeShadowRoot(root);
+      }
+      return;
+    }
     this.restoreHandlers.forEach((handler) => {
       try {
         handler();
