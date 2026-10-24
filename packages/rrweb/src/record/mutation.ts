@@ -165,12 +165,7 @@ export default class MutationBuffer {
     const addedIds = new Set<number>();
 
     while (this.mapRemoves.length) {
-      const removedNode = this.mapRemoves.shift()!;
-      this.mirror.removeNodeFromMap(removedNode);
-      if (!inDom(removedNode)) {
-        // if later re-added to DOM, they'll be picked up again by shadowDomManager
-        this.shadowDomManager.removeShadowRootsIn(removedNode);
-      }
+      this.mirror.removeNodeFromMap(this.mapRemoves.shift()!);
     }
 
     for (const n of this.movedSet) {
@@ -620,6 +615,9 @@ export default class MutationBuffer {
 
         m.addedNodes.forEach((n) => this.genAdds(n, m.target));
         m.removedNodes.forEach((n) => {
+          if (!inDom(n)) {
+            this.shadowDomManager.removeShadowRootsIn(n);
+          }
           const nodeId = this.mirror.getId(n);
           const parentId = isShadowRoot(m.target)
             ? this.mirror.getId(dom.host(m.target))

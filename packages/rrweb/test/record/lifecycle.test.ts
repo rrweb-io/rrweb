@@ -246,4 +246,30 @@ describe('recorder lifecycle', () => {
       expect(mutationBuffers.size).toBe(1);
     });
   });
+
+  describe('when a shadow host is removed and re-added during a freeze', () => {
+    it('keeps shadow mutations buffered before the removal', async () => {
+      const host = createShadowHost();
+      document.body.appendChild(host);
+      start();
+      await flush();
+      const span = host.shadowRoot!.querySelector('span')!;
+
+      record.freezePage();
+      span.textContent = 'changed-during-freeze';
+      await flush();
+      host.remove();
+      await flush();
+      document.body.appendChild(host);
+      await flush();
+
+      record.addCustomEvent('unfreeze', {});
+      await flush();
+
+      const captured = events.some((e) =>
+        JSON.stringify(e).includes('changed-during-freeze'),
+      );
+      expect(captured).toBe(true);
+    });
+  });
 });
