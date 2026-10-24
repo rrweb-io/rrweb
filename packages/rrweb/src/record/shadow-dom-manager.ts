@@ -10,7 +10,7 @@ import {
   initScrollObserver,
   initAdoptedStyleSheetObserver,
 } from './observer';
-import { inDom, hasShadowRoot } from '../utils';
+import { inDom, on } from '../utils';
 import type { Mirror } from 'rrweb-snapshot';
 import { isNativeShadowDom } from 'rrweb-snapshot';
 import dom, { patch } from '@rrweb/utils';
@@ -31,6 +31,10 @@ export class ShadowDomManager {
   private bypassOptions: BypassOptions;
   private mirror: Mirror;
   private restoreHandlers: (() => void)[] = [];
+  private eventObservers = new Set<{
+    doc: Document;
+    observe(root: ShadowRoot): void;
+  }>();
 
   constructor(options: {
     mutationCb: mutationCallBack;
@@ -58,6 +62,10 @@ export class ShadowDomManager {
     this.shadowDoms.add(shadowRoot);
     const teardowns: (() => void)[] = [];
     this.shadowRootTeardowns.set(shadowRoot, teardowns);
+    this.eventObservers.forEach((observer) => {
+      if (observer.doc === shadowRoot.ownerDocument)
+        observer.observe(shadowRoot);
+    });
     const [observer] = initMutationObserver(
       {
         ...this.bypassOptions,
@@ -105,6 +113,32 @@ export class ShadowDomManager {
     }, 0);
   }
 
+  /** 在文档和它的各个根内监听，避免 closed 边界隐藏原始事件目标。 */
+  public observeEvent(type: string, listener: EventListener, doc: Document) {
+    const handlers = new Map<ShadowRoot, () => void>();
+    const observer = {
+      doc,
+      observe: (root: ShadowRoot) => {
+        handlers.set(root, on(type, listener, root));
+        this.shadowRootTeardowns.get(root)?.push(() => {
+          handlers.get(root)?.();
+          handlers.delete(root);
+        });
+      },
+    };
+    this.eventObservers.add(observer);
+    this.shadowRootTeardowns.forEach((_, root) => {
+      if (root.ownerDocument === doc) observer.observe(root);
+    });
+    const stop = on(type, listener, doc);
+    return () => {
+      stop();
+      handlers.forEach((handler) => handler());
+      handlers.clear();
+      this.eventObservers.delete(observer);
+    };
+  }
+
   /** Disconnects one shadow root and forgets it. */
   public removeShadowRoot(shadowRoot: ShadowRoot) {
     const teardowns = this.shadowRootTeardowns.get(shadowRoot);
@@ -122,8 +156,8 @@ export class ShadowDomManager {
   }
 
   public removeShadowRootsFor(node: Node) {
-    if (hasShadowRoot(node)) {
-      const shadowRoot = node.shadowRoot;
+    const shadowRoot = dom.shadowRoot(node);
+    if (shadowRoot) {
       // Attached at emit time means moved or reinserted: keep observing.
       if (this.shadowDoms.has(shadowRoot) && !inDom(node)) {
         this.removeShadowRoot(shadowRoot);
@@ -170,6 +204,7 @@ export class ShadowDomManager {
             // For the shadow dom elements in the document, monitor their dom mutations.
             // For shadow dom elements that aren't in the document yet,
             // we start monitoring them once their shadow dom host is appended to the document.
+            if (isNativeShadowDom(sRoot)) dom.registerShadowRoot(sRoot);
             const shadowRootEl = dom.shadowRoot(this);
             if (shadowRootEl && inDom(this))
               manager.addShadowRoot(shadowRootEl, doc);

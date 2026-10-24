@@ -5,6 +5,7 @@ import {
   getInputType,
   toLowerCase,
 } from 'rrweb-snapshot';
+import type { ShadowDomManager } from './shadow-dom-manager';
 import type { FontFaceSet } from 'css-font-loading-module';
 import {
   throttle,
@@ -65,7 +66,17 @@ type NonStandardEvent = Omit<Event, 'composedPath'> & {
   path: EventTarget[];
 };
 
+const shadowEventTargets = new WeakMap<Event, EventTarget>();
+
 function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
+  const shadowTarget = shadowEventTargets.get(event as Event);
+  if (shadowTarget) return shadowTarget;
+  return getOriginalEventTarget(event);
+}
+
+function getOriginalEventTarget(
+  event: Event | NonStandardEvent,
+): EventTarget | null {
   try {
     if ('composedPath' in event) {
       const path = event.composedPath();
@@ -80,6 +91,54 @@ function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
   }
 
   return event && event.target;
+}
+
+function onObservedEvent(
+  type: string,
+  listener: EventListener,
+  doc: Document,
+  manager: ShadowDomManager,
+): listenerHandler {
+  const dispatches = new WeakMap<Event, { handled: boolean }>();
+  let active = true;
+  const stop = manager.observeEvent(
+    type,
+    (event) => {
+      const target = getOriginalEventTarget(event);
+      // 同一个 Event 对象可以多次 dispatch；去重只作用于当前传播过程。
+      if (
+        event.currentTarget === doc ||
+        (!event.composed &&
+          event.target &&
+          dom.getRootNode(event.target as Node) === event.currentTarget)
+      ) {
+        dispatches.delete(event);
+      }
+      let dispatch = dispatches.get(event);
+      if (!dispatch) {
+        dispatch = { handled: false };
+        dispatches.set(event, dispatch);
+      }
+      const invoke = () => {
+        if (!active || dispatch.handled) return;
+        dispatch.handled = true;
+        if (target) shadowEventTargets.set(event, target);
+        listener(event);
+      };
+      // 外层捕获阶段只能看见 closed 宿主；让根内监听器先取得真实目标。
+      // 若事件直接发生在宿主上，微任务仍会采集该事件。
+      if (target && dom.shadowRoot(target as Node)?.mode === 'closed') {
+        void Promise.resolve().then(callbackWrapper(invoke));
+      } else {
+        invoke();
+      }
+    },
+    doc,
+  );
+  return () => {
+    active = false;
+    stop();
+  };
 }
 
 export function initMutationObserver(
@@ -123,6 +182,7 @@ function initMoveObserver({
   sampling,
   doc,
   mirror,
+  shadowDomManager,
 }: observerParam): listenerHandler {
   if (sampling.mousemove === false) {
     return () => {
@@ -195,9 +255,9 @@ function initMoveObserver({
     ),
   );
   const handlers = [
-    on('mousemove', updatePosition, doc),
-    on('touchmove', updatePosition, doc),
-    on('drag', updatePosition, doc),
+    onObservedEvent('mousemove', updatePosition, doc, shadowDomManager),
+    onObservedEvent('touchmove', updatePosition, doc, shadowDomManager),
+    onObservedEvent('drag', updatePosition, doc, shadowDomManager),
   ];
   return callbackWrapper(() => {
     handlers.forEach((h) => h());
@@ -211,6 +271,7 @@ function initMouseInteractionObserver({
   blockClass,
   blockSelector,
   sampling,
+  shadowDomManager,
 }: observerParam): listenerHandler {
   if (sampling.mouseInteraction === false) {
     return () => {
@@ -316,7 +377,7 @@ function initMouseInteractionObserver({
             return;
         }
       }
-      handlers.push(on(eventName, handler, doc));
+      handlers.push(onObservedEvent(eventName, handler, doc, shadowDomManager));
     });
   return callbackWrapper(() => {
     handlers.forEach((h) => h());
@@ -406,6 +467,7 @@ function initInputObserver({
   maskInputFn,
   sampling,
   userTriggeredOnInput,
+  shadowDomManager,
 }: observerParam): listenerHandler {
   function eventHandler(event: Event) {
     let target = getEventTarget(event) as HTMLElement | null;
@@ -463,7 +525,7 @@ function initInputObserver({
     // the other radios with the same name attribute will be unchecked.
     const name: string | undefined = (target as HTMLInputElement).name;
     if (type === 'radio' && name && isChecked) {
-      doc
+      (dom.getRootNode(target) as Document | ShadowRoot)
         .querySelectorAll(`input[type="radio"][name="${name}"]`)
         .forEach((el) => {
           if (el !== target) {
@@ -495,7 +557,13 @@ function initInputObserver({
   }
   const events = sampling.input === 'last' ? ['change'] : ['input', 'change'];
   const handlers: Array<listenerHandler | hookResetter> = events.map(
-    (eventName) => on(eventName, callbackWrapper(eventHandler), doc),
+    (eventName) =>
+      onObservedEvent(
+        eventName,
+        callbackWrapper(eventHandler),
+        doc,
+        shadowDomManager,
+      ),
   );
   const currentWindow = doc.defaultView;
   if (!currentWindow) {
@@ -1037,6 +1105,7 @@ function initMediaInteractionObserver({
   mirror,
   sampling,
   doc,
+  shadowDomManager,
 }: observerParam): listenerHandler {
   const handler = callbackWrapper((type: MediaInteractions) =>
     throttle(
@@ -1064,11 +1133,36 @@ function initMediaInteractionObserver({
     ),
   );
   const handlers = [
-    on('play', handler(MediaInteractions.Play), doc),
-    on('pause', handler(MediaInteractions.Pause), doc),
-    on('seeked', handler(MediaInteractions.Seeked), doc),
-    on('volumechange', handler(MediaInteractions.VolumeChange), doc),
-    on('ratechange', handler(MediaInteractions.RateChange), doc),
+    onObservedEvent(
+      'play',
+      handler(MediaInteractions.Play),
+      doc,
+      shadowDomManager,
+    ),
+    onObservedEvent(
+      'pause',
+      handler(MediaInteractions.Pause),
+      doc,
+      shadowDomManager,
+    ),
+    onObservedEvent(
+      'seeked',
+      handler(MediaInteractions.Seeked),
+      doc,
+      shadowDomManager,
+    ),
+    onObservedEvent(
+      'volumechange',
+      handler(MediaInteractions.VolumeChange),
+      doc,
+      shadowDomManager,
+    ),
+    onObservedEvent(
+      'ratechange',
+      handler(MediaInteractions.RateChange),
+      doc,
+      shadowDomManager,
+    ),
   ];
   return callbackWrapper(() => {
     handlers.forEach((h) => h());

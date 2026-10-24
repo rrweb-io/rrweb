@@ -10,6 +10,12 @@
 
 [链接](./record-and-replay.zh_CN.md)
 
+### Shadow DOM
+
+录制 open、closed Shadow DOM，以及注册录制前已经存在的 closed 根。
+
+[链接](./shadow-dom.zh_CN.md)
+
 ### 异步加载数据
 
 当录制的数据较多时，一次性加载至回放页面可能带来较大的网络开销和较长的等待时间。这时可以采取数据分页的方式，异步地加载数据并回放。

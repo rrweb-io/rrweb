@@ -10,6 +10,13 @@ Record and Replay is the most common use case, which is suitable for any scenari
 
 [link](./record-and-replay.md)
 
+### Shadow DOM
+
+Record open and closed Shadow DOM, and register closed roots that existed before
+recording started.
+
+[link](./shadow-dom.md)
+
 ### Load Events Asynchronous
 
 When the size of the recorded events increased, load them in one request is not performant. You can paginate the events and load them as you need.

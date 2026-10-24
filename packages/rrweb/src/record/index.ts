@@ -11,7 +11,6 @@ import {
   getWindowHeight,
   getWindowScroll,
   polyfill,
-  hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
   nowTimestamp,
@@ -383,10 +382,8 @@ function record<T = eventWithTime>(
         if (isSerializedStylesheet(n, mirror)) {
           stylesheetManager.trackLinkElement(n as HTMLLinkElement);
         }
-        if (hasShadowRoot(n)) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          shadowDomManager.addShadowRoot(dom.shadowRoot(n as Node)!, document);
-        }
+        const root = dom.shadowRoot(n);
+        if (root) shadowDomManager.addShadowRoot(root, root.ownerDocument);
       },
       onIframeLoad: (iframe, childSn) => {
         iframeManager.attachIframe(iframe, childSn);
@@ -675,6 +672,12 @@ record.takeFullSnapshot = (isCheckout?: boolean) => {
     throw new Error('please take full snapshot after start recording');
   }
   takeFullSnapshot(isCheckout);
+};
+
+/** 已有 closed 根需由调用方提供；活动录制通过新快照建立节点基线。 */
+record.registerShadowRoot = (root: ShadowRoot) => {
+  dom.registerShadowRoot(root);
+  if (recording && root.host.isConnected) takeFullSnapshot(true);
 };
 
 record.mirror = mirror;
