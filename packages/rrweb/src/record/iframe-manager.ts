@@ -64,6 +64,8 @@ export class IframeManager {
     this.iframes.set(iframeEl, true);
     if (iframeEl.contentWindow)
       this.crossOriginIframeMap.set(iframeEl.contentWindow, iframeEl);
+    // postMessage replies run after the snapshot or mutation that serialized this iframe has been emitted.
+    this.requestFullSnapshot(iframeEl);
   }
 
   /**
@@ -71,7 +73,7 @@ export class IframeManager {
    * It only sends one when it starts, so without this the iframe replays blank
    * after every full snapshot of this frame.
    */
-  public requestFullSnapshot(iframeEl: HTMLIFrameElement) {
+  private requestFullSnapshot(iframeEl: HTMLIFrameElement) {
     if (
       !this.recordCrossOriginIframes ||
       iframeEl.contentDocument ||

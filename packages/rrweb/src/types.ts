@@ -230,7 +230,6 @@ export type CrossOriginIframeMessageEventContent<T = eventWithTime> = {
 };
 export type CrossOriginIframeMessageEvent =
   MessageEvent<CrossOriginIframeMessageEventContent>;
-// Sent by a parent frame to a cross-origin child frame after the parent takes a full snapshot, which drops the child's content. The child's recorder answers with a new full snapshot.
 export type CrossOriginIframeSnapshotRequest = {
   type: 'rrweb-snapshot-request';
 };

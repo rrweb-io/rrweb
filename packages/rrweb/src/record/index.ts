@@ -378,7 +378,6 @@ function record<T = eventWithTime>(
 
     canvasManager.lock();
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
-    const iframes: HTMLIFrameElement[] = [];
     const node = snapshot(document, {
       mirror,
       blockClass,
@@ -396,7 +395,6 @@ function record<T = eventWithTime>(
       onSerialize: (n) => {
         if (isSerializedIframe(n, mirror)) {
           iframeManager.addIframe(n as HTMLIFrameElement);
-          iframes.push(n as HTMLIFrameElement);
         }
         if (isSerializedStylesheet(n, mirror)) {
           stylesheetManager.trackLinkElement(n as HTMLLinkElement);
@@ -432,9 +430,6 @@ function record<T = eventWithTime>(
     );
     canvasManager.unlock();
     mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
-
-    // The snapshot above replaces cross-origin iframes with empty ones, so ask them for their content again.
-    iframes.forEach((iframe) => iframeManager.requestFullSnapshot(iframe));
 
     // Some old browsers don't support adoptedStyleSheets.
     if (document.adoptedStyleSheets && document.adoptedStyleSheets.length > 0)
