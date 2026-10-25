@@ -210,6 +210,12 @@ export class MediaManager {
     const target = node as HTMLMediaElement;
     const serializedNode = mirror.getMeta(target);
     if (!serializedNode || !('attributes' in serializedNode)) return;
+
+    // don't process if the media element is blocked
+    const isBlockedMediaElement =
+      serializedNode.attributes.rr_width || serializedNode.attributes.rr_height;
+    if (isBlockedMediaElement) return;
+
     const playerIsPaused = this.service.state.matches('paused');
     const mediaAttributes = serializedNode.attributes as
       | mediaAttributes
@@ -285,7 +291,9 @@ export class MediaManager {
     this.syncTargetWithState(target);
   }
 
-  public isSupportedMediaElement(node: Node): node is HTMLMediaElement {
+  public isSupportedMediaElement(
+    node: Node | RRMediaElement,
+  ): node is HTMLMediaElement | RRMediaElement {
     return ['AUDIO', 'VIDEO'].includes(node.nodeName);
   }
 
