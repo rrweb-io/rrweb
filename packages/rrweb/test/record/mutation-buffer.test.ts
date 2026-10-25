@@ -14,7 +14,7 @@ function createBuffer(
   const buffer = new MutationBuffer();
   const noopManager = {
     addShadowRoot: vi.fn(),
-    removeShadowRootsFor: vi.fn(),
+    removeShadowRootsIn: vi.fn(),
     reset: vi.fn(),
   };
   buffer.init({

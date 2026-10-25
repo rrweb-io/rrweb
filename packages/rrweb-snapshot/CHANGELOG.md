@@ -1,5 +1,13 @@
 # rrweb-snapshot
 
+## 2.2.0
+
+### Patch Changes
+
+- [#1958](https://github.com/rrweb-io/rrweb/pull/1958) [`009b2dd`](https://github.com/rrweb-io/rrweb/commit/009b2dd4971ea575bd481f1f591822d319ab078b) Thanks [@salzahrani-salla](https://github.com/salzahrani-salla)! - fix: release removed shadow trees from the mirror
+
+  Removing a shadow host from DOM was leaving references to shadow descendants, so e.g. repeatedly replacing web components mem-leaked their detached trees. Fix by recursing into shadow roots during removal, including nested hosts and releasing strong references from the mirror.
+
 ## 2.1.7
 
 ## 2.1.6
