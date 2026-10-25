@@ -1,45 +1,100 @@
 # 使用指南
 
-> 除通用的使用指南外，你可能还想通过[场景示例](./docs/recipes/index.zh_CN.md)了解特定场景下的使用方式，或是通过[设计文档](./docs)深入 rrweb 的技术细节。
+> 除通用的使用指南外，你可能还想通过[场景示例](./docs/recipes/index.zh_CN.md)了解特定场景下的使用方式，或是通过[设计文档](./docs/design/index.md)深入 rrweb 的技术细节。
 
 ## 安装
 
-### 直接通过 `<script>` 引入
+| 目标                      | 推荐包                            |
+| ------------------------- | --------------------------------- |
+| 大多数项目（录制 + 回放） | `@rrweb/record` + `@rrweb/replay` |
+| 单包便捷接入              | `@rrweb/all`                      |
+| 仅遗留兼容                | `rrweb`                           |
 
-推荐通过 jsdelivr 的 CDN 安装：
+在绝大多数生产架构中，录制端和回放端运行在不同的运行时/页面。请在被录制应用中安装 `@rrweb/record`，在回放应用中安装 `@rrweb/replay`（或 `rrweb-player`）。除非有明确的高级场景，一般不要在同一页面同时引入两者。
+
+### 1) Bundler / npm（推荐）
+
+```shell
+npm install @rrweb/record @rrweb/replay
+```
+
+```js
+import { record } from '@rrweb/record';
+import { Replayer } from '@rrweb/replay';
+import '@rrweb/replay/dist/style.css';
+```
+
+如果你希望使用单一入口，也可以使用便捷包 `@rrweb/all`：
+
+```shell
+npm install @rrweb/all
+```
+
+```js
+import { record, Replayer } from '@rrweb/all';
+import '@rrweb/all/dist/style.css';
+```
+
+`require(...)` / CommonJS 仍可作为兼容方案使用（由各包的 `exports`/`main` 提供），但 2.x 的主路径是 ESM。
+
+### 2) 无 Bundler 的浏览器场景（no-build）
+
+推荐使用 CDN 提供的浏览器 ESM 资源：
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
+  href="https://cdn.rrweb.com/replay/current/dist/style.css"
 />
-<script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.umd.min.cjs"></script>
+<script type="module">
+  import { record } from 'https://cdn.rrweb.com/record/current/dist/record.js';
+  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.js';
+
+  record({
+    emit(event) {
+      console.log(event);
+    },
+  });
+</script>
 ```
 
-也可以在 URL 中指定具体的版本号，例如：
+`current` 指向最新稳定版本；生产环境也可以固定到不可变的精确版本，例如
+`https://cdn.rrweb.com/record/2.0.0/dist/record.js` 和
+`https://cdn.rrweb.com/replay/2.0.0/dist/replay.js`。
+
+`rrweb-player` 也提供浏览器 ESM 资源：
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.14/dist/rrweb.umd.min.cjs"></script>
+<link
+  rel="stylesheet"
+  href="https://cdn.rrweb.com/rrweb-player/current/style.css"
+/>
+<script type="module">
+  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.js';
+</script>
 ```
 
-#### 仅引入录制部分
+### 3) 传统直接 `<script>` 引入（Legacy / UMD 兼容）
 
-rrweb 代码分为录制和回放两部分，大多数时候用户在被录制的应用中只需要引入录制部分代码。同样可以通过使用 @rrweb/record 包和 CDN 服务来实现：
+仅在不支持 ESM 的兼容场景中建议使用。
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@rrweb/record@latest/dist/record.umd.min.cjs"></script>
+<script src="https://cdn.rrweb.com/record/current/dist/record.umd.cjs"></script>
+<script src="https://cdn.rrweb.com/replay/current/dist/replay.umd.cjs"></script>
 ```
+
+这些 UMD 构建会暴露全局变量 `rrwebRecord` 和 `rrwebReplay`。现代浏览器推荐优先使用 CDN ESM 资源。
 
 #### 其他包
 
-除了 `rrweb` 和 `@rrweb/record` 包之外，rrweb 还提供了其他不同用途的包。
+除了 `@rrweb/record` 和 `@rrweb/replay` 包之外，rrweb 还提供了其他不同用途的包。
 
 - [rrweb](packages/rrweb)：rrweb 的核心包，包括录制和回放功能。
 - [rrweb-player](packages/rrweb-player)：rrweb 的图形用户界面，提供时间线和暂停、快进、加速等按钮。
 - [rrweb-snapshot](packages/rrweb-snapshot)：处理快照和重建功能，将 DOM 及其状态转换为可序列化的数据结构。
 - [rrdom](packages/rrdom)：rrweb 的虚拟 dom 包。
 - [rrdom-nodejs](packages/rrdom-nodejs)：用于服务器端 DOM 操作的 rrdom 的 Node.js 版本。
-- [@rrweb/all](packages/all)：一个包含 `rrweb` 和 `@rrweb/packer`，便于安装的包。
+- [@rrweb/all](packages/all)：一个包含 `rrweb` 和 `@rrweb/packer` 的便捷包。
 - [@rrweb/record](packages/record)：一个用于录制 rrweb 会话的包。
 - [@rrweb/replay](packages/replay)：一个用于回放 rrweb 会话的包。
 - [@rrweb/packer](packages/packer)：一个用于打包和解包 rrweb 数据的包。
@@ -53,14 +108,8 @@ rrweb 代码分为录制和回放两部分，大多数时候用户在被录制�
 - [@rrweb/rrweb-plugin-sequential-id-replay](packages/plugins/rrweb-plugin-sequential-id-replay)：一个用于回放顺序 ID 的插件。
 - [@rrweb/rrweb-plugin-canvas-webrtc-record](packages/plugins/rrweb-plugin-canvas-webrtc-record)：一个用于通过 WebRTC 流式传输 `<canvas>` 的插件。
 - [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay)：一个用于通过 WebRTC 播放流式 `<canvas>` 的插件。
-
-### 通过 npm 引入
-
-```shell
-npm install --save rrweb
-```
-
-rrweb 同时提供 commonJS 和 ES modules 两种格式的打包文件，易于和常见的打包工具配合使用。
+- [@rrweb/rrweb-plugin-network-record](packages/plugins/rrweb-plugin-network-record)：一个用于记录网络请求的插件 (xhr/fetch)。
+- [@rrweb/rrweb-plugin-network-replay](packages/plugins/rrweb-plugin-network-replay)：一个用于回放网络请求的插件 (xhr/fetch)。
 
 ### 兼容性
 
@@ -70,10 +119,14 @@ rrweb 同时提供 commonJS 和 ES modules 两种格式的打包文件，易于�
 
 ### 录制
 
-如果通过 `<script>` 的方式仅引入录制部分，那么可以访问到全局变量 `rrwebRecord`，它和全量引入时的 `rrweb.record` 使用方式完全一致，以下示例代码将使用后者。
+现代用法建议直接使用 `@rrweb/record` 的 `record`：
 
 ```js
-rrweb.record({
+import { record } from '@rrweb/record';
+```
+
+```js
+record({
   emit(event) {
     // 用任意方式存储 event
   },
@@ -85,7 +138,7 @@ rrweb 在录制时会不断将各类 event 传递给配置的 emit 方法，你�
 调用 `record` 方法将返回一个函数，调用该函数可以终止录制：
 
 ```js
-let stopFn = rrweb.record({
+let stopFn = record({
   emit(event) {
     if (events.length > 100) {
       // 当事件数量大于 100 时停止录制
@@ -98,9 +151,12 @@ let stopFn = rrweb.record({
 一个更接近实际真实使用场景的示例如下：
 
 ```js
+const publicApiKey = 'your-public-api-key-here';
+const recordingId = crypto.randomUUID();
+
 let events = [];
 
-rrweb.record({
+record({
   emit(event) {
     // 将 event 存入 events 数组中
     events.push(event);
@@ -111,9 +167,10 @@ rrweb.record({
 function save() {
   const body = JSON.stringify({ events });
   events = [];
-  fetch('http://YOUR_BACKEND_API', {
+  fetch(`https://api.rrweb.com/recordings/${recordingId}/events`, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${publicApiKey}`,
       'Content-Type': 'application/json',
     },
     body,
@@ -126,7 +183,7 @@ setInterval(save, 10 * 1000);
 
 #### 配置参数
 
-`rrweb.record(config)` 的 config 部分接受以下参数
+`record(config)` 的 config 部分接受以下参数
 
 | key                      | 默认值             | 功能                                                                                                                                                                                  |
 | ------------------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -144,7 +201,7 @@ setInterval(save, 10 * 1000);
 | maskInputFn              | -                  | 自定义特定类型的输入框内容记录逻辑                                                                                                                                                    |
 | maskTextFn               | -                  | 自定义文字内容的记录逻辑                                                                                                                                                              |
 | slimDOMOptions           | {}                 | 去除 DOM 中不必要的部分 <br />类型详见[列表](https://github.com/rrweb-io/rrweb/blob/588164aa12f1d94576f89ae0210b98f6e971c895/packages/rrweb-snapshot/src/types.ts#L97-L108)           |
-| inlineStylesheet         | true               | 是否将样式表内联                                                                                                                                                                      |
+| inlineStylesheet         | true               | 自 2.0.0 起弃用。2.0 中仍受支持，但计划由未来的 `captureAssets` 资源录制 API 取代。                                                                                                   |
 | hooks                    | {}                 | 各类事件的回调<br />类型详见[列表](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L207)                                                 |
 | packFn                   | -                  | 数据压缩函数，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                            |
 | sampling                 | -                  | 数据抽样策略，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                            |
@@ -152,10 +209,10 @@ setInterval(save, 10 * 1000);
 | recordCanvas             | false              | 是否记录 canvas 内容, 可用选项：`false`, `true`                                                                                                                                       |
 | recordCrossOriginIframes | false              | 是否记录 cross origin iframes。 必须在每个子 iframe 中注入 rrweb 才能使其工作。 可用选项：`false`, `true`                                                                             |
 | recordAfter              | 'load'             | 如果 document 还没有加载完成，recorder 将会在指定的事件触发后开始录制。可用选项： `DOMContentLoaded`, `load`                                                                          |
-| inlineImages             | false              | 是否将图片内容记内联录制                                                                                                                                                              |
+| inlineImages             | false              | 自 2.0.0 起弃用。2.0 中仍受支持，但计划由未来的 `captureAssets` 资源录制 API 取代。                                                                                                   |
 | collectFonts             | false              | 是否记录页面中的字体文件                                                                                                                                                              |
 | userTriggeredOnInput     | false              | [什么是 `userTriggered`](https://github.com/rrweb-io/rrweb/pull/495)                                                                                                                  |
-| plugins                  | []                 | 加载插件以获得额外的录制功能. [什么是插件？](./docs/recipes/plugin.zh_CN.md)                                                                                                          |
+| plugins                  | []                 | 加载插件以获得额外的录制功能. [什么是插件？](./docs/recipes/plugin-api.zh_CN.md)                                                                                                      |
 | errorHandler             | -                  | 一个可以定制化处理错误的回调函数，它的参数是错误对象。如果 rrweb recorder 内部的某些内容抛出错误，则会调用该回调。                                                                    |
 
 #### 隐私
@@ -175,10 +232,13 @@ setInterval(save, 10 * 1000);
 **多数时候你不必这样配置**。但比如在页面错误发生时，你只想捕获最近的几次 event ，这里有一个例子：
 
 ```js
+const publicApiKey = 'your-public-api-key-here';
+const recordingId = crypto.randomUUID();
+
 // 使用二维数组来存放多个 event 数组
 const eventsMatrix = [[]];
 
-rrweb.record({
+record({
   emit(event, isCheckout) {
     // isCheckout 是一个标识，告诉你重新制作了快照
     if (isCheckout) {
@@ -195,9 +255,10 @@ window.onerror = function () {
   const len = eventsMatrix.length;
   const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
   const body = JSON.stringify({ events });
-  fetch('http://YOUR_BACKEND_API', {
+  fetch(`https://api.rrweb.com/recordings/${recordingId}/events`, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${publicApiKey}`,
       'Content-Type': 'application/json',
     },
     body,
@@ -210,10 +271,13 @@ window.onerror = function () {
 类似的，你可以通过配置 `checkoutEveryNms` 来捕获最近指定时间的 event :
 
 ```js
+const publicApiKey = 'your-public-api-key-here';
+const recordingId = crypto.randomUUID();
+
 // 使用二维数组来存放多个 event 数组
 const eventsMatrix = [[]];
 
-rrweb.record({
+record({
   emit(event, isCheckout) {
     // isCheckout 是一个标识，告诉你重新制作了快照
     if (isCheckout) {
@@ -230,9 +294,10 @@ window.onerror = function () {
   const len = eventsMatrix.length;
   const events = eventsMatrix[len - 2].concat(eventsMatrix[len - 1]);
   const body = JSON.stringify({ events });
-  fetch('http://YOUR_BACKEND_API', {
+  fetch(`https://api.rrweb.com/recordings/${recordingId}/events`, {
     method: 'POST',
     headers: {
+      Authorization: `Bearer ${publicApiKey}`,
       'Content-Type': 'application/json',
     },
     body,
@@ -244,28 +309,33 @@ window.onerror = function () {
 
 ### 回放
 
-回放时需要引入对应的 CSS 文件：
+在 bundler 场景下，可在入口文件中引入 CSS：
+
+```js
+import '@rrweb/replay/dist/style.css';
+```
+
+在浏览器 no-build 场景下，可以引入 CSS 并从 CDN 导入 replayer：
 
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/style.css"
+  href="https://cdn.rrweb.com/replay/current/dist/style.css"
 />
-```
+<script type="module">
+  import { Replayer } from 'https://cdn.rrweb.com/replay/current/dist/replay.js';
 
-再通过以下 JS 代码初始化 replayer：
+  const events = YOUR_EVENTS;
 
-```js
-const events = YOUR_EVENTS;
-
-const replayer = new rrweb.Replayer(events);
-replayer.play();
+  const replayer = new Replayer(events);
+  replayer.play();
+</script>
 ```
 
 #### 使用 API 控制回放
 
 ```js
-const replayer = new rrweb.Replayer(events);
+const replayer = new Replayer(events);
 
 // 播放
 replayer.play();
@@ -285,7 +355,7 @@ replayer.destroy();
 
 #### 配置参数
 
-可以通过 `new rrweb.Replayer(events, options)` 的方式向 rrweb 传递回放时的配置参数，具体配置如下：
+可以通过 `new Replayer(events, options)` 的方式向 rrweb 传递回放时的配置参数，具体配置如下：
 
 | key                 | 默认值        | 功能                                                                                                                                                                                                 |
 | ------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -299,11 +369,11 @@ replayer.destroy();
 | liveMode            | false         | 是否开启直播模式                                                                                                                                                                                     |
 | insertStyleRules    | []            | 可以传入多个 CSS rule string，用于自定义回放时 iframe 内的样式                                                                                                                                       |
 | triggerFocus        | true          | 回放时是否回放 focus 交互                                                                                                                                                                            |
-| UNSAFE_replayCanvas | false         | 回放时是否回放 canvas 内容，**开启后将会关闭沙盒策略，导致一定风险**                                                                                                                                 |
+| UNSAFE_replayCanvas | false         | 回放时是否回放 canvas 内容，**开启后会向回放 iframe 添加 `allow-scripts`，并退出沙盒的脚本执行保护。仅在你接受该风险的回放数据上使用。**                                                             |
 | pauseAnimation      | true          | 当播放器停止播放时，是否将 CSS 动画也停止播放                                                                                                                                                        |
 | mouseTail           | true          | 是否在回放时增加鼠标轨迹。传入 false 可关闭，传入对象可以定制轨迹持续时间、样式等，配置详见[类型](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
 | unpackFn            | -             | 数据解压缩函数，详见[优化存储策略](./docs/recipes/optimize-storage.zh_CN.md)                                                                                                                         |
-| plugins             | []            | 加载插件以获得额外的回放功能. [什么是插件？](./docs/recipes/plugin.zh_CN.md)                                                                                                                         |
+| plugins             | []            | 加载插件以获得额外的回放功能. [什么是插件？](./docs/recipes/plugin-api.zh_CN.md)                                                                                                                     |
 | useVirtualDom       | true          | 在播放器跳转到一个新的时间点的过程中，是否使用 Virtual Dom 优化                                                                                                                                      |
 | logger              | console       | 当播放器出现警告或错误时用来打印日志的对象                                                                                                                                                           |
 
@@ -313,25 +383,37 @@ rrweb 自带的回放只提供所有的 JS API 以及最基本的 UI，如果需
 
 ##### 安装
 
-rrweb-player 同样可以使用 CDN 方式安装：
-
-```html
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css"
-/>
-<script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/index.js"></script>
-```
-
-或者通过 npm 安装：
+Bundler / npm（推荐）：
 
 ```shell
-npm install --save rrweb-player
+npm install rrweb-player
 ```
 
 ```js
 import rrwebPlayer from 'rrweb-player';
 import 'rrweb-player/dist/style.css';
+```
+
+无 bundler 的浏览器场景（ESM）：
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.rrweb.com/rrweb-player/current/style.css"
+/>
+<script type="module">
+  import rrwebPlayer from 'https://cdn.rrweb.com/rrweb-player/current/rrweb-player.js';
+</script>
+```
+
+Legacy 直接 `<script>` 引入（UMD 兼容）：
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.rrweb.com/rrweb-player/current/style.css"
+/>
+<script src="https://cdn.rrweb.com/rrweb-player/current/rrweb-player.umd.cjs"></script>
 ```
 
 ##### 使用
@@ -359,16 +441,16 @@ new rrwebPlayer({
 | speedOption    | [1, 2, 4, 8] | 倍速播放可选值                                        |
 | showController | true         | 是否显示播放器控制 UI                                 |
 | tags           | {}           | 可以以 key value 的形式展示自定义事件在时间轴上的颜色 |
-| ...            | -            | 其它所有 rrweb Replayer 的配置参数均可透传            |
+| ...            | -            | 其它所有 Replayer 的配置参数均可透传                  |
 
 #### 事件
 
 开发者可能希望监听回放时的各类事件，例如在跳过无用户操作的时间时给用户一些提示。
 
-rrweb 的 Replayer 提供了 `on` API 用于提供该功能
+Replayer 提供了 `on` API 用于实现该功能
 
 ```js
-const replayer = new rrweb.Replayer(events);
+const replayer = new Replayer(events);
 replayer.on(EVENT_NAME, (payload) => {
   ...
 })
@@ -407,13 +489,13 @@ replayer.on(EVENT_NAME, (payload) => {
 运行 `yarn repl`，将会启动浏览器并在命令行要求输入一个测试的 url：
 
 ```
-Enter the url you want to record, e.g https://react-redux.realworld.io:
+Enter the url you want to record, e.g https://example.com:
 ```
 
 输入后等待浏览器打开指定页面，并在命令行中出现以下提示信息：
 
 ```
-Enter the url you want to record, e.g https://react-redux.realworld.io: https://github.com
+Enter the url you want to record, e.g https://example.com: https://github.com
 Going to open https://github.com...
 Ready to record. You can do any interaction on the page.
 Once you want to finish the recording, enter 'y' to start replay:

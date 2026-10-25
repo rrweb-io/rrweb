@@ -60,7 +60,7 @@ export const startServer = (defaultPort = 3030) =>
 
       let pathname = path.join(__dirname, sanitizePath);
       if (/^\/rrweb.*\.c?js.*/.test(sanitizePath)) {
-        pathname = path.join(__dirname, `../dist/main`, sanitizePath);
+        pathname = path.join(__dirname, `../dist`, sanitizePath);
       }
 
       try {
@@ -319,14 +319,15 @@ export async function assertSnapshot(
   }
 
   expect(snapshots).toBeDefined();
+
   if (useOwnFile) {
     // e.g. 'mutation.test.ts > mutation > add elements at once'
-    const long_fname = expect.getState().currentTestName.split('/').pop();
-    const file = long_fname.split(' > ')[0].replace('.test.ts', '');
+    const longFname = expect.getState().currentTestName.split('/').pop();
+    const file = longFname.split(' > ')[0].replace('.test.ts', '');
     if (typeof useOwnFile !== 'string') {
-      useOwnFile = long_fname.substring(long_fname.indexOf(' > ') + 3);
+      useOwnFile = longFname.substring(longFname.indexOf(' > ') + 3);
     }
-    useOwnFile = useOwnFile.replace(/ > /g, '.').replace(/\s/g, '_');
+    useOwnFile = useOwnFile.replace(/ > /g, '.').replace(/\s/g, '-');
 
     const fname = `./__${file}.snapshots__/${useOwnFile}.json`;
     expect(stringifySnapshots(snapshots)).toMatchFileSnapshot(fname);
@@ -740,9 +741,11 @@ export const polyfillWebGLGlobals = () => {
   global.WebGL2RenderingContext = WebGL2RenderingContext as any;
 };
 
-export async function waitForRAF(
-  pageOrFrame: puppeteer.Page | puppeteer.Frame,
-) {
+interface PageOrFrameWithEvaluate {
+  evaluate<T>(pageFunction: () => T | Promise<T>): Promise<T>;
+}
+
+export async function waitForRAF(pageOrFrame: PageOrFrameWithEvaluate) {
   return await pageOrFrame.evaluate(() => {
     return new Promise((resolve) => {
       requestAnimationFrame(() => {

@@ -9,5 +9,11 @@ export default {
       escapeString: true,
       printBasicPrototype: true,
     },
+    /**
+     * Use forks instead of threads for Vite 6 compatibility
+     * Vite 6 has issues with worker threads not cleaning up properly
+     * causing tests to hang indefinitely
+     */
+    pool: 'forks',
   },
 };

@@ -1,0 +1,53 @@
+name: ESLint Check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  eslint_check_upload:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    name: ESLint Check and Report Upload
+
+    steps:
+      - name: Checkout pull request head
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Checkout current branch
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: lts/*
+          cache: 'yarn'
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
+      - name: Build Packages
+        run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
+      - name: Eslint Check
+        run: yarn turbo run lint
+      - name: Publish package previews
+        if: github.event_name == 'pull_request'
+        run: yarn pkg-pr-new publish './packages/*' './packages/plugins/*' --previewVersion --no-template --commentWithSha --no-compact
+      - name: Save Code Linting Report JSON
+        run: yarn lint:report
+        # Continue to the next step even if this fails
+        continue-on-error: true
+      - name: Upload ESLint Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint_report.json
+          path: eslint_report.json
