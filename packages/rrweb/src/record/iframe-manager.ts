@@ -11,8 +11,11 @@ import type {
   eventWithoutTime,
   serializedNodeWithId,
   mutationCallBack,
+  listenerHandler,
+  IWindow,
 } from '@rrweb/types';
 import type { StylesheetManager } from './stylesheet-manager';
+import { on } from '../utils';
 
 export class IframeManager {
   private iframes: WeakMap<HTMLIFrameElement, true> = new WeakMap();
@@ -26,11 +29,14 @@ export class IframeManager {
   private mutationCb: mutationCallBack;
   private wrappedEmit: (e: eventWithoutTime, isCheckout?: boolean) => void;
   private loadListener?: (iframeEl: HTMLIFrameElement) => unknown;
-  private pageHideListener?: (iframeEl: HTMLIFrameElement) => unknown;
+  private unloadListener?: (doc: Document) => unknown;
+  // Windows of attached same-origin iframes, with the handler that stops listening to them.
+  private attachedWindows: Map<Window, listenerHandler> = new Map();
+  // One handler for all windows, so that attaching an iframe again (e.g. on every full snapshot) doesn't add another.
+  private messageHandler = (message: Event) =>
+    this.handleMessage(message as MessageEvent);
   private stylesheetManager: StylesheetManager;
   private recordCrossOriginIframes: boolean;
-  private messageHandler = this.handleMessage.bind(this);
-  private messageListenerWindows: Set<Window> = new Set();
 
   constructor(options: {
     mirror: Mirror;
@@ -50,7 +56,7 @@ export class IframeManager {
     );
     this.mirror = options.mirror;
     if (this.recordCrossOriginIframes) {
-      this.addMessageListener(window);
+      window.addEventListener('message', this.messageHandler);
     }
   }
 
@@ -78,33 +84,12 @@ export class IframeManager {
     iframeEl.contentWindow.postMessage(message, '*');
   }
 
-  /**
-   * Stops handling messages from cross-origin iframes, so a stopped recording
-   * no longer emits their events.
-   */
-  public destroy() {
-    this.messageListenerWindows.forEach((win) => {
-      try {
-        win.removeEventListener('message', this.messageHandler);
-      } catch (error) {
-        // The iframe may have navigated to another origin since.
-      }
-    });
-    this.messageListenerWindows.clear();
-  }
-
-  private addMessageListener(win: Window) {
-    if (this.messageListenerWindows.has(win)) return;
-    win.addEventListener('message', this.messageHandler);
-    this.messageListenerWindows.add(win);
-  }
-
   public addLoadListener(cb: (iframeEl: HTMLIFrameElement) => unknown) {
     this.loadListener = cb;
   }
 
-  public addPageHideListener(cb: (iframeEl: HTMLIFrameElement) => unknown) {
-    this.pageHideListener = cb;
+  public addUnloadListener(cb: (doc: Document) => unknown) {
+    this.unloadListener = cb;
   }
 
   public attachIframe(
@@ -125,15 +110,8 @@ export class IframeManager {
       isAttachIframe: true,
     });
 
-    // Receive messages (events) coming from cross-origin iframes that are nested in this same-origin iframe.
-    if (this.recordCrossOriginIframes && iframeEl.contentWindow)
-      this.addMessageListener(iframeEl.contentWindow);
+    this.watchIframeWindow(iframeEl);
 
-    iframeEl.contentWindow?.addEventListener('pagehide', () => {
-      this.pageHideListener?.(iframeEl);
-      this.mirror.removeNodeFromMap(iframeEl.contentDocument!);
-      this.crossOriginIframeMap.delete(iframeEl.contentWindow!);
-    });
     this.loadListener?.(iframeEl);
 
     if (
@@ -146,6 +124,47 @@ export class IframeManager {
         this.mirror.getId(iframeEl.contentDocument),
       );
   }
+
+  public destroy() {
+    window.removeEventListener('message', this.messageHandler);
+    this.attachedWindows.forEach((stop) => stop());
+  }
+
+  private watchIframeWindow(iframeEl: HTMLIFrameElement) {
+    const win = iframeEl.contentWindow as IWindow | null;
+    if (!win || this.attachedWindows.has(win)) return;
+    const handlers: listenerHandler[] = [];
+    const stop = () => {
+      this.attachedWindows.delete(win);
+      handlers.forEach((handler) => {
+        try {
+          handler();
+        } catch {
+          // the iframe may have navigated to a cross-origin page by now
+        }
+      });
+    };
+    this.attachedWindows.set(win, stop);
+
+    // Receive messages (events) coming from cross-origin iframes that are nested in this same-origin iframe.
+    if (this.recordCrossOriginIframes) {
+      handlers.push(on('message', this.messageHandler, win));
+    }
+    handlers.push(
+      on(
+        'pagehide',
+        (event) => {
+          // A persisted page is kept in the back/forward cache and may be shown again.
+          if ((event as PageTransitionEvent).persisted) return;
+          const doc = win.document;
+          stop();
+          this.unloadListener?.(doc);
+        },
+        win,
+      ),
+    );
+  }
+
   private handleMessage(message: MessageEvent | CrossOriginIframeMessageEvent) {
     const crossOriginMessageEvent = message as CrossOriginIframeMessageEvent;
     if (
