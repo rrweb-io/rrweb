@@ -92,6 +92,23 @@ jobs:
         run: yarn build
         working-directory: packages/rrweb-snapshot
 
+      - name: Verify container has the WebKit build this Playwright expects
+        working-directory: packages/rrweb-snapshot
+        run: |
+          node -e '
+            const { webkit } = require("playwright");
+            const fs = require("fs");
+            const p = webkit.executablePath();
+            if (!fs.existsSync(p)) {
+              const v = require("playwright/package.json").version;
+              console.error("::error::Playwright " + v + " expects WebKit at " + p +
+                ", which is not in this container image. Bump the " +
+                "mcr.microsoft.com/playwright image tag in this workflow to match.");
+              process.exit(1);
+            }
+            console.log("WebKit OK:", p);
+          '
+
       - name: Run rrweb-snapshot WebKit tests
         run: BROWSER=webkit yarn workspace rrweb-snapshot vitest run --config vitest.config.webkit.ts
 
