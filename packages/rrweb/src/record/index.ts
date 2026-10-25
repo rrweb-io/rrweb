@@ -208,7 +208,7 @@ function record<T = eventWithTime>(
       // to apply all DOM changes that have been buffering during paused state
       canvasManager.unfreeze();
       for (const buf of mutationBuffers) {
-         buf.unfreeze(e.timestamp);
+        buf.unfreeze(e.timestamp);
       }
       frozen = false;
     }
