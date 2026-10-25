@@ -14,6 +14,8 @@
 
 这与我们的预期是相符的，尤其是对 JS 脚本的处理相比自行实现会更加安全、可靠。
 
+`rrweb-snapshot.rebuild()` 会在浏览器环境中强制执行这一边界。浏览器重建应使用 `rebuildIntoSandboxedIframe()`，或使用由 `createSandboxedIframe()` 创建的 iframe；它们会先创建精确设置为 `sandbox="allow-same-origin"` 的 iframe，再在其中重建。直接对调用方创建的浏览器文档调用 `rebuild()` 时，必须通过 `UNSAFE_allowUnprotectedRebuild: true` 显式选择不受保护的重建。
+
 ## 避免链接跳转
 
 当点击 a 元素链接时默认事件为跳转至它的 href 属性对应的 URL。在重放时我们会通过重建跳转后页面 DOM 的方式保证视觉上的正确重放，而原本的跳转则应该被禁止执行。

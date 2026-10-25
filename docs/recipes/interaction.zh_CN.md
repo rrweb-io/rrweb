@@ -3,7 +3,9 @@
 回放时的 UI 默认不可交互，但在特定场景下也可以通过 API 允许用户与回放场景进行交互。
 
 ```js
-const replayer = new rrweb.Replayer(events);
+import { Replayer } from '@rrweb/replay';
+
+const replayer = new Replayer(events);
 
 // 允许用户在回放的 UI 中进行交互
 replayer.enableInteract();

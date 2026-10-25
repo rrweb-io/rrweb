@@ -1,7 +1,7 @@
 import {
   snapshot,
+  slimDOMDefaults,
   type MaskInputOptions,
-  type SlimDOMOptions,
   createMirror,
 } from 'rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
@@ -19,6 +19,7 @@ import {
 import type { recordOptions } from '../types';
 import {
   EventType,
+  type annotationData,
   type eventWithoutTime,
   type eventWithTime,
   IncrementalSource,
@@ -160,26 +161,7 @@ function record<T = eventWithTime>(
       ? _maskInputOptions
       : { password: true };
 
-  const slimDOMOptions: SlimDOMOptions =
-    _slimDOMOptions === true || _slimDOMOptions === 'all'
-      ? {
-          script: true,
-          comment: true,
-          headFavicon: true,
-          headWhitespace: true,
-          headMetaSocial: true,
-          headMetaRobots: true,
-          headMetaHttpEquiv: true,
-          headMetaVerification: true,
-          // the following are off for slimDOMOptions === true,
-          // as they destroy some (hidden) info:
-          headMetaAuthorship: _slimDOMOptions === 'all',
-          headMetaDescKeywords: _slimDOMOptions === 'all',
-          headTitleMutations: _slimDOMOptions === 'all',
-        }
-      : _slimDOMOptions
-      ? _slimDOMOptions
-      : {};
+  const slimDOMOptions = slimDOMDefaults(_slimDOMOptions);
 
   polyfill();
 
@@ -205,16 +187,22 @@ function record<T = eventWithTime>(
     const e = r as eventWithTime;
     e.timestamp = nowTimestamp();
     if (
-      mutationBuffers[0]?.isFrozen() &&
       e.type !== EventType.FullSnapshot &&
       !(
         e.type === EventType.IncrementalSnapshot &&
         e.data.source === IncrementalSource.Mutation
       )
     ) {
-      // we've got a user initiated event so first we need to apply
-      // all DOM changes that have been buffering during paused state
-      mutationBuffers.forEach((buf) => buf.unfreeze());
+      // we've got a user initiated event so if we've been frozen we first need
+      // to apply all DOM changes that have been buffering during paused state
+      canvasManager.unfreeze();
+      for (const buf of mutationBuffers) {
+        if (buf.isFrozen()) {
+          buf.unfreeze();
+        } else {
+          break; // just need to check one as they all get frozen together
+        }
+      }
     }
 
     if (inEmittingFrame) {
@@ -374,6 +362,7 @@ function record<T = eventWithTime>(
 
     shadowDomManager.init();
 
+    canvasManager.lock();
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
       mirror,
@@ -425,6 +414,7 @@ function record<T = eventWithTime>(
       },
       isCheckout,
     );
+    canvasManager.unlock();
     mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
 
     // Some old browsers don't support adoptedStyleSheets.
@@ -573,13 +563,26 @@ function record<T = eventWithTime>(
       );
     };
 
+    // Observers of same-origin iframe documents, stopped when the document unloads.
+    const iframeObservers = new Map<Document, listenerHandler>();
     iframeManager.addLoadListener((iframeEl) => {
       try {
-        handlers.push(observe(iframeEl.contentDocument!));
+        const doc = iframeEl.contentDocument!;
+        // Iframes are attached again on every full snapshot, but each document needs to be observed only once.
+        if (iframeObservers.has(doc)) return;
+        iframeObservers.set(doc, observe(doc));
       } catch (error) {
         // TODO: handle internal error
         console.warn(error);
       }
+    });
+    iframeManager.addUnloadListener((doc) => {
+      const stopObserving = iframeObservers.get(doc);
+      if (!stopObserving) return;
+      iframeObservers.delete(doc);
+      stopObserving();
+      shadowDomManager.removeShadowRootsIn(doc);
+      mirror.removeNodeFromMap(doc);
     });
 
     const init = () => {
@@ -587,10 +590,7 @@ function record<T = eventWithTime>(
       handlers.push(observe(document));
       recording = true;
     };
-    if (
-      document.readyState === 'interactive' ||
-      document.readyState === 'complete'
-    ) {
+    if (['interactive', 'complete'].includes(document.readyState)) {
       init();
     } else {
       handlers.push(
@@ -617,8 +617,30 @@ function record<T = eventWithTime>(
       );
     }
     return () => {
-      handlers.forEach((h) => h());
+      [...handlers, ...iframeObservers.values()].forEach((handler) => {
+        try {
+          handler();
+        } catch (error) {
+          const msg = String(error).toLowerCase();
+          /**
+           * https://github.com/rrweb-io/rrweb/pull/1695
+           * This error can occur in a known scenario:
+           * If an iframe is initially same-origin and observed, but later its 
+           location is changed in an opaque way to a cross-origin URL (perhaps within the iframe via its `document.location` or a redirect) 
+           * attempting to execute the handler in the stop record function will 
+           throw a "cannot access cross-origin frame" error.
+           * This error is expected and can be safely ignored.
+           */
+          if (!msg.includes('cross-origin')) {
+            console.warn(error);
+          }
+        }
+      });
+      iframeObservers.clear();
+      iframeManager.destroy();
       processedNodeManager.destroy();
+      shadowDomManager.reset();
+      canvasManager.reset();
       recording = false;
       unregisterErrorHandler();
     };
@@ -641,7 +663,15 @@ record.addCustomEvent = <T>(tag: string, payload: T) => {
   });
 };
 
+record.addAnnotation = (annotation: annotationData) => {
+  if (!recording) {
+    throw new Error('please add annotation after recording started');
+  }
+  wrappedEmit({ type: EventType.Annotation, data: annotation });
+};
+
 record.freezePage = () => {
+  canvasManager.freeze();
   mutationBuffers.forEach((buf) => buf.freeze());
 };
 
