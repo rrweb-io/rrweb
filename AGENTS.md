@@ -20,7 +20,7 @@ that you are adding to cover the same section of code. This has longer
 durability than the codebase which may be refactored so long as the test case
 still holds. Comments and explanations record a point in time and are better
 suited to the **commit message**, especially the motivations for the change i.e.
-the non-obvious *why*.
+the non-obvious _why_.
 
 Keep a comment when you are editing one that already exists, move it with the
 code it is attached to when you are refactoring. When you edit code with an
@@ -31,7 +31,7 @@ comments out.
 
 ## Before starting work on a new PR
 
-Search for an existing pull request *before* you start — someone may already be
+Search for an existing pull request _before_ you start — someone may already be
 proposing the same fix or feature, and checking first avoids duplicated work.
 
 - Check open PRs: `gh pr list --search "<keywords>"`, or search
