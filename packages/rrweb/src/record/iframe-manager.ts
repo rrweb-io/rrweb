@@ -8,8 +8,11 @@ import type {
   eventWithoutTime,
   serializedNodeWithId,
   mutationCallBack,
+  listenerHandler,
+  IWindow,
 } from '@rrweb/types';
 import type { StylesheetManager } from './stylesheet-manager';
+import { on } from '../utils';
 
 export class IframeManager {
   private iframes: WeakMap<HTMLIFrameElement, true> = new WeakMap();
@@ -23,6 +26,12 @@ export class IframeManager {
   private mutationCb: mutationCallBack;
   private wrappedEmit: (e: eventWithoutTime, isCheckout?: boolean) => void;
   private loadListener?: (iframeEl: HTMLIFrameElement) => unknown;
+  private unloadListener?: (doc: Document) => unknown;
+  // Windows of attached same-origin iframes, with the handler that stops listening to them.
+  private attachedWindows: Map<Window, listenerHandler> = new Map();
+  // One handler for all windows, so that attaching an iframe again (e.g. on every full snapshot) doesn't add another.
+  private messageHandler = (message: Event) =>
+    this.handleMessage(message as MessageEvent);
   private stylesheetManager: StylesheetManager;
   private recordCrossOriginIframes: boolean;
 
@@ -44,7 +53,7 @@ export class IframeManager {
     );
     this.mirror = options.mirror;
     if (this.recordCrossOriginIframes) {
-      window.addEventListener('message', this.handleMessage.bind(this));
+      window.addEventListener('message', this.messageHandler);
     }
   }
 
@@ -56,6 +65,10 @@ export class IframeManager {
 
   public addLoadListener(cb: (iframeEl: HTMLIFrameElement) => unknown) {
     this.loadListener = cb;
+  }
+
+  public addUnloadListener(cb: (doc: Document) => unknown) {
+    this.unloadListener = cb;
   }
 
   public attachIframe(
@@ -76,12 +89,7 @@ export class IframeManager {
       isAttachIframe: true,
     });
 
-    // Receive messages (events) coming from cross-origin iframes that are nested in this same-origin iframe.
-    if (this.recordCrossOriginIframes)
-      iframeEl.contentWindow?.addEventListener(
-        'message',
-        this.handleMessage.bind(this),
-      );
+    this.watchIframeWindow(iframeEl);
 
     this.loadListener?.(iframeEl);
 
@@ -95,6 +103,47 @@ export class IframeManager {
         this.mirror.getId(iframeEl.contentDocument),
       );
   }
+
+  public destroy() {
+    window.removeEventListener('message', this.messageHandler);
+    this.attachedWindows.forEach((stop) => stop());
+  }
+
+  private watchIframeWindow(iframeEl: HTMLIFrameElement) {
+    const win = iframeEl.contentWindow as IWindow | null;
+    if (!win || this.attachedWindows.has(win)) return;
+    const handlers: listenerHandler[] = [];
+    const stop = () => {
+      this.attachedWindows.delete(win);
+      handlers.forEach((handler) => {
+        try {
+          handler();
+        } catch {
+          // the iframe may have navigated to a cross-origin page by now
+        }
+      });
+    };
+    this.attachedWindows.set(win, stop);
+
+    // Receive messages (events) coming from cross-origin iframes that are nested in this same-origin iframe.
+    if (this.recordCrossOriginIframes) {
+      handlers.push(on('message', this.messageHandler, win));
+    }
+    handlers.push(
+      on(
+        'pagehide',
+        (event) => {
+          // A persisted page is kept in the back/forward cache and may be shown again.
+          if ((event as PageTransitionEvent).persisted) return;
+          const doc = win.document;
+          stop();
+          this.unloadListener?.(doc);
+        },
+        win,
+      ),
+    );
+  }
+
   private handleMessage(message: MessageEvent | CrossOriginIframeMessageEvent) {
     const crossOriginMessageEvent = message as CrossOriginIframeMessageEvent;
     if (
