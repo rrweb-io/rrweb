@@ -1040,8 +1040,7 @@ function initMediaInteractionObserver({
         ) {
           return;
         }
-        const { currentTime, volume, muted, playbackRate, loop } =
-          target as HTMLMediaElement;
+        const { currentTime, volume, muted, playbackRate, loop } = target;
         mediaInteractionCb({
           type,
           id: mirror.getId(target as Node),
