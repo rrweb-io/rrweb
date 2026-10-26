@@ -4,4 +4,4 @@
 "@rrweb/replay": patch
 ---
 
-Safer Media play/pause when target is not in fact a MediaElement
+Don't record play/pause/seek etc. against elements that aren't Media Elements and make the player safe (try/catch) against attempts to do so on old recordings.
