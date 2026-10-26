@@ -1,5 +1,18 @@
 # @rrweb/record
 
+## 2.2.1
+
+### Patch Changes
+
+- [#1673](https://github.com/rrweb-io/rrweb/pull/1673) [`339683f`](https://github.com/rrweb-io/rrweb/commit/339683f34bf2dd5df2e7cc18fe59fb924b65661b) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Don't record play/pause/seek etc. against elements that aren't Media Elements and make the player safe (try/catch) against attempts to do so on old recordings.
+
+- [#1633](https://github.com/rrweb-io/rrweb/pull/1633) [`2bc4f89`](https://github.com/rrweb-io/rrweb/commit/2bc4f89beb7f99a987817703031e3a15c75d0c10) Thanks [@pauldambra](https://github.com/pauldambra)! - AngularJS: Load unpatched versions of browser APIs from the `zone` object when present (Angular monkeypatches them), so we don't need to apply our own monkeypatch avoidance mechanism.
+
+- Updated dependencies [[`339683f`](https://github.com/rrweb-io/rrweb/commit/339683f34bf2dd5df2e7cc18fe59fb924b65661b), [`2bc4f89`](https://github.com/rrweb-io/rrweb/commit/2bc4f89beb7f99a987817703031e3a15c75d0c10)]:
+  - rrweb@2.2.1
+  - @rrweb/utils@2.2.1
+  - @rrweb/types@2.2.1
+
 ## 2.2.0
 
 ### Minor Changes
