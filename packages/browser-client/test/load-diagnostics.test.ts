@@ -16,6 +16,10 @@ type MockState = {
   buffers: QueueLike[];
   lastRecordOptions?: Record<string, unknown>;
   lastWebsocketUrl?: string;
+  socket?: {
+    send: ReturnType<typeof vi.fn>;
+    fire(name: string, data?: string): void;
+  };
   addAnnotation: ReturnType<typeof vi.fn>;
   addCustomEvent: ReturnType<typeof vi.fn>;
   send: ReturnType<typeof vi.fn>;
@@ -60,6 +64,12 @@ vi.mock('@rrweb/record', () => {
 vi.mock('websocket-ts', () => {
   class ArrayQueue {
     items: string[] = [];
+    constructor() {
+      mockState.buffers.push(this);
+    }
+    peek() {
+      return this.items[0];
+    }
     add(value: string) {
       this.items.push(value);
     }
@@ -82,15 +92,28 @@ vi.mock('websocket-ts', () => {
   }
 
   class Websocket {
-    send = mockState.send;
+    send = vi.fn((value: string) => mockState.send(value));
+    bufferedAmount = 0;
     close = vi.fn();
-    addEventListener = vi.fn();
+    private listeners = new Map<
+      string,
+      Array<(socket: Websocket, event: { data?: string }) => void>
+    >();
+    addEventListener(
+      name: string,
+      listener: (socket: Websocket, event: { data?: string }) => void,
+    ) {
+      this.listeners.set(name, [...(this.listeners.get(name) ?? []), listener]);
+    }
+    fire(name: string, data?: string) {
+      this.listeners.get(name)?.forEach((listener) => listener(this, { data }));
+    }
   }
 
   class WebsocketBuilder {
     constructor(private readonly url: string) {}
     withBuffer(buffer: QueueLike) {
-      mockState.buffers.push(buffer);
+      void buffer;
       return this;
     }
     withBackoff() {
@@ -98,7 +121,9 @@ vi.mock('websocket-ts', () => {
     }
     build() {
       mockState.lastWebsocketUrl = this.url;
-      return new Websocket();
+      const socket = new Websocket();
+      mockState.socket = socket;
+      return socket;
     }
   }
 
@@ -129,13 +154,17 @@ function setCurrentScript(script: HTMLScriptElement | null) {
   });
 }
 
+let currentClient: typeof import('../src/index') | undefined;
+
 async function importFreshClient() {
   vi.resetModules();
   mockState.buffers = [];
   mockState.lastRecordOptions = undefined;
   mockState.lastWebsocketUrl = undefined;
+  mockState.socket = undefined;
   mockState.timestamp = 100;
-  return await import('../src/index');
+  currentClient = await import('../src/index');
+  return currentClient;
 }
 
 function latestRecordingMetaPayload(): Record<string, unknown> {
@@ -174,17 +203,39 @@ function expectBrowserClientDiagnostics(
 }
 
 beforeEach(() => {
+  vi.useFakeTimers();
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => new Response(null, { status: 202 })),
+  );
   sessionStorage.clear();
   document.body.innerHTML = '';
   setCurrentScript(null);
   window.history.replaceState({}, '', 'http://localhost/');
 });
 
-afterEach(() => {
+afterEach(async () => {
+  currentClient?.stop(false);
+  currentClient = undefined;
+  await vi.advanceTimersByTimeAsync(0);
+  vi.clearAllTimers();
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
   vi.clearAllMocks();
 });
 
 describe('@rrweb/browser-client load diagnostics', () => {
+  it('bounds custom events and annotations queued before recording starts', async () => {
+    const client = await importFreshClient();
+    client.addCustomEvent('too-large', 'x'.repeat(5 * 1024 * 1024));
+    for (let i = 0; i < 10; i++)
+      client.addAnnotation({ type: 'caption', text: 'later' });
+    client.start({ publicApiKey: 'synthetic' });
+    await vi.advanceTimersByTimeAsync(120000);
+    expect(fetch).not.toHaveBeenCalled();
+    expect(mockState.socket).toBeUndefined();
+  });
+
   it('emits annotations immediately while recording', async () => {
     const client = await importFreshClient();
     const annotation = { type: 'caption', text: 'Save the project' } as const;
@@ -252,15 +303,12 @@ describe('@rrweb/browser-client load diagnostics', () => {
           .filter((event) => event.type !== EventType.Meta),
       ).toEqual(expected);
       expect(
-        mockState.send.mock.calls
-          .map(([event]) => JSON.parse(event))
-          .filter((event) => event.type !== EventType.Meta),
+        mockState.buffers[0].items.slice(2).map((event) => JSON.parse(event)),
       ).toEqual(expected);
       expect(mockState.addAnnotation).not.toHaveBeenCalled();
       expect(mockState.addCustomEvent).not.toHaveBeenCalled();
-      expect(
-        mockState.buffers[0].items.map((item) => JSON.parse(item).data.tag),
-      ).toEqual(['recording-meta']);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(mockState.buffers[0].length()).toBe(0);
       client.stop(false);
       delete (window as unknown as Record<string, unknown>).queuedEventEmit;
     },
@@ -292,7 +340,8 @@ describe('@rrweb/browser-client load diagnostics', () => {
       EventType.Custom,
       EventType.Annotation,
     ]);
-    expect(mockState.send).toHaveBeenCalledTimes(3);
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(mockState.buffers.at(-1)!.length()).toBe(0);
     client.stop(false);
   });
 
@@ -440,8 +489,6 @@ describe('@rrweb/browser-client load diagnostics', () => {
 
 describe('@rrweb/browser-client HTTP fallback batching', () => {
   afterEach(() => {
-    vi.useRealTimers();
-    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
@@ -476,10 +523,7 @@ describe('@rrweb/browser-client HTTP fallback batching', () => {
           .split('\n')
           .map((event) => JSON.parse(event).id),
       ),
-    ).toEqual([
-      [0, 1, 2],
-      [3, 4],
-    ]);
+    ).toEqual([[0, 1], [2, 3], [4]]);
     expect(buffer.length()).toBe(0);
   });
 
@@ -495,7 +539,9 @@ describe('@rrweb/browser-client HTTP fallback batching', () => {
     await vi.advanceTimersByTimeAsync(5000);
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(buffer.items.map((event) => JSON.parse(event).id)).toEqual([3, 4]);
+    expect(buffer.items.map((event) => JSON.parse(event).id)).toEqual([
+      2, 3, 4,
+    ]);
   });
 
   it('requeues the failed batch ahead of events buffered during the request', async () => {
@@ -514,5 +560,239 @@ describe('@rrweb/browser-client HTTP fallback batching', () => {
     expect(buffer.items.map((event) => JSON.parse(event).id)).toEqual([
       0, 1, 2, 3, 4, 99,
     ]);
+  });
+});
+
+describe('@rrweb/browser-client transport recovery', () => {
+  afterEach(() => {
+    vi.clearAllTimers();
+    vi.restoreAllMocks();
+  });
+
+  async function setup() {
+    vi.useFakeTimers();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fetchMock = vi.fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>(
+      async () => new Response(null, { status: 202 }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const client = await importFreshClient();
+    client.start({ publicApiKey: 'test' });
+    const socket = mockState.socket!;
+    const buffer = mockState.buffers[0];
+    socket.fire('open');
+    // This helper isolates post-start events; startup backlog is covered separately.
+    buffer.clear();
+    socket.send.mockClear();
+    const emit = mockState.lastRecordOptions!.emit as (event: unknown) => void;
+    const event = {
+      type: 5,
+      timestamp: 123,
+      data: { tag: 'test', payload: {} },
+    };
+    return {
+      client,
+      socket,
+      buffer,
+      fetchMock,
+      event,
+      emit: () => emit(event),
+    };
+  }
+
+  it('delivers initial metadata and snapshot backlog before direct WebSocket events', async () => {
+    const client = await importFreshClient();
+    client.start({ publicApiKey: 'synthetic' });
+    const socket = mockState.socket!;
+    socket.fire('open');
+    const payload = socket.send.mock.calls.map(([value]) => JSON.parse(value));
+    expect(payload[0].data.tag).toBe('recording-meta');
+    expect(payload[1].type).toBe(EventType.Meta);
+    const emit = mockState.lastRecordOptions!.emit as (event: unknown) => void;
+    emit({ type: 5, timestamp: 2, data: { tag: 'after-start', payload: {} } });
+    expect(socket.send).toHaveBeenCalledTimes(3);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('retains one ordered transport across freeze and visible resume during a POST', async () => {
+    const { socket: oldSocket, buffer, fetchMock, emit } = await setup();
+    let resolveRequest!: (response: Response) => void;
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRequest = resolve;
+        }),
+    );
+    oldSocket.fire('close');
+    emit();
+    await vi.advanceTimersByTimeAsync(5000);
+    document.dispatchEvent(new Event('freeze'));
+    document.dispatchEvent(new Event('visibilitychange'));
+    const newSocket = mockState.socket!;
+    expect(newSocket).not.toBe(oldSocket);
+    newSocket.fire('open');
+    oldSocket.fire('close');
+    oldSocket.fire('message', JSON.stringify({ type: 'error' }));
+    emit();
+    expect(newSocket.send).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    resolveRequest(new Response(null, { status: 202 }));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(buffer.length()).toBe(0);
+    emit();
+    expect(newSocket.send).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends new events over the socket after reconnecting', async () => {
+    const { socket, buffer, event, emit } = await setup();
+    socket.fire('close');
+    socket.fire('open');
+    emit();
+    expect(socket.send).toHaveBeenCalledWith(JSON.stringify(event));
+    expect(buffer.length()).toBe(0);
+  });
+
+  it.each(['close', 'server error', 'upstream failure'])(
+    'POSTs events after %s on a previously open socket',
+    async (failure) => {
+      const { socket, fetchMock, event, emit } = await setup();
+      if (failure === 'close') socket.fire('close');
+      else
+        socket.fire(
+          'message',
+          JSON.stringify(
+            failure === 'server error'
+              ? { type: 'error' }
+              : { type: 'upstream-result', ok: false },
+          ),
+        );
+      emit();
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock.mock.calls[0][1]?.body).toBe(JSON.stringify(event));
+    },
+  );
+
+  it('bounds repeated network failures', async () => {
+    const { socket, fetchMock, emit } = await setup();
+    fetchMock.mockRejectedValue(new TypeError('offline'));
+    socket.fire('close');
+    emit();
+    await vi.advanceTimersByTimeAsync(120000);
+    expect(fetchMock.mock.calls.length).toBeLessThanOrEqual(4);
+  });
+
+  it('does not overlap lifecycle and periodic uploads', async () => {
+    const { socket, fetchMock, emit } = await setup();
+    fetchMock.mockImplementation(() => new Promise(() => {}));
+    socket.fire('close');
+    emit();
+    await vi.advanceTimersByTimeAsync(5000);
+    emit();
+    Object.defineProperty(document, 'hidden', {
+      configurable: true,
+      value: true,
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+    Object.defineProperty(document, 'hidden', {
+      configurable: true,
+      value: false,
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps retrying fallback after an HTTP error', async () => {
+    const { socket, fetchMock, event, emit } = await setup();
+    fetchMock.mockResolvedValueOnce(new Response('{}', { status: 503 }));
+    socket.fire('close');
+    emit();
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[1][1]?.body).toBe(JSON.stringify(event));
+  });
+
+  it('retains events for retry when the fallback network request rejects', async () => {
+    const { socket, fetchMock, event, emit } = await setup();
+    fetchMock.mockRejectedValueOnce(new TypeError('Network failure'));
+    socket.fire('close');
+    emit();
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[1][1]?.body).toBe(JSON.stringify(event));
+  });
+
+  it('does not POST while the socket is healthy', async () => {
+    const { fetchMock, emit } = await setup();
+    emit();
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it('does not overlap slow periodic POST requests', async () => {
+    const { socket, fetchMock, emit } = await setup();
+    let resolveRequest!: (response: Response) => void;
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveRequest = resolve;
+        }),
+    );
+    socket.fire('close');
+    emit();
+    await vi.advanceTimersByTimeAsync(5000);
+    emit();
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    resolveRequest(new Response(null, { status: 202 }));
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('cleans up fallback polling when recording stops', async () => {
+    const { client, socket } = await setup();
+    socket.fire('close');
+    client.stop(false);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+  it('retries an in-flight failed POST even if the socket reconnected', async () => {
+    const { socket, fetchMock, event, emit } = await setup();
+    let rejectRequest!: (error: Error) => void;
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise((_, reject) => {
+          rejectRequest = reject;
+        }),
+    );
+    socket.fire('close');
+    emit();
+    await vi.advanceTimersByTimeAsync(5000);
+    socket.fire('open');
+    rejectRequest(new TypeError('Network failure'));
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[1][1]?.body).toBe(JSON.stringify(event));
+  });
+  it('ignores late events from a stopped socket after recording restarts', async () => {
+    const { client, socket: oldSocket } = await setup();
+    client.stop(false);
+    client.start({ publicApiKey: 'test' });
+    const socket = mockState.socket!;
+    socket.fire('open');
+    await vi.advanceTimersByTimeAsync(5000);
+    oldSocket.fire('close');
+    oldSocket.fire('message', JSON.stringify({ type: 'error' }));
+    socket.send.mockClear();
+    const emit = mockState.lastRecordOptions!.emit as (event: unknown) => void;
+    const event = {
+      type: 5,
+      timestamp: 456,
+      data: { tag: 'restarted', payload: {} },
+    };
+    emit(event);
+    expect(socket.send).toHaveBeenCalledWith(JSON.stringify(event));
+    client.stop(false);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(vi.getTimerCount()).toBe(0);
   });
 });
