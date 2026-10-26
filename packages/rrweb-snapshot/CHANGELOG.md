@@ -1,5 +1,11 @@
 # rrweb-snapshot
 
+## 2.2.1
+
+### Patch Changes
+
+- [#1964](https://github.com/rrweb-io/rrweb/pull/1964) [`7cdbadf`](https://github.com/rrweb-io/rrweb/commit/7cdbadf927a33987235a80295782091522024a9b) Thanks [@arivyiii](https://github.com/arivyiii)! - fix: do not record the document of an iframe that is blocked via blockClass/blockSelector
+
 ## 2.2.0
 
 ### Patch Changes

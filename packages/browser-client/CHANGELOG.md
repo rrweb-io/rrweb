@@ -1,5 +1,15 @@
 # @rrweb/browser-client
 
+## 2.2.1
+
+### Patch Changes
+
+- Updated dependencies [[`339683f`](https://github.com/rrweb-io/rrweb/commit/339683f34bf2dd5df2e7cc18fe59fb924b65661b), [`2bc4f89`](https://github.com/rrweb-io/rrweb/commit/2bc4f89beb7f99a987817703031e3a15c75d0c10)]:
+  - rrweb@2.2.1
+  - @rrweb/record@2.2.1
+  - @rrweb/utils@2.2.1
+  - @rrweb/types@2.2.1
+
 ## 2.2.0
 
 ### Minor Changes
