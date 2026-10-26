@@ -230,5 +230,8 @@ export type CrossOriginIframeMessageEventContent<T = eventWithTime> = {
 };
 export type CrossOriginIframeMessageEvent =
   MessageEvent<CrossOriginIframeMessageEventContent>;
+export type CrossOriginIframeSnapshotRequest = {
+  type: 'rrweb-snapshot-request';
+};
 
 export type ErrorHandler = (error: unknown) => void | boolean;
