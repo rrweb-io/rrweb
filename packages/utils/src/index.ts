@@ -266,9 +266,27 @@ export function styleSheets(n: ShadowRoot): StyleSheetList {
   return n.styleSheets;
 }
 
+const registeredShadowRoots = new WeakMap<Element, ShadowRoot>();
+
+/** 保存调用方持有的根引用，不改变宿主的原生 shadowRoot 属性。 */
+export function registerShadowRoot(root: ShadowRoot): void {
+  const hostEl =
+    Object.prototype.toString.call(root) === '[object ShadowRoot]' &&
+    host(root);
+  if (!hostEl) {
+    throw new TypeError('Expected a native ShadowRoot');
+  }
+  registeredShadowRoots.set(hostEl, root);
+}
+
+/** 统一读取原生 open 根及已注册的 closed 根。 */
 export function shadowRoot(n: Node): ShadowRoot | null {
   if (!n || !('shadowRoot' in n)) return null;
-  return getUntaintedAccessor('Element', n as Element, 'shadowRoot');
+  return (
+    getUntaintedAccessor('Element', n as Element, 'shadowRoot') ||
+    registeredShadowRoots.get(n as Element) ||
+    null
+  );
 }
 
 export function querySelector(n: Element, selectors: string): Element | null {
@@ -374,6 +392,7 @@ export default {
   host,
   styleSheets,
   shadowRoot,
+  registerShadowRoot,
   querySelector,
   querySelectorAll,
   nowTimestamp,

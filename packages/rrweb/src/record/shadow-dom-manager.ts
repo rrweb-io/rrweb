@@ -10,7 +10,7 @@ import {
   initScrollObserver,
   initAdoptedStyleSheetObserver,
 } from './observer';
-import { inDom } from '../utils';
+import { inDom, on } from '../utils';
 import type { Mirror } from 'rrweb-snapshot';
 import { isNativeShadowDom } from 'rrweb-snapshot';
 import dom, { patch } from '@rrweb/utils';
@@ -30,6 +30,10 @@ export class ShadowDomManager {
   private bypassOptions: BypassOptions;
   private mirror: Mirror;
   private restoreHandlers: (() => void)[] = [];
+  private eventObservers = new Set<{
+    doc: Document;
+    observe(root: ShadowRoot): void;
+  }>();
 
   constructor(options: {
     mutationCb: mutationCallBack;
@@ -56,6 +60,10 @@ export class ShadowDomManager {
     if (this.shadowDoms.has(shadowRoot)) return;
     const handlers: listenerHandler[] = [];
     this.shadowDoms.set(shadowRoot, handlers);
+    this.eventObservers.forEach((observer) => {
+      if (observer.doc === shadowRoot.ownerDocument)
+        observer.observe(shadowRoot);
+    });
     const stopMutationObserver = initMutationObserver(
       {
         ...this.bypassOptions,
@@ -99,6 +107,32 @@ export class ShadowDomManager {
         ),
       );
     }, 0);
+  }
+
+  /** 在文档和它的各个根内监听，避免 closed 边界隐藏原始事件目标。 */
+  public observeEvent(type: string, listener: EventListener, doc: Document) {
+    const handlers = new Map<ShadowRoot, listenerHandler>();
+    const observer = {
+      doc,
+      observe: (root: ShadowRoot) => {
+        handlers.set(root, on(type, listener, root));
+        this.shadowDoms.get(root)?.push(() => {
+          handlers.get(root)?.();
+          handlers.delete(root);
+        });
+      },
+    };
+    this.eventObservers.add(observer);
+    this.shadowDoms.forEach((_, root) => {
+      if (root.ownerDocument === doc) observer.observe(root);
+    });
+    const stop = on(type, listener, doc);
+    return () => {
+      stop();
+      handlers.forEach((handler) => handler());
+      handlers.clear();
+      this.eventObservers.delete(observer);
+    };
   }
 
   public removeShadowRootsIn(n: Node) {
@@ -156,6 +190,7 @@ export class ShadowDomManager {
             // For the shadow dom elements in the document, monitor their dom mutations.
             // For shadow dom elements that aren't in the document yet,
             // we start monitoring them once their shadow dom host is appended to the document.
+            if (isNativeShadowDom(sRoot)) dom.registerShadowRoot(sRoot);
             const shadowRootEl = dom.shadowRoot(this);
             if (shadowRootEl && inDom(this))
               manager.addShadowRoot(shadowRootEl, doc);
