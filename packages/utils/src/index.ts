@@ -40,6 +40,7 @@ const untaintedBasePrototype: Partial<BasePrototypeCache> = {};
 const untaintedBaseIframeCleanup: Partial<
   Record<keyof BasePrototypeCache, () => void>
 > = {};
+let mutationObserverUsers = 0;
 
 type WindowWithZone = typeof globalThis & {
   Zone?: {
@@ -285,12 +286,24 @@ export function mutationObserverCtor(): [
   (typeof MutationObserver)['prototype']['constructor'],
   () => void,
 ] {
+  const prototype = getUntaintedPrototype('MutationObserver');
+  mutationObserverUsers++;
+  let stopCalled = false;
   return [
-    getUntaintedPrototype('MutationObserver').constructor,
-    untaintedBaseIframeCleanup['MutationObserver'] ??
-      (() => {
-        /* no-op; a cleanup function is only needed in Safari browsers */
-      }),
+    prototype.constructor,
+    () => {
+      if (stopCalled) return; // don't double decrement if *this* observer's stop() is called more than once
+      stopCalled = true;
+      if (--mutationObserverUsers !== 0) return;
+      const cleanup = untaintedBaseIframeCleanup['MutationObserver'];
+      if (!cleanup) return;
+      try {
+        cleanup();
+      } finally {
+        delete untaintedBasePrototype['MutationObserver'];
+        delete untaintedBaseIframeCleanup['MutationObserver'];
+      }
+    },
   ];
 }
 
