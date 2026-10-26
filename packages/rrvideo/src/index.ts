@@ -3,6 +3,7 @@ import * as path from 'path';
 import { chromium } from 'playwright';
 import { EventType, eventWithTime } from '@rrweb/types';
 import type Player from 'rrweb-player';
+import { captureFrames, clockScript } from './frames';
 
 const rrwebScriptPath = path.resolve(
   require.resolve('rrweb-player'),
@@ -20,6 +21,8 @@ type RRvideoConfig = {
   headless?: boolean;
   // A number between 0 and 1. The higher the value, the better the quality of the video.
   resolutionRatio?: number;
+  // Frame rate of .mp4 output. Default 60. Needs ffmpeg on PATH.
+  fps?: number;
   // A callback function that will be called when the progress of the replay is updated.
   onProgressUpdate?: (percent: number) => void;
   rrwebPlayer?: Omit<
@@ -34,13 +37,19 @@ const defaultConfig: Required<RRvideoConfig> = {
   headless: true,
   // A good trade-off value between quality and file size.
   resolutionRatio: 0.8,
+  fps: 60,
   onProgressUpdate: () => {
     //
   },
   rrwebPlayer: {},
 };
 
-function getHtml(events: Array<eventWithTime>, config?: RRvideoConfig): string {
+function getHtml(
+  events: Array<eventWithTime>,
+  config: RRvideoConfig,
+  scale: number,
+  prelude = '',
+): string {
   return `
 <html>
   <head>
@@ -48,6 +57,7 @@ function getHtml(events: Array<eventWithTime>, config?: RRvideoConfig): string {
   <style>html, body {padding: 0; border: none; margin: 0;}</style>
   </head>
   <body>
+    ${prelude}
     <script>
       ${rrwebRaw};
       /*<!--*/
@@ -56,9 +66,9 @@ function getHtml(events: Array<eventWithTime>, config?: RRvideoConfig): string {
         '<\\/script>',
       )};
       /*-->*/
-      const userConfig = ${JSON.stringify(config?.rrwebPlayer || {})};
+      const userConfig = ${JSON.stringify(config.rrwebPlayer || {})};
       try {
-        window.replayer = new rrwebPlayer({
+        window.replayer = new rrwebPlayer.default({
           target: document.body,
           props: {
             ...userConfig,
@@ -69,9 +79,7 @@ function getHtml(events: Array<eventWithTime>, config?: RRvideoConfig): string {
         });
         window.replayer.addEventListener('finish', () => window.onReplayFinish());
         window.replayer.addEventListener('ui-update-progress', (payload)=> window.onReplayProgressUpdate(payload));
-        window.replayer.addEventListener('resize', () => document.querySelector('.replayer-wrapper').style.transform = 'scale(${
-          (config?.resolutionRatio ?? 1) * MaxScaleValue
-        }) translate(-50%, -50%)');
+        window.replayer.addEventListener('resize', () => document.querySelector('.replayer-wrapper').style.transform = 'scale(${scale}) translate(-50%, -50%)');
         // Start playback after event listeners are attached
         window.replayer.play();
       } catch (error) {
@@ -122,6 +130,30 @@ export async function transformToVideo(options: RRvideoConfig) {
 
   // Make the browser viewport fit the player size.
   const maxViewport = getMaxViewport(events);
+
+  if (outputPath.endsWith('.mp4')) {
+    // Render frame by frame on a virtual clock rather than recording in real
+    // time, so any fps works and the result doesn't depend on machine load.
+    const scale = config.resolutionRatio;
+    const even = (n: number) => Math.ceil((n * scale) / 2) * 2; // for yuv420p
+    const viewport = {
+      width: even(maxViewport.width),
+      height: even(maxViewport.height),
+    };
+    Object.assign(config.rrwebPlayer, viewport);
+    await captureFrames({
+      html: getHtml(events, config, scale, clockScript),
+      output: outputPath,
+      viewport,
+      fps: config.fps,
+      durationMs: events[events.length - 1].timestamp - events[0].timestamp,
+      speed: config.rrwebPlayer.speed || 1,
+      headless: config.headless,
+      onProgressUpdate: config.onProgressUpdate,
+    });
+    return outputPath;
+  }
+
   // Use the scaling method to improve the video quality.
   const scaledViewport = {
     width: Math.round(
@@ -186,7 +218,13 @@ export async function transformToVideo(options: RRvideoConfig) {
       })
       .then(() => {
         console.log('[DEBUG] Setting page content');
-        return page.setContent(getHtml(events, config));
+        return page.setContent(
+          getHtml(
+            events,
+            config,
+            (config.resolutionRatio ?? 1) * MaxScaleValue,
+          ),
+        );
       })
       .then(() => {
         console.log('[DEBUG] Page content set successfully');
