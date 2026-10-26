@@ -473,9 +473,9 @@ describe('closed Shadow DOM', () => {
       await page.waitForFunction(() =>
         JSON.stringify((window as TestWindow).events).includes('frame-initial'),
       );
-      const frame = page
-        .frames()
-        .find((frame) => frame.url().endsWith('/frame'))!;
+      const frame = await page.waitForFrame((frame) =>
+        frame.url().endsWith('/frame'),
+      );
       await frame.evaluate(
         () => (document.querySelector('p')!.textContent = 'frame-updated'),
       );
