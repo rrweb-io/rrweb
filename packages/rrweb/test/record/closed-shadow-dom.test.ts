@@ -406,6 +406,31 @@ describe('closed Shadow DOM', () => {
     ).toEqual(targets);
   });
 
+  it('keeps closed-root click targets without duplicates after repeated full snapshots', async () => {
+    await createRoot();
+    const targets = await page.evaluate(() => {
+      const win = window as TestWindow;
+      const button = win.root.querySelector('button')!;
+      const targets: number[] = [];
+      for (let cycle = 0; cycle < 3; cycle++) {
+        win.rrweb.record.takeFullSnapshot(true);
+        targets.push(win.rrweb.record.mirror.getId(button));
+        button.click();
+      }
+      return targets;
+    });
+    await waitForRAF(page);
+    const clicks = (await events()).filter(
+      (event) =>
+        event.type === EventType.IncrementalSnapshot &&
+        event.data.source === IncrementalSource.MouseInteraction &&
+        event.data.type === MouseInteractions.Click,
+    );
+    expect(
+      clicks.map((event) => (event as { data: { id: number } }).data.id),
+    ).toEqual(targets);
+  });
+
   it('stops observing roots and resumes known roots after restart', async () => {
     await createRoot();
     const count = await page.evaluate(() => {
