@@ -3,4 +3,4 @@
 "@rrweb/record": patch
 ---
 
-AngularJS: Load unpatched versions of browser APIs from the Angular zone when present, avoiding the related 'untainted iframe' hack for Safari
+AngularJS: Load unpatched versions of browser APIs from the `zone` object when present (Angular monkeypatches them), so we don't need to apply our own monkeypatch avoidance mechanism.
