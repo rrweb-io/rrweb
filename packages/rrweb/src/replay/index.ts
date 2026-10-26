@@ -30,18 +30,20 @@ import type {
 import * as mittProxy from 'mitt';
 import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
+import { defaultCursorPack, resolveCursor } from './cursor';
 import {
   createPlayerService,
   createSpeedService,
   type PlayerMachineState,
   type SpeedMachineState,
 } from './machine';
-import type { playerConfig, missingNodeMap } from '../types';
+import type { playerConfig, missingNodeMap, CursorState } from '../types';
 import {
   NodeType,
   EventType,
   IncrementalSource,
   MouseInteractions,
+  PointerTypes,
   ReplayerEvents,
 } from '@rrweb/types';
 import type {
@@ -135,6 +137,11 @@ export class Replayer {
   private mouse: HTMLDivElement;
   private mouseTail: HTMLCanvasElement | null = null;
   private tailPositions: Array<{ x: number; y: number }> = [];
+  private cursorSample: { target: Element; x: number; y: number } | null = null;
+  private cursorPending = false;
+  private cursorState: CursorState | null = null;
+  private cursorPressed = false;
+  private cursorPointer: CursorState['pointerType'] = 'mouse';
 
   private emitter: Emitter = mitt();
 
@@ -1132,6 +1139,7 @@ export class Replayer {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
           this.warn(`Exception in mutation ${error.message || error}`, d);
         }
+        this.scheduleCursor();
         break;
       }
       case IncrementalSource.Drag:
@@ -1184,6 +1192,12 @@ export class Replayer {
           type: d.type,
           target,
         });
+        if (d.pointerType !== undefined)
+          this.cursorPointer = toLowerCase(
+            PointerTypes[d.pointerType],
+          ) as CursorState['pointerType'];
+        if (d.type === MouseInteractions.MouseDown) this.cursorPressed = true;
+        if (d.type === MouseInteractions.MouseUp) this.cursorPressed = false;
         const { triggerFocus } = this.config;
         switch (d.type) {
           case MouseInteractions.Blur:
@@ -2210,6 +2224,53 @@ export class Replayer {
       this.drawMouseTail({ x: _x, y: _y });
     }
     this.hoverElements(target as Element);
+    if (this.config.cursor?.mode === 'state') {
+      this.cursorSample = { target: target as Element, x, y };
+      this.scheduleCursor();
+    }
+  }
+
+  // One resolve per frame, run after paint (rAF, then a timeout) so reading
+  // computed style doesn't force a style recalc. Seeks finish before it runs.
+  private scheduleCursor() {
+    if (!this.cursorSample || this.cursorPending) return;
+    this.cursorPending = true;
+    requestAnimationFrame(() =>
+      setTimeout(() => {
+        this.cursorPending = false;
+        const { target, x, y } = this.cursorSample!;
+        const pressed = this.cursorPressed;
+        const state: CursorState = {
+          cursor: resolveCursor(
+            target,
+            x,
+            y,
+            this.config.cursor?.resolveAuto !== false,
+            pressed,
+          ),
+          pointerType: this.cursorPointer,
+          pressed,
+          target,
+        };
+        const prev = this.cursorState;
+        if (
+          prev?.cursor === state.cursor &&
+          prev.pointerType === state.pointerType &&
+          prev.pressed === pressed
+        )
+          return;
+        this.cursorState = state;
+        const { url, hotspot } =
+          (this.config.cursor?.pack || defaultCursorPack).resolve(state) ||
+          defaultCursorPack.resolve({ ...state, cursor: 'default' })!;
+        this.mouse.dataset.cursor = state.cursor;
+        this.mouse.dataset.pointer = state.pointerType;
+        this.mouse.style.setProperty('--rr-cursor', `url("${url}")`);
+        this.mouse.style.setProperty('--rr-cursor-x', `${hotspot[0]}`);
+        this.mouse.style.setProperty('--rr-cursor-y', `${hotspot[1]}`);
+        this.emitter.emit(ReplayerEvents.CursorChange, state);
+      }),
+    );
   }
 
   private drawMouseTail(position: { x: number; y: number }) {
