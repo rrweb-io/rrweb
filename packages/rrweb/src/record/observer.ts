@@ -57,9 +57,6 @@ import dom, { mutationObserverCtor } from '@rrweb/utils';
 // one principal mutation buffer, but also one per shadowRoot/iframe on the page
 export const mutationBuffers = new Set<MutationBuffer>();
 
-/** Lets per-shadow-root observers be fully torn down when their root detaches. */
-const observerBuffers = new WeakMap<MutationObserver, MutationBuffer>();
-
 // Event.path is non-standard and used in some older browsers
 type NonStandardEvent = Omit<Event, 'composedPath'> & {
   path: EventTarget[];
@@ -85,12 +82,12 @@ function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
 export function initMutationObserver(
   options: MutationBufferParam,
   rootEl: Node,
-): [MutationObserver, () => void] {
+): listenerHandler {
   const mutationBuffer = new MutationBuffer();
   mutationBuffers.add(mutationBuffer);
   // see mutation.ts for details
   mutationBuffer.init(options);
-  const [ObserverCtor, iframeCleanup] = mutationObserverCtor();
+  const [ObserverCtor, releaseObserverConstructor] = mutationObserverCtor();
   const observer = new (ObserverCtor as new (
     callback: MutationCallback,
   ) => MutationObserver)(
@@ -104,18 +101,12 @@ export function initMutationObserver(
     childList: true,
     subtree: true,
   });
-  observerBuffers.set(observer, mutationBuffer);
-  return [observer, iframeCleanup];
-}
-
-/** Disconnects an observer and drops its buffer from the registry. */
-export function removeMutationBuffer(observer: MutationObserver): void {
-  observer.disconnect();
-  const buffer = observerBuffers.get(observer);
-  if (buffer) {
-    mutationBuffers.delete(buffer);
-    observerBuffers.delete(observer);
-  }
+  const stop = () => {
+    observer.disconnect();
+    mutationBuffers.delete(mutationBuffer);
+    releaseObserverConstructor();
+  };
+  return stop;
 }
 
 function initMoveObserver({
@@ -1323,11 +1314,9 @@ export function initObservers(
   }
 
   mergeHooks(o, hooks);
-  let mutationObserver: MutationObserver | undefined;
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  let cleanupMutationIframe: () => void = () => {};
+  let stopMutationObserver: listenerHandler | undefined;
   if (o.recordDOM) {
-    [mutationObserver, cleanupMutationIframe] = initMutationObserver(o, o.doc);
+    stopMutationObserver = initMutationObserver(o, o.doc);
   }
   const mousemoveHandler = initMoveObserver(o);
   const mouseInteractionHandler = initMouseInteractionObserver(o);
@@ -1368,9 +1357,7 @@ export function initObservers(
   }
 
   return callbackWrapper(() => {
-    mutationBuffers.forEach((b) => b.reset(o.doc));
-    mutationObserver?.disconnect();
-    cleanupMutationIframe();
+    stopMutationObserver?.();
     mousemoveHandler();
     mouseInteractionHandler();
     scrollHandler();

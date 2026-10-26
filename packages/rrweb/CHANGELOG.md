@@ -1,5 +1,29 @@
 # rrweb
 
+## 2.2.0
+
+### Minor Changes
+
+- [#1928](https://github.com/rrweb-io/rrweb/pull/1928) [`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80) Thanks [@Juice10](https://github.com/Juice10)! - Add a top-level annotation event with `record.addAnnotation()` and `replayer.on('annotation', handler)`. Annotation data uses `type: 'caption'` or `type: 'timelineMarker'`. Import `annotationData` from `@rrweb/types` to type annotation data. The player can display these annotations as captions and interactive timeline markers.
+
+### Patch Changes
+
+- [#1971](https://github.com/rrweb-io/rrweb/pull/1971) [`235ae85`](https://github.com/rrweb-io/rrweb/commit/235ae85e501bae64db7a46b2a773b8390737822c) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fix record-side memory leaks and duplicate mutation emission:
+
+  - Stopping a recording now releases the root document's mutation buffer and observer — previously the document observer was only disconnected, so each start/stop cycle leaked one buffer — and removes the cross-origin iframe `message` listener.
+  - A same-origin iframe is observed once instead of re-observed on every full snapshot (`checkoutEveryNth`/`checkoutEveryNms`/manual `takeFullSnapshot`), so a single iframe mutation is no longer emitted once per checkout; its observers are also released when the iframe is removed or navigates away.
+  - The untainted-`MutationObserver` helper iframe used on WebKit/Safari is reference-counted, so it is torn down only when the last observer stops and will get rebuilt for a later recording.
+
+- [#1958](https://github.com/rrweb-io/rrweb/pull/1958) [`009b2dd`](https://github.com/rrweb-io/rrweb/commit/009b2dd4971ea575bd481f1f591822d319ab078b) Thanks [@salzahrani-salla](https://github.com/salzahrani-salla)! - fix: disconnect shadow-DOM observers when their host is removed
+
+  Each observed shadow root kept a live `MutationObserver` plus its mutation buffer for the rest of the recording session even if its host was removed, a memory leak problem for component-heavy pages. Fix: release shadow observers and buffers as soon as we observe them as removed/detached from dom with tests added for the still-attached host-moved case, and to ensure they get re-observed on reinsertion.
+
+- Updated dependencies [[`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80), [`235ae85`](https://github.com/rrweb-io/rrweb/commit/235ae85e501bae64db7a46b2a773b8390737822c), [`009b2dd`](https://github.com/rrweb-io/rrweb/commit/009b2dd4971ea575bd481f1f591822d319ab078b)]:
+  - @rrweb/types@2.2.0
+  - @rrweb/utils@2.2.0
+  - rrweb-snapshot@2.2.0
+  - rrdom@2.2.0
+
 ## 2.1.7
 
 ### Patch Changes
