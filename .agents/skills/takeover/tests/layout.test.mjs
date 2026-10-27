@@ -19,7 +19,13 @@ test('runtime entry points resolve one implementation', async () => {
     adapter,
     /\.\.\/\.\.\/\.\.\/\.agents\/skills\/takeover\/SKILL.md/,
   );
-  assert.ok(adapter.split('\n').length < 14);
+  const adapterPath = resolve(root, '.claude/skills/takeover/SKILL.md');
+  for (const [, target] of adapter.matchAll(/\]\(([^)]+)\)/g)) {
+    assert.equal(
+      await realpath(resolve(dirname(adapterPath), target)),
+      canonical,
+    );
+  }
 });
 test('local dependencies exist without backend or vendor skills installed', async () => {
   const body = await readFile(canonical, 'utf8');

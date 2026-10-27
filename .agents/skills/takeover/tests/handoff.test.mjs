@@ -69,7 +69,16 @@ test('rejects stale target and prior-author test reports', () => {
   const r = fixture();
   r.items[0].targetHead = 'old';
   r.checks[0].head = 'source';
-  assert.equal(assessHandoff(r).blockers.length, 2);
+  assert.ok(
+    assessHandoff(r).blockers.includes(
+      'Stale or missing absorption evidence: R1.',
+    ),
+  );
+  assert.ok(
+    assessHandoff(r).blockers.includes(
+      'Stale or missing verification evidence.',
+    ),
+  );
 });
 test('rejects uncertain and duplicate behavior IDs', () => {
   const r = fixture();
@@ -83,6 +92,8 @@ test('requires a reason for an inapplicable check', () => {
   r.checks[0].result = 'not-applicable';
   assert.equal(assessHandoff(r).state, 'blocked');
   r.checks[0].reason = 'Skill-only change, no browser behavior';
+  assert.equal(assessHandoff(r).state, 'blocked');
+  r.checks.push(fixture().checks[0]);
   assert.equal(assessHandoff(r).state, 'local-complete');
 });
 test('missing report and empty evidence fail closed', () => {
@@ -93,4 +104,17 @@ test('missing report and empty evidence fail closed', () => {
     { ...fixture(), checks: [] },
   ])
     assert.equal(assessHandoff(r).state, 'blocked');
+});
+
+test('duplicate otherwise satisfied IDs block completion', () => {
+  const r = fixture();
+  r.items.push({ ...r.items[0] });
+  assert.ok(
+    assessHandoff(r).blockers.includes('Missing or duplicate behavior ID.'),
+  );
+});
+test('superseded behavior with evidence is accounted for', () => {
+  const r = fixture();
+  r.items[0].disposition = 'superseded';
+  assert.equal(assessHandoff(r).state, 'local-complete');
 });

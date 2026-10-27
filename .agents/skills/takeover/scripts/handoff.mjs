@@ -36,6 +36,17 @@ export function assessHandoff(report) {
   }
   const checks = Array.isArray(report.checks) ? report.checks : [];
   if (!checks.length) blockers.push('Missing candidate verification.');
+  if (
+    !checks.some(
+      (check) =>
+        check?.result === 'passed' &&
+        check.head === report.candidateHead &&
+        text(check.command) &&
+        text(check.evidence),
+    )
+  ) {
+    blockers.push('No passing candidate verification.');
+  }
   for (const check of checks) {
     if (
       !check ||
