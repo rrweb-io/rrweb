@@ -547,9 +547,16 @@ describe('record integration tests', function (this: ISuite) {
     'ignores masked %s input changes and checked mutations',
     async (type) => {
       const page = await browser.newPage();
-      await page.setContent(getHtml('form.html', { maskAllInputs: true }));
+      await page.setContent(getHtml('form-labels.html', { maskAllInputs: true }));
       await waitForRAF(page);
       const selector = `input[type="${type}"]`;
+
+      // Clicking label text must activate the input without recording its state.
+      const inputId = type === 'radio' ? 'radio-on' : 'checkbox';
+      await page.click(`label[for="${inputId}"] span`);
+      expect(
+        await page.$eval(selector, (input: HTMLInputElement) => input.checked),
+      ).toBe(true);
 
       // Mouse and keyboard interactions must not record the masked state.
       await page.click(selector);
