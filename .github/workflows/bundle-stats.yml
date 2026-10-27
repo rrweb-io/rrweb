@@ -2,7 +2,19 @@ name: Bundle Stats
 
 on:
   push:
+    paths-ignore:
+      - '**/*.md'
+      - '.changeset/**'
+      - '**/test/**'
   pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - '.changeset/**'
+      - '**/test/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
