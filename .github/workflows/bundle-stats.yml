@@ -5,10 +5,12 @@ on:
     paths-ignore:
       - '**/*.md'
       - '.changeset/**'
+      - '**/test/**'
   pull_request:
     paths-ignore:
       - '**/*.md'
       - '.changeset/**'
+      - '**/test/**'
 
 jobs:
   build:
