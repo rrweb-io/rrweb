@@ -197,13 +197,6 @@ function record<T = eventWithTime>(
         e.data.source === IncrementalSource.Mutation
       )
     ) {
-      if (ongoingMove) {
-        // emit any ongoing (but throttled) mouse or touch move;
-        // emitting now creates more events, but ensures events are emitted in
-        // sequence without any overlap from the negative Move timeOffset
-        ongoingMove(e.timestamp);
-      }
-
       // we've got a user initiated event so if we've been frozen we first need
       // to apply all DOM changes that have been buffering during paused state
       canvasManager.unfreeze();
@@ -211,6 +204,12 @@ function record<T = eventWithTime>(
         buf.unfreeze(e.timestamp);
       }
       frozen = false;
+    }
+    if (ongoingMove) {
+      // emit any ongoing (but throttled) mouse or touch move;
+      // emitting now creates more events, but ensures events are emitted in
+      // sequence without any overlap from the negative Move timeOffset
+      ongoingMove(e.timestamp);
     }
 
     if (inEmittingFrame) {
