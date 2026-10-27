@@ -286,9 +286,17 @@ export type SamplingStrategy = Partial<{
    */
   mouseInteraction: boolean | Record<string, boolean | undefined>;
   /**
-   * number is the throttle threshold of recording scroll
+   * number is the throttle threshold of recording scroll in ms
+   * default: 100
    */
   scroll: number;
+  /**
+   * per-element throttle threshold for mutation emission in ms: a given
+   * element's repeated text/attribute changes emit at most once per interval,
+   * while structural changes (adds/removes) still emit promptly
+   * off by default
+   */
+  mutation: number;
   /**
    * number is the throttle threshold of recording media interactions
    */
@@ -365,10 +373,6 @@ export type mutationRecord = Readonly<{
   attributeName: string | null;
 }>;
 
-export type textCursor = {
-  node: Node;
-  value: string | null;
-};
 export type textMutation = {
   id: number;
   value: string | null;
@@ -380,14 +384,6 @@ export type styleOMValue = {
 
 export type styleValueWithPriority = [string, string];
 
-export type attributeCursor = {
-  node: Node;
-  attributes: {
-    [key: string]: string | styleOMValue | null;
-  };
-  styleDiff: styleOMValue;
-  _unchangedStyles: styleOMValue;
-};
 export type attributeMutation = {
   id: number;
   attributes: {

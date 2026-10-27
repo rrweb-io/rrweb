@@ -35,6 +35,7 @@ function createBuffer(
     keepIframeSrcFn: () => false,
     recordCanvas: false,
     inlineImages: false,
+    sampling: {},
     slimDOMOptions: {},
     dataURLOptions: {},
     doc,

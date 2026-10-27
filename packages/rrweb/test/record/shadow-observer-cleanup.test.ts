@@ -131,6 +131,7 @@ describe('Shadow observer lifecycle (regression)', () => {
       keepIframeSrcFn: () => false,
       recordCanvas: false,
       inlineImages: false,
+      sampling: {},
       slimDOMOptions: {},
       dataURLOptions: {},
       doc,
