@@ -204,6 +204,16 @@ export default class MutationBuffer {
         // eslint-disable-next-line no-constant-condition
         while (true) {
           parentNode = dom.parentNode(n);
+          // Shadow DOM: a shadow child's DOM parent is a ShadowRoot, which is
+          // never put into addedSet. Without this substitution the walk-up
+          // exits here, and if the host happens to be queued after the child
+          // (out-of-order MutationRecord processing can produce this), the
+          // host is never serialized before the child in this drain and the
+          // subtree gets dropped via missingParents. Jump through the
+          // ShadowRoot to the host so the walk-up stays correct.
+          if (parentNode && isShadowRoot(parentNode)) {
+            parentNode = dom.host(parentNode as ShadowRoot) as Node;
+          }
           if (this.addedSet.has(parentNode as Node)) {
             // start at top of added tree so as not to serialize children before their parents (parentId requirement)
             n = parentNode as Node;
