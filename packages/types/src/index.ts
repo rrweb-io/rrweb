@@ -417,7 +417,10 @@ export type mutationCallbackParam = {
   isAttachIframe?: true;
 };
 
-export type mutationCallBack = (m: mutationCallbackParam) => void;
+export type mutationCallBack = (
+  m: mutationCallbackParam,
+  timestamp?: number,
+) => void;
 
 export type mousemoveCallBack = (
   p: mousePosition[],
@@ -425,6 +428,7 @@ export type mousemoveCallBack = (
     | IncrementalSource.MouseMove
     | IncrementalSource.TouchMove
     | IncrementalSource.Drag,
+  timestamp: number,
 ) => void;
 
 export type mousePosition = {
