@@ -3,7 +3,7 @@ import * as path from 'path';
 import { chromium } from 'playwright';
 import { EventType, eventWithTime } from '@rrweb/types';
 import type Player from 'rrweb-player';
-import { captureFrames, clockScript } from './frames';
+import { captureFrames } from './frames';
 
 const rrwebScriptPath = path.resolve(
   require.resolve('rrweb-player'),
@@ -142,7 +142,7 @@ export async function transformToVideo(options: RRvideoConfig) {
     };
     Object.assign(config.rrwebPlayer, viewport);
     await captureFrames({
-      html: getHtml(events, config, scale, clockScript),
+      html: (prelude) => getHtml(events, config, scale, prelude),
       output: outputPath,
       viewport,
       fps: config.fps,

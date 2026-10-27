@@ -1,27 +1,35 @@
 import { spawn } from 'child_process';
 import { once } from 'events';
+import * as fs from 'fs-extra';
+import * as path from 'path';
 import { chromium, type CDPSession, type Page } from 'playwright';
 import { installClock } from './clock';
 
 type PageWindow = {
-  __clock: {
-    advance(ms: number): Promise<void>;
-    sleep(ms: number): Promise<void>;
-  };
+  __clock: { advance(ms: number): Promise<void> };
   __finished?: boolean;
   replayer: { getReplayer(): { getCurrentTime(): number } };
 };
 
-/** Injected before the player script. */
-export const clockScript = `<script>
-  (${installClock.toString()})();
+type Driver = {
+  advance(ms: number): Promise<void>;
+  grab(): Promise<Buffer>;
+};
+
+const TIMEOUT_MS = 30_000;
+const JPEG = { format: 'jpeg', quality: 90 } as const;
+
+const hooksScript = `<script>
   window.onReplayFinish = () => { window.__finished = true; };
   window.onReplayProgressUpdate = () => {};
 </script>`;
+const clockScript = `<script>(${installClock.toString()})();</script>`;
 
-// With these, Chrome only draws on HeadlessExperimental.beginFrame and takes
-// CSS animation time from it, so animations follow the virtual clock too.
-// Only chrome-headless-shell on Linux supports it; elsewhere we screenshot.
+// chrome-headless-shell (Playwright's headless default) on Linux can be driven
+// frame by frame: Chrome's virtual time holds timers, rAF and CSS animations
+// between frames, and HeadlessExperimental.beginFrame draws one. Elsewhere
+// clock.ts fakes the replayer's timers and we screenshot, so CSS animations
+// run in real time.
 const BEGIN_FRAME_ARGS = [
   '--deterministic-mode',
   '--enable-begin-frame-control',
@@ -33,48 +41,92 @@ const BEGIN_FRAME_ARGS = [
   '--disable-image-animation-resync',
 ];
 
-function frameGrabber(
-  page: Page,
-  cdp: CDPSession,
-  beginFrame: boolean,
-  interval: number,
-) {
-  const screenshot = { format: 'jpeg', quality: 90 } as const;
-  if (!beginFrame) {
-    return async () => {
-      const { data } = await cdp.send('Page.captureScreenshot', {
-        ...screenshot,
-        optimizeForSpeed: true,
-      });
-      return Buffer.from(data, 'base64');
-    };
+/** Chrome can hang on these calls rather than fail. */
+function withTimeout<T>(promise: Promise<T>, label: string, ms = TIMEOUT_MS) {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`${label} timed out after ${ms}ms`)),
+      ms,
+    );
+    void promise.then(resolve, reject).then(() => clearTimeout(timer));
+  });
+}
+
+async function launch(headless: boolean) {
+  if (process.platform === 'linux' && headless) {
+    const browser = await chromium.launch({ headless, args: BEGIN_FRAME_ARGS });
+    const cdp = await browser.newBrowserCDPSession();
+    const { product } = await cdp.send('Browser.getVersion');
+    if (product.startsWith('HeadlessChrome'))
+      return { browser, beginFrame: true };
+    await browser.close();
   }
-  let frameTimeTicks = 1000;
+  return { browser: await chromium.launch({ headless }), beginFrame: false };
+}
+
+async function beginFrameDriver(page: Page, cdp: CDPSession): Promise<Driver> {
+  const { virtualTimeTicksBase } = await cdp.send(
+    'Emulation.setVirtualTimePolicy',
+    { policy: 'pause' },
+  );
+  let time = 0;
   let last: Buffer | undefined;
-  return async () => {
-    for (let attempt = 1; attempt <= 5; attempt++) {
-      const { screenshotData } = await cdp.send(
-        'HeadlessExperimental.beginFrame',
-        {
-          frameTimeTicks: (frameTimeTicks += interval),
-          interval,
-          screenshot,
-        },
+  return {
+    async advance(ms) {
+      const expired = new Promise((r) =>
+        cdp.once('Emulation.virtualTimeBudgetExpired', r),
       );
-      if (screenshotData) last = Buffer.from(screenshotData, 'base64');
-      if (last) return last; // empty when nothing was redrawn
-      // No screenshot comes back without a redraw, and Page.captureScreenshot
-      // hangs under BeginFrame control, so repaint an invisible pixel.
-      await page.evaluate((alpha) => {
-        const px =
-          document.getElementById('rrvideo-px') ||
-          document.body.appendChild(
-            Object.assign(document.createElement('div'), { id: 'rrvideo-px' }),
-          );
-        px.style.cssText = `position:fixed;top:0;left:0;width:1px;height:1px;background:rgba(0,0,0,${alpha})`;
-      }, attempt / 1000);
-    }
-    throw new Error('HeadlessExperimental.beginFrame produced no frame');
+      await cdp.send('Emulation.setVirtualTimePolicy', {
+        policy: 'advance',
+        budget: ms,
+      });
+      await withTimeout(expired, 'Virtual time advance');
+      time += ms;
+    },
+    async grab() {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const { screenshotData } = await withTimeout(
+          cdp.send('HeadlessExperimental.beginFrame', {
+            // Ticks must strictly increase; retries stay well inside the frame.
+            frameTimeTicks: virtualTimeTicksBase + 1 + time + attempt / 100,
+            screenshot: JPEG,
+          }),
+          'HeadlessExperimental.beginFrame',
+        );
+        if (screenshotData) last = Buffer.from(screenshotData, 'base64');
+        if (last) return last; // empty when nothing was redrawn
+        // The first frame needs a redraw, and Page.captureScreenshot hangs
+        // under BeginFrame control, so repaint an invisible pixel.
+        await page.evaluate((alpha) => {
+          const px =
+            document.getElementById('rrvideo-px') ||
+            document.body.appendChild(
+              Object.assign(document.createElement('div'), {
+                id: 'rrvideo-px',
+              }),
+            );
+          px.style.cssText = `position:fixed;top:0;left:0;width:1px;height:1px;background:rgba(0,0,0,${alpha})`;
+        }, (attempt + 1) / 1000);
+      }
+      throw new Error('HeadlessExperimental.beginFrame produced no frame');
+    },
+  };
+}
+
+function screenshotDriver(page: Page, cdp: CDPSession): Driver {
+  return {
+    advance: (ms) =>
+      page.evaluate(
+        (ms) => (window as unknown as PageWindow).__clock.advance(ms),
+        ms,
+      ),
+    async grab() {
+      const { data } = await withTimeout(
+        cdp.send('Page.captureScreenshot', { ...JPEG, optimizeForSpeed: true }),
+        'Page.captureScreenshot',
+      );
+      return Buffer.from(data, 'base64');
+    },
   };
 }
 
@@ -108,8 +160,26 @@ function encode(output: string, fps: number) {
   };
 }
 
+/** Wait (in real time, up to 5s) for the first snapshot's images and fonts. */
+async function waitForAssets(page: Page) {
+  const loaded = page.evaluate(() => {
+    const doc = document.querySelector('iframe')?.contentDocument;
+    if (!doc) return;
+    const images = Array.from(doc.images).filter((img) => !img.complete);
+    const loads = images.map(
+      (img) =>
+        new Promise((r) => {
+          img.addEventListener('load', r);
+          img.addEventListener('error', r);
+        }),
+    );
+    return Promise.all([...loads, doc.fonts.ready]).then(() => undefined);
+  });
+  await withTimeout(loaded, 'Asset load', 5000).catch(() => undefined);
+}
+
 export async function captureFrames(options: {
-  html: string;
+  html: (prelude: string) => string;
   output: string;
   viewport: { width: number; height: number };
   fps: number;
@@ -118,67 +188,58 @@ export async function captureFrames(options: {
   headless: boolean;
   onProgressUpdate: (percent: number) => void;
 }) {
-  const { fps, durationMs } = options;
-  const interval = 1000 / fps;
-  const beginFrame = process.platform === 'linux' && options.headless;
-  const encoder = encode(options.output, fps);
-
-  const browser = await chromium.launch({
-    headless: options.headless,
-    args: beginFrame ? BEGIN_FRAME_ARGS : [],
-  });
+  const { fps, durationMs, output } = options;
+  // Encode next to the output and move it into place only on success.
+  const tmp = path.join(
+    path.dirname(output),
+    `.${process.pid}.${path.basename(output)}`,
+  );
+  const encoder = encode(tmp, fps);
+  const { browser, beginFrame } = await launch(options.headless);
   try {
     const page = await browser.newPage({ viewport: options.viewport });
     page.on('pageerror', (error) =>
       console.error('[PAGE ERROR]', error.message),
     );
     const cdp = await page.context().newCDPSession(page);
-    await page.setContent(options.html);
-    await page.evaluate(() => {
-      const w = window as unknown as PageWindow;
-      // Run the player's mount timers, then give the first snapshot's images
-      // and fonts up to 5s of real time to load.
-      return w.__clock.advance(0).then(() => {
-        const doc = document.querySelector('iframe')?.contentDocument;
-        if (!doc) return;
-        const loads = Array.from(doc.images)
-          .filter((img) => !img.complete)
-          .map(
-            (img) =>
-              new Promise((r) => {
-                img.addEventListener('load', r);
-                img.addEventListener('error', r);
-              }),
-          );
-        return Promise.race([
-          Promise.all([...loads, doc.fonts.ready]),
-          w.__clock.sleep(5000),
-        ]);
-      });
-    });
+    const driver = beginFrame
+      ? await beginFrameDriver(page, cdp)
+      : screenshotDriver(page, cdp);
+    await page.setContent(
+      options.html(hooksScript + (beginFrame ? '' : clockScript)),
+    );
+    await driver.advance(1); // run the player's mount timers
+    await waitForAssets(page);
 
-    const grab = frameGrabber(page, cdp, beginFrame, interval);
     // speed and skipInactive are applied by the replayer; this only bounds the loop.
-    const maxFrames = durationMs / options.speed / interval + fps;
-    for (let i = 0; i < maxFrames; i++) {
-      await encoder.write(await grab());
-      const { finished, time } = await page.evaluate((ms) => {
+    const maxFrames = (durationMs / options.speed / 1000) * fps + fps;
+    let time = 0;
+    for (let frame = 1; frame <= maxFrames; frame++) {
+      await encoder.write(await driver.grab());
+      // Whole milliseconds, as events are recorded, so an event on a frame
+      // boundary can't drift to the next frame through float rounding.
+      const next = Math.floor((frame * 1000) / fps);
+      await driver.advance(next - time);
+      time = next;
+      const { finished, current } = await page.evaluate(() => {
         const w = window as unknown as PageWindow;
-        return w.__clock.advance(ms).then(() => ({
+        return {
           finished: w.__finished,
-          time: w.replayer.getReplayer().getCurrentTime(),
-        }));
-      }, interval);
+          current: w.replayer.getReplayer().getCurrentTime(),
+        };
+      });
       if (finished) {
-        await encoder.write(await grab());
+        await encoder.write(await driver.grab());
         break;
       }
-      options.onProgressUpdate(Math.min(time / durationMs, 0.99));
+      options.onProgressUpdate(Math.min(current / durationMs, 0.99));
     }
     await encoder.end();
+    await fs.move(tmp, output, { overwrite: true });
     options.onProgressUpdate(1);
   } finally {
     encoder.kill();
     await browser.close();
+    await fs.remove(tmp);
   }
 }

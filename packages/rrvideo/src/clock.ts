@@ -10,7 +10,6 @@
 export function installClock() {
   type Timer = { due: number; every: number; fn: () => void };
   const w = window as unknown as Record<string, unknown>;
-  const realSetTimeout = setTimeout.bind(window);
   const timers = new Map<number, Timer>();
   let frames = new Map<number, FrameRequestCallback>();
   let now = performance.now();
@@ -44,7 +43,6 @@ export function installClock() {
   w.cancelAnimationFrame = (id: number) => frames.delete(id);
 
   w.__clock = {
-    sleep: (ms: number) => new Promise((r) => realSetTimeout(r, ms)),
     // Fire due timers in order, yielding to microtasks between them as real
     // tasks would, then one round of animation frames.
     advance(ms: number): Promise<void> {
