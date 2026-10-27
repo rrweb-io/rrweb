@@ -2,7 +2,13 @@ name: ESLint Check
 
 on:
   push:
+    paths-ignore:
+      - '**/*.md'
+      - '.changeset/**'
   pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - '.changeset/**'
 
 jobs:
   eslint_check_upload:

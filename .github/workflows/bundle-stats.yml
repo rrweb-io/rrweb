@@ -2,7 +2,13 @@ name: Bundle Stats
 
 on:
   push:
+    paths-ignore:
+      - '**/*.md'
+      - '.changeset/**'
   pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - '.changeset/**'
 
 jobs:
   build:
