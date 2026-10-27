@@ -10,6 +10,10 @@ on:
       - '**/*.md'
       - '.changeset/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   eslint_check_upload:
     runs-on: ubuntu-latest
