@@ -168,14 +168,15 @@ function initMoveObserver({
         const { clientX, clientY } = legacy_isTouchEvent(evt)
           ? evt.changedTouches[0]
           : evt;
+        const now = nowTimestamp();
         if (!timeBaseline) {
-          timeBaseline = nowTimestamp();
+          timeBaseline = now;
         }
         positions.push({
           x: clientX,
           y: clientY,
           id: mirror.getId(target as Node),
-          timeOffset: nowTimestamp() - timeBaseline,
+          timeOffset: now - timeBaseline,
         });
         // it is possible DragEvent is undefined even on devices
         // that support event 'drag'
@@ -186,7 +187,7 @@ function initMoveObserver({
             ? IncrementalSource.MouseMove
             : IncrementalSource.TouchMove;
         ongoingMove = moveEmission;
-        throttledMoveEmission(nowTimestamp());
+        throttledMoveEmission(now);
       }),
       threshold,
       {
