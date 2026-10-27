@@ -83,7 +83,6 @@ import {
   getNestedRule,
   getPositionsAndIndex,
   uniqueTextMutations,
-  StyleSheetMirror,
 } from '../utils';
 import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
@@ -151,7 +150,7 @@ export class Replayer {
   private mirror: Mirror = createMirror();
 
   // Used to track StyleSheetObjects adopted on multiple document hosts.
-  private styleMirror: StyleSheetMirror = new StyleSheetMirror();
+  private styleSheetMap = new Map<number, CSSStyleSheet>();
 
   // Used to track video & audio elements, and keep them in sync with general playback.
   private mediaManager: MediaManager;
@@ -337,7 +336,7 @@ export class Replayer {
     this.emitter.on(ReplayerEvents.PlayBack, () => {
       this.firstFullSnapshot = null;
       this.mirror.reset();
-      this.styleMirror.reset();
+      this.styleSheetMap.clear();
       this.mediaManager.reset();
     });
 
@@ -559,7 +558,7 @@ export class Replayer {
   public destroy() {
     this.pause();
     this.mirror.reset();
-    this.styleMirror.reset();
+    this.styleSheetMap.clear();
     this.mediaManager.reset();
     this.config.root.removeChild(this.wrapper);
     this.emitter.emit(ReplayerEvents.Destroy);
@@ -708,7 +707,7 @@ export class Replayer {
             this.firstFullSnapshot = true;
           }
           this.mediaManager.reset();
-          this.styleMirror.reset();
+          this.styleSheetMap.clear();
           this.rebuildFullSnapshot(event, isSync);
           this.iframe.contentWindow?.scrollTo(event.data.initialOffset);
         };
@@ -1980,7 +1979,7 @@ export class Replayer {
     data: styleDeclarationData | styleSheetRuleData,
   ) {
     let styleSheet: CSSStyleSheet | null = null;
-    if (data.styleId) styleSheet = this.styleMirror.getStyle(data.styleId);
+    if (data.styleId) styleSheet = this.styleSheetMap.get(data.styleId) ?? null;
     else if (data.id)
       styleSheet =
         (this.mirror.getNode(data.id) as HTMLStyleElement)?.sheet || null;
@@ -2114,7 +2113,7 @@ export class Replayer {
       if (!hostWindow) return;
       try {
         newStyleSheet = new hostWindow.CSSStyleSheet();
-        this.styleMirror.add(newStyleSheet, style.styleId);
+        this.styleSheetMap.set(style.styleId, newStyleSheet);
         // To reuse the code of applying stylesheet rules
         this.applyStyleSheetRule(
           {
@@ -2132,7 +2131,7 @@ export class Replayer {
     let count = 0;
     const adoptStyleSheets = (targetHost: Node, styleIds: number[]) => {
       const stylesToAdopt = styleIds
-        .map((styleId) => this.styleMirror.getStyle(styleId))
+        .map((styleId) => this.styleSheetMap.get(styleId) ?? null)
         .filter((style) => style !== null) as CSSStyleSheet[];
       if (hasShadowRoot(targetHost))
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
