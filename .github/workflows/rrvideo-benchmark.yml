@@ -1,0 +1,39 @@
+name: rrvideo capture comparison
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'packages/rrvideo/**'
+      - '.github/workflows/rrvideo-benchmark.yml'
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: yarn workspace rrvideo exec playwright install --with-deps --only-shell chromium
+      - run: yarn turbo run prepublish --filter=rrweb-player...
+      - run: yarn workspace rrvideo build
+      - run: yarn workspace rrvideo test --runInBand
+      - name: Capture comparison smoke test
+        if: github.event_name == 'pull_request'
+        run: node packages/rrvideo/benchmark/run.cjs --output benchmark-results --repetitions 1 --delays 0
+      - name: Full repeated capture comparison
+        if: github.event_name == 'workflow_dispatch'
+        run: node packages/rrvideo/benchmark/run.cjs --output benchmark-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rrvideo-capture-comparison
+          path: benchmark-results
