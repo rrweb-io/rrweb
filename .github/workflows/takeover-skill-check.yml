@@ -1,0 +1,27 @@
+name: Takeover skill checks
+on:
+  pull_request:
+    paths:
+      - '.agents/skills/takeover/**'
+      - '.claude/skills/takeover/**'
+      - '.codex/skills/takeover'
+      - '.github/workflows/takeover-skill-check.yml'
+  push:
+    paths:
+      - '.agents/skills/takeover/**'
+      - '.claude/skills/takeover/**'
+      - '.codex/skills/takeover'
+      - '.github/workflows/takeover-skill-check.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: node --test .agents/skills/takeover/tests/*.test.mjs
