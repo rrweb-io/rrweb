@@ -29,6 +29,8 @@ Every item has a stable `id`, `disposition`, nonempty `evidence`, and the `targe
 it was assessed against. Permitted dispositions are `absorbed`, `superseded`,
 `implemented`, `missing`, or `uncertain`. Use `implemented` only for remaining work
 completed on `candidateHead`; retain its prior `missing` disposition in the raw ledger.
+An `implemented` item also needs its own `candidateHead` equal to the report's
+`candidateHead`.
 At least one check must pass on the final candidate; inapplicable checks alone
 cannot establish completion. Offline work with unverified remote freshness remains
 blocked even if local checks pass. Every check has a nonempty `command`, `head`, `result` as `passed`, `failed`, `blocked`,
