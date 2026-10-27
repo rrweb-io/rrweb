@@ -3,12 +3,19 @@ import { once } from 'events';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { chromium, type CDPSession, type Page } from 'playwright';
+import type { eventWithTime } from '@rrweb/types';
 import { installClock } from './clock';
+import { actionTimes, heldFrames, readStatus } from './idle';
 
-type PageWindow = {
+export type PageWindow = {
   __clock: { advance(ms: number): Promise<void> };
   __finished?: boolean;
-  replayer: { getReplayer(): { getCurrentTime(): number } };
+  replayer: {
+    getReplayer(): {
+      getCurrentTime(): number;
+      speedService: { state: { context: { timer: { speed: number } } } };
+    };
+  };
 };
 
 type Driver = {
@@ -183,12 +190,14 @@ export async function captureFrames(options: {
   output: string;
   viewport: { width: number; height: number };
   fps: number;
-  durationMs: number;
+  events: eventWithTime[];
   speed: number;
   headless: boolean;
   onProgressUpdate: (percent: number) => void;
 }) {
-  const { fps, durationMs, output } = options;
+  const { fps, events, output } = options;
+  const actions = actionTimes(events);
+  const durationMs = actions.all[actions.all.length - 1];
   // Encode next to the output and move it into place only on success.
   const tmp = path.join(
     path.dirname(output),
@@ -214,25 +223,24 @@ export async function captureFrames(options: {
     // speed and skipInactive are applied by the replayer; this only bounds the loop.
     const maxFrames = (durationMs / options.speed / 1000) * fps + fps;
     let time = 0;
-    for (let frame = 1; frame <= maxFrames; frame++) {
-      await encoder.write(await driver.grab());
+    for (let frame = 0; frame < maxFrames; ) {
+      const image = await driver.grab();
+      // Read after drawing: in beginFrame mode the replayer only catches up
+      // with the clock in the frame's rAF.
+      const status = await readStatus(page);
+      // Render once and repeat the picture over idle stretches.
+      const held = status.finished
+        ? 1
+        : heldFrames(status, actions, frame, time, fps);
+      for (let i = 0; i < held; i++) await encoder.write(image);
+      if (status.finished) break;
+      frame += held;
       // Whole milliseconds, as events are recorded, so an event on a frame
       // boundary can't drift to the next frame through float rounding.
       const next = Math.floor((frame * 1000) / fps);
       await driver.advance(next - time);
       time = next;
-      const { finished, current } = await page.evaluate(() => {
-        const w = window as unknown as PageWindow;
-        return {
-          finished: w.__finished,
-          current: w.replayer.getReplayer().getCurrentTime(),
-        };
-      });
-      if (finished) {
-        await encoder.write(await driver.grab());
-        break;
-      }
-      options.onProgressUpdate(Math.min(current / durationMs, 0.99));
+      options.onProgressUpdate(Math.min(status.current / durationMs, 0.99));
     }
     await encoder.end();
     await fs.move(tmp, output, { overwrite: true });

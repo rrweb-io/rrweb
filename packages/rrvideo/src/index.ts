@@ -146,7 +146,7 @@ export async function transformToVideo(options: RRvideoConfig) {
       output: outputPath,
       viewport,
       fps: config.fps,
-      durationMs: events[events.length - 1].timestamp - events[0].timestamp,
+      events,
       speed: config.rrwebPlayer.speed || 1,
       headless: config.headless,
       onProgressUpdate: config.onProgressUpdate,
