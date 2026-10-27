@@ -1,6 +1,6 @@
 ---
 name: takeover
-description: Use when explicitly asked to take over an rrweb PR, branch or prior agent task.
+description: Use when explicitly asked to take over an rrweb PR, branch, or agent task.
 disable-model-invocation: true
 ---
 

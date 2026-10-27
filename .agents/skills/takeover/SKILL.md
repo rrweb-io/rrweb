@@ -1,6 +1,6 @@
 ---
 name: takeover
-description: Use when the user explicitly asks to take over an rrweb PR, branch, or prior agent task. Reconstruct intent, check partial absorption against the actual target branch, and continue only the remaining authorized work.
+description: Use when explicitly asked to take over an rrweb PR, branch, or agent task.
 ---
 
 # Take over rrweb work
