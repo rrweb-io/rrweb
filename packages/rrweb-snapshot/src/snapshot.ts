@@ -618,19 +618,13 @@ function serializeElementNode(
   // form fields
   if (['input', 'textarea', 'select'].includes(tagName)) {
     const value = (n as HTMLInputElement | HTMLTextAreaElement).value;
-    const checked = (n as HTMLInputElement).checked;
-    const type = getInputType(n);
-    if (type === 'radio' || type === 'checkbox') {
-      const maskedChecked = maskInputChecked({
-        type,
-        checked,
+    const inputType = getInputType(n);
+    if (inputType === 'radio' || inputType === 'checkbox') {
+      attributes.checked = maskInputChecked({
+        type: inputType,
+        checked: (n as HTMLInputElement).checked,
         maskInputOptions,
-      });
-      if (maskedChecked) {
-        attributes.checked = true;
-      } else {
-        delete attributes.checked;
-      }
+      }) || null;
     } else if (
       attributes.type !== 'submit' &&
       attributes.type !== 'button' &&

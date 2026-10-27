@@ -297,6 +297,7 @@ export function maskInputValue({
   let text = value || '';
   const actualType = type && toLowerCase(type);
 
+
   if (
     maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
     (actualType && maskInputOptions[actualType as keyof MaskInputOptions])
