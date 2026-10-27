@@ -470,7 +470,6 @@ export function uniqueTextMutations(mutations: textMutation[]): textMutation[] {
 export class StyleSheetMirror {
   private id = 1;
   private styleIDMap = new WeakMap<CSSStyleSheet, number>();
-  private idStyleMap = new Map<number, CSSStyleSheet>();
 
   getId(stylesheet: CSSStyleSheet): number {
     return this.styleIDMap.get(stylesheet) ?? -1;
@@ -490,17 +489,11 @@ export class StyleSheetMirror {
       newId = this.id++;
     } else newId = id;
     this.styleIDMap.set(stylesheet, newId);
-    this.idStyleMap.set(newId, stylesheet);
     return newId;
-  }
-
-  getStyle(id: number): CSSStyleSheet | null {
-    return this.idStyleMap.get(id) || null;
   }
 
   reset(): void {
     this.styleIDMap = new WeakMap();
-    this.idStyleMap = new Map();
     this.id = 1;
   }
 
