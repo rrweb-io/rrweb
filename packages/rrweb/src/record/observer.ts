@@ -430,6 +430,7 @@ function initInputObserver({
     const type: Lowercase<string> = getInputType(target) || '';
 
     if (type === 'radio' || type === 'checkbox') {
+      if (maskInputOptions[type as 'checkbox' | 'radio']) return;
       isChecked = (target as HTMLInputElement).checked;
     } else if (
       maskInputOptions[tagName.toLowerCase() as keyof MaskInputOptions] ||
