@@ -35,6 +35,7 @@ const onProgressUpdate = (percent: number) => {
 transformToVideo({
   input: argv.input as string,
   output: argv.output as string,
+  fps: argv.fps as number | undefined,
   rrwebPlayer: config,
   onProgressUpdate,
 })
