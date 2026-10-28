@@ -15,6 +15,7 @@ jobs:
     name: Tests
     permissions:
       contents: read
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -33,6 +34,13 @@ jobs:
         run: yarn install --frozen-lockfile
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
+
+      - name: Set up Turborepo Remote Cache
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        continue-on-error: true
+        uses: vercel/setup-turborepo-remote-cache-action@49d7b1b46ba4c9251e1977986bfe18336feabc8f
+        with:
+          team: ${{ vars.TURBO_TEAM }}
 
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
