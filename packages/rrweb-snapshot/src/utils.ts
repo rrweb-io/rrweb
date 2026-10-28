@@ -289,7 +289,16 @@ export function maskInputValue({
     if (maskInputFn) {
       text = maskInputFn(text, element);
     } else {
-      text = '*'.repeat(text.length);
+      if (maskInputOptions["maskLengthStrategy"] === "bucketed") {
+        if (text.length <= 5) {
+          text = '*'.repeat(text.length);
+        } else {
+          const bucketCount = Math.ceil(text.length / 10);
+          text = '*'.repeat(text.length * bucketCount);
+        }
+      } else {
+        text = '*'.repeat(text.length);
+      }
     }
   }
   return text;
