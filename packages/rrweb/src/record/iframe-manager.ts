@@ -33,26 +33,26 @@ export class IframeManager {
   private messageHandler = (message: Event) =>
     this.handleMessage(message as MessageEvent);
   private stylesheetManager: StylesheetManager;
-  private recordCrossOriginIframes: boolean;
+  private collectFromOrigins?: string[];
 
   constructor(options: {
     mirror: Mirror;
     mutationCb: mutationCallBack;
     stylesheetManager: StylesheetManager;
-    recordCrossOriginIframes: boolean;
+    collectFromOrigins?: string[];
     wrappedEmit: (e: eventWithoutTime, isCheckout?: boolean) => void;
   }) {
     this.mutationCb = options.mutationCb;
     this.wrappedEmit = options.wrappedEmit;
     this.stylesheetManager = options.stylesheetManager;
-    this.recordCrossOriginIframes = options.recordCrossOriginIframes;
+    this.collectFromOrigins = options.collectFromOrigins;
     this.crossOriginIframeStyleMirror = new CrossOriginIframeMirror(
       this.stylesheetManager.styleMirror.generateId.bind(
         this.stylesheetManager.styleMirror,
       ),
     );
     this.mirror = options.mirror;
-    if (this.recordCrossOriginIframes) {
+    if (this.collectFromOrigins) {
       window.addEventListener('message', this.messageHandler);
     }
   }
@@ -126,7 +126,7 @@ export class IframeManager {
     this.attachedWindows.set(win, stop);
 
     // Receive messages (events) coming from cross-origin iframes that are nested in this same-origin iframe.
-    if (this.recordCrossOriginIframes) {
+    if (this.collectFromOrigins) {
       handlers.push(on('message', this.messageHandler, win));
     }
     handlers.push(
@@ -144,6 +144,12 @@ export class IframeManager {
     );
   }
 
+  private isOriginAllowed(origin: string): boolean {
+    const allowed = this.collectFromOrigins;
+    if (!allowed) return false;
+    return allowed.includes('*') || allowed.includes(origin);
+  }
+
   private handleMessage(message: MessageEvent | CrossOriginIframeMessageEvent) {
     const crossOriginMessageEvent = message as CrossOriginIframeMessageEvent;
     if (
@@ -152,6 +158,8 @@ export class IframeManager {
       crossOriginMessageEvent.origin !== crossOriginMessageEvent.data.origin
     )
       return;
+
+    if (!this.isOriginAllowed(crossOriginMessageEvent.origin)) return;
 
     const iframeSourceWindow = message.source;
     if (!iframeSourceWindow) return;
