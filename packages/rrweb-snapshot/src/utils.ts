@@ -293,8 +293,9 @@ export function maskInputValue({
         if (text.length <= 5) {
           text = '*'.repeat(text.length);
         } else {
-          const bucketCount = Math.ceil(text.length / 10);
-          text = '*'.repeat(text.length * bucketCount);
+          const bucketSize = 10;
+          const bucketCount = Math.ceil(text.length / bucketSize);
+          text = '*'.repeat(bucketCount * bucketSize);
         }
       } else {
         text = '*'.repeat(text.length);
