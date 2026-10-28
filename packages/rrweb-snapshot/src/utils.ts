@@ -289,17 +289,7 @@ export function maskInputValue({
     if (maskInputFn) {
       text = maskInputFn(text, element);
     } else {
-      if (maskInputOptions['maskLengthStrategy'] === 'bucketed') {
-        if (text.length <= 5) {
-          text = '*'.repeat(text.length);
-        } else {
-          const bucketSize = 10;
-          const bucketCount = Math.ceil(text.length / bucketSize);
-          text = '*'.repeat(bucketCount * bucketSize);
-        }
-      } else {
-        text = '*'.repeat(text.length);
-      }
+      text = '*'.repeat(text.length);
     }
   }
   return text;

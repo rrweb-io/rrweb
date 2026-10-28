@@ -688,6 +688,32 @@ if (hasDocument() && document.currentScript) {
   }
 }
 
+export function bucketMasker(text: string, element: HTMLElement): string {
+  const bucketSize = 10;
+
+  // as a default maskInputFunction in the browser client package
+  let textLength
+  if (text.length <= 2) {
+    textLength = 2;
+  }
+  else if (text.length <= 5) {
+    textLength = 5
+  } else {
+
+    const bucketCount = Math.ceil(text.length / bucketSize);
+    textLength = bucketSize * bucketCount
+  }
+  if (element.hasAttribute('maxlength')) {
+    textLength = Math.min(
+      textLength,
+      (element as HTMLInputElement | HTMLTextAreaElement).maxLength,
+    );
+  }
+  text = '*'.repeat(textLength);
+  return text;
+}
+
+
 export default {
   start,
   stop,
