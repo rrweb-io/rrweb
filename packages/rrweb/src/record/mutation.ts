@@ -87,11 +87,13 @@ export default class MutationBuffer {
   private dataURLOptions: observerParam['dataURLOptions'];
   private doc: observerParam['doc'];
   private mirror: observerParam['mirror'];
+
+  // managers: convenience references to per-recording singletons
   private iframeManager: observerParam['iframeManager'];
   private stylesheetManager: observerParam['stylesheetManager'];
   private shadowDomManager: observerParam['shadowDomManager'];
-  private canvasManager: observerParam['canvasManager'];
   private processedNodeManager: observerParam['processedNodeManager'];
+
   private unattachedDoc: HTMLDocument;
 
   public init(options: MutationBufferParam) {
@@ -116,7 +118,6 @@ export default class MutationBuffer {
         'iframeManager',
         'stylesheetManager',
         'shadowDomManager',
-        'canvasManager',
         'processedNodeManager',
       ] as const
     ).forEach((key) => {
@@ -127,12 +128,10 @@ export default class MutationBuffer {
 
   public freeze() {
     this.frozen = true;
-    this.canvasManager.freeze();
   }
 
   public unfreeze() {
     this.frozen = false;
-    this.canvasManager.unfreeze();
     this.emit();
   }
 
@@ -142,18 +141,11 @@ export default class MutationBuffer {
 
   public lock() {
     this.locked = true;
-    this.canvasManager.lock();
   }
 
   public unlock() {
     this.locked = false;
-    this.canvasManager.unlock();
     this.emit();
-  }
-
-  public reset() {
-    this.shadowDomManager.reset();
-    this.canvasManager.reset();
   }
 
   public processMutations = (mutations: mutationRecord[]) => {
@@ -173,9 +165,7 @@ export default class MutationBuffer {
     const addedIds = new Set<number>();
 
     while (this.mapRemoves.length) {
-      const removedNode = this.mapRemoves.shift()!;
-      this.mirror.removeNodeFromMap(removedNode);
-      this.shadowDomManager.removeShadowRootsFor(removedNode);
+      this.mirror.removeNodeFromMap(this.mapRemoves.shift()!);
     }
 
     for (const n of this.movedSet) {
@@ -439,10 +429,6 @@ export default class MutationBuffer {
     this.mutationCb(payload);
   };
 
-  public bufferBelongsToIframe = (iframeEl: HTMLIFrameElement) => {
-    return this.doc === iframeEl.contentDocument;
-  };
-
   private genTextAreaValueMutation = (textarea: HTMLTextAreaElement) => {
     let item = this.attributeMap.get(textarea);
     if (!item) {
@@ -629,6 +615,9 @@ export default class MutationBuffer {
 
         m.addedNodes.forEach((n) => this.genAdds(n, m.target));
         m.removedNodes.forEach((n) => {
+          if (!inDom(n)) {
+            this.shadowDomManager.removeShadowRootsIn(n);
+          }
           const nodeId = this.mirror.getId(n);
           const parentId = isShadowRoot(m.target)
             ? this.mirror.getId(dom.host(m.target))
