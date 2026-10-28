@@ -1,77 +1,120 @@
 # Cross origin iframes
 
 Browsers prevent a parent page from accessing the contents of a cross-origin
-iframe. To record those contents, run rrweb in both pages and enable
-`recordCrossOriginIframes`. The iframe sends its recording events to its parent.
+iframe. To record those contents, run rrweb in both pages: the child recorder
+forwards its events to the parent recorder via `postMessage`, and the parent
+stitches them into a single recording.
+
+Two options control this, one on each side:
+
+- `collectFromOrigins` — set on the **parent** recorder. A list of child origins
+  it accepts and trusts events from. Events from any other origin are dropped.
+- `emitToOrigin` — set on the **cross-origin child** recorder. The origin of its
+  parent, used so the browser only delivers its events to that parent.
 
 > **Security warning:** Cross-origin iframe recording is not recommended unless
 > you [strictly restrict](https://stackoverflow.com/a/21629575) which sites can
-> embed your page and trust those sites with its recorded contents.
-> The browser's cross-origin restrictions protect
-> sensitive information. With the default `crossOriginIframeParentOrigin: '*'`,
-> a malicious website can embed your page and collect its recorded contents.
-
-Set `crossOriginIframeParentOrigin` in the child page to restrict event delivery
-to a trusted parent origin. This controls where events are delivered; it does
-not restrict which websites can embed your page.
+> embed your page and trust those sites with its recorded contents. The
+> browser's cross-origin restrictions protect sensitive information. Accepting
+> events with `collectFromOrigins: ['*']`, or forwarding them with
+> `emitToOrigin: '*'`, removes that protection — a malicious page can then
+> embed your page and collect its recorded contents, or inject fabricated
+> events into your recording. Name specific origins on both sides.
 
 ## How to record cross origin iframes
 
-Enable recording cross-origin iframes in your parent page:
+In this example the parent page is hosted at `https://app.example.com` and the
+child iframe at `https://widgets.example.com`.
+
+Enable collecting from the child in your parent page:
 
 ```js
 import { record } from '@rrweb/record';
 
 record({
-  emit(event) {}, // all events will be emitted here, including events from cross origin iframes
-  recordCrossOriginIframes: true,
+  emit(event) {}, // all events arrive here, including events from cross-origin iframes
+  collectFromOrigins: ['https://widgets.example.com'],
 });
 ```
 
-Enable recording in your child page. In this example, the parent page is hosted
-at `https://app.example.com`:
+Enable forwarding to the parent in your child page:
 
 ```js
 import { record } from '@rrweb/record';
 
 record({
-  recordCrossOriginIframes: true,
-  crossOriginIframeParentOrigin: 'https://app.example.com',
+  emitToOrigin: 'https://app.example.com',
 });
 ```
 
 The child forwards events to its parent instead of calling its own `emit`
 callback, so the child does not need an `emit` callback.
 
-## Restrict event delivery to a parent origin
+## `collectFromOrigins` (parent side)
 
-`crossOriginIframeParentOrigin` is a string that defaults to `'*'`. Set it in
-each cross-origin child recorder to the origin of its immediate parent window.
-Use the scheme, hostname, and port if needed, such as
-`https://app.example.com:8443`. Do not include a path or trailing slash.
+`collectFromOrigins` is a list of origins. The parent recorder accepts events
+only from child iframes on those origins; events from any other embedded iframe
+(an ad frame, an untrusted widget) are dropped before they enter the recording.
+Setting it is also what turns the parent into a collector — without it the
+parent ignores forwarded events.
 
-The browser delivers events only if the parent's origin matches. If it does not
-match, the parent receives no recording events from that iframe. Setting this
-option on the top-level recorder does not configure the child recorders.
-The option applies only when `recordCrossOriginIframes` is `true` and the recorder
-forwards events from a cross-origin iframe.
+Each entry is a full origin: scheme, hostname, and port if non-default, such as
+`https://widgets.example.com:8443`. Do not include a path or trailing slash. Use
+`['*']` to accept any origin, but note this re-opens the injection risk above.
 
-For nested cross-origin iframes, configure each child with its immediate parent's
-origin. This can differ from the top-level page's origin.
+## `emitToOrigin` (child side)
+
+`emitToOrigin` is the origin of the child's **immediate** parent window. The
+browser delivers the forwarded events only if the parent's origin matches; if it
+does not, the parent receives nothing from that iframe. Setting it is also what
+switches the child from emitting locally to forwarding upward.
+
+Use the same origin format as above. Setting this option on the top-level
+recorder has no effect — it only applies to a recorder inside a cross-origin
+iframe.
+
+## Nested cross-origin iframes
+
+Events hop up one level at a time: each child forwards to its immediate parent,
+which re-emits and (if it is itself a cross-origin child) forwards upward again.
+Configure each frame with its immediate neighbours, not the top-level page.
+
+For `A (https://top.example) › B (https://mid.example) › C (https://deep.example)`:
+
+```js
+// A — top collector
+record({ emit(event) {}, collectFromOrigins: ['https://mid.example'] });
+
+// B — middle: collects from C and forwards to A
+record({
+  collectFromOrigins: ['https://deep.example'],
+  emitToOrigin: 'https://top.example',
+});
+
+// C — deepest: forwards to B
+record({ emitToOrigin: 'https://mid.example' });
+```
 
 ## Considerations
 
-When cross origin iframe recording is turned on rrweb will check to see if it is being run in a top level window.
-If it isn't it'll send the events to the parent window via `postMessage`.
+A cross-origin child recorder sends its events to the parent window via
+`postMessage`. If you do not have rrweb running in the parent window, those
+events are lost.
 
-If you don't have rrweb running in the top level window, the events will be lost when `recordCrossOriginIframes` is turned on.
+`collectFromOrigins` controls whom the parent accepts events from, and
+`emitToOrigin` controls which parent the browser delivers them to. Neither
+prevents scripts running in a trusted parent page from reading events once
+delivered. Only name origins you trust with the recorded contents of your iframe.
 
-With the default `crossOriginIframeParentOrigin: '*'`, any parent website can
-receive the events and send them to a server of its choosing.
+## Migrating from `recordCrossOriginIframes`
 
-Restricting the parent origin controls where the browser delivers events. It
-does not prevent scripts running in the trusted parent page from reading them.
-Only allow parent origins you trust with the recorded contents of your iframe.
+`recordCrossOriginIframes` is deprecated. It enabled both halves at once and
+trusted any origin. Replace it with the scoped options:
+
+- On the parent: `recordCrossOriginIframes: true` → `collectFromOrigins: ['*']`,
+  then narrow `['*']` to your real child origins.
+- On a cross-origin child: `recordCrossOriginIframes: true` →
+  `emitToOrigin: '<parent origin>'`.
 
 ## Options for injecting rrweb into cross origin iframes
 
@@ -108,12 +151,18 @@ async function injectRecording(frame) {
       }
       loadScript(rrwebCode);
 
-      window.rrweb.record({
-        emit: (event) => {
-          window._captureEvent(event);
-        },
-        recordCrossOriginIframes: true,
-      });
+      if (window.parent === window) {
+        window.rrweb.record({
+          emit: (event) => {
+            window._captureEvent(event);
+          },
+          collectFromOrigins: ['*'],
+        });
+      } else {
+        window.rrweb.record({
+          emitToOrigin: '*',
+        });
+      }
     })();
   }, code);
 }
