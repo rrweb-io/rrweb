@@ -8,7 +8,7 @@ interface RecordingWindow extends Window {
   rrweb: Pick<typeof import('../../src'), 'record' | 'addCustomEvent'>;
 }
 
-describe('crossOriginIframeParentOrigin', () => {
+describe('emitToOrigin', () => {
   let browser: puppeteer.Browser;
   let parentServer: http.Server;
   let childServer: http.Server;
@@ -59,19 +59,14 @@ describe('crossOriginIframeParentOrigin', () => {
 
   it.each([
     {
-      origin: undefined,
-      delivered: true,
-      description: 'defaults to any parent',
-    },
-    {
       origin: '*',
       delivered: true,
-      description: 'allows any parent explicitly',
+      description: 'allows any parent with a wildcard',
     },
     {
       origin: 'matching',
       delivered: true,
-      description: 'allows a matching parent',
+      description: 'allows a matching parent origin',
     },
     {
       origin: 'https://untrusted.example',
@@ -84,16 +79,11 @@ describe('crossOriginIframeParentOrigin', () => {
       path: path.resolve(__dirname, '../../dist/rrweb.umd.cjs'),
     });
     await frame.evaluate(
-      (crossOriginIframeParentOrigin) => {
+      (emitToOrigin) => {
         const { record, addCustomEvent } = (window as RecordingWindow).rrweb;
-        const stop = record({
-          recordCrossOriginIframes: true,
-          crossOriginIframeParentOrigin,
-        });
-        addCustomEvent('parent-origin-test', {});
+        const stop = record({ emitToOrigin });
+        addCustomEvent('emit-to-origin-test', {});
         stop?.();
-        // Messages to the same parent arrive in order. This marks the end of
-        // recording messages even when the configured origin blocks delivery.
         window.parent.postMessage('test-complete', '*');
       },
       origin === 'matching' ? getServerURL(parentServer) : origin,
@@ -107,7 +97,7 @@ describe('crossOriginIframeParentOrigin', () => {
     if (delivered) {
       expect(messages).toContainEqual({
         type: EventType.Custom,
-        data: { tag: 'parent-origin-test', payload: {} },
+        data: { tag: 'emit-to-origin-test', payload: {} },
         timestamp: expect.any(Number),
       });
     } else {

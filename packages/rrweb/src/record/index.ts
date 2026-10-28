@@ -100,25 +100,43 @@ function record<T = eventWithTime>(
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
     errorHandler,
-    crossOriginIframeParentOrigin = '*',
+    emitToOrigin,
   } = options;
 
   registerErrorHandler(errorHandler);
 
-  const inEmittingFrame = recordCrossOriginIframes
-    ? window.parent === window
-    : true;
+  const collectFromOrigins =
+    options.collectFromOrigins ??
+    (recordCrossOriginIframes ? ['*'] : undefined);
 
-  let passEmitsToParent = false;
-  if (!inEmittingFrame) {
-    try {
-      // throws if parent is cross-origin
-      if (window.parent.document) {
-        passEmitsToParent = false; // if parent is same origin we collect iframe events from the parent
+  let inEmittingFrame: boolean;
+  let passEmitsToParent: boolean;
+  let emitToParentOrigin: string | undefined;
+
+  if (emitToOrigin !== undefined) {
+    emitToParentOrigin = emitToOrigin;
+    passEmitsToParent = true;
+    inEmittingFrame = false;
+  } else if (options.collectFromOrigins !== undefined) {
+    passEmitsToParent = false;
+    inEmittingFrame = true;
+  } else if (recordCrossOriginIframes) {
+    inEmittingFrame = window.parent === window;
+    passEmitsToParent = false;
+    if (!inEmittingFrame) {
+      try {
+        // throws if parent is cross-origin
+        if (window.parent.document) {
+          passEmitsToParent = false; // if parent is same origin we collect iframe events from the parent
+        }
+      } catch (e) {
+        passEmitsToParent = true;
       }
-    } catch (e) {
-      passEmitsToParent = true;
     }
+    emitToParentOrigin = passEmitsToParent ? '*' : undefined;
+  } else {
+    inEmittingFrame = true;
+    passEmitsToParent = false;
   }
 
   // runtime checks for user options
@@ -215,7 +233,7 @@ function record<T = eventWithTime>(
         origin: window.location.origin,
         isCheckout,
       };
-      window.parent.postMessage(message, crossOriginIframeParentOrigin);
+      window.parent.postMessage(message, emitToParentOrigin as string);
     }
 
     if (e.type === EventType.FullSnapshot) {
@@ -286,7 +304,7 @@ function record<T = eventWithTime>(
     mirror,
     mutationCb: wrappedMutationEmit,
     stylesheetManager: stylesheetManager,
-    recordCrossOriginIframes,
+    collectFromOrigins,
     wrappedEmit,
   });
 
