@@ -4,6 +4,7 @@ import type * as puppeteer from 'puppeteer';
 import { vi } from 'vitest';
 import type { recordOptions } from '../../src/types';
 import type {
+  annotationData,
   listenerHandler,
   eventWithTime,
   mutationData,
@@ -33,6 +34,7 @@ interface IWindow extends Window {
       options: recordOptions<eventWithTime>,
     ) => listenerHandler | undefined;
     addCustomEvent<T>(tag: string, payload: T): void;
+    addAnnotation(annotation: annotationData): void;
     pack: (e: eventWithTime) => string;
   };
   emit: (e: eventWithTime) => undefined;
@@ -176,6 +178,43 @@ describe('cross origin iframes', function (this: ISuite) {
       await waitForRAF(ctx.page);
       // two events (full snapshot + meta) from main frame, and one full snapshot from iframe
       expect(events.length).toBe(3);
+    });
+
+    it('should forward annotation events from a cross-origin iframe', async () => {
+      const frame = ctx.page.mainFrame().childFrames()[0];
+      await frame.evaluate(() => {
+        const { addAnnotation } = (window as unknown as IWindow).rrweb;
+        addAnnotation({ type: 'caption', text: 'Iframe caption' });
+        addAnnotation({ type: 'timelineMarker', text: 'Iframe marker' });
+      });
+
+      await ctx.page.waitForFunction(
+        (annotationType) =>
+          (window as unknown as IWindow).snapshots.filter(
+            (event) => event.type === annotationType,
+          ).length >= 2,
+        {},
+        EventType.Annotation,
+      );
+
+      const annotationEvents = await ctx.page.evaluate(
+        (annotationType) =>
+          (window as unknown as IWindow).snapshots.filter(
+            (event) => event.type === annotationType,
+          ),
+        EventType.Annotation,
+      );
+
+      expect(annotationEvents).toMatchObject([
+        {
+          type: EventType.Annotation,
+          data: { type: 'caption', text: 'Iframe caption' },
+        },
+        {
+          type: EventType.Annotation,
+          data: { type: 'timelineMarker', text: 'Iframe marker' },
+        },
+      ]);
     });
 
     it('should emit full snapshot event from iframe as mutation event', async () => {

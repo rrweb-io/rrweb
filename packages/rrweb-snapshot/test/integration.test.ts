@@ -370,6 +370,42 @@ iframe.contentDocument.querySelector('center').clientHeight
     assert(snapshot.includes('data:image/webp;base64,'));
   });
 
+  describe('blocked iframes', () => {
+    const countIframeLoads = async (
+      page: puppeteer.Page,
+      className: string,
+    ): Promise<number> => {
+      await page.goto(`${serverURL}/html/iframe.html`, {
+        waitUntil: 'load',
+      });
+      await page.waitForSelector('iframe', { timeout: 1000 });
+      await waitForRAF(page); // wait for the iframe to finish loading
+      await page.evaluate(
+        `document.querySelector('iframe').className = '${className}'`,
+      );
+      await page.evaluate(`${code}
+        window.iframeLoads = 0;
+        rrwebSnapshot.snapshot(document, {
+          blockClass: 'rr-block',
+          onIframeLoad: function() {
+            window.iframeLoads++;
+          }
+        })`);
+      await waitForRAF(page);
+      return (await page.evaluate('window.iframeLoads')) as number;
+    };
+
+    it('does not record the document of a blocked iframe', async () => {
+      const page: puppeteer.Page = await browser.newPage();
+      expect(await countIframeLoads(page, 'rr-block')).toBe(0);
+    });
+
+    it('still records the document of an unblocked iframe', async () => {
+      const page: puppeteer.Page = await browser.newPage();
+      expect(await countIframeLoads(page, 'other')).toBe(1);
+    });
+  });
+
   it('should save background-clip: text; as the more compatible -webkit-background-clip: test;', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto(`${serverURL}/html/background-clip-text.html`, {

@@ -19,6 +19,7 @@ import {
 import type { recordOptions } from '../types';
 import {
   EventType,
+  type annotationData,
   type eventWithoutTime,
   type eventWithTime,
   IncrementalSource,
@@ -186,16 +187,22 @@ function record<T = eventWithTime>(
     const e = r as eventWithTime;
     e.timestamp = nowTimestamp();
     if (
-      mutationBuffers[0]?.isFrozen() &&
       e.type !== EventType.FullSnapshot &&
       !(
         e.type === EventType.IncrementalSnapshot &&
         e.data.source === IncrementalSource.Mutation
       )
     ) {
-      // we've got a user initiated event so first we need to apply
-      // all DOM changes that have been buffering during paused state
-      mutationBuffers.forEach((buf) => buf.unfreeze());
+      // we've got a user initiated event so if we've been frozen we first need
+      // to apply all DOM changes that have been buffering during paused state
+      canvasManager.unfreeze();
+      for (const buf of mutationBuffers) {
+        if (buf.isFrozen()) {
+          buf.unfreeze();
+        } else {
+          break; // just need to check one as they all get frozen together
+        }
+      }
     }
 
     if (inEmittingFrame) {
@@ -355,6 +362,7 @@ function record<T = eventWithTime>(
 
     shadowDomManager.init();
 
+    canvasManager.lock();
     mutationBuffers.forEach((buf) => buf.lock()); // don't allow any mirror modifications during snapshotting
     const node = snapshot(document, {
       mirror,
@@ -406,6 +414,7 @@ function record<T = eventWithTime>(
       },
       isCheckout,
     );
+    canvasManager.unlock();
     mutationBuffers.forEach((buf) => buf.unlock()); // generate & emit any mutations that happened during snapshotting, as can now apply against the newly built mirror
 
     // Some old browsers don't support adoptedStyleSheets.
@@ -554,13 +563,26 @@ function record<T = eventWithTime>(
       );
     };
 
+    // Observers of same-origin iframe documents, stopped when the document unloads.
+    const iframeObservers = new Map<Document, listenerHandler>();
     iframeManager.addLoadListener((iframeEl) => {
       try {
-        handlers.push(observe(iframeEl.contentDocument!));
+        const doc = iframeEl.contentDocument!;
+        // Iframes are attached again on every full snapshot, but each document needs to be observed only once.
+        if (iframeObservers.has(doc)) return;
+        iframeObservers.set(doc, observe(doc));
       } catch (error) {
         // TODO: handle internal error
         console.warn(error);
       }
+    });
+    iframeManager.addUnloadListener((doc) => {
+      const stopObserving = iframeObservers.get(doc);
+      if (!stopObserving) return;
+      iframeObservers.delete(doc);
+      stopObserving();
+      shadowDomManager.removeShadowRootsIn(doc);
+      mirror.removeNodeFromMap(doc);
     });
 
     const init = () => {
@@ -595,7 +617,7 @@ function record<T = eventWithTime>(
       );
     }
     return () => {
-      handlers.forEach((handler) => {
+      [...handlers, ...iframeObservers.values()].forEach((handler) => {
         try {
           handler();
         } catch (error) {
@@ -614,7 +636,11 @@ function record<T = eventWithTime>(
           }
         }
       });
+      iframeObservers.clear();
+      iframeManager.destroy();
       processedNodeManager.destroy();
+      shadowDomManager.reset();
+      canvasManager.reset();
       recording = false;
       unregisterErrorHandler();
     };
@@ -637,7 +663,15 @@ record.addCustomEvent = <T>(tag: string, payload: T) => {
   });
 };
 
+record.addAnnotation = (annotation: annotationData) => {
+  if (!recording) {
+    throw new Error('please add annotation after recording started');
+  }
+  wrappedEmit({ type: EventType.Annotation, data: annotation });
+};
+
 record.freezePage = () => {
+  canvasManager.freeze();
   mutationBuffers.forEach((buf) => buf.freeze());
 };
 

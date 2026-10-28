@@ -40,23 +40,39 @@ const untaintedBasePrototype: Partial<BasePrototypeCache> = {};
 const untaintedBaseIframeCleanup: Partial<
   Record<keyof BasePrototypeCache, () => void>
 > = {};
+let mutationObserverUsers = 0;
+
+type WindowWithZone = typeof globalThis & {
+  Zone?: {
+    __symbol__?: (key: string) => string;
+  };
+};
+
+type WindowWithUnpatchedSymbols = typeof globalThis &
+  Record<string, TypeofPrototypeOwner>;
 
 /*
- When angular patches things - particularly the MutationObserver -
- they pass the `isNativeFunction` check
- That then causes performance issues
- because Angular's change detection
- doesn't like sharing a mutation observer
- Checking for the presence of the Zone object
- on global is a good-enough proxy for Angular
- to cover most cases
- (you can configure zone.js to have a different name
-  on the global object and should then manually run rrweb
-  outside the Zone)
- */
-export const isAngularZonePresent = (): boolean => {
-  return !!(globalThis as { Zone?: unknown }).Zone;
-};
+Angular zone patches many things and can pass the untainted checks below, causing performance issues
+Angular zone, puts the unpatched originals on the window, and the names for hose on the zone object.
+So, we get the unpatched versions from the window object if they exist.
+You can rename Zone, but this is a good enough proxy to avoid going to an iframe to get the untainted versions.
+see: https://github.com/angular/angular/issues/26948
+*/
+function angularZoneUnpatchedAlternative(key: keyof BasePrototypeCache) {
+  const angularUnpatchedVersionSymbol = (
+    globalThis as WindowWithZone
+  )?.Zone?.__symbol__?.(key);
+  if (
+    angularUnpatchedVersionSymbol &&
+    (globalThis as WindowWithUnpatchedSymbols)[angularUnpatchedVersionSymbol]
+  ) {
+    return (globalThis as WindowWithUnpatchedSymbols)[
+      angularUnpatchedVersionSymbol
+    ];
+  } else {
+    return undefined;
+  }
+}
 
 export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
   key: T,
@@ -64,7 +80,9 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
   if (untaintedBasePrototype[key])
     return untaintedBasePrototype[key] as BasePrototypeCache[T];
 
-  const defaultObj = globalThis[key] as TypeofPrototypeOwner;
+  const defaultObj =
+    angularZoneUnpatchedAlternative(key) ||
+    (globalThis[key] as TypeofPrototypeOwner);
   const defaultPrototype = defaultObj.prototype as BasePrototypeCache[T];
 
   // use list of testable accessors to check if the prototype is tainted
@@ -93,7 +111,7 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
       ),
   );
 
-  if (isUntaintedAccessors && isUntaintedMethods && !isAngularZonePresent()) {
+  if (isUntaintedAccessors && isUntaintedMethods) {
     untaintedBasePrototype[key] = defaultObj.prototype as BasePrototypeCache[T];
     return defaultObj.prototype as BasePrototypeCache[T];
   }
@@ -273,12 +291,24 @@ export function mutationObserverCtor(): [
   (typeof MutationObserver)['prototype']['constructor'],
   () => void,
 ] {
+  const prototype = getUntaintedPrototype('MutationObserver');
+  mutationObserverUsers++;
+  let stopCalled = false;
   return [
-    getUntaintedPrototype('MutationObserver').constructor,
-    untaintedBaseIframeCleanup['MutationObserver'] ??
-      (() => {
-        /* no-op; a cleanup function is only needed in Safari browsers */
-      }),
+    prototype.constructor,
+    () => {
+      if (stopCalled) return; // don't double decrement if *this* observer's stop() is called more than once
+      stopCalled = true;
+      if (--mutationObserverUsers !== 0) return;
+      const cleanup = untaintedBaseIframeCleanup['MutationObserver'];
+      if (!cleanup) return;
+      try {
+        cleanup();
+      } finally {
+        delete untaintedBasePrototype['MutationObserver'];
+        delete untaintedBaseIframeCleanup['MutationObserver'];
+      }
+    },
   ];
 }
 
