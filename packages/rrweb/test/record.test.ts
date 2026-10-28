@@ -1225,7 +1225,7 @@ describe('bucketed input masking', function (this: ISuite) {
       )
       .map((event) => event.data.text);
 
-    const recordedLengths = [1, 2, 3, 4, 5, 10, 11];
+    const recordedLengths = [1, 2, 3, 4, 5, 10, 20];
     expect(recordedTexts).toEqual(
       recordedLengths.map((length) => '*'.repeat(length)),
     );
