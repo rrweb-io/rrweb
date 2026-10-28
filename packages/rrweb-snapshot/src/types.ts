@@ -47,6 +47,7 @@ export type MaskInputOptions = Partial<{
   textarea: boolean;
   select: boolean;
   password: boolean;
+  "maskLengthStrategy": "bucketed" | "fixed";
 }>;
 
 export type SlimDOMOptions = Partial<{
