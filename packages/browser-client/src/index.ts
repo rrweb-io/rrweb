@@ -326,6 +326,9 @@ export function start(
   if (recordOptions.maskAllInputs === undefined) {
     recordOptions.maskAllInputs = true; // default to more privacy
   }
+  if (recordOptions.maskInputFn === undefined) {
+    recordOptions.maskInputFn = bucketMasker;
+  }
   // TODO: switch this back to captureAssets.stylesheets once rrweb pulls in
   // the captureAssets recording API from the assets branch.
   if (recordOptions.inlineStylesheet === undefined) {
@@ -686,6 +689,32 @@ if (hasDocument() && document.currentScript) {
   if (config.autostart || truthyAttr.includes(self.getAttribute('autostart'))) {
     start(config);
   }
+}
+
+export function bucketMasker(text: string, element: HTMLElement): string {
+  if (text.length === 0) {
+    return '';
+  }
+
+  const bucketSize = 10;
+
+  let textLength;
+  if (text.length <= 2) {
+    textLength = 2;
+  } else if (text.length <= 5) {
+    textLength = 5;
+  } else {
+    const bucketCount = Math.ceil(text.length / bucketSize);
+    textLength = bucketSize * bucketCount;
+  }
+  if (element.hasAttribute('maxlength')) {
+    textLength = Math.min(
+      textLength,
+      (element as HTMLInputElement | HTMLTextAreaElement).maxLength,
+    );
+  }
+  text = '*'.repeat(textLength);
+  return text;
 }
 
 export default {
