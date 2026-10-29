@@ -717,7 +717,6 @@ export function bucketMasker(text: string, element: HTMLElement): string {
   return text;
 }
 
-
 export default {
   start,
   stop,
