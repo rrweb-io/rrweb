@@ -204,6 +204,9 @@ export default class MutationBuffer {
         // eslint-disable-next-line no-constant-condition
         while (true) {
           parentNode = dom.parentNode(n);
+          if (parentNode && isShadowRoot(parentNode)) {
+            parentNode = dom.host(parentNode as ShadowRoot) as Node;
+          }
           if (this.addedSet.has(parentNode as Node)) {
             // start at top of added tree so as not to serialize children before their parents (parentId requirement)
             n = parentNode as Node;
