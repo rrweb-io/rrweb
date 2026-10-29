@@ -561,15 +561,7 @@ export class Replayer {
         return;
       }
     }
-    if (
-      this.service.state.matches('paused') ||
-      this.service.state.matches('buffering')
-    ) {
-      this.service.send({ type: 'PLAY', payload: { timeOffset } });
-    } else {
-      this.service.send({ type: 'PAUSE' });
-      this.service.send({ type: 'PLAY', payload: { timeOffset } });
-    }
+    this.service.send({ type: 'PLAY', payload: { timeOffset } });
     this.iframe.contentDocument
       ?.getElementsByTagName('html')[0]
       ?.classList.remove('rrweb-paused');

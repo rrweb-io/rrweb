@@ -169,6 +169,10 @@ export function createPlayerService(
       states: {
         playing: {
           on: {
+            PLAY: {
+              target: 'playing',
+              actions: ['recordTimeOffset', 'play'],
+            },
             PAUSE: {
               target: 'paused',
               actions: ['pause'],
