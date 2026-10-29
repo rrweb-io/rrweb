@@ -326,6 +326,9 @@ export function start(
   if (recordOptions.maskAllInputs === undefined) {
     recordOptions.maskAllInputs = true; // default to more privacy
   }
+  if (recordOptions.maskInputFn === undefined) {
+    recordOptions.maskInputFn = bucketMasker;
+  }
   // TODO: switch this back to captureAssets.stylesheets once rrweb pulls in
   // the captureAssets recording API from the assets branch.
   if (recordOptions.inlineStylesheet === undefined) {
