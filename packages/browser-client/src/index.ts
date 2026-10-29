@@ -689,19 +689,20 @@ if (hasDocument() && document.currentScript) {
 }
 
 export function bucketMasker(text: string, element: HTMLElement): string {
+  if (text.length === 0) {
+    return '';
+  }
+
   const bucketSize = 10;
 
-  // as a default maskInputFunction in the browser client package
-  let textLength
+  let textLength;
   if (text.length <= 2) {
     textLength = 2;
-  }
-  else if (text.length <= 5) {
-    textLength = 5
+  } else if (text.length <= 5) {
+    textLength = 5;
   } else {
-
     const bucketCount = Math.ceil(text.length / bucketSize);
-    textLength = bucketSize * bucketCount
+    textLength = bucketSize * bucketCount;
   }
   if (element.hasAttribute('maxlength')) {
     textLength = Math.min(

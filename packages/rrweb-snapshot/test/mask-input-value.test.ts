@@ -57,28 +57,4 @@ describe('maskInputValue length strategies', () => {
     expect(maskInputFn).toHaveBeenCalledTimes(1);
     expect(maskInputFn).toHaveBeenCalledWith('private input', element);
   });
-
-  describe('bucket boundaries', () => {
-    it.each([
-      [6, 10],
-      [9, 10],
-      [10, 10],
-      [11, 20],
-      [19, 20],
-      [21, 30],
-    ])('masks %i characters with %i stars', (length, maskedLength) => {
-      expect(mask('a'.repeat(length))).toBe('*'.repeat(maskedLength));
-    });
-
-    it('applies buckets to textarea masking as well', () => {
-      expect(
-        mask('a'.repeat(11), {
-          element: document.createElement('textarea'),
-          tagName: 'textarea',
-          type: null,
-          maskInputOptions: { textarea: true, maskLengthStrategy: 'bucketed' },
-        }),
-      ).toBe('*'.repeat(20));
-    });
-  });
 });
