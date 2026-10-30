@@ -120,7 +120,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
 
 ### Infrastructure Sponsors
 
-<a href="https://www.blacksmith.sh/">
+<a href="https://www.blacksmith.sh/" rel="nofollow sponsored">
   <img src="./assets/blacksmith-powered.png" alt="CI powered by Blacksmith" width="270">
 </a>
 
