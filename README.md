@@ -118,6 +118,15 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
 
 <a href="https://opencollective.com/rrweb#sponsor" rel="nofollow"><img src="https://opencollective.com/rrweb/tiers/backers.svg?avatarHeight=36"></a>
 
+### Infrastructure Sponsors
+
+<a href="https://www.blacksmith.sh/">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/blacksmith-dark.svg">
+    <img src="./assets/blacksmith.svg" alt="Blacksmith" width="150" height="15">
+  </picture>
+</a>
+
 ## Core Team Members
 
 <table>
