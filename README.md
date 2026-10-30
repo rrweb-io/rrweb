@@ -121,10 +121,7 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
 ### Infrastructure Sponsors
 
 <a href="https://www.blacksmith.sh/">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./assets/blacksmith-dark.svg">
-    <img src="./assets/blacksmith.svg" alt="Blacksmith" width="150" height="15">
-  </picture>
+  <img src="./assets/blacksmith-powered.png" alt="CI powered by Blacksmith" width="270">
 </a>
 
 ## Core Team Members
