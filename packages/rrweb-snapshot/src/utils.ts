@@ -441,6 +441,10 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
       if (DATA_URI.test(filePath)) {
         return `url(${maybeQuote}${filePath}${maybeQuote})`;
       }
+      if (filePath[0] === '#') {
+        // fragment-only urls refer to the current document, not the stylesheet
+        return `url(${maybeQuote}${filePath}${maybeQuote})`;
+      }
       if (filePath[0] === '/') {
         return `url(${maybeQuote}${
           extractOrigin(href) + filePath
