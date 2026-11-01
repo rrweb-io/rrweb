@@ -3,6 +3,7 @@ import type {
   SlimDOMOptions,
   MaskTextFn,
   MaskInputFn,
+  MaskAttributeFn,
   KeepIframeSrcFn,
   ICanvas,
   DialogAttributes,
@@ -23,6 +24,7 @@ import {
   isElement,
   isShadowRoot,
   maskInputValue,
+  maskAttributeValue,
   isNativeShadowDom,
   stringifyStylesheet,
   getInputType,
@@ -395,6 +397,8 @@ function serializeNode(
     maskInputOptions: MaskInputOptions;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
+    maskAttributeFn: MaskAttributeFn | undefined;
+    maskAttributeNames: string[] | undefined;
     dataURLOptions?: DataURLOptions;
     inlineImages: boolean;
     recordCanvas: boolean;
@@ -416,6 +420,8 @@ function serializeNode(
     maskInputOptions = {},
     maskTextFn,
     maskInputFn,
+    maskAttributeFn,
+    maskAttributeNames,
     dataURLOptions = {},
     inlineImages,
     recordCanvas,
@@ -455,6 +461,8 @@ function serializeNode(
         inlineStylesheet,
         maskInputOptions,
         maskInputFn,
+        maskAttributeFn,
+        maskAttributeNames,
         dataURLOptions,
         inlineImages,
         recordCanvas,
@@ -545,6 +553,8 @@ function serializeElementNode(
     inlineStylesheet: boolean;
     maskInputOptions: MaskInputOptions;
     maskInputFn: MaskInputFn | undefined;
+    maskAttributeFn: MaskAttributeFn | undefined;
+    maskAttributeNames: string[] | undefined;
     dataURLOptions?: DataURLOptions;
     inlineImages: boolean;
     recordCanvas: boolean;
@@ -563,6 +573,8 @@ function serializeElementNode(
     inlineStylesheet,
     maskInputOptions = {},
     maskInputFn,
+    maskAttributeFn,
+    maskAttributeNames,
     dataURLOptions = {},
     inlineImages,
     recordCanvas,
@@ -577,12 +589,18 @@ function serializeElementNode(
   for (let i = 0; i < len; i++) {
     const attr = n.attributes[i];
     if (!ignoreAttribute(tagName, attr.name, attr.value)) {
-      attributes[attr.name] = transformAttribute(
-        doc,
-        tagName,
-        toLowerCase(attr.name),
-        attr.value,
-      );
+      attributes[attr.name] = maskAttributeValue({
+        name: attr.name,
+        value: transformAttribute(
+          doc,
+          tagName,
+          toLowerCase(attr.name),
+          attr.value,
+        ),
+        element: n,
+        maskAttributeFn,
+        maskAttributeNames,
+      });
     }
   }
   // remote css
@@ -935,6 +953,8 @@ export function serializeNodeWithId(
     needsMask?: boolean;
     maskTextFn: MaskTextFn | undefined;
     maskInputFn: MaskInputFn | undefined;
+    maskAttributeFn?: MaskAttributeFn;
+    maskAttributeNames?: string[];
     slimDOMOptions: SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     keepIframeSrcFn?: KeepIframeSrcFn;
@@ -967,6 +987,8 @@ export function serializeNodeWithId(
     maskInputOptions = {},
     maskTextFn,
     maskInputFn,
+    maskAttributeFn,
+    maskAttributeNames,
     slimDOMOptions,
     dataURLOptions = {},
     inlineImages = false,
@@ -1004,6 +1026,8 @@ export function serializeNodeWithId(
     maskInputOptions,
     maskTextFn,
     maskInputFn,
+    maskAttributeFn,
+    maskAttributeNames,
     dataURLOptions,
     inlineImages,
     recordCanvas,
@@ -1078,6 +1102,8 @@ export function serializeNodeWithId(
       maskInputOptions,
       maskTextFn,
       maskInputFn,
+      maskAttributeFn,
+      maskAttributeNames,
       slimDOMOptions,
       dataURLOptions,
       inlineImages,
@@ -1154,6 +1180,8 @@ export function serializeNodeWithId(
             maskInputOptions,
             maskTextFn,
             maskInputFn,
+            maskAttributeFn,
+            maskAttributeNames,
             slimDOMOptions,
             dataURLOptions,
             inlineImages,
@@ -1206,6 +1234,8 @@ export function serializeNodeWithId(
             maskInputOptions,
             maskTextFn,
             maskInputFn,
+            maskAttributeFn,
+            maskAttributeNames,
             slimDOMOptions,
             dataURLOptions,
             inlineImages,
@@ -1246,6 +1276,8 @@ function snapshot(
     maskAllInputs?: boolean | MaskInputOptions;
     maskTextFn?: MaskTextFn;
     maskInputFn?: MaskInputFn;
+    maskAttributeFn?: MaskAttributeFn;
+    maskAttributeNames?: string[];
     slimDOM?: 'all' | boolean | SlimDOMOptions;
     dataURLOptions?: DataURLOptions;
     inlineImages?: boolean;
@@ -1277,6 +1309,8 @@ function snapshot(
     maskAllInputs = false,
     maskTextFn,
     maskInputFn,
+    maskAttributeFn,
+    maskAttributeNames,
     slimDOM = false,
     dataURLOptions,
     preserveWhiteSpace,
@@ -1326,6 +1360,8 @@ function snapshot(
     maskInputOptions,
     maskTextFn,
     maskInputFn,
+    maskAttributeFn,
+    maskAttributeNames,
     slimDOMOptions,
     dataURLOptions,
     inlineImages,

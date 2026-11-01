@@ -1,5 +1,6 @@
 import type {
   idNodeMap,
+  MaskAttributeFn,
   MaskInputFn,
   MaskInputOptions,
   nodeMetaMap,
@@ -276,6 +277,51 @@ export function maskInputValue({
     }
   }
   return text;
+}
+
+/**
+ * Returns true when `attributeName` matches an entry in `maskAttributeNames`.
+ * Entries are matched case-insensitively; a trailing `*` is treated as a prefix
+ * wildcard (e.g. `data-*` matches `data-user-id`).
+ */
+export function shouldMaskAttribute(
+  attributeName: string,
+  maskAttributeNames?: string[] | null,
+): boolean {
+  if (!maskAttributeNames || maskAttributeNames.length === 0) {
+    return false;
+  }
+  const lowerName = toLowerCase(attributeName);
+  return maskAttributeNames.some((pattern) => {
+    const lowerPattern = toLowerCase(pattern);
+    if (lowerPattern.endsWith('*')) {
+      return lowerName.startsWith(lowerPattern.slice(0, -1));
+    }
+    return lowerName === lowerPattern;
+  });
+}
+
+export function maskAttributeValue({
+  name,
+  value,
+  element,
+  maskAttributeFn,
+  maskAttributeNames,
+}: {
+  name: string;
+  value: string | null;
+  element: HTMLElement;
+  maskAttributeFn?: MaskAttributeFn;
+  maskAttributeNames?: string[] | null;
+}): string | null {
+  if (
+    value === null ||
+    !maskAttributeFn ||
+    !shouldMaskAttribute(name, maskAttributeNames)
+  ) {
+    return value;
+  }
+  return maskAttributeFn(name, value, element);
 }
 
 export function toLowerCase<T extends string>(str: T): Lowercase<T> {

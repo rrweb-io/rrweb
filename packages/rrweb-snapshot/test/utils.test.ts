@@ -7,6 +7,8 @@ import {
   extractFileExtension,
   fixSafariColons,
   isNodeMetaEqual,
+  maskAttributeValue,
+  shouldMaskAttribute,
   stringifyStylesheet
 } from '../src/utils';
 import { NodeType } from '@saola.ai/rrweb-types';
@@ -327,6 +329,83 @@ describe('utils', () => {
       ).toEqual(
         "@font-face { font-family: 'MockFont'; src: url('https://example.com/fonts/mockfont.woff2') format('woff2'); font-weight: normal; font-style: normal; }",
       );
+    });
+  });
+
+  describe('shouldMaskAttribute()', () => {
+    const names = [
+      'title',
+      'placeholder',
+      'aria-label',
+      'alt',
+      'href',
+      'action',
+      'data-*',
+    ];
+
+    it('returns false when the names list is empty or missing', () => {
+      expect(shouldMaskAttribute('title')).toBe(false);
+      expect(shouldMaskAttribute('title', [])).toBe(false);
+    });
+
+    it('matches listed names case-insensitively', () => {
+      expect(shouldMaskAttribute('title', names)).toBe(true);
+      expect(shouldMaskAttribute('TITLE', names)).toBe(true);
+      expect(shouldMaskAttribute('id', names)).toBe(false);
+      expect(shouldMaskAttribute('class', names)).toBe(false);
+    });
+
+    it('supports a trailing * as a prefix wildcard', () => {
+      expect(shouldMaskAttribute('data-user-id', names)).toBe(true);
+      expect(shouldMaskAttribute('data-foo', names)).toBe(true);
+      expect(shouldMaskAttribute('dataset', names)).toBe(false);
+    });
+  });
+
+  describe('maskAttributeValue()', () => {
+    const element = document.createElement('a');
+    const maskAttributeFn = (name: string, value: string) =>
+      `[masked:${name}:${value}]`;
+
+    it('only invokes the callback for listed attribute names', () => {
+      expect(
+        maskAttributeValue({
+          name: 'title',
+          value: 'secret',
+          element,
+          maskAttributeFn,
+          maskAttributeNames: ['title'],
+        }),
+      ).toBe('[masked:title:secret]');
+      expect(
+        maskAttributeValue({
+          name: 'id',
+          value: 'keep-me',
+          element,
+          maskAttributeFn,
+          maskAttributeNames: ['title'],
+        }),
+      ).toBe('keep-me');
+    });
+
+    it('does not invoke the callback when value is null or fn is missing', () => {
+      expect(
+        maskAttributeValue({
+          name: 'title',
+          value: null,
+          element,
+          maskAttributeFn,
+          maskAttributeNames: ['title'],
+        }),
+      ).toBeNull();
+      expect(
+        maskAttributeValue({
+          name: 'title',
+          value: 'secret',
+          element,
+          maskAttributeNames: ['title'],
+        }),
+      ).toBe('secret');
     });
   });
 });

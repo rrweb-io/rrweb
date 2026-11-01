@@ -6,6 +6,7 @@ import {
   isShadowRoot,
   needMaskingText,
   maskInputValue,
+  maskAttributeValue,
   Mirror,
   isNativeShadowDom,
   getInputType,
@@ -180,6 +181,8 @@ export default class MutationBuffer {
   private maskInputOptions: observerParam['maskInputOptions'];
   private maskTextFn: observerParam['maskTextFn'];
   private maskInputFn: observerParam['maskInputFn'];
+  private maskAttributeFn: observerParam['maskAttributeFn'];
+  private maskAttributeNames: observerParam['maskAttributeNames'];
   private keepIframeSrcFn: observerParam['keepIframeSrcFn'];
   private recordCanvas: observerParam['recordCanvas'];
   private inlineImages: observerParam['inlineImages'];
@@ -206,6 +209,8 @@ export default class MutationBuffer {
         'maskInputOptions',
         'maskTextFn',
         'maskInputFn',
+        'maskAttributeFn',
+        'maskAttributeNames',
         'keepIframeSrcFn',
         'recordCanvas',
         'inlineImages',
@@ -325,6 +330,8 @@ export default class MutationBuffer {
         maskInputOptions: this.maskInputOptions,
         maskTextFn: this.maskTextFn,
         maskInputFn: this.maskInputFn,
+        maskAttributeFn: this.maskAttributeFn,
+        maskAttributeNames: this.maskAttributeNames,
         slimDOMOptions: this.slimDOMOptions,
         dataURLOptions: this.dataURLOptions,
         recordCanvas: this.recordCanvas,
@@ -637,12 +644,18 @@ export default class MutationBuffer {
 
         if (!ignoreAttribute(target.tagName, attributeName, value)) {
           // overwrite attribute if the mutations was triggered in same time
-          item.attributes[attributeName] = transformAttribute(
-            this.doc,
-            toLowerCase(target.tagName),
-            toLowerCase(attributeName),
-            value,
-          );
+          item.attributes[attributeName] = maskAttributeValue({
+            name: attributeName,
+            value: transformAttribute(
+              this.doc,
+              toLowerCase(target.tagName),
+              toLowerCase(attributeName),
+              value,
+            ),
+            element: target,
+            maskAttributeFn: this.maskAttributeFn,
+            maskAttributeNames: this.maskAttributeNames,
+          });
           if (attributeName === 'style') {
             if (!this.unattachedDoc) {
               try {
