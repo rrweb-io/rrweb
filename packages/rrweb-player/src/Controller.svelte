@@ -71,7 +71,7 @@
     dispatch('ui-update-current-time', { payload: currentTime });
   }
   let timer: number | null = null;
-  let playerState: 'playing' | 'paused' | 'live';
+  let playerState: PlayerMachineState['value'];
   $: {
     dispatch('ui-update-player-state', { payload: playerState });
   }
