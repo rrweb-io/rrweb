@@ -121,7 +121,6 @@ type SegmentInfo = {
   fetched: boolean;
   fetching: boolean;
   attempts: number;
-  markerInserted: boolean;
 };
 
 const maxSegmentFetchAttempts = 3;
@@ -618,13 +617,9 @@ export class Replayer {
     const event = this.config.unpackFn
       ? this.config.unpackFn(rawEvent as string)
       : (rawEvent as eventWithTime);
-    this.registerEvent(event);
-    if (isSegmentStartMarker(event)) {
-      const info = this.segments.get(markerSegmentStart(event))!;
-      if (info.markerInserted) {
-        return;
-      }
-      info.markerInserted = true;
+    const createdSegment = this.registerEvent(event);
+    if (isSegmentStartMarker(event) && !createdSegment) {
+      return;
     }
     void Promise.resolve().then(() =>
       this.service.send({ type: 'ADD_EVENT', payload: { event } }),
@@ -642,13 +637,10 @@ export class Replayer {
   private indexInitialEvents(events: eventWithTime[]) {
     for (const event of events) {
       this.registerEvent(event);
-      if (isSegmentStartMarker(event)) {
-        this.segments.get(markerSegmentStart(event))!.markerInserted = true;
-      }
     }
   }
 
-  private registerEvent(event: eventWithTime) {
+  private registerEvent(event: eventWithTime): boolean {
     if (event.timestamp > this.recordingEndTs) {
       this.recordingEndTs = event.timestamp;
     }
@@ -664,10 +656,11 @@ export class Replayer {
           fetched: false,
           fetching: false,
           attempts: 0,
-          markerInserted: false,
         });
+        return true;
       }
     }
+    return false;
   }
 
   private spliceSegmentMarker(segmentStart: number) {
@@ -851,14 +844,19 @@ export class Replayer {
         : (raw as eventWithTime),
     );
     let frontier: number | null = null;
+    let frontierEvent: eventWithTime | null = null;
     for (const event of events) {
       if (isSegmentStartMarker(event)) {
-        this.registerEvent(event);
         const cs = markerSegmentStart(event);
         if (cs > segmentStart && (frontier === null || cs > frontier)) {
           frontier = cs;
+          frontierEvent = event;
         }
       }
+    }
+    let frontierIsNew = false;
+    if (frontierEvent) {
+      frontierIsNew = this.registerEvent(frontierEvent);
     }
     const nextKnown = this.sortedSegmentStarts().find(
       (cs) => cs > segmentStart,
@@ -869,9 +867,8 @@ export class Replayer {
     for (const event of events) {
       if (isSegmentStartMarker(event)) {
         const cs = markerSegmentStart(event);
-        const info = this.segments.get(cs)!;
-        if (cs >= bound && !info.markerInserted) {
-          info.markerInserted = true;
+        if (cs >= bound && frontierIsNew) {
+          frontierIsNew = false;
           injectEvent(this.service.state.context.events, event);
         }
         continue;
