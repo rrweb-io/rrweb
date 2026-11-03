@@ -827,14 +827,18 @@ export class Replayer {
             segmentStart,
           });
         }
-        this.onSegmentSettled();
       },
       (error) => {
         info.fetching = false;
         this.warn('[replayer] fetchEvents failed', error);
-        this.onSegmentSettled();
       },
-    );
+    ).then(() => {
+      if (this.service.state.matches('buffering')) {
+        this.resumeFromBuffering();
+      } else if (this.service.state.matches('playing')) {
+        this.extendSchedule();
+      }
+    });
   }
 
   private acceptFetchedBatch(
@@ -889,14 +893,6 @@ export class Replayer {
       }
     }
     return true;
-  }
-
-  private onSegmentSettled() {
-    if (this.service.state.matches('buffering')) {
-      this.resumeFromBuffering();
-    } else if (this.service.state.matches('playing')) {
-      this.extendSchedule();
-    }
   }
 
   private inFlightFetches(): number {
