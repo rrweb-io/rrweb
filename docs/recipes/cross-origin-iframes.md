@@ -38,6 +38,20 @@ If the top level window is a malicious website it can listen to the events and s
 
 Or if a malicious script is running in on your page they can listen in on `postMessage` and as communication between the child and parent window is not encrypted. And they can see the events.
 
+### Custom transport
+
+Embedders that control every participating recorder can supply `crossOriginIframeTransport`
+alongside `recordCrossOriginIframes: true`. Its `send(message)` delivers to the parent frame.
+Its `subscribe(targetWindow, receive)` subscribes on the recorder window or an observed
+same-origin iframe window, and returns an unsubscribe function. rrweb calls that function
+when the window is detached or recording stops.
+
+Deliver a `MessageEvent` to `receive` with the original message, `source` window and `origin`.
+rrweb still validates the origin and known iframe source, attaches child snapshots and remaps
+node IDs. The custom transport is responsible for delivering only recording messages and for
+any isolation from page listeners. rrweb does not fall back to `postMessage` if it fails.
+Without this option, the existing `postMessage` transport is unchanged.
+
 ## Options for injecting rrweb into cross origin iframes
 
 ### 1. Website owners, add rrweb in the iframes
