@@ -176,6 +176,43 @@ describe('custom cross-origin iframe transport', () => {
     for (const stop of stops.values()) expect(stop).toHaveBeenCalledOnce();
   });
 
+  it('resubscribes reused iframe windows after pagehide but retains persisted pages', () => {
+    const { manager, iframe, transport, receivers, stops, emit } = setup();
+    const childWindow = iframe.contentWindow!;
+    manager.attachIframe(iframe, childSnapshot());
+    const originalStop = stops.get(childWindow)!;
+
+    childWindow.dispatchEvent(
+      new PageTransitionEvent('pagehide', { persisted: true }),
+    );
+    expect(originalStop).not.toHaveBeenCalled();
+    expect(receivers.has(childWindow)).toBe(true);
+
+    childWindow.dispatchEvent(
+      new PageTransitionEvent('pagehide', { persisted: false }),
+    );
+    expect(originalStop).toHaveBeenCalledOnce();
+    expect(receivers.has(childWindow)).toBe(false);
+
+    // jsdom does not navigate; reuse the same window identity to exercise the
+    // manager's WindowProxy-keyed lifecycle independently of native navigation.
+    manager.attachIframe(iframe, childSnapshot());
+    manager.attachIframe(iframe, childSnapshot());
+    expect(transport.subscribe).toHaveBeenCalledTimes(3);
+    expect(receivers.has(childWindow)).toBe(true);
+
+    const nested = iframe.contentDocument!.createElement('iframe');
+    iframe.contentDocument!.body.appendChild(nested);
+    manager.addIframe(nested);
+    receivers.get(childWindow)!(childMessage(nested.contentWindow!));
+    expect(emit).toHaveBeenCalledOnce();
+
+    const replacementStop = stops.get(childWindow)!;
+    manager.destroy();
+    expect(originalStop).toHaveBeenCalledOnce();
+    expect(replacementStop).toHaveBeenCalledOnce();
+  });
+
   it('uses the custom sender instead of parent.postMessage', () => {
     const postMessage = vi.fn();
     const parent = {
