@@ -5,6 +5,7 @@ import { EventType, IncrementalSource, type eventWithTime } from '@rrweb/types';
 import { launchPuppeteer } from '../utils';
 import type * as puppeteer from 'puppeteer';
 import hoverEvents from '../events/hover';
+import scrollEvents from '../events/scroll';
 
 const base = hoverEvents.slice(0, 4);
 const BODY = 14;
@@ -67,6 +68,44 @@ describe('smoothCursor', () => {
     })()`);
     console.log(JSON.stringify(r));
     expect(r.distinct).toBeGreaterThan(40);
+    await page.close();
+  });
+});
+
+describe('smoothScroll', () => {
+  vi.setConfig({ testTimeout: 20_000, hookTimeout: 30_000 });
+  let browser: puppeteer.Browser;
+  let code: string;
+
+  beforeAll(async () => {
+    browser = await launchPuppeteer();
+    code = fs.readFileSync(
+      path.resolve(__dirname, '../../dist/rrweb.umd.cjs'),
+      'utf8',
+    );
+  });
+  afterAll(async () => browser.close());
+
+  it('seeks instantly when the page uses CSS scroll-behavior: smooth', async () => {
+    const page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.evaluate(code);
+    const smooth = JSON.stringify(scrollEvents)
+      .replace('"lang":"en"', '"lang":"en","style":"scroll-behavior: smooth"')
+      .replace(
+        'overflow: scroll;',
+        'overflow: scroll; scroll-behavior: smooth;',
+      );
+    await page.evaluate(`let events = ${smooth}`);
+    const r = await page.evaluate(`(() => {
+      const replayer = new rrweb.Replayer(events, { smoothScroll: true });
+      const doc = replayer.iframe.contentDocument;
+      replayer.pause(1200);
+      const container = doc.getElementById('container').scrollTop;
+      replayer.pause(1600);
+      return { container, document: doc.defaultView.scrollY };
+    })()`);
+    expect(r).toEqual({ container: 2500, document: 250 });
     await page.close();
   });
 });
