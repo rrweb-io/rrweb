@@ -1958,7 +1958,7 @@ export class Replayer {
       return this.debugNodeNotFound(d, d.id);
     }
     const sn = this.mirror.getMeta(target);
-    const behavior = isSync || this.config.smoothScroll ? 'auto' : 'smooth';
+    const behavior = isSync || this.config.smoothScroll ? 'instant' : 'smooth';
     if (target === this.iframe.contentDocument) {
       this.iframe.contentWindow?.scrollTo({ top: d.y, left: d.x, behavior });
     } else if (sn?.type === NodeType.Document) {
