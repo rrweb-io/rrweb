@@ -10,7 +10,7 @@
     "moduleResolution": "Node",
     "rootDir": "src",
     "outDir": "dist",
-    "lib": ["es6", "dom"],
+    "lib": ["es2020", "dom"],
     "sourceMap": true,
     "skipLibCheck": true,
     "declaration": true,
