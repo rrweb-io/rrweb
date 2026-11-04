@@ -74,7 +74,7 @@
     "typescript": "^5.4.5",
     "vite": "^6.4.5",
     "vite-plugin-dts": "^3.9.1",
-    "vitest": "^5.1.0"
+    "vitest": "^1.6.1"
   },
   "dependencies": {
     "postcss": "^8.5.32"
