@@ -40,7 +40,7 @@ jobs:
       - name: Eslint Check
         run: yarn turbo run lint
       - name: Publish package previews
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.repository == 'rrweb-io/rrweb'
         run: yarn pkg-pr-new publish './packages/*' './packages/plugins/*' --previewVersion --no-template --commentWithSha --no-compact
       - name: Save Code Linting Report JSON
         run: yarn lint:report
