@@ -121,6 +121,42 @@ describe('replayer cursor', () => {
     ]);
   });
 
+  it('follows the current pointer in a session with touch events', async () => {
+    const seen = await page.evaluate(`(async () => {
+      const id = events.find((e) => e.type === 3 && e.data.source === 1).data.positions[0].id;
+      const at = (dt, data) => ({ type: 3, timestamp: events[0].timestamp + dt, data });
+      const touch = [
+        at(50, { source: 6, positions: [{ x: 5, y: 5, id, timeOffset: 0 }] }), // TouchMove, flags the session
+        at(250, { source: 2, type: 7, id, x: 5, y: 5 }), // TouchStart
+        at(260, { source: 2, type: 9, id, x: 5, y: 5 }), // TouchEnd
+        at(310, { source: 2, type: 7, id, x: 5, y: 5 }),
+        at(320, { source: 2, type: 9, id, x: 5, y: 5 }),
+        at(325, { source: 2, type: 2, id, x: 5, y: 5, pointerType: 2 }), // Click from touch
+        at(350, { source: 2, type: 1, id, x: 5, y: 5 }), // MouseDown, pointerType implied
+      ];
+      const replayer = new rrweb.Replayer(
+        [...events, ...touch].sort((a, b) => a.timestamp - b.timestamp),
+        { cursor: { mode: 'state' } },
+      );
+      const m = document.querySelector('.replayer-mouse');
+      const seen = [];
+      for (const t of [110, 255, 305, 330, 355]) {
+        replayer.pause(t);
+        await new Promise((r) => requestAnimationFrame(() => setTimeout(r)));
+        const image = getComputedStyle(m, '::before').display !== 'none';
+        seen.push([t, m.dataset.pointer, m.classList.contains('touch-device'), image]);
+      }
+      return seen;
+    })()`);
+    expect(seen).toEqual([
+      [110, 'mouse', false, true], // mousemove after the session's TouchMove
+      [255, 'touch', true, false],
+      [305, 'mouse', false, true], // mousemove at 300
+      [330, 'touch', true, false],
+      [355, 'mouse', false, true], // MouseDown without pointerType
+    ]);
+  });
+
   it('falls back to default when the target is removed', async () => {
     const seen = await page.evaluate(`(async () => {
       const link = events.find((e) => e.type === 3 && e.data.source === 1).data.positions[0].id;

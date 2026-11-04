@@ -108,6 +108,9 @@ const defaultMouseTailConfig = {
   strokeStyle: 'red',
 } as const;
 
+const touchOrMouse = (source: IncrementalSource) =>
+  source === IncrementalSource.TouchMove ? 'touch' : 'mouse';
+
 function indicatesTouchDevice(e: eventWithTime) {
   return (
     e.type == EventType.IncrementalSnapshot &&
@@ -1146,6 +1149,7 @@ export class Replayer {
       case IncrementalSource.TouchMove:
       case IncrementalSource.MouseMove:
         if (isSync) {
+          this.cursorPointer = touchOrMouse(d.source);
           const lastPosition = d.positions[d.positions.length - 1];
           this.mousePos = {
             x: lastPosition.x,
@@ -1157,6 +1161,7 @@ export class Replayer {
           d.positions.forEach((p) => {
             const action = {
               doAction: () => {
+                this.cursorPointer = touchOrMouse(d.source);
                 this.moveAndHover(p.x, p.y, p.id, isSync, d);
               },
               delay:
@@ -1192,10 +1197,21 @@ export class Replayer {
           type: d.type,
           target,
         });
+        // the recorder omits pointerType when the interaction type implies it
         if (d.pointerType !== undefined)
           this.cursorPointer = toLowerCase(
             PointerTypes[d.pointerType],
           ) as CursorState['pointerType'];
+        else if (
+          d.type === MouseInteractions.TouchStart ||
+          d.type === MouseInteractions.TouchEnd
+        )
+          this.cursorPointer = 'touch';
+        else if (
+          d.type === MouseInteractions.MouseDown ||
+          d.type === MouseInteractions.MouseUp
+        )
+          this.cursorPointer = 'mouse';
         if (d.type === MouseInteractions.MouseDown) this.cursorPressed = true;
         if (d.type === MouseInteractions.MouseUp) this.cursorPressed = false;
         const { triggerFocus } = this.config;
@@ -2230,47 +2246,51 @@ export class Replayer {
     }
   }
 
-  // One resolve per frame, run after paint (rAF, then a timeout) so reading
-  // computed style doesn't force a style recalc. Seeks finish before it runs.
+  // Called from the timer's rAF, so the timeout runs once after that frame is
+  // painted and reading computed style doesn't force a style recalc.
+  // Seeks finish before it runs.
   private scheduleCursor() {
     if (!this.cursorSample || this.cursorPending) return;
     this.cursorPending = true;
-    requestAnimationFrame(() =>
-      setTimeout(() => {
-        this.cursorPending = false;
-        const { target, x, y } = this.cursorSample!;
-        const pressed = this.cursorPressed;
-        const state: CursorState = {
-          cursor: resolveCursor(
-            target,
-            x,
-            y,
-            this.config.cursor?.resolveAuto !== false,
-            pressed,
-          ),
-          pointerType: this.cursorPointer,
-          pressed,
+    setTimeout(() => {
+      this.cursorPending = false;
+      const { target, x, y } = this.cursorSample!;
+      const pressed = this.cursorPressed;
+      const state: CursorState = {
+        cursor: resolveCursor(
           target,
-        };
-        const prev = this.cursorState;
-        if (
-          prev?.cursor === state.cursor &&
-          prev.pointerType === state.pointerType &&
-          prev.pressed === pressed
-        )
-          return;
-        this.cursorState = state;
-        const { url, hotspot } =
-          (this.config.cursor?.pack || defaultCursorPack).resolve(state) ||
-          defaultCursorPack.resolve({ ...state, cursor: 'default' })!;
-        this.mouse.dataset.cursor = state.cursor;
-        this.mouse.dataset.pointer = state.pointerType;
-        this.mouse.style.setProperty('--rr-cursor', `url("${url}")`);
-        this.mouse.style.setProperty('--rr-cursor-x', `${hotspot[0]}`);
-        this.mouse.style.setProperty('--rr-cursor-y', `${hotspot[1]}`);
-        this.emitter.emit(ReplayerEvents.CursorChange, state);
-      }),
-    );
+          x,
+          y,
+          this.config.cursor?.resolveAuto !== false,
+          pressed,
+        ),
+        pointerType: this.cursorPointer,
+        pressed,
+        target,
+      };
+      // follow the current pointer rather than the session-wide touch guess
+      this.mouse.classList.toggle(
+        'touch-device',
+        state.pointerType === 'touch',
+      );
+      const prev = this.cursorState;
+      if (
+        prev?.cursor === state.cursor &&
+        prev.pointerType === state.pointerType &&
+        prev.pressed === pressed
+      )
+        return;
+      this.cursorState = state;
+      const { url, hotspot } =
+        (this.config.cursor?.pack || defaultCursorPack).resolve(state) ||
+        defaultCursorPack.resolve({ ...state, cursor: 'default' })!;
+      this.mouse.dataset.cursor = state.cursor;
+      this.mouse.dataset.pointer = state.pointerType;
+      this.mouse.style.setProperty('--rr-cursor', `url("${url}")`);
+      this.mouse.style.setProperty('--rr-cursor-x', `${hotspot[0]}`);
+      this.mouse.style.setProperty('--rr-cursor-y', `${hotspot[1]}`);
+      this.emitter.emit(ReplayerEvents.CursorChange, state);
+    });
   }
 
   private drawMouseTail(position: { x: number; y: number }) {
