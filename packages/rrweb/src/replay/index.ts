@@ -109,8 +109,16 @@ const defaultMouseTailConfig = {
   strokeStyle: 'red',
 } as const;
 
-const touchOrMouse = (source: IncrementalSource) =>
-  source === IncrementalSource.TouchMove ? 'touch' : 'mouse';
+// a mousemove can come from a mouse or a pen, so it only ends a touch
+const movePointer = (
+  source: IncrementalSource,
+  current: CursorState['pointerType'],
+) =>
+  source === IncrementalSource.TouchMove
+    ? 'touch'
+    : current === 'touch'
+    ? 'mouse'
+    : current;
 
 function indicatesTouchDevice(e: eventWithTime) {
   return (
@@ -146,6 +154,7 @@ export class Replayer {
   private cursorState: CursorState | null = null;
   private cursorPressed = false;
   private cursorPointer: CursorState['pointerType'] = 'mouse';
+  private lastTouch = { x: NaN, y: NaN };
 
   private emitter: Emitter = mitt();
 
@@ -331,6 +340,10 @@ export class Replayer {
           this.mousePos.debugData,
         );
         this.mousePos = null;
+        this.mouse.classList.toggle(
+          'touch-device',
+          this.cursorPointer === 'touch',
+        );
       }
 
       if (this.touchActive === true) {
@@ -1261,8 +1274,13 @@ export class Replayer {
       case IncrementalSource.TouchMove:
       case IncrementalSource.MouseMove:
         if (isSync) {
-          this.cursorPointer = touchOrMouse(d.source);
           const lastPosition = d.positions[d.positions.length - 1];
+          this.setPointer(
+            movePointer(d.source, this.cursorPointer),
+            lastPosition.x,
+            lastPosition.y,
+            isSync,
+          );
           this.mousePos = {
             x: lastPosition.x,
             y: lastPosition.y,
@@ -1273,7 +1291,12 @@ export class Replayer {
           d.positions.forEach((p) => {
             const action = {
               doAction: () => {
-                this.cursorPointer = touchOrMouse(d.source);
+                this.setPointer(
+                  movePointer(d.source, this.cursorPointer),
+                  p.x,
+                  p.y,
+                  isSync,
+                );
                 this.moveAndHover(p.x, p.y, p.id, isSync, d);
               },
               delay:
@@ -1310,20 +1333,19 @@ export class Replayer {
           target,
         });
         // the recorder omits pointerType when the interaction type implies it
-        if (d.pointerType !== undefined)
-          this.cursorPointer = toLowerCase(
-            PointerTypes[d.pointerType],
-          ) as CursorState['pointerType'];
-        else if (
-          d.type === MouseInteractions.TouchStart ||
-          d.type === MouseInteractions.TouchEnd
-        )
-          this.cursorPointer = 'touch';
-        else if (
-          d.type === MouseInteractions.MouseDown ||
-          d.type === MouseInteractions.MouseUp
-        )
-          this.cursorPointer = 'mouse';
+        const pointer =
+          d.pointerType !== undefined
+            ? (toLowerCase(
+                PointerTypes[d.pointerType],
+              ) as CursorState['pointerType'])
+            : d.type === MouseInteractions.TouchStart ||
+              d.type === MouseInteractions.TouchEnd
+            ? 'touch'
+            : d.type === MouseInteractions.MouseDown ||
+              d.type === MouseInteractions.MouseUp
+            ? 'mouse'
+            : null;
+        if (pointer) this.setPointer(pointer, d.x || 0, d.y || 0, isSync);
         if (d.type === MouseInteractions.MouseDown) this.cursorPressed = true;
         if (d.type === MouseInteractions.MouseUp) this.cursorPressed = false;
         const { triggerFocus } = this.config;
@@ -2358,6 +2380,25 @@ export class Replayer {
     }
   }
 
+  // Shows the touch ring only while the pointer is a finger. Mouse events at
+  // the last touch point are the browser emulating that touch, so skip them.
+  private setPointer(
+    pointer: CursorState['pointerType'],
+    x: number,
+    y: number,
+    isSync: boolean,
+  ) {
+    if (pointer === 'touch') this.lastTouch = { x, y };
+    else if (
+      Math.abs(x - this.lastTouch.x) < 1 &&
+      Math.abs(y - this.lastTouch.y) < 1
+    )
+      return;
+    this.cursorPointer = pointer;
+    if (!isSync)
+      this.mouse.classList.toggle('touch-device', pointer === 'touch');
+  }
+
   // Called from the timer's rAF, so the timeout runs once after that frame is
   // painted and reading computed style doesn't force a style recalc.
   // Seeks finish before it runs.
@@ -2380,11 +2421,6 @@ export class Replayer {
         pressed,
         target,
       };
-      // follow the current pointer rather than the session-wide touch guess
-      this.mouse.classList.toggle(
-        'touch-device',
-        state.pointerType === 'touch',
-      );
       const prev = this.cursorState;
       if (
         prev?.cursor === state.cursor &&
