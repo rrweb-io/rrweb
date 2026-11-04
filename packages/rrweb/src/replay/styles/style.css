@@ -63,8 +63,7 @@
   background-image: var(--rr-cursor);
   pointer-events: none;
 }
-.replayer-mouse.touch-device::before,
-.replayer-mouse[data-pointer='touch']::before {
+.replayer-mouse.touch-device::before {
   display: none;
 }
 .replayer-mouse-tail {

@@ -77,7 +77,10 @@ export const defaultCursorPack: CursorPack = {
         : cursor.replace(/^(\w\w?)-resize$/, (m, d: string) =>
             TWO_WAY[d] ? `${TWO_WAY[d]}-resize` : m,
           );
-    const [url, x, y] = cursors[key] || cursors.default;
-    return { url, hotspot: [x, y] };
+    const [svg, x, y] = cursors[key] || cursors.default;
+    return {
+      url: `data:image/svg+xml,${encodeURIComponent(svg)}`,
+      hotspot: [x, y],
+    };
   },
 };
