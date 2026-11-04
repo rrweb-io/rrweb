@@ -843,6 +843,9 @@ export class Replayer {
         ? this.config.unpackFn(raw as string)
         : (raw as eventWithTime),
     );
+    if (events.length === 0) {
+      return false;
+    }
     let frontier: number | null = null;
     let frontierEvent: eventWithTime | null = null;
     for (const event of events) {
@@ -852,37 +855,18 @@ export class Replayer {
           frontier = cs;
           frontierEvent = event;
         }
-      }
-    }
-    let frontierIsNew = false;
-    if (frontierEvent) {
-      frontierIsNew = this.registerEvent(frontierEvent);
-    }
-    const nextKnown = this.sortedSegmentStarts().find(
-      (cs) => cs > segmentStart,
-    );
-    const bound = frontier ?? nextKnown ?? Infinity;
-
-    let accepted = 0;
-    for (const event of events) {
-      if (isSegmentStartMarker(event)) {
-        const cs = markerSegmentStart(event);
-        if (cs >= bound && frontierIsNew) {
-          frontierIsNew = false;
-          injectEvent(this.service.state.context.events, event);
-        }
-        continue;
-      }
-      if (event.timestamp < segmentStart || event.timestamp >= bound) {
         continue;
       }
       this.registerEvent(event);
       injectEvent(this.service.state.context.events, event);
-      accepted += 1;
     }
-    if (accepted === 0) {
-      return false;
+    if (frontierEvent && this.registerEvent(frontierEvent)) {
+      injectEvent(this.service.state.context.events, frontierEvent);
     }
+    const bound =
+      frontier ??
+      this.sortedSegmentStarts().find((cs) => cs > segmentStart) ??
+      Infinity;
     for (const cs of this.sortedSegmentStarts()) {
       if (cs >= segmentStart && cs < bound) {
         this.segments.get(cs)!.fetched = true;
