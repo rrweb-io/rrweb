@@ -132,7 +132,7 @@ describe('replayer cursor', () => {
         at(310, { source: 2, type: 7, id, x: 5, y: 5 }),
         at(320, { source: 2, type: 9, id, x: 5, y: 5 }),
         at(325, { source: 2, type: 2, id, x: 5, y: 5, pointerType: 2 }), // Click from touch
-        at(350, { source: 2, type: 1, id, x: 5, y: 5 }), // MouseDown, pointerType implied
+        at(350, { source: 2, type: 1, id, x: 50, y: 50 }), // MouseDown, pointerType implied
       ];
       const replayer = new rrweb.Replayer(
         [...events, ...touch].sort((a, b) => a.timestamp - b.timestamp),
@@ -155,6 +155,66 @@ describe('replayer cursor', () => {
       [330, 'touch', true, false],
       [355, 'mouse', false, true], // MouseDown without pointerType
     ]);
+  });
+
+  it('ignores the mouse events a touch tap emulates', async () => {
+    const seen = await page.evaluate(`(async () => {
+      const id = events.find((e) => e.type === 3 && e.data.source === 1).data.positions[0].id;
+      const at = (dt, data) => ({ type: 3, timestamp: events[0].timestamp + dt, data });
+      // the sequence Chrome records for a tap
+      const tap = [
+        at(250, { source: 2, type: 7, id, x: 4.99, y: 4.99 }), // TouchStart
+        at(257, { source: 2, type: 9, id, x: 4.99, y: 4.99 }), // TouchEnd
+        at(258, { source: 1, positions: [{ x: 5, y: 5, id, timeOffset: 0 }] }), // emulated mousemove
+        at(260, { source: 2, type: 2, id, x: 5, y: 5, pointerType: 2 }), // Click
+      ];
+      const replayer = new rrweb.Replayer(
+        [...events, ...tap].sort((a, b) => a.timestamp - b.timestamp),
+        { cursor: { mode: 'state' } },
+      );
+      const m = document.querySelector('.replayer-mouse');
+      replayer.pause(259);
+      await new Promise((r) => requestAnimationFrame(() => setTimeout(r)));
+      return [m.dataset.pointer, m.classList.contains('touch-device')];
+    })()`);
+    expect(seen).toEqual(['touch', true]);
+  });
+
+  it('shows the cursor in dot mode after a touch in a desktop session', async () => {
+    const seen = await page.evaluate(`(async () => {
+      const id = events.find((e) => e.type === 3 && e.data.source === 1).data.positions[0].id;
+      const touchMove = { type: 3, timestamp: events[0].timestamp + 50, data: { source: 6, positions: [{ x: 5, y: 5, id, timeOffset: 0 }] } };
+      const replayer = new rrweb.Replayer([...events, touchMove].sort((a, b) => a.timestamp - b.timestamp));
+      const m = document.querySelector('.replayer-mouse');
+      const seen = [];
+      for (const t of [60, 110]) {
+        replayer.pause(t);
+        seen.push(m.classList.contains('touch-device'));
+      }
+      return seen;
+    })()`);
+    expect(seen).toEqual([true, false]);
+  });
+
+  it('keeps the pen pointer across mouse moves', async () => {
+    const seen = await page.evaluate(`(async () => {
+      const id = events.find((e) => e.type === 3 && e.data.source === 1).data.positions[0].id;
+      const at = (dt, data) => ({ type: 3, timestamp: events[0].timestamp + dt, data });
+      const pen = [at(150, { source: 2, type: 1, id, x: 5, y: 5, pointerType: 1 })]; // MouseDown from a pen
+      const replayer = new rrweb.Replayer(
+        [...events, ...pen].sort((a, b) => a.timestamp - b.timestamp),
+        { cursor: { mode: 'state' } },
+      );
+      const m = document.querySelector('.replayer-mouse');
+      const seen = [];
+      for (const t of [110, 160, 310]) {
+        replayer.pause(t);
+        await new Promise((r) => requestAnimationFrame(() => setTimeout(r)));
+        seen.push(m.dataset.pointer);
+      }
+      return seen;
+    })()`);
+    expect(seen).toEqual(['mouse', 'pen', 'pen']); // mousemoves at 200 and 300 come from the pen
   });
 
   it('falls back to default when the target is removed', async () => {
