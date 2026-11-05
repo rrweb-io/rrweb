@@ -14,7 +14,7 @@ export class Timer {
   private lastTimestamp: number;
   private onExhausted?: () => void;
   private onNearEnd?: () => void;
-  private nearEndLead: number;
+  private nearEndLead = 0;
   private nearEndFired = false;
 
   constructor(
@@ -22,15 +22,17 @@ export class Timer {
     config: {
       speed: number;
       onExhausted?: () => void;
-      onNearEnd?: () => void;
-      nearEndLead?: number;
     },
   ) {
     this.actions = actions;
     this.speed = config.speed;
     this.onExhausted = config.onExhausted;
-    this.onNearEnd = config.onNearEnd;
-    this.nearEndLead = config.nearEndLead ?? 0;
+  }
+
+  public armNearEnd(leadMs: number, callback: () => void) {
+    this.nearEndLead = leadMs;
+    this.onNearEnd = callback;
+    this.nearEndFired = false;
   }
   /**
    * Add an action, possibly after the timer starts.

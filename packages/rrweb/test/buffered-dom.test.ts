@@ -68,7 +68,11 @@ async function bundleReplayer(): Promise<string> {
       contents:
         `export { Replayer } from ${JSON.stringify(
           path.resolve(rrwebDir, 'src/replay/index.ts'),
-        )};\n` + `export { ReplayerEvents } from '@rrweb/types';\n`,
+        )};\n` +
+        `export { SegmentController } from ${JSON.stringify(
+          path.resolve(rrwebDir, 'src/replay/segment-controller.ts'),
+        )};\n` +
+        `export { ReplayerEvents } from '@rrweb/types';\n`,
       resolveDir: rrwebDir,
       loader: 'ts',
     },
@@ -122,6 +126,8 @@ describe('buffered-dom replay', function () {
         timestamp: ts,
         data: { tag: 'segment-start', payload: { segmentStart: ts, keyframe: !!keyframe } },
       });
+      var segmentBuffer = (fetchFn, aheadMs) => (core) =>
+        new rrweb.SegmentController(core, fetchFn, aheadMs);
     `);
     page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
   });
@@ -141,7 +147,7 @@ describe('buffered-dom replay', function () {
         let fetched = false;
         let finished = false;
         const replayer = new Replayer(noMarkers, {
-          fetchEvents: () => { fetched = true; return Promise.resolve([]); },
+          createStallController: segmentBuffer(() => { fetched = true; return Promise.resolve([]); }),
         });
         replayer.on(ReplayerEvents.Finish, () => { finished = true; });
         replayer.play(0);
@@ -162,9 +168,9 @@ describe('buffered-dom replay', function () {
         const cast = [];
         let finished = false;
         const replayer = new Replayer(oneFrontier, {
-          fetchEvents: (cs) => { calls.push(cs); return Promise.resolve([click(T + 150)]); },
+          createStallController: segmentBuffer((cs) => { calls.push(cs); return Promise.resolve([click(T + 150)]); }),
         });
-        replayer.on(ReplayerEvents.BufferingStart, () => emitted.push('start'));
+        replayer.on(ReplayerEvents.StallStart, () => emitted.push('start'));
         replayer.on(ReplayerEvents.EventCast, (e) => cast.push(e.timestamp));
         replayer.on(ReplayerEvents.Finish, () => { finished = true; });
         replayer.play(0);
@@ -187,10 +193,10 @@ describe('buffered-dom replay', function () {
         const emitted = [];
         const cast = [];
         const replayer = new Replayer(oneFrontier, {
-          fetchEvents: (cs) => { calls.push(cs); return new Promise(() => {}); },
+          createStallController: segmentBuffer((cs) => { calls.push(cs); return new Promise(() => {}); }),
         });
-        replayer.on(ReplayerEvents.BufferingStart, () => emitted.push('start'));
-        replayer.on(ReplayerEvents.BufferingEnd, () => emitted.push('end'));
+        replayer.on(ReplayerEvents.StallStart, () => emitted.push('start'));
+        replayer.on(ReplayerEvents.StallEnd, () => emitted.push('end'));
         replayer.on(ReplayerEvents.EventCast, (e) => cast.push(e.timestamp));
         replayer.play(0);
         await new Promise((r) => setTimeout(r, 400));
@@ -211,10 +217,10 @@ describe('buffered-dom replay', function () {
         const emitted = [];
         const cast = [];
         const replayer = new Replayer(oneFrontier, {
-          fetchEvents: (cs) => { calls.push(cs); return Promise.resolve([click(T + 150)]); },
+          createStallController: segmentBuffer((cs) => { calls.push(cs); return Promise.resolve([click(T + 150)]); }),
         });
-        replayer.on(ReplayerEvents.BufferingStart, () => emitted.push('start'));
-        replayer.on(ReplayerEvents.BufferingEnd, () => emitted.push('end'));
+        replayer.on(ReplayerEvents.StallStart, () => emitted.push('start'));
+        replayer.on(ReplayerEvents.StallEnd, () => emitted.push('end'));
         replayer.on(ReplayerEvents.EventCast, (e) => cast.push(e.timestamp));
         replayer.play(150);
         await new Promise((r) => setTimeout(r, 400));
@@ -235,14 +241,14 @@ describe('buffered-dom replay', function () {
         const cast = [];
         let n = 0;
         const replayer = new Replayer(oneFrontier, {
-          fetchEvents: (cs) => {
+          createStallController: segmentBuffer((cs) => {
             calls.push(cs);
             n += 1;
             return Promise.resolve(n === 1 ? [] : [click(T + 150)]);
-          },
+          }),
         });
-        replayer.on(ReplayerEvents.BufferingStart, () => emitted.push('start'));
-        replayer.on(ReplayerEvents.BufferingEnd, () => emitted.push('end'));
+        replayer.on(ReplayerEvents.StallStart, () => emitted.push('start'));
+        replayer.on(ReplayerEvents.StallEnd, () => emitted.push('end'));
         replayer.on(ReplayerEvents.EventCast, (e) => cast.push(e.timestamp));
         replayer.play(150);
         await new Promise((r) => setTimeout(r, 400));
@@ -261,7 +267,7 @@ describe('buffered-dom replay', function () {
         const calls = [];
         let finished = false;
         const replayer = new Replayer(twoFrontiers, {
-          fetchEvents: (cs) => {
+          createStallController: segmentBuffer((cs) => {
             calls.push(cs);
             if (cs === T + 100) {
               return Promise.resolve([click(T + 150), click(T + 250), segmentStart(T + 300)]);
@@ -270,7 +276,7 @@ describe('buffered-dom replay', function () {
               return Promise.resolve([click(T + 350)]);
             }
             return Promise.resolve([]);
-          },
+          }),
         });
         replayer.on(ReplayerEvents.Finish, () => { finished = true; });
         replayer.play(150);
@@ -291,11 +297,11 @@ describe('buffered-dom replay', function () {
         const cast = [];
         let finished = false;
         const replayer = new Replayer(twoFrontiers, {
-          fetchEvents: (cs) => {
+          createStallController: segmentBuffer((cs) => {
             if (cs === T + 100) return Promise.resolve([click(T + 150), click(T + 250)]);
             if (cs === T + 200) return Promise.resolve([click(T + 250)]);
             return Promise.resolve([]);
-          },
+          }),
         });
         replayer.on(ReplayerEvents.EventCast, (e) => cast.push(e.timestamp));
         replayer.on(ReplayerEvents.Finish, () => { finished = true; });
@@ -317,7 +323,7 @@ describe('buffered-dom replay', function () {
         const { Replayer } = rrweb;
         let calls = 0;
         const replayer = new Replayer(manyFrontiers, {
-          fetchEvents: () => { calls += 1; return new Promise(() => {}); },
+          createStallController: segmentBuffer(() => { calls += 1; return new Promise(() => {}); }),
         });
         replayer.play(0);
         await new Promise((r) => setTimeout(r, 300));
@@ -334,9 +340,9 @@ describe('buffered-dom replay', function () {
         const calls = [];
         const emitted = [];
         const replayer = new Replayer(manyFrontiers, {
-          fetchEvents: (cs) => { calls.push(cs); return new Promise(() => {}); },
+          createStallController: segmentBuffer((cs) => { calls.push(cs); return new Promise(() => {}); }),
         });
-        replayer.on(ReplayerEvents.BufferingStart, () => emitted.push('start'));
+        replayer.on(ReplayerEvents.StallStart, () => emitted.push('start'));
         replayer.play(0);
         await new Promise((r) => setTimeout(r, 400));
         return {
@@ -360,7 +366,7 @@ describe('buffered-dom replay', function () {
         const calls = [];
         let finished = false;
         const replayer = new Replayer(manyFrontiers, {
-          fetchEvents: (cs) => { calls.push(cs); return Promise.resolve([click(cs + 50)]); },
+          createStallController: segmentBuffer((cs) => { calls.push(cs); return Promise.resolve([click(cs + 50)]); }),
         });
         replayer.on(ReplayerEvents.Finish, () => { finished = true; });
         replayer.play(0);
@@ -372,7 +378,7 @@ describe('buffered-dom replay', function () {
     expect(result.finished).toBe(true);
   });
 
-  it('emits BufferingError (and still BufferingEnd) after retries are exhausted', async () => {
+  it('emits StallError (and still StallEnd) after retries are exhausted', async () => {
     const result = await page.evaluate(`
       (async () => {
         const { Replayer, ReplayerEvents } = rrweb;
@@ -380,11 +386,11 @@ describe('buffered-dom replay', function () {
         const emitted = [];
         let errorPayload = null;
         const replayer = new Replayer(oneFrontier, {
-          fetchEvents: () => { calls += 1; return Promise.reject(new Error('boom')); },
+          createStallController: segmentBuffer(() => { calls += 1; return Promise.reject(new Error('boom')); }),
         });
-        replayer.on(ReplayerEvents.BufferingStart, () => emitted.push('start'));
-        replayer.on(ReplayerEvents.BufferingError, (d) => { emitted.push('error'); errorPayload = d; });
-        replayer.on(ReplayerEvents.BufferingEnd, () => emitted.push('end'));
+        replayer.on(ReplayerEvents.StallStart, () => emitted.push('start'));
+        replayer.on(ReplayerEvents.StallError, (d) => { emitted.push('error'); errorPayload = d; });
+        replayer.on(ReplayerEvents.StallEnd, () => emitted.push('end'));
         replayer.play(150);
         await new Promise((r) => setTimeout(r, 400));
         return { calls, emitted, errorPayload };
@@ -393,5 +399,40 @@ describe('buffered-dom replay', function () {
     expect(result.calls).toBe(3);
     expect(result.emitted).toEqual(['start', 'error', 'end']);
     expect(result.errorPayload.segmentStarts).toContain(T + 100);
+  });
+
+  it('stays paused when the user pauses mid-stall and the segment then arrives', async () => {
+    const result = await page.evaluate(`
+      (async () => {
+        const { Replayer, ReplayerEvents } = rrweb;
+        let releaseFetch = null;
+        const cast = [];
+        const replayer = new Replayer(oneFrontier, {
+          createStallController: segmentBuffer(
+            () => new Promise((resolve) => {
+              releaseFetch = () => resolve([click(T + 150)]);
+            }),
+          ),
+        });
+        replayer.on(ReplayerEvents.EventCast, (e) => cast.push(e.timestamp));
+        replayer.play(0);
+        await new Promise((r) => setTimeout(r, 300));
+        const stateWhileStalled = replayer.service.state.value;
+        replayer.pause();
+        const stateAfterPause = replayer.service.state.value;
+        releaseFetch();
+        await new Promise((r) => setTimeout(r, 300));
+        return {
+          stateWhileStalled,
+          stateAfterPause,
+          finalState: replayer.service.state.value,
+          castPastStall: cast.filter((t) => t > T + 100).length,
+        };
+      })();
+    `);
+    expect(result.stateWhileStalled).toBe('stalled');
+    expect(result.stateAfterPause).toBe('paused');
+    expect(result.finalState).toBe('paused');
+    expect(result.castPastStall).toBe(0);
   });
 });

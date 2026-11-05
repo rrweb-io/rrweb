@@ -43,7 +43,7 @@ export type PlayerEvent =
       };
     }
   | {
-      type: 'BUFFER';
+      type: 'STALL';
     }
   | {
       type: 'RESCHEDULE';
@@ -64,7 +64,7 @@ export type PlayerState =
       context: PlayerContext;
     }
   | {
-      value: 'buffering';
+      value: 'stalled';
       context: PlayerContext;
     }
   | {
@@ -156,20 +156,13 @@ type PlayerAssets = {
   emitter: Emitter;
   applyEventsSynchronously(events: Array<eventWithTime>): void;
   getCastFn(event: eventWithTime, isSync: boolean): () => void;
-  onEnterBuffering(): void;
-  onExitBuffering(): void;
+  isStallMarker(event: eventWithTime): boolean;
 };
 export function createPlayerService(
   context: PlayerContext,
-  {
-    getCastFn,
-    applyEventsSynchronously,
-    emitter,
-    onEnterBuffering,
-    onExitBuffering,
-  }: PlayerAssets,
+  { getCastFn, applyEventsSynchronously, emitter, isStallMarker }: PlayerAssets,
 ) {
-  let nextSegmentStart: number | null = null;
+  let nextStallTimestamp: number | null = null;
   const scheduleEvents = (
     ctx: PlayerContext,
     events: eventWithTime[],
@@ -179,11 +172,8 @@ export function createPlayerService(
     for (let i = startIndex; i < events.length; i++) {
       const event = events[i];
       addDelay(event, baselineTime);
-      if (
-        event.type === EventType.Custom &&
-        event.data.tag === 'segment-start'
-      ) {
-        nextSegmentStart = event.timestamp;
+      if (isStallMarker(event)) {
+        nextStallTimestamp = event.timestamp;
         timer.addAction({
           doAction: () => undefined, // keep the timer alive
           delay: event.delay!,
@@ -221,16 +211,16 @@ export function createPlayerService(
             },
             FINISHED: [
               {
-                target: 'buffering',
-                cond: () => nextSegmentStart !== null,
+                target: 'stalled',
+                cond: () => nextStallTimestamp !== null,
               },
               {
                 target: 'paused',
                 actions: ['resetLastPlayedEvent', 'pause'],
               },
             ],
-            BUFFER: {
-              target: 'buffering',
+            STALL: {
+              target: 'stalled',
             },
             RESCHEDULE: {
               target: 'playing',
@@ -256,8 +246,8 @@ export function createPlayerService(
               target: 'paused',
               actions: 'castEvent',
             },
-            BUFFER: {
-              target: 'buffering',
+            STALL: {
+              target: 'stalled',
             },
             TO_LIVE: {
               target: 'live',
@@ -269,9 +259,9 @@ export function createPlayerService(
             },
           },
         },
-        buffering: {
-          entry: ['pause', 'bufferingEntry'],
-          exit: ['bufferingExit'],
+        stalled: {
+          entry: ['pause', 'stallStart'],
+          exit: ['stallEnd'],
           on: {
             PLAY: {
               target: 'playing',
@@ -305,8 +295,8 @@ export function createPlayerService(
     },
     {
       actions: {
-        bufferingEntry: onEnterBuffering,
-        bufferingExit: onExitBuffering,
+        stallStart: () => emitter.emit(ReplayerEvents.StallStart),
+        stallEnd: () => emitter.emit(ReplayerEvents.StallEnd),
         castEvent: assign({
           lastPlayedEvent: (ctx, event) => {
             if (event.type === 'CAST_EVENT') {
@@ -329,7 +319,7 @@ export function createPlayerService(
         play(ctx) {
           const { timer, events, baselineTime, lastPlayedEvent } = ctx;
           timer.clear();
-          nextSegmentStart = null;
+          nextStallTimestamp = null;
 
           for (const event of events) {
             // TODO: improve this API
@@ -362,10 +352,7 @@ export function createPlayerService(
             ) {
               continue;
             }
-            if (
-              event.type === EventType.Custom &&
-              event.data.tag === 'segment-start'
-            ) {
+            if (isStallMarker(event)) {
               tailStart = i;
               break;
             }
@@ -384,11 +371,11 @@ export function createPlayerService(
         },
         extendPlay(ctx) {
           const { events } = ctx;
-          const from = nextSegmentStart;
+          const from = nextStallTimestamp;
           if (from === null) {
             return;
           }
-          nextSegmentStart = null;
+          nextStallTimestamp = null;
           let lo = 0;
           let hi = events.length;
           while (lo < hi) {
