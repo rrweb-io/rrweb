@@ -575,7 +575,11 @@ export class Replayer {
     ) {
       return;
     }
-    if (timeOffset === undefined && this.service.state.matches('playing')) {
+    if (
+      timeOffset === undefined &&
+      (this.service.state.matches('playing') ||
+        this.service.state.matches('stalled'))
+    ) {
       this.service.send({ type: 'PAUSE' });
     }
     if (typeof timeOffset === 'number') {
