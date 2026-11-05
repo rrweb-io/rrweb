@@ -1,6 +1,6 @@
 import { type eventWithTime, EventType, ReplayerEvents } from '@rrweb/types';
 import type { SegmentFetchFn } from '../types';
-import type { StallController } from './stall-controller';
+import { type StallController, StallEvents } from './stall-controller';
 import type { Replayer } from './index';
 
 type SegmentInfo = {
@@ -107,11 +107,13 @@ export class SegmentController implements StallController {
     for (const info of this.segments.values()) {
       info.attempts = 0;
     }
+    this.replayer.emit(StallEvents.BufferingStart);
     this.requestNeededSegments();
   };
 
   private onStallEnd = () => {
     this.stallTarget = null;
+    this.replayer.emit(StallEvents.BufferingEnd);
   };
 
   private onPrefetchAlarm = () => {

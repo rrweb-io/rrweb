@@ -457,4 +457,24 @@ describe('buffered-dom replay', function () {
     `);
     expect(result.order).toEqual(['a', 'b', 'c', 'd', 'e']);
   });
+
+  it('emits buffering start/end around a loading stall', async () => {
+    const result = await page.evaluate(`
+      (async () => {
+        const { Replayer } = rrweb;
+        const emitted = [];
+        const replayer = new Replayer(oneFrontier, {
+          createStallController: segmentBuffer((cs) =>
+            Promise.resolve([click(T + 150)]),
+          ),
+        });
+        replayer.on('buffering-start', () => emitted.push('buffering-start'));
+        replayer.on('buffering-end', () => emitted.push('buffering-end'));
+        replayer.play(150);
+        await new Promise((r) => setTimeout(r, 400));
+        return { emitted };
+      })();
+    `);
+    expect(result.emitted).toEqual(['buffering-start', 'buffering-end']);
+  });
 });
