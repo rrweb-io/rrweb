@@ -220,6 +220,7 @@ export class SegmentController implements StallController {
     }
     let frontier: number | null = null;
     let frontierEvent: eventWithTime | null = null;
+    const toInject: eventWithTime[] = [];
     for (const event of events) {
       if (isSegmentStartMarker(event)) {
         const cs = markerSegmentStart(event);
@@ -229,11 +230,12 @@ export class SegmentController implements StallController {
         }
         continue;
       }
-      this.replayer.addEvent(event);
+      toInject.push(event);
     }
     if (frontierEvent) {
-      this.replayer.addEvent(frontierEvent);
+      toInject.push(frontierEvent);
     }
+    this.replayer.injectEvents(toInject);
     const bound =
       frontier ??
       this.sortedSegmentStarts().find((cs) => cs > segmentStart) ??

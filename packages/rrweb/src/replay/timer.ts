@@ -120,6 +120,10 @@ export class Timer {
     return this.raf !== null;
   }
 
+  public hasUpcomingActions() {
+    return this.actions.length > 0;
+  }
+
   private findActionIndex(action: actionWithDelay): number {
     let start = 0;
     let end = this.actions.length - 1;

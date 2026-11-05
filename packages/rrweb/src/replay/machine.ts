@@ -37,19 +37,10 @@ export type PlayerEvent =
   | { type: 'PAUSE' }
   | { type: 'TO_LIVE'; payload: { baselineTime?: number } }
   | {
-      type: 'ADD_EVENT';
-      payload: {
-        event: eventWithTime;
-      };
-    }
-  | {
       type: 'STALL';
     }
   | {
       type: 'RESCHEDULE';
-    }
-  | {
-      type: 'FINISHED';
     }
   | {
       type: 'END';
@@ -71,67 +62,6 @@ export type PlayerState =
       value: 'live';
       context: PlayerContext;
     };
-
-function isDuplicateEvent(a: eventWithTime, b: eventWithTime): boolean {
-  if (a.type !== b.type) {
-    return false;
-  }
-  let earlyOut = false;
-  switch (a.type) {
-    case EventType.Asset:
-      return a.data.url === (b as typeof a).data.url;
-    case EventType.IncrementalSnapshot:
-      if (a.data.source !== (b as typeof a).data.source) {
-        earlyOut = true;
-      } else if (a.data.source === IncrementalSource.Mutation) {
-        const bdata = b.data as typeof a.data;
-        earlyOut =
-          a.data.adds.length !== bdata.adds.length ||
-          a.data.removes.length !== bdata.removes.length ||
-          a.data.attributes.length !== bdata.attributes.length ||
-          a.data.texts.length !== bdata.texts.length;
-      }
-      break;
-  }
-  if (earlyOut) {
-    return false;
-  }
-  return JSON.stringify(a) === JSON.stringify(b);
-}
-
-export function injectEvent(
-  events: eventWithTime[],
-  event: eventWithTime,
-): boolean {
-  const lastIndex = events.length - 1;
-  if (!events[lastIndex] || events[lastIndex].timestamp < event.timestamp) {
-    // fast track
-    events.push(event);
-    return true;
-  }
-  // binary search - events can arrive out of order in a realtime context
-  let start = 0;
-  let end = events.length;
-  while (start < end) {
-    const mid = (start + end) >> 1;
-    if (events[mid].timestamp <= event.timestamp) {
-      start = mid + 1;
-    } else {
-      end = mid;
-    }
-  }
-  for (
-    let i = start - 1;
-    i >= 0 && events[i].timestamp === event.timestamp;
-    i--
-  ) {
-    if (isDuplicateEvent(events[i], event)) {
-      return false;
-    }
-  }
-  events.splice(start, 0, event);
-  return true;
-}
 
 /**
  * If the array have multiple meta and fullsnapshot events,
@@ -209,7 +139,7 @@ export function createPlayerService(
               target: 'playing',
               actions: 'castEvent',
             },
-            FINISHED: [
+            END: [
               {
                 target: 'stalled',
                 cond: () => nextStallTimestamp !== null,
@@ -225,14 +155,6 @@ export function createPlayerService(
             RESCHEDULE: {
               target: 'playing',
               actions: ['extendPlay'],
-            },
-            END: {
-              target: 'paused',
-              actions: ['resetLastPlayedEvent', 'pause'],
-            },
-            ADD_EVENT: {
-              target: 'playing',
-              actions: ['addEvent'],
             },
           },
         },
@@ -253,10 +175,6 @@ export function createPlayerService(
               target: 'live',
               actions: ['startLive'],
             },
-            ADD_EVENT: {
-              target: 'paused',
-              actions: ['addEvent'],
-            },
           },
         },
         stalled: {
@@ -274,17 +192,10 @@ export function createPlayerService(
             CAST_EVENT: {
               actions: 'castEvent',
             },
-            ADD_EVENT: {
-              actions: ['addEvent'],
-            },
           },
         },
         live: {
           on: {
-            ADD_EVENT: {
-              target: 'live',
-              actions: ['addEvent'],
-            },
             CAST_EVENT: {
               target: 'live',
               actions: ['castEvent'],
@@ -405,29 +316,6 @@ export function createPlayerService(
             }
             return Date.now();
           },
-        }),
-        addEvent: assign((ctx, machineEvent) => {
-          const { baselineTime, timer, events } = ctx;
-          if (machineEvent.type === 'ADD_EVENT') {
-            const { event } = machineEvent.payload;
-            addDelay(event, baselineTime);
-
-            if (injectEvent(events, event)) {
-              const isSync = event.timestamp < baselineTime;
-              const castFn = getCastFn(event, isSync);
-              if (isSync) {
-                castFn();
-              } else if (timer.isActive()) {
-                timer.addAction({
-                  doAction: () => {
-                    castFn();
-                  },
-                  delay: event.delay!,
-                });
-              }
-            }
-          }
-          return { ...ctx, events };
         }),
       },
     },

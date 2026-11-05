@@ -28,7 +28,7 @@ import type {
   Mirror as RRDOMMirror,
 } from 'rrdom';
 import * as mittProxy from 'mitt';
-import { Timer } from './timer';
+import { Timer, addDelay } from './timer';
 import {
   createPlayerService,
   createSpeedService,
@@ -115,6 +115,32 @@ function indicatesTouchDevice(e: eventWithTime) {
   );
 }
 
+function isDuplicateEvent(a: eventWithTime, b: eventWithTime): boolean {
+  if (a.type !== b.type) {
+    return false;
+  }
+  let earlyOut = false;
+  switch (a.type) {
+    case EventType.Asset:
+      return a.data.url === (b as typeof a).data.url;
+    case EventType.IncrementalSnapshot:
+      if (a.data.source !== (b as typeof a).data.source) {
+        earlyOut = true;
+      } else if (a.data.source === IncrementalSource.Mutation) {
+        const bdata = b.data as typeof a.data;
+        earlyOut =
+          a.data.adds.length !== bdata.adds.length ||
+          a.data.removes.length !== bdata.removes.length ||
+          a.data.attributes.length !== bdata.attributes.length ||
+          a.data.texts.length !== bdata.texts.length;
+      }
+      break;
+  }
+  if (earlyOut) {
+    return false;
+  }
+  return JSON.stringify(a) === JSON.stringify(b);
+}
 
 export class Replayer {
   public wrapper: HTMLDivElement;
@@ -588,13 +614,92 @@ export class Replayer {
   }
 
   public addEvent(rawEvent: eventWithTime | string) {
+    // add or append a single event in a live context
+    // will be immediately processed and scheduled
     const event = this.config.unpackFn
       ? this.config.unpackFn(rawEvent as string)
       : (rawEvent as eventWithTime);
-    void Promise.resolve().then(() =>
-      this.service.send({ type: 'ADD_EVENT', payload: { event } }),
+    if (this.injectEvent(event) !== -1) {
+      this.applyOrSchedule(event);
+    }
+  }
+
+  public injectEvents(rawEvents: (eventWithTime | string)[]) {
+    const events = rawEvents.map((e) =>
+      typeof e === 'string' && this.config.unpackFn
+        ? this.config.unpackFn(e)
+        : (e as eventWithTime),
     );
+    const first = events.shift();
+    if (!first) return;
+    const ix = this.injectEvent(first);
+    const next = this.service.state.context.events[ix + 1];
+    if (
+      ix >= 0 &&
+      events.length > 0 &&
+      (!next || events[events.length - 1].timestamp < next.timestamp)
+    ) {
+      // fast track: assumes incoming events are sorted and contain no dupes
+      this.service.state.context.events.splice(ix + 1, 0, ...events);
+      for (const event of events) {
+        this.registerEvent(event);
+      }
+      return;
+    }
+    for (const event of events) {
+      this.injectEvent(event);
+    }
+  }
+
+  private injectEvent(event: eventWithTime): number {
+    const events = this.service.state.context.events;
+    const lastIndex = events.length - 1;
+    if (!events[lastIndex] || events[lastIndex].timestamp < event.timestamp) {
+      // fast track
+      events.push(event);
+      this.registerEvent(event);
+      return lastIndex + 1;
+    }
+    // binary search - events can arrive out of order in a realtime context
+    let start = 0;
+    let end = events.length;
+    while (start < end) {
+      const mid = (start + end) >> 1;
+      if (events[mid].timestamp <= event.timestamp) {
+        start = mid + 1;
+      } else {
+        end = mid;
+      }
+    }
+    for (
+      let i = start - 1;
+      i >= 0 && events[i].timestamp === event.timestamp;
+      i--
+    ) {
+      if (isDuplicateEvent(events[i], event)) {
+        return -1;
+      }
+    }
+    events.splice(start, 0, event);
     this.registerEvent(event);
+    return start;
+  }
+
+  private applyOrSchedule(event: eventWithTime) {
+    const { baselineTime, timer } = this.service.state.context;
+    addDelay(event, baselineTime);
+    const isSync = event.timestamp < baselineTime;
+    const castFn = this.getCastFn(event, isSync);
+    if (isSync) {
+      castFn();
+    } else if (timer.isActive()) {
+      timer.addAction({
+        doAction: () => {
+          castFn();
+        },
+        delay: event.delay!,
+      });
+    }
   }
 
   private registerEvent(event: eventWithTime) {
@@ -607,12 +712,18 @@ export class Replayer {
   private onTimerExhausted = () => {
     if (this.config.liveMode) return;
     if (!this.service.state.matches('playing')) return;
-    this.service.send({ type: 'FINISHED' });
-    if (this.service.state.matches('stalled')) {
-      return;
-    }
-    this.backToNormal();
-    this.emitter.emit(ReplayerEvents.Finish);
+    // allow for checking whether new events aren't just about to be loaded in
+    setTimeout(() => {
+      if (this.timer.hasUpcomingActions()) return; // if added in 50ms window
+      if (!this.service.state.matches('playing')) return;
+      this.service.send('END');
+      if (this.service.state.matches('stalled')) {
+        // tried to end, but needed to buffer instead
+        return;
+      }
+      this.backToNormal();
+      this.emitter.emit(ReplayerEvents.Finish);
+    }, 50);
   };
 
   public enableInteract() {
@@ -798,36 +909,6 @@ export class Replayer {
       }
 
       this.service.send({ type: 'CAST_EVENT', payload: { event } });
-
-      // events are kept sorted by timestamp, check if this is the last event
-      const lastIndex = this.service.state.context.events.length - 1;
-      if (
-        !this.config.liveMode &&
-        event === this.service.state.context.events[lastIndex]
-      ) {
-        const finish = () => {
-          if (lastIndex < this.service.state.context.events.length - 1) {
-            // more events have been added since the setTimeout
-            return;
-          }
-          if (this.config.fetchEvents) {
-            return;
-          }
-          this.backToNormal();
-          this.service.send('END');
-          this.emitter.emit(ReplayerEvents.Finish);
-        };
-        let finishBuffer = 50; // allow for checking whether new events aren't just about to be loaded in
-        if (
-          event.type === EventType.IncrementalSnapshot &&
-          event.data.source === IncrementalSource.MouseMove &&
-          event.data.positions.length
-        ) {
-          // extend finish event if the last event is a mouse move so that the timer isn't stopped by the service before checking the last event
-          finishBuffer += Math.max(0, -event.data.positions[0].timeOffset);
-        }
-        setTimeout(finish, finishBuffer);
-      }
 
       this.emitter.emit(ReplayerEvents.EventCast, event);
     };

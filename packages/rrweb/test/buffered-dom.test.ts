@@ -435,4 +435,26 @@ describe('buffered-dom replay', function () {
     expect(result.finalState).toBe('paused');
     expect(result.castPastStall).toBe(0);
   });
+
+  it('injectEvents preserves input order for events sharing a timestamp', async () => {
+    const result = await page.evaluate(`
+      (async () => {
+        const { Replayer } = rrweb;
+        const replayer = new Replayer(oneFrontier, {});
+        const ts = T + 120;
+        const mark = (id) => ({
+          type: ${EventType.Custom},
+          timestamp: ts,
+          data: { tag: 'mark', payload: id },
+        });
+        replayer.injectEvents([mark('a'), mark('b'), mark('c')]);
+        replayer.injectEvents([mark('d'), mark('e')]);
+        const order = replayer.service.state.context.events
+          .filter((e) => e.timestamp === ts)
+          .map((e) => e.data.payload);
+        return { order };
+      })();
+    `);
+    expect(result.order).toEqual(['a', 'b', 'c', 'd', 'e']);
+  });
 });

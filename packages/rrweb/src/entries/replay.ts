@@ -1,3 +1,3 @@
 export * from '../replay';
 export { SegmentController } from '../replay/segment-controller';
-export type { StallController } from '../replay/stall-controller';
+export { type StallController, StallEvents } from '../replay/stall-controller';
