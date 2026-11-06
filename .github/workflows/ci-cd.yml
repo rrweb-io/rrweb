@@ -34,6 +34,15 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
 
+      - name: Test release scripts
+        run: node --test .github/scripts/*.test.cjs
+
+      - name: Check rrweb wrapper changesets
+        if: github.event_name == 'pull_request'
+        run: yarn changeset:sync --check --since "$CHANGESET_BASE"
+        env:
+          CHANGESET_BASE: ${{ github.event.pull_request.base.sha }}
+
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
 
