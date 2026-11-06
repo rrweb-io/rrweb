@@ -27,7 +27,6 @@ import {
   isSerializedIframe,
   isSerializedStylesheet,
   inDom,
-  getShadowHost,
   closestElementOfNode,
 } from '../utils';
 import dom from '@rrweb/utils';
@@ -251,18 +250,9 @@ export default class MutationBuffer {
             }
           }
 
-          parentId = isShadowRoot(parentNode)
-            ? this.mirror.getId(getShadowHost(n))
-            : this.mirror.getId(parentNode);
-
-          // If the node is the direct child of a shadow root, we treat the shadow host as its parent node.
-          if (
-            parentId === -1 &&
-            parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE
-          ) {
-            const shadowHost = dom.host(parentNode as ShadowRoot);
-            parentId = this.mirror.getId(shadowHost);
-          }
+          // parentNode was already replaced with its shadow host above, so a
+          // simple getId is sufficient here.
+          parentId = this.mirror.getId(parentNode);
         }
       }
 
