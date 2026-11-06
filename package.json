@@ -29,7 +29,7 @@
     "@types/prettier": "2.7.3",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
-    "browserslist": "^4.22.1",
+    "browserslist": "^4.28.7",
     "concurrently": "^7.1.0",
     "cross-env": "^7.0.3",
     "esbuild-plugin-umd-wrapper": "^2.0.0",
