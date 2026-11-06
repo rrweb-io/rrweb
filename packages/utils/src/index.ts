@@ -125,7 +125,8 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
     const untaintedObject = (win as any)[key]
       .prototype as BasePrototypeCache[T];
-    if (!untaintedObject) throw new Error('no prototype on untainted constructor');
+    if (!untaintedObject)
+      throw new Error('no prototype on untainted constructor');
     // WebKit/Safari: WebKit tears down an iframe's ScriptExecutionContext when it is
     // detached from the DOM. MutationObserver.deliver() silently drops callbacks when
     // m_callback->scriptExecutionContext() returns null (webkit.org/b/179224).
