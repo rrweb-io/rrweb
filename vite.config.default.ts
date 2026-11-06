@@ -64,9 +64,11 @@ function relativeCIStatsPlugin(outDir: string): Plugin {
 function minifyAndUMDPlugin({
   name,
   outDir,
+  umdExport,
 }: {
   name: LibraryOptions['name'];
   outDir: string;
+  umdExport?: 'default';
 }): Plugin {
   return {
     name: 'minify-plugin',
@@ -105,6 +107,7 @@ function minifyAndUMDPlugin({
               name,
               input: inputFilePath,
               output: outUmd,
+              umdExport,
               minify: false,
               isCss: false,
               outDir,
@@ -117,6 +120,7 @@ function minifyAndUMDPlugin({
               name,
               input: inputFilePath,
               output: outUmdMin,
+              umdExport,
               minify: true,
               isCss: false,
               outDir,
@@ -136,6 +140,7 @@ async function buildFile({
   minify,
   isCss,
   outDir,
+  umdExport,
 }: {
   name?: LibraryOptions['name'];
   input: string;
@@ -143,6 +148,7 @@ async function buildFile({
   outDir: string;
   minify: boolean;
   isCss: boolean;
+  umdExport?: 'default';
 }) {
   await build({
     entryPoints: [input],
@@ -152,6 +158,11 @@ async function buildFile({
     format: isCss ? undefined : ('umd' as Format),
     target: isCss ? undefined : 'es2017',
     treeShaking: !isCss,
+    // Run before the UMD wrapper returns the CommonJS exports.
+    footer:
+      umdExport === 'default'
+        ? { js: 'module.exports = module.exports.default;' }
+        : undefined,
     plugins: [
       umdWrapper({
         libraryName: name,
@@ -174,6 +185,7 @@ export default function (
     fileName?: string;
     plugins?: Plugin[];
     bundleStats?: boolean;
+    umdExport?: 'default';
   },
 ) {
   const {
@@ -181,6 +193,7 @@ export default function (
     outputDir: outDir = 'dist',
     plugins = [],
     bundleStats = true,
+    umdExport,
   } = options || {};
 
   let formats: LibraryFormats[] = ['es', 'cjs'];
@@ -225,7 +238,7 @@ export default function (
           });
         },
       }),
-      minifyAndUMDPlugin({ name, outDir }),
+      minifyAndUMDPlugin({ name, outDir, umdExport }),
       visualizer({
         filename: resolve(__dirname, name + '-bundle-analysis.html'), // Path for the HTML report
         open: false, // don't Automatically open the report in the browser

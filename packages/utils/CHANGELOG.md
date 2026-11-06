@@ -1,5 +1,11 @@
 # @rrweb/utils
 
+## 2.2.1
+
+### Patch Changes
+
+- [#1633](https://github.com/rrweb-io/rrweb/pull/1633) [`2bc4f89`](https://github.com/rrweb-io/rrweb/commit/2bc4f89beb7f99a987817703031e3a15c75d0c10) Thanks [@pauldambra](https://github.com/pauldambra)! - AngularJS: Load unpatched versions of browser APIs from the `zone` object when present (Angular monkeypatches them), so we don't need to apply our own monkeypatch avoidance mechanism.
+
 ## 2.2.0
 
 ### Patch Changes

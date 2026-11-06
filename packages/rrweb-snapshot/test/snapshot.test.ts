@@ -55,6 +55,12 @@ describe('absolute url to stylesheet', () => {
     );
   });
 
+  it('leaves fragment-only references alone', () => {
+    expect(absolutifyURLs('url(#filter)', href)).toEqual(`url(#filter)`);
+    expect(absolutifyURLs(`url('#filter')`, href)).toEqual(`url('#filter')`);
+    expect(absolutifyURLs('url("#filter")', href)).toEqual(`url("#filter")`);
+  });
+
   it('can handle absolute path', () => {
     expect(absolutifyURLs('url("/a.jpg")', href)).toEqual(
       `url("http://localhost/a.jpg")`,
