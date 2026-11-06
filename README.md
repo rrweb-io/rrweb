@@ -120,6 +120,12 @@ This project is tested with BrowserStack
 
 <a href="https://opencollective.com/rrweb#sponsor" rel="nofollow"><img src="https://opencollective.com/rrweb/tiers/backers.svg?avatarHeight=36"></a>
 
+### Infrastructure Sponsors
+
+<a href="https://www.blacksmith.sh/" rel="nofollow sponsored">
+  <img src="https://gist.githubusercontent.com/Juice10/63574f35f5095c56cb74539a07588f5f/raw/5955900a42c62a479ae8f561e57e78aa8edbbc7a/blacksmith-powered.png" alt="CI powered by Blacksmith" width="270">
+</a>
+
 ## Core Team Members
 
 <table>
