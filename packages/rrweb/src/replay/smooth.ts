@@ -5,6 +5,7 @@ import {
   ReplayerEvents,
 } from '@rrweb/types';
 import type {
+  DocumentDimension,
   eventWithTime,
   fullSnapshotEvent,
   scrollData,
@@ -221,8 +222,11 @@ export class SmoothReplay {
   private lastGuard = 0;
   private last = { x: NaN, y: NaN, t: NaN };
   private speed = 0;
-  /** Timestamp of the last event seen by seed(); later casts are new events. */
-  private seeded = -Infinity;
+  /** Iframe offset of each sample, measured when the cursor reaches it. */
+  private bases = new WeakMap<CursorSample, DocumentDimension>();
+  /** Pointer events read by seed(); any other cast is newly added. */
+  private seen = new WeakSet<eventWithTime>();
+  private live = false;
   private cursorOn = false;
   private scrollOn = false;
 
@@ -237,11 +241,14 @@ export class SmoothReplay {
     replayer.on(ReplayerEvents.Destroy, () => this.stop());
     replayer.on(ReplayerEvents.StateChange, (s) => {
       const p = (s as { player?: { matches(v: string): boolean } }).player;
-      if (p?.matches('live')) this.start();
+      if (!p) return;
+      const live = p.matches('live');
+      if (live && !this.live) this.seed();
+      this.live = live;
     });
-    replayer.on(ReplayerEvents.FullsnapshotRebuilded, (e) =>
-      this.trackSnapshot(e as fullSnapshotEvent),
-    );
+    replayer.on(ReplayerEvents.FullsnapshotRebuilded, (e) => {
+      if (this.scrollOn) this.trackSnapshot(e as fullSnapshotEvent);
+    });
     replayer.on(ReplayerEvents.EventCast, (e) =>
       this.trackCast(e as eventWithTime),
     );
@@ -257,8 +264,7 @@ export class SmoothReplay {
     this.scrollOn = smoothScroll;
     this.mouse.classList.toggle('smooth', smoothCursor);
     const { state } = this.replayer.service;
-    if (state.matches('playing')) this.seed();
-    else if (state.matches('live')) this.start();
+    if (state.matches('playing') || state.matches('live')) this.seed();
     else this.stop();
   }
 
@@ -279,33 +285,34 @@ export class SmoothReplay {
     this.samples.length = 0;
     this.glides.clear();
     this.desired.clear();
+    // The first snapshot is already on screen as the poster, even before its time.
+    let poster = true;
     for (const e of events) {
       const past = e.timestamp <= now;
       if (e.type === EventType.FullSnapshot) {
-        if (past) this.trackSnapshot(e);
+        if (this.scrollOn && (past || poster)) this.trackSnapshot(e);
+        poster = false;
       } else if (
-        past &&
         e.type === EventType.IncrementalSnapshot &&
         e.data.source === IncrementalSource.Scroll
       ) {
-        this.trackScroll(e, e.data);
-      } else {
+        if (this.scrollOn && past) this.trackScroll(e, e.data);
+      } else if (this.cursorOn) {
         const add = cursorSamples(e);
         if (!add.length) continue;
+        this.seen.add(e);
         if (past) seedSample(this.samples, add[add.length - 1]);
         else queueSamples(this.samples, add);
       }
     }
-    this.seeded = events.length
-      ? events[events.length - 1].timestamp
-      : -Infinity;
     this.start();
   }
 
   private trackCast(e: eventWithTime) {
-    if (!this.enabled || e.type !== EventType.IncrementalSnapshot) return;
-    if (e.data.source === IncrementalSource.Scroll) this.trackScroll(e, e.data);
-    else if (e.timestamp > this.seeded)
+    if (e.type !== EventType.IncrementalSnapshot) return;
+    if (e.data.source === IncrementalSource.Scroll) {
+      if (this.scrollOn) this.trackScroll(e, e.data);
+    } else if (this.cursorOn && !this.seen.has(e))
       queueSamples(this.samples, cursorSamples(e));
   }
 
@@ -383,7 +390,14 @@ export class SmoothReplay {
     const p = cursorAt(s, t, this.sameDocument);
     const target = p && this.replayer.getMirror().getNode(p.id);
     if (!p || !target) return;
-    const base = getBaseDimension(target, this.replayer.iframe);
+    // Measured once per sample, as moveAndHover does: a still pointer stays
+    // put when the page scrolls a nested iframe under it.
+    const reached = s[1] && s[1].t <= t ? s[1] : s[0];
+    let base = this.bases.get(reached);
+    if (!base) {
+      base = getBaseDimension(target, this.replayer.iframe);
+      this.bases.set(reached, base);
+    }
     const x = p.x * base.absoluteScale + base.x;
     const y = p.y * base.absoluteScale + base.y;
     const last = this.last;
