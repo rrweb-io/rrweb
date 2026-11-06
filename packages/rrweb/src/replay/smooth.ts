@@ -1,5 +1,16 @@
-import { EventType, IncrementalSource } from '@rrweb/types';
-import type { eventWithTime, scrollData } from '@rrweb/types';
+import {
+  EventType,
+  IncrementalSource,
+  MouseInteractions,
+  ReplayerEvents,
+} from '@rrweb/types';
+import type {
+  eventWithTime,
+  fullSnapshotEvent,
+  scrollData,
+} from '@rrweb/types';
+import { getBaseDimension } from '../utils';
+import type { Replayer } from './index';
 
 export type CursorSample = {
   t: number;
@@ -147,15 +158,16 @@ export function findNextScroll(
   return null;
 }
 
-/** Strokes pts as segments whose width grows from 0 at pts[0] to headWidth at the last point. */
+/** Strokes pts as segments whose width grows from 0 at pts[0] to TRAIL_HEAD_SCALE * lineWidth at the last point. */
 export function drawTaperedTrail(
   ctx: Pick<
     CanvasRenderingContext2D,
     'beginPath' | 'moveTo' | 'lineTo' | 'stroke'
   > & { lineWidth: number },
   pts: Array<{ x: number; y: number }>,
-  headWidth: number,
+  lineWidth: number,
 ) {
+  const headWidth = lineWidth * TRAIL_HEAD_SCALE;
   const last = pts.length - 1;
   for (let i = 1; i <= last; i++) {
     ctx.beginPath();
@@ -163,5 +175,258 @@ export function drawTaperedTrail(
     ctx.moveTo(pts[i - 1].x, pts[i - 1].y);
     ctx.lineTo(pts[i].x, pts[i].y);
     ctx.stroke();
+  }
+}
+
+const cursorSamples = (e: eventWithTime): CursorSample[] => {
+  if (e.type !== EventType.IncrementalSnapshot) return [];
+  const d = e.data;
+  if ('positions' in d)
+    return d.positions
+      .filter((p) => p.id !== -1)
+      .map((p) => ({
+        t: e.timestamp + p.timeOffset,
+        x: p.x,
+        y: p.y,
+        id: p.id,
+      }));
+  if (
+    d.source === IncrementalSource.MouseInteraction &&
+    d.id !== -1 &&
+    typeof d.x === 'number' &&
+    typeof d.y === 'number'
+  )
+    return [
+      {
+        t: e.timestamp,
+        x: d.x,
+        y: d.y,
+        id: d.id,
+        jump: d.type === MouseInteractions.TouchStart,
+      },
+    ];
+  return [];
+};
+
+/**
+ * Drives the smoothCursor and smoothScroll options from the replayer's events:
+ * rebuilds its state on Start, follows casts after that, and moves the cursor
+ * and scroll offsets every animation frame while playing.
+ */
+export class SmoothReplay {
+  private samples: CursorSample[] = [];
+  private glides = new Map<number, ScrollGlide>();
+  private desired = new Map<number, { x: number; y: number }>();
+  private raf: number | null = null;
+  private lastGuard = 0;
+  private last = { x: NaN, y: NaN, t: NaN };
+  private speed = 0;
+  /** Timestamp of the last event seen by seed(); later casts are new events. */
+  private seeded = -Infinity;
+  private cursorOn = false;
+  private scrollOn = false;
+
+  constructor(
+    private replayer: Replayer,
+    private mouse: HTMLElement,
+    private drawTrail: (p: { x: number; y: number }) => void,
+  ) {
+    replayer.on(ReplayerEvents.Start, () => this.seed());
+    replayer.on(ReplayerEvents.Pause, () => this.stop());
+    replayer.on(ReplayerEvents.Finish, () => this.stop());
+    replayer.on(ReplayerEvents.Destroy, () => this.stop());
+    replayer.on(ReplayerEvents.StateChange, (s) => {
+      const p = (s as { player?: { matches(v: string): boolean } }).player;
+      if (p?.matches('live')) this.start();
+    });
+    replayer.on(ReplayerEvents.FullsnapshotRebuilded, (e) =>
+      this.trackSnapshot(e as fullSnapshotEvent),
+    );
+    replayer.on(ReplayerEvents.EventCast, (e) =>
+      this.trackCast(e as eventWithTime),
+    );
+    this.configure();
+  }
+
+  /** Applies the replayer config; a no-op unless an option changed. */
+  configure() {
+    const { smoothCursor = false, smoothScroll = false } = this.replayer.config;
+    if (smoothCursor === this.cursorOn && smoothScroll === this.scrollOn)
+      return;
+    this.cursorOn = smoothCursor;
+    this.scrollOn = smoothScroll;
+    this.mouse.classList.toggle('smooth', smoothCursor);
+    const { state } = this.replayer.service;
+    if (state.matches('playing')) this.seed();
+    else if (state.matches('live')) this.start();
+    else this.stop();
+  }
+
+  private get enabled() {
+    return this.cursorOn || this.scrollOn;
+  }
+
+  private now() {
+    const { baselineTime } = this.replayer.service.state.context;
+    return baselineTime + this.replayer.timer.timeOffset;
+  }
+
+  /** Rebuilds samples and scroll state from the events at the current time, then runs. */
+  private seed() {
+    if (!this.enabled) return this.stop();
+    const { events } = this.replayer.service.state.context;
+    const now = this.now();
+    this.samples.length = 0;
+    this.glides.clear();
+    this.desired.clear();
+    for (const e of events) {
+      const past = e.timestamp <= now;
+      if (e.type === EventType.FullSnapshot) {
+        if (past) this.trackSnapshot(e);
+      } else if (
+        past &&
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.Scroll
+      ) {
+        this.trackScroll(e, e.data);
+      } else {
+        const add = cursorSamples(e);
+        if (!add.length) continue;
+        if (past) seedSample(this.samples, add[add.length - 1]);
+        else queueSamples(this.samples, add);
+      }
+    }
+    this.seeded = events.length
+      ? events[events.length - 1].timestamp
+      : -Infinity;
+    this.start();
+  }
+
+  private trackCast(e: eventWithTime) {
+    if (!this.enabled || e.type !== EventType.IncrementalSnapshot) return;
+    if (e.data.source === IncrementalSource.Scroll) this.trackScroll(e, e.data);
+    else if (e.timestamp > this.seeded)
+      queueSamples(this.samples, cursorSamples(e));
+  }
+
+  private trackSnapshot(e: fullSnapshotEvent) {
+    this.glides.clear();
+    this.desired.clear();
+    const { left: x, top: y } = e.data.initialOffset;
+    this.desired.set(e.data.node.id, { x, y });
+  }
+
+  private trackScroll(e: eventWithTime, d: scrollData) {
+    this.desired.set(d.id, { x: d.x, y: d.y });
+    const next = findNextScroll(
+      this.replayer.service.state.context.events,
+      e,
+      d.id,
+    );
+    if (next)
+      this.glides.set(d.id, {
+        fx: d.x,
+        fy: d.y,
+        tx: next.data.x,
+        ty: next.data.y,
+        t0: e.timestamp,
+        t1: next.timestamp,
+      });
+    else this.glides.delete(d.id);
+  }
+
+  private scroller(id: number) {
+    const n = this.replayer.getMirror().getNode(id) as
+      | Document
+      | Element
+      | null;
+    const win = (n as Document | null)?.defaultView;
+    return win === undefined ? (n as Element | null) : win;
+  }
+
+  private getScroll(id: number) {
+    const t = this.scroller(id);
+    if (!t) return null;
+    return 'scrollX' in t
+      ? { x: t.scrollX, y: t.scrollY }
+      : { x: t.scrollLeft, y: t.scrollTop };
+  }
+
+  private setScroll(id: number, x: number, y: number) {
+    try {
+      this.scroller(id)?.scrollTo({ left: x, top: y, behavior: 'instant' });
+    } catch {
+      // the target may have been removed before its last scroll
+    }
+  }
+
+  private start() {
+    this.stop();
+    if (this.enabled) this.raf = requestAnimationFrame(this.frame);
+  }
+
+  private stop() {
+    if (this.raf) cancelAnimationFrame(this.raf);
+    this.raf = null;
+  }
+
+  private frame = () => {
+    this.raf = requestAnimationFrame(this.frame);
+    const t = this.now();
+    if (this.cursorOn) this.stepCursor(t);
+    if (this.scrollOn) this.stepScroll(t);
+  };
+
+  private stepCursor(t: number) {
+    const s = this.samples;
+    while (s.length > 2 && s[2].t <= t) s.shift();
+    const p = cursorAt(s, t, this.sameDocument);
+    const target = p && this.replayer.getMirror().getNode(p.id);
+    if (!p || !target) return;
+    const base = getBaseDimension(target, this.replayer.iframe);
+    const x = p.x * base.absoluteScale + base.x;
+    const y = p.y * base.absoluteScale + base.y;
+    const last = this.last;
+    if (t > last.t) {
+      const v = Math.hypot(x - last.x, y - last.y) / (t - last.t);
+      this.speed = smoothSpeed(this.speed, v);
+      this.mouse.style.setProperty('--rr-cursor-scale', haloScale(this.speed));
+    }
+    if (x !== last.x || y !== last.y) {
+      this.mouse.style.left = `${x}px`;
+      this.mouse.style.top = `${y}px`;
+      this.drawTrail({ x, y });
+    }
+    this.last = { x, y, t };
+  }
+
+  /**
+   * Recorded positions are viewport coordinates of the document they were
+   * captured in, so only positions from the same document can be blended.
+   */
+  private sameDocument = (a: CursorSample, b: CursorSample) => {
+    const mirror = this.replayer.getMirror();
+    return (
+      !b.jump &&
+      (a.id === b.id ||
+        mirror.getNode(a.id)?.ownerDocument ===
+          mirror.getNode(b.id)?.ownerDocument)
+    );
+  };
+
+  private stepScroll(t: number) {
+    for (const [id, g] of this.glides) {
+      const { x, y, done } = glideAt(g, t);
+      this.setScroll(id, x, y);
+      if (done) this.glides.delete(id);
+    }
+    const now = performance.now();
+    if (now - this.lastGuard < SCROLL_GUARD_MS) return;
+    this.lastGuard = now;
+    for (const [id, want] of this.desired) {
+      const cur = this.glides.has(id) ? null : this.getScroll(id);
+      if (cur && (Math.abs(cur.x - want.x) > 1 || Math.abs(cur.y - want.y) > 1))
+        this.setScroll(id, want.x, want.y);
+    }
   }
 }
