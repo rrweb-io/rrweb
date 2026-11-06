@@ -1788,6 +1788,13 @@ export class Replayer {
       }
       for (const attributeName in mutation.attributes) {
         if (typeof attributeName === 'string') {
+          if (
+            attributeName === 'autocomplete' &&
+            (target.nodeName === 'INPUT' || target.nodeName === 'TEXTAREA')
+          ) {
+            // Keep the autocomplete setting applied when rebuilding the node.
+            continue;
+          }
           const value = mutation.attributes[attributeName];
           if (value === null) {
             (target as Element | RRElement).removeAttribute(attributeName);
