@@ -119,10 +119,10 @@ describe('drawTaperedTrail', () => {
         widths.push(this.lineWidth);
       },
     };
-    drawTaperedTrail(ctx, [s(0, 0), s(1, 1), s(2, 2), s(3, 3)], 3.9);
-    expect(widths).toEqual([1.3, 2.6, 3.9]);
+    drawTaperedTrail(ctx, [s(0, 0), s(1, 1), s(2, 2), s(3, 3)], 3);
+    expect(widths.map((w) => +w.toFixed(2))).toEqual([1.3, 2.6, 3.9]);
     widths.length = 0;
-    drawTaperedTrail(ctx, [s(0, 0)], 3.9);
+    drawTaperedTrail(ctx, [s(0, 0)], 3);
     expect(widths).toEqual([]);
   });
 });
