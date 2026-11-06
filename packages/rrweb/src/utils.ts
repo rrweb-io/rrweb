@@ -19,7 +19,7 @@ export { nowTimestamp } from '@rrweb/utils';
 export function on(
   type: string,
   fn: EventListenerOrEventListenerObject,
-  target: Document | IWindow = document,
+  target: Document | IWindow | ShadowRoot = document,
 ): listenerHandler {
   const options = { capture: true, passive: true };
   target.addEventListener(type, fn, options);
@@ -176,6 +176,7 @@ export function closestElementOfNode(node: Node | null): HTMLElement | null {
   if (!node) {
     return null;
   }
+  if (isShadowRoot(node)) return dom.host(node) as HTMLElement;
   const el: HTMLElement | null =
     node.nodeType === node.ELEMENT_NODE
       ? (node as HTMLElement)
@@ -219,6 +220,12 @@ export function isBlocked(
   if (blockSelector) {
     if (el.matches(blockSelector)) return true;
     if (checkAncestors && el.closest(blockSelector) !== null) return true;
+  }
+  if (checkAncestors) {
+    const root = dom.getRootNode(el);
+    if (isShadowRoot(root)) {
+      return isBlocked(dom.host(root), blockClass, blockSelector, true);
+    }
   }
   return false;
 }
@@ -402,14 +409,13 @@ export function getBaseDimension(
   };
 }
 
-export function hasShadowRoot<T extends Node | RRNode>(
-  n: T,
-): n is T & { shadowRoot: ShadowRoot } {
-  if (!n) return false;
-  if (n instanceof BaseRRNode && 'shadowRoot' in n) {
+/** 判断 rrweb 能否取得根，包括已注册的 closed 根和 RRDOM 根。 */
+export function hasShadowRoot(n: Node | RRNode): boolean {
+  if (!n || !('shadowRoot' in n)) return false;
+  if (n instanceof BaseRRNode) {
     return Boolean(n.shadowRoot);
   }
-  return Boolean(dom.shadowRoot(n as unknown as Element));
+  return Boolean(dom.shadowRoot(n as Node));
 }
 
 /**

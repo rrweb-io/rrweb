@@ -288,4 +288,54 @@ describe('Shadow observer lifecycle (regression)', () => {
     ]);
     expect(mutationCb).toHaveBeenCalled();
   });
+
+  it('releases closed-root event listeners on removal and restores them on reinsertion', () => {
+    const host = doc.createElement('x-closed');
+    const root = host.attachShadow({ mode: 'closed' });
+    const button = doc.createElement('button');
+    root.appendChild(button);
+    const listener = vi.fn();
+    const stop = manager.observeEvent('click', listener, doc);
+    const click = () =>
+      button.dispatchEvent(new Event('click', { bubbles: true }));
+
+    doc.body.appendChild(host);
+    buffer.processMutations([childListMutation(doc.body, [host])]);
+    click();
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    host.remove();
+    buffer.processMutations([childListMutation(doc.body, [], [host])]);
+    click();
+    expect(listener).toHaveBeenCalledTimes(1);
+
+    doc.body.appendChild(host);
+    buffer.processMutations([childListMutation(doc.body, [host])]);
+    click();
+    expect(listener).toHaveBeenCalledTimes(2);
+
+    stop();
+    click();
+    expect(listener).toHaveBeenCalledTimes(2);
+  });
+
+  it('releases and reattaches closed-root event listeners across manager resets', () => {
+    const host = doc.createElement('x-closed');
+    const root = host.attachShadow({ mode: 'closed' });
+    const button = doc.createElement('button');
+    root.appendChild(button);
+    const listener = vi.fn();
+    const stop = manager.observeEvent('click', listener, doc);
+
+    for (let cycle = 0; cycle < 3; cycle++) {
+      manager.addShadowRoot(root, doc);
+      button.dispatchEvent(new Event('click', { bubbles: true }));
+      expect(listener).toHaveBeenCalledTimes(cycle + 1);
+
+      manager.reset();
+      button.dispatchEvent(new Event('click', { bubbles: true }));
+      expect(listener).toHaveBeenCalledTimes(cycle + 1);
+    }
+    stop();
+  });
 });

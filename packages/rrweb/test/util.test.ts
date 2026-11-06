@@ -9,9 +9,52 @@ import {
   getShadowHost,
   getNestedRule,
   getPositionsAndIndex,
+  hasShadowRoot,
 } from '../src/utils';
+import dom from '@rrweb/utils';
+import { RRDocument } from 'rrdom';
 
 describe('Utilities for other modules', () => {
+  describe('hasShadowRoot()', () => {
+    it('识别原生 open 根', () => {
+      const host = document.createElement('div');
+      const root = host.attachShadow({ mode: 'open' });
+
+      expect(hasShadowRoot(host)).toBe(true);
+      expect(host.shadowRoot).toBe(root);
+    });
+
+    it('注册 closed 根后返回 true，同时保留原生属性为 null', () => {
+      const host = document.createElement('div');
+      const root = host.attachShadow({ mode: 'closed' });
+      expect(hasShadowRoot(host)).toBe(false);
+
+      dom.registerShadowRoot(root);
+
+      expect(dom.shadowRoot(host)).toBe(root);
+      expect(host.shadowRoot).toBeNull();
+      expect(hasShadowRoot(host)).toBe(true);
+    });
+
+    it('对无根元素和非宿主节点返回 false', () => {
+      expect(hasShadowRoot(document.createElement('div'))).toBe(false);
+      expect(hasShadowRoot(document.createTextNode('text'))).toBe(false);
+      expect(hasShadowRoot(document)).toBe(false);
+    });
+
+    it('保留 RRDOM 根的判断行为', () => {
+      const doc = new RRDocument();
+      const host = doc.createElement('div');
+      expect(hasShadowRoot(host)).toBe(false);
+
+      const root = host.attachShadow({ mode: 'open' });
+
+      expect(hasShadowRoot(host)).toBe(true);
+      expect(host.shadowRoot).toBe(root);
+      expect(hasShadowRoot(doc)).toBe(false);
+    });
+  });
+
   describe('StyleSheetMirror', () => {
     it('should create a StyleSheetMirror', () => {
       const mirror = new StyleSheetMirror();

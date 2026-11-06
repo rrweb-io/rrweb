@@ -23,7 +23,6 @@ import {
   isAncestorRemoved,
   isIgnored,
   isSerialized,
-  hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
   inDom,
@@ -329,13 +328,9 @@ export default class MutationBuffer {
               currentN as HTMLLinkElement,
             );
           }
-          if (hasShadowRoot(n as Node)) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.shadowDomManager.addShadowRoot(
-              dom.shadowRoot(n as Node)!,
-              this.doc,
-            );
-          }
+          const root = dom.shadowRoot(currentN);
+          if (root)
+            this.shadowDomManager.addShadowRoot(root, root.ownerDocument);
         },
         onIframeLoad: (iframe, childSn) => {
           this.iframeManager.attachIframe(iframe, childSn);
@@ -704,9 +699,9 @@ export default class MutationBuffer {
     // but we have to remove it's children otherwise they will be added as placeholders too
     if (!isBlocked(n, this.blockClass, this.blockSelector, false)) {
       dom.childNodes(n).forEach((childN) => this.genAdds(childN));
-      if (hasShadowRoot(n)) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        dom.childNodes(dom.shadowRoot(n)!).forEach((childN) => {
+      const root = dom.shadowRoot(n);
+      if (root) {
+        dom.childNodes(root).forEach((childN) => {
           this.processedNodeManager.add(childN, this);
           this.genAdds(childN, n);
         });
