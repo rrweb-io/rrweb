@@ -783,6 +783,7 @@ export enum ReplayerEvents {
   EventCast = 'event-cast',
   CustomEvent = 'custom-event',
   Annotation = 'annotation',
+  CursorChange = 'cursor-change',
   Flush = 'flush',
   StateChange = 'state-change',
   PlayBack = 'play-back',
