@@ -45,6 +45,7 @@ describe('@rrweb/browser-client event startup', () => {
               CLOSING = 2;
               CLOSED = 3;
               readyState = this.CONNECTING;
+              bufferedAmount = 0;
               constructor(url) {
                 super();
                 this.url = url;
