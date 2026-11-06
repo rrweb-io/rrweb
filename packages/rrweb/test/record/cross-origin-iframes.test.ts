@@ -8,8 +8,9 @@ import type {
   listenerHandler,
   eventWithTime,
   mutationData,
+  serializedNodeWithId,
 } from '@rrweb/types';
-import { EventType, IncrementalSource } from '@rrweb/types';
+import { EventType, IncrementalSource, NodeType } from '@rrweb/types';
 import {
   assertSnapshot,
   getServerURL,
@@ -30,15 +31,19 @@ interface ISuite {
 
 interface IWindow extends Window {
   rrweb: {
-    record: (
+    record: ((
       options: recordOptions<eventWithTime>,
-    ) => listenerHandler | undefined;
+    ) => listenerHandler | undefined) & {
+      takeFullSnapshot(isCheckout?: boolean): void;
+      mirror: { getId(node: Node): number };
+    };
     addCustomEvent<T>(tag: string, payload: T): void;
     addAnnotation(annotation: annotationData): void;
     pack: (e: eventWithTime) => string;
   };
   emit: (e: eventWithTime) => undefined;
   snapshots: eventWithTime[];
+  stopRecording?: listenerHandler;
 }
 type ExtraOptions = {
   usePackFn?: boolean;
@@ -75,12 +80,46 @@ async function injectRecordScript(
         (window as unknown as IWindow).emit(event);
       },
     };
-    record(config);
+    (window as unknown as IWindow).stopRecording = record(config);
   }, options);
 
   for (const child of frame.childFrames()) {
     await injectRecordScript(child, options);
   }
+}
+
+function findIframeId(node: serializedNodeWithId): number | undefined {
+  if (node.type === NodeType.Element && node.tagName === 'iframe')
+    return node.id;
+  if ('childNodes' in node)
+    for (const child of node.childNodes) {
+      const id = findIframeId(child);
+      if (id !== undefined) return id;
+    }
+  return undefined;
+}
+
+// Mutations attaching a cross-origin iframe's document after the last full snapshot of the top frame.
+function attachesAfterLastFullSnapshot(
+  events: eventWithTime[],
+  iframeId?: number,
+) {
+  let fullSnapshotIndex = -1;
+  events.forEach((e, i) => {
+    if (e.type === EventType.FullSnapshot) fullSnapshotIndex = i;
+  });
+  const fullSnapshot = events[fullSnapshotIndex];
+  if (fullSnapshot?.type !== EventType.FullSnapshot) return [];
+  const parentId = iframeId ?? findIframeId(fullSnapshot.data.node);
+  return events
+    .slice(fullSnapshotIndex + 1)
+    .filter(
+      (e) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.Mutation &&
+        e.data.isAttachIframe &&
+        e.data.adds[0]?.parentId === parentId,
+    );
 }
 
 const setup = function (
@@ -274,6 +313,109 @@ describe('cross origin iframes', function (this: ISuite) {
       expect(
         (events[events.length - 1].data as mutationData).isAttachIframe,
       ).toBeTruthy();
+    });
+
+    it('should attach the iframe again after the top frame takes a full snapshot', async () => {
+      await waitForRAF(ctx.page);
+      await ctx.page.evaluate(() => {
+        (window as unknown as IWindow).rrweb.record.takeFullSnapshot();
+      });
+      // an iframe attach after the second full snapshot
+      await ctx.page.waitForFunction(
+        () => {
+          const events = (window as unknown as IWindow).snapshots;
+          const fullSnapshots = events.filter((e) => e.type === 2);
+          const last = events.lastIndexOf(fullSnapshots[1]);
+          return (
+            fullSnapshots.length === 2 &&
+            events
+              .slice(last + 1)
+              .some(
+                (e) =>
+                  e.type === 3 &&
+                  e.data.source === 0 &&
+                  'isAttachIframe' in e.data &&
+                  e.data.isAttachIframe,
+              )
+          );
+        },
+        { timeout: 10_000 },
+      );
+
+      const events = (await ctx.page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      const attaches = attachesAfterLastFullSnapshot(events);
+      expect(attaches).toHaveLength(1);
+      expect((attaches[0].data as mutationData).adds[0].node).toMatchObject({
+        type: NodeType.Document,
+        childNodes: expect.arrayContaining([
+          expect.objectContaining({ tagName: 'html' }),
+        ]),
+      });
+    });
+
+    it('should not emit iframe events twice after recording restarts', async () => {
+      await waitForRAF(ctx.page);
+      await ctx.page.evaluate(() => {
+        const win = window as unknown as IWindow;
+        win.stopRecording?.();
+        win.snapshots = [];
+        win.stopRecording = win.rrweb.record({
+          recordCrossOriginIframes: true,
+          emit(event) {
+            win.snapshots.push(event);
+          },
+        });
+      });
+      await ctx.page.waitForFunction(
+        () =>
+          (window as unknown as IWindow).snapshots.some(
+            (e) =>
+              e.type === 3 &&
+              e.data.source === 0 &&
+              'isAttachIframe' in e.data &&
+              e.data.isAttachIframe,
+          ),
+        { timeout: 10_000 },
+      );
+
+      const frame = ctx.page.mainFrame().childFrames()[0];
+      await frame.evaluate(() => {
+        const marker = document.createElement('div');
+        marker.id = 'after-restart';
+        document.body.appendChild(marker);
+      });
+      const addsMarker = (e: eventWithTime) =>
+        e.type === EventType.IncrementalSnapshot &&
+        e.data.source === IncrementalSource.Mutation &&
+        e.data.adds.some(
+          (add) =>
+            add.node.type === NodeType.Element &&
+            add.node.attributes.id === 'after-restart',
+        );
+      await ctx.page.waitForFunction(
+        () =>
+          (window as unknown as IWindow).snapshots.some(
+            (e) =>
+              e.type === 3 &&
+              e.data.source === 0 &&
+              'adds' in e.data &&
+              e.data.adds.some(
+                (add) =>
+                  'attributes' in add.node &&
+                  add.node.attributes.id === 'after-restart',
+              ),
+          ),
+        { timeout: 10_000 },
+      );
+      await waitForRAF(ctx.page);
+
+      const events = (await ctx.page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      expect(attachesAfterLastFullSnapshot(events)).toHaveLength(1);
+      expect(events.filter(addsMarker)).toHaveLength(1);
     });
 
     it('should map input events correctly', async () => {
@@ -668,4 +810,70 @@ describe('same origin iframes', function (this: ISuite) {
     )) as eventWithTime[];
     await assertSnapshot(snapshots);
   });
+
+  it.each([
+    { name: 'top document', nested: false },
+    { name: 'same-origin iframe', nested: true },
+  ])(
+    'should reattach a dynamically added iframe in the $name after a full snapshot',
+    async ({ nested }) => {
+      const parentFrame = nested
+        ? ctx.page.mainFrame().childFrames()[0]
+        : ctx.page.mainFrame();
+      await parentFrame.evaluate((serverUrl) => {
+        const iframe = document.createElement('iframe');
+        iframe.id = 'dynamic-child';
+        iframe.src = `${serverUrl}/html/blank.html`;
+        const loaded = new Promise<void>((resolve) => {
+          iframe.onload = () => resolve();
+        });
+        document.body.appendChild(iframe);
+        return loaded;
+      }, ctx.serverURL);
+      const childFrame = parentFrame
+        .childFrames()
+        .find((frame) => frame.url().includes('/html/blank.html'))!;
+      await injectRecordScript(childFrame);
+      await waitForRAF(ctx.page);
+
+      const iframeId = await ctx.page.evaluate((nested) => {
+        const doc = nested
+          ? document.querySelector('iframe')!.contentDocument!
+          : document;
+        return (window as unknown as IWindow).rrweb.record.mirror.getId(
+          doc.querySelector('#dynamic-child')!,
+        );
+      }, nested);
+      expect(iframeId).toBeGreaterThan(0);
+
+      const waitForAttach = () =>
+        ctx.page.waitForFunction(
+          (id) =>
+            (window as unknown as IWindow).snapshots.some(
+              (event) =>
+                event.type === 3 &&
+                event.data.source === 0 &&
+                event.data.isAttachIframe &&
+                event.data.adds[0]?.parentId === id,
+            ),
+          { timeout: 10_000 },
+          iframeId,
+        );
+      await waitForAttach();
+      await ctx.page.evaluate(() => {
+        const win = window as unknown as IWindow;
+        win.snapshots = [];
+        win.rrweb.record.takeFullSnapshot();
+      });
+      await waitForAttach();
+      await waitForRAF(ctx.page);
+
+      const snapshots = await ctx.page.evaluate(
+        () => (window as unknown as IWindow).snapshots,
+      );
+      expect(attachesAfterLastFullSnapshot(snapshots, iframeId)).toHaveLength(
+        1,
+      );
+    },
+  );
 });
