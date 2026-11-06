@@ -232,6 +232,7 @@ export class SegmentController implements StallController {
     if (frontierEvent) {
       toInject.push(frontierEvent);
     }
+    toInject.sort((a, b) => a.timestamp - b.timestamp);
     this.replayer.injectEvents(toInject);
     const bound =
       frontier ??
