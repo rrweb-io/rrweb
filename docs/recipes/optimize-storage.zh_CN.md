@@ -37,6 +37,8 @@ record({
     mouseInteraction: false,
     // 设置滚动事件的触发频率
     scroll: 150 // 每 150ms 最多触发一次
+    // 针对频繁变化的元素进行节流：同一元素的文本/属性重复变化在每个间隔内最多触发一次（结构性变化仍会即时触发）
+    mutation: 50 // 每个元素每 50ms 最多触发一次
     // set the interval of media interaction event
     media: 800
     // 设置输入事件的录制时机
