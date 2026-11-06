@@ -6,6 +6,7 @@ import { launchPuppeteer } from '../utils';
 import type * as puppeteer from 'puppeteer';
 import hoverEvents from '../events/hover';
 import scrollEvents from '../events/scroll';
+import iframeEvents from '../events/iframe-shadowdom-hover';
 
 const base = hoverEvents.slice(0, 4);
 const BODY = 14;
@@ -106,6 +107,46 @@ describe('smoothScroll', () => {
       return { container, document: doc.defaultView.scrollY };
     })()`);
     expect(r).toEqual({ container: 2500, document: 250 });
+    await page.close();
+  });
+
+  it('keeps a still cursor in place when the page scrolls a nested iframe', async () => {
+    const t0 = iframeEvents[0].timestamp;
+    const ev = JSON.parse(JSON.stringify(iframeEvents.slice(0, 5)));
+    const body = ev[3].data.node.childNodes[1].childNodes[1];
+    body.attributes = { style: 'height: 5000px; margin: 0' };
+    body.childNodes[0].attributes = { style: 'margin-top: 300px' };
+    ev.push({
+      type: EventType.IncrementalSnapshot,
+      data: {
+        source: IncrementalSource.MouseMove,
+        positions: [{ x: 20, y: 20, id: 14, timeOffset: 0 }],
+      },
+      timestamp: t0 + 600,
+    });
+    for (let i = 0; i <= 10; i++)
+      ev.push({
+        type: EventType.IncrementalSnapshot,
+        data: { source: IncrementalSource.Scroll, id: 1, x: 0, y: i * 20 },
+        timestamp: t0 + 1000 + i * 100,
+      });
+    const page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.evaluate(code);
+    await page.evaluate(`let events = ${JSON.stringify(ev)}`);
+    const tops = await page.evaluate(`(async () => {
+      const replayer = new rrweb.Replayer(events, { smoothCursor: true, smoothScroll: true });
+      replayer.play(800);
+      const m = document.querySelector('.replayer-mouse');
+      const seen = new Set();
+      const start = performance.now();
+      while (performance.now() - start < 1500) {
+        await new Promise((r) => requestAnimationFrame(r));
+        seen.add(m.style.top);
+      }
+      return [...seen].filter(Boolean);
+    })()`);
+    expect(tops.length).toBe(1);
     await page.close();
   });
 });
