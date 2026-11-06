@@ -12,6 +12,7 @@ import type {
   serializedNode,
   serializedNodeWithId,
   serializedElementNodeWithId,
+  serializedAdoptedStyleSheet,
   elementNode,
   attributes,
   mediaAttributes,
@@ -25,6 +26,7 @@ import {
   maskInputValue,
   isNativeShadowDom,
   stringifyStylesheet,
+  stringifyRule,
   getInputType,
   toLowerCase,
   extractFileExtension,
@@ -40,6 +42,22 @@ export const IGNORED_NODE = -2;
 
 export function genId(): number {
   return _id++;
+}
+
+/**
+ * Serializes a Document's or ShadowRoot's `adoptedStyleSheets` so they can be
+ * rebuilt as constructed CSSStyleSheets on replay.
+ */
+function serializeAdoptedStyleSheets(
+  sheets: CSSStyleSheet[] | readonly CSSStyleSheet[],
+): serializedAdoptedStyleSheet[] | undefined {
+  if (!sheets || sheets.length === 0) return undefined;
+  return Array.from(sheets, (sheet) => ({
+    rules: Array.from(sheet.cssRules, (rule, index) => ({
+      rule: stringifyRule(rule, sheet.href),
+      index,
+    })),
+  }));
 }
 
 function getValidTagName(element: HTMLElement): Lowercase<string> {
@@ -434,11 +452,17 @@ function serializeNode(
           type: NodeType.Document,
           childNodes: [],
           compatMode: (n as Document).compatMode, // probably "BackCompat"
+          adoptedStyleSheets: serializeAdoptedStyleSheets(
+            (n as Document).adoptedStyleSheets,
+          ),
         };
       } else {
         return {
           type: NodeType.Document,
           childNodes: [],
+          adoptedStyleSheets: serializeAdoptedStyleSheets(
+            (n as Document).adoptedStyleSheets,
+          ),
         };
       }
     case n.DOCUMENT_TYPE_NODE:
@@ -1051,8 +1075,12 @@ export function serializeNodeWithId(
     // this property was not needed in replay side
     delete serializedNode.needBlock;
     const shadowRootEl = dom.shadowRoot(n);
-    if (shadowRootEl && isNativeShadowDom(shadowRootEl))
+    if (shadowRootEl && isNativeShadowDom(shadowRootEl)) {
       serializedNode.isShadowHost = true;
+      serializedNode.adoptedStyleSheets = serializeAdoptedStyleSheets(
+        shadowRootEl.adoptedStyleSheets,
+      );
+    }
   }
   if (
     (serializedNode.type === NodeType.Document ||
