@@ -69,9 +69,13 @@ browser delivers the forwarded events only if the parent's origin matches; if it
 does not, the parent receives nothing from that iframe. Setting it is also what
 switches the child from emitting locally to forwarding upward.
 
-Use the same origin format as above. Setting this option on the top-level
-recorder has no effect — it only applies to a recorder inside a cross-origin
-iframe.
+Use the same origin format as above. On the **top-level** recorder (a window
+with no parent) `emitToOrigin` is ignored: that recorder emits locally through
+its own `emit` callback, and rrweb logs a one-time console warning since this is
+usually a misconfiguration. A same-origin child also ignores it — its parent
+records it directly through the DOM. Because of this, you can safely apply the
+same `emitToOrigin` value to every recorder instance: the top page emits,
+cross-origin children forward, and same-origin children stay quiet.
 
 ## Nested cross-origin iframes
 

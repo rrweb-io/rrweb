@@ -109,19 +109,42 @@ function record<T = eventWithTime>(
     options.collectFromOrigins ??
     (recordCrossOriginIframes ? ['*'] : undefined);
 
+  const isTopFrame = window.parent === window;
+
+  if (emitToOrigin !== undefined && isTopFrame) {
+    console.warn(
+      'rrweb: `emitToOrigin` is set on the top-level recorder, which has no parent to forward to. Events are emitted locally and `emitToOrigin` is ignored. This is likely a misconfiguration.',
+    );
+  }
+
   let inEmittingFrame: boolean;
   let passEmitsToParent: boolean;
   let emitToParentOrigin: string | undefined;
 
-  if (emitToOrigin !== undefined) {
-    emitToParentOrigin = emitToOrigin;
-    passEmitsToParent = true;
-    inEmittingFrame = false;
-  } else if (options.collectFromOrigins !== undefined) {
+  if (emitToOrigin !== undefined && !isTopFrame) {
+    let parentIsCrossOrigin: boolean;
+    try {
+      // throws if parent is cross-origin
+      parentIsCrossOrigin = !window.parent.document;
+    } catch (e) {
+      parentIsCrossOrigin = true;
+    }
+    if (parentIsCrossOrigin) {
+      emitToParentOrigin = emitToOrigin;
+      passEmitsToParent = true;
+      inEmittingFrame = false;
+    } else {
+      passEmitsToParent = false;
+      inEmittingFrame = options.collectFromOrigins !== undefined;
+    }
+  } else if (
+    options.collectFromOrigins !== undefined ||
+    emitToOrigin !== undefined
+  ) {
     passEmitsToParent = false;
     inEmittingFrame = true;
   } else if (recordCrossOriginIframes) {
-    inEmittingFrame = window.parent === window;
+    inEmittingFrame = isTopFrame;
     passEmitsToParent = false;
     if (!inEmittingFrame) {
       try {

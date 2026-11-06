@@ -104,4 +104,37 @@ describe('emitToOrigin', () => {
       expect(messages).toEqual([]);
     }
   });
+
+  it('emits locally and warns when set on the top frame', async () => {
+    await page.addScriptTag({
+      path: path.resolve(__dirname, '../../dist/rrweb.umd.cjs'),
+    });
+    const result = await page.evaluate(() => {
+      const { record, addCustomEvent } = (window as RecordingWindow).rrweb;
+      const events: { type: number; data: { tag?: string } }[] = [];
+      const warnings: string[] = [];
+      const originalWarn = console.warn;
+      console.warn = (...args: unknown[]) =>
+        warnings.push(args.map(String).join(' '));
+      try {
+        record({
+          emitToOrigin: 'https://example.com',
+          emit(event) {
+            events.push(event as never);
+          },
+        });
+        addCustomEvent('top-frame-emit', {});
+      } finally {
+        console.warn = originalWarn;
+      }
+      return {
+        customTags: events.filter((e) => e.type === 5).map((e) => e.data.tag),
+        warnedAboutEmitToOrigin: warnings.some((w) =>
+          w.includes('emitToOrigin'),
+        ),
+      };
+    });
+    expect(result.customTags).toContain('top-frame-emit');
+    expect(result.warnedAboutEmitToOrigin).toBe(true);
+  });
 });
