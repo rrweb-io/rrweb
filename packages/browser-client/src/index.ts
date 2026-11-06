@@ -1,7 +1,13 @@
 import { record } from '@rrweb/record';
 
 import { EventType } from '@rrweb/types';
-import type { customEvent, eventWithTime, listenerHandler } from '@rrweb/types';
+import type {
+  annotationData,
+  annotationEvent,
+  customEvent,
+  eventWithTime,
+  listenerHandler,
+} from '@rrweb/types';
 import { nowTimestamp } from '@rrweb/utils';
 import type { recordOptions } from 'rrweb';
 
@@ -46,6 +52,8 @@ export type customEventWithTime = customEvent & {
   timestamp: number;
 };
 
+type ClientEvent = customEvent | annotationEvent;
+
 const defaultServerUrl =
   'https://api.rrweb.com/recordings/{recordingId}/events/ws';
 let defaultClientConfig: clientConfig = {
@@ -62,6 +70,15 @@ let wsConnectionPaused = false;
 
 const buffer: ArrayQueue<string> = new ArrayQueue();
 let rrwebStopFn: listenerHandler | undefined;
+let recorderReady = false;
+const pendingEvents: (ClientEvent & { timestamp: number })[] = [];
+let cancelRecordingStartListener: listenerHandler | undefined;
+
+function resetRecordingState() {
+  recorderReady = false;
+  cancelRecordingStartListener?.();
+  cancelRecordingStartListener = undefined;
+}
 
 function hasDocument(): boolean {
   return typeof document !== 'undefined';
@@ -91,6 +108,8 @@ function scriptSourceFromElement(
 
 export function stop(resetRecordingId: boolean) {
   // reset all state so that start() can start afresh
+  resetRecordingState();
+  pendingEvents.length = 0;
   if (rrwebStopFn !== undefined) {
     rrwebStopFn();
     rrwebStopFn = undefined;
@@ -412,7 +431,7 @@ export function start(
   // metadata event should be the first seen server side
   buffer.add(JSON.stringify(metaEvent));
 
-  recordOptions.emit = (event: eventWithTime) => {
+  const emitEvent = (event: eventWithTime) => {
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
       ws = connect(serverUrl, postUrl, publicApiKey, handleMessage);
@@ -458,9 +477,56 @@ export function start(
     }
   };
 
+  recordOptions.emit = emitEvent;
+
+  const markRecorderReady = () => {
+    recorderReady = true;
+    cancelRecordingStartListener = undefined;
+    // Preserve call-time timestamps and use the same callback and transport as
+    // recorder events. Remove each event before emitting to avoid redelivery.
+    while (recorderReady && pendingEvents.length) {
+      const event = pendingEvents.shift();
+      if (event) emitEvent(event);
+    }
+  };
+
+  const startRrwebRecording = () => {
+    resetRecordingState();
+    const startsImmediately =
+      document.readyState === 'interactive' ||
+      document.readyState === 'complete';
+    rrwebStopFn = record(recordOptions as recordOptions<eventWithTime>);
+    if (rrwebStopFn === undefined) {
+      return;
+    }
+    if (startsImmediately) {
+      markRecorderReady();
+      return;
+    }
+
+    const startEvent =
+      recordOptions.recordAfter === 'DOMContentLoaded'
+        ? { target: document, type: 'DOMContentLoaded' }
+        : { target: window, type: 'load' };
+    const listenerOptions = { capture: true, once: true };
+    // rrweb installs its capture listener during record(). Registering after it
+    // waits for rrweb's initializer to set its internal recording flag.
+    startEvent.target.addEventListener(
+      startEvent.type,
+      markRecorderReady,
+      listenerOptions,
+    );
+    cancelRecordingStartListener = () =>
+      startEvent.target.removeEventListener(
+        startEvent.type,
+        markRecorderReady,
+        listenerOptions,
+      );
+  };
+
   let startWhenVisible = false;
   if (!document.hidden) {
-    rrwebStopFn = record(recordOptions as recordOptions<eventWithTime>);
+    startRrwebRecording();
   } else {
     startWhenVisible = true;
   }
@@ -469,7 +535,7 @@ export function start(
       'visibilitychange',
       () => {
         if (!document.hidden && startWhenVisible) {
-          rrwebStopFn = record(recordOptions as recordOptions<eventWithTime>);
+          startRrwebRecording();
           startWhenVisible = false;
           return;
         }
@@ -509,27 +575,51 @@ export function start(
       ws = undefined; // so `emit` can restart it again if page is unfrozen
     }
     if (rrwebStopFn !== undefined) {
+      resetRecordingState();
       rrwebStopFn();
       startWhenVisible = true;
     }
   });
 }
 
-export const addCustomEvent = <T>(tag: string, payload: T) => {
-  if (rrwebStopFn !== undefined) {
-    record.addCustomEvent(tag, payload);
-  } else {
-    const customEvent: customEventWithTime = {
-      timestamp: nowTimestamp(),
-      type: EventType.Custom,
-      data: {
-        tag,
-        payload,
-      },
-    };
-    // let websocket buffer handle it
-    buffer.add(JSON.stringify(customEvent));
+function addClientEvent(event: ClientEvent) {
+  if (!recorderReady) {
+    const timestamp = nowTimestamp();
+    // Snapshot queued data at call time, as the transport buffer did before.
+    if (event.type === EventType.Custom) {
+      const serialized = JSON.stringify(event.data.payload);
+      const payload: unknown =
+        serialized === undefined ? undefined : JSON.parse(serialized);
+      pendingEvents.push({
+        type: event.type,
+        timestamp,
+        data: { tag: event.data.tag, payload },
+      });
+    } else {
+      pendingEvents.push({
+        type: event.type,
+        timestamp,
+        data: { ...event.data },
+      });
+    }
+    return;
   }
+  switch (event.type) {
+    case EventType.Custom:
+      record.addCustomEvent(event.data.tag, event.data.payload);
+      break;
+    case EventType.Annotation:
+      record.addAnnotation(event.data);
+      break;
+  }
+}
+
+export const addCustomEvent = <T>(tag: string, payload: T) => {
+  addClientEvent({ type: EventType.Custom, data: { tag, payload } });
+};
+
+export const addAnnotation = (annotation: annotationData) => {
+  addClientEvent({ type: EventType.Annotation, data: annotation });
 };
 
 export function addMeta(payload: nameValues) {
@@ -604,5 +694,6 @@ export default {
   addMeta,
   addPageviewMeta,
   addCustomEvent,
+  addAnnotation,
   getRecordingId,
 };

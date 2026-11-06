@@ -1,5 +1,23 @@
 # @rrweb/all
 
+## 2.2.0
+
+### Patch Changes
+
+- Updated dependencies [[`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80), [`235ae85`](https://github.com/rrweb-io/rrweb/commit/235ae85e501bae64db7a46b2a773b8390737822c), [`009b2dd`](https://github.com/rrweb-io/rrweb/commit/009b2dd4971ea575bd481f1f591822d319ab078b), [`0d6fc66`](https://github.com/rrweb-io/rrweb/commit/0d6fc6685a0e99eb0cc7fd310e1d7e8164c74568)]:
+  - rrweb@2.2.0
+  - @rrweb/types@2.2.0
+  - @rrweb/packer@2.2.0
+
+## 2.1.7
+
+### Patch Changes
+
+- Updated dependencies [[`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804), [`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804)]:
+  - rrweb@2.1.7
+  - @rrweb/types@2.1.7
+  - @rrweb/packer@2.1.7
+
 ## 2.1.6
 
 ### Patch Changes

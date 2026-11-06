@@ -54,7 +54,8 @@ import MutationBuffer from './mutation';
 import { callbackWrapper } from './error-handler';
 import dom, { mutationObserverCtor } from '@rrweb/utils';
 
-export const mutationBuffers: MutationBuffer[] = [];
+// one principal mutation buffer, but also one per shadowRoot/iframe on the page
+export const mutationBuffers = new Set<MutationBuffer>();
 
 // Event.path is non-standard and used in some older browsers
 type NonStandardEvent = Omit<Event, 'composedPath'> & {
@@ -81,12 +82,12 @@ function getEventTarget(event: Event | NonStandardEvent): EventTarget | null {
 export function initMutationObserver(
   options: MutationBufferParam,
   rootEl: Node,
-): [MutationObserver, () => void] {
+): listenerHandler {
   const mutationBuffer = new MutationBuffer();
-  mutationBuffers.push(mutationBuffer);
+  mutationBuffers.add(mutationBuffer);
   // see mutation.ts for details
   mutationBuffer.init(options);
-  const [ObserverCtor, iframeCleanup] = mutationObserverCtor();
+  const [ObserverCtor, releaseObserverConstructor] = mutationObserverCtor();
   const observer = new (ObserverCtor as new (
     callback: MutationCallback,
   ) => MutationObserver)(
@@ -100,7 +101,12 @@ export function initMutationObserver(
     childList: true,
     subtree: true,
   });
-  return [observer, iframeCleanup];
+  const stop = () => {
+    observer.disconnect();
+    mutationBuffers.delete(mutationBuffer);
+    releaseObserverConstructor();
+  };
+  return stop;
 }
 
 function initMoveObserver({
@@ -1029,12 +1035,12 @@ function initMediaInteractionObserver({
         const target = getEventTarget(event);
         if (
           !target ||
+          !(target instanceof HTMLMediaElement) ||
           isBlocked(target as Node, blockClass, blockSelector, true)
         ) {
           return;
         }
-        const { currentTime, volume, muted, playbackRate, loop } =
-          target as HTMLMediaElement;
+        const { currentTime, volume, muted, playbackRate, loop } = target;
         mediaInteractionCb({
           type,
           id: mirror.getId(target as Node),
@@ -1308,11 +1314,9 @@ export function initObservers(
   }
 
   mergeHooks(o, hooks);
-  let mutationObserver: MutationObserver | undefined;
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  let cleanupMutationIframe: () => void = () => {};
+  let stopMutationObserver: listenerHandler | undefined;
   if (o.recordDOM) {
-    [mutationObserver, cleanupMutationIframe] = initMutationObserver(o, o.doc);
+    stopMutationObserver = initMutationObserver(o, o.doc);
   }
   const mousemoveHandler = initMoveObserver(o);
   const mouseInteractionHandler = initMouseInteractionObserver(o);
@@ -1353,9 +1357,7 @@ export function initObservers(
   }
 
   return callbackWrapper(() => {
-    mutationBuffers.forEach((b) => b.reset());
-    mutationObserver?.disconnect();
-    cleanupMutationIframe();
+    stopMutationObserver?.();
     mousemoveHandler();
     mouseInteractionHandler();
     scrollHandler();
