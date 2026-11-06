@@ -1,5 +1,7 @@
 # @rrweb/rrweb-plugin-sequential-id-replay
 
+## 2.2.0
+
 ## 2.1.7
 
 ## 2.1.6

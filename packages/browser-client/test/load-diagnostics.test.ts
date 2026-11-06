@@ -16,13 +16,26 @@ type MockState = {
   buffers: QueueLike[];
   lastRecordOptions?: Record<string, unknown>;
   lastWebsocketUrl?: string;
+  addAnnotation: ReturnType<typeof vi.fn>;
+  addCustomEvent: ReturnType<typeof vi.fn>;
+  send: ReturnType<typeof vi.fn>;
+  timestamp: number;
 };
 
 const mockState = vi.hoisted(
   (): MockState => ({
     buffers: [],
+    addAnnotation: vi.fn(),
+    addCustomEvent: vi.fn(),
+    send: vi.fn(),
+    timestamp: 100,
   }),
 );
+
+vi.mock('@rrweb/utils', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@rrweb/utils')>()),
+  nowTimestamp: () => mockState.timestamp,
+}));
 
 vi.mock('@rrweb/record', () => {
   const record = vi.fn((options: { emit?: (event: unknown) => void }) => {
@@ -38,7 +51,8 @@ vi.mock('@rrweb/record', () => {
     });
     return vi.fn();
   });
-  record.addCustomEvent = vi.fn();
+  record.addCustomEvent = mockState.addCustomEvent;
+  record.addAnnotation = mockState.addAnnotation;
   record.freezePage = vi.fn();
   return { record };
 });
@@ -68,7 +82,7 @@ vi.mock('websocket-ts', () => {
   }
 
   class Websocket {
-    send = vi.fn();
+    send = mockState.send;
     close = vi.fn();
     addEventListener = vi.fn();
   }
@@ -120,6 +134,7 @@ async function importFreshClient() {
   mockState.buffers = [];
   mockState.lastRecordOptions = undefined;
   mockState.lastWebsocketUrl = undefined;
+  mockState.timestamp = 100;
   return await import('../src/index');
 }
 
@@ -170,6 +185,117 @@ afterEach(() => {
 });
 
 describe('@rrweb/browser-client load diagnostics', () => {
+  it('emits annotations immediately while recording', async () => {
+    const client = await importFreshClient();
+    const annotation = { type: 'caption', text: 'Save the project' } as const;
+
+    expect(client.default).toHaveProperty(
+      'addAnnotation',
+      client.addAnnotation,
+    );
+
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      emit: () => undefined,
+    });
+    client.addAnnotation(annotation);
+
+    expect(mockState.addAnnotation).toHaveBeenCalledWith(annotation);
+    expect(mockState.buffers[0].items).not.toContainEqual(
+      expect.stringContaining('Save the project'),
+    );
+  });
+
+  it.each(['function', 'global'])(
+    'delivers queued custom events and annotations once through %s emit',
+    async (callbackType) => {
+      const client = await importFreshClient();
+      const emit = vi.fn();
+      const annotation = {
+        type: 'timelineMarker' as const,
+        text: 'Checkpoint',
+      };
+      const payload = { value: 1 };
+      client.addCustomEvent('before-start', payload);
+      client.addAnnotation(annotation);
+      payload.value = 2;
+      annotation.text = 'Changed after enqueue';
+      expect(emit).not.toHaveBeenCalled();
+      mockState.timestamp = 200;
+      Object.defineProperty(window, 'queuedEventEmit', {
+        configurable: true,
+        value: emit,
+      });
+      client.start({
+        serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+        publicApiKey: 'public_key_rr_test',
+        includePii: false,
+        emit: callbackType === 'function' ? emit : 'queuedEventEmit',
+      });
+      const expected = [
+        {
+          type: EventType.Custom,
+          timestamp: 100,
+          data: { tag: 'before-start', payload: { value: 1 } },
+        },
+        {
+          type: EventType.Annotation,
+          timestamp: 100,
+          data: { type: 'timelineMarker', text: 'Checkpoint' },
+        },
+      ];
+      expect(
+        emit.mock.calls
+          .map(([event]) => event)
+          .filter((event) => event.type !== EventType.Meta),
+      ).toEqual(expected);
+      expect(
+        mockState.send.mock.calls
+          .map(([event]) => JSON.parse(event))
+          .filter((event) => event.type !== EventType.Meta),
+      ).toEqual(expected);
+      expect(mockState.addAnnotation).not.toHaveBeenCalled();
+      expect(mockState.addCustomEvent).not.toHaveBeenCalled();
+      expect(
+        mockState.buffers[0].items.map((item) => JSON.parse(item).data.tag),
+      ).toEqual(['recording-meta']);
+      client.stop(false);
+      delete (window as unknown as Record<string, unknown>).queuedEventEmit;
+    },
+  );
+
+  it('clears queued events on stop and delivers new events only to the next recording', async () => {
+    const client = await importFreshClient();
+    client.addCustomEvent('discarded', {});
+    client.addAnnotation({ type: 'caption', text: 'Discarded' });
+    client.stop(false);
+    const emit = vi.fn();
+    const options = {
+      publicApiKey: 'public_key_rr_test',
+      includePii: false,
+      emit,
+    };
+    client.start(options);
+    expect(emit.mock.calls.map(([event]) => event.type)).toEqual([
+      EventType.Meta,
+    ]);
+    client.stop(false);
+    emit.mockClear();
+    mockState.send.mockClear();
+    client.addCustomEvent('next-session', {});
+    client.addAnnotation({ type: 'caption', text: 'Next session' });
+    client.start(options);
+    expect(emit.mock.calls.map(([event]) => event.type)).toEqual([
+      EventType.Meta,
+      EventType.Custom,
+      EventType.Annotation,
+    ]);
+    expect(mockState.send).toHaveBeenCalledTimes(3);
+    client.stop(false);
+  });
+
   it('adds programmatic diagnostics without jsSource by default', async () => {
     const client = await importFreshClient();
 

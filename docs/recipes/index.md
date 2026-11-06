@@ -28,6 +28,13 @@ You may need to record some custom events along with the rrweb events, and let t
 
 [link](./custom-event.md)
 
+### Annotations
+
+Add captions and timeline markers to a recording, display them with rrweb-player,
+or render your own annotation UI using replay callbacks.
+
+[link](./annotations.md)
+
 ### Interact With UI During Replay
 
 By default, the UI could not interact during replay. But you can use API to enable/disable this programmatically.

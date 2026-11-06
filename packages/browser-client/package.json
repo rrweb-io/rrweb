@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/browser-client",
-  "version": "2.1.7",
+  "version": "2.2.0",
   "publishConfig": {
     "access": "public"
   },
@@ -69,10 +69,10 @@
     "vitest": "^1.6.1"
   },
   "dependencies": {
-    "@rrweb/record": "^2.1.7",
-    "@rrweb/types": "^2.1.7",
-    "@rrweb/utils": "^2.1.7",
-    "rrweb": "^2.1.7",
+    "@rrweb/record": "^2.2.0",
+    "@rrweb/types": "^2.2.0",
+    "@rrweb/utils": "^2.2.0",
+    "rrweb": "^2.2.0",
     "websocket-ts": "^2.2.1"
   },
   "browserslist": [

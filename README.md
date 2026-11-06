@@ -66,6 +66,8 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
 
 [Using the REPL tool](./guide.md#REPL-tool)
 
+This project is tested with BrowserStack
+
 ## Sponsors
 
 [Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.

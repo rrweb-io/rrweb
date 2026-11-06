@@ -1,5 +1,12 @@
 # rrdom
 
+## 2.2.0
+
+### Patch Changes
+
+- Updated dependencies [[`009b2dd`](https://github.com/rrweb-io/rrweb/commit/009b2dd4971ea575bd481f1f591822d319ab078b)]:
+  - rrweb-snapshot@2.2.0
+
 ## 2.1.7
 
 ### Patch Changes
