@@ -14,7 +14,13 @@ import {
   ISuite,
 } from './utils';
 import type { recordOptions } from '../src/types';
-import { eventWithTime, NodeType, EventType } from '@rrweb/types';
+import {
+  eventWithTime,
+  NodeType,
+  EventType,
+  IncrementalSource,
+  MouseInteractions,
+} from '@rrweb/types';
 import { visitSnapshot } from 'rrweb-snapshot';
 
 describe('record integration tests', function (this: ISuite) {
@@ -82,6 +88,40 @@ describe('record integration tests', function (this: ISuite) {
       'window.snapshots',
     )) as eventWithTime[];
     await assertSnapshot(snapshots);
+  });
+
+  it('records the end of a touch that scrolls the page', async () => {
+    const page: puppeteer.Page = await browser.newPage();
+    await page.setViewport({
+      width: 400,
+      height: 600,
+      hasTouch: true,
+      isMobile: true,
+    });
+    await page.goto('about:blank');
+    await page.setContent(getHtml.call(this, 'empty.html'));
+    await page.evaluate(() => (document.body.style.height = '3000px'));
+
+    // swipe up, so the browser takes over the touch to scroll
+    await page.touchscreen.touchStart(200, 400);
+    await page.touchscreen.touchMove(200, 300);
+    await page.touchscreen.touchMove(200, 200);
+    await page.touchscreen.touchEnd();
+    await waitForRAF(page);
+
+    const snapshots = (await page.evaluate(
+      'window.snapshots',
+    )) as eventWithTime[];
+    const interactions = snapshots.flatMap((e) =>
+      e.type === EventType.IncrementalSnapshot &&
+      e.data.source === IncrementalSource.MouseInteraction
+        ? [e.data.type]
+        : [],
+    );
+    expect(interactions).toEqual([
+      MouseInteractions.TouchStart,
+      MouseInteractions.TouchCancel,
+    ]);
   });
 
   it('can record form interactions', async () => {
