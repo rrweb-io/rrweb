@@ -28,9 +28,7 @@ import { recordOptions } from '../../src/types';
 
 interface IWindow extends Window {
   rrweb: {
-    record: (
-      options: recordOptions<eventWithTime>,
-    ) => undefined | (() => void);
+    record: (options: recordOptions<eventWithTime>) => undefined | (() => void);
   };
   emit: (e: eventWithTime) => undefined;
 }
