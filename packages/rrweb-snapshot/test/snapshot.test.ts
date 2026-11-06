@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { JSDOM } from 'jsdom';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import snapshot, {
   _isBlockedElement,
@@ -158,6 +158,130 @@ describe('isBlockedElement()', () => {
       subject('<div data-rr-block />', { blockSelector: '[data-rr-block]' }),
     ).toEqual(true);
   });
+});
+
+describe('inline images', () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const createImage = (loaded: boolean) => {
+    const doc = document.implementation.createHTMLDocument();
+    const image = doc.createElement('img');
+    image.src = 'https://example.com/image.png';
+    const setLoaded = (complete: boolean) =>
+      Object.defineProperties(image, {
+        complete: { configurable: true, value: complete },
+        naturalWidth: { configurable: true, value: complete ? 16 : 0 },
+        naturalHeight: { configurable: true, value: complete ? 9 : 0 },
+      });
+    setLoaded(loaded);
+    doc.body.append(image);
+
+    const drawImage = vi.fn();
+    const getContext = vi
+      .spyOn(HTMLCanvasElement.prototype, 'getContext')
+      .mockReturnValue({ drawImage } as unknown as CanvasRenderingContext2D);
+    const toDataURL = vi
+      .spyOn(HTMLCanvasElement.prototype, 'toDataURL')
+      .mockReturnValue('data:image/png;base64,image');
+
+    return {
+      image,
+      setLoaded,
+      drawImage,
+      getContext,
+      toDataURL,
+      createElement: vi.spyOn(doc, 'createElement'),
+      addEventListener: vi.spyOn(image, 'addEventListener'),
+    };
+  };
+
+  const serializeImage = async (
+    image: HTMLImageElement,
+    blockSelector: string | null = null,
+  ) => {
+    const { default: snapshot } = await import('../src/snapshot');
+    const mirror = new Mirror();
+    snapshot(image.ownerDocument, {
+      mirror,
+      inlineImages: true,
+      blockSelector,
+    });
+    return mirror.getMeta(image) as elementNode;
+  };
+
+  it.each([
+    { blocking: 'blockClass', loaded: true },
+    { blocking: 'blockClass', loaded: false },
+    { blocking: 'blockSelector', loaded: true },
+    { blocking: 'blockSelector', loaded: false },
+  ])(
+    'does not inline an image blocked by $blocking (loaded: $loaded)',
+    async ({ blocking, loaded }) => {
+      const {
+        image,
+        setLoaded,
+        createElement,
+        getContext,
+        drawImage,
+        toDataURL,
+        addEventListener,
+      } = createImage(loaded);
+      if (blocking === 'blockClass') image.className = 'rr-block';
+      else image.setAttribute('data-rr-block', '');
+
+      const serializedImage = await serializeImage(
+        image,
+        blocking === 'blockSelector' ? '[data-rr-block]' : null,
+      );
+      setLoaded(true);
+      image.dispatchEvent(new Event('load'));
+
+      expect(serializedImage.attributes).toEqual({
+        class: blocking === 'blockClass' ? 'rr-block' : undefined,
+        rr_width: '0px',
+        rr_height: '0px',
+      });
+      expect(createElement).not.toHaveBeenCalledWith('canvas');
+      expect(getContext).not.toHaveBeenCalled();
+      expect(drawImage).not.toHaveBeenCalled();
+      expect(toDataURL).not.toHaveBeenCalled();
+      expect(addEventListener).not.toHaveBeenCalledWith(
+        'load',
+        expect.any(Function),
+      );
+    },
+  );
+
+  it.each([true, false])(
+    'inlines an unblocked image (loaded: %s)',
+    async (loaded) => {
+      const { image, setLoaded, drawImage, toDataURL, addEventListener } =
+        createImage(loaded);
+      const serializedImage = await serializeImage(image);
+      if (!loaded) {
+        expect(drawImage).not.toHaveBeenCalled();
+        expect(addEventListener).toHaveBeenCalledWith(
+          'load',
+          expect.any(Function),
+        );
+        setLoaded(true);
+        image.dispatchEvent(new Event('load'));
+      }
+
+      expect(drawImage).toHaveBeenCalledTimes(1);
+      expect(drawImage).toHaveBeenCalledWith(image, 0, 0);
+      expect(toDataURL).toHaveBeenCalledTimes(1);
+      expect(serializedImage.attributes.rr_dataURL).toBe(
+        'data:image/png;base64,image',
+      );
+    },
+  );
 });
 
 describe('ignoreAttribute()', () => {
