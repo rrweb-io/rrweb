@@ -1,16 +1,7 @@
 /**
- * Invariant test: in every mutation batch the recorder emits, a shadow
- * child node is never emitted before its shadow host.
- *
- * The MutationBuffer drain can only resolve a shadow child's parentId
- * via `mirror.getId(getShadowHost(n))`. If the host hasn't been serialized
- * yet in this batch, that lookup returns -1 and the subtree gets dropped
- * through `missingParents`. The walk-up loop prevents this by jumping
- * through `ShadowRoot` to the host so the host is always drained first.
- *
- * This file does not snapshot JSON — it inspects the emitted events and
- * asserts the topological property directly, so it stays meaningful even
- * if unrelated serializer details change.
+ * #1652 refactored mutation emission to walk up the DOM and serialize parents
+ * before children, but missed traversing parents of shadowDOM hosts
+ * These tests add coverage for shadow cases
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -36,7 +27,13 @@ interface IWindow extends Window {
 type AddPayload = {
   parentId: number;
   nextId: number | null;
-  node: { id: number; isShadow?: boolean; isShadowHost?: boolean };
+  node: {
+    id: number;
+    isShadow?: boolean;
+    isShadowHost?: boolean;
+    attributes?: Record<string, unknown>;
+    textContent?: string;
+  };
 };
 
 function collectAdds(events: eventWithTime[]): AddPayload[][] {
@@ -74,6 +71,23 @@ function assertHostBeforeChild(batch: AddPayload[]) {
       }
     }
   }
+}
+
+function concatAdds(batches: AddPayload[][]): AddPayload[] {
+  return ([] as AddPayload[]).concat(...batches);
+}
+
+function findByDomId(
+  adds: AddPayload[],
+  domId: string,
+): AddPayload | undefined {
+  return adds.find((add) => add.node.attributes?.id === domId);
+}
+
+function batchIndexOfDomId(batches: AddPayload[][], domId: string): number {
+  return batches.findIndex((batch) =>
+    batch.some((add) => add.node.attributes?.id === domId),
+  );
 }
 
 describe('shadow DOM emit-order invariant', () => {
@@ -228,5 +242,116 @@ describe('shadow DOM emit-order invariant', () => {
     const batches = collectAdds(events);
     expect(batches.length).toBeGreaterThan(0);
     batches.forEach(assertHostBeforeChild);
+  });
+
+  it('shadow children added with their host are emitted, not dropped', async () => {
+    await setupPage();
+    await page.evaluate(() => {
+      const host = document.createElement('div');
+      host.id = 'togetherHost';
+      host.attachShadow({ mode: 'open' });
+      const inp = document.createElement('input');
+      inp.id = 'togetherInput';
+      host.shadowRoot!.appendChild(inp);
+      const spn = document.createElement('span');
+      spn.id = 'togetherSpan';
+      spn.textContent = 'in-shadow';
+      host.shadowRoot!.appendChild(spn);
+      document.body.append(host);
+    });
+    await waitForRAF(page);
+
+    const batches = collectAdds(events);
+    batches.forEach(assertHostBeforeChild);
+
+    const adds = concatAdds(batches);
+    const hostAdd = findByDomId(adds, 'togetherHost');
+    const inputAdd = findByDomId(adds, 'togetherInput');
+    const spanAdd = findByDomId(adds, 'togetherSpan');
+
+    expect(hostAdd).toBeDefined();
+    expect(inputAdd).toBeDefined();
+    expect(spanAdd).toBeDefined();
+
+    expect(inputAdd!.node.isShadow).toBe(true);
+    expect(spanAdd!.node.isShadow).toBe(true);
+    expect(inputAdd!.parentId).toBe(hostAdd!.node.id);
+    expect(spanAdd!.parentId).toBe(hostAdd!.node.id);
+  });
+
+  it('shadow child added into an already-recorded host resolves to that host', async () => {
+    await setupPage();
+    await page.evaluate(() => {
+      const host = document.createElement('div');
+      host.id = 'existingHost';
+      host.attachShadow({ mode: 'open' });
+      document.body.append(host);
+    });
+    await waitForRAF(page);
+
+    await page.evaluate(() => {
+      const host = document.getElementById('existingHost')!;
+      const inp = document.createElement('input');
+      inp.id = 'lateChild';
+      host.shadowRoot!.appendChild(inp);
+    });
+    await waitForRAF(page);
+
+    const batches = collectAdds(events);
+    const adds = concatAdds(batches);
+
+    const hostAdd = findByDomId(adds, 'existingHost');
+    const lateAdd = findByDomId(adds, 'lateChild');
+
+    expect(hostAdd).toBeDefined();
+    expect(lateAdd).toBeDefined();
+    expect(lateAdd!.node.isShadow).toBe(true);
+    expect(lateAdd!.parentId).toBe(hostAdd!.node.id);
+
+    expect(batchIndexOfDomId(batches, 'lateChild')).toBeGreaterThan(
+      batchIndexOfDomId(batches, 'existingHost'),
+    );
+  });
+
+  it('shadow child added into an existing nested inner host resolves to the inner host', async () => {
+    await setupPage();
+    await page.evaluate(() => {
+      const outer = document.createElement('div');
+      outer.id = 'outerHost';
+      outer.attachShadow({ mode: 'open' });
+      const inner = document.createElement('div');
+      inner.id = 'innerHost';
+      inner.attachShadow({ mode: 'open' });
+      outer.shadowRoot!.appendChild(inner);
+      document.body.append(outer);
+    });
+    await waitForRAF(page);
+
+    await page.evaluate(() => {
+      const inner = document
+        .getElementById('outerHost')!
+        .shadowRoot!.querySelector('#innerHost') as Element;
+      const leaf = document.createElement('span');
+      leaf.id = 'deepLeaf';
+      leaf.textContent = 'deep';
+      inner.shadowRoot!.appendChild(leaf);
+    });
+    await waitForRAF(page);
+
+    const batches = collectAdds(events);
+    batches.forEach(assertHostBeforeChild);
+
+    const adds = concatAdds(batches);
+    const outerAdd = findByDomId(adds, 'outerHost');
+    const innerAdd = findByDomId(adds, 'innerHost');
+    const leafAdd = findByDomId(adds, 'deepLeaf');
+
+    expect(outerAdd).toBeDefined();
+    expect(innerAdd).toBeDefined();
+    expect(leafAdd).toBeDefined();
+
+    expect(leafAdd!.node.isShadow).toBe(true);
+    expect(leafAdd!.parentId).toBe(innerAdd!.node.id);
+    expect(leafAdd!.parentId).not.toBe(outerAdd!.node.id);
   });
 });
