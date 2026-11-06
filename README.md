@@ -66,6 +66,8 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
 
 [Using the REPL tool](./guide.md#REPL-tool)
 
+This project is tested with BrowserStack
+
 ## Sponsors
 
 [Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.
@@ -117,6 +119,12 @@ In addition to adding integration tests and unit tests, rrweb also provides a RE
 ### Backers
 
 <a href="https://opencollective.com/rrweb#sponsor" rel="nofollow"><img src="https://opencollective.com/rrweb/tiers/backers.svg?avatarHeight=36"></a>
+
+### Infrastructure Sponsors
+
+<a href="https://www.blacksmith.sh/" rel="nofollow sponsored">
+  <img src="https://gist.githubusercontent.com/Juice10/63574f35f5095c56cb74539a07588f5f/raw/5955900a42c62a479ae8f561e57e78aa8edbbc7a/blacksmith-powered.png" alt="CI powered by Blacksmith" width="270">
+</a>
 
 ## Core Team Members
 
