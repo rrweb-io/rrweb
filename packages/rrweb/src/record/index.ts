@@ -112,9 +112,19 @@ function record<T = eventWithTime>(
   const isTopFrame = window.parent === window;
 
   if (emitToOrigin !== undefined && isTopFrame) {
-    console.warn(
-      'rrweb: `emitToOrigin` is set on the top-level recorder, which has no parent to forward to. Events are emitted locally and `emitToOrigin` is ignored. This is likely a misconfiguration.',
-    );
+    let emitsToOwnOrigin = false;
+    try {
+      emitsToOwnOrigin =
+        new URL(emitToOrigin).origin === window.location.origin;
+    } catch (e) {
+      emitsToOwnOrigin = false;
+    }
+    if (!emitsToOwnOrigin) {
+      console.warn(
+        `\`emitToOrigin: ${emitToOrigin}\` ignored on top frame:`,
+        window,
+      );
+    }
   }
 
   let inEmittingFrame: boolean;
