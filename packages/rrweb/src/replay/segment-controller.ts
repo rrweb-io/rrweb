@@ -35,7 +35,6 @@ function markerIsKeyframe(event: eventWithTime): boolean {
 
 export class SegmentController implements StallController {
   private segments = new Map<number, SegmentInfo>();
-  private recordingEndTs = 0;
   private stallTarget: { offset: number; play: boolean } | null = null;
 
   constructor(
@@ -62,9 +61,6 @@ export class SegmentController implements StallController {
   }
 
   public registerEvent(event: eventWithTime) {
-    if (event.timestamp > this.recordingEndTs) {
-      this.recordingEndTs = event.timestamp;
-    }
     if (isSegmentStartMarker(event)) {
       const segmentStart = markerSegmentStart(event);
       if (!this.segments.has(segmentStart)) {
@@ -89,7 +85,6 @@ export class SegmentController implements StallController {
 
   private stallIfNeeded(timeOffset: number, play: boolean): boolean {
     const targetTimestamp = this.timestampFromOffset(timeOffset);
-    if (targetTimestamp >= this.recordingEndTs) return false;
     if (this.neededSegments(targetTimestamp).length === 0) return false;
     this.stallTarget = { offset: timeOffset, play };
     if (this.replayer.service.state.matches('stalled')) {
