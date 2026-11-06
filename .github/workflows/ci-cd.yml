@@ -37,6 +37,9 @@ jobs:
       - name: Build Project
         run: NODE_OPTIONS='--max-old-space-size=4096' yarn build:all
 
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
       - name: Install Playwright browsers
         run: cd packages/rrvideo && yarn playwright install chromium
 
