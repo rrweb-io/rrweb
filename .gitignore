@@ -39,3 +39,6 @@ vite.config.ts.timestamp-*
 
 # bundle analysis files
 *-bundle-analysis.html
+
+# Local rrvideo comparison outputs
+benchmark-results/
