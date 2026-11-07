@@ -68,6 +68,11 @@ export type recordOptions<T> = {
   dataURLOptions?: DataURLOptions;
   recordDOM?: boolean;
   recordCanvas?: boolean;
+  /**
+   * @deprecated Superseded by `collectFromOrigins` (accept events from
+   * cross-origin child iframes) and `emitToOrigin` (forward this frame's events
+   * up to its parent). Still supported.
+   */
   recordCrossOriginIframes?: boolean;
   recordAfter?: 'DOMContentLoaded' | 'load';
   userTriggeredOnInput?: boolean;
@@ -82,6 +87,8 @@ export type recordOptions<T> = {
   mousemoveWait?: number;
   keepIframeSrcFn?: KeepIframeSrcFn;
   errorHandler?: ErrorHandler;
+  collectFromOrigins?: string[];
+  emitToOrigin?: string;
 };
 
 export type observerParam = {
