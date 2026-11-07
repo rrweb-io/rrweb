@@ -262,39 +262,20 @@ export class SegmentController implements StallController {
   }
 
   private neededSegments(targetTimestamp: number): number[] {
-    const sorted = this.sortedSegmentStarts();
-    const index = this.segmentIndexContaining(sorted, targetTimestamp);
-    if (index < 0) return [];
-    let keyframe = index;
-    while (keyframe > 0 && !this.segments.get(sorted[keyframe])!.keyframe) {
-      keyframe--;
-    }
-    const needed: number[] = [];
-    for (let i = keyframe; i <= index; i++) {
-      const info = this.segments.get(sorted[i])!;
-      if (!info.fetched) needed.push(info.segmentStart);
-    }
-    return needed;
-  }
-
-  private segmentIndexContaining(sorted: number[], timestamp: number): number {
-    let start = 0;
-    let end = sorted.length - 1;
-    let result = -1;
-    while (start <= end) {
-      const mid = Math.floor((start + end) / 2);
-      if (sorted[mid] <= timestamp) {
-        result = mid;
-        start = mid + 1;
-      } else {
-        end = mid - 1;
+    const priors: number[] = [];
+    const keyframeTs: number | null = null;
+    for (const [segmentTs, segmentInfo] of this.segments.values()) {
+      if (segmentTs < targetTimestamp) {
+        if (segmentInfo.keyframe &&
+          (!keyframeTs || keyframeTs < segmentTs) {
+          keyframeTs = segmentTs;
+        }
+        if (!segmentInfo.fetched) {
+          priors.push(segmentTs);
+        }
       }
     }
-    return result;
-  }
-
-  private sortedSegmentStarts(): number[] {
-    return [...this.segments.keys()].sort((a, b) => a - b);
+    return priors.filter(p => keyframeTs <= p);
   }
 
   private canFetch(segmentStart: number): boolean {
