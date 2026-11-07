@@ -229,7 +229,7 @@ export class SegmentController implements StallController {
       }
       toInject.push(event);
     }
-    if (frontierEvent) {
+    if (frontierEvent && !this.segments.get(frontier!)?.fetched) {
       toInject.push(frontierEvent);
     }
     toInject.sort((a, b) => a.timestamp - b.timestamp);
