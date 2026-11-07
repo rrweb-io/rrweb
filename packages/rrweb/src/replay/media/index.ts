@@ -287,6 +287,8 @@ export class MediaManager {
     timeOffset: number;
     mutation: mediaInteractionData;
   }) {
+    if (!['AUDIO', 'VIDEO'].includes(target.nodeName)) return;
+
     this.mediaMap.set(
       target,
       this.getMediaStateFromMutation({
