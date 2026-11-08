@@ -22,7 +22,7 @@
   export let replayer: Replayer;
   export let showCaptions = true;
   const updateTimeline = createTimelineIndex();
-  $: timeline = updateTimeline(replayer.service.state.context.events, replayer.config.inactivePeriodThreshold);
+  $: timeline = updateTimeline(replayer.events, replayer.config.inactivePeriodThreshold);
   export let captionText: string | undefined = undefined;
   let activeCaptionText: string | undefined;
   $: captionText = showCaptions ? activeCaptionText : undefined;
@@ -305,14 +305,14 @@
   export const triggerUpdateMeta = () => {
     return Promise.resolve().then(() => {
       meta = replayer.getMetaData();
-      timeline = updateTimeline(replayer.service.state.context.events, replayer.config.inactivePeriodThreshold);
+      timeline = updateTimeline(replayer.events, replayer.config.inactivePeriodThreshold);
     });
   };
 
   onMount(() => {
     replayer.on('annotation', handleAnnotation);
     replayer.on('start', restoreCaptionOnSeek);
-    playerState = replayer.service.state.value;
+    playerState = replayer.getState();
     speedState = replayer.speedService.state.value;
     replayer.on(
       'state-change',

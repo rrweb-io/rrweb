@@ -12,7 +12,7 @@ import {
   afterAll,
 } from 'vitest';
 import { EventType, type eventWithTime } from '@rrweb/types';
-import { launchPuppeteer, sampleEvents } from './utils';
+import { launchPuppeteer, sampleEvents } from '../../rrweb/test/utils';
 
 const T = sampleEvents[0].timestamp;
 const DCL = sampleEvents[0];
@@ -61,7 +61,7 @@ const manyFrontiers: eventWithTime[] = [
 ];
 
 async function bundleReplayer(): Promise<string> {
-  const rrwebDir = path.resolve(__dirname, '..');
+  const rrwebDir = path.resolve(__dirname, '../../rrweb');
   const typesSrc = path.resolve(rrwebDir, '../types/src/index.ts');
   const result = await esbuild.build({
     stdin: {
@@ -70,7 +70,7 @@ async function bundleReplayer(): Promise<string> {
           path.resolve(rrwebDir, 'src/replay/index.ts'),
         )};\n` +
         `export { SegmentController } from ${JSON.stringify(
-          path.resolve(rrwebDir, 'src/replay/segment-controller.ts'),
+          path.resolve(__dirname, '../src/segment-controller.ts'),
         )};\n` +
         `export { ReplayerEvents } from '@rrweb/types';\n`,
       resolveDir: rrwebDir,
@@ -85,10 +85,13 @@ async function bundleReplayer(): Promise<string> {
     logLevel: 'silent',
     plugins: [
       {
-        name: 'alias-rrweb-types',
+        name: 'alias-rrweb',
         setup(build) {
           build.onResolve({ filter: /^@rrweb\/types$/ }, () => ({
             path: typesSrc,
+          }));
+          build.onResolve({ filter: /^@rrweb\/replay$/ }, () => ({
+            path: path.resolve(rrwebDir, 'src/entries/replay.ts'),
           }));
         },
       },

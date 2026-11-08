@@ -16,4 +16,6 @@ export class Player extends _Player {
 
 export default Player;
 
+export { StallEvents } from '@rrweb/replay';
+export type { StallController } from '@rrweb/replay';
 export type { annotationData } from '@rrweb/types';

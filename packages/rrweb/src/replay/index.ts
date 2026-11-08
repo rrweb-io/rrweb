@@ -530,6 +530,34 @@ export class Replayer {
     };
   }
 
+  public get events(): eventWithTime[] {
+    return this.service.state.context.events;
+  }
+
+  public isPlaying(): boolean {
+    return this.service.state.matches('playing');
+  }
+
+  public isStalled(): boolean {
+    return this.service.state.matches('stalled');
+  }
+
+  public getState(): PlayerMachineState['value'] {
+    return this.service.state.value;
+  }
+
+  public stall() {
+    this.service.send({ type: 'STALL' });
+  }
+
+  public reschedule() {
+    this.service.send({ type: 'RESCHEDULE' });
+  }
+
+  public abortStall() {
+    this.service.send({ type: 'PAUSE' });
+  }
+
   /**
    * Get the actual time offset the player is at now compared to the first event.
    */

@@ -208,10 +208,6 @@ export type playerConfig = {
   createStallController?: (replayer: Replayer) => StallController;
 };
 
-export type SegmentFetchFn = (
-  segmentStart: number,
-) => Promise<Array<eventWithTime | string>>;
-
 export type missingNode = {
   node: Node | RRNode;
   mutation: addedNodeMutation;

@@ -1,7 +1,6 @@
 import { type eventWithTime, EventType, ReplayerEvents } from '@rrweb/types';
-import type { SegmentFetchFn } from '../types';
-import { type StallController, StallEvents } from './stall-controller';
-import type { Replayer } from './index';
+import { type Replayer, type StallController, StallEvents } from '@rrweb/replay';
+import type { SegmentFetchFn } from './types';
 
 type SegmentInfo = {
   timestamp: number;
@@ -53,7 +52,7 @@ export class SegmentController implements StallController {
   }
 
   private timestampFromOffset(timeOffset: number): number {
-    return this.replayer.service.state.context.events[0].timestamp + timeOffset;
+    return this.replayer.events[0].timestamp + timeOffset;
   }
 
   private warn(...args: Parameters<typeof console.warn>) {
@@ -97,11 +96,11 @@ export class SegmentController implements StallController {
     const needed = this.neededSegments(targetTimestamp);
     if (needed.length === 0) return false;
     this.stallTarget = { offset: timeOffset, play };
-    if (this.replayer.service.state.matches('stalled')) {
+    if (this.replayer.isStalled()) {
       this.requestSegments(needed);
     } else {
       // synchronously picked up by onStallStart
-      this.replayer.service.send({ type: 'STALL' });
+      this.replayer.stall();
     }
     return true;
   }
@@ -127,7 +126,7 @@ export class SegmentController implements StallController {
   };
 
   private onPrefetchAlarm = () => {
-    if (!this.replayer.service.state.matches('playing')) return;
+    if (!this.replayer.isPlaying()) return;
     const playhead = this.timestampFromOffset(this.replayer.getCurrentTime());
     const horizon = playhead + this.bufferAheadMs * this.replayer.timer.speed;
     for (const seg of this.segments.values()) {
@@ -157,7 +156,7 @@ export class SegmentController implements StallController {
         segmentStarts: this.neededSegments(targetTimestamp).map(info => info.timestamp),
       });
     }
-    this.replayer.service.send({ type: 'PAUSE' });
+    this.replayer.abortStall();
   }
 
   private resumeFromStall() {
@@ -177,8 +176,8 @@ export class SegmentController implements StallController {
   }
 
   private extendSchedule() {
-    if (!this.replayer.service.state.matches('playing')) return;
-    this.replayer.service.send({ type: 'RESCHEDULE' });
+    if (!this.replayer.isPlaying()) return;
+    this.replayer.reschedule();
   }
 
   private fetchSegment = (seg: SegmentInfo) => {
@@ -203,9 +202,9 @@ export class SegmentController implements StallController {
         },
       )
       .then(() => {
-        if (this.replayer.service.state.matches('stalled')) {
+        if (this.replayer.isStalled()) {
           this.resumeFromStall();
-        } else if (this.replayer.service.state.matches('playing')) {
+        } else if (this.replayer.isPlaying()) {
           this.extendSchedule();
         }
       });
@@ -282,7 +281,7 @@ export class SegmentController implements StallController {
   private neededSegments(targetTimestamp: number): SegmentInfo[] {
     const priors: SegmentInfo[] = [];
     let lastKeyframeTs = 0;
-    for (const seg of this.segments.entries()) {
+    for (const seg of this.segments.values()) {
       if (seg.timestamp <= targetTimestamp) {
         if (seg.keyframe &&
           (!lastKeyframeTs || lastKeyframeTs < seg.timestamp)) {
