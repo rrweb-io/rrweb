@@ -48,7 +48,8 @@ export class SegmentController implements StallController {
   }
 
   public isStallMarker(event: eventWithTime): boolean {
-    return isSegmentStartMarker(event);
+    return isSegmentStartMarker(event) &&
+      !this.segments.get(event.timestamp)?.fetched;  // don't stall again if already fetched
   }
 
   private timestampFromOffset(timeOffset: number): number {
@@ -241,25 +242,11 @@ export class SegmentController implements StallController {
     for (const cs of this.sortedSegmentStarts()) {
       if (cs >= segmentStart && cs < bound) {
         this.segments.get(cs)!.fetched = true;
-        this.spliceSegmentMarker(cs);
       }
     }
     return true;
   }
 
-  private spliceSegmentMarker(segmentStart: number) {
-    const events = this.replayer.service.state.context.events;
-    for (let i = 0; i < events.length; i++) {
-      const event = events[i];
-      if (
-        isSegmentStartMarker(event) &&
-        markerSegmentStart(event) === segmentStart
-      ) {
-        events.splice(i, 1);
-        return;
-      }
-    }
-  }
 
   private neededSegments(targetTimestamp: number): number[] {
     const priors: number[] = [];
