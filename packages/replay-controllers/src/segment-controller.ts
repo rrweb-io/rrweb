@@ -1,5 +1,9 @@
 import { type eventWithTime, EventType, ReplayerEvents } from '@rrweb/types';
-import { type Replayer, type StallController, StallEvents } from '@rrweb/replay';
+import {
+  type Replayer,
+  type StallController,
+  StallEvents,
+} from '@rrweb/replay';
 import type { SegmentFetchFn } from './types';
 
 type SegmentInfo = {
@@ -18,7 +22,7 @@ type SegmentMarker = {
     tag: 'segment-start';
     payload: {
       keyframe?: boolean;
-      fetchTimestamp?: number;  // if different
+      fetchTimestamp?: number; // if different
     };
   };
 };
@@ -26,7 +30,9 @@ type SegmentMarker = {
 const maxSegmentFetchAttempts = 3;
 const maxConcurrentFetches = 3;
 
-export function isSegmentStartMarker(event: eventWithTime): event is SegmentMarker {
+export function isSegmentStartMarker(
+  event: eventWithTime,
+): event is SegmentMarker {
   // sent by a server to indicate to request segments from i.e.
   // at what point events become 'missing'
   return event.type === EventType.Custom && event.data.tag === 'segment-start';
@@ -47,8 +53,10 @@ export class SegmentController implements StallController {
   }
 
   public isStallMarker(event: eventWithTime): boolean {
-    return isSegmentStartMarker(event) &&
-      !this.segments.get(event.timestamp)?.fetched;  // don't stall again if already fetched
+    return (
+      isSegmentStartMarker(event) &&
+      !this.segments.get(event.timestamp)?.fetched
+    ); // don't stall again if already fetched
   }
 
   private timestampFromOffset(timeOffset: number): number {
@@ -67,11 +75,15 @@ export class SegmentController implements StallController {
   }
 
   private registerSegmentMarker(segmentMarker: SegmentMarker) {
-    const { timestamp, data: { payload } } = segmentMarker;
+    const {
+      timestamp,
+      data: { payload },
+    } = segmentMarker;
     if (!this.segments.has(timestamp)) {
-      const fetchTimestamp = typeof payload?.fetchTimestamp === 'number'
-        ? payload.fetchTimestamp
-        : timestamp
+      const fetchTimestamp =
+        typeof payload?.fetchTimestamp === 'number'
+          ? payload.fetchTimestamp
+          : timestamp;
       this.segments.set(timestamp, {
         timestamp,
         fetchTimestamp,
@@ -153,7 +165,9 @@ export class SegmentController implements StallController {
     if (this.stallTarget) {
       const targetTimestamp = this.timestampFromOffset(this.stallTarget.offset);
       this.replayer.emit(ReplayerEvents.StallError, {
-        segmentStarts: this.neededSegments(targetTimestamp).map(info => info.timestamp),
+        segmentStarts: this.neededSegments(targetTimestamp).map(
+          (info) => info.timestamp,
+        ),
       });
     }
     this.replayer.abortStall();
@@ -267,7 +281,7 @@ export class SegmentController implements StallController {
     return true;
   }
 
-  private markFetchedInRange(fetchCoverage: { from: number, before: number }) {
+  private markFetchedInRange(fetchCoverage: { from: number; before: number }) {
     const { from, before } = fetchCoverage;
     for (const seg of this.segments.values()) {
       if (from <= seg.timestamp && seg.timestamp < before) {
@@ -283,8 +297,10 @@ export class SegmentController implements StallController {
     let lastKeyframeTs = 0;
     for (const seg of this.segments.values()) {
       if (seg.timestamp <= targetTimestamp) {
-        if (seg.keyframe &&
-          (!lastKeyframeTs || lastKeyframeTs < seg.timestamp)) {
+        if (
+          seg.keyframe &&
+          (!lastKeyframeTs || lastKeyframeTs < seg.timestamp)
+        ) {
           lastKeyframeTs = seg.timestamp;
         }
         if (!seg.fetched) {
@@ -292,7 +308,7 @@ export class SegmentController implements StallController {
         }
       }
     }
-    return priors.filter(p => lastKeyframeTs <= p.timestamp);
+    return priors.filter((p) => lastKeyframeTs <= p.timestamp);
   }
 
   public canFetch = (seg: SegmentInfo): boolean => {
