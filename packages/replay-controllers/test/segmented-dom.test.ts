@@ -100,7 +100,7 @@ async function bundleReplayer(): Promise<string> {
   return result.outputFiles[0].text;
 }
 
-describe('buffered-dom replay', function () {
+describe('segmented-dom replay', function () {
   vi.setConfig({ testTimeout: 20_000 });
 
   let code: string;
