@@ -4,33 +4,33 @@ import { type StallController, StallEvents } from './stall-controller';
 import type { Replayer } from './index';
 
 type SegmentInfo = {
-  segmentStart: number;
+  timestamp: number;
+  fetchTimestamp: number;
   keyframe: boolean;
   fetched: boolean;
   fetching: boolean;
   attempts: number;
 };
 
+type SegmentMarker = {
+  type: EventType.Custom;
+  timestamp: number;
+  data: {
+    tag: 'segment-start';
+    payload: {
+      keyframe?: boolean;
+      fetchTimestamp?: number;  // if different
+    };
+  };
+};
+
 const maxSegmentFetchAttempts = 3;
 const maxConcurrentFetches = 3;
 
-export function isSegmentStartMarker(event: eventWithTime): boolean {
+export function isSegmentStartMarker(event: eventWithTime): event is SegmentMarker {
   // sent by a server to indicate to request segments from i.e.
   // at what point events become 'missing'
   return event.type === EventType.Custom && event.data.tag === 'segment-start';
-}
-
-function markerSegmentStart(event: eventWithTime): number {
-  const payload = (event.data as { payload?: { segmentStart?: number } })
-    .payload;
-  return typeof payload?.segmentStart === 'number'
-    ? payload.segmentStart
-    : event.timestamp;
-}
-
-function markerIsKeyframe(event: eventWithTime): boolean {
-  const payload = (event.data as { payload?: { keyframe?: boolean } }).payload;
-  return payload?.keyframe === true;
 }
 
 export class SegmentController implements StallController {
@@ -63,16 +63,24 @@ export class SegmentController implements StallController {
 
   public registerEvent(event: eventWithTime) {
     if (isSegmentStartMarker(event)) {
-      const segmentStart = markerSegmentStart(event);
-      if (!this.segments.has(segmentStart)) {
-        this.segments.set(segmentStart, {
-          segmentStart,
-          keyframe: markerIsKeyframe(event),
-          fetched: false,
-          fetching: false,
-          attempts: 0,
-        });
-      }
+      this.registerSegmentMarker(event);
+    }
+  }
+
+  private registerSegmentMarker(segmentMarker: SegmentMarker) {
+    const { timestamp, data: { payload } } = segmentMarker;
+    if (!this.segments.has(timestamp)) {
+      const fetchTimestamp = typeof payload?.fetchTimestamp === 'number'
+        ? payload.fetchTimestamp
+        : timestamp
+      this.segments.set(timestamp, {
+        timestamp,
+        fetchTimestamp,
+        keyframe: payload?.keyframe === true,
+        fetched: false,
+        fetching: false,
+        attempts: 0,
+      });
     }
   }
 
@@ -86,11 +94,13 @@ export class SegmentController implements StallController {
 
   private stallIfNeeded(timeOffset: number, play: boolean): boolean {
     const targetTimestamp = this.timestampFromOffset(timeOffset);
-    if (this.neededSegments(targetTimestamp).length === 0) return false;
+    const needed = this.neededSegments(targetTimestamp);
+    if (needed.length === 0) return false;
     this.stallTarget = { offset: timeOffset, play };
     if (this.replayer.service.state.matches('stalled')) {
-      this.requestNeededSegments();
+      this.requestSegments(needed);
     } else {
+      // synchronously picked up by onStallStart
       this.replayer.service.send({ type: 'STALL' });
     }
     return true;
@@ -100,11 +110,15 @@ export class SegmentController implements StallController {
     if (!this.stallTarget) {
       this.stallTarget = { offset: this.replayer.getCurrentTime(), play: true };
     }
-    for (const info of this.segments.values()) {
-      info.attempts = 0;
+    // refresh fetch limits when we re-enter a stall e.g.
+    // user clicking around timeline after earlier failure
+    for (const seg of this.segments.values()) {
+      seg.attempts = 0;
     }
     this.replayer.emit(StallEvents.BufferingStart);
-    this.requestNeededSegments();
+    const targetTimestamp = this.timestampFromOffset(this.stallTarget.offset);
+    const needed = this.neededSegments(targetTimestamp);
+    this.requestSegments(needed);
   };
 
   private onStallEnd = () => {
@@ -116,31 +130,23 @@ export class SegmentController implements StallController {
     if (!this.replayer.service.state.matches('playing')) return;
     const playhead = this.timestampFromOffset(this.replayer.getCurrentTime());
     const horizon = playhead + this.bufferAheadMs * this.replayer.timer.speed;
-    for (const segmentStart of this.sortedSegmentStarts()) {
-      if (segmentStart > horizon) break;
-      if (segmentStart < playhead) continue;
-      this.fetchSegment(segmentStart);
+    for (const seg of this.segments.values()) {
+      if (playhead <= seg.timestamp && seg.timestamp <= horizon)
+        this.fetchSegment(seg);
     }
   };
 
-  private requestNeededSegments() {
-    if (!this.stallTarget) return;
-    const targetTimestamp = this.timestampFromOffset(this.stallTarget.offset);
-    const needed = this.neededSegments(targetTimestamp);
-    if (needed.length === 0) {
+  private requestSegments(segments: SegmentInfo[]) {
+    if (segments.length === 0) {
       this.resumeFromStall();
       return;
     }
-    const fetchable = needed.filter((segmentStart) =>
-      this.canFetch(segmentStart),
-    );
+    const fetchable = segments.filter(this.canFetch);
     if (fetchable.length === 0 && !this.hasPendingFetches()) {
       this.giveUpStalling();
       return;
     }
-    for (const segmentStart of fetchable) {
-      this.fetchSegment(segmentStart);
-    }
+    fetchable.map(this.fetchSegment);
   }
 
   private giveUpStalling() {
@@ -148,7 +154,7 @@ export class SegmentController implements StallController {
     if (this.stallTarget) {
       const targetTimestamp = this.timestampFromOffset(this.stallTarget.offset);
       this.replayer.emit(ReplayerEvents.StallError, {
-        segmentStarts: this.neededSegments(targetTimestamp),
+        segmentStarts: this.neededSegments(targetTimestamp).map(info => info.timestamp),
       });
     }
     this.replayer.service.send({ type: 'PAUSE' });
@@ -158,8 +164,9 @@ export class SegmentController implements StallController {
     const target = this.stallTarget;
     if (!target) return;
     const targetTimestamp = this.timestampFromOffset(target.offset);
-    if (this.neededSegments(targetTimestamp).length > 0) {
-      this.requestNeededSegments();
+    const needed = this.neededSegments(targetTimestamp);
+    if (needed.length > 0) {
+      this.requestSegments(needed);
       return;
     }
     if (target.play) {
@@ -174,24 +181,24 @@ export class SegmentController implements StallController {
     this.replayer.service.send({ type: 'RESCHEDULE' });
   }
 
-  private fetchSegment(segmentStart: number) {
-    if (!this.canFetch(segmentStart)) return;
+  private fetchSegment = (seg: SegmentInfo) => {
+    if (!this.canFetch(seg)) return;
     if (this.inFlightFetches() >= maxConcurrentFetches) return;
-    const info = this.segments.get(segmentStart)!;
-    info.attempts += 1;
-    info.fetching = true;
-    void this.fetchEvents(segmentStart)
+    seg.attempts += 1;
+    seg.fetching = true;
+    const { fetchTimestamp } = seg;
+    void this.fetchEvents(fetchTimestamp)
       .then(
         (batch) => {
-          info.fetching = false;
-          if (!this.acceptFetchedBatch(segmentStart, batch)) {
+          seg.fetching = false;
+          if (!this.acceptFetchedBatch(seg, batch)) {
             this.warn('[replayer] empty or out-of-range segment response', {
-              segmentStart,
+              fetchTimestamp,
             });
           }
         },
         (error) => {
-          info.fetching = false;
+          seg.fetching = false;
           this.warn('[replayer] fetchEvents failed', error);
         },
       )
@@ -202,74 +209,97 @@ export class SegmentController implements StallController {
           this.extendSchedule();
         }
       });
-  }
+  };
 
   private acceptFetchedBatch(
-    segmentStart: number,
+    seg: SegmentInfo,
     batch: Array<eventWithTime | string>,
   ): boolean {
-    const events = batch.map((raw) =>
+    const newEvents = batch.map((raw) =>
       this.replayer.config.unpackFn
         ? this.replayer.config.unpackFn(raw as string)
         : (raw as eventWithTime),
     );
-    if (events.length === 0) {
+    if (newEvents.length === 0) {
+      // retry later
       return false;
     }
-    let frontier: number | null = null;
-    let frontierEvent: eventWithTime | null = null;
+    seg.fetched = true;
+    const fetchCoverage = {
+      from: seg.timestamp,
+      before: seg.timestamp + 1,
+    };
     const toInject: eventWithTime[] = [];
-    for (const event of events) {
-      if (isSegmentStartMarker(event)) {
-        const cs = markerSegmentStart(event);
-        if (cs > segmentStart && (frontier === null || cs > frontier)) {
-          frontier = cs;
-          frontierEvent = event;
+    newEvents.sort((a, b) => a.timestamp - b.timestamp);
+    let lastIsSegmentMarker = false;
+    for (const newEvent of newEvents) {
+      if (isSegmentStartMarker(newEvent)) {
+        const cs = newEvent.timestamp;
+        if (!lastIsSegmentMarker) {
+          fetchCoverage.before = cs;
         }
-        continue;
+        this.markFetchedInRange(fetchCoverage);
+        fetchCoverage.from = cs;
+        if (this.segments.get(cs)?.fetched) {
+          // marker already present and fetched
+          lastIsSegmentMarker = false;
+          continue;
+        }
+        lastIsSegmentMarker = true;
+      } else {
+        if (lastIsSegmentMarker) {
+          // reject a segment marker followed by events
+          // these are deemed 'fetched' so we don't inject
+          // the stall marker
+          toInject.pop();
+        }
+        lastIsSegmentMarker = false;
+        if (newEvent.timestamp < fetchCoverage.from) {
+          // warning? returned an event before requested time
+          fetchCoverage.from = newEvent.timestamp;
+        } else if (fetchCoverage.before < newEvent.timestamp) {
+          fetchCoverage.before = newEvent.timestamp;
+        }
       }
-      toInject.push(event);
+      toInject.push(newEvent);
     }
-    if (frontierEvent && !this.segments.get(frontier!)?.fetched) {
-      toInject.push(frontierEvent);
-    }
-    toInject.sort((a, b) => a.timestamp - b.timestamp);
-    this.replayer.injectEvents(toInject);
-    const bound =
-      frontier ??
-      this.sortedSegmentStarts().find((cs) => cs > segmentStart) ??
-      Infinity;
-    for (const cs of this.sortedSegmentStarts()) {
-      if (cs >= segmentStart && cs < bound) {
-        this.segments.get(cs)!.fetched = true;
-      }
-    }
+    this.markFetchedInRange(fetchCoverage);
+    this.replayer.injectEvents(toInject); // deduplicates in case of overlapping fetches
     return true;
   }
 
+  private markFetchedInRange(fetchCoverage: { from: number, before: number }) {
+    const { from, before } = fetchCoverage;
+    for (const seg of this.segments.values()) {
+      if (from <= seg.timestamp && seg.timestamp < before) {
+        seg.fetched = true;
+        // we could also remove the marker from replayer.service.state.context.events
+        // if casting the custom event after it's been fetched becomes a problem
+      }
+    }
+  }
 
-  private neededSegments(targetTimestamp: number): number[] {
-    const priors: number[] = [];
-    const keyframeTs: number | null = null;
-    for (const [segmentTs, segmentInfo] of this.segments.values()) {
-      if (segmentTs < targetTimestamp) {
-        if (segmentInfo.keyframe &&
-          (!keyframeTs || keyframeTs < segmentTs) {
-          keyframeTs = segmentTs;
+  private neededSegments(targetTimestamp: number): SegmentInfo[] {
+    const priors: SegmentInfo[] = [];
+    let lastKeyframeTs = 0;
+    for (const seg of this.segments.entries()) {
+      if (seg.timestamp <= targetTimestamp) {
+        if (seg.keyframe &&
+          (!lastKeyframeTs || lastKeyframeTs < seg.timestamp)) {
+          lastKeyframeTs = seg.timestamp;
         }
-        if (!segmentInfo.fetched) {
-          priors.push(segmentTs);
+        if (!seg.fetched) {
+          priors.push(seg);
         }
       }
     }
-    return priors.filter(p => keyframeTs <= p);
+    return priors.filter(p => lastKeyframeTs <= p.timestamp);
   }
 
-  private canFetch(segmentStart: number): boolean {
-    const info = this.segments.get(segmentStart);
-    if (!info || info.fetched || info.fetching) return false;
-    return info.attempts < maxSegmentFetchAttempts;
-  }
+  public canFetch = (seg: SegmentInfo): boolean => {
+    if (seg.fetched || seg.fetching) return false;
+    return seg.attempts < maxSegmentFetchAttempts;
+  };
 
   private inFlightFetches(): number {
     let count = 0;

@@ -477,4 +477,149 @@ describe('buffered-dom replay', function () {
     `);
     expect(result.emitted).toEqual(['buffering-start', 'buffering-end']);
   });
+
+  it('marks a segment fetched when its batch is a single event exactly at the segment start', async () => {
+    const result = await page.evaluate(`
+      (async () => {
+        const { Replayer, ReplayerEvents } = rrweb;
+        const calls = [];
+        const emitted = [];
+        const cast = [];
+        let finished = false;
+        const replayer = new Replayer(oneFrontier, {
+          createStallController: segmentBuffer((cs) => { calls.push(cs); return Promise.resolve([click(cs)]); }),
+        });
+        replayer.on(ReplayerEvents.StallStart, () => emitted.push('start'));
+        replayer.on(ReplayerEvents.StallEnd, () => emitted.push('end'));
+        replayer.on(ReplayerEvents.StallError, () => emitted.push('error'));
+        replayer.on(ReplayerEvents.EventCast, (e) => cast.push(e.timestamp));
+        replayer.on(ReplayerEvents.Finish, () => { finished = true; });
+        replayer.play(100);
+        await new Promise((r) => setTimeout(r, 400));
+        return { calls, emitted, finished, maxCast: Math.max(0, ...cast) };
+      })();
+    `);
+    expect(result.calls).toEqual([T + 100]);
+    expect(result.emitted).toEqual(['start', 'end']);
+    expect(result.finished).toBe(true);
+    expect(result.maxCast).toBe(T + 100);
+  });
+
+  it('swallows a known inner boundary when a batch straddles it', async () => {
+    const result = await page.evaluate(`
+      (async () => {
+        const { Replayer, ReplayerEvents } = rrweb;
+        const calls = [];
+        const cast = [];
+        let finished = false;
+        const replayer = new Replayer(twoFrontiers, {
+          createStallController: segmentBuffer((cs) => {
+            calls.push(cs);
+            return Promise.resolve([click(T + 150), click(T + 250)]);
+          }),
+        });
+        replayer.on(ReplayerEvents.EventCast, (e) => cast.push(e.timestamp));
+        replayer.on(ReplayerEvents.Finish, () => { finished = true; });
+        replayer.play(150);
+        await new Promise((r) => setTimeout(r, 400));
+        return { calls, finished, maxCast: Math.max(0, ...cast) };
+      })();
+    `);
+    expect(result.calls).toEqual([T + 100]);
+    expect(result.finished).toBe(true);
+    expect(result.maxCast).toBe(T + 250);
+  });
+
+  it('does not over-reach: a known marker past the last event stays unfetched', async () => {
+    const result = await page.evaluate(`
+      (async () => {
+        const { Replayer, ReplayerEvents } = rrweb;
+        const calls = [];
+        let finished = false;
+        const replayer = new Replayer(twoFrontiers, {
+          createStallController: segmentBuffer((cs) => {
+            calls.push(cs);
+            if (cs === T + 100) return Promise.resolve([click(T + 150), click(T + 180)]);
+            return Promise.resolve([click(T + 250)]);
+          }),
+        });
+        replayer.on(ReplayerEvents.Finish, () => { finished = true; });
+        replayer.play(150);
+        await new Promise((r) => setTimeout(r, 400));
+        return { calls, finished };
+      })();
+    `);
+    expect(result.calls).toEqual([T + 100, T + 200]);
+    expect(result.finished).toBe(true);
+  });
+
+  it('leaves the gap between two adjacent markers unfetched', async () => {
+    const result = await page.evaluate(`
+      (async () => {
+        const { Replayer } = rrweb;
+        const calls = [];
+        const replayer = new Replayer(oneFrontier, {
+          createStallController: segmentBuffer((cs) => {
+            calls.push(cs);
+            if (cs === T + 100) return Promise.resolve([click(T + 120), segmentStart(T + 200), segmentStart(T + 300)]);
+            return Promise.resolve([click(T + 250)]);
+          }),
+        });
+        replayer.pause(150);
+        await new Promise((r) => setTimeout(r, 200));
+        replayer.pause(250);
+        await new Promise((r) => setTimeout(r, 200));
+        return { calls };
+      })();
+    `);
+    expect(result.calls).toEqual([T + 100, T + 200]);
+  });
+
+  it('keeps a trailing frontier marker as an unfetched stall point', async () => {
+    const result = await page.evaluate(`
+      (async () => {
+        const { Replayer, ReplayerEvents } = rrweb;
+        const calls = [];
+        let finished = false;
+        const replayer = new Replayer(oneFrontier, {
+          createStallController: segmentBuffer((cs) => {
+            calls.push(cs);
+            if (cs === T + 100) return Promise.resolve([click(T + 150), segmentStart(T + 300)]);
+            return Promise.resolve([click(T + 350)]);
+          }),
+        });
+        replayer.on(ReplayerEvents.Finish, () => { finished = true; });
+        replayer.play(150);
+        await new Promise((r) => setTimeout(r, 400));
+        return { calls, finished };
+      })();
+    `);
+    expect(result.calls).toEqual([T + 100, T + 300]);
+    expect(result.finished).toBe(true);
+  });
+
+  it('preserves an unfetched marker that precedes an already-fetched marker (pop-bug regression)', async () => {
+    const result = await page.evaluate(`
+      (async () => {
+        const { Replayer } = rrweb;
+        const calls = [];
+        const events = oneFrontier.concat([segmentStart(T + 200, true)]);
+        const replayer = new Replayer(events, {
+          createStallController: segmentBuffer((cs) => {
+            calls.push(cs);
+            if (cs === T + 200) return Promise.resolve([click(T + 230)]);
+            if (cs === T + 100) return Promise.resolve([click(T + 120), segmentStart(T + 150), segmentStart(T + 200), click(T + 220)]);
+            if (cs === T + 150) return Promise.resolve([click(T + 160)]);
+            return Promise.resolve([]);
+          }),
+        });
+        replayer.pause(250);
+        await new Promise((r) => setTimeout(r, 200));
+        replayer.pause(150);
+        await new Promise((r) => setTimeout(r, 300));
+        return { calls };
+      })();
+    `);
+    expect(result.calls).toEqual([T + 200, T + 100, T + 150]);
+  });
 });
