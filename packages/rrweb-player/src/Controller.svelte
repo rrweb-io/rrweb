@@ -302,11 +302,15 @@
     skipInactive = !skipInactive;
   };
 
-  export const triggerUpdateMeta = () => {
-    return Promise.resolve().then(() => {
+  let updateMetaTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  const updateMeta = () => {
+    if (updateMetaTimeout) return;
+    updateMetaTimeout = setTimeout(() => {
+      updateMetaTimeout = null;
       meta = replayer.getMetaData();
       timeline = updateTimeline(replayer.events, replayer.config.inactivePeriodThreshold);
-    });
+    }, 20); // throttle to protect against rapid calls to addEvent
   };
 
   onMount(() => {
@@ -343,6 +347,7 @@
         onPauseHook = null;
       }
     });
+    replayer.on('events-updated', updateMeta);
 
     if (autoPlay) {
       replayer.play();
@@ -359,6 +364,8 @@
     captionUpdatePending = false;
     replayer.off('annotation', handleAnnotation);
     replayer.off('start', restoreCaptionOnSeek);
+    replayer.off('events-updated', updateMeta);
+    clearTimeout(updateMetaTimeout);
     replayer.pause();
     stopTimer();
   });

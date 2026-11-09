@@ -657,6 +657,7 @@ export class Replayer {
       : (rawEvent as eventWithTime);
     if (this.injectEvent(event) !== -1) {
       this.applyOrSchedule(event);
+      this.emitter.emit(ReplayerEvents.EventsUpdated);
     }
   }
 
@@ -680,11 +681,12 @@ export class Replayer {
       for (const event of events) {
         this.registerEvent(event);
       }
-      return;
+    } else {
+      for (const event of events) {
+        this.injectEvent(event);
+      }
     }
-    for (const event of events) {
-      this.injectEvent(event);
-    }
+    this.emitter.emit(ReplayerEvents.EventsUpdated);
   }
 
   private injectEvent(event: eventWithTime): number {
