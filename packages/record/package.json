@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/record",
-  "version": "2.1.6",
+  "version": "2.2.2",
   "publishConfig": {
     "access": "public"
   },
@@ -56,15 +56,15 @@
   ],
   "devDependencies": {
     "puppeteer": "^20.9.0",
-    "vite": "^6.0.1",
+    "vite": "^8.3.6",
     "vite-plugin-dts": "^3.9.1",
     "vitest": "^1.6.1",
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@rrweb/types": "^2.1.6",
-    "rrweb": "^2.1.6",
-    "@rrweb/utils": "^2.1.6"
+    "@rrweb/types": "^2.2.2",
+    "rrweb": "^2.2.2",
+    "@rrweb/utils": "^2.2.2"
   },
   "browserslist": [
     "supports es6-class"

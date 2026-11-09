@@ -1,5 +1,69 @@
 # @rrweb/record
 
+## 2.2.2
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb@2.2.2
+  - @rrweb/types@2.2.2
+  - @rrweb/utils@2.2.2
+
+## 2.2.1
+
+### Patch Changes
+
+- [#1993](https://github.com/rrweb-io/rrweb/pull/1993) [`f2cfd83`](https://github.com/rrweb-io/rrweb/commit/f2cfd8326756f6e2790d9739c4dd3e853702ef68) Thanks [@andrewfader](https://github.com/andrewfader)! - Don't absolutify fragment-only css urls like `url(#filter)`, which refer to the current document
+
+- [#1673](https://github.com/rrweb-io/rrweb/pull/1673) [`339683f`](https://github.com/rrweb-io/rrweb/commit/339683f34bf2dd5df2e7cc18fe59fb924b65661b) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Don't record play/pause/seek etc. against elements that aren't Media Elements and make the player safe (try/catch) against attempts to do so on old recordings.
+
+- [#1956](https://github.com/rrweb-io/rrweb/pull/1956) [`031ef19`](https://github.com/rrweb-io/rrweb/commit/031ef19a124704eb474066c6c064fdeb67deb90c) Thanks [@sarmah-rup](https://github.com/sarmah-rup)! - Keep `blob:` urls unchanged when absolutifying `url()`s in stylesheets and inline style attributes
+
+- [#1633](https://github.com/rrweb-io/rrweb/pull/1633) [`2bc4f89`](https://github.com/rrweb-io/rrweb/commit/2bc4f89beb7f99a987817703031e3a15c75d0c10) Thanks [@pauldambra](https://github.com/pauldambra)! - AngularJS: Load unpatched versions of browser APIs from the `zone` object when present (Angular monkeypatches them), so we don't need to apply our own monkeypatch avoidance mechanism.
+
+- Updated dependencies [[`339683f`](https://github.com/rrweb-io/rrweb/commit/339683f34bf2dd5df2e7cc18fe59fb924b65661b), [`2bc4f89`](https://github.com/rrweb-io/rrweb/commit/2bc4f89beb7f99a987817703031e3a15c75d0c10)]:
+  - rrweb@2.2.1
+  - @rrweb/utils@2.2.1
+  - @rrweb/types@2.2.1
+
+## 2.2.0
+
+### Minor Changes
+
+- [#1928](https://github.com/rrweb-io/rrweb/pull/1928) [`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80) Thanks [@Juice10](https://github.com/Juice10)! - Add a top-level annotation event with `record.addAnnotation()` and `replayer.on('annotation', handler)`. Annotation data uses `type: 'caption'` or `type: 'timelineMarker'`. Import `annotationData` from `@rrweb/types` to type annotation data. The player can display these annotations as captions and interactive timeline markers.
+
+### Patch Changes
+
+- [#1971](https://github.com/rrweb-io/rrweb/pull/1971) [`235ae85`](https://github.com/rrweb-io/rrweb/commit/235ae85e501bae64db7a46b2a773b8390737822c) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fix record-side memory leaks and duplicate mutation emission:
+
+  - Stopping a recording now releases the root document's mutation buffer and observer — previously the document observer was only disconnected, so each start/stop cycle leaked one buffer — and removes the cross-origin iframe `message` listener.
+  - A same-origin iframe is observed once instead of re-observed on every full snapshot (`checkoutEveryNth`/`checkoutEveryNms`/manual `takeFullSnapshot`), so a single iframe mutation is no longer emitted once per checkout; its observers are also released when the iframe is removed or navigates away.
+  - The untainted-`MutationObserver` helper iframe used on WebKit/Safari is reference-counted, so it is torn down only when the last observer stops and will get rebuilt for a later recording.
+
+- [#1958](https://github.com/rrweb-io/rrweb/pull/1958) [`009b2dd`](https://github.com/rrweb-io/rrweb/commit/009b2dd4971ea575bd481f1f591822d319ab078b) Thanks [@salzahrani-salla](https://github.com/salzahrani-salla)! - fix: disconnect shadow-DOM observers when their host is removed
+
+  Each observed shadow root kept a live `MutationObserver` plus its mutation buffer for the rest of the recording session even if its host was removed, a memory leak problem for component-heavy pages. Fix: release shadow observers and buffers as soon as we observe them as removed/detached from dom with tests added for the still-attached host-moved case, and to ensure they get re-observed on reinsertion.
+
+- [#1958](https://github.com/rrweb-io/rrweb/pull/1958) [`009b2dd`](https://github.com/rrweb-io/rrweb/commit/009b2dd4971ea575bd481f1f591822d319ab078b) Thanks [@salzahrani-salla](https://github.com/salzahrani-salla)! - fix: release removed shadow trees from the mirror
+
+  Removing a shadow host from DOM was leaving references to shadow descendants, so e.g. repeatedly replacing web components mem-leaked their detached trees. Fix by recursing into shadow roots during removal, including nested hosts and releasing strong references from the mirror.
+
+- Updated dependencies [[`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80), [`235ae85`](https://github.com/rrweb-io/rrweb/commit/235ae85e501bae64db7a46b2a773b8390737822c), [`009b2dd`](https://github.com/rrweb-io/rrweb/commit/009b2dd4971ea575bd481f1f591822d319ab078b)]:
+  - rrweb@2.2.0
+  - @rrweb/types@2.2.0
+  - @rrweb/utils@2.2.0
+
+## 2.1.7
+
+### Patch Changes
+
+- [#1948](https://github.com/rrweb-io/rrweb/pull/1948) [`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fix [#1920](https://github.com/rrweb-io/rrweb/issues/1920) - normalization of '0px' in style sheets caused problems with the styled-components library, which built style elements text element by text element. Bug introduced in [#1640](https://github.com/rrweb-io/rrweb/issues/1640)
+
+- Updated dependencies [[`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804), [`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804)]:
+  - rrweb@2.1.7
+  - @rrweb/types@2.1.7
+  - @rrweb/utils@2.1.7
+
 ## 2.1.6
 
 ### Patch Changes

@@ -225,6 +225,11 @@ export class Mirror implements IMirror<Node> {
         this.removeNodeFromMap(childNode as unknown as Node),
       );
     }
+
+    const shadowRoot = dom.shadowRoot(n);
+    if (shadowRoot) {
+      this.removeNodeFromMap(shadowRoot);
+    }
   }
   has(id: number): boolean {
     return this.idNodeMap.has(id);
@@ -414,6 +419,7 @@ const URL_IN_CSS_REF = /url\((?:(')([^']*)'|(")(.*?)"|([^)]*))\)/gm;
 const URL_PROTOCOL_MATCH = /^(?:[a-z+]+:)?\/\//i;
 const URL_WWW_MATCH = /^www\..*/i;
 const DATA_URI = /^(data:)([^,]*),(.*)/i;
+const BLOB_URI = /^blob:/i;
 export function absolutifyURLs(cssText: string | null, href: string): string {
   return (cssText || '').replace(
     URL_IN_CSS_REF,
@@ -433,7 +439,11 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
       if (URL_PROTOCOL_MATCH.test(filePath) || URL_WWW_MATCH.test(filePath)) {
         return `url(${maybeQuote}${filePath}${maybeQuote})`;
       }
-      if (DATA_URI.test(filePath)) {
+      if (DATA_URI.test(filePath) || BLOB_URI.test(filePath)) {
+        return `url(${maybeQuote}${filePath}${maybeQuote})`;
+      }
+      if (filePath[0] === '#') {
+        // fragment-only urls refer to the current document, not the stylesheet
         return `url(${maybeQuote}${filePath}${maybeQuote})`;
       }
       if (filePath[0] === '/') {
@@ -460,6 +470,10 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
   );
 }
 
+const cssNormalizeBase = '(?:/\\*[^*]*\\*/)|[\\s;]'; // whitespace
+const cssNormalizeRe = new RegExp(`${cssNormalizeBase}|\\b(0)px?`, 'g');
+const cssNormalizeReNoPx = new RegExp(cssNormalizeBase, 'g');
+
 /**
  * Intention is to normalize by remove spaces, semicolons and CSS comments
  * so that we can compare css as authored vs. output of stringifyStylesheet
@@ -472,11 +486,9 @@ export function normalizeCssString(
    */
   _testNoPxNorm = false,
 ): string {
-  if (_testNoPxNorm) {
-    return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '');
-  } else {
-    return cssText.replace(/(\/\*[^*]*\*\/)|[\s;]/g, '').replace(/0px/g, '0');
-  }
+  return _testNoPxNorm
+    ? cssText.replace(cssNormalizeReNoPx, '')
+    : cssText.replace(cssNormalizeRe, '$1');
 }
 
 /**

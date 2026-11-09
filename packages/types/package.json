@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/types",
-  "version": "2.1.6",
+  "version": "2.2.2",
   "publishConfig": {
     "access": "public"
   },
@@ -52,7 +52,7 @@
     "package.json"
   ],
   "devDependencies": {
-    "vite": "^6.0.1",
+    "vite": "^8.3.6",
     "vite-plugin-dts": "^3.9.1"
   },
   "browserslist": [

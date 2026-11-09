@@ -1,5 +1,47 @@
 # @rrweb/replay
 
+## 2.2.2
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb@2.2.2
+  - @rrweb/types@2.2.2
+
+## 2.2.1
+
+### Patch Changes
+
+- [#1998](https://github.com/rrweb-io/rrweb/pull/1998) [`b706a91`](https://github.com/rrweb-io/rrweb/commit/b706a91fa52966e4cd43a8f2469a35d752da6e24) Thanks [@roggernaut](https://github.com/roggernaut)! - Bump bundled postcss to 8.5.32 (CVE-2026-41305)
+
+- [#1673](https://github.com/rrweb-io/rrweb/pull/1673) [`339683f`](https://github.com/rrweb-io/rrweb/commit/339683f34bf2dd5df2e7cc18fe59fb924b65661b) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Don't record play/pause/seek etc. against elements that aren't Media Elements and make the player safe (try/catch) against attempts to do so on old recordings.
+
+- Updated dependencies [[`339683f`](https://github.com/rrweb-io/rrweb/commit/339683f34bf2dd5df2e7cc18fe59fb924b65661b)]:
+  - rrweb@2.2.1
+  - @rrweb/types@2.2.1
+
+## 2.2.0
+
+### Minor Changes
+
+- [#1928](https://github.com/rrweb-io/rrweb/pull/1928) [`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80) Thanks [@Juice10](https://github.com/Juice10)! - Add a top-level annotation event with `record.addAnnotation()` and `replayer.on('annotation', handler)`. Annotation data uses `type: 'caption'` or `type: 'timelineMarker'`. Import `annotationData` from `@rrweb/types` to type annotation data. The player can display these annotations as captions and interactive timeline markers.
+
+### Patch Changes
+
+- Updated dependencies [[`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80), [`235ae85`](https://github.com/rrweb-io/rrweb/commit/235ae85e501bae64db7a46b2a773b8390737822c), [`009b2dd`](https://github.com/rrweb-io/rrweb/commit/009b2dd4971ea575bd481f1f591822d319ab078b)]:
+  - rrweb@2.2.0
+  - @rrweb/types@2.2.0
+
+## 2.1.7
+
+### Patch Changes
+
+- [#1948](https://github.com/rrweb-io/rrweb/pull/1948) [`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fix replay side of [#1920](https://github.com/rrweb-io/rrweb/issues/1920). Fixes recordings with bad css text split data produced since [#1640](https://github.com/rrweb-io/rrweb/issues/1640)
+
+- Updated dependencies [[`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804), [`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804)]:
+  - rrweb@2.1.7
+  - @rrweb/types@2.1.7
+
 ## 2.1.6
 
 ### Patch Changes

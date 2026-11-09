@@ -1,5 +1,29 @@
 # rrweb-snapshot
 
+## 2.2.2
+
+## 2.2.1
+
+### Patch Changes
+
+- [#1998](https://github.com/rrweb-io/rrweb/pull/1998) [`b706a91`](https://github.com/rrweb-io/rrweb/commit/b706a91fa52966e4cd43a8f2469a35d752da6e24) Thanks [@roggernaut](https://github.com/roggernaut)! - Bump bundled postcss to 8.5.32 (CVE-2026-41305)
+
+- [#1993](https://github.com/rrweb-io/rrweb/pull/1993) [`f2cfd83`](https://github.com/rrweb-io/rrweb/commit/f2cfd8326756f6e2790d9739c4dd3e853702ef68) Thanks [@andrewfader](https://github.com/andrewfader)! - Don't absolutify fragment-only css urls like `url(#filter)`, which refer to the current document
+
+- [#1956](https://github.com/rrweb-io/rrweb/pull/1956) [`031ef19`](https://github.com/rrweb-io/rrweb/commit/031ef19a124704eb474066c6c064fdeb67deb90c) Thanks [@sarmah-rup](https://github.com/sarmah-rup)! - Keep `blob:` urls unchanged when absolutifying `url()`s in stylesheets and inline style attributes
+
+- [#1964](https://github.com/rrweb-io/rrweb/pull/1964) [`7cdbadf`](https://github.com/rrweb-io/rrweb/commit/7cdbadf927a33987235a80295782091522024a9b) Thanks [@arivyiii](https://github.com/arivyiii)! - fix: do not record the document of an iframe that is blocked via blockClass/blockSelector
+
+## 2.2.0
+
+### Patch Changes
+
+- [#1958](https://github.com/rrweb-io/rrweb/pull/1958) [`009b2dd`](https://github.com/rrweb-io/rrweb/commit/009b2dd4971ea575bd481f1f591822d319ab078b) Thanks [@salzahrani-salla](https://github.com/salzahrani-salla)! - fix: release removed shadow trees from the mirror
+
+  Removing a shadow host from DOM was leaving references to shadow descendants, so e.g. repeatedly replacing web components mem-leaked their detached trees. Fix by recursing into shadow roots during removal, including nested hosts and releasing strong references from the mirror.
+
+## 2.1.7
+
 ## 2.1.6
 
 ## 2.1.5

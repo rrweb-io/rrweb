@@ -1,5 +1,53 @@
 # @rrweb/browser-client
 
+## 2.2.2
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb@2.2.2
+  - @rrweb/record@2.2.2
+  - @rrweb/types@2.2.2
+  - @rrweb/utils@2.2.2
+
+## 2.2.1
+
+### Patch Changes
+
+- Updated dependencies [[`f2cfd83`](https://github.com/rrweb-io/rrweb/commit/f2cfd8326756f6e2790d9739c4dd3e853702ef68), [`339683f`](https://github.com/rrweb-io/rrweb/commit/339683f34bf2dd5df2e7cc18fe59fb924b65661b), [`031ef19`](https://github.com/rrweb-io/rrweb/commit/031ef19a124704eb474066c6c064fdeb67deb90c), [`2bc4f89`](https://github.com/rrweb-io/rrweb/commit/2bc4f89beb7f99a987817703031e3a15c75d0c10)]:
+  - @rrweb/record@2.2.1
+  - rrweb@2.2.1
+  - @rrweb/utils@2.2.1
+  - @rrweb/types@2.2.1
+
+## 2.2.0
+
+### Minor Changes
+
+- [#1928](https://github.com/rrweb-io/rrweb/pull/1928) [`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80) Thanks [@Juice10](https://github.com/Juice10)! - Expose `addAnnotation()` through named and default exports. Calls record annotations immediately during an active session or queue them with their call-time timestamp until the recorder is ready, including calls immediately after `start()` while the document is still loading.
+
+### Patch Changes
+
+- [#1928](https://github.com/rrweb-io/rrweb/pull/1928) [`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80) Thanks [@Juice10](https://github.com/Juice10)! - Deliver queued custom events and annotations through the configured `emit` callback when the recorder is ready, preserving their original call-time timestamps. Previously, queued events bypassed the callback and were sent only to the server.
+
+  Queue custom events added while the document is still loading instead of calling the recorder before it is ready and throwing an error.
+
+- Updated dependencies [[`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80), [`235ae85`](https://github.com/rrweb-io/rrweb/commit/235ae85e501bae64db7a46b2a773b8390737822c), [`009b2dd`](https://github.com/rrweb-io/rrweb/commit/009b2dd4971ea575bd481f1f591822d319ab078b), [`009b2dd`](https://github.com/rrweb-io/rrweb/commit/009b2dd4971ea575bd481f1f591822d319ab078b)]:
+  - rrweb@2.2.0
+  - @rrweb/types@2.2.0
+  - @rrweb/record@2.2.0
+  - @rrweb/utils@2.2.0
+
+## 2.1.7
+
+### Patch Changes
+
+- Updated dependencies [[`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804), [`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804)]:
+  - rrweb@2.1.7
+  - @rrweb/record@2.1.7
+  - @rrweb/types@2.1.7
+  - @rrweb/utils@2.1.7
+
 ## 2.1.6
 
 ### Patch Changes

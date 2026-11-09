@@ -1,5 +1,37 @@
 # @rrweb/packer
 
+## 2.2.2
+
+### Patch Changes
+
+- [#2009](https://github.com/rrweb-io/rrweb/pull/2009) [`756765f`](https://github.com/rrweb-io/rrweb/commit/756765f898c654696d25781c3d588f24177cfbc7) Thanks [@Juice10](https://github.com/Juice10)! - Restore UMD output for mapless JavaScript entrypoints, including the combined packer entry emitted by Vite 8. Bundle dependencies into each UMD entry so packer, pack, and unpack can run independently in browsers. Internal shared chunks no longer receive UMD wrappers.
+
+- Updated dependencies []:
+  - @rrweb/types@2.2.2
+
+## 2.2.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @rrweb/types@2.2.1
+
+## 2.2.0
+
+### Patch Changes
+
+- [#1960](https://github.com/rrweb-io/rrweb/pull/1960) [`0d6fc66`](https://github.com/rrweb-io/rrweb/commit/0d6fc6685a0e99eb0cc7fd310e1d7e8164c74568) Thanks [@Juice10](https://github.com/Juice10)! - Update fflate from 0.4.8 to 0.4.9 and require at least 0.4.9 for event packing and unpacking.
+
+- Updated dependencies [[`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80)]:
+  - @rrweb/types@2.2.0
+
+## 2.1.7
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @rrweb/types@2.1.7
+
 ## 2.1.6
 
 ### Patch Changes
