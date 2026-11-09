@@ -23,17 +23,17 @@ export function on(
 ): listenerHandler {
   const options = { capture: true, passive: true };
   const eventTarget = target as unknown as EventTarget;
-  getUntaintedMethod(
-    'EventTarget',
-    eventTarget,
-    'addEventListener',
-  )(type, fn, options);
+  getUntaintedMethod('EventTarget', eventTarget, 'addEventListener')(
+    type,
+    fn,
+    options,
+  );
   return () =>
-    getUntaintedMethod(
-      'EventTarget',
-      eventTarget,
-      'removeEventListener',
-    )(type, fn, options);
+    getUntaintedMethod('EventTarget', eventTarget, 'removeEventListener')(
+      type,
+      fn,
+      options,
+    );
 }
 
 // https://github.com/rrweb-io/rrweb/pull/407

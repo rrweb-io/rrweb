@@ -1,4 +1,9 @@
-type PrototypeOwner = Node | ShadowRoot | MutationObserver | Element | EventTarget;
+type PrototypeOwner =
+  | Node
+  | ShadowRoot
+  | MutationObserver
+  | Element
+  | EventTarget;
 type TypeofPrototypeOwner =
   | typeof Node
   | typeof ShadowRoot
