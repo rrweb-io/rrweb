@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Keydown record</title>
+    <script src="./index.ts" type="module"></script>
+  </head>
+  <body>
+    <input id="text" type="text" />
+    <input id="password" type="password" />
+    <input id="masked" type="email" />
+    <input id="ignored" type="text" class="rr-ignore" />
+    <div class="rr-block"><input id="blocked" type="text" /></div>
+    <div id="zone" class="private-zone"><input id="zoned" type="text" /></div>
+    <div id="host"></div>
+    <iframe srcdoc="<input type='password' />"></iframe>
+  </body>
+</html>

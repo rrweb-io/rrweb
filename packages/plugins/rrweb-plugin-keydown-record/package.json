@@ -1,0 +1,66 @@
+{
+  "name": "@rrweb/rrweb-plugin-keydown-record",
+  "version": "2.2.1",
+  "description": "rrweb record plugin that captures keydown events for non-printable keys and keyboard shortcuts",
+  "type": "module",
+  "main": "./dist/rrweb-plugin-keydown-record.umd.cjs",
+  "module": "./dist/rrweb-plugin-keydown-record.js",
+  "unpkg": "./dist/rrweb-plugin-keydown-record.umd.cjs",
+  "jsdelivr": "./umd/rrweb-plugin-keydown-record.js",
+  "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/rrweb-plugin-keydown-record.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/rrweb-plugin-keydown-record.umd.cjs"
+      }
+    }
+  },
+  "files": [
+    "umd",
+    "dist",
+    "package.json"
+  ],
+  "scripts": {
+    "dev": "vite build --watch",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "build": "yarn turbo run prepublish",
+    "check-types": "tsc -noEmit",
+    "prepublish": "tsc -noEmit && vite build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rrweb-io/rrweb.git",
+    "directory": "packages/plugins/rrweb-plugin-keydown-record"
+  },
+  "keywords": [
+    "keyboard",
+    "keydown",
+    "e2e",
+    "rrweb"
+  ],
+  "author": "rrweb Core Team <maintainers@rrweb.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rrweb-io/rrweb/issues"
+  },
+  "homepage": "https://github.com/rrweb-io/rrweb#readme",
+  "devDependencies": {
+    "@rrweb/types": "^2.2.1",
+    "rrweb": "^2.2.1",
+    "puppeteer": "^20.9.0",
+    "typescript": "^5.4.5",
+    "vite": "^8.3.6",
+    "vite-plugin-dts": "^3.9.1",
+    "vitest": "^1.6.1"
+  },
+  "peerDependencies": {
+    "@rrweb/types": "^2.2.1",
+    "rrweb": "^2.2.1"
+  }
+}
