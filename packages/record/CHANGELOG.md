@@ -1,5 +1,14 @@
 # @rrweb/record
 
+## 2.2.2
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb@2.2.2
+  - @rrweb/types@2.2.2
+  - @rrweb/utils@2.2.2
+
 ## 2.2.1
 
 ### Patch Changes
