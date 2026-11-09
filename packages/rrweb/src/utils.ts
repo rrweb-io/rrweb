@@ -23,17 +23,28 @@ export function on(
 ): listenerHandler {
   const options = { capture: true, passive: true };
   const eventTarget = target as unknown as EventTarget;
-  getUntaintedMethod('EventTarget', eventTarget, 'addEventListener')(
-    type,
-    fn,
-    options,
-  );
-  return () =>
-    getUntaintedMethod('EventTarget', eventTarget, 'removeEventListener')(
+  // jsdom's window is not a valid receiver for EventTarget.prototype methods,
+  // so fall back to the target's own methods if the untainted call throws
+  try {
+    getUntaintedMethod('EventTarget', eventTarget, 'addEventListener')(
       type,
       fn,
       options,
     );
+  } catch {
+    target.addEventListener(type, fn, options);
+  }
+  return () => {
+    try {
+      getUntaintedMethod('EventTarget', eventTarget, 'removeEventListener')(
+        type,
+        fn,
+        options,
+      );
+    } catch {
+      target.removeEventListener(type, fn, options);
+    }
+  };
 }
 
 // https://github.com/rrweb-io/rrweb/pull/407
