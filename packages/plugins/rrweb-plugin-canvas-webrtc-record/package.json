@@ -54,7 +54,7 @@
     "rrweb": "^2.2.2",
     "typescript": "^5.4.5",
     "vite": "^8.3.6",
-    "vitest": "^1.4.0",
+    "vitest": "^5.1.0",
     "vite-plugin-dts": "^3.9.1"
   },
   "peerDependencies": {
