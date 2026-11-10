@@ -4,7 +4,7 @@ import {
   type MaskInputOptions,
   createMirror,
 } from 'rrweb-snapshot';
-import { initObservers, mutationBuffers } from './observer';
+import { initObservers, mutationBuffers, ongoingMove } from './observer';
 import {
   on,
   getWindowWidth,
@@ -47,6 +47,7 @@ let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
 let takeFullSnapshot!: (isCheckout?: boolean) => void;
 let canvasManager!: CanvasManager;
 let recording = false;
+let frozen = false;
 
 // Multiple tools (i.e. MooTools, Prototype.js) override Array.from and drop support for the 2nd parameter
 // Try to pull a clean implementation from a newly created iframe
@@ -183,10 +184,13 @@ function record<T = eventWithTime>(
     }
     return e as unknown as T;
   };
-  wrappedEmit = (r: eventWithoutTime, isCheckout?: boolean) => {
+  wrappedEmit = (r: eventWithoutTime | eventWithTime, isCheckout?: boolean) => {
     const e = r as eventWithTime;
-    e.timestamp = nowTimestamp();
+    if (!('timestamp' in e) || e.timestamp === undefined) {
+      e.timestamp = nowTimestamp();
+    }
     if (
+      frozen &&
       e.type !== EventType.FullSnapshot &&
       !(
         e.type === EventType.IncrementalSnapshot &&
@@ -197,12 +201,15 @@ function record<T = eventWithTime>(
       // to apply all DOM changes that have been buffering during paused state
       canvasManager.unfreeze();
       for (const buf of mutationBuffers) {
-        if (buf.isFrozen()) {
-          buf.unfreeze();
-        } else {
-          break; // just need to check one as they all get frozen together
-        }
+        buf.unfreeze(e.timestamp);
       }
+      frozen = false;
+    }
+    if (ongoingMove) {
+      // emit any ongoing (but throttled) mouse or touch move;
+      // emitting now creates more events, but ensures events are emitted in
+      // sequence without any overlap from the negative Move timeOffset
+      ongoingMove(e.timestamp);
     }
 
     if (inEmittingFrame) {
@@ -241,15 +248,20 @@ function record<T = eventWithTime>(
     }
   };
 
-  const wrappedMutationEmit = (m: mutationCallbackParam) => {
+  const wrappedMutationEmit = (
+    m: mutationCallbackParam,
+    timestamp?: number,
+  ) => {
     wrappedEmit({
       type: EventType.IncrementalSnapshot,
       data: {
         source: IncrementalSource.Mutation,
         ...m,
       },
+      ...(timestamp === undefined ? {} : { timestamp }),
     });
   };
+
   const wrappedScrollEmit: scrollCallback = (p) =>
     wrappedEmit({
       type: EventType.IncrementalSnapshot,
@@ -432,14 +444,15 @@ function record<T = eventWithTime>(
       return callbackWrapper(initObservers)(
         {
           mutationCb: wrappedMutationEmit,
-          mousemoveCb: (positions, source) =>
+          mousemoveCb: (positions, source, timestamp) =>
             wrappedEmit({
               type: EventType.IncrementalSnapshot,
               data: {
                 source,
                 positions,
               },
-            }),
+              timestamp,
+            } as eventWithTime),
           mouseInteractionCb: (d) =>
             wrappedEmit({
               type: EventType.IncrementalSnapshot,
@@ -671,8 +684,10 @@ record.addAnnotation = (annotation: annotationData) => {
 };
 
 record.freezePage = () => {
+  if (ongoingMove) ongoingMove(nowTimestamp(), true);
   canvasManager.freeze();
   mutationBuffers.forEach((buf) => buf.freeze());
+  frozen = true;
 };
 
 record.takeFullSnapshot = (isCheckout?: boolean) => {
