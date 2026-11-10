@@ -63,7 +63,9 @@ export function createTimelineIndex() {
           });
         }
       } else if (event.type === EventType.Custom) {
-        state.markers.push({ timestamp: event.timestamp, tag: event.data.tag });
+        if (!event.data.omitFromTimeline) {
+          state.markers.push({ timestamp: event.timestamp, tag: event.data.tag });
+        }
       }
       if (isUserInteraction(event)) {
         if (event.timestamp - lastActiveTime > inactiveThreshold) {

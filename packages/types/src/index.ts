@@ -60,6 +60,7 @@ export type customEvent<T = unknown> = {
   data: {
     tag: string;
     payload: T;
+    omitFromTimeline?: boolean;
   };
 };
 
