@@ -173,6 +173,32 @@ describe('diff algorithm for rrdom', () => {
       applyScrollFn.mockRestore();
     });
 
+    it('should not re-apply document scroll data after destroyTree', () => {
+      document.close();
+      document.open();
+      const rrNode = new RRDocument();
+      rrNode.write('<!DOCTYPE html>');
+      rrNode.scrollData = {
+        source: IncrementalSource.Scroll,
+        id: 0,
+        x: 0,
+        y: 100,
+      };
+      const applyScrollFn = vi.spyOn(replayer, 'applyScroll');
+
+      diff(document, rrNode, replayer);
+      expect(applyScrollFn).toHaveBeenCalledTimes(1);
+
+      rrNode.destroyTree();
+      expect(rrNode.scrollData).toBeNull();
+
+      applyScrollFn.mockClear();
+      diff(document, rrNode, replayer);
+      expect(applyScrollFn).not.toHaveBeenCalled();
+
+      applyScrollFn.mockRestore();
+    });
+
     it('should apply input data on an input element', () => {
       const element = document.createElement('input');
       const rrDocument = new RRDocument();
