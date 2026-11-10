@@ -64,7 +64,10 @@ export function createTimelineIndex() {
         }
       } else if (event.type === EventType.Custom) {
         if (!event.data.omitFromTimeline) {
-          state.markers.push({ timestamp: event.timestamp, tag: event.data.tag });
+          state.markers.push({
+            timestamp: event.timestamp,
+            tag: event.data.tag,
+          });
         }
       }
       if (isUserInteraction(event)) {
