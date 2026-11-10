@@ -63,6 +63,20 @@ try {
 }
 
 const mirror = createMirror();
+
+function normalizeTargetOrigin(value: string): string {
+  if (value === '*') return value;
+  for (const candidate of [value, `https://${value}`]) {
+    try {
+      const parsedOrigin = new URL(candidate).origin;
+      if (parsedOrigin !== 'null') return parsedOrigin;
+    } catch (e) {
+      continue;
+    }
+  }
+  return value;
+}
+
 function record<T = eventWithTime>(
   options: recordOptions<T> = {},
 ): listenerHandler | undefined {
@@ -100,7 +114,7 @@ function record<T = eventWithTime>(
     keepIframeSrcFn = () => false,
     ignoreCSSAttributes = new Set([]),
     errorHandler,
-    emitToOrigin,
+    emitToOrigin: rawEmitToOrigin,
   } = options;
 
   registerErrorHandler(errorHandler);
@@ -109,22 +123,22 @@ function record<T = eventWithTime>(
     options.collectFromOrigins ??
     (recordCrossOriginIframes ? ['*'] : undefined);
 
+  const emitToOrigin =
+    rawEmitToOrigin === undefined
+      ? undefined
+      : normalizeTargetOrigin(rawEmitToOrigin);
+
   const isTopFrame = window.parent === window;
 
-  if (emitToOrigin !== undefined && isTopFrame) {
-    let emitsToOwnOrigin = false;
-    try {
-      emitsToOwnOrigin =
-        new URL(emitToOrigin).origin === window.location.origin;
-    } catch (e) {
-      emitsToOwnOrigin = false;
-    }
-    if (!emitsToOwnOrigin) {
-      console.warn(
-        `\`emitToOrigin: ${emitToOrigin}\` ignored on top frame:`,
-        window,
-      );
-    }
+  if (
+    emitToOrigin !== undefined &&
+    isTopFrame &&
+    emitToOrigin !== window.location.origin
+  ) {
+    console.warn(
+      `\`emitToOrigin: ${emitToOrigin}\` ignored on top frame:`,
+      window,
+    );
   }
 
   let inEmittingFrame: boolean;

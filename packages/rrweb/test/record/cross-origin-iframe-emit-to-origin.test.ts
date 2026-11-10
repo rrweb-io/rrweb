@@ -69,6 +69,11 @@ describe('emitToOrigin', () => {
       description: 'allows a matching parent origin',
     },
     {
+      origin: 'matching-with-path',
+      delivered: true,
+      description: 'normalizes a value that includes a path to its origin',
+    },
+    {
       origin: 'https://untrusted.example',
       delivered: false,
       description: 'blocks a different parent origin',
@@ -86,7 +91,11 @@ describe('emitToOrigin', () => {
         stop?.();
         window.parent.postMessage('test-complete', '*');
       },
-      origin === 'matching' ? getServerURL(parentServer) : origin,
+      origin === 'matching'
+        ? getServerURL(parentServer)
+        : origin === 'matching-with-path'
+        ? `${getServerURL(parentServer)}/some/path`
+        : origin,
     );
     await page.waitForFunction(
       () => document.querySelector('#completed')?.textContent,
