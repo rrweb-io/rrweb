@@ -5,21 +5,44 @@ iframe. To record those contents, run rrweb in both pages: the child recorder
 forwards its events to the parent recorder via `postMessage`, and the parent
 stitches them into a single recording.
 
-Two options control this, one on each side:
+Two options control where these events flow, one on each side:
 
-- `collectFromOrigins` — set on the **parent** recorder. A list of child origins
-  it accepts and trusts events from. Events from any other origin are dropped.
+- `collectFromOrigins` — set on the **parent** recorder. The child origins it
+  accepts and trusts forwarded events from. Events from any other embedded
+  iframe are dropped.
 - `emitToOrigin` — set on the **cross-origin child** recorder. The origin of its
-  parent, used so the browser only delivers its events to that parent.
+  parent, used as the `postMessage` target so the browser only delivers its
+  events to that parent.
 
-> **Security warning:** Cross-origin iframe recording is not recommended unless
-> you [strictly restrict](https://stackoverflow.com/a/21629575) which sites can
-> embed your page and trust those sites with its recorded contents. The
-> browser's cross-origin restrictions protect sensitive information. Accepting
-> events with `collectFromOrigins: ['*']`, or forwarding them with
-> `emitToOrigin: '*'`, removes that protection — a malicious page can then
-> embed your page and collect its recorded contents, or inject fabricated
-> events into your recording. Name specific origins on both sides.
+## Security
+
+Recording a cross-origin iframe carries its contents across an origin boundary,
+so two independent questions decide who can see or tamper with them. The two
+options above are not the whole story — the first question is about embedding.
+
+**Who is allowed to embed your page?** A child can only ever forward its events
+to the page that actually embeds it. So the strongest control is to stop sites
+you don't trust from embedding your page at all, with `X-Frame-Options` or a
+[`Content-Security-Policy: frame-ancestors`](https://stackoverflow.com/a/21629575)
+header. Once embedding is limited to origins you control, every parent is one of
+yours.
+
+**`emitToOrigin` — where the child forwards.** This is the `postMessage` target
+origin, so a specific value means the browser delivers events only to a matching
+parent; even if an untrusted site embeds your page, it receives nothing.
+`emitToOrigin: '*'` removes that check and forwards to whoever embeds you — which
+is fine if you have already restricted embedding (above), and a leak if you have
+not. Setting both is simply defence in depth.
+
+**`collectFromOrigins` — what the parent accepts.** `collectFromOrigins: ['*']`
+accepts forwarded events from any iframe on the page, so a compromised or
+untrusted embed (an ad, a third-party widget) could inject fabricated events
+into your recording. Listing the child origins you actually trust prevents this.
+Embedding controls do not help here — these are iframes you chose to embed.
+
+In short: either pin `emitToOrigin` to the parent or restrict who can embed your
+page (ideally both), and list real origins in `collectFromOrigins` rather than
+`'*'`.
 
 ## How to record cross origin iframes
 
