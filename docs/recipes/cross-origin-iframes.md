@@ -16,33 +16,31 @@ Two options control where these events flow, one on each side:
 
 ## Security
 
-Recording a cross-origin iframe carries its contents across an origin boundary,
-so two independent questions decide who can see or tamper with them. The two
-options above are not the whole story — the first question is about embedding.
+Recording a cross-origin iframe moves its contents across an origin boundary, so
+two separate questions decide who can read or tamper with them. The two options
+above only answer the second. The first is about embedding, and it matters more.
 
-**Who is allowed to embed your page?** A child can only ever forward its events
-to the page that actually embeds it. So the strongest control is to stop sites
-you don't trust from embedding your page at all, with `X-Frame-Options` or a
+**Who can embed your page?** A child only ever forwards to the page that embeds
+it. So the strongest control is to stop sites you don't trust from embedding you
+at all, with `X-Frame-Options` or a
 [`Content-Security-Policy: frame-ancestors`](https://stackoverflow.com/a/21629575)
 header. Once embedding is limited to origins you control, every parent is one of
-yours.
+yours, and the two options below matter much less.
 
-**`emitToOrigin` — where the child forwards.** This is the `postMessage` target
-origin, so a specific value means the browser delivers events only to a matching
-parent; even if an untrusted site embeds your page, it receives nothing.
-`emitToOrigin: '*'` removes that check and forwards to whoever embeds you — which
-is fine if you have already restricted embedding (above), and a leak if you have
-not. Setting both is simply defence in depth.
+`emitToOrigin` is the `postMessage` target origin on the child. A specific value
+tells the browser to deliver only to a matching parent, so an untrusted site that
+embeds your page receives nothing. `emitToOrigin: '*'` drops that check and
+forwards to whoever embeds you. That is fine if you have already restricted
+embedding, and a leak if you have not. Doing both is defence in depth.
 
-**`collectFromOrigins` — what the parent accepts.** `collectFromOrigins: ['*']`
-accepts forwarded events from any iframe on the page, so a compromised or
-untrusted embed (an ad, a third-party widget) could inject fabricated events
-into your recording. Listing the child origins you actually trust prevents this.
-Embedding controls do not help here — these are iframes you chose to embed.
+`collectFromOrigins` is the opposite direction, on the parent. `['*']` accepts
+forwarded events from any iframe on the page, so a compromised ad or third-party
+widget could inject fabricated events into your recording. Here, naming the child
+origins you trust is the only defence. Embedding headers don't help, because
+these are iframes you chose to embed yourself.
 
-In short: either pin `emitToOrigin` to the parent or restrict who can embed your
-page (ideally both), and list real origins in `collectFromOrigins` rather than
-`'*'`.
+So pin `emitToOrigin` to the parent, or lock down who can embed you, ideally
+both. And list real origins in `collectFromOrigins` rather than `'*'`.
 
 ## How to record cross origin iframes
 
