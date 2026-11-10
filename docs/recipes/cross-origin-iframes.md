@@ -7,11 +7,11 @@ stitches them into a single recording.
 
 Two options control where these events flow, one on each side:
 
-- `collectFromOrigins` — set on the **parent** recorder. The child origins it
-  accepts and trusts forwarded events from. Events from any other embedded
+- `collectFromOrigins` goes on the **parent** recorder. It's the child origins
+  it accepts and trusts forwarded events from; events from any other embedded
   iframe are dropped.
-- `emitToOrigin` — set on the **cross-origin child** recorder. The origin of its
-  parent, used as the `postMessage` target so the browser only delivers its
+- `emitToOrigin` goes on the **cross-origin child** recorder. It's the origin of
+  its parent, used as the `postMessage` target so the browser only delivers its
   events to that parent.
 
 ## Security
@@ -76,7 +76,7 @@ callback, so the child does not need an `emit` callback.
 `collectFromOrigins` is a list of origins. The parent recorder accepts events
 only from child iframes on those origins; events from any other embedded iframe
 (an ad frame, an untrusted widget) are dropped before they enter the recording.
-Setting it is also what turns the parent into a collector — without it the
+Setting it is also what turns the parent into a collector. Without it, the
 parent ignores forwarded events.
 
 Each entry is a full origin: scheme, hostname, and port if non-default, such as
@@ -91,13 +91,13 @@ does not, the parent receives nothing from that iframe. Setting it is also what
 switches the child from emitting locally to forwarding upward.
 
 Use the same origin format as above. On the **top-level** recorder (a window
-with no parent) `emitToOrigin` is ignored: that recorder emits locally through
-its own `emit` callback. rrweb logs a console warning in that case, unless the
-value matches the top page's own origin (the expected blanket-config case
-below). A same-origin child also ignores it — its parent records it directly
-through the DOM. Because of this, you can safely apply the same `emitToOrigin`
-value to every recorder instance: the top page emits, cross-origin children
-forward, and same-origin children stay quiet.
+with no parent) `emitToOrigin` is ignored, and the recorder emits locally
+through its own `emit` callback. rrweb logs a console warning in that case,
+unless the value matches the top page's own origin, which is the expected
+blanket-config case below. A same-origin child also ignores it, because its
+parent records it directly through the DOM. So you can safely apply the same
+`emitToOrigin` value to every recorder instance: the top page emits, cross-origin
+children forward, and same-origin children stay quiet.
 
 ## Nested cross-origin iframes
 
@@ -108,16 +108,16 @@ Configure each frame with its immediate neighbours, not the top-level page.
 For `A (https://top.example) › B (https://mid.example) › C (https://deep.example)`:
 
 ```js
-// A — top collector
+// A, top collector
 record({ emit(event) {}, collectFromOrigins: ['https://mid.example'] });
 
-// B — middle: collects from C and forwards to A
+// B, middle: collects from C and forwards to A
 record({
   collectFromOrigins: ['https://deep.example'],
   emitToOrigin: 'https://top.example',
 });
 
-// C — deepest: forwards to B
+// C, deepest: forwards to B
 record({ emitToOrigin: 'https://mid.example' });
 ```
 
