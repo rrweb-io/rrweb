@@ -2300,14 +2300,14 @@ export class Replayer {
     this.debug(`Node with id '${id}' not found. `, d);
   }
 
-  private warn(...args: Parameters<typeof console.warn>) {
+  private warn(...args: unknown[]) {
     if (!this.config.showWarning) {
       return;
     }
     this.config.logger.warn(REPLAY_CONSOLE_PREFIX, ...args);
   }
 
-  private debug(...args: Parameters<typeof console.log>) {
+  private debug(...args: unknown[]) {
     if (!this.config.showDebug) {
       return;
     }
