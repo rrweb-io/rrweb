@@ -2,7 +2,17 @@ name: ESLint Check
 
 on:
   push:
+    paths-ignore:
+      - '**/*.md'
+      - '.changeset/**'
   pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - '.changeset/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   eslint_check_upload:

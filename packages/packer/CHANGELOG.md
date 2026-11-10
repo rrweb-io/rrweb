@@ -1,5 +1,21 @@
 # @rrweb/packer
 
+## 2.2.2
+
+### Patch Changes
+
+- [#2009](https://github.com/rrweb-io/rrweb/pull/2009) [`756765f`](https://github.com/rrweb-io/rrweb/commit/756765f898c654696d25781c3d588f24177cfbc7) Thanks [@Juice10](https://github.com/Juice10)! - Restore UMD output for mapless JavaScript entrypoints, including the combined packer entry emitted by Vite 8. Bundle dependencies into each UMD entry so packer, pack, and unpack can run independently in browsers. Internal shared chunks no longer receive UMD wrappers.
+
+- Updated dependencies []:
+  - @rrweb/types@2.2.2
+
+## 2.2.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @rrweb/types@2.2.1
+
 ## 2.2.0
 
 ### Patch Changes
