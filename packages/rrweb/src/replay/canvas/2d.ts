@@ -3,13 +3,11 @@ import type { canvasMutationCommand } from '@rrweb/types';
 import { deserializeArg } from './deserialize-args';
 
 export default async function canvasMutation({
-  event,
   mutations,
   target,
   imageMap,
   errorHandler,
 }: {
-  event: Parameters<Replayer['applyIncremental']>[0];
   mutations: canvasMutationCommand[];
   target: HTMLCanvasElement;
   imageMap: Replayer['imageMap'];
@@ -42,21 +40,7 @@ export default async function canvasMutation({
       const original = ctx[
         mutation.property as Exclude<keyof typeof ctx, 'canvas'>
       ] as (ctx: CanvasRenderingContext2D, args: unknown[]) => void;
-
-      /**
-       * We have serialized the image source into base64 string during recording,
-       * which has been preloaded before replay.
-       * So we can get call drawImage SYNCHRONOUSLY which avoid some fragile cast.
-       */
-      if (
-        mutation.property === 'drawImage' &&
-        typeof mutation.args[0] === 'string'
-      ) {
-        imageMap.get(event);
-        original.apply(ctx, mutation.args);
-      } else {
-        original.apply(ctx, args);
-      }
+      original.apply(ctx, args);
     } catch (error) {
       errorHandler(mutation, error);
     }
