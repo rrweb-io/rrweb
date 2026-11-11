@@ -69,11 +69,17 @@ const fallbackPostDelay = 5 * 1000;
 const fallbackPostMaxDelay = 60 * 1000;
 const errorBodyTimeout = 2 * 1000;
 
-let ws: Websocket | undefined;
-let wsRejected = false;
-let cancelFallbackPosting: (() => void) | undefined;
+type RecordingContext = {
+  ws: Websocket | undefined;
+  buffer: ArrayQueue<string>;
+  wsRejected: boolean;
+  postUrl: string;
+  publicApiKey: string;
+  stopFallbackPosting: () => void;
+};
 
-const buffer: ArrayQueue<string> = new ArrayQueue();
+let current: RecordingContext | undefined;
+
 let rrwebStopFn: listenerHandler | undefined;
 let recorderReady = false;
 const pendingEvents: (ClientEvent & { timestamp: number })[] = [];
@@ -119,26 +125,28 @@ export function stop(resetRecordingId: boolean) {
     rrwebStopFn();
     rrwebStopFn = undefined;
   }
-  cancelFallbackPosting?.();
-  cancelFallbackPosting = undefined;
-  if (ws) {
-    const closeEvent: customEventWithTime = {
-      timestamp: nowTimestamp(),
-      type: EventType.Custom,
-      data: {
-        tag: 'close-' + (resetRecordingId ? 'permanent' : 'temporary'),
-        payload: {},
-      },
-    };
-    // Clear old events before send, so websocket-ts can buffer the close event
-    // for the HTTP fallback when the socket is not currently open.
-    buffer.clear();
-    ws.send(JSON.stringify(closeEvent));
-    ws.close();
-    wsRejected = false;
-    ws = undefined; // so `emit` can restart it again if page is unfrozen
-  } else {
-    buffer.clear();
+  const ctx = current;
+  current = undefined;
+  if (ctx) {
+    ctx.stopFallbackPosting();
+    if (ctx.ws) {
+      const closeEvent: customEventWithTime = {
+        timestamp: nowTimestamp(),
+        type: EventType.Custom,
+        data: {
+          tag: 'close-' + (resetRecordingId ? 'permanent' : 'temporary'),
+          payload: {},
+        },
+      };
+      // Clear old events before send, so websocket-ts can buffer the close event
+      // for the HTTP fallback when the socket is not currently open.
+      ctx.buffer.clear();
+      ctx.ws.send(JSON.stringify(closeEvent));
+      ctx.ws.close();
+      ctx.ws = undefined;
+    } else {
+      ctx.buffer.clear();
+    }
   }
   if (resetRecordingId) {
     removeRecordingId();
@@ -203,19 +211,18 @@ function getSetRecordingId(): string | null {
 export const getRecordingId = getSetRecordingId;
 
 function connect(
+  ctx: RecordingContext,
   serverUrl: string,
-  postUrl: string,
-  publicApiKey: string,
   messageHandler: websocketListenerHandler,
 ): Websocket {
   const wsUrl = new URL(serverUrl);
-  if (publicApiKey) {
-    wsUrl.searchParams.set('token', publicApiKey);
+  if (ctx.publicApiKey) {
+    wsUrl.searchParams.set('token', ctx.publicApiKey);
   }
   wsUrl.protocol = wsUrl.protocol.replace('http', 'ws'); // testing/puppeteer: SyntaxError: Failed to construct 'WebSocket': The URL's scheme must be either 'ws' or 'wss'. 'https' is not allowed.
 
   const ws = new WebsocketBuilder(wsUrl.href)
-    .withBuffer(buffer) // when disconnected
+    .withBuffer(ctx.buffer) // when disconnected
     .withBackoff(
       new ExponentialBackoff(500 + Math.round(1000 * Math.random()), 6),
     ) // retry around every 1s, 2s, 4s, 8s, maxing out with a retry every ~1minute
@@ -225,16 +232,16 @@ function connect(
   let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
   let fallbackCancelled = false;
   const fallbackPostTick = () => {
-    if (!buffer.length()) {
+    if (!ctx.buffer.length()) {
       scheduleFallbackPost();
       return;
     }
-    if (ws.readyState === wsReadyStateOpen && !wsRejected) {
+    if (ws.readyState === wsReadyStateOpen && !ctx.wsRejected) {
       const toFlush: string[] = [];
       for (
-        let eventStr = buffer.read();
+        let eventStr = ctx.buffer.read();
         eventStr !== undefined;
-        eventStr = buffer.read()
+        eventStr = ctx.buffer.read()
       ) {
         toFlush.push(eventStr);
       }
@@ -242,7 +249,7 @@ function connect(
       scheduleFallbackPost();
       return;
     }
-    postData(postUrl, publicApiKey, buffer)
+    postData(ctx.postUrl, ctx.publicApiKey, ctx.buffer)
       .then(() => {
         fallbackDelay = fallbackPostDelay;
       })
@@ -258,8 +265,8 @@ function connect(
     fallbackTimer = setTimeout(fallbackPostTick, fallbackDelay);
   };
   scheduleFallbackPost();
-  cancelFallbackPosting?.();
-  cancelFallbackPosting = () => {
+  ctx.stopFallbackPosting();
+  ctx.stopFallbackPosting = () => {
     fallbackCancelled = true;
     clearTimeout(fallbackTimer);
   };
@@ -396,20 +403,6 @@ export function start(
 
   const configEmit = recordOptions.emit;
 
-  const handleMessage = (_: Websocket, ev: MessageEvent) => {
-    const parsedEvent: unknown = JSON.parse(String(ev.data));
-    if (
-      isServerMessage(parsedEvent) &&
-      (parsedEvent.type === 'error' ||
-        (parsedEvent.type === 'upstream-result' && !parsedEvent.ok))
-    ) {
-      console.warn('received error, pausing websockets:', parsedEvent);
-      wsRejected = true;
-    } else {
-      console.log(`received message: ${String(ev.data)}`);
-    }
-  };
-
   const recordingId = getSetRecordingId();
   if (!recordingId) {
     // TODO: we could allow client to supply their own recordingId
@@ -444,6 +437,32 @@ export function start(
     sURL.pathname = sURL.pathname.slice(0, -3);
   }
   const postUrl = sURL.href;
+
+  const ctx: RecordingContext = current ?? {
+    ws: undefined,
+    buffer: new ArrayQueue(),
+    wsRejected: false,
+    postUrl,
+    publicApiKey,
+    stopFallbackPosting: () => undefined,
+  };
+  current = ctx;
+  ctx.postUrl = postUrl;
+  ctx.publicApiKey = publicApiKey;
+
+  const handleMessage = (_: Websocket, ev: MessageEvent) => {
+    const parsedEvent: unknown = JSON.parse(String(ev.data));
+    if (
+      isServerMessage(parsedEvent) &&
+      (parsedEvent.type === 'error' ||
+        (parsedEvent.type === 'upstream-result' && !parsedEvent.ok))
+    ) {
+      console.warn('received error, pausing websockets:', parsedEvent);
+      ctx.wsRejected = true;
+    } else {
+      console.log(`received message: ${String(ev.data)}`);
+    }
+  };
 
   if (includePii) {
     initialPayload.visitor = getSetVisitorId();
@@ -491,12 +510,12 @@ export function start(
     },
   };
   // metadata event should be the first seen server side
-  buffer.add(JSON.stringify(metaEvent));
+  ctx.buffer.add(JSON.stringify(metaEvent));
 
   const emitEvent = (event: eventWithTime) => {
-    if (!ws) {
+    if (!ctx.ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
-      ws = connect(serverUrl, postUrl, publicApiKey, handleMessage);
+      ctx.ws = connect(ctx, serverUrl, handleMessage);
     }
     if (configEmit !== undefined) {
       if (typeof configEmit === 'function') {
@@ -526,13 +545,13 @@ export function start(
     // TODO: add browser native compression
     if (eventStr.length > wsLimit) {
       // Assuming wsLimit is a defined constant, and eventStr.length is intended.
-      void postData(postUrl, publicApiKey, eventStr).catch((error) => {
+      void postData(ctx.postUrl, ctx.publicApiKey, eventStr).catch((error) => {
         console.error('Error POSTing oversized event:', error);
       });
-    } else if (ws && !wsRejected) {
-      ws.send(eventStr);
+    } else if (ctx.ws && !ctx.wsRejected) {
+      ctx.ws.send(eventStr);
     } else {
-      buffer.add(eventStr);
+      ctx.buffer.add(eventStr);
     }
   };
 
@@ -593,6 +612,9 @@ export function start(
     document.addEventListener(
       'visibilitychange',
       () => {
+        if (ctx !== current) {
+          return;
+        }
         if (!document.hidden && startWhenVisible) {
           startRrwebRecording();
           startWhenVisible = false;
@@ -615,12 +637,16 @@ export function start(
             // document.hidden is better than beforeunload, see:
             // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
             if (
-              (!ws || wsRejected || ws.readyState !== wsReadyStateOpen) &&
-              buffer.length()
+              (!ctx.ws ||
+                ctx.wsRejected ||
+                ctx.ws.readyState !== wsReadyStateOpen) &&
+              ctx.buffer.length()
             ) {
-              void postData(postUrl, publicApiKey, buffer).catch((error) => {
-                console.error('Error POSTing events on page hide:', error);
-              });
+              void postData(ctx.postUrl, ctx.publicApiKey, ctx.buffer).catch(
+                (error) => {
+                  console.error('Error POSTing events on page hide:', error);
+                },
+              );
             }
           }
         } catch (e) {
@@ -631,14 +657,16 @@ export function start(
     );
   }
   document.addEventListener('freeze', () => {
+    if (ctx !== current) {
+      return;
+    }
     // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
     // "In particular, it's important that you ... close any open Web Socket connections
-    if (ws) {
-      ws.close();
-      cancelFallbackPosting?.();
-      cancelFallbackPosting = undefined;
-      wsRejected = false;
-      ws = undefined; // so `emit` can restart it again if page is unfrozen
+    if (ctx.ws) {
+      ctx.ws.close();
+      ctx.stopFallbackPosting();
+      ctx.wsRejected = false;
+      ctx.ws = undefined; // so `emit` can restart it again if page is unfrozen
     }
     if (rrwebStopFn !== undefined) {
       resetRecordingState();

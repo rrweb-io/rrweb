@@ -301,6 +301,84 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     expect(socket.buffer.length()).toBe(0);
   });
 
+  it('does not move events between recordings when a POST settles after stop()', async () => {
+    const post = deferredFetch();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { client, emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+    emit({ ...event(2), pad: 'x'.repeat(70_000) });
+    emit(event(3));
+    await vi.advanceTimersByTimeAsync(5000);
+    const firstUrl = post.urls()[0];
+
+    client.stop(true);
+    await vi.advanceTimersByTimeAsync(0);
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+    });
+    mockState.emit!(event(10));
+    const second = mockState.sockets[1];
+    const bufferedForSecond = second.buffer.length();
+
+    post.resolve(new Response(null, { status: 202 }));
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(second.buffer.length()).toBe(bufferedForSecond);
+    expect(ids(second.buffer.items)).toEqual([10]);
+    expect(post.urls().every((url) => url === firstUrl)).toBe(true);
+  });
+
+  it('does not requeue a failed POST into the next recording', async () => {
+    const post = deferredFetch();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { client, emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+    emit(event(2));
+    await vi.advanceTimersByTimeAsync(5000);
+
+    client.stop(true);
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+    });
+    mockState.emit!(event(10));
+    post.reject(new TypeError('Failed to fetch'));
+    await vi.advanceTimersByTimeAsync(0);
+
+    const second = mockState.sockets[1];
+    second.reopen();
+    expect(ids(second.sent)).toEqual([10]);
+  });
+
+  it('does not move events between recordings when stop() follows a freeze', async () => {
+    const post = deferredFetch();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { client, emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+    emit({ ...event(2), pad: 'x'.repeat(70_000) });
+    emit(event(3));
+    await vi.advanceTimersByTimeAsync(5000);
+
+    document.dispatchEvent(new Event('freeze'));
+    client.stop(true);
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+    });
+    mockState.emit!(event(10));
+    const second = mockState.sockets[mockState.sockets.length - 1];
+
+    post.resolve(new Response(null, { status: 202 }));
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(post.urls()).toHaveLength(1);
+    expect(ids(second.buffer.items)).toEqual([10]);
+  });
+
   it('recovers when an error response body is not JSON or never finishes', async () => {
     const stuckBody = new Response(null, { status: 503 });
     vi.spyOn(stuckBody, 'text').mockReturnValue(new Promise(() => {}));
