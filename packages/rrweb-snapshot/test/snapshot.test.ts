@@ -10,7 +10,7 @@ import snapshot, {
   serializeNodeWithId,
 } from '../src/snapshot';
 import { elementNode, serializedNodeWithId } from '../src/types';
-import { Mirror, absolutifyURLs } from '../src/utils';
+import { Mirror, absolutifyURLs, maskInputValue } from '../src/utils';
 
 const serializeNode = (node: Node): serializedNodeWithId | null => {
   return serializeNodeWithId(node, {
@@ -276,4 +276,62 @@ describe('jsdom snapshot', () => {
       type: 0,
     });
   });
+});
+
+describe('masked input values', () => {
+  it('preserves an empty live value after clearing a populated value attribute', () => {
+    const input = document.createElement('input');
+    input.type = 'password';
+    input.setAttribute('value', 'private default');
+    input.value = '';
+    const node = serializeNodeWithId(input, {
+      doc: document,
+      mirror: new Mirror(),
+      blockClass: 'rr-block',
+      blockSelector: null,
+      maskTextClass: 'rr-mask',
+      maskTextSelector: null,
+      skipChild: false,
+      inlineStylesheet: true,
+      maskTextFn: undefined,
+      maskInputFn: undefined,
+      maskInputOptions: { password: true },
+      slimDOMOptions: {},
+    });
+    expect((node as elementNode).attributes.value).toBe('');
+    expect(JSON.stringify(node)).not.toContain('private default');
+  });
+
+  it.each([
+    [-1, '********'],
+    [0, ''],
+    [3, '***'],
+    [8, '********'],
+    [20, '********'],
+  ])(
+    'uses a fixed mask capped by maxLength %s',
+    (maxLength, expected) => {
+      for (const tagName of ['input', 'textarea']) {
+        const element = document.createElement(tagName);
+        element.setAttribute('maxlength', String(maxLength));
+        const options = {
+          element,
+          tagName,
+          type: 'text',
+          maskInputOptions: { text: true, textarea: true },
+        };
+        for (const value of ['a', 'a much longer private value']) {
+          expect(maskInputValue({ ...options, value })).toBe(expected);
+        }
+        expect(maskInputValue({ ...options, value: '' })).toBe('');
+        expect(
+          maskInputValue({
+            ...options,
+            value: 'secret',
+            maskInputFn: () => '[custom]',
+          }),
+        ).toBe('[custom]');
+      }
+    },
+  );
 });
