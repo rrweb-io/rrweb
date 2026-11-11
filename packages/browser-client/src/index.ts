@@ -129,6 +129,9 @@ export function stop(resetRecordingId: boolean) {
   current = undefined;
   if (ctx) {
     ctx.stopFallbackPosting();
+    // Clear old events before send, so websocket-ts can buffer the close event
+    // for the HTTP fallback when the socket is not currently open.
+    ctx.buffer.clear();
     if (ctx.ws) {
       const closeEvent: customEventWithTime = {
         timestamp: nowTimestamp(),
@@ -138,14 +141,9 @@ export function stop(resetRecordingId: boolean) {
           payload: {},
         },
       };
-      // Clear old events before send, so websocket-ts can buffer the close event
-      // for the HTTP fallback when the socket is not currently open.
-      ctx.buffer.clear();
       ctx.ws.send(JSON.stringify(closeEvent));
       ctx.ws.close();
       ctx.ws = undefined;
-    } else {
-      ctx.buffer.clear();
     }
   }
   if (resetRecordingId) {
@@ -237,15 +235,7 @@ function connect(
       return;
     }
     if (ws.readyState === wsReadyStateOpen && !ctx.wsRejected) {
-      const toFlush: string[] = [];
-      for (
-        let eventStr = ctx.buffer.read();
-        eventStr !== undefined;
-        eventStr = ctx.buffer.read()
-      ) {
-        toFlush.push(eventStr);
-      }
-      toFlush.forEach((eventStr) => ws.send(eventStr));
+      drain(ctx.buffer).forEach((eventStr) => ws.send(eventStr));
       scheduleFallbackPost();
       return;
     }
@@ -276,16 +266,20 @@ function connect(
   return ws;
 }
 
-function requeue(buffer: ArrayQueue<string>, taken: string[]) {
-  const rest: string[] = [];
+function drain(buffer: ArrayQueue<string>): string[] {
+  const events: string[] = [];
   for (
     let eventStr = buffer.read();
     eventStr !== undefined;
     eventStr = buffer.read()
   ) {
-    rest.push(eventStr);
+    events.push(eventStr);
   }
-  [...taken, ...rest].forEach((eventStr) => buffer.add(eventStr));
+  return events;
+}
+
+function requeue(buffer: ArrayQueue<string>, taken: string[]) {
+  [...taken, ...drain(buffer)].forEach((eventStr) => buffer.add(eventStr));
 }
 
 async function postData(
