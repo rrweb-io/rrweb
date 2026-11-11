@@ -42,9 +42,7 @@ function fakeClerk(token: string | null, userId: string | null = 'user_2') {
 function stubKey(body: unknown, ok = true) {
   vi.stubGlobal(
     'fetch',
-    vi.fn(() =>
-      Promise.resolve({ ok, json: () => Promise.resolve(body) }),
-    ),
+    vi.fn(() => Promise.resolve({ ok, json: () => Promise.resolve(body) })),
   );
 }
 
