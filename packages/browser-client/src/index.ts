@@ -64,9 +64,10 @@ let defaultClientConfig: clientConfig = {
 };
 const sessionStorageName = 'rrweb-browser-client-recording-id';
 const wsLimit = 10e5; // this is approximate and depends on the browser, also on how unicode is encoded (we are comparing against the length of a javascript string)
+const wsReadyStateOpen = 1; // WebSocket.OPEN
 
 let ws: Websocket | undefined;
-let wsConnectionPaused = false;
+let wsRejected = false;
 
 const buffer: ArrayQueue<string> = new ArrayQueue();
 let rrwebStopFn: listenerHandler | undefined;
@@ -128,7 +129,7 @@ export function stop(resetRecordingId: boolean) {
     buffer.clear();
     ws.send(JSON.stringify(closeEvent));
     ws.close();
-    wsConnectionPaused = false;
+    wsRejected = false;
     ws = undefined; // so `emit` can restart it again if page is unfrozen
   } else {
     buffer.clear();
@@ -342,7 +343,7 @@ export function start(
         (parsedEvent.type === 'upstream-result' && !parsedEvent.ok))
     ) {
       console.warn('received error, pausing websockets:', parsedEvent);
-      wsConnectionPaused = true;
+      wsRejected = true;
     } else {
       console.log(`received message: ${String(ev.data)}`);
     }
@@ -435,11 +436,6 @@ export function start(
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
       ws = connect(serverUrl, postUrl, publicApiKey, handleMessage);
-
-      ws.addEventListener(WebsocketEvent.close, () => {
-        // fallback to postData while backoff algorithm is in effect
-        wsConnectionPaused = true;
-      });
     }
     if (configEmit !== undefined) {
       if (typeof configEmit === 'function') {
@@ -470,7 +466,7 @@ export function start(
     if (eventStr.length > wsLimit) {
       // Assuming wsLimit is a defined constant, and eventStr.length is intended.
       void postData(postUrl, publicApiKey, eventStr);
-    } else if (ws && !wsConnectionPaused) {
+    } else if (ws && !wsRejected) {
       ws.send(eventStr);
     } else {
       buffer.add(eventStr);
@@ -555,7 +551,10 @@ export function start(
 
             // document.hidden is better than beforeunload, see:
             // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
-            if ((!ws || wsConnectionPaused) && buffer.length()) {
+            if (
+              (!ws || wsRejected || ws.readyState !== wsReadyStateOpen) &&
+              buffer.length()
+            ) {
               void postData(postUrl, publicApiKey, buffer);
             }
           }
@@ -571,7 +570,7 @@ export function start(
     // "In particular, it's important that you ... close any open Web Socket connections
     if (ws) {
       ws.close();
-      wsConnectionPaused = false;
+      wsRejected = false;
       ws = undefined; // so `emit` can restart it again if page is unfrozen
     }
     if (rrwebStopFn !== undefined) {
