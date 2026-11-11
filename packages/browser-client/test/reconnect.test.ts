@@ -63,12 +63,17 @@ vi.mock('websocket-ts', () => {
     readyState = 0;
     sent: string[] = [];
     listeners: Record<string, Listener[]> = {};
-    close = vi.fn();
+    closedByUser = false;
     constructor(readonly buffer: QueueLike) {}
+    close() {
+      this.closedByUser = true;
+      this.readyState = 3;
+    }
     addEventListener(type: string, listener: Listener) {
       (this.listeners[type] ??= []).push(listener);
     }
     send(data: string) {
+      if (this.closedByUser) return;
       if (this.readyState === 1) {
         this.sent.push(data);
       } else {
@@ -128,6 +133,27 @@ function ids(payloads: string[]): number[] {
     .map((line) => JSON.parse(line) as { data: { id?: number } })
     .map((parsed) => parsed.data.id)
     .filter((id): id is number => id !== undefined);
+}
+
+// fetch whose first call stays pending until the test settles it
+function deferredFetch() {
+  let resolve!: (response: Response) => void;
+  let reject!: (error: unknown) => void;
+  const first = new Promise<Response>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  const fetchMock = vi
+    .fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>()
+    .mockReturnValueOnce(first)
+    .mockImplementation(async () => new Response(null, { status: 202 }));
+  vi.stubGlobal('fetch', fetchMock);
+  return {
+    resolve,
+    reject,
+    urls: () => fetchMock.mock.calls.map(([url]) => String(url)),
+    bodies: () => fetchMock.mock.calls.map(([, init]) => String(init?.body)),
+  };
 }
 
 async function startClient() {
@@ -254,6 +280,102 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     socket.reopen();
 
     expect(ids(socket.sent)).toEqual([1, 2]);
+  });
+
+  it('sends requeued events over a reopened socket when the POST fails late', async () => {
+    const post = deferredFetch();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    emit(event(2));
+    await vi.advanceTimersByTimeAsync(5000); // POST takes event 2
+    socket.reopen();
+    emit(event(3));
+    post.reject(new TypeError('Failed to fetch'));
+    await vi.advanceTimersByTimeAsync(0);
+    emit(event(4));
+
+    expect(ids(socket.sent)).toEqual([1, 2, 3, 4]);
+    expect(socket.buffer.length()).toBe(0);
+  });
+
+  it('keeps newer events behind a fallback POST that is still in flight', async () => {
+    const post = deferredFetch();
+    const { emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    emit(event(2));
+    await vi.advanceTimersByTimeAsync(5000); // POST takes event 2
+    emit(event(3));
+    socket.reopen();
+    emit(event(4));
+    expect(ids(socket.sent)).toEqual([1]); // nothing overtakes event 2
+
+    post.resolve(new Response(null, { status: 202 }));
+    await vi.advanceTimersByTimeAsync(0);
+    emit(event(5));
+
+    expect(ids(post.bodies())).toEqual([2]);
+    expect(ids(socket.sent)).toEqual([1, 3, 4, 5]);
+  });
+
+  it('does not move events between recordings when a POST settles after stop()', async () => {
+    const post = deferredFetch();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { client, emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+    // two batches: more than the 65 KB keepalive limit
+    emit({ ...event(2), pad: 'x'.repeat(70_000) });
+    emit(event(3));
+    await vi.advanceTimersByTimeAsync(5000); // POST takes event 2
+    const firstUrl = post.urls()[0];
+
+    client.stop(true);
+    await vi.advanceTimersByTimeAsync(0);
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+    });
+    mockState.emit!(event(10));
+    const second = mockState.sockets[1];
+    const bufferedForSecond = second.buffer.length();
+
+    post.resolve(new Response(null, { status: 202 }));
+    await vi.advanceTimersByTimeAsync(0);
+
+    // the old POST neither drained the new recording's buffer nor refilled it
+    expect(second.buffer.length()).toBe(bufferedForSecond);
+    expect(ids(second.buffer.items)).toEqual([10]);
+    expect(
+      post.urls().filter((url, i) => i > 0 && url === firstUrl),
+    ).toHaveLength(1); // only stop()'s close event went to the old recording
+  });
+
+  it('does not requeue a failed POST into the next recording', async () => {
+    const post = deferredFetch();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { client, emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+    emit(event(2));
+    await vi.advanceTimersByTimeAsync(5000);
+
+    client.stop(true);
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+    });
+    mockState.emit!(event(10));
+    post.reject(new TypeError('Failed to fetch'));
+    await vi.advanceTimersByTimeAsync(0);
+
+    const second = mockState.sockets[1];
+    second.reopen();
+    expect(ids(second.sent)).toEqual([10]);
   });
 
   it('stops the fallback POST timer on stop()', async () => {

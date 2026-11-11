@@ -76,10 +76,18 @@ let wsDisconnected = false;
 // replaced, so later events go through the POST fallback instead.
 let wsRejected = false;
 let cancelFallbackPosting: (() => void) | undefined;
-let postBuffer: (() => Promise<unknown>) | undefined;
+let postTarget: { postUrl: string; publicApiKey: string } | undefined;
+// A fallback POST of the buffer is in flight. Until it settles, new events are
+// buffered behind it so they can't overtake the events it took.
+let fallbackPostInFlight = false;
+// Events the socket would have flushed when it reopened during that POST.
+let heldDuringPost: string[] = [];
+// Bumped by stop(), so a POST started for one recording never puts events
+// back into, or takes events from, the buffer of the next one.
+let recordingEpoch = 0;
 
 function wsConnectionPaused(): boolean {
-  return wsDisconnected || wsRejected;
+  return wsDisconnected || wsRejected || fallbackPostInFlight;
 }
 
 function resetConnectionState() {
@@ -90,6 +98,61 @@ function resetConnectionState() {
 }
 
 const buffer: ArrayQueue<string> = new ArrayQueue();
+
+// put events taken for a failed POST back in front of anything added since
+function requeue(buffer: ArrayQueue<string>, taken: string[]) {
+  const rest: string[] = [];
+  for (
+    let eventStr = buffer.read();
+    eventStr !== undefined;
+    eventStr = buffer.read()
+  ) {
+    rest.push(eventStr);
+  }
+  [...taken, ...heldDuringPost, ...rest].forEach((eventStr) =>
+    buffer.add(eventStr),
+  );
+  heldDuringPost = [];
+}
+
+function sendBufferOverSocket() {
+  if (!ws || ws.readyState !== wsReadyStateOpen || wsConnectionPaused()) {
+    return;
+  }
+  for (
+    let eventStr = buffer.read();
+    eventStr !== undefined;
+    eventStr = buffer.read()
+  ) {
+    ws.send(eventStr);
+  }
+}
+
+// POST the buffer, one request at a time. Rejects when the POST failed; the
+// events are back in the buffer by then.
+async function postBufferedEvents(): Promise<void> {
+  if (fallbackPostInFlight || !postTarget || !buffer.length()) {
+    return;
+  }
+  const epoch = recordingEpoch;
+  const isCurrent = () => epoch === recordingEpoch;
+  fallbackPostInFlight = true;
+  try {
+    await postData(
+      postTarget.postUrl,
+      postTarget.publicApiKey,
+      buffer,
+      isCurrent,
+    );
+  } finally {
+    if (isCurrent()) {
+      fallbackPostInFlight = false;
+      requeue(buffer, []); // restores anything held while the POST ran
+      // the socket may have reopened meanwhile; nothing else would send these
+      sendBufferOverSocket();
+    }
+  }
+}
 let rrwebStopFn: listenerHandler | undefined;
 let recorderReady = false;
 const pendingEvents: (ClientEvent & { timestamp: number })[] = [];
@@ -149,13 +212,30 @@ export function stop(resetRecordingId: boolean) {
     buffer.clear();
     ws.send(JSON.stringify(closeEvent));
     ws.close();
-    if (buffer.length()) {
-      // the socket wasn't open, so the close event is still in the buffer
-      void postBuffer?.().catch((error) => {
+    if (buffer.length() && postTarget) {
+      // The socket wasn't open, so the close event is still in the buffer.
+      // POST it as a plain string: a failure must not put it back, or it
+      // would be sent under the next recording.
+      const unsent: string[] = [];
+      for (
+        let eventStr = buffer.read();
+        eventStr !== undefined;
+        eventStr = buffer.read()
+      ) {
+        unsent.push(eventStr);
+      }
+      void postData(
+        postTarget.postUrl,
+        postTarget.publicApiKey,
+        unsent.join('\n'),
+      ).catch((error) => {
         console.error('Error POSTing close event:', error);
       });
     }
     resetConnectionState();
+    recordingEpoch++;
+    fallbackPostInFlight = false;
+    heldDuringPost = [];
     ws = undefined; // so `emit` can restart it again if page is unfrozen
   } else {
     buffer.clear();
@@ -243,7 +323,7 @@ function connect(
 
   // POST buffered events whenever the socket can't take them: before it first
   // opens, while it is reconnecting, and after the server rejected it.
-  postBuffer = () => postData(postUrl, publicApiKey, buffer);
+  postTarget = { postUrl, publicApiKey };
   let timer: ReturnType<typeof setTimeout> | undefined;
   let cancelled = false;
   let delay = fallbackPostDelay;
@@ -251,11 +331,11 @@ function connect(
     timer = setTimeout(() => {
       const socketUsable =
         ws.readyState === wsReadyStateOpen && !wsConnectionPaused();
-      if (socketUsable || !buffer.length()) {
+      if (socketUsable || fallbackPostInFlight || !buffer.length()) {
         schedule();
         return;
       }
-      postData(postUrl, publicApiKey, buffer)
+      postBufferedEvents()
         .then(() => {
           delay = fallbackPostDelay;
         })
@@ -283,28 +363,27 @@ function connect(
   ws.addEventListener(WebsocketEvent.open, () => {
     // websocket-ts sends the buffer right after this; resume live sending
     wsDisconnected = false;
+    if (fallbackPostInFlight) {
+      // keep these behind the events being POSTed; sent once it settles
+      for (
+        let eventStr = buffer.read();
+        eventStr !== undefined;
+        eventStr = buffer.read()
+      ) {
+        heldDuringPost.push(eventStr);
+      }
+    }
   });
   ws.addEventListener(WebsocketEvent.message, messageHandler);
   return ws;
-}
-
-// put events taken for a failed POST back in front of anything added since
-function requeue(buffer: ArrayQueue<string>, taken: string[]) {
-  const rest: string[] = [];
-  for (
-    let eventStr = buffer.read();
-    eventStr !== undefined;
-    eventStr = buffer.read()
-  ) {
-    rest.push(eventStr);
-  }
-  [...taken, ...rest].forEach((eventStr) => buffer.add(eventStr));
 }
 
 async function postData(
   postUrl: string,
   publicApiKey: string,
   buffer: ArrayQueue<string> | string,
+  // false once the recording this POST belongs to was stopped
+  ownsBuffer: () => boolean = () => true,
 ) {
   const keepaliveLimit = 65000;
   let done = false;
@@ -313,6 +392,12 @@ async function postData(
     const toSend: string[] = [];
     let body;
     if (buffer instanceof ArrayQueue) {
+      if (!ownsBuffer()) {
+        break; // the buffer now belongs to another recording
+      }
+      if (heldDuringPost.length) {
+        requeue(buffer, []); // keep held events ahead of newer ones
+      }
       // this clears the buffer so no need to call buffer.clear()
       let sendSize = 0;
       done = true;
@@ -347,14 +432,14 @@ async function postData(
       });
     } catch (error) {
       // offline, DNS, CORS, aborted: nothing reached the server
-      if (buffer instanceof ArrayQueue) {
+      if (buffer instanceof ArrayQueue && ownsBuffer()) {
         requeue(buffer, toSend);
       }
       throw error;
     }
     responses.push(response);
     if (!response.ok) {
-      if (buffer instanceof ArrayQueue) {
+      if (buffer instanceof ArrayQueue && ownsBuffer()) {
         // re-queue events in case we can reconnect next time or with ws
         requeue(buffer, toSend);
       }
@@ -624,7 +709,7 @@ export function start(
             // document.hidden is better than beforeunload, see:
             // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
             if ((!ws || wsConnectionPaused()) && buffer.length()) {
-              void postData(postUrl, publicApiKey, buffer).catch((error) => {
+              void postBufferedEvents().catch((error) => {
                 console.error('Error POSTing events on page hide:', error);
               });
             }
