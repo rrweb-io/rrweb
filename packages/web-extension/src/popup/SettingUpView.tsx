@@ -8,7 +8,6 @@ import {
   RecordingControls,
   type RecorderControls,
 } from './PopupParts';
-import { RecorderStatus } from '~/types';
 
 /** The status line shared by the popup and the account page. */
 export function SettingUpText({
@@ -97,11 +96,13 @@ export function SettingUpView({
       <RecordButton
         recorder={recorder}
         idleLabel="Start recording"
+        startAs="cannot-start"
         tall
-        disabled={recorder.status === RecorderStatus.IDLE}
       />
       <RecorderError recorder={recorder} />
-      {stage === 'setup-slow' && <SetupSlow dashboardUrl={dashboardUrl} onTryAgain={onTryAgain} />}
+      {stage === 'setup-slow' && (
+        <SetupSlow dashboardUrl={dashboardUrl} onTryAgain={onTryAgain} />
+      )}
     </PopupFrame>
   );
 }

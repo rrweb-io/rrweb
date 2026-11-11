@@ -1,7 +1,11 @@
 import { record } from 'rrweb';
 import type { recordOptions } from 'rrweb';
 import type { eventWithTime } from '@rrweb/types';
-import { MessageName, type RecordStartedMessage } from '~/types';
+import {
+  MessageName,
+  type EmitEventMessage,
+  type RecordStartedMessage,
+} from '~/types';
 
 /**
  * This script runs rrweb in the page world of the recorded tab's top frame.
@@ -16,14 +20,16 @@ type MarkedWindow = Window & { [LISTENING]?: true };
 
 let stopFn: (() => void) | null = null;
 
-function startRecord(config: recordOptions<eventWithTime>) {
+/** `token` names the recording; every event carries it back. */
+function startRecord(config: recordOptions<eventWithTime>, token: string) {
   stopFn =
     record({
       emit: (event) => {
         postMessage({
           message: MessageName.EmitEvent,
           event,
-        });
+          token,
+        } as EmitEventMessage);
       },
       ...config,
     }) || null;
@@ -37,13 +43,14 @@ const messageHandler = (
   event: MessageEvent<{
     message: MessageName;
     config?: recordOptions<eventWithTime>;
+    token?: string;
   }>,
 ) => {
   if (event.source !== window) return;
   const data = event.data;
   const eventHandler = {
     [MessageName.StartRecord]: () => {
-      startRecord(data.config || {});
+      startRecord(data.config || {}, data.token ?? 'no-token');
     },
     [MessageName.StopRecord]: () => {
       if (stopFn) {

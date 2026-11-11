@@ -6,10 +6,9 @@ import {
   MessageName,
   type EmitEventMessage,
   type StartRecordPayload,
+  type RecordedEvent,
   EventName,
 } from '~/types';
-import type { recordOptions } from 'rrweb';
-import type { eventWithTime } from '@rrweb/types';
 import Channel from '~/utils/channel';
 import { RECORDED_PAGE_PORT } from '~/background/pageWatch';
 
@@ -49,13 +48,13 @@ function init() {
   // The page script is listening for StartRecord.
   let pageScriptReady = false;
   // A start the background asked for, waiting for the page script.
-  let pendingConfig: recordOptions<eventWithTime> | undefined;
+  let pendingStart: StartRecordPayload | undefined;
   const startWhenReady = () => {
-    if (!pageScriptReady || !pendingConfig) return;
-    const config = pendingConfig;
-    pendingConfig = undefined;
+    if (!pageScriptReady || !pendingStart) return;
+    const { config, token } = pendingStart;
+    pendingStart = undefined;
     window.postMessage(
-      { message: MessageName.StartRecord, config },
+      { message: MessageName.StartRecord, config, token },
       location.origin,
     );
   };
@@ -64,7 +63,7 @@ function init() {
     undefined;
   channel.provide(ServiceName.StartRecord, async (params) => {
     keepPagePort();
-    pendingConfig = (params as StartRecordPayload).config;
+    pendingStart = params as StartRecordPayload;
     // Chrome injects the page script into the page world itself. Firefox has
     // no page-world injection, so this script adds it as a <script> tag.
     if (!pageScriptReady && import.meta.env.VITE_TARGET_BROWSER === 'firefox')
@@ -111,11 +110,11 @@ function init() {
         // On firefox, the event.data is immutable, so we need to clone it to avoid errors.
         if (stopResponseCb)
           stopResponseCb({ ...(event.data as RecordStoppedMessage) });
-      } else if (message === MessageName.EmitEvent)
-        channel.emit(
-          EventName.ContentScriptEmitEvent,
-          (event.data as EmitEventMessage).event,
-        );
+      } else if (message === MessageName.EmitEvent) {
+        const { event: recorded, token } = event.data as EmitEventMessage;
+        const forwarded: RecordedEvent = { event: recorded, token };
+        channel.emit(EventName.ContentScriptEmitEvent, forwarded);
+      }
     },
   );
 }

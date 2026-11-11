@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Browser from 'webextension-polyfill';
 import { useAuth, useClerk, useUser } from '@clerk/chrome-extension';
-import { LocalDataKey } from '~/types';
+import Channel from '~/utils/channel';
+import { EventName, LocalDataKey } from '~/types';
 import type { CloudAccount, LocalData } from '~/types';
 import {
   checkAccount,
@@ -16,6 +17,12 @@ import {
   signOutAccount,
 } from './accountActions';
 import type { OrgOption, OrgSwitch } from './OrgPicker';
+
+// Created on the first log out: a Channel listens for runtime messages.
+let channel: Channel | undefined;
+/** Tells the background which user logged out. */
+const reportLoggedOut = (userId: string) =>
+  (channel ??= new Channel()).emit(EventName.UserLoggedOut, { userId });
 
 type StoredAccount =
   | { name: 'loading' }
@@ -206,7 +213,7 @@ export function useCloudAccount(): CloudAccountApi {
   const logOut = () => {
     signingOut.current = true;
     setSession({ name: 'signing-out' });
-    signOutAccount(clerk).catch(() => {
+    signOutAccount(clerk, reportLoggedOut).catch(() => {
       signingOut.current = false;
       setSession({ name: 'active' });
     });

@@ -17,6 +17,7 @@ const fake = vi.hoisted(() => ({
     changes: Record<string, { newValue?: unknown }>,
   ) => void)[],
   auth: { isSignedIn: false },
+  sentMessages: [] as string[],
   clerk: {
     user: null as FakeUser | null,
     organization: null as { id: string } | null,
@@ -52,6 +53,13 @@ vi.mock('webextension-polyfill', () => {
               fake.listeners = fake.listeners.filter((x) => x !== l);
             },
           },
+        },
+      },
+      runtime: {
+        onMessage: { addListener: () => undefined },
+        sendMessage: (message: string) => {
+          fake.sentMessages.push(message);
+          return Promise.resolve();
         },
       },
     },
@@ -138,6 +146,10 @@ describe('useCloudAccount', () => {
     await render();
     await settle();
     expect(api?.view.name).toBe('signed-out');
+    // the background deletes the failed uploads of the user who logged out
+    expect(fake.sentMessages.map((m) => JSON.parse(m) as unknown)).toEqual([
+      { type: 'event', event: 'user-logged-out', detail: { userId: 'user_1' } },
+    ]);
 
     // A new Clerk session arrives while the page stays open.
     fake.clerk.user = makeUser('user_2', 'org_2');

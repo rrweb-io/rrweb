@@ -16,6 +16,7 @@ export type Settings = {
 export enum LocalDataKey {
   recorderStatus = 'recorder_status',
   cloudAccount = 'cloud_account',
+  failedUploads = 'failed_uploads',
 }
 
 export type CloudAccount = {
@@ -29,8 +30,44 @@ export type CloudAccount = {
 /** Where a recording goes: this browser only, or uploaded to rrweb. */
 export type RecordingKind = 'offline' | 'cloud';
 
+/**
+ * What the record button the person pressed promised: offline, or an upload
+ * to this user's organization. The background refuses a cloud start whose
+ * account no longer matches the stored one.
+ */
+export type StartRequest =
+  | { mode: 'offline' }
+  | { mode: 'cloud'; userId: string; orgId: string };
+
+/**
+ * Where a failed cloud upload stands.
+ * upload-failed: the upload at stop failed; waiting for "Retry upload".
+ * retrying: a retry is in flight.
+ * retry-failed: the last retry failed, with the reason shown to the person.
+ * delivered: a retry delivered it; only cleanup is left, nothing is re-sent.
+ */
+export type FailedUploadState =
+  | { name: 'upload-failed' }
+  | { name: 'retrying' }
+  | { name: 'retry-failed'; errorMessage: string }
+  | { name: 'delivered' };
+
+/**
+ * A cloud recording whose upload failed. Its unsent events are kept in this
+ * browser until a retry delivers them, or the person discards them, or the
+ * user who made it logs out.
+ */
+export type FailedUpload = {
+  recordingId: string;
+  /** The Clerk user who made the recording; only they can upload it. */
+  userId: string;
+  title: string;
+  state: FailedUploadState;
+};
+
 export type LocalData = {
   [LocalDataKey.cloudAccount]?: CloudAccount | null;
+  [LocalDataKey.failedUploads]?: FailedUpload[];
   [LocalDataKey.recorderStatus]: {
     status: RecorderStatus;
     // the recorded tab, or the tab a start is claiming; -1 when idle
@@ -75,6 +112,10 @@ export enum EventName {
   StopButtonClicked = 'stop-recording-button-clicked',
   PauseButtonClicked = 'pause-recording-button-clicked',
   ResumeButtonClicked = 'resume-recording-button-clicked',
+  RetryUploadClicked = 'retry-upload-button-clicked',
+  DiscardUploadClicked = 'discard-upload-button-clicked',
+  // the user logged out from the popup or the account page
+  UserLoggedOut = 'user-logged-out',
 }
 
 // all message names for postMessage API
@@ -87,7 +128,14 @@ export enum MessageName {
   EmitEvent = 'rrweb-extension-emit-event',
 }
 
-export type StartRecordPayload = { config: recordOptions<eventWithTime> };
+/**
+ * `token` identifies the recording. The page script echoes it on every event,
+ * so the background can drop events from an earlier recording.
+ */
+export type StartRecordPayload = {
+  config: recordOptions<eventWithTime>;
+  token: string;
+};
 
 export type RecordStartedMessage = {
   message: MessageName.RecordStarted;
@@ -102,4 +150,8 @@ export type RecordStoppedMessage = {
 export type EmitEventMessage = {
   message: MessageName.EmitEvent;
   event: eventWithTime;
+  token: string;
 };
+
+/** What the content script forwards to the background for each event. */
+export type RecordedEvent = { event: eventWithTime; token: string };

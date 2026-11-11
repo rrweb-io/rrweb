@@ -11,16 +11,23 @@ import type {
 import { nowTimestamp } from '@rrweb/utils';
 import type { recordOptions } from 'rrweb';
 
-import { createTransport } from './transport';
+import { createTransport, postEvents } from './transport';
 import type {
   customEventWithTime,
+  DeliveryResult,
   nameValues,
   Transport,
   TransportOptions,
 } from './transport';
 
-export { createTransport };
-export type { customEventWithTime, nameValues, Transport, TransportOptions };
+export { createTransport, postEvents };
+export type {
+  customEventWithTime,
+  DeliveryResult,
+  nameValues,
+  Transport,
+  TransportOptions,
+};
 
 export type clientConfig = {
   serverUrl?: string;
@@ -239,7 +246,7 @@ export function start(
   }
 
   // A second start() replaces the transport: close the first one's socket and
-  // POST what it still buffered (with no socket, flush() always POSTs).
+  // POST what it still buffered (with no open socket, flush() always POSTs).
   transport?.disconnect();
   transport?.flush();
   transport = createTransport({

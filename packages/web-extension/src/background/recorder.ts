@@ -4,6 +4,7 @@ import type {
   CloudAccount,
   LocalData,
   LocalDataKey,
+  RecordedEvent,
   RecordStoppedMessage,
   Session,
 } from '~/types';
@@ -40,7 +41,12 @@ export type RecorderDeps = {
   /** Run `tick` every `ms` until the returned function is called. */
   every: (ms: number, tick: () => void) => () => void;
   now: () => number;
+  /** A fresh, unguessable token for each recording. */
+  newToken: () => string;
 };
+
+/** Where an event came from, as the browser reports the message sender. */
+export type EventSource = { tabId?: number; frameId?: number };
 
 /**
  * The recording state machine: start, pause, resume and stop. One recording
@@ -64,18 +70,23 @@ export function createRecorder(deps: RecorderDeps) {
   let startTitle: string | undefined;
   // The recorded page went away while the start was still in flight.
   let goneWhileStarting = false;
+  // Handed to the page script with every StartRecord and echoed on each
+  // event, so events from an earlier recording's page are dropped.
+  let token = 'no-recording';
 
   const save = () => deps.saveStatus(status);
 
-  async function start() {
+  /** `request` is the popup's message, checked by startRecording. */
+  async function start(request: unknown) {
     if (status.status !== RecorderStatus.IDLE) return;
     // Claim the start before the first await, so a second click is ignored.
     status = { status: RecorderStatus.STARTING, activeTabId: -1 };
     sink = null; // drop any leftover sink before recording
     pendingEvents = [];
     goneWhileStarting = false;
+    token = deps.newToken();
     try {
-      await startClaimed();
+      await startClaimed(request);
     } finally {
       pendingEvents = []; // refused or failed starts must not leak events
       // Any path that did not reach RECORDING releases the claim.
@@ -88,7 +99,7 @@ export function createRecorder(deps: RecorderDeps) {
       await finish({ pageGone: true });
   }
 
-  async function startClaimed() {
+  async function startClaimed(request: unknown) {
     await save();
     const tabId = await deps.getCurrentTabId();
     if (tabId === -1) return;
@@ -96,12 +107,14 @@ export function createRecorder(deps: RecorderDeps) {
     startTitle = await deps.getTabTitle(tabId).catch(() => undefined);
 
     const result = await startRecording({
+      request,
       getAccount: deps.getAccount,
       getTabUrl: () => deps.getTabUrl(tabId),
       requestStart: async (config) => {
         await deps.injectRecorder(tabId);
         return deps.requestToTab(tabId, ServiceName.StartRecord, {
           config,
+          token,
         }) as Promise<{ startTimestamp: number }>;
       },
       requestStop: () => deps.requestToTab(tabId, ServiceName.StopRecord, {}),
@@ -168,9 +181,11 @@ export function createRecorder(deps: RecorderDeps) {
     status = { status: RecorderStatus.IDLE, activeTabId: -1 };
     await save();
     try {
-      const { openUrl, session } = await finishingSink.finish(title);
-      if (session) deps.onSessionUpdated(session);
-      await deps.openTab(openUrl);
+      const result = await finishingSink.finish(title);
+      // upload-failed: the popup lists it from storage, with a retry
+      if (result.state !== 'delivered') return;
+      if (result.session) deps.onSessionUpdated(result.session);
+      await deps.openTab(result.openUrl);
     } catch (e) {
       status.errorMessage = (e as { message: string }).message;
       void save();
@@ -204,6 +219,7 @@ export function createRecorder(deps: RecorderDeps) {
       .then(() =>
         deps.requestToTab(tabId, ServiceName.StartRecord, {
           config: sink?.recordConfig ?? {},
+          token,
         }),
       )
       .catch((e: { message: string }) => {
@@ -238,9 +254,21 @@ export function createRecorder(deps: RecorderDeps) {
       await save();
       await resume();
     },
-    add(event: eventWithTime) {
-      if (status.status === RecorderStatus.STARTING) pendingEvents.push(event);
-      else sink?.add(event);
+    /**
+     * An event from a page script. Only the recorded tab's top frame, running
+     * this recording, may add to it; anything else is dropped.
+     */
+    add(message: RecordedEvent, from: EventSource) {
+      if (
+        status.status === RecorderStatus.IDLE ||
+        from.tabId !== status.activeTabId ||
+        from.frameId !== 0 ||
+        message.token !== token
+      )
+        return;
+      if (status.status === RecorderStatus.STARTING)
+        pendingEvents.push(message.event);
+      else sink?.add(message.event);
     },
     /**
      * The top-frame document of `tabId` went away, or the tab closed. If that

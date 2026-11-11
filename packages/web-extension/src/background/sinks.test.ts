@@ -1,11 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { eventWithTime } from '@rrweb/types';
 import {
+  INVALID_START_ERROR,
+  ACCOUNT_CHANGED_ERROR,
   ACCOUNT_NOT_SET_UP_ERROR,
   createSink,
   NO_HOSTNAME_ERROR,
   startRecording,
 } from './sinks';
+import type { DeliveryResult } from '@rrweb/browser-client';
 import type { CloudAccount } from '~/types';
 
 const account: CloudAccount = {
@@ -15,6 +18,12 @@ const account: CloudAccount = {
   publicKey: 'pk_acme',
 };
 const cloud = { kind: 'cloud', account, domain: 'example.com' } as const;
+/** What the signed-in popup sends for this account. */
+const cloudRequest = {
+  mode: 'cloud',
+  userId: 'user_1',
+  orgId: 'org_1',
+} as const;
 const event = (timestamp: number) => ({ timestamp } as eventWithTime);
 
 function makeDeps() {
@@ -22,13 +31,16 @@ function makeDeps() {
     send: vi.fn(),
     flush: vi.fn(),
     disconnect: vi.fn(),
-    stop: vi.fn(() => Promise.resolve()),
+    stop: vi.fn(
+      (): Promise<DeliveryResult> => Promise.resolve({ delivered: true }),
+    ),
   };
   return {
     transport,
     deps: {
       createTransport: vi.fn(() => transport),
       addSession: vi.fn(() => Promise.resolve()),
+      keepFailedUpload: vi.fn(() => Promise.resolve()),
       randomId: vi.fn(() => 'rec-1'),
       getURL: (path: string) => `chrome-extension://abc/${path}`,
       recorderVersion: '2.2.2',
@@ -70,18 +82,41 @@ describe('createSink', () => {
   it('cloud finish opens the dashboard recording', async () => {
     const { deps, transport } = makeDeps();
     const sink = createSink(cloud, deps);
-    const { openUrl } = await sink.finish('Title');
-    expect(openUrl).toBe('https://app.rrweb.com/recordings/rec-1');
+    const result = await sink.finish('Title');
+    expect(result).toEqual({
+      state: 'delivered',
+      openUrl: 'https://app.rrweb.com/recordings/rec-1',
+    });
     expect(transport.stop).toHaveBeenCalledWith(true);
     expect(deps.addSession).not.toHaveBeenCalled();
+    expect(deps.keepFailedUpload).not.toHaveBeenCalled();
+  });
+
+  it('cloud finish keeps the unsent events and opens nothing when the upload fails', async () => {
+    const { deps, transport } = makeDeps();
+    transport.stop.mockResolvedValue({
+      delivered: false,
+      error: new Error('Bad response from POST: 503'),
+      unsent: ['{"meta":1}', '{"close":1}'],
+    });
+    const sink = createSink(cloud, deps);
+    const result = await sink.finish('Checkout page');
+    expect(result).toEqual({ state: 'upload-failed' });
+    expect(deps.keepFailedUpload).toHaveBeenCalledWith({
+      recordingId: 'rec-1',
+      userId: 'user_1',
+      publicKey: 'pk_acme',
+      title: 'Checkout page',
+      unsent: ['{"meta":1}', '{"close":1}'],
+    });
   });
 
   it('cloud finish waits for the transport to deliver before returning', async () => {
     const { deps, transport } = makeDeps();
     let release: () => void = () => undefined;
     transport.stop.mockReturnValue(
-      new Promise<void>((resolve) => {
-        release = resolve;
+      new Promise<DeliveryResult>((resolve) => {
+        release = () => resolve({ delivered: true });
       }),
     );
     const sink = createSink(cloud, deps);
@@ -105,7 +140,9 @@ describe('createSink', () => {
     expect(sink.recordConfig).toEqual({ recordCrossOriginIframes: false });
     sink.add(event(1));
     sink.add(event(2));
-    const { openUrl } = await sink.finish('My page');
+    const finished = await sink.finish('My page');
+    if (finished.state !== 'delivered') throw new Error('expected delivered');
+    const { openUrl } = finished;
     expect(deps.createTransport).not.toHaveBeenCalled();
     expect(deps.addSession).toHaveBeenCalledOnce();
     const [session, events] = deps.addSession.mock.calls[0] as unknown as [
@@ -148,6 +185,7 @@ describe('startRecording', () => {
     const { deps } = makeDeps();
     let current: CloudAccount | null = account;
     const result = await startRecording({
+      request: cloudRequest,
       getAccount: () => Promise.resolve(current),
       getTabUrl: () => Promise.resolve('https://example.com/a'),
       requestStart: () => {
@@ -175,6 +213,7 @@ describe('startRecording', () => {
     const { deps } = makeDeps();
     const requestStart = vi.fn(() => Promise.resolve({ startTimestamp: 1 }));
     await startRecording({
+      request: cloudRequest,
       getAccount: () => Promise.resolve(account),
       getTabUrl: () => Promise.resolve('https://example.com/a'),
       requestStart,
@@ -193,6 +232,7 @@ describe('startRecording', () => {
     const { deps } = makeDeps();
     const requestStart = vi.fn(() => Promise.resolve({ startTimestamp: 1 }));
     await startRecording({
+      request: { mode: 'offline' },
       getAccount: () => Promise.resolve(null),
       getTabUrl: () => Promise.resolve('https://example.com/a'),
       requestStart,
@@ -210,6 +250,7 @@ describe('startRecording', () => {
   it('opens no transport when the tab refuses to record', async () => {
     const { deps } = makeDeps();
     const result = await startRecording({
+      request: cloudRequest,
       getAccount: () => Promise.resolve(account),
       getTabUrl: () => Promise.resolve('chrome://extensions'),
       requestStart: () => Promise.reject(new Error('cannot record here')),
@@ -227,6 +268,7 @@ describe('startRecording', () => {
     const { userId: _, ...stored } = account;
     const requestStart = vi.fn(() => Promise.resolve({ startTimestamp: 1 }));
     const result = await startRecording({
+      request: cloudRequest,
       getAccount: () => Promise.resolve(stored as CloudAccount),
       getTabUrl: () => Promise.resolve('https://example.com/a'),
       requestStart,
@@ -246,6 +288,7 @@ describe('startRecording', () => {
       const { deps } = makeDeps();
       const requestStart = vi.fn(() => Promise.resolve({ startTimestamp: 1 }));
       const result = await startRecording({
+        request: cloudRequest,
         getAccount: () => Promise.resolve(account),
         getTabUrl: () => Promise.resolve(url),
         requestStart,
@@ -264,6 +307,7 @@ describe('startRecording', () => {
   it('still records offline on a tab with no hostname', async () => {
     const { deps } = makeDeps();
     const result = await startRecording({
+      request: { mode: 'offline' },
       getAccount: () => Promise.resolve(null),
       getTabUrl: () => Promise.resolve(undefined),
       requestStart: () => Promise.resolve({ startTimestamp: 7 }),
@@ -277,6 +321,7 @@ describe('startRecording', () => {
   it('files the cloud recording under the tab hostname', async () => {
     const { deps } = makeDeps();
     const result = await startRecording({
+      request: cloudRequest,
       getAccount: () => Promise.resolve(account),
       getTabUrl: () => Promise.resolve('https://shop.example.net/cart?x=1'),
       requestStart: () => Promise.resolve({ startTimestamp: 1 }),
@@ -300,6 +345,7 @@ describe('startRecording', () => {
       return Promise.resolve();
     });
     const result = await startRecording({
+      request: cloudRequest,
       getAccount: () => Promise.resolve(account),
       getTabUrl: () => Promise.resolve('https://example.com/a'),
       requestStart: () => {
@@ -317,6 +363,7 @@ describe('startRecording', () => {
 
   it('reports the sink failure even when the tab cannot be stopped', async () => {
     const result = await startRecording({
+      request: cloudRequest,
       getAccount: () => Promise.resolve(account),
       getTabUrl: () => Promise.resolve('https://example.com/a'),
       requestStart: () => Promise.resolve({ startTimestamp: 1 }),
@@ -328,10 +375,89 @@ describe('startRecording', () => {
     expect(result).toEqual({ state: 'failed', errorMessage: 'no transport' });
   });
 
+  it('records offline when the popup asked for offline, even with an account stored', async () => {
+    const { deps } = makeDeps();
+    const requestStart = vi.fn(() => Promise.resolve({ startTimestamp: 1 }));
+    const result = await startRecording({
+      request: { mode: 'offline' },
+      getAccount: () => Promise.resolve(account),
+      getTabUrl: () => Promise.resolve('https://example.com/a'),
+      requestStart,
+      requestStop: () => Promise.resolve(),
+      createSink: (target) => createSink(target, deps),
+    });
+    if (result.state !== 'started') throw new Error('expected started');
+    expect(result.sink.kind).toBe('offline');
+    expect(requestStart).toHaveBeenCalledWith({
+      recordCrossOriginIframes: false,
+    });
+    expect(deps.createTransport).not.toHaveBeenCalled();
+  });
+
+  it('refuses a cloud start whose account no longer matches storage', async () => {
+    const stored: (CloudAccount | null)[] = [
+      { ...account, orgId: 'org_2' }, // another organization picked elsewhere
+      { ...account, userId: 'user_2' }, // another user signed in
+      null, // signed out in another view
+    ];
+    for (const current of stored) {
+      const { deps } = makeDeps();
+      const requestStart = vi.fn(() => Promise.resolve({ startTimestamp: 1 }));
+      const result = await startRecording({
+        request: cloudRequest,
+        getAccount: () => Promise.resolve(current),
+        getTabUrl: () => Promise.resolve('https://example.com/a'),
+        requestStart,
+        requestStop: () => Promise.resolve(),
+        createSink: (target) => createSink(target, deps),
+      });
+      expect(result).toEqual({
+        state: 'refused',
+        errorMessage: ACCOUNT_CHANGED_ERROR,
+      });
+      expect(requestStart).not.toHaveBeenCalled();
+      expect(deps.createTransport).not.toHaveBeenCalled();
+    }
+  });
+
+  it('refuses a start request that names no valid destination, without throwing', async () => {
+    const invalid: unknown[] = [
+      undefined,
+      null,
+      {},
+      'offline',
+      { mode: 'upload' },
+      { mode: 'cloud' },
+      { mode: 'cloud', userId: 'user_1' },
+      { mode: 'cloud', userId: 'user_1', orgId: 7 },
+      { mode: 'cloud', userId: '', orgId: 'org_1' },
+    ];
+    for (const request of invalid) {
+      const { deps } = makeDeps();
+      const getAccount = vi.fn(() => Promise.resolve(account));
+      const requestStart = vi.fn(() => Promise.resolve({ startTimestamp: 1 }));
+      const result = await startRecording({
+        request,
+        getAccount,
+        getTabUrl: () => Promise.resolve('https://example.com/a'),
+        requestStart,
+        requestStop: () => Promise.resolve(),
+        createSink: (target) => createSink(target, deps),
+      });
+      expect(result).toEqual({
+        state: 'refused',
+        errorMessage: INVALID_START_ERROR,
+      });
+      expect(getAccount).not.toHaveBeenCalled();
+      expect(requestStart).not.toHaveBeenCalled();
+    }
+  });
+
   it('does not stop the tab after a successful start', async () => {
     const { deps } = makeDeps();
     const requestStop = vi.fn(() => Promise.resolve());
     const result = await startRecording({
+      request: cloudRequest,
       getAccount: () => Promise.resolve(account),
       getTabUrl: () => Promise.resolve('https://example.com/a'),
       requestStart: () => Promise.resolve({ startTimestamp: 1 }),

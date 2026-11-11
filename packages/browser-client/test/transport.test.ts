@@ -1,7 +1,7 @@
 import { EventType } from '@rrweb/types';
 import type { eventWithTime } from '@rrweb/types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createTransport } from '../src/transport';
+import { createTransport, postEvents } from '../src/transport';
 
 class FakeWebSocket extends EventTarget {
   static instances: FakeWebSocket[] = [];
@@ -248,6 +248,246 @@ describe('createTransport', () => {
       }
     }
   });
+  it('stop() closes the socket where the runtime defines no global WebSocket', async () => {
+    const transport = createTransport(options);
+    transport.send(fullSnapshot(1));
+    await opened();
+    // happy-dom, older Node and some workers have no WebSocket global; the
+    // socket was built already, so only stop() would look it up.
+    globalThis.WebSocket = undefined as unknown as typeof WebSocket;
+    await expect(transport.stop(true)).resolves.toEqual({ delivered: true });
+    expect(messages().at(-1)?.data.tag).toBe('close-permanent');
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  const postedLines = (fetchMock: ReturnType<typeof vi.fn>) =>
+    (fetchMock.mock.calls as unknown as [string, { body: string }][]).flatMap(
+      ([, init]) => init.body.split('\n'),
+    );
+  const tagOrTimestamp = (line: string) => {
+    const m = JSON.parse(line) as { timestamp: number; data: { tag?: string } };
+    return m.data.tag ?? m.timestamp;
+  };
+
+  it('stop(true) reports a rejected final POST and returns every unsent event in order', async () => {
+    FakeWebSocket.autoOpen = false; // nothing goes over the socket
+    const fetchMock = vi.fn(() =>
+      Promise.resolve({
+        ok: false,
+        status: 503,
+        statusText: 'Unavailable',
+        bodyUsed: false,
+        json: () => Promise.resolve({ error: 'down' }),
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const transport = createTransport(options);
+    transport.send(fullSnapshot(1));
+    transport.send(fullSnapshot(2));
+    const result = await transport.stop(true);
+    expect(result.delivered).toBe(false);
+    if (result.delivered) return;
+    expect(result.error.message).toContain('503');
+    expect(result.unsent.map(tagOrTimestamp)).toEqual([
+      'recording-meta',
+      1,
+      2,
+      'close-permanent',
+    ]);
+  });
+
+  it('stop(true) keeps the events when the final POST cannot reach the server', async () => {
+    FakeWebSocket.autoOpen = false;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.reject(new TypeError('Failed to fetch'))),
+    );
+    const transport = createTransport(options);
+    transport.send(fullSnapshot(1));
+    const result = await transport.stop(true);
+    expect(result.delivered).toBe(false);
+    if (result.delivered) return;
+    expect(result.error.message).toBe('Failed to fetch');
+    expect(result.unsent.map(tagOrTimestamp)).toEqual([
+      'recording-meta',
+      1,
+      'close-permanent',
+    ]);
+  });
+
+  it('stop(true) resolves delivered once the final POST succeeds', async () => {
+    FakeWebSocket.autoOpen = false;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.resolve({ ok: true, status: 200 })),
+    );
+    const transport = createTransport(options);
+    transport.send(fullSnapshot(1));
+    await expect(transport.stop(true)).resolves.toEqual({ delivered: true });
+  });
+
+  it('stop(true) still delivers a large event whose own POST failed', async () => {
+    FakeWebSocket.autoOpen = false;
+    let calls = 0;
+    const fetchMock = vi.fn(() =>
+      ++calls === 1
+        ? Promise.reject(new TypeError('Failed to fetch'))
+        : Promise.resolve({ ok: true, status: 200 }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const transport = createTransport(options);
+    const large = {
+      ...fullSnapshot(7),
+      data: { blob: 'x'.repeat(10e5 + 1) },
+    } as unknown as eventWithTime;
+    transport.send(large); // too big for the socket: POSTed on its own, fails
+    await Promise.resolve();
+    await expect(transport.stop(true)).resolves.toEqual({ delivered: true });
+    expect(postedLines(fetchMock).slice(1).map(tagOrTimestamp)).toEqual([
+      'recording-meta',
+      7,
+      'close-permanent',
+    ]);
+  });
+
+  describe('a large event whose own POST failed', () => {
+    const largeEvent = (timestamp: number) =>
+      ({
+        ...fullSnapshot(timestamp),
+        data: { blob: 'x'.repeat(10e5 + 1) },
+      } as unknown as eventWithTime);
+    const firstPostFails = () => {
+      let calls = 0;
+      const fetchMock = vi.fn(() =>
+        ++calls === 1
+          ? Promise.reject(new TypeError('Failed to fetch'))
+          : Promise.resolve({ ok: true, status: 200 }),
+      );
+      vi.stubGlobal('fetch', fetchMock);
+      return fetchMock;
+    };
+
+    it('is never sent over the socket that opens afterwards, and stop(true) POSTs it before close-permanent', async () => {
+      const fetchMock = firstPostFails();
+      const transport = createTransport(options);
+      transport.send(largeEvent(7)); // POSTed on its own; that POST fails
+      await opened(); // the socket opens and drains its buffer
+      const socketSent = FakeWebSocket.instances[0].sent;
+      expect(socketSent.map(tagOrTimestamp)).toEqual(['recording-meta']);
+      expect(socketSent.every((m) => m.length < 10e5)).toBe(true);
+      await expect(transport.stop(true)).resolves.toEqual({ delivered: true });
+      // the failed POST, then one final POST: the large event, then close
+      expect(postedLines(fetchMock).slice(1).map(tagOrTimestamp)).toEqual([
+        7,
+        'close-permanent',
+      ]);
+      expect(FakeWebSocket.instances[0].sent).toEqual(socketSent);
+    });
+
+    it('is POSTed again by flush() even while the socket is streaming', async () => {
+      const fetchMock = firstPostFails();
+      const transport = createTransport(options);
+      transport.send(largeEvent(7));
+      await opened();
+      transport.flush();
+      await Promise.resolve();
+      expect(postedLines(fetchMock).slice(1).map(tagOrTimestamp)).toEqual([7]);
+      expect(FakeWebSocket.instances[0].sent.map(tagOrTimestamp)).not.toContain(
+        7,
+      );
+    });
+
+    it('is reported unsent ahead of close-permanent when the final POST fails too', async () => {
+      FakeWebSocket.autoOpen = false;
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(() => Promise.reject(new TypeError('Failed to fetch'))),
+      );
+      const transport = createTransport(options);
+      transport.send(largeEvent(7));
+      transport.send(fullSnapshot(8));
+      await Promise.resolve();
+      const result = await transport.stop(true);
+      if (result.delivered) throw new Error('expected a failed delivery');
+      expect(result.unsent.map(tagOrTimestamp)).toEqual([
+        'recording-meta',
+        8,
+        7,
+        'close-permanent',
+      ]);
+    });
+  });
+
+  it('flush() POSTs what is buffered while the first socket is still connecting', () => {
+    FakeWebSocket.autoOpen = false; // the socket stays connecting
+    const fetchMock = vi.fn(() => Promise.resolve({ ok: true, status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const transport = createTransport(options);
+    transport.send(fullSnapshot(1));
+    transport.flush();
+    expect(postedLines(fetchMock).map(tagOrTimestamp)).toEqual([
+      'recording-meta',
+      1,
+    ]);
+  });
+
+  it('flush() POSTs nothing while the socket is open and streaming', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve({ ok: true, status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const transport = createTransport(options);
+    transport.send(fullSnapshot(1));
+    await opened();
+    transport.flush();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(messages().map((m) => m.data.tag ?? m.type)).toEqual([
+      'recording-meta',
+      EventType.FullSnapshot,
+    ]);
+  });
+
+  describe('postEvents', () => {
+    it('POSTs the given lines in order to the recording events URL', async () => {
+      const fetchMock = vi.fn(() => Promise.resolve({ ok: true, status: 200 }));
+      vi.stubGlobal('fetch', fetchMock);
+      const lines = ['{"a":1}', '{"a":2}'];
+      await expect(
+        postEvents(
+          {
+            publicApiKey: 'pk_test',
+            recordingId: 'rec-123',
+            serverUrl: 'https://api.example/recordings/{recordingId}/events/ws',
+          },
+          lines,
+        ),
+      ).resolves.toEqual({ delivered: true });
+      const [url, init] = (
+        fetchMock.mock.calls as unknown as [
+          string,
+          { body: string; headers: Record<string, string> },
+        ][]
+      )[0];
+      expect(url).toBe('https://api.example/recordings/rec-123/events');
+      expect(init.headers.Authorization).toBe('Bearer pk_test');
+      expect(init.body).toBe('{"a":1}\n{"a":2}');
+    });
+
+    it('returns the lines it could not deliver', async () => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(() => Promise.reject(new TypeError('Failed to fetch'))),
+      );
+      const result = await postEvents(
+        { publicApiKey: 'pk_test', recordingId: 'rec-123' },
+        ['{"a":1}', '{"a":2}'],
+      );
+      expect(result).toEqual({
+        delivered: false,
+        error: new TypeError('Failed to fetch'),
+        unsent: ['{"a":1}', '{"a":2}'],
+      });
+    });
+  });
+
   describe('after the socket drops', () => {
     // ExponentialBackoff's first retry waits 1 to 3 s; the fallback POST runs every 5 s.
     const firstRetry = 3100;

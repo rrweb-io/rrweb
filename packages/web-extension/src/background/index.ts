@@ -1,14 +1,25 @@
 import Browser from 'webextension-polyfill';
-import type { eventWithTime } from '@rrweb/types';
 import Channel from '~/utils/channel';
 import { EventName, LocalDataKey, SyncDataKey } from '~/types';
-import type { CloudAccount, LocalData, Settings, SyncData } from '~/types';
-import { createTransport } from '@rrweb/browser-client';
+import type {
+  FailedUpload,
+  LocalData,
+  RecordedEvent,
+  Settings,
+  SyncData,
+} from '~/types';
+import { createTransport, postEvents } from '@rrweb/browser-client';
 import { config } from '~/config';
-import { addSession } from '~/utils/storage';
+import {
+  addSession,
+  deleteFailedUpload,
+  getFailedUpload,
+  putFailedUpload,
+} from '~/utils/storage';
+import { createFailedUploads } from './failedUploads';
 import { watchRecordedPages } from './pageWatch';
 import { createRecorder } from './recorder';
-import { createSink } from './sinks';
+import { createSink, type UnsentUpload } from './sinks';
 
 void (async () => {
   // assign default value to settings of this extension
@@ -25,27 +36,42 @@ void (async () => {
     settings,
   } as SyncData);
 
+  const storedAccount = async () => {
+    if (!config.cloudEnabled) return null;
+    const stored = (await Browser.storage.local.get(
+      LocalDataKey.cloudAccount,
+    )) as LocalData;
+    return stored[LocalDataKey.cloudAccount] ?? null;
+  };
+  const failedUploads = createFailedUploads({
+    readList: async () =>
+      (
+        (await Browser.storage.local.get(
+          LocalDataKey.failedUploads,
+        )) as LocalData
+      )[LocalDataKey.failedUploads] ?? [],
+    writeList: (list: FailedUpload[]) =>
+      Browser.storage.local.set({ [LocalDataKey.failedUploads]: list }),
+    putUpload: putFailedUpload,
+    getUpload: getFailedUpload,
+    deleteUpload: deleteFailedUpload,
+    postEvents,
+    openTab: (url) => Browser.tabs.create({ url }),
+    currentUserId: async () => (await storedAccount())?.userId ?? null,
+  });
+  await failedUploads.recoverAfterRestart();
+
   const sinkDeps = {
     createTransport,
     addSession,
+    keepFailedUpload: (upload: UnsentUpload) => failedUploads.keep(upload),
     randomId: () => crypto.randomUUID(),
     getURL: (path: string) => Browser.runtime.getURL(path),
     recorderVersion: Browser.runtime.getManifest().version_name || 'unknown',
   };
   const channel = new Channel();
   const recorder = createRecorder({
-    getAccount: async () => {
-      if (!config.cloudEnabled) return null;
-      const stored = (await Browser.storage.local.get(
-        LocalDataKey.cloudAccount,
-      )) as LocalData;
-      return (
-        (stored[LocalDataKey.cloudAccount] as
-          | CloudAccount
-          | null
-          | undefined) ?? null
-      );
-    },
+    getAccount: storedAccount,
     getTabUrl: async (tabId) => (await Browser.tabs.get(tabId)).url,
     getTabTitle: async (tabId) => (await Browser.tabs.get(tabId)).title,
     getCurrentTabId: () => channel.getCurrentTabId(),
@@ -64,18 +90,50 @@ void (async () => {
       return () => clearInterval(interval);
     },
     now: () => Date.now(),
+    newToken: () => crypto.randomUUID(),
   });
   // Reset recorder status when the extension is reloaded.
   await Browser.storage.local.set({
     [LocalDataKey.recorderStatus]: recorder.getStatus(),
   });
 
-  channel.on(EventName.StartButtonClicked, () => recorder.start());
+  channel.on(
+    EventName.StartButtonClicked,
+    (request) => void recorder.start(request),
+  );
   channel.on(EventName.StopButtonClicked, () => recorder.stop());
   channel.on(EventName.PauseButtonClicked, () => recorder.pauseClicked());
   channel.on(EventName.ResumeButtonClicked, () => recorder.resumeClicked());
-  channel.on(EventName.ContentScriptEmitEvent, (data) => {
-    recorder.add(data as eventWithTime);
+  channel.on(EventName.ContentScriptEmitEvent, (data, sender) => {
+    recorder.add(data as RecordedEvent, {
+      tabId: sender.tab?.id,
+      frameId: sender.frameId,
+    });
+  });
+  // Retry never rejects: a failure is stored as the upload's retry-failed
+  // state, which the popup shows. Discard and log out can fail on storage.
+  const logFailure = (action: string) => (error: unknown) =>
+    console.error(`Could not ${action}:`, error);
+  channel.on(EventName.RetryUploadClicked, (data) => {
+    const recordingId = stringField(data, 'recordingId');
+    if (recordingId !== 'invalid')
+      void failedUploads
+        .retry(recordingId)
+        .catch(logFailure('retry the upload'));
+  });
+  channel.on(EventName.DiscardUploadClicked, (data) => {
+    const recordingId = stringField(data, 'recordingId');
+    if (recordingId !== 'invalid')
+      void failedUploads
+        .discard(recordingId)
+        .catch(logFailure('discard the recording'));
+  });
+  channel.on(EventName.UserLoggedOut, (data) => {
+    const userId = stringField(data, 'userId');
+    if (userId !== 'invalid')
+      void failedUploads
+        .forgetUser(userId)
+        .catch(logFailure("delete the user's failed uploads"));
   });
 
   // One recording is one tab: it finishes when that tab's document goes away.
@@ -109,6 +167,13 @@ async function injectRecorder(tabId: number) {
     files: ['content/inject.js'],
     world: 'MAIN',
   });
+}
+
+/** A non-empty string field of a runtime message, or 'invalid'. */
+function stringField(data: unknown, key: string): string | 'invalid' {
+  if (typeof data !== 'object' || data === null) return 'invalid';
+  const value = (data as Record<string, unknown>)[key];
+  return typeof value === 'string' && value !== '' ? value : 'invalid';
 }
 
 /**

@@ -101,24 +101,49 @@ describe('connectOrg', () => {
 });
 
 describe('signOutAccount', () => {
+  const clerk = (
+    signOut: (cb: () => Promise<unknown>) => Promise<unknown>,
+  ) => ({
+    user: { id: 'user_1' },
+    signOut,
+  });
+
   it('clears the stored account once sign-out completes', async () => {
-    await signOutAccount({ signOut: () => Promise.resolve() });
+    await signOutAccount(
+      clerk(() => Promise.resolve()),
+      () => undefined,
+    );
     expect(LocalDataKey.cloudAccount in store.data).toBe(false);
   });
 
   it('clears the account from the callback that replaces the redirect', async () => {
-    await signOutAccount({
-      signOut: async (callback) => {
+    await signOutAccount(
+      clerk(async (callback) => {
         await callback();
         expect(LocalDataKey.cloudAccount in store.data).toBe(false);
-      },
-    });
+      }),
+      () => undefined,
+    );
   });
 
-  it('keeps the account and rejects when sign-out fails', async () => {
+  it("forgets the user's failed uploads once sign-out completes", async () => {
+    const forgetUploadsOf = vi.fn();
+    await signOutAccount(
+      clerk(() => Promise.resolve()),
+      forgetUploadsOf,
+    );
+    expect(forgetUploadsOf).toHaveBeenCalledWith('user_1');
+  });
+
+  it('keeps the account and the failed uploads, and rejects, when sign-out fails', async () => {
+    const forgetUploadsOf = vi.fn();
     await expect(
-      signOutAccount({ signOut: () => Promise.reject(new Error('offline')) }),
+      signOutAccount(
+        clerk(() => Promise.reject(new Error('offline'))),
+        forgetUploadsOf,
+      ),
     ).rejects.toThrow('offline');
     expect(store.data[LocalDataKey.cloudAccount]).toEqual(previous);
+    expect(forgetUploadsOf).not.toHaveBeenCalled();
   });
 });

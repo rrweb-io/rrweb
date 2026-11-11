@@ -43,13 +43,20 @@ export async function connectOrg(
 }
 
 /**
- * Signs out and drops the stored account. The callback replaces Clerk's
- * post-sign-out navigation, so extension pages stay where they are. A failed
- * sign-out leaves the account in place.
+ * Signs out, drops the stored account, then has the user's failed uploads
+ * deleted, so the signed-out view never shows or uploads them. The callback
+ * replaces Clerk's post-sign-out navigation, so extension pages stay where
+ * they are. A failed sign-out leaves the account and the uploads in place.
  */
-export async function signOutAccount(clerk: {
-  signOut: (callback: () => Promise<unknown>) => Promise<unknown>;
-}): Promise<void> {
+export async function signOutAccount(
+  clerk: {
+    user?: { id: string } | null;
+    signOut: (callback: () => Promise<unknown>) => Promise<unknown>;
+  },
+  forgetUploadsOf: (userId: string) => void,
+): Promise<void> {
+  const userId = clerk.user?.id; // gone once signed out
   await clerk.signOut(() => removeStoredAccount());
   await removeStoredAccount();
+  if (userId) forgetUploadsOf(userId);
 }

@@ -6,6 +6,7 @@ import {
   Logo,
   Note,
   PopupFrame,
+  FailedUploads,
   RecordButton,
   RecorderError,
   RecordingControls,
@@ -55,6 +56,11 @@ export function SignedInView({
       <RecordButton
         recorder={recorder}
         idleLabel="Start recording"
+        startAs={{
+          mode: 'cloud',
+          userId: account.userId,
+          orgId: account.orgId,
+        }}
         tall
         disabled={orgSwitch.name === 'switching'}
         autoFocus
@@ -66,6 +72,12 @@ export function SignedInView({
           : 'Uploads to rrweb. Inputs are masked.'}
       </Note>
       <RecorderError recorder={recorder} />
+      <FailedUploads
+        uploads={recorder.failedUploads.filter(
+          (u) => u.userId === account.userId,
+        )}
+        recorder={recorder}
+      />
       <Link
         href={dashboardUrl}
         isExternal

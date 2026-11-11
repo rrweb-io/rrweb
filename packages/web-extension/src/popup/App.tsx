@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import Browser from 'webextension-polyfill';
 import Channel from '~/utils/channel';
 import { LocalDataKey, RecorderStatus, EventName } from '~/types';
-import type { LocalData, Session } from '~/types';
+import type { FailedUpload, LocalData, Session } from '~/types';
 import { LoadingView, type RecorderControls } from './PopupParts';
 import { SignedOutView } from './SignedOutView';
 import { activeRecording, type ActiveRecording } from './account';
@@ -42,6 +42,7 @@ function useRecorder(): PopupRecorder {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [newSession, setNewSession] = useState<Session | null>(null);
+  const [failedUploads, setFailedUploads] = useState<FailedUpload[]>([]);
 
   useEffect(() => {
     const parseStatusData = (data: LocalData[LocalDataKey.recorderStatus]) => {
@@ -57,9 +58,18 @@ function useRecorder(): PopupRecorder {
       if (!data || !data[LocalDataKey.recorderStatus]) return;
       parseStatusData((data as LocalData)[LocalDataKey.recorderStatus]);
     });
+    void Browser.storage.local.get(LocalDataKey.failedUploads).then((data) => {
+      setFailedUploads((data as LocalData)[LocalDataKey.failedUploads] ?? []);
+    });
     const onChanged = (
       changes: Record<string, Browser.Storage.StorageChange>,
     ) => {
+      if (changes[LocalDataKey.failedUploads])
+        setFailedUploads(
+          (changes[LocalDataKey.failedUploads].newValue as
+            | FailedUpload[]
+            | undefined) ?? [],
+        );
       if (!changes[LocalDataKey.recorderStatus]) return;
       const data = changes[LocalDataKey.recorderStatus]
         .newValue as LocalData[LocalDataKey.recorderStatus];
@@ -79,16 +89,21 @@ function useRecorder(): PopupRecorder {
       active,
       startTime,
       errorMessage,
-      toggle: () => {
+      toggle: (startAs) => {
         if (status === RecorderStatus.STARTING) return;
         if (status === RecorderStatus.IDLE)
-          void channel.emit(EventName.StartButtonClicked, {});
+          void channel.emit(EventName.StartButtonClicked, startAs);
         else void channel.emit(EventName.StopButtonClicked, {});
       },
       pause: () => void channel.emit(EventName.PauseButtonClicked, {}),
       resume: () => void channel.emit(EventName.ResumeButtonClicked, {}),
+      failedUploads,
+      retryUpload: (recordingId) =>
+        void channel.emit(EventName.RetryUploadClicked, { recordingId }),
+      discardUpload: (recordingId) =>
+        void channel.emit(EventName.DiscardUploadClicked, { recordingId }),
     }),
-    [status, active, startTime, errorMessage],
+    [status, active, startTime, errorMessage, failedUploads],
   );
   return { controls, newSession };
 }

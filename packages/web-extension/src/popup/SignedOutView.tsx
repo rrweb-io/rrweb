@@ -98,6 +98,7 @@ export function SignedOutView({
       <RecordButton
         recorder={recorder}
         idleLabel="Record offline"
+        startAs={{ mode: 'offline' }}
         autoFocus={cloud.name === 'unavailable'}
       />
       <Note>{recordingNote(recorder.active)}</Note>

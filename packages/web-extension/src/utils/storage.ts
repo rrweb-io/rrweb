@@ -119,3 +119,39 @@ export async function downloadSessions(ids: string[]) {
     URL.revokeObjectURL(url);
   }
 }
+
+/**
+ * Events of cloud recordings whose upload failed, kept until a retry
+ * delivers them. A database of its own, so the offline stores keep version 1.
+ */
+const FailedUploadStoreName = 'failed-uploads';
+export type StoredFailedUpload = {
+  recordingId: string;
+  publicKey: string;
+  events: string[];
+};
+
+function getFailedUploadStore() {
+  return openDB<StoredFailedUpload>(FailedUploadStoreName, 1, {
+    upgrade(db) {
+      db.createObjectStore(FailedUploadStoreName, { keyPath: 'recordingId' });
+    },
+  });
+}
+
+export async function putFailedUpload(upload: StoredFailedUpload) {
+  const db = await getFailedUploadStore();
+  await db.put(FailedUploadStoreName, upload);
+}
+
+export async function getFailedUpload(recordingId: string) {
+  const db = await getFailedUploadStore();
+  return (await db.get(FailedUploadStoreName, recordingId)) as
+    | StoredFailedUpload
+    | undefined;
+}
+
+export async function deleteFailedUpload(recordingId: string) {
+  const db = await getFailedUploadStore();
+  await db.delete(FailedUploadStoreName, recordingId);
+}

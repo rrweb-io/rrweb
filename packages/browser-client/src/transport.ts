@@ -26,9 +26,22 @@ export type TransportOptions = {
   meta: nameValues;
 };
 
+/**
+ * Whether stop() or postEvents() got everything to the server. `unsent` holds
+ * the serialized events (one JSON string each, in order) that did not arrive,
+ * so the caller can keep them and retry with postEvents() later.
+ */
+export type DeliveryResult =
+  | { delivered: true }
+  | { delivered: false; error: Error; unsent: string[] };
+
 export type Transport = {
   send(event: eventWithTime): void;
-  /** POST anything buffered (what start() does on page hidden). */
+  /**
+   * POST anything buffered, unless the socket is open and streaming (what
+   * start() does on page hidden). Events wait in the buffer while the socket
+   * is connecting, reconnecting or paused by a server error.
+   */
   flush(): void;
   /** Close the socket and let the next send() open a new one (page freeze). */
   disconnect(): void;
@@ -37,10 +50,11 @@ export type Transport = {
    * stop(true) first POSTs anything still buffered, in order, followed by
    * close-permanent; stop(false) drops what is buffered. When the socket is
    * not open, or a POST is still in flight, the close event is POSTed after
-   * every earlier POST settles. The promise resolves once delivery has been
-   * attempted.
+   * every earlier POST settles. The promise never rejects: it resolves to
+   * `{ delivered: false, error, unsent }` when a POST failed, with every event
+   * the server did not accept, the close event included.
    */
-  stop(permanent: boolean): Promise<void>;
+  stop(permanent: boolean): Promise<DeliveryResult>;
 };
 
 type ServerMessage =
@@ -50,6 +64,8 @@ type ServerMessage =
 
 const defaultServerUrl =
   'https://api.rrweb.com/recordings/{recordingId}/events/ws';
+/** WebSocket.OPEN; not every runtime defines the WebSocket global. */
+const SOCKET_OPEN = 1;
 const wsLimit = 10e5; // this is approximate and depends on the browser, also on how unicode is encoded (we are comparing against the length of a javascript string)
 
 function isServerMessage(value: unknown): value is ServerMessage {
@@ -58,7 +74,6 @@ function isServerMessage(value: unknown): value is ServerMessage {
 
 export function createTransport(options: TransportOptions): Transport {
   const { publicApiKey, recordingId, meta } = options;
-  let serverUrl = options.serverUrl ?? defaultServerUrl;
 
   let ws: Websocket | undefined;
   /** Whether send() ever ran; until then there is no recording to close. */
@@ -70,36 +85,55 @@ export function createTransport(options: TransportOptions): Transport {
    */
   let paused: 'no' | 'socket-closed' | 'server-error' = 'no';
   let fallbackPosting: ReturnType<typeof setInterval> | undefined;
+  /** websocket-ts sends this over the socket whenever the socket opens. */
   const buffer: ArrayQueue<string> = new ArrayQueue();
-  /** POSTs not yet settled; the close event must not overtake them. */
-  const uploads = new Set<Promise<unknown>>();
+  /**
+   * Events too large for the socket whose own POST failed. They never go into
+   * `buffer`, so the socket never carries them: flush(), the fallback POST and
+   * stop(true) POST them again, stop(true) ahead of the close event.
+   */
+  const postOnly: string[] = [];
+  /**
+   * POSTs not yet settled, as promises that never reject; the close event
+   * must not overtake them. A failed POST keeps its events: a queue body goes
+   * back into the buffer (postData re-queues it), a large event into postOnly.
+   */
+  const uploads = new Set<Promise<void>>();
   const upload = (body: ArrayQueue<string> | string) => {
-    const request = postData(postUrl, publicApiKey, body);
-    uploads.add(request);
-    const settle = () => uploads.delete(request);
-    request.then(settle, settle);
+    const request = postData(postUrl, publicApiKey, body).catch(
+      (error: unknown) => {
+        if (typeof body === 'string') postOnly.push(body);
+        throw error;
+      },
+    );
+    const settled = request.then(
+      () => undefined,
+      () => undefined,
+    );
+    uploads.add(settled);
+    void settled.then(() => uploads.delete(settled));
     return request;
+  };
+  const uploadPostOnly = () => {
+    postOnly.splice(0).forEach((eventStr) => {
+      void upload(eventStr).catch((error) => {
+        console.error('Error POSTing a large event:', error);
+      });
+    });
   };
 
   const initialPayload: nameValues = { ...meta };
 
-  // the expected replacement of recording id
-  serverUrl = serverUrl.replace('{recordingId}', recordingId);
-  serverUrl = serverUrl.replace('%7BrecordingId%7D', recordingId); // as mangled by `new URL`
-
-  const sURL = new URL(serverUrl);
-  if (!serverUrl.includes(recordingId)) {
-    // '{recordingId}' wasn't in the url;
-    // pass as a query string param instead
-    sURL.searchParams.set('recordingId', recordingId);
-    serverUrl = sURL.href;
+  const urls = recordingUrls(
+    options.serverUrl ?? defaultServerUrl,
+    recordingId,
+  );
+  const serverUrl = urls.socketUrl;
+  const postUrl = urls.postUrl;
+  if (urls.idInQuery) {
     // also include in the payload in case query string gets lost during upgrade or proxying
     initialPayload.recordingId = recordingId;
   }
-  if (sURL.pathname.endsWith('/ws')) {
-    sURL.pathname = sURL.pathname.slice(0, -3);
-  }
-  const postUrl = sURL.href;
 
   initialPayload.recordVersion = __RRWEB_BROWSER_CLIENT_VERSION__;
   initialPayload.recordCommitHash = __RRWEB_BROWSER_CLIENT_COMMIT_HASH__;
@@ -143,6 +177,7 @@ export function createTransport(options: TransportOptions): Transport {
           console.error('Error periodically POSTing events:', error);
         });
       }
+      uploadPostOnly();
     }, 5 * 1000);
   };
 
@@ -197,11 +232,13 @@ export function createTransport(options: TransportOptions): Transport {
     },
 
     flush() {
-      if ((!ws || paused !== 'no') && buffer.length()) {
+      const streaming = ws?.readyState === SOCKET_OPEN && paused === 'no';
+      if (!streaming && buffer.length()) {
         void upload(buffer).catch((error) => {
           console.error('Error POSTing buffered events:', error);
         });
       }
+      uploadPostOnly(); // these never go over the socket
     },
 
     disconnect() {
@@ -226,35 +263,101 @@ export function createTransport(options: TransportOptions): Transport {
       stopFallbackPosting();
       if (!started) {
         buffer.clear();
-        return;
+        postOnly.length = 0;
+        return { delivered: true }; // no recording, so nothing to deliver
       }
       // ws is undefined after disconnect(); the buffer still goes out below.
       const socket = ws;
       ws = undefined;
       paused = 'no';
-      if (!permanent) buffer.clear();
+      if (!permanent) {
+        buffer.clear();
+        postOnly.length = 0;
+      }
       if (
-        socket?.readyState === WebSocket.OPEN &&
+        socket?.readyState === SOCKET_OPEN &&
         !buffer.length() &&
+        !postOnly.length &&
         !uploads.size
       ) {
         socket.send(closeStr);
         socket.close();
-        return;
+        return { delivered: true };
       }
       // No open socket to carry the close event, events still buffered
       // (socket connecting, or paused for the POST fallback), or a POST in
       // flight: deliver everything in order, then the close event.
       socket?.close();
-      await Promise.allSettled([...uploads]);
-      buffer.add(closeStr);
+      await Promise.all([...uploads]); // each already settled to undefined
+      // What the socket did not carry, then large events, then the close.
+      const final = new ArrayQueue<string>();
+      [...drain(buffer), ...postOnly.splice(0), closeStr].forEach((eventStr) =>
+        final.add(eventStr),
+      );
       try {
-        await postData(postUrl, publicApiKey, buffer);
+        await postData(postUrl, publicApiKey, final);
+        return { delivered: true };
       } catch (error) {
         console.error('Error POSTing final events:', error);
+        return {
+          delivered: false,
+          error: asError(error),
+          unsent: drain(final),
+        };
       }
     },
   };
+}
+
+/**
+ * POST serialized events (for example `unsent` from a failed stop()) to the
+ * recording, in order. Resolves like stop(): never rejects.
+ */
+export async function postEvents(
+  options: Pick<TransportOptions, 'publicApiKey' | 'recordingId' | 'serverUrl'>,
+  events: string[],
+): Promise<DeliveryResult> {
+  const { postUrl } = recordingUrls(
+    options.serverUrl ?? defaultServerUrl,
+    options.recordingId,
+  );
+  const queue = new ArrayQueue<string>();
+  events.forEach((eventStr) => queue.add(eventStr));
+  try {
+    await postData(postUrl, options.publicApiKey, queue);
+    return { delivered: true };
+  } catch (error) {
+    return { delivered: false, error: asError(error), unsent: drain(queue) };
+  }
+}
+
+/** The socket URL and POST URL for a recording, from a `serverUrl` template. */
+function recordingUrls(template: string, recordingId: string) {
+  // the expected replacement of recording id
+  let socketUrl = template.replace('{recordingId}', recordingId);
+  socketUrl = socketUrl.replace('%7BrecordingId%7D', recordingId); // as mangled by `new URL`
+  const sURL = new URL(socketUrl);
+  const idInQuery = !socketUrl.includes(recordingId);
+  if (idInQuery) {
+    // '{recordingId}' wasn't in the url;
+    // pass as a query string param instead
+    sURL.searchParams.set('recordingId', recordingId);
+    socketUrl = sURL.href;
+  }
+  if (sURL.pathname.endsWith('/ws')) {
+    sURL.pathname = sURL.pathname.slice(0, -3);
+  }
+  return { socketUrl, postUrl: sURL.href, idInQuery };
+}
+
+function drain(queue: ArrayQueue<string>): string[] {
+  const out: string[] = [];
+  for (let s = queue.read(); s !== undefined; s = queue.read()) out.push(s);
+  return out;
+}
+
+function asError(error: unknown): Error {
+  return error instanceof Error ? error : new Error(String(error));
 }
 
 async function postData(
@@ -289,30 +392,31 @@ async function postData(
       body = buffer;
       done = true;
     }
-    // eslint-disable-next-line compat/compat -- fetch is the runtime transport for POST fallback in supported browsers.
-    const response = await fetch(postUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-ndjson',
-        Authorization: `Bearer ${publicApiKey}`,
-      },
-      body,
-      keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
-    });
+    // re-queue events in case we can reconnect next time or with ws
+    const requeue = () => {
+      if (!(buffer instanceof ArrayQueue)) return;
+      const rest = drain(buffer);
+      [...toSend, ...rest].forEach((eventStr) => buffer.add(eventStr));
+    };
+    let response: Response;
+    try {
+      // eslint-disable-next-line compat/compat -- fetch is the runtime transport for POST fallback in supported browsers.
+      response = await fetch(postUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-ndjson',
+          Authorization: `Bearer ${publicApiKey}`,
+        },
+        body,
+        keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
+      });
+    } catch (error) {
+      requeue(); // the server never saw these events
+      throw error;
+    }
     responses.push(response);
     if (!response.ok) {
-      if (buffer instanceof ArrayQueue) {
-        // re-queue events in case we can reconnect next time or with ws
-        const rest: string[] = [];
-        for (
-          let eventStr = buffer.read();
-          eventStr !== undefined;
-          eventStr = buffer.read()
-        ) {
-          rest.push(eventStr);
-        }
-        [...toSend, ...rest].forEach((eventStr) => buffer.add(eventStr));
-      }
+      requeue();
       break;
     } else if (done) {
       break;
