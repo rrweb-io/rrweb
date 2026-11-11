@@ -1,4 +1,9 @@
-import { type eventWithTime, EventType, ReplayerEvents } from '@rrweb/types';
+import {
+  type eventWithTime,
+  type customEvent,
+  EventType,
+  ReplayerEvents,
+} from '@rrweb/types';
 import {
   type Replayer,
   type StallController,
@@ -8,23 +13,21 @@ import type { SegmentFetchFn } from './types';
 
 type SegmentInfo = {
   timestamp: number;
-  fetchTimestamp: number;
+  fetchQuery: string;
   keyframe: boolean;
   fetched: boolean;
   fetching: boolean;
   attempts: number;
 };
 
-type SegmentMarker = {
-  type: EventType.Custom;
+type SegmentPayload = {
+  keyframe?: boolean;
+  fetchQuery?: string; // will use the segment start timestamp if omitted
+};
+
+type SegmentMarker = customEvent<SegmentPayload> & {
   timestamp: number;
-  data: {
-    tag: 'segment-start';
-    payload: {
-      keyframe?: boolean;
-      fetchTimestamp?: number; // if different
-    };
-  };
+  data: { tag: 'segment-start'; omitFromTimeline: true };
 };
 
 const maxSegmentFetchAttempts = 3;
@@ -80,13 +83,13 @@ export class SegmentController implements StallController {
       data: { payload },
     } = segmentMarker;
     if (!this.segments.has(timestamp)) {
-      const fetchTimestamp =
-        typeof payload?.fetchTimestamp === 'number'
-          ? payload.fetchTimestamp
-          : timestamp;
+      const fetchQuery =
+        typeof payload?.fetchQuery === 'string'
+          ? payload.fetchQuery
+          : `from=${timestamp}`;
       this.segments.set(timestamp, {
         timestamp,
-        fetchTimestamp,
+        fetchQuery,
         keyframe: payload?.keyframe === true,
         fetched: false,
         fetching: false,
@@ -199,14 +202,14 @@ export class SegmentController implements StallController {
     if (this.inFlightFetches() >= maxConcurrentFetches) return;
     seg.attempts += 1;
     seg.fetching = true;
-    const { fetchTimestamp } = seg;
-    void this.fetchEvents(fetchTimestamp)
+    const { fetchQuery } = seg;
+    void this.fetchEvents(fetchQuery)
       .then(
         (batch) => {
           seg.fetching = false;
           if (!this.acceptFetchedBatch(seg, batch)) {
             this.warn('[replayer] empty or out-of-range segment response', {
-              fetchTimestamp,
+              fetchQuery,
             });
           }
         },

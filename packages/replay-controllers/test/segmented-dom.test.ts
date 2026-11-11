@@ -31,7 +31,11 @@ const segmentStart = (ts: number, keyframe = false): eventWithTime =>
   ({
     type: EventType.Custom,
     timestamp: ts,
-    data: { tag: 'segment-start', payload: { segmentStart: ts, keyframe } },
+    data: {
+      tag: 'segment-start',
+      omitFromTimeline: true,
+      payload: { segmentStart: ts, keyframe },
+    },
   } as unknown as eventWithTime);
 
 const head: eventWithTime[] = [
@@ -124,10 +128,11 @@ describe('segmented-dom replay', function () {
       var T = ${T};
       var CLICK = ${JSON.stringify(CLICK)};
       var click = (ts) => Object.assign({}, CLICK, { timestamp: ts });
+      var fromTs = (q) => +new URLSearchParams(q).get('from');
       var segmentStart = (ts, keyframe) => ({
         type: ${EventType.Custom},
         timestamp: ts,
-        data: { tag: 'segment-start', payload: { segmentStart: ts, keyframe: !!keyframe } },
+        data: { tag: 'segment-start', omitFromTimeline: true, payload: { segmentStart: ts, keyframe: !!keyframe } },
       });
       var segmentBuffer = (fetchFn, aheadMs) => (core) =>
         new rrweb.SegmentController(core, fetchFn, aheadMs);
@@ -171,7 +176,7 @@ describe('segmented-dom replay', function () {
         const cast = [];
         let finished = false;
         const replayer = new Replayer(oneFrontier, {
-          createStallController: segmentBuffer((cs) => { calls.push(cs); return Promise.resolve([click(T + 150)]); }),
+          createStallController: segmentBuffer((cs) => { calls.push(fromTs(cs)); return Promise.resolve([click(T + 150)]); }),
         });
         replayer.on(ReplayerEvents.StallStart, () => emitted.push('start'));
         replayer.on(ReplayerEvents.EventCast, (e) => cast.push(e.timestamp));
@@ -196,7 +201,7 @@ describe('segmented-dom replay', function () {
         const emitted = [];
         const cast = [];
         const replayer = new Replayer(oneFrontier, {
-          createStallController: segmentBuffer((cs) => { calls.push(cs); return new Promise(() => {}); }),
+          createStallController: segmentBuffer((cs) => { calls.push(fromTs(cs)); return new Promise(() => {}); }),
         });
         replayer.on(ReplayerEvents.StallStart, () => emitted.push('start'));
         replayer.on(ReplayerEvents.StallEnd, () => emitted.push('end'));
@@ -220,7 +225,7 @@ describe('segmented-dom replay', function () {
         const emitted = [];
         const cast = [];
         const replayer = new Replayer(oneFrontier, {
-          createStallController: segmentBuffer((cs) => { calls.push(cs); return Promise.resolve([click(T + 150)]); }),
+          createStallController: segmentBuffer((cs) => { calls.push(fromTs(cs)); return Promise.resolve([click(T + 150)]); }),
         });
         replayer.on(ReplayerEvents.StallStart, () => emitted.push('start'));
         replayer.on(ReplayerEvents.StallEnd, () => emitted.push('end'));
@@ -245,7 +250,7 @@ describe('segmented-dom replay', function () {
         let n = 0;
         const replayer = new Replayer(oneFrontier, {
           createStallController: segmentBuffer((cs) => {
-            calls.push(cs);
+            calls.push(fromTs(cs));
             n += 1;
             return Promise.resolve(n === 1 ? [] : [click(T + 150)]);
           }),
@@ -271,11 +276,11 @@ describe('segmented-dom replay', function () {
         let finished = false;
         const replayer = new Replayer(twoFrontiers, {
           createStallController: segmentBuffer((cs) => {
-            calls.push(cs);
-            if (cs === T + 100) {
+            calls.push(fromTs(cs));
+            if (fromTs(cs) === T + 100) {
               return Promise.resolve([click(T + 150), click(T + 250), segmentStart(T + 300)]);
             }
-            if (cs === T + 300) {
+            if (fromTs(cs) === T + 300) {
               return Promise.resolve([click(T + 350)]);
             }
             return Promise.resolve([]);
@@ -301,8 +306,8 @@ describe('segmented-dom replay', function () {
         let finished = false;
         const replayer = new Replayer(twoFrontiers, {
           createStallController: segmentBuffer((cs) => {
-            if (cs === T + 100) return Promise.resolve([click(T + 150), click(T + 250)]);
-            if (cs === T + 200) return Promise.resolve([click(T + 250)]);
+            if (fromTs(cs) === T + 100) return Promise.resolve([click(T + 150), click(T + 250)]);
+            if (fromTs(cs) === T + 200) return Promise.resolve([click(T + 250)]);
             return Promise.resolve([]);
           }),
         });
@@ -343,7 +348,7 @@ describe('segmented-dom replay', function () {
         const calls = [];
         const emitted = [];
         const replayer = new Replayer(manyFrontiers, {
-          createStallController: segmentBuffer((cs) => { calls.push(cs); return new Promise(() => {}); }),
+          createStallController: segmentBuffer((cs) => { calls.push(fromTs(cs)); return new Promise(() => {}); }),
         });
         replayer.on(ReplayerEvents.StallStart, () => emitted.push('start'));
         replayer.play(0);
@@ -369,7 +374,7 @@ describe('segmented-dom replay', function () {
         const calls = [];
         let finished = false;
         const replayer = new Replayer(manyFrontiers, {
-          createStallController: segmentBuffer((cs) => { calls.push(cs); return Promise.resolve([click(cs + 50)]); }),
+          createStallController: segmentBuffer((cs) => { calls.push(fromTs(cs)); return Promise.resolve([click(fromTs(cs) + 50)]); }),
         });
         replayer.on(ReplayerEvents.Finish, () => { finished = true; });
         replayer.play(0);
@@ -490,7 +495,7 @@ describe('segmented-dom replay', function () {
         const cast = [];
         let finished = false;
         const replayer = new Replayer(oneFrontier, {
-          createStallController: segmentBuffer((cs) => { calls.push(cs); return Promise.resolve([click(cs)]); }),
+          createStallController: segmentBuffer((cs) => { calls.push(fromTs(cs)); return Promise.resolve([click(fromTs(cs))]); }),
         });
         replayer.on(ReplayerEvents.StallStart, () => emitted.push('start'));
         replayer.on(ReplayerEvents.StallEnd, () => emitted.push('end'));
@@ -517,7 +522,7 @@ describe('segmented-dom replay', function () {
         let finished = false;
         const replayer = new Replayer(twoFrontiers, {
           createStallController: segmentBuffer((cs) => {
-            calls.push(cs);
+            calls.push(fromTs(cs));
             return Promise.resolve([click(T + 150), click(T + 250)]);
           }),
         });
@@ -541,8 +546,8 @@ describe('segmented-dom replay', function () {
         let finished = false;
         const replayer = new Replayer(twoFrontiers, {
           createStallController: segmentBuffer((cs) => {
-            calls.push(cs);
-            if (cs === T + 100) return Promise.resolve([click(T + 150), click(T + 180)]);
+            calls.push(fromTs(cs));
+            if (fromTs(cs) === T + 100) return Promise.resolve([click(T + 150), click(T + 180)]);
             return Promise.resolve([click(T + 250)]);
           }),
         });
@@ -563,8 +568,8 @@ describe('segmented-dom replay', function () {
         const calls = [];
         const replayer = new Replayer(oneFrontier, {
           createStallController: segmentBuffer((cs) => {
-            calls.push(cs);
-            if (cs === T + 100) return Promise.resolve([click(T + 120), segmentStart(T + 200), segmentStart(T + 300)]);
+            calls.push(fromTs(cs));
+            if (fromTs(cs) === T + 100) return Promise.resolve([click(T + 120), segmentStart(T + 200), segmentStart(T + 300)]);
             return Promise.resolve([click(T + 250)]);
           }),
         });
@@ -586,8 +591,8 @@ describe('segmented-dom replay', function () {
         let finished = false;
         const replayer = new Replayer(oneFrontier, {
           createStallController: segmentBuffer((cs) => {
-            calls.push(cs);
-            if (cs === T + 100) return Promise.resolve([click(T + 150), segmentStart(T + 300)]);
+            calls.push(fromTs(cs));
+            if (fromTs(cs) === T + 100) return Promise.resolve([click(T + 150), segmentStart(T + 300)]);
             return Promise.resolve([click(T + 350)]);
           }),
         });
@@ -609,10 +614,10 @@ describe('segmented-dom replay', function () {
         const events = oneFrontier.concat([segmentStart(T + 200, true)]);
         const replayer = new Replayer(events, {
           createStallController: segmentBuffer((cs) => {
-            calls.push(cs);
-            if (cs === T + 200) return Promise.resolve([click(T + 230)]);
-            if (cs === T + 100) return Promise.resolve([click(T + 120), segmentStart(T + 150), segmentStart(T + 200), click(T + 220)]);
-            if (cs === T + 150) return Promise.resolve([click(T + 160)]);
+            calls.push(fromTs(cs));
+            if (fromTs(cs) === T + 200) return Promise.resolve([click(T + 230)]);
+            if (fromTs(cs) === T + 100) return Promise.resolve([click(T + 120), segmentStart(T + 150), segmentStart(T + 200), click(T + 220)]);
+            if (fromTs(cs) === T + 150) return Promise.resolve([click(T + 160)]);
             return Promise.resolve([]);
           }),
         });
