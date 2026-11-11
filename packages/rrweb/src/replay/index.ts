@@ -59,6 +59,7 @@ import type {
   mutationData,
   scrollData,
   inputData,
+  mouseInteractionData,
   canvasMutationData,
   styleValueWithPriority,
   mouseMovePos,
@@ -85,7 +86,9 @@ import {
   uniqueTextMutations,
   StyleSheetMirror,
 } from '../utils';
-import getInjectStyleRules from './styles/inject-style';
+import getInjectStyleRules, {
+  maskedEditingAttribute,
+} from './styles/inject-style';
 import './styles/style.css';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
@@ -163,6 +166,8 @@ export class Replayer {
   private mousePos: mouseMovePos | null = null;
   private touchActive: boolean | null = null;
   private lastMouseDownEvent: [Node, Event] | null = null;
+  private maskedEditingIds = new Set<number>();
+  private pendingFocusInteractions: mouseInteractionData[] = [];
 
   // Keep the rootNode of the last hovered element. So  when hovering a new element, we can remove the last hovered element's :hover style.
   private lastHoveredRootNode: Document | ShadowRoot;
@@ -305,6 +310,13 @@ export class Replayer {
         this.adoptedStyleSheets = [];
       }
 
+      const focusInteractions = this.pendingFocusInteractions;
+      this.pendingFocusInteractions = [];
+      for (const interaction of focusInteractions) {
+        const target = this.mirror.getNode(interaction.id);
+        if (target) this.replayFocusInteraction(interaction, target);
+      }
+
       if (this.mousePos) {
         this.moveAndHover(
           this.mousePos.x,
@@ -336,6 +348,8 @@ export class Replayer {
     });
     this.emitter.on(ReplayerEvents.PlayBack, () => {
       this.firstFullSnapshot = null;
+      this.maskedEditingIds.clear();
+      this.pendingFocusInteractions = [];
       this.mirror.reset();
       this.styleMirror.reset();
       this.mediaManager.reset();
@@ -845,6 +859,7 @@ export class Replayer {
      * Adding this check to avoid any potential issues.
      */
     if (this.usingVirtualDom) {
+      this.pendingFocusInteractions = [];
       this.virtualDom.destroyTree();
       this.usingVirtualDom = false;
     }
@@ -867,6 +882,23 @@ export class Replayer {
     }
     const { documentElement, head } = this.iframe.contentDocument;
     this.insertStyleRules(documentElement, head);
+    if (isSync) {
+      // Seeking can start at a checkout that omitted the preceding focus event.
+      this.maskedEditingIds.clear();
+      for (const prior of this.service.state.context.events) {
+        if (prior === event) break;
+        if (
+          prior.type === EventType.IncrementalSnapshot &&
+          prior.data.source === IncrementalSource.MouseInteraction
+        ) {
+          this.updateMaskedEditingState(prior.data);
+        }
+      }
+    }
+    for (const id of this.maskedEditingIds) {
+      if (this.mirror.getNode(id)) this.applyMaskedEditingMarker(id);
+      else this.maskedEditingIds.delete(id);
+    }
     collectedDialogs.forEach((d) => applyDialogToTopLevel(d));
     if (!this.service.state.matches('playing')) {
       this.iframe.contentDocument
@@ -1175,29 +1207,39 @@ export class Replayer {
         if (d.id === -1) {
           break;
         }
-        const event = new Event(toLowerCase(MouseInteractions[d.type]));
+        if (
+          (d.type === MouseInteractions.Focus && d.maskFocus) ||
+          (d.type === MouseInteractions.Blur &&
+            (d.maskBlur || this.maskedEditingIds.has(d.id)))
+        ) {
+          this.updateMaskedEditingState(d);
+          this.applyMaskedEditingMarker(d.id);
+        }
+        if (
+          this.usingVirtualDom &&
+          (d.type === MouseInteractions.Focus ||
+            d.type === MouseInteractions.Blur)
+        ) {
+          this.pendingFocusInteractions.push(d);
+          break;
+        }
         const target = this.mirror.getNode(d.id);
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
         }
+        if (
+          d.type === MouseInteractions.Focus ||
+          d.type === MouseInteractions.Blur
+        ) {
+          this.replayFocusInteraction(d, target);
+          break;
+        }
+        const event = new Event(toLowerCase(MouseInteractions[d.type]));
         this.emitter.emit(ReplayerEvents.MouseInteraction, {
           type: d.type,
           target,
         });
-        const { triggerFocus } = this.config;
         switch (d.type) {
-          case MouseInteractions.Blur:
-            if ('blur' in (target as HTMLElement)) {
-              (target as HTMLElement).blur();
-            }
-            break;
-          case MouseInteractions.Focus:
-            if (triggerFocus && (target as HTMLElement).focus) {
-              (target as HTMLElement).focus({
-                preventScroll: true,
-              });
-            }
-            break;
           case MouseInteractions.Click:
           case MouseInteractions.TouchStart:
           case MouseInteractions.TouchEnd:
@@ -1929,6 +1971,42 @@ export class Replayer {
          * its last scroll event.
          */
       }
+    }
+  }
+
+  private updateMaskedEditingState(data: mouseInteractionData) {
+    if (data.id === -1) return;
+    if (data.type === MouseInteractions.Focus && data.maskFocus) {
+      this.maskedEditingIds.add(data.id);
+    } else if (data.type === MouseInteractions.Blur) {
+      this.maskedEditingIds.delete(data.id);
+    }
+  }
+
+  private applyMaskedEditingMarker(id: number) {
+    const mirror = this.usingVirtualDom ? this.virtualDom.mirror : this.mirror;
+    const target = mirror.getNode(id);
+    if (!target || !('setAttribute' in target)) return;
+    const element = target as Element | RRElement;
+    if (this.maskedEditingIds.has(id)) {
+      element.setAttribute(maskedEditingAttribute, 'true');
+    } else {
+      element.removeAttribute(maskedEditingAttribute);
+    }
+  }
+
+  private replayFocusInteraction(data: mouseInteractionData, target: Node) {
+    this.emitter.emit(ReplayerEvents.MouseInteraction, {
+      type: data.type,
+      target,
+      ...(data.maskFocus !== undefined && { maskFocus: data.maskFocus }),
+      ...(data.maskBlur !== undefined && { maskBlur: data.maskBlur }),
+    });
+    const element = target as HTMLElement;
+    if (data.type === MouseInteractions.Blur) {
+      element.blur?.();
+    } else if (this.config.triggerFocus) {
+      element.focus?.({ preventScroll: true });
     }
   }
 
