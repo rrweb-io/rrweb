@@ -68,6 +68,8 @@ const wsLimit = 10e5; // this is approximate and depends on the browser, also on
 const wsReadyStateOpen = 1; // WebSocket.OPEN
 const fallbackPostDelay = 5 * 1000;
 const fallbackPostMaxDelay = 60 * 1000;
+// A buffer POST holds back live sending, so it must not hang forever.
+const fallbackPostTimeout = 30 * 1000;
 
 let ws: Websocket | undefined;
 // The socket dropped; the library is reconnecting. Cleared when it reopens.
@@ -143,6 +145,7 @@ async function postBufferedEvents(): Promise<void> {
       postTarget.publicApiKey,
       buffer,
       isCurrent,
+      fallbackPostTimeout,
     );
   } finally {
     if (isCurrent()) {
@@ -207,6 +210,24 @@ export function stop(resetRecordingId: boolean) {
         payload: {},
       },
     };
+    if (
+      fallbackPostInFlight &&
+      ws.readyState === wsReadyStateOpen &&
+      !wsDisconnected &&
+      !wsRejected
+    ) {
+      // These were only waiting behind a pending POST; without it they would
+      // already have gone out over this socket.
+      const withheld = heldDuringPost;
+      for (
+        let eventStr = buffer.read();
+        eventStr !== undefined;
+        eventStr = buffer.read()
+      ) {
+        withheld.push(eventStr);
+      }
+      withheld.forEach((eventStr) => ws?.send(eventStr));
+    }
     // Clear old events before send, so websocket-ts can buffer the close event
     // for the HTTP fallback when the socket is not currently open.
     buffer.clear();
@@ -233,13 +254,15 @@ export function stop(resetRecordingId: boolean) {
       });
     }
     resetConnectionState();
-    recordingEpoch++;
-    fallbackPostInFlight = false;
-    heldDuringPost = [];
     ws = undefined; // so `emit` can restart it again if page is unfrozen
   } else {
     buffer.clear();
   }
+  // Also when a freeze already dropped the socket: a POST still in flight
+  // must lose its claim on the buffer before another recording starts.
+  recordingEpoch++;
+  fallbackPostInFlight = false;
+  heldDuringPost = [];
   if (resetRecordingId) {
     removeRecordingId();
   }
@@ -384,6 +407,8 @@ async function postData(
   buffer: ArrayQueue<string> | string,
   // false once the recording this POST belongs to was stopped
   ownsBuffer: () => boolean = () => true,
+  // abort a request that takes longer than this; its events are requeued
+  timeoutMs?: number,
 ) {
   const keepaliveLimit = 65000;
   let done = false;
@@ -419,6 +444,14 @@ async function postData(
       done = true;
     }
     let response: Response;
+    const controller =
+      timeoutMs !== undefined && typeof AbortController !== 'undefined'
+        ? // eslint-disable-next-line compat/compat -- feature-detected; without it the request simply has no timeout.
+          new AbortController()
+        : undefined;
+    const timeout = controller
+      ? setTimeout(() => controller.abort(), timeoutMs)
+      : undefined;
     try {
       // eslint-disable-next-line compat/compat -- fetch is the runtime transport for POST fallback in supported browsers.
       response = await fetch(postUrl, {
@@ -429,6 +462,7 @@ async function postData(
         },
         body,
         keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
+        signal: controller?.signal,
       });
     } catch (error) {
       // offline, DNS, CORS, aborted: nothing reached the server
@@ -436,6 +470,8 @@ async function postData(
         requeue(buffer, toSend);
       }
       throw error;
+    } finally {
+      clearTimeout(timeout);
     }
     responses.push(response);
     if (!response.ok) {

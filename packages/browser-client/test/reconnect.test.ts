@@ -378,6 +378,83 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     expect(ids(second.sent)).toEqual([10]);
   });
 
+  it('does not move events between recordings when stop() follows a freeze', async () => {
+    const post = deferredFetch();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { client, emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+    emit({ ...event(2), pad: 'x'.repeat(70_000) });
+    emit(event(3));
+    await vi.advanceTimersByTimeAsync(5000); // POST takes event 2
+
+    document.dispatchEvent(new Event('freeze')); // drops the socket
+    client.stop(true);
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+    });
+    mockState.emit!(event(10));
+    const second = mockState.sockets[mockState.sockets.length - 1];
+
+    post.resolve(new Response(null, { status: 202 }));
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(post.urls()).toHaveLength(1);
+    expect(ids(second.buffer.items)).toEqual([10]);
+  });
+
+  it('gives up on a POST that never settles and returns to the socket', async () => {
+    const fetchMock = vi.fn(
+      (_url: unknown, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () =>
+            reject(new DOMException('Aborted', 'AbortError')),
+          );
+        }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    emit(event(2));
+    await vi.advanceTimersByTimeAsync(5000); // POST takes event 2 and hangs
+    socket.reopen();
+    emit(event(3));
+    expect(ids(socket.sent)).toEqual([1]);
+
+    await vi.advanceTimersByTimeAsync(30_000);
+    emit(event(4));
+
+    expect(ids(socket.sent)).toEqual([1, 2, 3, 4]);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends events withheld behind a pending POST when stop() is called', async () => {
+    const post = deferredFetch();
+    const { client, emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    emit(event(2));
+    await vi.advanceTimersByTimeAsync(5000); // POST takes event 2
+    emit(event(3));
+    socket.reopen(); // event 3 is held behind the POST
+    emit(event(4));
+
+    client.stop(true);
+    post.resolve(new Response(null, { status: 202 }));
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(ids(socket.sent)).toEqual([1, 3, 4]);
+    expect(socket.sent.some((sent) => sent.includes('close-permanent'))).toBe(
+      true,
+    );
+    expect(ids(post.bodies())).toEqual([2]);
+  });
+
   it('stops the fallback POST timer on stop()', async () => {
     const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
     vi.stubGlobal('fetch', fetchMock);
