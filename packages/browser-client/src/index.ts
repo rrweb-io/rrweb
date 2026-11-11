@@ -67,6 +67,7 @@ const wsLimit = 10e5; // this is approximate and depends on the browser, also on
 const wsReadyStateOpen = 1; // WebSocket.OPEN
 const fallbackPostDelay = 5 * 1000;
 const fallbackPostMaxDelay = 60 * 1000;
+const errorBodyTimeout = 2 * 1000;
 
 let ws: Websocket | undefined;
 let wsRejected = false;
@@ -268,6 +269,18 @@ function connect(
   return ws;
 }
 
+function requeue(buffer: ArrayQueue<string>, taken: string[]) {
+  const rest: string[] = [];
+  for (
+    let eventStr = buffer.read();
+    eventStr !== undefined;
+    eventStr = buffer.read()
+  ) {
+    rest.push(eventStr);
+  }
+  [...taken, ...rest].forEach((eventStr) => buffer.add(eventStr));
+}
+
 async function postData(
   postUrl: string,
   publicApiKey: string,
@@ -295,34 +308,37 @@ async function postData(
           break;
         }
       }
+      if (toSend.length === 0) {
+        break;
+      }
       body = toSend.join('\n');
     } else {
       body = buffer;
       done = true;
     }
-    // eslint-disable-next-line compat/compat -- fetch is the runtime transport for POST fallback in supported browsers.
-    const response = await fetch(postUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-ndjson',
-        Authorization: `Bearer ${publicApiKey}`,
-      },
-      body,
-      keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
-    });
+    let response: Response;
+    try {
+      // eslint-disable-next-line compat/compat -- fetch is the runtime transport for POST fallback in supported browsers.
+      response = await fetch(postUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-ndjson',
+          Authorization: `Bearer ${publicApiKey}`,
+        },
+        body,
+        keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
+      });
+    } catch (error) {
+      if (buffer instanceof ArrayQueue) {
+        requeue(buffer, toSend);
+      }
+      throw error;
+    }
     responses.push(response);
     if (!response.ok) {
       if (buffer instanceof ArrayQueue) {
         // re-queue events in case we can reconnect next time or with ws
-        const rest: string[] = [];
-        for (
-          let eventStr = buffer.read();
-          eventStr !== undefined;
-          eventStr = buffer.read()
-        ) {
-          rest.push(eventStr);
-        }
-        [...toSend, ...rest].forEach((eventStr) => buffer.add(eventStr));
+        requeue(buffer, toSend);
       }
       break;
     } else if (done) {
@@ -333,8 +349,17 @@ async function postData(
   if (badResponse) {
     let badResponseInfo = `${badResponse.status} ${badResponse.statusText}`;
     if (!badResponse.bodyUsed) {
-      badResponseInfo +=
-        '\nresponse body:' + JSON.stringify(await badResponse.json());
+      let bodyTimer: ReturnType<typeof setTimeout> | undefined;
+      const responseBody = await Promise.race([
+        badResponse.text().catch(() => ''),
+        new Promise<string>((resolve) => {
+          bodyTimer = setTimeout(() => resolve(''), errorBodyTimeout);
+        }),
+      ]);
+      clearTimeout(bodyTimer);
+      if (responseBody) {
+        badResponseInfo += '\nresponse body:' + responseBody;
+      }
     }
     throw new Error(`Bad response from POST: ${badResponseInfo}`);
   }
@@ -501,7 +526,9 @@ export function start(
     // TODO: add browser native compression
     if (eventStr.length > wsLimit) {
       // Assuming wsLimit is a defined constant, and eventStr.length is intended.
-      void postData(postUrl, publicApiKey, eventStr);
+      void postData(postUrl, publicApiKey, eventStr).catch((error) => {
+        console.error('Error POSTing oversized event:', error);
+      });
     } else if (ws && !wsRejected) {
       ws.send(eventStr);
     } else {
@@ -591,7 +618,9 @@ export function start(
               (!ws || wsRejected || ws.readyState !== wsReadyStateOpen) &&
               buffer.length()
             ) {
-              void postData(postUrl, publicApiKey, buffer);
+              void postData(postUrl, publicApiKey, buffer).catch((error) => {
+                console.error('Error POSTing events on page hide:', error);
+              });
             }
           }
         } catch (e) {

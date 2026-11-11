@@ -236,6 +236,96 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     ).toEqual([2]);
   });
 
+  it('keeps events when a POST fails at the network level and retries with backoff', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValue(new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    emit(event(2));
+    emit(event(3));
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(ids(socket.buffer.items)).toEqual([2, 3]);
+
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(ids([String(fetchMock.mock.calls[1][1]?.body)])).toEqual([2, 3]);
+    expect(socket.buffer.length()).toBe(0);
+  });
+
+  it('delivers network-failed events over the socket when it reopens first', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockRejectedValue(new TypeError('Failed to fetch')),
+    );
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    emit(event(2));
+    await vi.advanceTimersByTimeAsync(5000);
+    socket.reopen();
+
+    expect(ids(socket.sent)).toEqual([1, 2]);
+  });
+
+  it('sends requeued events over the socket without waiting for another reconnect', async () => {
+    const post = deferredFetch();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    emit(event(2));
+    await vi.advanceTimersByTimeAsync(5000);
+    socket.reopen();
+    emit(event(3));
+    expect(ids(socket.sent)).toEqual([1, 3]);
+
+    post.reject(new TypeError('Failed to fetch'));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(ids(socket.buffer.items)).toEqual([2]);
+
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(ids(socket.sent)).toEqual([1, 3, 2]);
+    expect(socket.buffer.length()).toBe(0);
+  });
+
+  it('recovers when an error response body is not JSON or never finishes', async () => {
+    const stuckBody = new Response(null, { status: 503 });
+    vi.spyOn(stuckBody, 'text').mockReturnValue(new Promise(() => {}));
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(stuckBody)
+        .mockResolvedValue(new Response(null, { status: 202 })),
+    );
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    emit(event(2));
+    await vi.advanceTimersByTimeAsync(5000);
+    socket.reopen();
+    emit(event(3));
+    await vi.advanceTimersByTimeAsync(2000);
+    emit(event(4));
+
+    expect(ids(socket.sent)).toEqual([1, 2, 3, 4]);
+  });
+
   it('stops the fallback POST timer on stop()', async () => {
     const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
     vi.stubGlobal('fetch', fetchMock);
