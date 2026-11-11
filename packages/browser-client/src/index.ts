@@ -65,9 +65,12 @@ let defaultClientConfig: clientConfig = {
 const sessionStorageName = 'rrweb-browser-client-recording-id';
 const wsLimit = 10e5; // this is approximate and depends on the browser, also on how unicode is encoded (we are comparing against the length of a javascript string)
 const wsReadyStateOpen = 1; // WebSocket.OPEN
+const fallbackPostDelay = 5 * 1000;
+const fallbackPostMaxDelay = 60 * 1000;
 
 let ws: Websocket | undefined;
 let wsRejected = false;
+let cancelFallbackPosting: (() => void) | undefined;
 
 const buffer: ArrayQueue<string> = new ArrayQueue();
 let rrwebStopFn: listenerHandler | undefined;
@@ -115,6 +118,8 @@ export function stop(resetRecordingId: boolean) {
     rrwebStopFn();
     rrwebStopFn = undefined;
   }
+  cancelFallbackPosting?.();
+  cancelFallbackPosting = undefined;
   if (ws) {
     const closeEvent: customEventWithTime = {
       timestamp: nowTimestamp(),
@@ -215,19 +220,50 @@ function connect(
     ) // retry around every 1s, 2s, 4s, 8s, maxing out with a retry every ~1minute
     .build();
 
-  const fallbackPosting = setInterval(() => {
-    if (buffer.length()) {
-      void postData(postUrl, publicApiKey, buffer).catch((error) => {
-        clearInterval(fallbackPosting);
-        console.error('Error periodically POSTing events:', error);
-      });
+  let fallbackDelay = fallbackPostDelay;
+  let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
+  let fallbackCancelled = false;
+  const fallbackPostTick = () => {
+    if (!buffer.length()) {
+      scheduleFallbackPost();
+      return;
     }
-  }, 5 * 1000);
+    if (ws.readyState === wsReadyStateOpen && !wsRejected) {
+      const toFlush: string[] = [];
+      for (
+        let eventStr = buffer.read();
+        eventStr !== undefined;
+        eventStr = buffer.read()
+      ) {
+        toFlush.push(eventStr);
+      }
+      toFlush.forEach((eventStr) => ws.send(eventStr));
+      scheduleFallbackPost();
+      return;
+    }
+    postData(postUrl, publicApiKey, buffer)
+      .then(() => {
+        fallbackDelay = fallbackPostDelay;
+      })
+      .catch((error) => {
+        fallbackDelay = Math.min(fallbackDelay * 2, fallbackPostMaxDelay);
+        console.error('Error periodically POSTing events:', error);
+      })
+      .finally(() => {
+        if (!fallbackCancelled) scheduleFallbackPost();
+      });
+  };
+  const scheduleFallbackPost = () => {
+    fallbackTimer = setTimeout(fallbackPostTick, fallbackDelay);
+  };
+  scheduleFallbackPost();
+  cancelFallbackPosting?.();
+  cancelFallbackPosting = () => {
+    fallbackCancelled = true;
+    clearTimeout(fallbackTimer);
+  };
 
   // Add event listeners
-  ws.addEventListener(WebsocketEvent.open, () => {
-    clearInterval(fallbackPosting);
-  });
   ws.addEventListener(WebsocketEvent.message, messageHandler);
   return ws;
 }
@@ -570,6 +606,8 @@ export function start(
     // "In particular, it's important that you ... close any open Web Socket connections
     if (ws) {
       ws.close();
+      cancelFallbackPosting?.();
+      cancelFallbackPosting = undefined;
       wsRejected = false;
       ws = undefined; // so `emit` can restart it again if page is unfrozen
     }

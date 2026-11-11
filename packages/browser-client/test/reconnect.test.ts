@@ -192,5 +192,61 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     emit(event(3));
     expect(ids(socket.sent)).toEqual([1, 2, 3]);
     expect(socket.buffer.length()).toBe(0);
+
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('POSTs buffered events while the socket stays down', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    emit(event(2));
+    await vi.advanceTimersByTimeAsync(5000);
+    emit(event(3));
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(
+      ids(fetchMock.mock.calls.map(([, init]) => String(init?.body))),
+    ).toEqual([2, 3]);
+    expect(socket.buffer.length()).toBe(0);
+  });
+
+  it('keeps POSTing after the server rejects the socket, even if it reopens', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { emit, socket } = await startClient();
+    socket.reopen();
+
+    socket.dispatch('message', {
+      data: JSON.stringify({ type: 'upstream-result', ok: false }),
+    });
+    socket.drop();
+    socket.reopen();
+    emit(event(2));
+    expect(ids(socket.sent)).toEqual([1]);
+
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(
+      ids(fetchMock.mock.calls.map(([, init]) => String(init?.body))),
+    ).toEqual([2]);
+  });
+
+  it('stops the fallback POST timer on stop()', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { client, socket } = await startClient();
+    socket.reopen();
+
+    client.stop(true);
+    fetchMock.mockClear();
+    socket.buffer.add(JSON.stringify(event(9)));
+    await vi.advanceTimersByTimeAsync(120_000);
+
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
