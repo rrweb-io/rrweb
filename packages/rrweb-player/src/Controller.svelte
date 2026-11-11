@@ -365,7 +365,7 @@
     replayer.off('annotation', handleAnnotation);
     replayer.off('start', restoreCaptionOnSeek);
     replayer.off('events-updated', updateMeta);
-    clearTimeout(updateMetaTimeout);
+    if (updateMetaTimeout) clearTimeout(updateMetaTimeout);
     replayer.pause();
     stopTimer();
   });

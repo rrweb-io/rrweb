@@ -66,7 +66,7 @@ export class SegmentController implements StallController {
     return this.replayer.events[0].timestamp + timeOffset;
   }
 
-  private warn(...args: Parameters<typeof console.warn>) {
+  private warn(...args: unknown[]) {
     if (!this.replayer.config.showWarning) return;
     this.replayer.config.logger.warn(...args);
   }
