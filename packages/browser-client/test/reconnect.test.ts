@@ -153,6 +153,7 @@ function deferredFetch() {
     reject,
     urls: () => fetchMock.mock.calls.map(([url]) => String(url)),
     bodies: () => fetchMock.mock.calls.map(([, init]) => String(init?.body)),
+    signals: () => fetchMock.mock.calls.map(([, init]) => init?.signal),
   };
 }
 
@@ -404,32 +405,44 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     expect(ids(second.buffer.items)).toEqual([10]);
   });
 
-  it('gives up on a POST that never settles and returns to the socket', async () => {
-    const fetchMock = vi.fn(
-      (_url: unknown, init?: RequestInit) =>
-        new Promise<Response>((_resolve, reject) => {
-          init?.signal?.addEventListener('abort', () =>
-            reject(new DOMException('Aborted', 'AbortError')),
-          );
-        }),
-    );
-    vi.stubGlobal('fetch', fetchMock);
+  it('stops waiting for a slow POST after 30s without cancelling it', async () => {
+    const post = deferredFetch();
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const { emit, socket } = await startClient();
     socket.reopen();
     socket.drop();
 
     emit(event(2));
-    await vi.advanceTimersByTimeAsync(5000); // POST takes event 2 and hangs
+    await vi.advanceTimersByTimeAsync(5000); // POST takes event 2 and stalls
     socket.reopen();
     emit(event(3));
     expect(ids(socket.sent)).toEqual([1]);
 
     await vi.advanceTimersByTimeAsync(30_000);
     emit(event(4));
+    expect(ids(socket.sent)).toEqual([1, 3, 4]);
+    expect(post.signals().every((signal) => !signal)).toBe(true);
 
-    expect(ids(socket.sent)).toEqual([1, 2, 3, 4]);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    // the slow POST then fails: its events come back and go over the socket
+    post.reject(new TypeError('Failed to fetch'));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(ids(socket.sent)).toEqual([1, 3, 4, 2]);
+    expect(post.urls()).toHaveLength(1);
+  });
+
+  it('keeps a slow POST alive when stop() follows its timeout', async () => {
+    const post = deferredFetch();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { client } = await startClient(); // socket still connecting
+
+    await vi.advanceTimersByTimeAsync(5000); // POST takes the buffer
+    await vi.advanceTimersByTimeAsync(30_000); // gives up waiting
+    client.stop(true);
+    post.resolve(new Response(null, { status: 202 }));
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(post.signals().every((signal) => !signal)).toBe(true);
+    expect(ids([post.bodies()[0]])).toEqual([1]);
   });
 
   it('sends events withheld behind a pending POST when stop() is called', async () => {
@@ -453,32 +466,6 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
       true,
     );
     expect(ids(post.bodies())).toEqual([2]);
-  });
-
-  it('lets an in-flight POST finish after stop() instead of timing it out', async () => {
-    let aborted = false;
-    let resolveFirst!: (response: Response) => void;
-    const fetchMock = vi
-      .fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>()
-      .mockImplementationOnce(
-        (_url, init) =>
-          new Promise<Response>((resolve) => {
-            resolveFirst = resolve;
-            init?.signal?.addEventListener('abort', () => {
-              aborted = true;
-            });
-          }),
-      )
-      .mockImplementation(async () => new Response(null, { status: 202 }));
-    vi.stubGlobal('fetch', fetchMock);
-    const { client } = await startClient(); // socket still connecting
-
-    await vi.advanceTimersByTimeAsync(5000); // POST takes the buffer
-    client.stop(true);
-    await vi.advanceTimersByTimeAsync(60_000);
-
-    expect(aborted).toBe(false);
-    resolveFirst(new Response(null, { status: 202 }));
   });
 
   it('resumes the socket when an error response body never finishes', async () => {

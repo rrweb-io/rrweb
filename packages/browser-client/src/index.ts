@@ -68,7 +68,7 @@ const wsLimit = 10e5; // this is approximate and depends on the browser, also on
 const wsReadyStateOpen = 1; // WebSocket.OPEN
 const fallbackPostDelay = 5 * 1000;
 const fallbackPostMaxDelay = 60 * 1000;
-// A buffer POST holds back live sending, so it must not hang forever.
+// How long a buffer POST may hold back live sending.
 const fallbackPostTimeout = 30 * 1000;
 const errorBodyTimeout = 2 * 1000;
 
@@ -131,31 +131,50 @@ function sendBufferOverSocket() {
   }
 }
 
-// POST the buffer, one request at a time. Rejects when the POST failed; the
-// events are back in the buffer by then.
-async function postBufferedEvents(): Promise<void> {
+// POST the buffer, one request at a time. Rejects when the POST failed (the
+// events are back in the buffer by then) or is taking too long.
+function postBufferedEvents(): Promise<void> {
   if (fallbackPostInFlight || !postTarget || !buffer.length()) {
-    return;
+    return Promise.resolve();
   }
   const epoch = recordingEpoch;
   const isCurrent = () => epoch === recordingEpoch;
   fallbackPostInFlight = true;
-  try {
-    await postData(
-      postTarget.postUrl,
-      postTarget.publicApiKey,
-      buffer,
-      isCurrent,
-      fallbackPostTimeout,
-    );
-  } finally {
-    if (isCurrent()) {
+  let released = false;
+  // let live sending continue; the socket may have reopened meanwhile and
+  // nothing else would send what was buffered or held behind the POST
+  const release = () => {
+    if (!isCurrent()) return;
+    if (!released) {
+      released = true;
       fallbackPostInFlight = false;
-      requeue(buffer, []); // restores anything held while the POST ran
-      // the socket may have reopened meanwhile; nothing else would send these
-      sendBufferOverSocket();
     }
-  }
+    requeue(buffer, []);
+    sendBufferOverSocket();
+  };
+  const post = postData(
+    postTarget.postUrl,
+    postTarget.publicApiKey,
+    buffer,
+    isCurrent,
+  );
+  return new Promise<void>((resolve, reject) => {
+    // A slow upload is never cancelled, as it may still succeed. It just
+    // stops holding back newer events; if it fails later they are requeued.
+    const timer = setTimeout(() => {
+      release();
+      reject(new Error('Fallback POST is taking too long'));
+    }, fallbackPostTimeout);
+    post
+      .then(
+        () => resolve(),
+        (error) => reject(error),
+      )
+      .finally(() => {
+        clearTimeout(timer);
+        release();
+      });
+  });
 }
 let rrwebStopFn: listenerHandler | undefined;
 let recorderReady = false;
@@ -408,8 +427,6 @@ async function postData(
   buffer: ArrayQueue<string> | string,
   // false once the recording this POST belongs to was stopped
   ownsBuffer: () => boolean = () => true,
-  // abort a request that takes longer than this; its events are requeued
-  timeoutMs?: number,
 ) {
   const keepaliveLimit = 65000;
   let done = false;
@@ -445,17 +462,6 @@ async function postData(
       done = true;
     }
     let response: Response;
-    const controller =
-      timeoutMs !== undefined && typeof AbortController !== 'undefined'
-        ? // eslint-disable-next-line compat/compat -- feature-detected; without it the request simply has no timeout.
-          new AbortController()
-        : undefined;
-    const timeout = controller
-      ? setTimeout(() => {
-          // after stop() nothing would retry the batch, so let it finish
-          if (ownsBuffer()) controller.abort();
-        }, timeoutMs)
-      : undefined;
     try {
       // eslint-disable-next-line compat/compat -- fetch is the runtime transport for POST fallback in supported browsers.
       response = await fetch(postUrl, {
@@ -466,7 +472,6 @@ async function postData(
         },
         body,
         keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
-        signal: controller?.signal,
       });
     } catch (error) {
       // offline, DNS, CORS, aborted: nothing reached the server
@@ -474,8 +479,6 @@ async function postData(
         requeue(buffer, toSend);
       }
       throw error;
-    } finally {
-      clearTimeout(timeout);
     }
     responses.push(response);
     if (!response.ok) {
@@ -493,12 +496,14 @@ async function postData(
     let badResponseInfo = `${badResponse.status} ${badResponse.statusText}`;
     if (!badResponse.bodyUsed) {
       // diagnostic only: don't let a slow or malformed body hold up sending
+      let bodyTimer: ReturnType<typeof setTimeout> | undefined;
       const responseBody = await Promise.race([
         badResponse.text().catch(() => ''),
-        new Promise<string>((resolve) =>
-          setTimeout(() => resolve(''), errorBodyTimeout),
-        ),
+        new Promise<string>((resolve) => {
+          bodyTimer = setTimeout(() => resolve(''), errorBodyTimeout);
+        }),
       ]);
+      clearTimeout(bodyTimer);
       if (responseBody) {
         badResponseInfo += '\nresponse body:' + responseBody;
       }
