@@ -455,6 +455,57 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     expect(ids(post.bodies())).toEqual([2]);
   });
 
+  it('lets an in-flight POST finish after stop() instead of timing it out', async () => {
+    let aborted = false;
+    let resolveFirst!: (response: Response) => void;
+    const fetchMock = vi
+      .fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>()
+      .mockImplementationOnce(
+        (_url, init) =>
+          new Promise<Response>((resolve) => {
+            resolveFirst = resolve;
+            init?.signal?.addEventListener('abort', () => {
+              aborted = true;
+            });
+          }),
+      )
+      .mockImplementation(async () => new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { client } = await startClient(); // socket still connecting
+
+    await vi.advanceTimersByTimeAsync(5000); // POST takes the buffer
+    client.stop(true);
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    expect(aborted).toBe(false);
+    resolveFirst(new Response(null, { status: 202 }));
+  });
+
+  it('resumes the socket when an error response body never finishes', async () => {
+    const stuckBody = new Response(null, { status: 503 });
+    vi.spyOn(stuckBody, 'text').mockReturnValue(new Promise(() => {}));
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(stuckBody)
+        .mockResolvedValue(new Response(null, { status: 202 })),
+    );
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    emit(event(2));
+    await vi.advanceTimersByTimeAsync(5000); // POST gets a 503
+    socket.reopen();
+    emit(event(3));
+    await vi.advanceTimersByTimeAsync(2000);
+    emit(event(4));
+
+    expect(ids(socket.sent)).toEqual([1, 2, 3, 4]);
+  });
+
   it('stops the fallback POST timer on stop()', async () => {
     const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
     vi.stubGlobal('fetch', fetchMock);

@@ -70,6 +70,7 @@ const fallbackPostDelay = 5 * 1000;
 const fallbackPostMaxDelay = 60 * 1000;
 // A buffer POST holds back live sending, so it must not hang forever.
 const fallbackPostTimeout = 30 * 1000;
+const errorBodyTimeout = 2 * 1000;
 
 let ws: Websocket | undefined;
 // The socket dropped; the library is reconnecting. Cleared when it reopens.
@@ -450,7 +451,10 @@ async function postData(
           new AbortController()
         : undefined;
     const timeout = controller
-      ? setTimeout(() => controller.abort(), timeoutMs)
+      ? setTimeout(() => {
+          // after stop() nothing would retry the batch, so let it finish
+          if (ownsBuffer()) controller.abort();
+        }, timeoutMs)
       : undefined;
     try {
       // eslint-disable-next-line compat/compat -- fetch is the runtime transport for POST fallback in supported browsers.
@@ -488,8 +492,16 @@ async function postData(
   if (badResponse) {
     let badResponseInfo = `${badResponse.status} ${badResponse.statusText}`;
     if (!badResponse.bodyUsed) {
-      badResponseInfo +=
-        '\nresponse body:' + JSON.stringify(await badResponse.json());
+      // diagnostic only: don't let a slow or malformed body hold up sending
+      const responseBody = await Promise.race([
+        badResponse.text().catch(() => ''),
+        new Promise<string>((resolve) =>
+          setTimeout(() => resolve(''), errorBodyTimeout),
+        ),
+      ]);
+      if (responseBody) {
+        badResponseInfo += '\nresponse body:' + responseBody;
+      }
     }
     throw new Error(`Bad response from POST: ${badResponseInfo}`);
   }
