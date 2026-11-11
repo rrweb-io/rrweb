@@ -1,6 +1,7 @@
 import { extendTheme } from '@chakra-ui/react';
 import '@fontsource/space-grotesk/400.css';
 import '@fontsource/space-grotesk/500.css';
+import '@fontsource/space-grotesk/600.css';
 import '@fontsource/space-grotesk/700.css';
 
 const fontFamily = "'Space Grotesk', system-ui, sans-serif";
@@ -29,6 +30,13 @@ export const theme = extendTheme({
       active: '#21436A',
       // Error text: the record red is under 4.5:1 on navy at small sizes.
       danger: '#FF9592',
+      // The rrweb dashboard's text, panels and rules on the full pages.
+      ink: '#DBE2FD',
+      inkSoft: 'rgb(219 226 253 / 0.85)',
+      inkMuted: 'rgb(219 226 253 / 0.66)',
+      surface: '#0F2136',
+      rule: 'rgb(219 226 253 / 0.1)',
+      input: 'rgb(219 226 253 / 0.17)',
     },
     record: { 500: '#E5484D', 600: '#DC3E42', 700: '#CE2C31' },
   },
@@ -48,9 +56,40 @@ export const theme = extendTheme({
         _focusVisible: { boxShadow: focusRing },
       },
     },
+    // Checked boxes are white on the dark pages, not Chakra's blue.
+    Checkbox: {
+      baseStyle: {
+        control: {
+          borderColor: 'brand.input',
+          _checked: {
+            bg: 'white',
+            borderColor: 'white',
+            color: 'brand.accentText',
+            _hover: { bg: 'brand.ink', borderColor: 'brand.ink' },
+          },
+          _indeterminate: {
+            bg: 'white',
+            borderColor: 'white',
+            color: 'brand.accentText',
+          },
+          _focusVisible: { boxShadow: focusRing },
+        },
+      },
+    },
     Button: {
       baseStyle: { _focusVisible: { boxShadow: focusRing } },
       variants: {
+        // A plain bordered button for the full pages.
+        quiet: {
+          bg: 'transparent',
+          color: 'white',
+          border: '1px solid',
+          borderColor: 'brand.input',
+          fontWeight: 600,
+          _hover: { bg: 'whiteAlpha.100', _disabled: { bg: 'transparent' } },
+          _active: { bg: 'whiteAlpha.200' },
+          _focusVisible: { boxShadow: focusRing },
+        },
         // Every interactive state is set here so Chakra's defaults never
         // replace the solid fill.
         signup: {

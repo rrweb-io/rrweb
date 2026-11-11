@@ -43,15 +43,20 @@ export function LoadingView({ label = 'Loading' }: { label?: string }) {
   );
 }
 
-/** The rrweb homepage header logo: the mark in a glass pill, then the wordmark. */
-export function Logo() {
+/**
+ * The rrweb homepage header logo: the mark in a glass pill, then the wordmark.
+ * On the full pages it is the dashboard's size, and the wordmark hides on
+ * narrow windows.
+ */
+export function Logo({ size = 'popup' }: { size?: 'popup' | 'page' }) {
+  const page = size === 'page';
   return (
     <Flex align="center" gap="10px" flexShrink={0}>
       <Flex
         as="span"
         align="center"
         px="10px"
-        py="7px"
+        py={page ? '6px' : '7px'}
         borderRadius="14px"
         bg="rgba(255,255,255,0.12)"
         border="1px solid rgba(255,255,255,0.20)"
@@ -63,8 +68,9 @@ export function Logo() {
         src="/rrweb-wordmark.svg"
         alt=""
         aria-hidden="true"
-        h="22px"
+        h={page ? '28px' : '22px'}
         w="auto"
+        display={page ? { base: 'none', sm: 'block' } : undefined}
       />
     </Flex>
   );

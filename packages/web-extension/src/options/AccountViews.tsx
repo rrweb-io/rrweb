@@ -1,15 +1,41 @@
 import type { ReactNode } from 'react';
-import { Box, Button, Flex, Link, Spinner, Stack, Text } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  Flex,
+  Heading,
+  Link,
+  Spinner,
+  Stack,
+  Text,
+} from '@chakra-ui/react';
+import PageChrome, { SESSIONS_HREF } from '~/components/PageChrome';
 import { OrgPicker, type OrgOption, type OrgSwitch } from '~/cloud/OrgPicker';
 import { SetupSlow, SettingUpText } from '~/popup/SettingUpView';
 import type { CloudAccount } from '~/types';
-
-export const SESSION_LIST_HREF = '/pages/index.html#/';
 
 /** Firefox has no sign-in, so only the offline lines are shown there. */
 export type AccountOffer =
   | { name: 'unavailable' }
   | { name: 'available'; signUpUrl: string; logInUrl: string };
+
+/** The Account page in the page chrome; `end` is the right of the bar. */
+export function AccountPage({
+  end,
+  children,
+}: {
+  end?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <PageChrome current="account" end={end}>
+      <Heading as="h1" fontSize="24px" fontWeight={600} mb="24px">
+        Account
+      </Heading>
+      {children}
+    </PageChrome>
+  );
+}
 
 function Column({ children }: { children: ReactNode }) {
   return (
@@ -21,7 +47,7 @@ function Column({ children }: { children: ReactNode }) {
 
 export function SessionListLink() {
   return (
-    <Link href={SESSION_LIST_HREF} fontSize="14px">
+    <Link href={SESSIONS_HREF} fontSize="14px">
       Open the session list
     </Link>
   );
@@ -67,7 +93,9 @@ export function SettingUpAccount({
   return (
     <Box maxW="340px">
       <SettingUpText />
-      {slow && <SetupSlow dashboardUrl={dashboardUrl} onTryAgain={onTryAgain} />}
+      {slow && (
+        <SetupSlow dashboardUrl={dashboardUrl} onTryAgain={onTryAgain} />
+      )}
     </Box>
   );
 }
@@ -75,7 +103,6 @@ export function SettingUpAccount({
 export function SignedInAccount({
   account,
   orgs,
-  email,
   orgSwitch,
   pickerDisabled,
   onPickOrg,
@@ -83,7 +110,6 @@ export function SignedInAccount({
 }: {
   account: CloudAccount;
   orgs: OrgOption[];
-  email: string | null;
   orgSwitch: OrgSwitch;
   /** True while a recording runs, so the organization cannot change under it. */
   pickerDisabled: boolean;
@@ -92,14 +118,6 @@ export function SignedInAccount({
 }) {
   return (
     <Column>
-      {email !== null && (
-        <Box>
-          <Text fontSize="12px" color="brand.muted">
-            Signed in as
-          </Text>
-          <Text fontSize="16px">{email}</Text>
-        </Box>
-      )}
       <Box>
         <Text fontSize="12px" color="brand.muted" mb="6px">
           Organization
@@ -116,7 +134,7 @@ export function SignedInAccount({
           </Text>
         )}
       </Box>
-      <Button variant="outline" borderColor="brand.line" onClick={onLogOut}>
+      <Button variant="quiet" onClick={onLogOut}>
         Log out
       </Button>
       <SessionListLink />

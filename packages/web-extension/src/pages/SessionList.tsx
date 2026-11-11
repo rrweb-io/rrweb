@@ -3,17 +3,15 @@ import { nanoid } from 'nanoid';
 import {
   Box,
   Button,
-  chakra,
   Checkbox,
-  Divider,
   Editable,
   EditableInput,
   EditablePreview,
   Flex,
+  Heading,
   IconButton,
   Input,
   Select,
-  Spacer,
   Table,
   TableContainer,
   Tbody,
@@ -106,6 +104,7 @@ export function SessionList() {
             isChecked={table.getIsAllRowsSelected()}
             isIndeterminate={table.getIsSomeRowsSelected()}
             onChange={table.getToggleAllRowsSelectedHandler()}
+            aria-label="Select all sessions"
           />
         ),
         cell: ({ row }) => (
@@ -113,6 +112,7 @@ export function SessionList() {
             isChecked={row.getIsSelected()}
             isIndeterminate={row.getIsSomeSelected()}
             onChange={row.getToggleSelectedHandler()}
+            aria-label={`Select ${row.original.name}`}
           />
         ),
       }),
@@ -131,7 +131,7 @@ export function SessionList() {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <IconButton
-                    aria-label="edit name"
+                    aria-label="Edit name"
                     size="sm"
                     icon={<EditIcon />}
                     variant="ghost"
@@ -174,12 +174,12 @@ export function SessionList() {
       columnHelper.accessor((row) => row.createTimestamp, {
         id: 'createTimestamp',
         cell: (info) => new Date(info.getValue()).toLocaleString(),
-        header: 'Created Time',
+        header: 'Created',
         sortDescFirst: true,
       }),
       columnHelper.accessor((row) => row.recorderVersion, {
         cell: (info) => info.getValue(),
-        header: 'RRWEB Version',
+        header: 'rrweb version',
       }),
     ],
     [sessions],
@@ -250,17 +250,28 @@ export function SessionList() {
     reader.readAsText(file);
   };
 
+  const selectedCount = Object.keys(rowSelection).length;
+
   return (
     <>
-      <Flex justify="flex-end" mb={4}>
+      <Flex
+        justify="space-between"
+        align="center"
+        gap="16px"
+        wrap="wrap"
+        mb="24px"
+      >
+        <Heading as="h1" fontSize="24px" fontWeight={600}>
+          Sessions
+        </Heading>
         <Button
+          variant="quiet"
+          size="sm"
           onClick={() => {
             fileInputRef.current?.click();
           }}
-          size="sm"
-          m={4}
         >
-          Import Session
+          Import session
         </Button>
         <input
           type="file"
@@ -270,17 +281,28 @@ export function SessionList() {
           onChange={handleFileUpload}
         />
       </Flex>
-      <TableContainer fontSize="md">
-        <Table variant="simple">
+      <TableContainer
+        bg="brand.surface"
+        border="1px solid"
+        borderColor="brand.rule"
+        borderRadius="12px"
+        fontSize="14px"
+      >
+        <Table variant="unstyled">
           <Thead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <Tr key={headerGroup.id}>
+              <Tr
+                key={headerGroup.id}
+                borderBottom="1px solid"
+                borderColor="brand.rule"
+              >
                 {headerGroup.headers.map((header) => {
                   const meta = header.column.columnDef.meta as
                     | {
                         isNumeric: boolean;
                       }
                     | undefined;
+                  const sortable = header.column.getCanSort();
                   return (
                     <Th
                       key={header.id}
@@ -288,22 +310,28 @@ export function SessionList() {
                       isNumeric={meta?.isNumeric}
                       verticalAlign="center"
                       userSelect="none"
+                      cursor={sortable ? 'pointer' : undefined}
+                      h="44px"
+                      px="16px"
+                      py="0"
+                      w={header.column.id === 'select' ? '48px' : undefined}
+                      textTransform="none"
+                      letterSpacing="normal"
+                      fontSize="13px"
+                      fontWeight={500}
+                      color="brand.inkMuted"
                     >
-                      <Flex align="center">
+                      <Flex align="center" gap="6px">
                         {flexRender(
                           header.column.columnDef.header,
                           header.getContext(),
                         )}
-                        <chakra.span pl={4}>
-                          {{
-                            asc: (
-                              <VscTriangleUp aria-label="sorted ascending" />
-                            ),
-                            desc: (
-                              <VscTriangleDown aria-label="sorted descending" />
-                            ),
-                          }[header.column.getIsSorted() as string] ?? null}
-                        </chakra.span>
+                        {{
+                          asc: <VscTriangleUp aria-label="sorted ascending" />,
+                          desc: (
+                            <VscTriangleDown aria-label="sorted descending" />
+                          ),
+                        }[header.column.getIsSorted() as string] ?? null}
                       </Flex>
                     </Th>
                   );
@@ -313,7 +341,15 @@ export function SessionList() {
           </Thead>
           <Tbody>
             {table.getRowModel().rows.map((row) => (
-              <Tr key={row.id} _hover={{ cursor: 'pointer' }}>
+              <Tr
+                key={row.id}
+                cursor="pointer"
+                borderBottom="1px solid"
+                borderColor="brand.rule"
+                _last={{ borderBottom: 'none' }}
+                bg={row.getIsSelected() ? 'whiteAlpha.100' : undefined}
+                _hover={{ bg: 'whiteAlpha.50' }}
+              >
                 {row.getVisibleCells().map((cell, index) => {
                   const meta = cell.column.columnDef.meta as
                     | {
@@ -324,6 +360,11 @@ export function SessionList() {
                     <Td
                       key={cell.id}
                       isNumeric={meta?.isNumeric}
+                      px="16px"
+                      py="10px"
+                      color={index === 1 ? 'white' : 'brand.inkSoft'}
+                      fontWeight={index === 1 ? 600 : 400}
+                      sx={{ fontVariantNumeric: 'tabular-nums' }}
                       onClick={() => {
                         if (index !== 0)
                           navigate(`/session/${row.original.id}`);
@@ -341,116 +382,122 @@ export function SessionList() {
           </Tbody>
         </Table>
       </TableContainer>
-      <Flex mt={4}>
-        <Flex gap={16} align="center" ml={4}>
-          <Flex gap={1}>
-            <IconButton
-              aria-label={'Goto 1st Page'}
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <FiChevronsLeft />
-            </IconButton>
-            <IconButton
-              aria-label={'Goto Previous Page'}
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <FiChevronLeft />
-            </IconButton>
-          </Flex>
-          <Flex gap={1} fontSize="md">
-            <Text>Page</Text>
-            <Text as="b" w={12}>
-              {`${
-                table.getState().pagination.pageIndex + 1
-              } of ${table.getPageCount()}`}
+      <Flex mt="16px" gap="16px" align="center" wrap="wrap" fontSize="14px">
+        <Flex gap="4px" align="center">
+          <IconButton
+            variant="quiet"
+            size="sm"
+            aria-label="First page"
+            onClick={() => table.setPageIndex(0)}
+            isDisabled={!table.getCanPreviousPage()}
+            icon={<FiChevronsLeft />}
+          />
+          <IconButton
+            variant="quiet"
+            size="sm"
+            aria-label="Previous page"
+            onClick={() => table.previousPage()}
+            isDisabled={!table.getCanPreviousPage()}
+            icon={<FiChevronLeft />}
+          />
+          <Text px="8px" color="brand.inkSoft" whiteSpace="nowrap">
+            Page{' '}
+            <Text as="b" color="white">
+              {`${table.getState().pagination.pageIndex + 1} of ${Math.max(
+                table.getPageCount(),
+                1,
+              )}`}
             </Text>
-          </Flex>
-          <Divider orientation="vertical" />
-          <Flex gap={1} justify="center" align="center" fontSize="md">
-            <Text w={28}>Go to page:</Text>
-            <Input
-              w={20}
-              size="md"
-              type="number"
-              defaultValue={table.getState().pagination.pageIndex + 1}
-              onChange={(e) => {
-                const page = e.target.value ? Number(e.target.value) - 1 : 0;
-                table.setPageIndex(page);
-              }}
-            />
-          </Flex>
-          <Flex gap={1}>
-            <IconButton
-              aria-label={'Goto Next Page'}
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <FiChevronRight />
-            </IconButton>
-            <IconButton
-              aria-label={'Goto last Page'}
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
-            >
-              <FiChevronsRight />
-            </IconButton>
-          </Flex>
+          </Text>
+          <IconButton
+            variant="quiet"
+            size="sm"
+            aria-label="Next page"
+            onClick={() => table.nextPage()}
+            isDisabled={!table.getCanNextPage()}
+            icon={<FiChevronRight />}
+          />
+          <IconButton
+            variant="quiet"
+            size="sm"
+            aria-label="Last page"
+            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+            isDisabled={!table.getCanNextPage()}
+            icon={<FiChevronsRight />}
+          />
         </Flex>
-        <Spacer />
-        <Flex gap={8} align="center" mr={4}>
-          <Select
-            variant="outline"
-            size="md"
-            value={table.getState().pagination.pageSize}
+        <Flex gap="8px" align="center" color="brand.inkSoft">
+          <Text as="label" htmlFor="go-to-page" whiteSpace="nowrap">
+            Go to page
+          </Text>
+          <Input
+            id="go-to-page"
+            w="64px"
+            size="sm"
+            type="number"
+            borderColor="brand.input"
+            borderRadius="8px"
+            defaultValue={table.getState().pagination.pageIndex + 1}
             onChange={(e) => {
-              table.setPageSize(Number(e.target.value));
+              const page = e.target.value ? Number(e.target.value) - 1 : 0;
+              table.setPageIndex(page);
             }}
-          >
-            {[10, 20, 30, 40, 50].map((pageSize) => (
-              <option key={pageSize} value={pageSize}>
-                Show {pageSize} items
-              </option>
-            ))}
-          </Select>
-          {Object.keys(rowSelection).length > 0 && (
-            <Flex gap={1}>
-              <Button
-                mr={4}
-                size="md"
-                colorScheme="red"
-                onClick={() => {
-                  if (table.getSelectedRowModel().flatRows.length === 0) return;
-                  const ids = table
-                    .getSelectedRowModel()
-                    .flatRows.map((row) => row.original.id);
-                  void deleteSessions(ids).then(() => {
-                    setRowSelection({});
-                    void updateSessions();
-                    channel.emit(EventName.SessionUpdated, {});
-                  });
-                }}
-              >
-                Delete
-              </Button>
-              <Button
-                mr={4}
-                size="md"
-                colorScheme="green"
-                onClick={() => {
-                  const selectedRows = table.getSelectedRowModel().flatRows;
-                  if (selectedRows.length === 0) return;
-                  void downloadSessions(
-                    selectedRows.map((row) => row.original.id),
-                  );
-                }}
-              >
-                Download
-              </Button>
-            </Flex>
-          )}
+          />
         </Flex>
+        <Select
+          aria-label="Sessions per page"
+          size="sm"
+          w="auto"
+          borderColor="brand.input"
+          borderRadius="8px"
+          value={table.getState().pagination.pageSize}
+          onChange={(e) => {
+            table.setPageSize(Number(e.target.value));
+          }}
+        >
+          {[10, 20, 30, 40, 50].map((pageSize) => (
+            <option key={pageSize} value={pageSize}>
+              Show {pageSize}
+            </option>
+          ))}
+        </Select>
+        {selectedCount > 0 && (
+          <Flex gap="8px" align="center" ml="auto">
+            <Text color="brand.inkSoft" whiteSpace="nowrap">
+              {selectedCount} selected
+            </Text>
+            <Button
+              variant="quiet"
+              size="sm"
+              onClick={() => {
+                const selectedRows = table.getSelectedRowModel().flatRows;
+                if (selectedRows.length === 0) return;
+                void downloadSessions(
+                  selectedRows.map((row) => row.original.id),
+                );
+              }}
+            >
+              Download
+            </Button>
+            <Button
+              variant="quiet"
+              size="sm"
+              onClick={() => {
+                if (table.getSelectedRowModel().flatRows.length === 0) return;
+                const ids = table
+                  .getSelectedRowModel()
+                  .flatRows.map((row) => row.original.id);
+                void deleteSessions(ids).then(() => {
+                  setRowSelection({});
+                  void updateSessions();
+                  channel.emit(EventName.SessionUpdated, {});
+                });
+              }}
+            >
+              Delete
+            </Button>
+          </Flex>
+        )}
       </Flex>
     </>
   );

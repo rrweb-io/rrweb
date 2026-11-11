@@ -2,13 +2,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Replayer from 'rrweb-player';
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Center,
-} from '@chakra-ui/react';
+import { Box, Heading, Link } from '@chakra-ui/react';
 import { getEvents, getSession } from '~/utils/storage';
 
 export default function Player() {
@@ -58,17 +52,29 @@ export default function Player() {
 
   return (
     <>
-      <Breadcrumb mb={5} fontSize="md">
-        <BreadcrumbItem>
-          <BreadcrumbLink href="#">Sessions</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbItem>
-          <BreadcrumbLink>{sessionName}</BreadcrumbLink>
-        </BreadcrumbItem>
-      </Breadcrumb>
-      <Center>
-        <Box ref={playerElRef}></Box>
-      </Center>
+      <Link href="#/" fontSize="14px">
+        All sessions
+      </Link>
+      <Heading
+        as="h1"
+        fontSize="24px"
+        fontWeight={600}
+        mt="8px"
+        mb="24px"
+        wordBreak="break-word"
+      >
+        {sessionName}
+      </Heading>
+      <Box
+        bg="brand.surface"
+        border="1px solid"
+        borderColor="brand.rule"
+        borderRadius="12px"
+        p="16px"
+        overflowX="auto"
+      >
+        <Box ref={playerElRef} w="fit-content" mx="auto"></Box>
+      </Box>
     </>
   );
 }

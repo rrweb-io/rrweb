@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import Browser from 'webextension-polyfill';
 import CloudGate from '~/cloud/CloudGate';
-import { useCloudAccount } from '~/cloud/useCloudAccount';
+import { useCloudAccount, type CloudAccountApi } from '~/cloud/useCloudAccount';
 import { config } from '~/config';
 import { LocalDataKey, RecorderStatus } from '~/types';
 import type { LocalData } from '~/types';
+import { BarLabel } from '~/components/PageChrome';
 import {
   AccountLoading,
+  AccountPage,
   SettingUpAccount,
   SignedInAccount,
   SignedOutAccount,
@@ -22,19 +24,17 @@ const offer: AccountOffer = {
 function useRecorderIdle(): boolean {
   const [idle, setIdle] = useState(true);
   useEffect(() => {
-    const read = (
-      value: LocalData[LocalDataKey.recorderStatus] | undefined,
-    ) => setIdle(value === undefined || value.status === RecorderStatus.IDLE);
+    const read = (value: LocalData[LocalDataKey.recorderStatus] | undefined) =>
+      setIdle(value === undefined || value.status === RecorderStatus.IDLE);
     void Browser.storage.local
       .get(LocalDataKey.recorderStatus)
-      .then((data) =>
-        read((data as LocalData)[LocalDataKey.recorderStatus]),
-      );
+      .then((data) => read((data as LocalData)[LocalDataKey.recorderStatus]));
     const onChanged = (
       changes: Record<string, Browser.Storage.StorageChange>,
     ) => {
       const change = changes[LocalDataKey.recorderStatus];
-      if (change) read(
+      if (change)
+        read(
           change.newValue as LocalData[LocalDataKey.recorderStatus] | undefined,
         );
     };
@@ -45,7 +45,28 @@ function useRecorderIdle(): boolean {
 }
 
 function Account() {
-  const { view, orgSwitch, pickOrg, logOut, tryAgain } = useCloudAccount();
+  const api = useCloudAccount();
+  const { view } = api;
+  return (
+    <AccountPage
+      end={
+        view.name === 'ready' && view.email !== null ? (
+          <BarLabel label={view.email} />
+        ) : undefined
+      }
+    >
+      <AccountBody {...api} />
+    </AccountPage>
+  );
+}
+
+function AccountBody({
+  view,
+  orgSwitch,
+  pickOrg,
+  logOut,
+  tryAgain,
+}: CloudAccountApi) {
   const recorderIdle = useRecorderIdle();
 
   switch (view.name) {
@@ -71,7 +92,6 @@ function Account() {
         <SignedInAccount
           account={view.account}
           orgs={view.orgs}
-          email={view.email}
           orgSwitch={orgSwitch}
           pickerDisabled={!recorderIdle}
           onPickOrg={pickOrg}
@@ -85,8 +105,16 @@ export default function CloudAccountPage() {
   return (
     <CloudGate
       afterSignOutUrl={Browser.runtime.getURL('options/index.html')}
-      loading={<AccountLoading label="Loading" />}
-      unavailable={<SignedOutAccount offer={offer} />}
+      loading={
+        <AccountPage>
+          <AccountLoading label="Loading" />
+        </AccountPage>
+      }
+      unavailable={
+        <AccountPage>
+          <SignedOutAccount offer={offer} />
+        </AccountPage>
+      }
     >
       <Account />
     </CloudGate>
