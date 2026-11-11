@@ -3,6 +3,7 @@ import { ChakraProvider } from '@chakra-ui/react';
 import * as ReactDOM from 'react-dom/client';
 import { createHashRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
+import { theme } from '~/theme';
 
 const rootElement = document.getElementById('root');
 const router = createHashRouter([
@@ -15,7 +16,7 @@ const router = createHashRouter([
 rootElement &&
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
-      <ChakraProvider>
+      <ChakraProvider theme={theme}>
         <RouterProvider router={router} />
       </ChakraProvider>
     </React.StrictMode>,

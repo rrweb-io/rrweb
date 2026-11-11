@@ -7,6 +7,7 @@
     "esModuleInterop": true,
     "incremental": true,
     "resolveJsonModule": true,
+    "moduleResolution": "Bundler",
     "paths": {
       "~/*": ["src/*"]
     },
@@ -14,6 +15,9 @@
   },
   "exclude": ["dist", "node_modules", "vite.config.ts"],
   "references": [
+    {
+      "path": "../browser-client"
+    },
     {
       "path": "../rrweb"
     },

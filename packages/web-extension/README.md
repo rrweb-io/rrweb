@@ -33,6 +33,45 @@ yarn dev:chrome
 yarn dev:firefox
 ```
 
+## How recording works
+
+The extension has no content script that runs on every page and no host access to every site. When you press record in the popup, the extension injects the recorder into the current tab only. Opening the popup grants `activeTab` access to that tab; Chrome injects with `chrome.scripting` (the `scripting` permission), Firefox with `tabs.executeScript`.
+
+- One recording is one tab. Switching to another tab does not move the recording.
+- Pause and resume continue in the same tab.
+- When the recorded tab loads a new page, reloads or closes, the recording stops as if you pressed Stop: it is saved or uploaded in full, then the result opens in a new tab. Changes that keep the page, such as a hash change or `history.pushState`, do not stop it.
+- Only the tab's top frame is recorded. Cross-origin iframes are not recorded.
+
+Chrome permissions: `activeTab`, `scripting`, `storage`, `unlimitedStorage`, plus `cookies` and the Clerk hosts in `host_permissions` for sign-in. Firefox permissions: `activeTab`, `storage`, `unlimitedStorage`.
+
+## Cloud sign-up configuration
+
+The Chrome build can sign users in to rrweb Cloud. The Firefox build only records offline. Configure the Chrome build with these variables, for example in a `.env` file in this folder:
+
+| Variable                     | Default                                                             |
+| ---------------------------- | ------------------------------------------------------------------- |
+| `VITE_CLERK_PUBLISHABLE_KEY` | production key (`pk_live_...`, Frontend API host `clerk.rrweb.com`) |
+| `VITE_CLERK_SYNC_HOST`       | `https://app.rrweb.com`                                             |
+| `VITE_RRWEB_API_URL`         | `https://api.rrweb.com`                                             |
+| `VITE_RRWEB_DASHBOARD_URL`   | `https://app.rrweb.com`                                             |
+
+`yarn dev:chrome` and `yarn build:chrome:dev` are development builds. They default to the Clerk test instance (`pk_test_Ymxlc3NlZC1tdXNrcmF0LTk3LmNsZXJrLmFjY291bnRzLmRldiQ`, host `blessed-muskrat-97.clerk.accounts.dev`), add `http://localhost/*` and that host to `host_permissions`, and embed a fixed public `key` in the manifest so the extension ID is stable:
+
+- Development extension ID: `djilnhkggipaaljnmkpcdbglbdfkgeoe`
+- Published Chrome Web Store ID: `pdaldeopoccdhlkabbkcjmecmmoninhe` (production builds carry no `key`)
+
+Add the extension origin (`chrome-extension://<id>`) to the allowed origins of the matching Clerk instance. The private key for the development ID is not in this repository.
+
+Only the Clerk key switches to the test instance in development builds. `VITE_CLERK_SYNC_HOST`, `VITE_RRWEB_API_URL` and `VITE_RRWEB_DASHBOARD_URL` keep their production defaults, so set all three to the local or test hosts that belong to the same Clerk test instance, for example:
+
+```bash
+VITE_CLERK_SYNC_HOST=http://localhost:3000
+VITE_RRWEB_API_URL=http://localhost:8787
+VITE_RRWEB_DASHBOARD_URL=http://localhost:3000
+```
+
+A development build that signs in to the test instance but talks to the production API or dashboard cannot fetch a public key or open its recordings.
+
 ## Sponsors
 
 [Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.

@@ -77,6 +77,29 @@ and are sent to the server with their original call-time timestamps. Events adde
 during active recording use the same callback and delivery path. Calling `stop()`
 discards events still waiting for the recorder to start.
 
+## Custom Recorders
+
+`createTransport(options)` is the upload half of the client, for callers that run their own recorder and supply the recording id, such as an extension service worker that records many tabs into one recording. It does not touch `document`, `window`, `sessionStorage`, or cookies.
+
+```js
+import { createTransport } from '@rrweb/browser-client';
+
+const transport = createTransport({
+  publicApiKey: 'public_key_rr_...',
+  recordingId: 'rec-123',
+  meta: { domain: 'example.com', jsEntrypoint: 'my-recorder' },
+});
+
+transport.send(event); // an rrweb event
+transport.flush(); // POST anything still buffered
+await transport.stop(true); // POSTs anything still buffered, then sends close-permanent; use false for close-temporary
+```
+
+- `publicApiKey` and `recordingId`: required.
+- `serverUrl`: optional, same format and default as for `start()`.
+- `meta`: sent as the first `recording-meta` event. `recordVersion` and `recordCommitHash` are added automatically.
+- `disconnect()`: closes the socket without ending the recording. The next `send()` opens a new one.
+
 ## Further Reading
 
 - [Browser Client guide](https://rrweb.com/docs/cloud/browser-client)

@@ -6,8 +6,6 @@ import {
   Flex,
   HStack,
   Icon,
-  Image,
-  useColorModeValue,
   Link,
   Drawer,
   DrawerContent,
@@ -16,26 +14,17 @@ import {
   type FlexProps,
   Heading,
   Stack,
-  Text,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
 } from '@chakra-ui/react';
-import { FiChevronRight, FiMenu } from 'react-icons/fi';
+import { FiMenu } from 'react-icons/fi';
 import type { IconType } from 'react-icons';
-import Browser from 'webextension-polyfill';
+import { Logo } from '~/popup/PopupParts';
 
 export interface SideBarItem {
   label: string;
   icon: IconType;
   href: string;
-}
-
-export interface HeadBarItem {
-  label: string;
-  subLabel?: string;
-  children?: Array<HeadBarItem>;
-  href?: string;
+  /** The page this item points at is the one showing. */
+  active?: boolean;
 }
 
 export default function SidebarWithHeader({
@@ -51,7 +40,7 @@ export default function SidebarWithHeader({
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
-    <Box minH="100vh">
+    <Box minH="100vh" bg="brand.bg" color="white">
       <SidebarContent
         sideBarItems={sideBarItems}
         onClose={() => onClose}
@@ -67,7 +56,7 @@ export default function SidebarWithHeader({
         onOverlayClick={onClose}
         size="full"
       >
-        <DrawerContent>
+        <DrawerContent bg="brand.field" color="white">
           <SidebarContent
             onClose={onClose}
             sideBarItems={sideBarItems}
@@ -103,33 +92,50 @@ const SidebarContent = ({
 }: SidebarProps) => {
   return (
     <Box
-      transition="3s ease"
-      bg={useColorModeValue('white', 'gray.900')}
+      bg="brand.field"
+      color="white"
       borderRight="1px"
-      borderRightColor={useColorModeValue('gray.200', 'gray.700')}
+      borderRightColor="brand.line"
       w={{ base: 'full', md: 60 }}
       pos="fixed"
       h="full"
       {...rest}
     >
-      <Flex h="20" alignItems="center" mx="8" justify="flex-start" gap="3">
-        <Link href="https://github.com/rrweb-io/rrweb" target="_blank">
-          <Image
-            borderRadius="md"
-            boxSize="2rem"
-            src={Browser.runtime.getURL('icon128.png')}
-            alt="RRWeb Logo"
-          />
+      <Flex h="20" alignItems="center" mx="6" justify="space-between" gap="3">
+        <Link
+          href="https://github.com/rrweb-io/rrweb"
+          target="_blank"
+          rel="noopener noreferrer"
+          textDecoration="none"
+          _hover={{ textDecoration: 'none' }}
+        >
+          <Logo />
         </Link>
-        {title && (
-          <Heading as="h4" size="md">
-            {title}
-          </Heading>
-        )}
-        <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
+        <CloseButton
+          display={{ base: 'flex', md: 'none' }}
+          onClick={onClose}
+          _hover={{ bg: 'brand.hover' }}
+        />
       </Flex>
+      {title && (
+        <Heading
+          as="h2"
+          fontSize="sm"
+          fontWeight={500}
+          color="brand.pitch"
+          mx="6"
+          mb="3"
+        >
+          {title}
+        </Heading>
+      )}
       {sideBarItems.map((link) => (
-        <NavItem key={link.label} icon={link.icon} href={link.href}>
+        <NavItem
+          key={link.label}
+          icon={link.icon}
+          href={link.href}
+          active={link.active}
+        >
           {link.label}
         </NavItem>
       ))}
@@ -140,14 +146,16 @@ const SidebarContent = ({
 interface NavItemProps extends FlexProps {
   icon: IconType;
   href: string;
+  active?: boolean;
   children: string;
 }
-const NavItem = ({ icon, href, children, ...rest }: NavItemProps) => {
+const NavItem = ({ icon, href, active, children, ...rest }: NavItemProps) => {
   return (
     <Link
       href={href}
+      aria-current={active ? 'page' : undefined}
       style={{ textDecoration: 'none' }}
-      _focus={{ boxShadow: 'none' }}
+      _hover={{ textDecoration: 'none' }}
       fontSize="lg"
       fontWeight={500}
     >
@@ -158,9 +166,11 @@ const NavItem = ({ icon, href, children, ...rest }: NavItemProps) => {
         borderRadius="lg"
         role="group"
         cursor="pointer"
-        _hover={{
-          bg: 'gray.200',
-        }}
+        color="white"
+        // The yellow marker is drawn inside the item, so it needs no extra width.
+        boxShadow={active ? 'inset 4px 0 0 #EEC202' : 'none'}
+        bg={active ? 'brand.active' : 'transparent'}
+        _hover={{ bg: active ? 'brand.active' : 'brand.hover' }}
         {...rest}
       >
         <>
@@ -182,9 +192,10 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
       px={{ base: 4, md: 4 }}
       height="20"
       alignItems="center"
-      bg={useColorModeValue('white', 'gray.900')}
+      bg="brand.bg"
+      color="white"
       borderBottomWidth="1px"
-      borderBottomColor={useColorModeValue('gray.200', 'gray.700')}
+      borderBottomColor="brand.line"
       justifyContent={{ base: 'space-between', md: 'flex-start' }}
       {...rest}
     >
@@ -192,6 +203,9 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
         display={{ base: 'flex', md: 'none' }}
         onClick={onOpen}
         variant="outline"
+        borderColor="brand.line"
+        color="white"
+        _hover={{ bg: 'brand.hover' }}
         aria-label="open menu"
         icon={<FiMenu />}
       />
@@ -203,88 +217,30 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
   );
 };
 
-const DesktopNav = ({ headBarItems }: { headBarItems: HeadBarItem[] }) => {
-  const linkColor = useColorModeValue('gray.600', 'gray.200');
-  const linkHoverColor = useColorModeValue('gray.800', 'white');
-  const popoverContentBgColor = useColorModeValue('white', 'gray.800');
-
+const DesktopNav = ({ headBarItems }: { headBarItems: SideBarItem[] }) => {
   return (
-    <Stack direction={'row'} spacing={4}>
+    <Stack direction={'row'} spacing={2}>
       {headBarItems.map((navItem) => (
-        <Box key={navItem.label}>
-          <Popover trigger={'hover'} placement={'bottom-start'}>
-            <PopoverTrigger>
-              <Link
-                p={2}
-                href={navItem.href ?? '#'}
-                fontSize={'sm'}
-                fontWeight={500}
-                color={linkColor}
-                _hover={{
-                  textDecoration: 'none',
-                  color: linkHoverColor,
-                }}
-              >
-                {navItem.label}
-              </Link>
-            </PopoverTrigger>
-
-            {navItem.children && (
-              <PopoverContent
-                border={0}
-                boxShadow={'xl'}
-                bg={popoverContentBgColor}
-                p={4}
-                rounded={'xl'}
-                minW={'sm'}
-              >
-                <Stack>
-                  {navItem.children.map((child) => (
-                    <DesktopSubNav key={child.label} {...child} />
-                  ))}
-                </Stack>
-              </PopoverContent>
-            )}
-          </Popover>
-        </Box>
+        <Link
+          key={navItem.label}
+          px={3}
+          py={2}
+          href={navItem.href}
+          aria-current={navItem.active ? 'page' : undefined}
+          fontSize={'sm'}
+          fontWeight={500}
+          color="white"
+          borderRadius="md"
+          bg={navItem.active ? 'brand.active' : 'transparent'}
+          textDecoration="none"
+          _hover={{
+            textDecoration: 'none',
+            bg: navItem.active ? 'brand.active' : 'brand.hover',
+          }}
+        >
+          {navItem.label}
+        </Link>
       ))}
     </Stack>
-  );
-};
-
-const DesktopSubNav = ({ label, href, subLabel }: HeadBarItem) => {
-  return (
-    <Link
-      href={href}
-      role={'group'}
-      display={'block'}
-      p={2}
-      rounded={'md'}
-      _hover={{ bg: useColorModeValue('pink.50', 'gray.900') }}
-    >
-      <Stack direction={'row'} align={'center'}>
-        <Box>
-          <Text
-            transition={'all .3s ease'}
-            _groupHover={{ color: 'pink.400' }}
-            fontWeight={500}
-          >
-            {label}
-          </Text>
-          <Text fontSize={'sm'}>{subLabel}</Text>
-        </Box>
-        <Flex
-          transition={'all .3s ease'}
-          transform={'translateX(-10px)'}
-          opacity={0}
-          _groupHover={{ opacity: '100%', transform: 'translateX(0)' }}
-          justify={'flex-end'}
-          align={'center'}
-          flex={1}
-        >
-          <Icon color={'pink.400'} w={5} h={5} as={FiChevronRight} />
-        </Flex>
-      </Stack>
-    </Link>
   );
 };

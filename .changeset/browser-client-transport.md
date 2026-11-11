@@ -1,0 +1,5 @@
+---
+"@rrweb/browser-client": minor
+---
+
+Export `createTransport` with its `Transport` and `TransportOptions` types, so callers that own a recording (such as the browser extension) can stream events with their own recording id and metadata. `stop(true)` now delivers events still buffered before sending `close-permanent`, and POSTs `close-permanent` when the socket is not open, so the end marker arrives even if the socket never connected. This also holds after the page was frozen, which closes the socket: `stop(true)` still POSTs what was buffered, then `close-permanent`. The close event is POSTed only after any POST already in flight settles, so it cannot overtake earlier events. `stop(false)` POSTs `close-temporary` when the socket is not open, instead of leaving it buffered. After the socket drops and reconnects, events go over the socket again instead of staying buffered, and the 5 second POST fallback runs again while the socket is closed. A server error still pauses the socket until the transport is stopped or disconnected. Calling `start()` twice closes the first transport's socket and POSTs any events it still buffered.

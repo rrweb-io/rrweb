@@ -1,7 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import SidebarWithHeader from '~/components/SidebarWithHeader';
 import { SessionList } from './SessionList';
-import { FiList, FiSettings } from 'react-icons/fi';
+import { FiList, FiUser } from 'react-icons/fi';
 import Player from './Player';
 
 export default function App() {
@@ -10,14 +10,15 @@ export default function App() {
       title="Sessions"
       headBarItems={[
         {
-          label: 'Settings',
-          icon: FiSettings,
+          label: 'Account',
+          icon: FiUser,
           href: '/options/index.html#',
         },
         {
           label: 'Sessions',
           icon: FiList,
           href: '#',
+          active: true,
         },
       ]}
       sideBarItems={[
@@ -25,6 +26,7 @@ export default function App() {
           label: 'List',
           icon: FiList,
           href: `#`,
+          active: true,
         },
       ]}
     >

@@ -6,17 +6,6 @@ export function isFirefox(): boolean {
   );
 }
 
-export function isInCrossOriginIFrame(): boolean {
-  if (window.parent !== window) {
-    try {
-      void window.parent.location.origin;
-    } catch (error) {
-      return true;
-    }
-  }
-  return false;
-}
-
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;

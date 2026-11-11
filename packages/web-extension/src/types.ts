@@ -1,4 +1,5 @@
 import type { eventWithTime } from '@rrweb/types';
+import type { recordOptions } from 'rrweb';
 
 export enum SyncDataKey {
   settings = 'settings',
@@ -14,25 +15,41 @@ export type Settings = {
 
 export enum LocalDataKey {
   recorderStatus = 'recorder_status',
+  cloudAccount = 'cloud_account',
 }
 
+export type CloudAccount = {
+  /** The Clerk user who connected the organization. */
+  userId: string;
+  orgId: string;
+  orgName: string;
+  publicKey: string;
+};
+
+/** Where a recording goes: this browser only, or uploaded to rrweb. */
+export type RecordingKind = 'offline' | 'cloud';
+
 export type LocalData = {
+  [LocalDataKey.cloudAccount]?: CloudAccount | null;
   [LocalDataKey.recorderStatus]: {
     status: RecorderStatus;
+    // the recorded tab, or the tab a start is claiming; -1 when idle
     activeTabId: number;
     startTimestamp?: number;
     // the timestamp when the recording is paused
     pausedTimestamp?: number;
     errorMessage?: string; // error message when recording failed
+    // set whenever status is not IDLE
+    kind?: RecordingKind;
   };
 };
 
 export enum RecorderStatus {
   IDLE = 'IDLE',
+  // start() is running: sink, tab and account lookups are still in flight
+  STARTING = 'STARTING',
   RECORDING = 'RECORDING',
   PAUSED = 'PAUSED',
-  // when user change the tab, the recorder will be paused during the tab change
-  PausedSwitch = 'PAUSED_SWITCH',
 }
 
 export type Session = {
@@ -69,6 +86,8 @@ export enum MessageName {
   RecordStopped = 'rrweb-extension-record-stopped',
   EmitEvent = 'rrweb-extension-emit-event',
 }
+
+export type StartRecordPayload = { config: recordOptions<eventWithTime> };
 
 export type RecordStartedMessage = {
   message: MessageName.RecordStarted;
