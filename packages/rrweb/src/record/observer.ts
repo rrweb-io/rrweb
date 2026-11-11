@@ -195,7 +195,7 @@ function initMoveObserver({
   });
 }
 
-function isMasked(
+export function isMasked(
   target: HTMLElement | null,
   maskInputOptions: MaskInputOptions,
 ): boolean {
