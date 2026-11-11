@@ -1,9 +1,6 @@
 import type { eventWithTime } from '@rrweb/types';
 
-export enum StallEvents {
-  BufferingStart = 'buffering-start',
-  BufferingEnd = 'buffering-end',
-}
+export { StallEvents } from '@rrweb/types';
 
 export interface StallController {
   registerEvent(event: eventWithTime): void;

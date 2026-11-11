@@ -794,6 +794,11 @@ export enum ReplayerEvents {
   EventsUpdated = 'events-updated',
 }
 
+export enum StallEvents {
+  BufferingStart = 'buffering-start',
+  BufferingEnd = 'buffering-end',
+}
+
 export type KeepIframeSrcFn = (src: string) => boolean;
 
 declare global {

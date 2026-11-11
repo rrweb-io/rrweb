@@ -3,12 +3,9 @@ import {
   type customEvent,
   EventType,
   ReplayerEvents,
-} from '@rrweb/types';
-import {
-  type Replayer,
-  type StallController,
   StallEvents,
-} from '@rrweb/replay';
+} from '@rrweb/types';
+import type { Replayer, StallController } from '@rrweb/replay';
 import type { SegmentFetchFn } from './types';
 
 type SegmentInfo = {
