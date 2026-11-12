@@ -6,6 +6,7 @@ export type OrgOption = { id: string; name: string };
 export type OrgSwitch =
   | { name: 'idle' }
   | { name: 'switching' }
+  | { name: 'no-key'; orgName: string }
   | { name: 'failed' };
 
 const pill = {

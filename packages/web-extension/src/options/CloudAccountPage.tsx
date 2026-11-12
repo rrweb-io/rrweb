@@ -93,6 +93,7 @@ function AccountBody({
           account={view.account}
           orgs={view.orgs}
           orgSwitch={orgSwitch}
+          dashboardUrl={config.dashboardUrl}
           pickerDisabled={!recorderIdle}
           onPickOrg={pickOrg}
           onLogOut={logOut}

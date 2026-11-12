@@ -14,6 +14,7 @@ import {
 import {
   connectOrg,
   removeStoredAccount,
+  type ConnectResult,
   signOutAccount,
 } from './accountActions';
 import type { OrgOption, OrgSwitch } from './OrgPicker';
@@ -123,7 +124,7 @@ export function useCloudAccount(): CloudAccountApi {
 
   /** Cancelled when sign-out starts or the caller replaces the attempt. */
   const connect = useCallback(
-    (org: OrgOption, isCancelled: () => boolean): Promise<boolean> =>
+    (org: OrgOption, isCancelled: () => boolean): Promise<ConnectResult> =>
       connectOrg(clerk, org, () => isCancelled() || signingOut.current),
     [clerk],
   );
@@ -189,9 +190,17 @@ export function useCloudAccount(): CloudAccountApi {
       try {
         // Reload: a new sign-up may have no organization yet.
         const list = await loadOrgs();
-        const org =
-          list.find((o) => o.id === clerk.organization?.id) ?? list[0];
-        if (org && !cancelled) await connect(org, () => cancelled);
+        // The active organization first, then the rest: one without a key
+        // must not hold back another that has one.
+        const active = list.find((o) => o.id === clerk.organization?.id);
+        const candidates = active
+          ? [active, ...list.filter((o) => o !== active)]
+          : list;
+        for (const org of candidates) {
+          if (cancelled) break;
+          const result = await connect(org, () => cancelled);
+          if (result.name !== 'no-key') break;
+        }
       } catch {
         // Keep waiting; the next tick tries again.
       } finally {
@@ -209,8 +218,16 @@ export function useCloudAccount(): CloudAccountApi {
   const pickOrg = (org: OrgOption) => {
     setOrgSwitch({ name: 'switching' });
     void connect(org, () => false)
-      .catch(() => false)
-      .then((ok) => setOrgSwitch(ok ? { name: 'idle' } : { name: 'failed' }));
+      .catch((): ConnectResult => ({ name: 'failed' }))
+      .then((result) =>
+        setOrgSwitch(
+          result.name === 'connected' || result.name === 'cancelled'
+            ? { name: 'idle' }
+            : result.name === 'no-key'
+            ? { name: 'no-key', orgName: org.name }
+            : { name: 'failed' },
+        ),
+      );
   };
 
   const logOut = () => {

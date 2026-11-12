@@ -1,5 +1,6 @@
 import { Flex, Link, Text } from '@chakra-ui/react';
 import { RecorderStatus, type CloudAccount, type RecordingKind } from '~/types';
+import { OrgSwitchNotice } from '~/cloud/OrgSwitchNotice';
 import { OrgPicker, type OrgOption, type OrgSwitch } from '~/cloud/OrgPicker';
 import {
   Logo,
@@ -57,11 +58,11 @@ export function SignedInView({
           onPick={onPickOrg}
         />
       </Flex>
-      {orgSwitch.name === 'failed' && (
-        <Text color="brand.danger" fontSize="13px" mb="12px" role="alert">
-          Could not switch organization. Try again.
-        </Text>
-      )}
+      <OrgSwitchNotice
+        orgSwitch={orgSwitch}
+        dashboardUrl={dashboardUrl}
+        mb="12px"
+      />
       <ModeSwitch
         shown={mode}
         cloud={{ name: 'selectable', dashboardUrl }}

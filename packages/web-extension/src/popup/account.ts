@@ -153,10 +153,20 @@ export function derivePopupState(input: {
     : { name: 'setting-up' };
 }
 
+/**
+ * The organization's public key lookup. `no-key` means the API answered but
+ * the organization has none yet; `failed` is anything else (status, network,
+ * body), which a retry may fix.
+ */
+export type PublicKeyResult =
+  | { name: 'key'; publicKey: string }
+  | { name: 'no-key' }
+  | { name: 'failed' };
+
 export async function fetchPublicKey(
   orgId: string,
   sessionToken: string,
-): Promise<string | null> {
+): Promise<PublicKeyResult> {
   try {
     const response = await fetch(
       `${config.apiUrl}/get-public-key/${encodeURIComponent(orgId)}`,
@@ -164,12 +174,12 @@ export async function fetchPublicKey(
         headers: { Authorization: `Bearer ${sessionToken}` },
       },
     );
-    if (!response.ok) return null;
+    if (!response.ok) return { name: 'failed' };
     const body = (await response.json()) as { publicKey?: unknown };
     return typeof body.publicKey === 'string' && body.publicKey !== ''
-      ? body.publicKey
-      : null;
+      ? { name: 'key', publicKey: body.publicKey }
+      : { name: 'no-key' };
   } catch {
-    return null;
+    return { name: 'failed' };
   }
 }

@@ -10,6 +10,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import PageChrome, { SESSIONS_HREF } from '~/components/PageChrome';
+import { OrgSwitchNotice } from '~/cloud/OrgSwitchNotice';
 import { OrgPicker, type OrgOption, type OrgSwitch } from '~/cloud/OrgPicker';
 import { SetupSlow, SettingUpText } from '~/popup/SettingUpView';
 import type { CloudAccount } from '~/types';
@@ -104,6 +105,7 @@ export function SignedInAccount({
   account,
   orgs,
   orgSwitch,
+  dashboardUrl,
   pickerDisabled,
   onPickOrg,
   onLogOut,
@@ -111,6 +113,7 @@ export function SignedInAccount({
   account: CloudAccount;
   orgs: OrgOption[];
   orgSwitch: OrgSwitch;
+  dashboardUrl: string;
   /** True while a recording runs, so the organization cannot change under it. */
   pickerDisabled: boolean;
   onPickOrg: (org: OrgOption) => void;
@@ -128,11 +131,11 @@ export function SignedInAccount({
           disabled={orgSwitch.name === 'switching' || pickerDisabled}
           onPick={onPickOrg}
         />
-        {orgSwitch.name === 'failed' && (
-          <Text color="brand.danger" fontSize="13px" mt="8px" role="alert">
-            Could not switch organization. Try again.
-          </Text>
-        )}
+        <OrgSwitchNotice
+          orgSwitch={orgSwitch}
+          dashboardUrl={dashboardUrl}
+          mt="8px"
+        />
       </Box>
       <Button variant="quiet" onClick={onLogOut}>
         Log out

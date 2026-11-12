@@ -6,6 +6,7 @@ vi.mock('webextension-polyfill', () => ({
   default: {
     storage: {
       local: {
+        get: (key: string) => Promise.resolve({ [key]: store.data[key] }),
         set: (items: Record<string, unknown>) => {
           Object.assign(store.data, items);
           return Promise.resolve();
@@ -54,10 +55,12 @@ afterEach(() => {
 });
 
 describe('connectOrg', () => {
-  it('activates the org and stores the account with its key', async () => {
+  it('activates the org, stores the account with its key and connects', async () => {
     stubKey({ publicKey: 'pk_beta' });
     const clerk = fakeClerk('tok');
-    await expect(connectOrg(clerk, org, () => false)).resolves.toBe(true);
+    await expect(connectOrg(clerk, org, () => false)).resolves.toEqual({
+      name: 'connected',
+    });
     expect(clerk.setActive).toHaveBeenCalledWith({ organization: 'org_2' });
     expect(store.data[LocalDataKey.cloudAccount]).toEqual({
       userId: 'user_2',
@@ -67,35 +70,81 @@ describe('connectOrg', () => {
     });
   });
 
-  it('keeps the previous account when the key is empty', async () => {
-    stubKey({ publicKey: '' });
-    await expect(connectOrg(fakeClerk('tok'), org, () => false)).resolves.toBe(
-      false,
-    );
+  it('reports no-key, restores the previous active org and stores nothing', async () => {
+    stubKey({ success: true });
+    const clerk = fakeClerk('tok');
+    await expect(connectOrg(clerk, org, () => false)).resolves.toEqual({
+      name: 'no-key',
+    });
+    expect(clerk.setActive.mock.calls).toEqual([
+      [{ organization: 'org_2' }],
+      [{ organization: 'org_1' }],
+    ]);
     expect(store.data[LocalDataKey.cloudAccount]).toEqual(previous);
   });
 
-  it('keeps the previous account when there is no session token', async () => {
+  it('reports failed and restores the previous active org when the key lookup fails', async () => {
+    stubKey({}, false);
+    const clerk = fakeClerk('tok');
+    await expect(connectOrg(clerk, org, () => false)).resolves.toEqual({
+      name: 'failed',
+    });
+    expect(clerk.setActive).toHaveBeenLastCalledWith({ organization: 'org_1' });
+    expect(store.data[LocalDataKey.cloudAccount]).toEqual(previous);
+  });
+
+  it('leaves the active org alone when there is no stored account to restore', async () => {
+    stubKey({ success: true });
+    store.data = {};
+    const clerk = fakeClerk('tok');
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    await expect(connectOrg(clerk, org, () => false)).resolves.toEqual({
+      name: 'no-key',
+    });
+    expect(clerk.setActive.mock.calls).toEqual([[{ organization: 'org_2' }]]);
+    expect(log).not.toHaveBeenCalled();
+    log.mockRestore();
+  });
+
+  it('logs and still reports no-key when restoring the previous org fails', async () => {
+    stubKey({ success: true });
+    const clerk = fakeClerk('tok');
+    clerk.setActive
+      .mockImplementationOnce(() => Promise.resolve())
+      .mockImplementationOnce(() => Promise.reject(new Error('clerk down')));
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    await expect(connectOrg(clerk, org, () => false)).resolves.toEqual({
+      name: 'no-key',
+    });
+    expect(log).toHaveBeenCalled();
+    log.mockRestore();
+  });
+
+  it('fails without a session token, restores, and keeps the previous account', async () => {
     stubKey({ publicKey: 'pk_beta' });
-    await expect(connectOrg(fakeClerk(null), org, () => false)).resolves.toBe(
-      false,
-    );
+    const clerk = fakeClerk(null);
+    await expect(connectOrg(clerk, org, () => false)).resolves.toEqual({
+      name: 'failed',
+    });
+    expect(clerk.setActive).toHaveBeenLastCalledWith({ organization: 'org_1' });
     expect(store.data[LocalDataKey.cloudAccount]).toEqual(previous);
   });
 
-  it('keeps the previous account when no user is signed in', async () => {
+  it('fails without touching Clerk when no user is signed in', async () => {
+    stubKey({ publicKey: 'pk_beta' });
+    const clerk = fakeClerk('tok', null);
+    await expect(connectOrg(clerk, org, () => false)).resolves.toEqual({
+      name: 'failed',
+    });
+    expect(clerk.setActive).not.toHaveBeenCalled();
+    expect(store.data[LocalDataKey.cloudAccount]).toEqual(previous);
+  });
+
+  it('reports cancelled and keeps the previous account when cancelled before the write', async () => {
     stubKey({ publicKey: 'pk_beta' });
     await expect(
-      connectOrg(fakeClerk('tok', null), org, () => false),
-    ).resolves.toBe(false);
-    expect(store.data[LocalDataKey.cloudAccount]).toEqual(previous);
-  });
-
-  it('keeps the previous account when cancelled before the write', async () => {
-    stubKey({ publicKey: 'pk_beta' });
-    await expect(connectOrg(fakeClerk('tok'), org, () => true)).resolves.toBe(
-      false,
-    );
+      connectOrg(fakeClerk('tok'), org, () => true),
+    ).resolves.toEqual({ name: 'cancelled' });
     expect(store.data[LocalDataKey.cloudAccount]).toEqual(previous);
   });
 });

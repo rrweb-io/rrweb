@@ -156,7 +156,10 @@ describe('fetchPublicKey', () => {
 
   it('returns the key and sends the Bearer header to the org route', async () => {
     const fetchMock = stub(() => json({ success: true, publicKey: 'pk_x' }));
-    await expect(fetchPublicKey('org_1', 'tok_1')).resolves.toBe('pk_x');
+    await expect(fetchPublicKey('org_1', 'tok_1')).resolves.toEqual({
+      name: 'key',
+      publicKey: 'pk_x',
+    });
     const [url, init] = fetchMock.mock.calls[0] as unknown as [
       string,
       RequestInit,
@@ -165,27 +168,35 @@ describe('fetchPublicKey', () => {
     expect(new Headers(init.headers).get('Authorization')).toBe('Bearer tok_1');
   });
 
-  it.each([401, 403, 404])('returns null for status %i', async (status) => {
+  it.each([401, 403, 404])('reports failed for status %i', async (status) => {
     stub(() => json({ success: true, publicKey: 'pk_x' }, status));
-    await expect(fetchPublicKey('org_1', 'tok')).resolves.toBeNull();
+    await expect(fetchPublicKey('org_1', 'tok')).resolves.toEqual({
+      name: 'failed',
+    });
   });
 
-  it('returns null on a network error', async () => {
+  it('reports failed on a network error', async () => {
     stub(() => Promise.reject(new TypeError('offline')));
-    await expect(fetchPublicKey('org_1', 'tok')).resolves.toBeNull();
+    await expect(fetchPublicKey('org_1', 'tok')).resolves.toEqual({
+      name: 'failed',
+    });
   });
 
-  it('returns null when the body has no publicKey', async () => {
+  it('reports no-key when the body has no publicKey', async () => {
     stub(() => json({ success: true }));
-    await expect(fetchPublicKey('org_1', 'tok')).resolves.toBeNull();
+    await expect(fetchPublicKey('org_1', 'tok')).resolves.toEqual({
+      name: 'no-key',
+    });
   });
 
-  it('returns null for an empty publicKey', async () => {
+  it('reports no-key for an empty publicKey', async () => {
     stub(() => json({ success: true, publicKey: '' }));
-    await expect(fetchPublicKey('org_1', 'tok')).resolves.toBeNull();
+    await expect(fetchPublicKey('org_1', 'tok')).resolves.toEqual({
+      name: 'no-key',
+    });
   });
 
-  it('returns null when the body is not JSON', async () => {
+  it('reports failed when the body is not JSON', async () => {
     stub(() =>
       Promise.resolve({
         ok: true,
@@ -193,7 +204,9 @@ describe('fetchPublicKey', () => {
         json: () => Promise.reject(new SyntaxError('bad')),
       }),
     );
-    await expect(fetchPublicKey('org_1', 'tok')).resolves.toBeNull();
+    await expect(fetchPublicKey('org_1', 'tok')).resolves.toEqual({
+      name: 'failed',
+    });
   });
 });
 

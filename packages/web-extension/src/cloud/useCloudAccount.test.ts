@@ -176,4 +176,66 @@ describe('useCloudAccount', () => {
       account: { userId: 'user_2', orgId: 'org_2', publicKey: 'pk_2' },
     });
   });
+
+  it('setup skips an organization without a key when another has one', async () => {
+    fake.store = {};
+    fake.clerk.user = {
+      ...makeUser('user_1', 'org_1'),
+      getOrganizationMemberships: () =>
+        Promise.resolve({
+          data: [
+            { organization: { id: 'org_empty', name: 'Empty' } },
+            { organization: { id: 'org_keyed', name: 'Keyed' } },
+          ],
+        }),
+    };
+    fake.clerk.organization = { id: 'org_empty' };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url: string) =>
+        Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve(
+              url.endsWith('/org_keyed') ? { publicKey: 'pk_keyed' } : {},
+            ),
+        }),
+      ),
+    );
+    await render();
+    await settle();
+    await settle();
+    expect(api?.view).toMatchObject({
+      name: 'ready',
+      account: { orgId: 'org_keyed', publicKey: 'pk_keyed' },
+    });
+  });
+
+  it('a pick without a key names the organization and keeps the current one', async () => {
+    fake.clerk.user = {
+      ...makeUser('user_1', 'org_1'),
+      getOrganizationMemberships: () =>
+        Promise.resolve({
+          data: [
+            { organization: { id: 'org_1', name: 'org_1' } },
+            { organization: { id: 'org_empty', name: 'Empty' } },
+          ],
+        }),
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve({ ok: true, json: () => Promise.resolve({}) }),
+      ),
+    );
+    await render();
+    await settle();
+    await act(async () => api?.pickOrg({ id: 'org_empty', name: 'Empty' }));
+    await settle();
+    expect(api?.orgSwitch).toEqual({ name: 'no-key', orgName: 'Empty' });
+    expect(api?.view).toMatchObject({
+      name: 'ready',
+      account: { orgId: 'org_1' },
+    });
+  });
 });
