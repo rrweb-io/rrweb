@@ -17,6 +17,7 @@ export enum LocalDataKey {
   recorderStatus = 'recorder_status',
   cloudAccount = 'cloud_account',
   failedUploads = 'failed_uploads',
+  sharedSessions = 'shared_sessions',
 }
 
 export type CloudAccount = {
@@ -65,9 +66,44 @@ export type FailedUpload = {
   state: FailedUploadState;
 };
 
+/**
+ * An offline session's upload with "Share", under one cloud recording ID.
+ * pending: not every event has arrived; the next Share sends the rest to it,
+ * only for the user and organization it started with (`userId`, `orgId`).
+ * shared: every event, the close included, was delivered.
+ */
+export type SessionShare =
+  | {
+      state: 'pending';
+      recordingId: string;
+      userId: string;
+      orgId: string;
+      orgName: string;
+    }
+  | { state: 'shared'; recordingId: string };
+
+/**
+ * Offline sessions uploaded with "Share", keyed by session ID. Kept on log
+ * out, since it only links to the cloud copy.
+ */
+export type SharedSessions = Record<string, SessionShare>;
+
+/** What the Share button promised: this session, to this user's organization. */
+export type ShareRequest = { sessionId: string; userId: string; orgId: string };
+
+/**
+ * How a share request ended.
+ * shared: the session is in rrweb as `recordingId` (now, or from earlier).
+ * share-failed: Share can be pressed again; it sends what has not arrived.
+ */
+export type ShareResult =
+  | { name: 'shared'; recordingId: string }
+  | { name: 'share-failed'; errorMessage: string };
+
 export type LocalData = {
   [LocalDataKey.cloudAccount]?: CloudAccount | null;
   [LocalDataKey.failedUploads]?: FailedUpload[];
+  [LocalDataKey.sharedSessions]?: SharedSessions;
   [LocalDataKey.recorderStatus]: {
     status: RecorderStatus;
     // the recorded tab, or the tab a start is claiming; -1 when idle
@@ -102,6 +138,10 @@ export type Session = {
 export enum ServiceName {
   StartRecord = 'start-record',
   StopRecord = 'stop-record',
+  // a page asks the background to upload an offline session
+  ShareSession = 'share-session',
+  // a page asks the background to delete offline sessions and their shares
+  DeleteSessions = 'delete-sessions',
 }
 
 // all event names for channel

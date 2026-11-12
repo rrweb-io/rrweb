@@ -29,6 +29,13 @@ export async function getEvents(id: string) {
   return data.events;
 }
 
+/** A session's events, or undefined if it is no longer stored. */
+export async function findEvents(id: string) {
+  const db = await getEventStore();
+  const data = (await db.get(EventStoreName, id)) as EventData | undefined;
+  return data?.events;
+}
+
 const SessionStoreName = 'sessions';
 export async function getSessionStore() {
   return openDB<Session>(SessionStoreName, 1, {

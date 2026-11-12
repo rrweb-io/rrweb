@@ -5,6 +5,7 @@ import { OrgPicker, type OrgOption, type OrgSwitch } from '~/cloud/OrgPicker';
 import {
   Logo,
   Note,
+  OfflineSessionsButton,
   PopupFrame,
   FailedUploads,
   RecordButton,
@@ -80,14 +81,18 @@ export function SignedInView({
         )}
         recorder={recorder}
       />
-      <Flex justify="center" gap="16px" fontSize="13px" mt="12px">
+      <Flex
+        justify="center"
+        align="center"
+        gap="16px"
+        fontSize="13px"
+        mt="12px"
+      >
         <Link href={dashboardUrl} isExternal>
-          Open dashboard{' '}
+          Cloud dashboard{' '}
           <FiArrowUpRight aria-hidden="true" style={{ display: 'inline' }} />
         </Link>
-        <Link as="button" onClick={onOpenSessions}>
-          Offline sessions
-        </Link>
+        <OfflineSessionsButton onClick={onOpenSessions} />
       </Flex>
       <Flex
         justify="space-between"

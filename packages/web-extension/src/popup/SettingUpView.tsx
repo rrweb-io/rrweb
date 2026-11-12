@@ -55,7 +55,7 @@ export function SetupSlow({
         fontSize="13px"
         mt="12px"
       >
-        Open dashboard{' '}
+        Cloud dashboard{' '}
         <FiArrowUpRight aria-hidden="true" style={{ display: 'inline' }} />
       </Link>
     </>

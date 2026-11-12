@@ -12,6 +12,7 @@ export const config: {
   cloudEnabled: boolean;
   uninstallSurveyUrl: string;
   uninstallSurveyVersionField: string;
+  privacyPolicyUrl: string;
 } = {
   clerkPublishableKey:
     import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || PRODUCTION_CLERK_KEY,
@@ -30,6 +31,7 @@ export const config: {
   uninstallSurveyUrl:
     'https://docs.google.com/forms/d/e/1FAIpQLSfy_mh3YstjtPac7rjKmZTbe5V9Vjlnc9Dky7mY-ydVNmSQXg/viewform',
   uninstallSurveyVersionField: 'entry.470733856',
+  privacyPolicyUrl: 'https://rrweb.com/privacy',
 };
 
 export function uninstallSurveyUrl(version: string): string {

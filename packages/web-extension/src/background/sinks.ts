@@ -182,6 +182,25 @@ export const ACCOUNT_CHANGED_ERROR =
   'Your rrweb account changed since this popup opened. Check the organization and press record again.';
 
 /**
+ * Whether the stored account is the one a button promised (`expected`).
+ * not-set-up: stored without its user (by an older version), so it cannot be
+ * checked; the popup sets it up again. changed: none, or another user or org.
+ */
+export function checkStoredAccount(
+  account: CloudAccount | null,
+  expected: { userId: string; orgId: string },
+): CloudAccount | 'not-set-up' | 'changed' {
+  if (account && !account.userId) return 'not-set-up';
+  if (
+    !account ||
+    account.userId !== expected.userId ||
+    account.orgId !== expected.orgId
+  )
+    return 'changed';
+  return account;
+}
+
+/**
  * Ask the tab to record first, and only then create the sink, so a tab that
  * refuses to record never opens a transport. The destination is the one the
  * pressed button showed: offline records offline whatever is stored, and a
@@ -223,14 +242,10 @@ export async function startRecording(deps: {
     return { state: 'refused', errorMessage: INVALID_START_ERROR };
   let target: SinkTarget = { kind: 'offline' };
   if (request.mode === 'cloud') {
-    const account = await deps.getAccount();
-    if (account && !account.userId)
+    const account = checkStoredAccount(await deps.getAccount(), request);
+    if (account === 'not-set-up')
       return { state: 'refused', errorMessage: ACCOUNT_NOT_SET_UP_ERROR };
-    if (
-      !account ||
-      account.userId !== request.userId ||
-      account.orgId !== request.orgId
-    )
+    if (account === 'changed')
       return { state: 'refused', errorMessage: ACCOUNT_CHANGED_ERROR };
     const domain = hostnameOf(await deps.getTabUrl());
     if (domain === undefined)

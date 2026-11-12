@@ -8,7 +8,7 @@ import {
   Spinner,
   Text,
 } from '@chakra-ui/react';
-import { FiPause, FiPlay } from 'react-icons/fi';
+import { FiList, FiPause, FiPlay } from 'react-icons/fi';
 import { RecorderStatus, type FailedUpload, type StartRequest } from '~/types';
 import { Timer } from './Timer';
 import { recordButtonLook, type ActiveRecording } from './account';
@@ -77,6 +77,34 @@ export function Logo({ size = 'popup' }: { size?: 'popup' | 'page' }) {
         display={page ? { base: 'none', sm: 'block' } : undefined}
       />
     </Flex>
+  );
+}
+
+/**
+ * Opens the Offline Stored Sessions page. A labelled outline button, the
+ * same in the signed-out and signed-in views, so it is always easy to find.
+ */
+export function OfflineSessionsButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Button
+      onClick={onClick}
+      size="sm"
+      h="32px"
+      px="12px"
+      fontSize="13px"
+      fontWeight={600}
+      color="white"
+      bg="transparent"
+      border="1px solid"
+      borderColor="whiteAlpha.400"
+      borderRadius="0.625rem"
+      _hover={{ bg: 'whiteAlpha.100', borderColor: 'whiteAlpha.600' }}
+      _active={{ bg: 'whiteAlpha.200' }}
+      leftIcon={<FiList aria-hidden="true" />}
+      flexShrink={0}
+    >
+      Offline sessions
+    </Button>
   );
 }
 

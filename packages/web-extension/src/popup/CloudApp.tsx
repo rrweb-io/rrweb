@@ -21,7 +21,6 @@ function SignedOut({ recorder, links }: Props) {
       recorder={recorder.controls}
       newSession={recorder.newSession}
       onOpenSessions={links.openSessions}
-      onOpenSettings={links.openSettings}
       sessionUrl={links.sessionUrl}
     />
   );

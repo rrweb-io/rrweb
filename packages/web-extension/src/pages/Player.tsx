@@ -3,8 +3,9 @@ import { useRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Replayer from 'rrweb-player';
 import 'rrweb-player/dist/style.css';
-import { Box, Heading, Link } from '@chakra-ui/react';
+import { Box, Flex, Heading, Link } from '@chakra-ui/react';
 import { getEvents, getSession } from '~/utils/storage';
+import { ShareAction } from './ShareAction';
 
 export default function Player() {
   const playerElRef = useRef<HTMLDivElement>(null);
@@ -50,16 +51,30 @@ export default function Player() {
       <Link href="#/" fontSize="14px">
         All sessions
       </Link>
-      <Heading
-        as="h1"
-        fontSize="24px"
-        fontWeight={600}
+      <Flex
+        justify="space-between"
+        align="flex-start"
+        gap="16px"
         mt="8px"
         mb="24px"
-        wordBreak="break-word"
       >
-        {sessionName}
-      </Heading>
+        <Heading
+          as="h1"
+          fontSize="24px"
+          fontWeight={600}
+          minW={0}
+          noOfLines={1}
+          wordBreak="break-all"
+          title={sessionName}
+        >
+          {sessionName}
+        </Heading>
+        {sessionId && (
+          <Box flexShrink={0}>
+            <ShareAction sessionId={sessionId} />
+          </Box>
+        )}
+      </Flex>
       <Box
         bg="brand.surface"
         border="1px solid"

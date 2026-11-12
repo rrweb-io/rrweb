@@ -1,24 +1,23 @@
 import Browser from 'webextension-polyfill';
 import Channel from '~/utils/channel';
 import { EventName, LocalDataKey, SyncDataKey } from '~/types';
-import type {
-  FailedUpload,
-  LocalData,
-  RecordedEvent,
-  Settings,
-  SyncData,
-} from '~/types';
+import type { FailedUpload, LocalData, Settings, SyncData } from '~/types';
 import { createTransport, postEvents } from '@rrweb/browser-client';
 import { config, uninstallSurveyUrl } from '~/config';
 import {
   addSession,
   deleteFailedUpload,
+  deleteSessions,
+  findEvents,
   getFailedUpload,
+  getSession,
   putFailedUpload,
 } from '~/utils/storage';
 import { createFailedUploads } from './failedUploads';
+import { registerHandlers, type BackgroundServices } from './handlers';
 import { watchRecordedPages } from './pageWatch';
 import { createRecorder } from './recorder';
+import { createSessionSharing } from './shareSession';
 import { createSink, type UnsentUpload } from './sinks';
 
 // Ask people who remove the extension why they left.
@@ -31,7 +30,27 @@ Browser.runtime
     // The survey is optional; recording must keep working without it.
   });
 
-void (async () => {
+// Register every listener before any await: a message that wakes a suspended
+// worker is dispatched during its first synchronous run.
+const channel = new Channel();
+const ready = start();
+// Handlers report their own failures; this keeps the rejection handled.
+ready.catch((error) => console.error('Could not start the background:', error));
+registerHandlers(channel, ready, { shareEnabled: config.cloudEnabled });
+
+// One recording is one tab: it finishes when that tab's document goes away.
+watchRecordedPages(
+  {
+    onConnect: Browser.runtime.onConnect,
+    onTabRemoved: Browser.tabs.onRemoved,
+  },
+  (tabId) =>
+    void ready
+      .then(({ recorder }) => recorder.pageGone(tabId))
+      .catch((error) => console.error('Could not end the recording:', error)),
+);
+
+async function start(): Promise<BackgroundServices> {
   // assign default value to settings of this extension
   const result =
     ((await Browser.storage.sync.get(SyncDataKey.settings)) as SyncData) ||
@@ -79,7 +98,6 @@ void (async () => {
     getURL: (path: string) => Browser.runtime.getURL(path),
     recorderVersion: Browser.runtime.getManifest().version_name || 'unknown',
   };
-  const channel = new Channel();
   const recorder = createRecorder({
     getAccount: storedAccount,
     getTabUrl: async (tabId) => (await Browser.tabs.get(tabId)).url,
@@ -107,54 +125,37 @@ void (async () => {
     [LocalDataKey.recorderStatus]: recorder.getStatus(),
   });
 
-  channel.on(
-    EventName.StartButtonClicked,
-    (request) => void recorder.start(request),
-  );
-  channel.on(EventName.StopButtonClicked, () => recorder.stop());
-  channel.on(EventName.PauseButtonClicked, () => recorder.pauseClicked());
-  channel.on(EventName.ResumeButtonClicked, () => recorder.resumeClicked());
-  channel.on(EventName.ContentScriptEmitEvent, (data, sender) => {
-    recorder.add(data as RecordedEvent, {
-      tabId: sender.tab?.id,
-      frameId: sender.frameId,
-    });
-  });
-  // Retry never rejects: a failure is stored as the upload's retry-failed
-  // state, which the popup shows. Discard and log out can fail on storage.
-  const logFailure = (action: string) => (error: unknown) =>
-    console.error(`Could not ${action}:`, error);
-  channel.on(EventName.RetryUploadClicked, (data) => {
-    const recordingId = stringField(data, 'recordingId');
-    if (recordingId !== 'invalid')
-      void failedUploads
-        .retry(recordingId)
-        .catch(logFailure('retry the upload'));
-  });
-  channel.on(EventName.DiscardUploadClicked, (data) => {
-    const recordingId = stringField(data, 'recordingId');
-    if (recordingId !== 'invalid')
-      void failedUploads
-        .discard(recordingId)
-        .catch(logFailure('discard the recording'));
-  });
-  channel.on(EventName.UserLoggedOut, (data) => {
-    const userId = stringField(data, 'userId');
-    if (userId !== 'invalid')
-      void failedUploads
-        .forgetUser(userId)
-        .catch(logFailure("delete the user's failed uploads"));
+  // Log out keeps the shared map: it only links to the cloud copies.
+  const sharing = createSessionSharing({
+    getAccount: storedAccount,
+    loadSession: async (id) => {
+      const events = await findEvents(id);
+      const session = await getSession(id);
+      return events && session
+        ? { events, recorderVersion: session.recorderVersion }
+        : undefined;
+    },
+    deleteStored: deleteSessions,
+    readShared: async () =>
+      (
+        (await Browser.storage.local.get(
+          LocalDataKey.sharedSessions,
+        )) as LocalData
+      )[LocalDataKey.sharedSessions] ?? {},
+    writeShared: (shared) =>
+      Browser.storage.local.set({ [LocalDataKey.sharedSessions]: shared }),
+    // Share IDs are fresh UUIDs, so they never collide with a failed upload.
+    putUnsent: putFailedUpload,
+    getUnsent: getFailedUpload,
+    deleteUnsent: deleteFailedUpload,
+    postEvents,
+    randomId: () => crypto.randomUUID(),
+    openTab: (url) => Browser.tabs.create({ url }),
+    now: () => Date.now(),
   });
 
-  // One recording is one tab: it finishes when that tab's document goes away.
-  watchRecordedPages(
-    {
-      onConnect: Browser.runtime.onConnect,
-      onTabRemoved: Browser.tabs.onRemoved,
-    },
-    (tabId) => void recorder.pageGone(tabId),
-  );
-})();
+  return { recorder, failedUploads, sharing };
+}
 
 /**
  * Load the recorder into the top frame of `tabId`. The popup's record button
@@ -177,13 +178,6 @@ async function injectRecorder(tabId: number) {
     files: ['content/inject.js'],
     world: 'MAIN',
   });
-}
-
-/** A non-empty string field of a runtime message, or 'invalid'. */
-function stringField(data: unknown, key: string): string | 'invalid' {
-  if (typeof data !== 'object' || data === null) return 'invalid';
-  const value = (data as Record<string, unknown>)[key];
-  return typeof value === 'string' && value !== '' ? value : 'invalid';
 }
 
 /**

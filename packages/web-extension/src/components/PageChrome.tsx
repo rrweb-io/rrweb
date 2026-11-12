@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react';
 import { Box, Flex, Link, Text } from '@chakra-ui/react';
+import { FiArrowUpRight } from 'react-icons/fi';
+import { config } from '~/config';
 import { Logo } from '~/popup/PopupParts';
 
 /** The full pages, each with its link in the bar. */
@@ -75,6 +77,17 @@ export default function PageChrome({
                 {page.label}
               </NavLink>
             ))}
+            {config.cloudEnabled && (
+              <NavLink href={config.dashboardUrl} active={false} external>
+                <>
+                  Cloud dashboard{' '}
+                  <FiArrowUpRight
+                    aria-hidden="true"
+                    style={{ display: 'inline' }}
+                  />
+                </>
+              </NavLink>
+            )}
           </Flex>
           <Flex ml="auto" minW={0} align="center">
             {end}
@@ -99,15 +112,18 @@ export default function PageChrome({
 function NavLink({
   href,
   active,
+  external = false,
   children,
 }: {
   href: string;
   active: boolean;
-  children: string;
+  external?: boolean;
+  children: ReactNode;
 }) {
   return (
     <Link
       href={href}
+      isExternal={external}
       aria-current={active ? 'page' : undefined}
       flexShrink={0}
       borderRadius="10px"

@@ -1,9 +1,9 @@
-import { Button, Flex, IconButton, Link, Stack, Text } from '@chakra-ui/react';
-import { FiList, FiSettings } from 'react-icons/fi';
+import { Button, Flex, Link, Text } from '@chakra-ui/react';
 import type { Session } from '~/types';
 import {
   Logo,
   Note,
+  OfflineSessionsButton,
   PopupFrame,
   RecordButton,
   RecorderError,
@@ -22,44 +22,19 @@ export function SignedOutView({
   recorder,
   newSession,
   onOpenSessions,
-  onOpenSettings,
   sessionUrl,
 }: {
   cloud: CloudOffer;
   recorder: RecorderControls;
   newSession: Session | null;
   onOpenSessions: () => void;
-  onOpenSettings: () => void;
   sessionUrl: (session: Session) => string;
 }) {
   return (
     <PopupFrame>
-      <Flex align="center" justify="space-between" mb="20px">
+      <Flex align="center" justify="space-between" gap="12px" mb="20px">
         <Logo />
-        <Stack direction="row" spacing="6px">
-          <IconButton
-            onClick={onOpenSessions}
-            size="xs"
-            variant="ghost"
-            color="white"
-            _hover={{ bg: 'whiteAlpha.200' }}
-            _active={{ bg: 'whiteAlpha.300' }}
-            icon={<FiList />}
-            aria-label="Offline sessions"
-            title="Offline sessions"
-          />
-          <IconButton
-            onClick={onOpenSettings}
-            size="xs"
-            variant="ghost"
-            color="white"
-            _hover={{ bg: 'whiteAlpha.200' }}
-            _active={{ bg: 'whiteAlpha.300' }}
-            icon={<FiSettings />}
-            aria-label="Account"
-            title="Account"
-          />
-        </Stack>
+        <OfflineSessionsButton onClick={onOpenSessions} />
       </Flex>
       {cloud.name === 'available' && (
         <>

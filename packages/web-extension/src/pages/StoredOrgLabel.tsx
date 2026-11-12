@@ -5,13 +5,25 @@ import { LocalDataKey } from '~/types';
 import type { CloudAccount, LocalData } from '~/types';
 
 /** The connected organization, as stored by the popup or the Account page. */
+/**
+ * not-set-up: stored without its user by an older version; the popup sets it
+ * up again before it can be used.
+ */
 export type StoredOrg =
   | { name: 'loading' }
   | { name: 'none' }
-  | { name: 'org'; orgName: string };
+  | { name: 'not-set-up'; orgName: string }
+  | { name: 'org'; orgName: string; userId: string; orgId: string };
 
 function storedOrgFrom(value: CloudAccount | null | undefined): StoredOrg {
-  return value ? { name: 'org', orgName: value.orgName } : { name: 'none' };
+  if (!value) return { name: 'none' };
+  if (!value.userId) return { name: 'not-set-up', orgName: value.orgName };
+  return {
+    name: 'org',
+    orgName: value.orgName,
+    userId: value.userId,
+    orgId: value.orgId,
+  };
 }
 
 /**
@@ -51,6 +63,7 @@ export function StoredOrgLabel() {
     case 'loading':
     case 'none':
       return null;
+    case 'not-set-up':
     case 'org':
       return <BarLabel label={org.orgName} />;
   }

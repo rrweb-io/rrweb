@@ -51,7 +51,6 @@ const signedOut = (recorder: RecorderControls) =>
     recorder,
     newSession: null,
     onOpenSessions: () => undefined,
-    onOpenSettings: () => undefined,
     sessionUrl: () => '',
   });
 
@@ -168,5 +167,53 @@ describe('record buttons name their destination', () => {
     const mine = controls([upload({ name: 'upload-failed' })]);
     render(signedOut(mine));
     expect(container.textContent).not.toContain('Upload failed');
+  });
+});
+
+describe('the popup header links', () => {
+  beforeEach(() => {
+    (
+      globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT = true;
+    container = document.createElement('div');
+    root = createRoot(container);
+  });
+
+  afterEach(() => act(() => root.unmount()));
+
+  it('both views show a labelled "Offline sessions" button and no Account button', () => {
+    const views = [
+      (onOpenSessions: () => void) =>
+        createElement(SignedOutView, {
+          cloud: { name: 'unavailable' },
+          recorder: controls(),
+          newSession: null,
+          onOpenSessions,
+          sessionUrl: () => '',
+        }),
+      (onOpenSessions: () => void) =>
+        createElement(SignedInView, {
+          account,
+          orgs: [{ id: 'org_1', name: 'Acme' }],
+          email: 'user@example.com',
+          recorder: controls(),
+          orgSwitch: { name: 'idle' },
+          dashboardUrl: 'https://app.rrweb.com',
+          onPickOrg: () => undefined,
+          onLogOut: () => undefined,
+          onOpenSessions,
+        }),
+    ];
+    for (const view of views) {
+      const onOpenSessions = vi.fn();
+      render(view(onOpenSessions));
+      // Found by its visible text, so an icon-only button does not count.
+      act(() => button('Offline sessions').click());
+      expect(onOpenSessions).toHaveBeenCalledTimes(1);
+      const labels = Array.from(container.querySelectorAll('button')).map(
+        (b) => b.getAttribute('aria-label') ?? b.textContent?.trim(),
+      );
+      expect(labels).not.toContain('Account');
+    }
   });
 });

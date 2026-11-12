@@ -36,10 +36,9 @@ import { VscTriangleDown, VscTriangleUp } from 'react-icons/vsc';
 import { FiEdit3 as EditIcon } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import type { eventWithTime } from 'rrweb';
-import { type Session, EventName } from '~/types';
+import { type Session, EventName, ServiceName } from '~/types';
 import Channel from '~/utils/channel';
 import {
-  deleteSessions,
   getAllSessions,
   downloadSessions,
   addSession,
@@ -51,6 +50,7 @@ import {
   FiChevronsLeft,
   FiChevronsRight,
 } from 'react-icons/fi';
+import { ShareAction } from './ShareAction';
 
 const columnHelper = createColumnHelper<Session>();
 const channel = new Channel();
@@ -148,8 +148,12 @@ export function SessionList() {
               onMouseLeave={() => setIsHovered(false)}
               alignItems="center"
               position="relative"
+              maxW="420px"
+              minW={0}
             >
               <Editable
+                minW={0}
+                maxW="100%"
                 defaultValue={info.getValue()}
                 isPreviewFocusable={false}
                 onSubmit={(nextValue) => {
@@ -162,7 +166,13 @@ export function SessionList() {
                   void updateSession(newSession);
                 }}
               >
-                <EditablePreview cursor="pointer" />
+                <EditablePreview
+                  cursor="pointer"
+                  display="block"
+                  noOfLines={1}
+                  wordBreak="break-all"
+                  title={info.getValue()}
+                />
                 <EditableControls />
                 <EditableInput onClick={(e) => e.stopPropagation()} />
               </Editable>
@@ -181,12 +191,23 @@ export function SessionList() {
         cell: (info) => info.getValue(),
         header: 'rrweb version',
       }),
+      columnHelper.display({
+        id: 'share',
+        header: () => null,
+        // Clicks here, the dialog's included, must not open the player.
+        cell: ({ row }) => (
+          <Box onClick={(e) => e.stopPropagation()} cursor="default">
+            <ShareAction sessionId={row.original.id} />
+          </Box>
+        ),
+      }),
     ],
     [sessions],
   );
   const table = useReactTable<Session>({
     columns,
     data: fetchData(fetchDataOptions).rows,
+    getRowId: (row) => row.id,
     getCoreRowModel: getCoreRowModel(),
     onPaginationChange: setPagination,
     onRowSelectionChange: setRowSelection,
@@ -250,7 +271,33 @@ export function SessionList() {
     reader.readAsText(file);
   };
 
-  const selectedCount = Object.keys(rowSelection).length;
+  // Selection survives page changes, so bulk actions resolve it against the
+  // whole list, not the table's current page. Ids of deleted sessions drop out.
+  const selectedIds = sessions
+    .map((session) => session.id)
+    .filter((id) => (rowSelection as Record<string, boolean>)[id]);
+  const selectedCount = selectedIds.length;
+
+  const deleteSelected = async () => {
+    try {
+      // The background also removes what Share kept for these sessions.
+      await channel.request(ServiceName.DeleteSessions, {
+        sessionIds: selectedIds,
+      });
+    } catch (error) {
+      toast({
+        title: 'Could not delete the sessions',
+        description: error instanceof Error ? error.message : String(error),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+    setRowSelection({});
+    void updateSessions();
+    channel.emit(EventName.SessionUpdated, {});
+  };
 
   return (
     <>
@@ -469,30 +516,14 @@ export function SessionList() {
             <Button
               variant="quiet"
               size="sm"
-              onClick={() => {
-                const selectedRows = table.getSelectedRowModel().flatRows;
-                if (selectedRows.length === 0) return;
-                void downloadSessions(
-                  selectedRows.map((row) => row.original.id),
-                );
-              }}
+              onClick={() => void downloadSessions(selectedIds)}
             >
               Download
             </Button>
             <Button
               variant="quiet"
               size="sm"
-              onClick={() => {
-                if (table.getSelectedRowModel().flatRows.length === 0) return;
-                const ids = table
-                  .getSelectedRowModel()
-                  .flatRows.map((row) => row.original.id);
-                void deleteSessions(ids).then(() => {
-                  setRowSelection({});
-                  void updateSessions();
-                  channel.emit(EventName.SessionUpdated, {});
-                });
-              }}
+              onClick={() => void deleteSelected()}
             >
               Delete
             </Button>

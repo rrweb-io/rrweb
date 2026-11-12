@@ -24,14 +24,12 @@ export type PopupRecorder = {
 export type PopupLinks = {
   openUrl: (url: string) => void;
   openSessions: () => void;
-  openSettings: () => void;
   sessionUrl: (session: Session) => string;
 };
 
 const links: PopupLinks = {
   openUrl: (url) => void Browser.tabs.create({ url }),
   openSessions: () => void Browser.tabs.create({ url: '/pages/index.html#/' }),
-  openSettings: () => void Browser.runtime.openOptionsPage(),
   sessionUrl: (session) =>
     Browser.runtime.getURL(`pages/index.html#/session/${session.id}`),
 };
@@ -117,7 +115,6 @@ export function App() {
         recorder={recorder.controls}
         newSession={recorder.newSession}
         onOpenSessions={links.openSessions}
-        onOpenSettings={links.openSettings}
         sessionUrl={links.sessionUrl}
       />
     );
