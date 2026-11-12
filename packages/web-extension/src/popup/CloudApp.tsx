@@ -7,6 +7,8 @@ import { LoadingView } from './PopupParts';
 import { SettingUpView } from './SettingUpView';
 import { SignedInView } from './SignedInView';
 import { SignedOutView } from './SignedOutView';
+import { SignedOutSwitch } from './ModeSwitch';
+import { useRecordingMode } from './useRecordingMode';
 
 type Props = { recorder: PopupRecorder; links: PopupLinks };
 
@@ -15,6 +17,12 @@ function SignedOut({ recorder, links }: Props) {
     <SignedOutView
       cloud={{
         name: 'available',
+        modeSwitch: (
+          <SignedOutSwitch
+            recorder={recorder.controls}
+            onOpenSessions={links.openSessions}
+          />
+        ),
         onSignUp: () => links.openUrl(`${config.dashboardUrl}/signup`),
         onLogIn: () => links.openUrl(`${config.dashboardUrl}/signin`),
       }}
@@ -29,6 +37,9 @@ function SignedOut({ recorder, links }: Props) {
 function Account(props: Props) {
   const { recorder } = props;
   const { view, orgSwitch, pickOrg, logOut, tryAgain } = useCloudAccount();
+  const mode = useRecordingMode();
+  // Waits for the remembered choice, so the switch never flips after opening.
+  if (mode.choice.name === 'loading') return <LoadingView />;
 
   switch (view.name) {
     case 'loading':
@@ -46,6 +57,7 @@ function Account(props: Props) {
           recorder={recorder.controls}
           dashboardUrl={config.dashboardUrl}
           onTryAgain={tryAgain}
+          onOpenSessions={props.links.openSessions}
         />
       );
     case 'ready':
@@ -57,6 +69,8 @@ function Account(props: Props) {
           recorder={recorder.controls}
           orgSwitch={orgSwitch}
           dashboardUrl={config.dashboardUrl}
+          storedMode={mode.choice.stored}
+          onChooseMode={mode.choose}
           onPickOrg={pickOrg}
           onLogOut={logOut}
           onOpenSessions={props.links.openSessions}

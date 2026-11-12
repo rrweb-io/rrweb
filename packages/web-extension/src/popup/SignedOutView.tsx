@@ -1,21 +1,29 @@
 import { Button, Flex, Link, Text } from '@chakra-ui/react';
+import type { ReactNode } from 'react';
 import type { Session } from '~/types';
 import {
   Logo,
   Note,
-  OfflineSessionsButton,
   PopupFrame,
   RecordButton,
   RecorderError,
   RecordingControls,
   type RecorderControls,
 } from './PopupParts';
-import { recordingNote } from './account';
+import { recordingNote, shownMode } from './account';
 
-/** Firefox has no sign-in, so only offline recording is offered there. */
+/**
+ * Firefox has no sign-in, so only offline recording is offered there.
+ * `modeSwitch` is passed in, so the Firefox build holds no switch code.
+ */
 export type CloudOffer =
   | { name: 'unavailable' }
-  | { name: 'available'; onSignUp: () => void; onLogIn: () => void };
+  | {
+      name: 'available';
+      modeSwitch: ReactNode;
+      onSignUp: () => void;
+      onLogIn: () => void;
+    };
 
 export function SignedOutView({
   cloud,
@@ -30,53 +38,28 @@ export function SignedOutView({
   onOpenSessions: () => void;
   sessionUrl: (session: Session) => string;
 }) {
+  // Offline, unless a cloud recording from before log out is still stopping.
+  const mode = shownMode({
+    active: recorder.active,
+    cloud: 'not-ready',
+    stored: 'not-stored',
+  });
   return (
     <PopupFrame>
-      <Flex align="center" justify="space-between" gap="12px" mb="20px">
+      <Flex align="center" mb="20px">
         <Logo />
-        <OfflineSessionsButton onClick={onOpenSessions} />
       </Flex>
-      {cloud.name === 'available' && (
-        <>
-          <Text fontSize="14px" lineHeight="1.55" color="brand.pitch" mb="20px">
-            Save every recording to rrweb and share it with a link. Free to
-            start.
-          </Text>
-          <Button variant="signup" w="100%" onClick={cloud.onSignUp} autoFocus>
-            Sign up free
-          </Button>
-          <Link
-            as="button"
-            onClick={cloud.onLogIn}
-            alignSelf="center"
-            fontSize="13px"
-            mt="14px"
-          >
-            I already have an account · Log in
-          </Link>
-          <Flex
-            align="center"
-            gap="10px"
-            color="brand.muted"
-            fontSize="12px"
-            my="20px"
-            role="separator"
-            aria-label="or"
-          >
-            <Flex flex="1" h="1px" bg="brand.line" />
-            <Text as="span">or</Text>
-            <Flex flex="1" h="1px" bg="brand.line" />
-          </Flex>
-        </>
-      )}
-      <RecordingControls recorder={recorder} />
-      <RecordButton
-        recorder={recorder}
-        idleLabel="Record offline"
-        startAs={{ mode: 'offline' }}
-        autoFocus={cloud.name === 'unavailable'}
-      />
-      <Note>{recordingNote(recorder.active)}</Note>
+      {cloud.name === 'available' && cloud.modeSwitch}
+      <Flex direction="column" mt={cloud.name === 'available' ? '12px' : 0}>
+        <RecordingControls recorder={recorder} />
+        <RecordButton
+          recorder={recorder}
+          idleLabel="Record offline"
+          startAs={{ mode: 'offline' }}
+          autoFocus
+        />
+      </Flex>
+      <Note>{recordingNote(mode, { name: 'signed-out' })}</Note>
       <RecorderError recorder={recorder} />
       {newSession && (
         <Text fontSize="13px" mt="12px">
@@ -85,6 +68,32 @@ export function SignedOutView({
             {newSession.name}
           </Link>
         </Text>
+      )}
+      {cloud.name === 'available' ? (
+        <>
+          <Button variant="signup" w="100%" mt="16px" onClick={cloud.onSignUp}>
+            Sign up free
+          </Button>
+          <Link
+            as="button"
+            onClick={cloud.onLogIn}
+            alignSelf="center"
+            fontSize="13px"
+            mt="12px"
+          >
+            I already have an account · Log in
+          </Link>
+        </>
+      ) : (
+        <Link
+          as="button"
+          onClick={onOpenSessions}
+          alignSelf="center"
+          fontSize="13px"
+          mt="14px"
+        >
+          Offline sessions
+        </Link>
       )}
     </PopupFrame>
   );

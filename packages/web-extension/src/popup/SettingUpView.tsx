@@ -1,13 +1,17 @@
-import { Button, Flex, Link, Text } from '@chakra-ui/react';
+import { Box, Button, Flex, Link, Text } from '@chakra-ui/react';
+import { RecorderStatus } from '~/types';
 import { FiArrowUpRight } from 'react-icons/fi';
 import {
   Logo,
+  Note,
   PopupFrame,
   RecordButton,
   RecorderError,
   RecordingControls,
   type RecorderControls,
 } from './PopupParts';
+import { ModeSwitch } from './ModeSwitch';
+import { recordingNote, shownMode } from './account';
 
 /** The status line shared by the popup and the account page. */
 export function SettingUpText({
@@ -64,7 +68,8 @@ export function SetupSlow({
 
 /**
  * validating: a stored account is being checked against the signed-in user.
- * Recording cannot start until it is checked or set up again.
+ * Cloud recording waits until it is checked or set up again; offline
+ * recording works throughout.
  */
 export type SetupStage = 'validating' | 'setting-up' | 'setup-slow';
 
@@ -73,32 +78,53 @@ export function SettingUpView({
   recorder,
   dashboardUrl,
   onTryAgain,
+  onOpenSessions,
 }: {
   stage: SetupStage;
   recorder: RecorderControls;
   dashboardUrl: string;
   onTryAgain: () => void;
+  onOpenSessions: () => void;
 }) {
+  // Offline, unless a cloud recording is still running.
+  const mode = shownMode({
+    active: recorder.active,
+    cloud: 'not-ready',
+    stored: 'not-stored',
+  });
   return (
     <PopupFrame>
       <Flex align="center" mb="20px">
         <Logo />
       </Flex>
-      <SettingUpText
-        label={
-          stage === 'validating'
-            ? 'Checking your account…'
-            : 'Setting up your account…'
-        }
+      <ModeSwitch
+        shown={mode}
+        cloud={{
+          name: 'unavailable',
+          hint: stage === 'validating' ? 'checking' : 'setting up',
+        }}
+        disabled={recorder.status !== RecorderStatus.IDLE}
+        onChoose={() => undefined}
+        onOpenSessions={onOpenSessions}
       />
+      <Box mt="16px">
+        <SettingUpText
+          label={
+            stage === 'validating'
+              ? 'Checking your account…'
+              : 'Setting up your account…'
+          }
+        />
+      </Box>
       <RecordingControls recorder={recorder} />
-      {/* Stays usable as a stop button if a recording is already running. */}
       <RecordButton
         recorder={recorder}
-        idleLabel="Start recording"
-        startAs="cannot-start"
-        tall
+        idleLabel="Record offline"
+        startAs={{ mode: 'offline' }}
+        // Try again takes the focus once setup is slow.
+        autoFocus={stage !== 'setup-slow'}
       />
+      <Note>{recordingNote(mode, { name: 'setting-up' })}</Note>
       <RecorderError recorder={recorder} />
       {stage === 'setup-slow' && (
         <SetupSlow dashboardUrl={dashboardUrl} onTryAgain={onTryAgain} />

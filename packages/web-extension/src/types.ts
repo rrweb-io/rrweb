@@ -18,6 +18,7 @@ export enum LocalDataKey {
   cloudAccount = 'cloud_account',
   failedUploads = 'failed_uploads',
   sharedSessions = 'shared_sessions',
+  recordingMode = 'recording_mode',
 }
 
 export type CloudAccount = {
@@ -104,6 +105,8 @@ export type LocalData = {
   [LocalDataKey.cloudAccount]?: CloudAccount | null;
   [LocalDataKey.failedUploads]?: FailedUpload[];
   [LocalDataKey.sharedSessions]?: SharedSessions;
+  /** The popup switch's last choice; absent until the person picks one. */
+  [LocalDataKey.recordingMode]?: RecordingKind;
   [LocalDataKey.recorderStatus]: {
     status: RecorderStatus;
     // the recorded tab, or the tab a start is claiming; -1 when idle

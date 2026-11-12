@@ -8,7 +8,7 @@ import {
   Spinner,
   Text,
 } from '@chakra-ui/react';
-import { FiList, FiPause, FiPlay } from 'react-icons/fi';
+import { FiPause, FiPlay } from 'react-icons/fi';
 import { RecorderStatus, type FailedUpload, type StartRequest } from '~/types';
 import { Timer } from './Timer';
 import { recordButtonLook, type ActiveRecording } from './account';
@@ -80,34 +80,6 @@ export function Logo({ size = 'popup' }: { size?: 'popup' | 'page' }) {
   );
 }
 
-/**
- * Opens the Offline Stored Sessions page. A labelled outline button, the
- * same in the signed-out and signed-in views, so it is always easy to find.
- */
-export function OfflineSessionsButton({ onClick }: { onClick: () => void }) {
-  return (
-    <Button
-      onClick={onClick}
-      size="sm"
-      h="32px"
-      px="12px"
-      fontSize="13px"
-      fontWeight={600}
-      color="white"
-      bg="transparent"
-      border="1px solid"
-      borderColor="whiteAlpha.400"
-      borderRadius="0.625rem"
-      _hover={{ bg: 'whiteAlpha.100', borderColor: 'whiteAlpha.600' }}
-      _active={{ bg: 'whiteAlpha.200' }}
-      leftIcon={<FiList aria-hidden="true" />}
-      flexShrink={0}
-    >
-      Offline sessions
-    </Button>
-  );
-}
-
 export function Note({ children }: { children: ReactNode }) {
   return (
     <Text fontSize="12px" color="brand.muted" textAlign="center" mt="8px">
@@ -116,50 +88,41 @@ export function Note({ children }: { children: ReactNode }) {
   );
 }
 
-/**
- * `startAs` is the destination this button shows. 'cannot-start' keeps the
- * button usable only to stop a recording that is already running.
- */
+/** `startAs` is the destination this button shows; a stop needs none. */
 export function RecordButton({
   recorder,
   idleLabel,
   startAs,
-  tall = false,
   disabled = false,
   autoFocus = false,
 }: {
   recorder: RecorderControls;
   idleLabel: string;
-  startAs: StartRequest | 'cannot-start';
-  tall?: boolean;
+  startAs: StartRequest;
   disabled?: boolean;
   autoFocus?: boolean;
 }) {
-  const cannotStart =
-    startAs === 'cannot-start' && recorder.status === RecorderStatus.IDLE;
-  const look = recordButtonLook(recorder.status, disabled || cannotStart);
-  const press = () => {
-    // a stop needs no destination; toggle ignores it while recording
-    recorder.toggle(startAs === 'cannot-start' ? { mode: 'offline' } : startAs);
-  };
-  const mark = tall ? '14px' : '10px';
+  const look = recordButtonLook(recorder.status, disabled);
   return (
     <Button
       variant="record"
       w="100%"
-      h={tall ? '66px' : undefined}
-      fontSize={tall ? '16px' : undefined}
+      h="66px"
+      fontSize="16px"
       leftIcon={
         <Box
-          w={mark}
-          h={mark}
+          w="14px"
+          h="14px"
           bg="white"
           borderRadius={look.mark === 'dot' ? '50%' : '2px'}
           aria-hidden="true"
         />
       }
       // Busy keeps the idle look under the cursor; `toggle` ignores the click.
-      onClick={look.press === 'enabled' ? press : undefined}
+      // While recording, `toggle` stops and ignores `startAs`.
+      onClick={
+        look.press === 'enabled' ? () => recorder.toggle(startAs) : undefined
+      }
       aria-busy={look.press === 'busy'}
       isDisabled={look.press === 'disabled'}
       autoFocus={autoFocus}

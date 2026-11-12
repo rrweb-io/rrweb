@@ -1,11 +1,9 @@
 import { Flex, Link, Text } from '@chakra-ui/react';
-import { FiArrowUpRight } from 'react-icons/fi';
-import { RecorderStatus, type CloudAccount } from '~/types';
+import { RecorderStatus, type CloudAccount, type RecordingKind } from '~/types';
 import { OrgPicker, type OrgOption, type OrgSwitch } from '~/cloud/OrgPicker';
 import {
   Logo,
   Note,
-  OfflineSessionsButton,
   PopupFrame,
   FailedUploads,
   RecordButton,
@@ -13,7 +11,8 @@ import {
   RecordingControls,
   type RecorderControls,
 } from './PopupParts';
-import { recordingNote } from './account';
+import { ModeSwitch } from './ModeSwitch';
+import { recordingNote, shownMode, type StoredMode } from './account';
 
 export function SignedInView({
   account,
@@ -22,6 +21,8 @@ export function SignedInView({
   recorder,
   orgSwitch,
   dashboardUrl,
+  storedMode,
+  onChooseMode,
   onPickOrg,
   onLogOut,
   onOpenSessions,
@@ -32,10 +33,19 @@ export function SignedInView({
   recorder: RecorderControls;
   orgSwitch: OrgSwitch;
   dashboardUrl: string;
+  storedMode: StoredMode;
+  onChooseMode: (mode: RecordingKind) => void;
   onPickOrg: (org: OrgOption) => void;
   onLogOut: () => void;
   onOpenSessions: () => void;
 }) {
+  // An offline recording started before sign-in keeps showing as offline.
+  const mode = shownMode({
+    active: recorder.active,
+    cloud: 'ready',
+    stored: storedMode,
+  });
+  const idle = recorder.status === RecorderStatus.IDLE;
   return (
     <PopupFrame>
       <Flex align="center" justify="space-between" gap="12px" mb="20px">
@@ -43,10 +53,7 @@ export function SignedInView({
         <OrgPicker
           account={account}
           orgs={orgs}
-          disabled={
-            orgSwitch.name === 'switching' ||
-            recorder.status !== RecorderStatus.IDLE
-          }
+          disabled={orgSwitch.name === 'switching' || !idle}
           onPick={onPickOrg}
         />
       </Flex>
@@ -55,24 +62,30 @@ export function SignedInView({
           Could not switch organization. Try again.
         </Text>
       )}
-      <RecordingControls recorder={recorder} />
-      <RecordButton
-        recorder={recorder}
-        idleLabel="Start recording"
-        startAs={{
-          mode: 'cloud',
-          userId: account.userId,
-          orgId: account.orgId,
-        }}
-        tall
-        disabled={orgSwitch.name === 'switching'}
-        autoFocus
+      <ModeSwitch
+        shown={mode}
+        cloud={{ name: 'selectable', dashboardUrl }}
+        disabled={!idle}
+        onChoose={onChooseMode}
+        onOpenSessions={onOpenSessions}
       />
+      <Flex direction="column" mt="12px">
+        <RecordingControls recorder={recorder} />
+        <RecordButton
+          recorder={recorder}
+          idleLabel={mode === 'cloud' ? 'Start recording' : 'Record offline'}
+          startAs={
+            mode === 'cloud'
+              ? { mode, userId: account.userId, orgId: account.orgId }
+              : { mode }
+          }
+          // Only a cloud start waits for the organization switch.
+          disabled={mode === 'cloud' && orgSwitch.name === 'switching'}
+          autoFocus
+        />
+      </Flex>
       <Note>
-        {/* An offline recording started before sign-in keeps its sink. */}
-        {recorder.active === 'offline'
-          ? recordingNote(recorder.active)
-          : 'Uploads to rrweb. Inputs are masked.'}
+        {recordingNote(mode, { name: 'signed-in', orgName: account.orgName })}
       </Note>
       <RecorderError recorder={recorder} />
       <FailedUploads
@@ -82,25 +95,15 @@ export function SignedInView({
         recorder={recorder}
       />
       <Flex
-        justify="center"
-        align="center"
-        gap="16px"
-        fontSize="13px"
-        mt="12px"
-      >
-        <Link href={dashboardUrl} isExternal>
-          Cloud dashboard{' '}
-          <FiArrowUpRight aria-hidden="true" style={{ display: 'inline' }} />
-        </Link>
-        <OfflineSessionsButton onClick={onOpenSessions} />
-      </Flex>
-      <Flex
         justify="space-between"
         align="center"
         gap="12px"
         fontSize="12px"
         color="brand.muted"
         mt="16px"
+        pt="12px"
+        borderTop="1px solid"
+        borderColor="brand.rule"
       >
         {email !== null && (
           <Text noOfLines={1} title={email}>

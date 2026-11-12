@@ -5,6 +5,8 @@ import {
   derivePopupState,
   recordButtonLook,
   recordingNote,
+  shownMode,
+  parseStoredMode,
   fetchPublicKey,
   SETUP_SLOW_AFTER_MS,
 } from './account';
@@ -195,30 +197,77 @@ describe('fetchPublicKey', () => {
   });
 });
 
-describe('recordingNote', () => {
-  const note = (status: RecorderStatus, kind?: 'offline' | 'cloud') =>
-    recordingNote(activeRecording({ status, kind }));
-
-  it('says the recording uploads while a cloud recording runs or is paused', () => {
-    expect(note(RecorderStatus.RECORDING, 'cloud')).toBe('Uploading to rrweb');
-    expect(note(RecorderStatus.PAUSED, 'cloud')).toBe('Uploading to rrweb');
-  });
-
-  it('does not claim an upload while a start is in flight', () => {
+describe('activeRecording', () => {
+  it('does not claim a recording while a start is in flight', () => {
     expect(activeRecording({ status: RecorderStatus.STARTING })).toBe(
       'not-recording',
     );
-    expect(note(RecorderStatus.STARTING)).toBe('Saved in this browser only');
+    expect(
+      activeRecording({ status: RecorderStatus.IDLE, kind: 'cloud' }),
+    ).toBe('not-recording');
+    expect(
+      activeRecording({ status: RecorderStatus.PAUSED, kind: 'cloud' }),
+    ).toBe('cloud');
+  });
+});
+
+describe('recordingNote', () => {
+  it('names the organization a cloud recording uploads to', () => {
+    expect(recordingNote('cloud', { name: 'signed-in', orgName: 'Acme' })).toBe(
+      'Uploads to Acme. Inputs are masked.',
+    );
+    expect(recordingNote('cloud', { name: 'setting-up' })).toBe(
+      'Uploads to rrweb. Inputs are masked.',
+    );
   });
 
-  it('says saved in this browser when idle or recording offline', () => {
-    expect(note(RecorderStatus.IDLE)).toBe('Saved in this browser only');
-    expect(note(RecorderStatus.IDLE, 'cloud')).toBe(
-      'Saved in this browser only',
+  it('offers sharing later only to someone signed in', () => {
+    expect(
+      recordingNote('offline', { name: 'signed-in', orgName: 'Acme' }),
+    ).toBe('Saved in this browser only. You can share it later.');
+    expect(recordingNote('offline', { name: 'setting-up' })).toBe(
+      'Saved in this browser only. You can share it later.',
     );
-    expect(note(RecorderStatus.RECORDING, 'offline')).toBe(
-      'Saved in this browser only',
+    expect(recordingNote('offline', { name: 'signed-out' })).toBe(
+      'Saved in this browser only.',
     );
+  });
+});
+
+describe('shownMode', () => {
+  it('defaults to Cloud once ready, then follows the stored choice', () => {
+    const ready = { active: 'not-recording', cloud: 'ready' } as const;
+    expect(shownMode({ ...ready, stored: 'not-stored' })).toBe('cloud');
+    expect(shownMode({ ...ready, stored: 'offline' })).toBe('offline');
+    expect(shownMode({ ...ready, stored: 'cloud' })).toBe('cloud');
+  });
+
+  it('shows Offline while the account is not ready, whatever is stored', () => {
+    expect(
+      shownMode({
+        active: 'not-recording',
+        cloud: 'not-ready',
+        stored: 'cloud',
+      }),
+    ).toBe('offline');
+  });
+
+  it("shows a running recording's own mode", () => {
+    expect(
+      shownMode({ active: 'offline', cloud: 'ready', stored: 'cloud' }),
+    ).toBe('offline');
+    expect(
+      shownMode({ active: 'cloud', cloud: 'not-ready', stored: 'offline' }),
+    ).toBe('cloud');
+  });
+});
+
+describe('parseStoredMode', () => {
+  it('reads only the two modes', () => {
+    expect(parseStoredMode('offline')).toBe('offline');
+    expect(parseStoredMode('cloud')).toBe('cloud');
+    expect(parseStoredMode(undefined)).toBe('not-stored');
+    expect(parseStoredMode('Cloud')).toBe('not-stored');
   });
 });
 

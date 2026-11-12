@@ -23,11 +23,48 @@ export function activeRecording(
   return data.kind ?? 'offline';
 }
 
-/** The line under the record button in the signed-out view. */
-export function recordingNote(active: ActiveRecording): string {
-  return active === 'cloud'
-    ? 'Uploading to rrweb'
-    : 'Saved in this browser only';
+/** The switch's choice in storage: 'not-stored' until the person picks one. */
+export type StoredMode = RecordingKind | 'not-stored';
+
+export function parseStoredMode(value: unknown): StoredMode {
+  return value === 'cloud' || value === 'offline' ? value : 'not-stored';
+}
+
+/**
+ * The mode the switch and record button show. A running recording shows its
+ * own mode. Cloud is shown only once the account is ready, and is the default
+ * until the person picks one.
+ */
+export function shownMode(input: {
+  active: ActiveRecording;
+  cloud: 'ready' | 'not-ready';
+  stored: StoredMode;
+}): RecordingKind {
+  if (input.active !== 'not-recording') return input.active;
+  if (input.cloud === 'not-ready') return 'offline';
+  return input.stored === 'not-stored' ? 'cloud' : input.stored;
+}
+
+/**
+ * Who reads the note under the record button.
+ * signed-in: uploads go to `orgName`.
+ * setting-up: signed in, but the account is not ready yet.
+ * signed-out: signed out, or a browser without sign-in.
+ */
+export type NoteReader =
+  | { name: 'signed-in'; orgName: string }
+  | { name: 'setting-up' }
+  | { name: 'signed-out' };
+
+/** The line under the record button. */
+export function recordingNote(mode: RecordingKind, reader: NoteReader): string {
+  if (mode === 'cloud')
+    return reader.name === 'signed-in'
+      ? `Uploads to ${reader.orgName}. Inputs are masked.`
+      : 'Uploads to rrweb. Inputs are masked.';
+  return reader.name === 'signed-out'
+    ? 'Saved in this browser only.'
+    : 'Saved in this browser only. You can share it later.';
 }
 
 export type RecordButtonLook = {
