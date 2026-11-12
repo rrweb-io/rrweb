@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { eventWithTime } from '@rrweb/types';
 import { createRecorder, KEEPALIVE_INTERVAL_MS } from './recorder';
+import { createBadge, BADGE_COLORS } from './badge';
 import type { RecorderDeps } from './recorder';
 import { ACCOUNT_CHANGED_ERROR, createSink } from './sinks';
 import { watchRecordedPages, RECORDED_PAGE_PORT } from './pageWatch';
@@ -90,7 +91,21 @@ function setup(initial: CloudAccount | null) {
     cancel: vi.fn((index: number) => void index),
     ping: vi.fn(() => Promise.resolve()),
   };
+  const badgeCalls: string[] = [];
+  const badgeFailure = { set: false };
+  const badge = createBadge({
+    setBadge: (tabId, color) => {
+      badgeCalls.push(`set:${tabId}:${color}`);
+      if (badgeFailure.set) return Promise.reject(new Error('badge broke'));
+      return Promise.resolve();
+    },
+    clearBadge: (tabId) => {
+      badgeCalls.push(`clear:${tabId}`);
+      return Promise.resolve();
+    },
+  });
   const deps: RecorderDeps = {
+    onStatus: badge.sync,
     getAccount: () => Promise.resolve(state.account),
     getTabUrl: (tabId) => Promise.resolve(state.tabs[tabId]),
     getCurrentTabId: () => Promise.resolve(state.currentTab),
@@ -190,6 +205,8 @@ function setup(initial: CloudAccount | null) {
     keepalive,
     requestToTab,
     saved,
+    badgeCalls,
+    badgeFailure,
   };
 }
 
@@ -807,5 +824,104 @@ describe('createRecorder', () => {
     const offline = setup(null);
     await offline.recorder.start();
     expect(offline.recorder.getStatus()).toMatchObject({ kind: 'offline' });
+  });
+});
+
+describe('recording badge', () => {
+  const { RECORDING, PAUSED } = BADGE_COLORS;
+  const last = (calls: string[]) => calls[calls.length - 1];
+
+  it('badges the recorded tab only, steady red', async () => {
+    const { recorder, badgeCalls, state } = setup(account);
+    state.currentTab = 2;
+    await recorder.start();
+    expect(badgeCalls).toEqual([`set:2:${RECORDING}`]);
+  });
+
+  it('shows the muted red while paused and red again on resume', async () => {
+    const { recorder, badgeCalls } = setup(account);
+    await recorder.start();
+    await recorder.pauseClicked();
+    expect(last(badgeCalls)).toBe(`set:1:${PAUSED}`);
+    await recorder.resumeClicked();
+    expect(last(badgeCalls)).toBe(`set:1:${RECORDING}`);
+  });
+
+  it('clears the badge when the recording stops', async () => {
+    const { recorder, badgeCalls } = setup(account);
+    await recorder.start();
+    await recorder.stop();
+    expect(last(badgeCalls)).toBe('clear:1');
+  });
+
+  it('clears the badge when the page goes away', async () => {
+    const { recorder, browser, badgeCalls, settle } = setup(account);
+    await recorder.start();
+    browser.openPage(1)();
+    await settle();
+    expect(last(badgeCalls)).toBe('clear:1');
+  });
+
+  it('clears the badge when the tab closes', async () => {
+    const { recorder, browser, badgeCalls, settle } = setup(account);
+    await recorder.start();
+    browser.closeTab(1);
+    await settle();
+    expect(last(badgeCalls)).toBe('clear:1');
+  });
+
+  it('clears the badge when the cloud upload fails', async () => {
+    const { recorder, badgeCalls, transport } = setup(account);
+    transport.stop.mockResolvedValueOnce({ delivered: false } as never);
+    await recorder.start();
+    await recorder.stop();
+    expect(last(badgeCalls)).toBe('clear:1');
+  });
+
+  it('leaves no badge when the start is refused', async () => {
+    const { recorder, badgeCalls, state } = setup(account);
+    state.refuse = true;
+    await recorder.start();
+    expect(badgeCalls.filter((c) => c.startsWith('set'))).toEqual([]);
+  });
+
+  it('keeps recording when the badge API fails', async () => {
+    const { recorder, badgeFailure, saved } = setup(account);
+    badgeFailure.set = true;
+    await recorder.start();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(recorder.getStatus().status).toBe(RecorderStatus.RECORDING);
+    expect(saved).toContain(RecorderStatus.RECORDING);
+    await recorder.stop();
+    expect(recorder.getStatus().status).toBe(RecorderStatus.IDLE);
+  });
+
+  it('contains a badge API that throws synchronously', () => {
+    const badge = createBadge({
+      setBadge: () => {
+        throw new Error('sync boom');
+      },
+      clearBadge: () => Promise.resolve(),
+    });
+    expect(() =>
+      badge.sync({ status: RecorderStatus.RECORDING, activeTabId: 1 }),
+    ).not.toThrow();
+  });
+
+  it('registers no timer', () => {
+    vi.useFakeTimers();
+    try {
+      const badge = createBadge({
+        setBadge: () => Promise.resolve(),
+        clearBadge: () => Promise.resolve(),
+      });
+      const status = { status: RecorderStatus.RECORDING, activeTabId: 1 };
+      badge.sync(status);
+      badge.sync({ ...status, status: RecorderStatus.PAUSED });
+      badge.sync({ ...status, status: RecorderStatus.IDLE });
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

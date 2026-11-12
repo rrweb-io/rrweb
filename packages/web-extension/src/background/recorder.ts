@@ -17,6 +17,8 @@ export const KEEPALIVE_INTERVAL_MS = 25_000;
 type Status = LocalData[LocalDataKey.recorderStatus];
 
 export type RecorderDeps = {
+  /** Called with the status after every change, for the toolbar badge. */
+  onStatus?: (status: Status) => void;
   getAccount: () => Promise<CloudAccount | null>;
   getTabUrl: (tabId: number) => Promise<string | undefined>;
   getTabTitle: (tabId: number) => Promise<string | undefined>;
@@ -74,7 +76,14 @@ export function createRecorder(deps: RecorderDeps) {
   // event, so events from an earlier recording's page are dropped.
   let token = 'no-recording';
 
-  const save = () => deps.saveStatus(status);
+  const save = () => {
+    try {
+      deps.onStatus?.(status);
+    } catch (e) {
+      console.warn('rrweb: status listener failed', e);
+    }
+    return deps.saveStatus(status);
+  };
 
   /** `request` is the popup's message, checked by startRecording. */
   async function start(request: unknown) {

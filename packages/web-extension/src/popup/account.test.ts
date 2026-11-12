@@ -227,10 +227,10 @@ describe('activeRecording', () => {
 describe('recordingNote', () => {
   it('names the organization a cloud recording uploads to', () => {
     expect(recordingNote('cloud', { name: 'signed-in', orgName: 'Acme' })).toBe(
-      'Uploads to Acme. Inputs are masked.',
+      'Uploads to Acme. Form fields are masked.',
     );
     expect(recordingNote('cloud', { name: 'setting-up' })).toBe(
-      'Uploads to rrweb. Inputs are masked.',
+      'Uploads to rrweb. Form fields are masked.',
     );
   });
 

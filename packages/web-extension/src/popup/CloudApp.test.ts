@@ -163,7 +163,7 @@ describe('the popup recording mode switch', () => {
     expect(checked(radio('Cloud'))).toBe(true);
     expect(checked(radio('Offline'))).toBe(false);
     expect(container.textContent).toContain(
-      'Uploads to Acme. Inputs are masked.',
+      'Uploads to Acme. Form fields are masked.',
     );
     act(() => button('Start recording').click());
     expect(recorder.toggle).toHaveBeenCalledWith({

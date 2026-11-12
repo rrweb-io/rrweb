@@ -60,8 +60,8 @@ export type NoteReader =
 export function recordingNote(mode: RecordingKind, reader: NoteReader): string {
   if (mode === 'cloud')
     return reader.name === 'signed-in'
-      ? `Uploads to ${reader.orgName}. Inputs are masked.`
-      : 'Uploads to rrweb. Inputs are masked.';
+      ? `Uploads to ${reader.orgName}. Form fields are masked.`
+      : 'Uploads to rrweb. Form fields are masked.';
   return reader.name === 'signed-out'
     ? 'Saved in this browser only.'
     : 'Saved in this browser only. You can share it later.';

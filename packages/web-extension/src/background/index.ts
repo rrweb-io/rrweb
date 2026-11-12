@@ -16,6 +16,7 @@ import {
 import { createFailedUploads } from './failedUploads';
 import { registerHandlers, type BackgroundServices } from './handlers';
 import { watchRecordedPages } from './pageWatch';
+import { BADGE_TEXT, createBadge } from './badge';
 import { createRecorder } from './recorder';
 import { createSessionSharing } from './shareSession';
 import { createSink, type UnsentUpload } from './sinks';
@@ -98,7 +99,18 @@ async function start(): Promise<BackgroundServices> {
     getURL: (path: string) => Browser.runtime.getURL(path),
     recorderVersion: Browser.runtime.getManifest().version_name || 'unknown',
   };
+  // MV3 has `action`, MV2 Firefox has `browserAction`.
+  const toolbar = Browser.action ?? Browser.browserAction;
+  const badge = createBadge({
+    setBadge: async (tabId, color) => {
+      await toolbar.setBadgeText({ tabId, text: BADGE_TEXT });
+      await toolbar.setBadgeBackgroundColor({ tabId, color });
+      await toolbar.setBadgeTextColor?.({ tabId, color: '#FFFFFF' });
+    },
+    clearBadge: (tabId) => toolbar.setBadgeText({ tabId, text: '' }),
+  });
   const recorder = createRecorder({
+    onStatus: badge.sync,
     getAccount: storedAccount,
     getTabUrl: async (tabId) => (await Browser.tabs.get(tabId)).url,
     getTabTitle: async (tabId) => (await Browser.tabs.get(tabId)).title,
@@ -124,6 +136,19 @@ async function start(): Promise<BackgroundServices> {
   await Browser.storage.local.set({
     [LocalDataKey.recorderStatus]: recorder.getStatus(),
   });
+  // The status is IDLE now, so no tab may still show a recording badge.
+  Browser.tabs
+    .query({})
+    .then((tabs) =>
+      Promise.all(
+        tabs.map((tab) =>
+          tab.id === undefined
+            ? undefined
+            : toolbar.setBadgeText({ tabId: tab.id, text: '' }),
+        ),
+      ),
+    )
+    .catch((e) => console.warn('rrweb: clearing stale badges failed', e));
 
   // Log out keeps the shared map: it only links to the cloud copies.
   const sharing = createSessionSharing({
