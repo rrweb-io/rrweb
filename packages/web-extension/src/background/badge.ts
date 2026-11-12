@@ -4,11 +4,12 @@ export const BADGE_COLORS = {
   RECORDING: '#E5484D',
   PAUSED: '#7A3A3D',
 } as const;
-/** A single space renders as a solid pill; the bullet looks uneven in Chrome. */
-export const BADGE_TEXT = ' ';
+export const BADGE_TEXT = 'REC';
+
+export type Badge = { text: string; color: string };
 
 export type BadgeDeps = {
-  setBadge: (tabId: number, color: string) => Promise<unknown>;
+  setBadge: (tabId: number, badge: Badge) => Promise<unknown>;
   clearBadge: (tabId: number) => Promise<unknown>;
 };
 
@@ -45,7 +46,7 @@ export function createBadge(deps: BadgeDeps) {
       status === RecorderStatus.PAUSED
         ? BADGE_COLORS.PAUSED
         : BADGE_COLORS.RECORDING;
-    guard(() => deps.setBadge(tabId, color));
+    guard(() => deps.setBadge(tabId, { text: BADGE_TEXT, color }));
   }
 
   return { sync };

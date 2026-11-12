@@ -16,7 +16,7 @@ import {
 import { createFailedUploads } from './failedUploads';
 import { registerHandlers, type BackgroundServices } from './handlers';
 import { watchRecordedPages } from './pageWatch';
-import { BADGE_TEXT, createBadge } from './badge';
+import { createBadge } from './badge';
 import { createRecorder } from './recorder';
 import { createSessionSharing } from './shareSession';
 import { createSink, type UnsentUpload } from './sinks';
@@ -102,8 +102,8 @@ async function start(): Promise<BackgroundServices> {
   // MV3 has `action`, MV2 Firefox has `browserAction`.
   const toolbar = Browser.action ?? Browser.browserAction;
   const badge = createBadge({
-    setBadge: async (tabId, color) => {
-      await toolbar.setBadgeText({ tabId, text: BADGE_TEXT });
+    setBadge: async (tabId, { text, color }) => {
+      await toolbar.setBadgeText({ tabId, text });
       await toolbar.setBadgeBackgroundColor({ tabId, color });
       await toolbar.setBadgeTextColor?.({ tabId, color: '#FFFFFF' });
     },

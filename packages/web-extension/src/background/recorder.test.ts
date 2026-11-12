@@ -94,8 +94,8 @@ function setup(initial: CloudAccount | null) {
   const badgeCalls: string[] = [];
   const badgeFailure = { set: false };
   const badge = createBadge({
-    setBadge: (tabId, color) => {
-      badgeCalls.push(`set:${tabId}:${color}`);
+    setBadge: (tabId, { text, color }) => {
+      badgeCalls.push(`set:${tabId}:${text}:${color}`);
       if (badgeFailure.set) return Promise.reject(new Error('badge broke'));
       return Promise.resolve();
     },
@@ -831,20 +831,20 @@ describe('recording badge', () => {
   const { RECORDING, PAUSED } = BADGE_COLORS;
   const last = (calls: string[]) => calls[calls.length - 1];
 
-  it('badges the recorded tab only, steady red', async () => {
+  it('shows REC on the recorded tab only, steady red', async () => {
     const { recorder, badgeCalls, state } = setup(account);
     state.currentTab = 2;
     await recorder.start();
-    expect(badgeCalls).toEqual([`set:2:${RECORDING}`]);
+    expect(badgeCalls).toEqual([`set:2:REC:${RECORDING}`]);
   });
 
   it('shows the muted red while paused and red again on resume', async () => {
     const { recorder, badgeCalls } = setup(account);
     await recorder.start();
     await recorder.pauseClicked();
-    expect(last(badgeCalls)).toBe(`set:1:${PAUSED}`);
+    expect(last(badgeCalls)).toBe(`set:1:REC:${PAUSED}`);
     await recorder.resumeClicked();
-    expect(last(badgeCalls)).toBe(`set:1:${RECORDING}`);
+    expect(last(badgeCalls)).toBe(`set:1:REC:${RECORDING}`);
   });
 
   it('clears the badge when the recording stops', async () => {
