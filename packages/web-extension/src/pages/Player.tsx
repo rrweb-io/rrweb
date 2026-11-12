@@ -2,6 +2,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Replayer from 'rrweb-player';
+import 'rrweb-player/dist/style.css';
 import { Box, Heading, Link } from '@chakra-ui/react';
 import { getEvents, getSession } from '~/utils/storage';
 
@@ -25,12 +26,6 @@ export default function Player() {
         if (!playerElRef.current) return;
         if (playerRef.current) return;
 
-        const manifest = chrome.runtime.getManifest();
-        const rrwebPlayerVersion = manifest.version_name || manifest.version;
-        const linkEl = document.createElement('link');
-        linkEl.href = `https://cdn.jsdelivr.net/npm/rrweb-player@${rrwebPlayerVersion}/dist/style.min.css`;
-        linkEl.rel = 'stylesheet';
-        document.head.appendChild(linkEl);
         playerRef.current = new Replayer({
           target: playerElRef.current as HTMLElement,
           props: {

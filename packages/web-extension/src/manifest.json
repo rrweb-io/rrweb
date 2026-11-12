@@ -1,6 +1,7 @@
 {
   "common": {
     "name": "rrweb",
+    "description": "Record and replay a browser tab with rrweb. Keep recordings in your browser, or sign in to save them to your rrweb account.",
     "icons": {
       "16": "icon16.png",
       "48": "icon48.png",
@@ -29,6 +30,7 @@
     },
     "chrome": {},
     "firefox": {
+      "description": "Record and replay a browser tab with rrweb. Recordings are kept in your browser.",
       "browser_specific_settings": {
         "gecko": {
           "id": "rrweb@rrweb.io",
@@ -46,8 +48,7 @@
       },
       "action": {
         "default_title": "rrweb",
-        "default_popup": "popup/popup.html",
-        "browser_style": false
+        "default_popup": "popup/popup.html"
       },
       "options_ui": {
         "page": "options/index.html",
