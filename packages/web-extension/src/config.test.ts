@@ -7,10 +7,7 @@ describe('uninstallSurveyUrl', () => {
     expect(url.origin + url.pathname).toBe(
       'https://docs.google.com/forms/d/e/1FAIpQLSfy_mh3YstjtPac7rjKmZTbe5V9Vjlnc9Dky7mY-ydVNmSQXg/viewform',
     );
-    expect(Object.fromEntries(url.searchParams)).toEqual({
-      usp: 'pp_url',
-      'entry.470733856': '2.2.2',
-    });
+    expect(url.search).toBe('?usp=pp_url&entry.470733856=2.2.2');
   });
 
   it('encodes a version name with spaces', () => {
