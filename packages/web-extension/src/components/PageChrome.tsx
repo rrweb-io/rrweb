@@ -9,7 +9,7 @@ export const SESSIONS_HREF = '/pages/index.html#/';
 export const ACCOUNT_HREF = '/options/index.html#/';
 
 const PAGES: { name: PageName; label: string; href: string }[] = [
-  { name: 'sessions', label: 'Sessions', href: SESSIONS_HREF },
+  { name: 'sessions', label: 'Offline Stored Sessions', href: SESSIONS_HREF },
   { name: 'account', label: 'Account', href: ACCOUNT_HREF },
 ];
 

@@ -48,7 +48,7 @@ function Column({ children }: { children: ReactNode }) {
 export function SessionListLink() {
   return (
     <Link href={SESSIONS_HREF} fontSize="14px">
-      Open the session list
+      Open Offline Stored Sessions
     </Link>
   );
 }

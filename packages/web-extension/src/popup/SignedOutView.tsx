@@ -45,8 +45,8 @@ export function SignedOutView({
             _hover={{ bg: 'whiteAlpha.200' }}
             _active={{ bg: 'whiteAlpha.300' }}
             icon={<FiList />}
-            aria-label="Session list"
-            title="Session list"
+            aria-label="Offline Stored Sessions"
+            title="Offline Stored Sessions"
           />
           <IconButton
             onClick={onOpenSettings}
