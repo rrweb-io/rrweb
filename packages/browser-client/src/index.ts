@@ -67,6 +67,9 @@ const wsLimit = 10e5; // this is approximate and depends on the browser, also on
 const wsReadyStateOpen = 1; // WebSocket.OPEN
 const fallbackPostDelay = 5 * 1000;
 const fallbackPostMaxDelay = 60 * 1000;
+// How long a fallback POST may run before the next tick is scheduled anyway.
+// The slow request is left running; later events go out in a new POST.
+const fallbackPostStallTimeout = 30 * 1000;
 const errorBodyTimeout = 2 * 1000;
 
 type RecordingContext = {
@@ -144,6 +147,15 @@ export function stop(resetRecordingId: boolean) {
       ctx.ws.send(JSON.stringify(closeEvent));
       ctx.ws.close();
       ctx.ws = undefined;
+      // The socket wasn't open, so the close event is still in the buffer and
+      // nothing else will send it now that fallback posting has stopped.
+      if (ctx.buffer.length()) {
+        void postData(ctx.postUrl, ctx.publicApiKey, ctx.buffer).catch(
+          (error) => {
+            console.error('Error POSTing close event on stop:', error);
+          },
+        );
+      }
     }
   }
   if (resetRecordingId) {
@@ -239,6 +251,17 @@ function connect(
       scheduleFallbackPost();
       return;
     }
+    let scheduled = false;
+    const scheduleNext = () => {
+      clearTimeout(stallTimer);
+      if (scheduled || fallbackCancelled) return;
+      scheduled = true;
+      scheduleFallbackPost();
+    };
+    const stallTimer = setTimeout(() => {
+      fallbackDelay = Math.min(fallbackDelay * 2, fallbackPostMaxDelay);
+      scheduleNext();
+    }, fallbackPostStallTimeout);
     postData(ctx.postUrl, ctx.publicApiKey, ctx.buffer)
       .then(() => {
         fallbackDelay = fallbackPostDelay;
@@ -247,9 +270,7 @@ function connect(
         fallbackDelay = Math.min(fallbackDelay * 2, fallbackPostMaxDelay);
         console.error('Error periodically POSTing events:', error);
       })
-      .finally(() => {
-        if (!fallbackCancelled) scheduleFallbackPost();
-      });
+      .finally(scheduleNext);
   };
   const scheduleFallbackPost = () => {
     fallbackTimer = setTimeout(fallbackPostTick, fallbackDelay);

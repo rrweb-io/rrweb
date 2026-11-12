@@ -404,6 +404,112 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     expect(ids(socket.sent)).toEqual([1, 2, 3, 4]);
   });
 
+  it('POSTs the close event when stop() runs before the socket first opens', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { client } = await startClient();
+
+    client.stop(true);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const body = String(fetchMock.mock.calls[0][1]?.body);
+    expect(body.split('\n').map((line) => JSON.parse(line))).toEqual([
+      expect.objectContaining({
+        data: { tag: 'close-permanent', payload: {} },
+      }),
+    ]);
+  });
+
+  it('POSTs the close event when stop() runs while the socket is down', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { client, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    client.stop(false);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(String(fetchMock.mock.calls[0][1]?.body)).toContain(
+      '"tag":"close-temporary"',
+    );
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not POST on stop() when the close event went over an open socket', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { client, socket } = await startClient();
+    socket.reopen();
+
+    client.stop(true);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(socket.sent.at(-1)).toContain('"tag":"close-permanent"');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('keeps POSTing later events while an earlier POST never answers', async () => {
+    const post = deferredFetch();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    emit(event(2));
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(post.bodies()).toHaveLength(1);
+
+    emit(event(3));
+    // 30 s stall allowance, then the doubled 10 s delay.
+    await vi.advanceTimersByTimeAsync(39_999);
+    expect(post.bodies()).toHaveLength(1);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(post.bodies().map((body) => ids([body]))).toEqual([[2], [3]]);
+
+    // The slow request is left running and its late answer does not start a
+    // second tick loop.
+    post.resolve(new Response(null, { status: 202 }));
+    await vi.advanceTimersByTimeAsync(0);
+    emit(event(4));
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(post.bodies().map((body) => ids([body]))).toEqual([[2], [3], [4]]);
+    emit(event(5));
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(post.bodies().map((body) => ids([body]))).toEqual([
+      [2],
+      [3],
+      [4],
+      [5],
+    ]);
+    expect(socket.buffer.length()).toBe(0);
+  });
+
+  it('requeues a stalled POST that later fails without losing newer events', async () => {
+    const post = deferredFetch();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    emit(event(2));
+    await vi.advanceTimersByTimeAsync(5000);
+    emit(event(3));
+    await vi.advanceTimersByTimeAsync(40_000);
+    expect(post.bodies().map((body) => ids([body]))).toEqual([[2], [3]]);
+
+    post.reject(new TypeError('Failed to fetch'));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(ids(socket.buffer.items)).toEqual([2]);
+
+    socket.reopen();
+    expect(ids(socket.sent)).toEqual([1, 2]);
+    expect(socket.buffer.length()).toBe(0);
+  });
+
   it('stops the fallback POST timer on stop()', async () => {
     const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
     vi.stubGlobal('fetch', fetchMock);
