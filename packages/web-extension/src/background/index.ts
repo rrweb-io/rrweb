@@ -97,7 +97,9 @@ async function start(): Promise<BackgroundServices> {
     keepFailedUpload: (upload: UnsentUpload) => failedUploads.keep(upload),
     randomId: () => crypto.randomUUID(),
     getURL: (path: string) => Browser.runtime.getURL(path),
-    recorderVersion: Browser.runtime.getManifest().version_name || 'unknown',
+    recorderVersion:
+      Browser.runtime.getManifest().version_name ||
+      Browser.runtime.getManifest().version,
   };
   // MV3 has `action`, MV2 Firefox has `browserAction`.
   const toolbar = Browser.action ?? Browser.browserAction;

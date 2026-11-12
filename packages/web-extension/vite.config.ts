@@ -151,7 +151,10 @@ export default defineConfig(({ command, mode }) => {
               base: {
                 version: getExtensionVersion(rrwebVersion),
                 author: packageJson.author,
-                version_name: rrwebVersion,
+                // Firefox rejects version_name as an unknown key.
+                ...(process.env.TARGET_BROWSER === 'chrome'
+                  ? { version_name: rrwebVersion }
+                  : {}),
               },
               clerkHostPermissions: [...clerkHostPermissions],
               key: isDevBuild ? DEV_MANIFEST_KEY : undefined,
