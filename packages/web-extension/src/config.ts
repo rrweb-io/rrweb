@@ -11,6 +11,7 @@ export const config: {
   dashboardUrl: string;
   cloudEnabled: boolean;
   uninstallSurveyUrl: string;
+  uninstallSurveyVersionField: string;
 } = {
   clerkPublishableKey:
     import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || PRODUCTION_CLERK_KEY,
@@ -24,7 +25,16 @@ export const config: {
     import.meta.env.VITE_RRWEB_DASHBOARD_URL || 'https://app.rrweb.com',
   ),
   cloudEnabled: import.meta.env.VITE_TARGET_BROWSER !== 'firefox',
-  // Opened by the browser after the extension is removed. Carries no user data.
+  // Opened by the browser after the extension is removed. The only value added
+  // to it is the extension version, in the form's "Which version" question.
   uninstallSurveyUrl:
     'https://docs.google.com/forms/d/e/1FAIpQLSfy_mh3YstjtPac7rjKmZTbe5V9Vjlnc9Dky7mY-ydVNmSQXg/viewform',
+  uninstallSurveyVersionField: 'entry.470733856',
 };
+
+export function uninstallSurveyUrl(version: string): string {
+  const url = new URL(config.uninstallSurveyUrl);
+  url.searchParams.set('usp', 'pp_url');
+  url.searchParams.set(config.uninstallSurveyVersionField, version);
+  return url.href;
+}

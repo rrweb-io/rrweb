@@ -9,7 +9,7 @@ import type {
   SyncData,
 } from '~/types';
 import { createTransport, postEvents } from '@rrweb/browser-client';
-import { config } from '~/config';
+import { config, uninstallSurveyUrl } from '~/config';
 import {
   addSession,
   deleteFailedUpload,
@@ -22,9 +22,14 @@ import { createRecorder } from './recorder';
 import { createSink, type UnsentUpload } from './sinks';
 
 // Ask people who remove the extension why they left.
-Browser.runtime.setUninstallURL(config.uninstallSurveyUrl).catch(() => {
-  // The survey is optional; recording must keep working without it.
-});
+const manifest = Browser.runtime.getManifest();
+Browser.runtime
+  .setUninstallURL(
+    uninstallSurveyUrl(manifest.version_name ?? manifest.version),
+  )
+  .catch(() => {
+    // The survey is optional; recording must keep working without it.
+  });
 
 void (async () => {
   // assign default value to settings of this extension
