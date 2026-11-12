@@ -90,19 +90,24 @@ export const theme = extendTheme({
           _active: { bg: 'whiteAlpha.200' },
           _focusVisible: { boxShadow: focusRing },
         },
-        // Every interactive state is set here so Chakra's defaults never
-        // replace the solid fill.
+        // Light white outline, the dashboard's pattern. Every state is set so Chakra's defaults never replace it.
         signup: {
-          bg: 'brand.accent',
-          color: 'brand.accentText',
+          bg: 'rgba(255,255,255,0.06)',
+          color: '#F5F7FA',
+          border: '1px solid',
+          borderColor: 'rgba(255,255,255,0.20)',
           fontWeight: 700,
           fontSize: '15px',
           h: '48px',
           _hover: {
-            bg: 'brand.accentHover',
-            _disabled: { bg: 'brand.accent' },
+            bg: 'rgba(255,255,255,0.10)',
+            borderColor: 'rgba(255,255,255,0.35)',
+            _disabled: {
+              bg: 'rgba(255,255,255,0.06)',
+              borderColor: 'rgba(255,255,255,0.20)',
+            },
           },
-          _active: { bg: 'brand.accentActive' },
+          _active: { bg: 'rgba(255,255,255,0.14)' },
           _focusVisible: { boxShadow: focusRing },
         },
         record: {
