@@ -43,6 +43,7 @@ function renderNote(status: RecorderStatus, active: ActiveRecording) {
           dashboardUrl: 'https://app.rrweb.com',
           onPickOrg: () => undefined,
           onLogOut: () => undefined,
+          onOpenSessions: () => undefined,
         }),
       ),
     ),
