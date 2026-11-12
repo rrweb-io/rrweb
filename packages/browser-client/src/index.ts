@@ -240,6 +240,7 @@ function connect(
 
   let fallbackDelay = fallbackPostDelay;
   let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
+  let fallbackStallTimer: ReturnType<typeof setTimeout> | undefined;
   let fallbackCancelled = false;
   const fallbackPostTick = () => {
     if (!ctx.buffer.length()) {
@@ -251,26 +252,30 @@ function connect(
       scheduleFallbackPost();
       return;
     }
-    let scheduled = false;
-    const scheduleNext = () => {
-      clearTimeout(stallTimer);
-      if (scheduled || fallbackCancelled) return;
-      scheduled = true;
-      scheduleFallbackPost();
-    };
+    // Once a POST has stalled, the loop has moved on: its late outcome
+    // still requeues its events on failure, but no longer changes the
+    // backoff or schedules a tick.
+    let stalled = false;
     const stallTimer = setTimeout(() => {
+      stalled = true;
       fallbackDelay = Math.min(fallbackDelay * 2, fallbackPostMaxDelay);
-      scheduleNext();
+      if (!fallbackCancelled) scheduleFallbackPost();
     }, fallbackPostStallTimeout);
+    fallbackStallTimer = stallTimer;
     postData(ctx.postUrl, ctx.publicApiKey, ctx.buffer)
       .then(() => {
-        fallbackDelay = fallbackPostDelay;
+        if (!stalled) fallbackDelay = fallbackPostDelay;
       })
       .catch((error) => {
-        fallbackDelay = Math.min(fallbackDelay * 2, fallbackPostMaxDelay);
+        if (!stalled) {
+          fallbackDelay = Math.min(fallbackDelay * 2, fallbackPostMaxDelay);
+        }
         console.error('Error periodically POSTing events:', error);
       })
-      .finally(scheduleNext);
+      .finally(() => {
+        clearTimeout(stallTimer);
+        if (!stalled && !fallbackCancelled) scheduleFallbackPost();
+      });
   };
   const scheduleFallbackPost = () => {
     fallbackTimer = setTimeout(fallbackPostTick, fallbackDelay);
@@ -280,6 +285,7 @@ function connect(
   ctx.stopFallbackPosting = () => {
     fallbackCancelled = true;
     clearTimeout(fallbackTimer);
+    clearTimeout(fallbackStallTimer);
   };
 
   // Add event listeners

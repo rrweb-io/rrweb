@@ -471,9 +471,10 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     expect(post.bodies().map((body) => ids([body]))).toEqual([[2], [3]]);
 
     // The slow request is left running and its late answer does not start a
-    // second tick loop.
+    // second tick loop: only the one scheduled tick is pending.
     post.resolve(new Response(null, { status: 202 }));
     await vi.advanceTimersByTimeAsync(0);
+    expect(vi.getTimerCount()).toBe(1);
     emit(event(4));
     await vi.advanceTimersByTimeAsync(5000);
     expect(post.bodies().map((body) => ids([body]))).toEqual([[2], [3], [4]]);
@@ -508,6 +509,61 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     socket.reopen();
     expect(ids(socket.sent)).toEqual([1, 2]);
     expect(socket.buffer.length()).toBe(0);
+  });
+
+  it('counts a stalled POST once in the backoff when it later fails', async () => {
+    let rejectFirst!: (error: unknown) => void;
+    const postTimes: number[] = [];
+    const fetchMock = vi
+      .fn<Parameters<typeof fetch>, ReturnType<typeof fetch>>()
+      .mockImplementationOnce(
+        () =>
+          new Promise<Response>((_, reject) => {
+            rejectFirst = reject;
+          }),
+      )
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockImplementation(async () => new Response(null, { status: 202 }));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+    const startedAt = Date.now();
+    vi.stubGlobal('fetch', (...args: Parameters<typeof fetch>) => {
+      postTimes.push(Date.now() - startedAt);
+      return fetchMock(...args);
+    });
+
+    emit(event(2));
+    await vi.advanceTimersByTimeAsync(5000);
+    emit(event(3));
+    // Stalls at 35 s, so the next POST waits the doubled 10 s.
+    await vi.advanceTimersByTimeAsync(35_000);
+    // The stalled POST fails late. Its attempt was already counted.
+    rejectFirst(new TypeError('Failed to fetch'));
+    await vi.advanceTimersByTimeAsync(0);
+    // The 45 s POST fails: 10 s doubles to 20 s, so the next is at 65 s.
+    await vi.advanceTimersByTimeAsync(25_000);
+
+    expect(postTimes).toEqual([5000, 45_000, 65_000]);
+    expect(
+      ids(fetchMock.mock.calls.map(([, init]) => String(init?.body))),
+    ).toEqual([2, 2, 3, 2, 3]);
+    expect(socket.buffer.length()).toBe(0);
+  });
+
+  it('clears the stall timer of a hung POST on stop()', async () => {
+    deferredFetch();
+    const { client, emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+    emit(event(2));
+    await vi.advanceTimersByTimeAsync(5000);
+
+    client.stop(true);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it('stops the fallback POST timer on stop()', async () => {
