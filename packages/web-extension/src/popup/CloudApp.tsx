@@ -60,6 +60,7 @@ function Account(props: Props) {
           dashboardUrl={config.dashboardUrl}
           onPickOrg={pickOrg}
           onLogOut={logOut}
+          onOpenSessions={props.links.openSessions}
         />
       );
   }

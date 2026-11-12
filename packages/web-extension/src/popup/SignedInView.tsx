@@ -23,6 +23,7 @@ export function SignedInView({
   dashboardUrl,
   onPickOrg,
   onLogOut,
+  onOpenSessions,
 }: {
   account: CloudAccount;
   orgs: OrgOption[];
@@ -32,6 +33,7 @@ export function SignedInView({
   dashboardUrl: string;
   onPickOrg: (org: OrgOption) => void;
   onLogOut: () => void;
+  onOpenSessions: () => void;
 }) {
   return (
     <PopupFrame>
@@ -78,16 +80,15 @@ export function SignedInView({
         )}
         recorder={recorder}
       />
-      <Link
-        href={dashboardUrl}
-        isExternal
-        alignSelf="center"
-        fontSize="13px"
-        mt="12px"
-      >
-        Open dashboard{' '}
-        <FiArrowUpRight aria-hidden="true" style={{ display: 'inline' }} />
-      </Link>
+      <Flex justify="center" gap="16px" fontSize="13px" mt="12px">
+        <Link href={dashboardUrl} isExternal>
+          Open dashboard{' '}
+          <FiArrowUpRight aria-hidden="true" style={{ display: 'inline' }} />
+        </Link>
+        <Link as="button" onClick={onOpenSessions}>
+          Offline sessions
+        </Link>
+      </Flex>
       <Flex
         justify="space-between"
         align="center"

@@ -78,6 +78,7 @@ describe('record buttons name their destination', () => {
         dashboardUrl: 'https://app.rrweb.com',
         onPickOrg: () => undefined,
         onLogOut: () => undefined,
+        onOpenSessions: () => undefined,
       }),
     );
     act(() => button('Start recording').click());
@@ -105,6 +106,7 @@ describe('record buttons name their destination', () => {
       dashboardUrl: 'https://app.rrweb.com',
       onPickOrg: () => undefined,
       onLogOut: () => undefined,
+      onOpenSessions: () => undefined,
     });
   const upload = (
     state: FailedUpload['state'],
