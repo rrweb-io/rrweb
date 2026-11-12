@@ -10,6 +10,7 @@ export const config: {
   apiUrl: string;
   dashboardUrl: string;
   cloudEnabled: boolean;
+  uninstallSurveyUrl: string;
 } = {
   clerkPublishableKey:
     import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || PRODUCTION_CLERK_KEY,
@@ -23,4 +24,7 @@ export const config: {
     import.meta.env.VITE_RRWEB_DASHBOARD_URL || 'https://app.rrweb.com',
   ),
   cloudEnabled: import.meta.env.VITE_TARGET_BROWSER !== 'firefox',
+  // Opened by the browser after the extension is removed. Carries no user data.
+  uninstallSurveyUrl:
+    'https://docs.google.com/forms/d/e/1FAIpQLSfy_mh3YstjtPac7rjKmZTbe5V9Vjlnc9Dky7mY-ydVNmSQXg/viewform',
 };

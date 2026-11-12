@@ -21,6 +21,11 @@ import { watchRecordedPages } from './pageWatch';
 import { createRecorder } from './recorder';
 import { createSink, type UnsentUpload } from './sinks';
 
+// Ask people who remove the extension why they left.
+Browser.runtime.setUninstallURL(config.uninstallSurveyUrl).catch(() => {
+  // The survey is optional; recording must keep working without it.
+});
+
 void (async () => {
   // assign default value to settings of this extension
   const result =
