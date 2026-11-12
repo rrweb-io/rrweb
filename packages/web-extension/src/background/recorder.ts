@@ -161,8 +161,6 @@ export function createRecorder(deps: RecorderDeps) {
     )
       return;
     const finishingSink = sink;
-    stopKeepalive();
-    stopKeepalive = () => undefined;
     const tabId = status.activeTabId;
     // A document that is gone cannot be asked to stop, and events it sent
     // before going away have already arrived.
@@ -178,9 +176,14 @@ export function createRecorder(deps: RecorderDeps) {
       'new session';
     if (!finishingSink || sink !== finishingSink) return;
     sink = null;
-    status = { status: RecorderStatus.IDLE, activeTabId: -1 };
-    await save();
+    // The keepalive goes with the sink: unsent events are lost if Chrome stops
+    // the worker before the upload is delivered or kept. A recording started
+    // meanwhile gets its own.
+    const stopFinishingKeepalive = stopKeepalive;
+    stopKeepalive = () => undefined;
     try {
+      status = { status: RecorderStatus.IDLE, activeTabId: -1 };
+      await save();
       const result = await finishingSink.finish(title);
       // upload-failed: the popup lists it from storage, with a retry
       if (result.state !== 'delivered') return;
@@ -189,6 +192,8 @@ export function createRecorder(deps: RecorderDeps) {
     } catch (e) {
       status.errorMessage = (e as { message: string }).message;
       void save();
+    } finally {
+      stopFinishingKeepalive();
     }
   }
 

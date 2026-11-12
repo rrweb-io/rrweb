@@ -38,6 +38,15 @@ export const EVENTS_MISSING_ERROR =
  * `readList`'s storage. No method rejects: a failure becomes a named state.
  */
 export function createFailedUploads(deps: FailedUploadsDeps) {
+  // Users who logged out while a recording of theirs could still fail. A
+  // recording finishing later keeps nothing for them, until they log back in.
+  const loggedOut = new Set<string>();
+  const isLoggedOut = async (userId: string) => {
+    if (!loggedOut.has(userId)) return false;
+    if ((await deps.currentUserId()) !== userId) return true;
+    loggedOut.delete(userId);
+    return false;
+  };
   // Read-modify-write of the list, one at a time.
   let updating: Promise<unknown> = Promise.resolve();
   const updateList = (change: (list: FailedUpload[]) => FailedUpload[]) => {
@@ -107,12 +116,19 @@ export function createFailedUploads(deps: FailedUploadsDeps) {
   return {
     async keep(upload: UnsentUpload) {
       const { recordingId, userId, publicKey, title, unsent } = upload;
+      if (await isLoggedOut(userId)) return;
       // events first, so a listed upload always has them
       await deps.putUpload({ recordingId, publicKey, events: unsent });
-      await updateList((list) => [
-        ...list.filter((u) => u.recordingId !== recordingId),
-        { recordingId, userId, title, state: { name: 'upload-failed' } },
-      ]);
+      let listed = false;
+      await updateList((list) => {
+        if (loggedOut.has(userId)) return list; // logged out meanwhile
+        listed = true;
+        return [
+          ...list.filter((u) => u.recordingId !== recordingId),
+          { recordingId, userId, title, state: { name: 'upload-failed' } },
+        ];
+      });
+      if (!listed) await deps.deleteUpload(recordingId);
     },
 
     async retry(recordingId: string) {
@@ -147,6 +163,7 @@ export function createFailedUploads(deps: FailedUploadsDeps) {
 
     /** The user logged out: delete every failed upload they made. */
     async forgetUser(userId: string) {
+      loggedOut.add(userId);
       const theirs = (await deps.readList()).filter((u) => u.userId === userId);
       for (const upload of theirs) await remove(upload.recordingId);
     },

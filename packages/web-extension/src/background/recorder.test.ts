@@ -87,7 +87,7 @@ function setup(initial: CloudAccount | null) {
   const keepalive = {
     ms: 0,
     ticks: [] as (() => void)[],
-    cancel: vi.fn(),
+    cancel: vi.fn((index: number) => void index),
     ping: vi.fn(() => Promise.resolve()),
   };
   const deps: RecorderDeps = {
@@ -110,8 +110,9 @@ function setup(initial: CloudAccount | null) {
     pingBrowser: keepalive.ping,
     every: (ms, tick) => {
       keepalive.ms = ms;
-      keepalive.ticks.push(tick);
-      return keepalive.cancel;
+      // cancel is called with the index of the registration it stops
+      const index = keepalive.ticks.push(tick) - 1;
+      return () => keepalive.cancel(index);
     },
     now: () => state.now,
     newToken: () => `token-${++state.tokens}`,
@@ -653,6 +654,81 @@ describe('createRecorder', () => {
     await recorder.stop();
     expect(keepalive.cancel).toHaveBeenCalledOnce();
     expect(addSession).toHaveBeenCalledOnce();
+  });
+
+  it('keeps the worker alive until a slow final upload is delivered', async () => {
+    const { recorder, transport, keepalive, opened, settle } = setup(account);
+    let deliver: (result: DeliveryResult) => void = () => undefined;
+    transport.stop.mockReturnValueOnce(
+      new Promise<DeliveryResult>((resolve) => (deliver = resolve)),
+    );
+    await recorder.start();
+    const stopping = recorder.stop();
+    await settle();
+    expect(recorder.getStatus().status).toBe(RecorderStatus.IDLE);
+    expect(keepalive.cancel).not.toHaveBeenCalled();
+    keepalive.ticks[0]();
+    expect(keepalive.ping).toHaveBeenCalledOnce();
+    deliver({ delivered: true });
+    await stopping;
+    expect(opened).toEqual(['https://app.rrweb.com/recordings/rec-1']);
+    expect(keepalive.cancel).toHaveBeenCalledOnce();
+  });
+
+  it('keeps the worker alive until a failed final upload is kept', async () => {
+    const { recorder, transport, keepalive, keepFailedUpload, settle } =
+      setup(account);
+    transport.stop.mockResolvedValueOnce({
+      delivered: false,
+      error: new Error('Failed to fetch'),
+      unsent: ['{"e":1}'],
+    });
+    let kept: () => void = () => undefined;
+    keepFailedUpload.mockReturnValueOnce(
+      new Promise<void>((resolve) => (kept = resolve)),
+    );
+    await recorder.start();
+    const stopping = recorder.stop();
+    await settle();
+    expect(keepFailedUpload).toHaveBeenCalledOnce();
+    expect(keepalive.cancel).not.toHaveBeenCalled();
+    kept();
+    await stopping;
+    expect(keepalive.cancel).toHaveBeenCalledOnce();
+  });
+
+  it('stops the keepalive when keeping a failed upload throws', async () => {
+    const { recorder, transport, keepalive, keepFailedUpload } = setup(account);
+    transport.stop.mockResolvedValueOnce({
+      delivered: false,
+      error: new Error('Failed to fetch'),
+      unsent: ['{"e":1}'],
+    });
+    keepFailedUpload.mockRejectedValueOnce(new Error('quota exceeded'));
+    await recorder.start();
+    await recorder.stop();
+    expect(recorder.getStatus().errorMessage).toBe('quota exceeded');
+    expect(keepalive.cancel).toHaveBeenCalledOnce();
+  });
+
+  it("leaves a new recording's keepalive alone while the last one uploads", async () => {
+    const { recorder, transport, keepalive, settle } = setup(account);
+    let deliver: (result: DeliveryResult) => void = () => undefined;
+    transport.stop.mockReturnValueOnce(
+      new Promise<DeliveryResult>((resolve) => (deliver = resolve)),
+    );
+    await recorder.start();
+    const stopping = recorder.stop();
+    await settle();
+    await recorder.start();
+    expect(recorder.getStatus().status).toBe(RecorderStatus.RECORDING);
+    expect(keepalive.ticks).toHaveLength(2);
+    expect(keepalive.cancel).not.toHaveBeenCalled();
+    deliver({ delivered: true });
+    await stopping;
+    expect(keepalive.cancel.mock.calls).toEqual([[0]]);
+    await recorder.stop();
+    expect(keepalive.cancel.mock.calls).toEqual([[0], [1]]);
   });
 
   it('starts no keepalive when the tab refuses', async () => {

@@ -259,6 +259,37 @@ describe('failed uploads', () => {
     expect([...store.uploads.keys()]).toEqual(['rec-2']);
   });
 
+  it('a recording that fails after its user logged out keeps nothing', async () => {
+    const { store, uploads, keepOne } = setup();
+    await uploads.forgetUser('user_1');
+    store.user = null;
+    await keepOne('rec-1', 'Mine', 'user_1');
+    await keepOne('rec-2', 'Theirs', 'user_2');
+    expect(store.list.map((u) => u.recordingId)).toEqual(['rec-2']);
+    expect([...store.uploads.keys()]).toEqual(['rec-2']);
+  });
+
+  it('a keep in flight when its user logs out keeps nothing', async () => {
+    const { store, uploads, keepOne } = setup();
+    const keeping = keepOne();
+    const forgetting = uploads.forgetUser('user_1');
+    store.user = null;
+    await Promise.all([keeping, forgetting]);
+    expect(store.list).toEqual([]);
+    expect(store.uploads.size).toBe(0);
+  });
+
+  it('keeps failed uploads again once the same user logs back in', async () => {
+    const { store, uploads, keepOne } = setup();
+    await uploads.forgetUser('user_1');
+    store.user = null;
+    await keepOne('rec-1');
+    store.user = 'user_1';
+    await keepOne('rec-2');
+    expect(store.list.map((u) => u.recordingId)).toEqual(['rec-2']);
+    expect([...store.uploads.keys()]).toEqual(['rec-2']);
+  });
+
   it('a retry that fails after its recording was forgotten leaves nothing behind', async () => {
     const { store, postEvents, uploads, keepOne } = setup();
     await keepOne();

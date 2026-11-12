@@ -98,6 +98,7 @@ describe('useCloudAccount', () => {
       globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
     ).IS_REACT_ACT_ENVIRONMENT = true;
     fake.listeners = [];
+    fake.sentMessages = [];
     fake.clerk.user = makeUser('user_1', 'org_1');
     fake.auth.isSignedIn = true;
     fake.store = {
@@ -123,6 +124,19 @@ describe('useCloudAccount', () => {
   afterEach(() => {
     act(() => root.unmount());
     vi.unstubAllGlobals();
+  });
+
+  it('forgets the stored user when they sign out on the website', async () => {
+    fake.auth.isSignedIn = false;
+    fake.clerk.user = null;
+    await render();
+    await settle();
+    expect(api?.view.name).toBe('signed-out');
+    expect(fake.store[LocalDataKey.cloudAccount]).toBeUndefined();
+    // the background deletes the failed uploads of the user who signed out
+    expect(fake.sentMessages.map((m) => JSON.parse(m) as unknown)).toEqual([
+      { type: 'event', event: 'user-logged-out', detail: { userId: 'user_1' } },
+    ]);
   });
 
   it('sets up the next signed-in user after a successful log out', async () => {

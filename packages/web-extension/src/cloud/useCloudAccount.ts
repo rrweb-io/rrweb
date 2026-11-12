@@ -164,9 +164,12 @@ export function useCloudAccount(): CloudAccountApi {
     }
   }, [session.name, signedIn]);
 
-  // Signing out on the website must not leave the background uploading.
+  // Signing out on the website must not leave the background uploading, nor
+  // keep the failed uploads of the user who signed out.
   useEffect(() => {
-    if (state.name === 'signed-out' && account) void removeStoredAccount();
+    if (state.name !== 'signed-out' || !account) return;
+    const { userId: outgoing } = account;
+    void removeStoredAccount().then(() => reportLoggedOut(outgoing));
   }, [state.name, account]);
 
   // A stored account from another user, a left organization or a failed
