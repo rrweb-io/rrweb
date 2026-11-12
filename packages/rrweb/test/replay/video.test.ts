@@ -172,6 +172,11 @@ describe('video', () => {
     await page.evaluate(`window.replayer.play()`);
     await waitForPlaying;
 
+    await page.waitForFunction(
+      `document.querySelector('iframe').contentDocument.querySelector('video').currentTime > 0`,
+      { timeout: 5000 },
+    );
+
     const isPlaying = await page.evaluate(`
       !document.querySelector('iframe').contentDocument.querySelector('video').paused && 
       document.querySelector('iframe').contentDocument.querySelector('video').currentTime !== 0 && 
@@ -192,6 +197,11 @@ describe('video', () => {
     const waitForPlaying = waitForVideoTo('playing', page);
     await page.evaluate(`window.replayer.play()`);
     await waitForPlaying;
+
+    await page.waitForFunction(
+      `document.querySelector('iframe').contentDocument.querySelector('video').currentTime > 0`,
+      { timeout: 5000 },
+    );
 
     const isPlaying = await page.evaluate(`
       !document.querySelector('iframe').contentDocument.querySelector('video').paused && 
