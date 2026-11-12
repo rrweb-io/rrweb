@@ -1,3 +1,4 @@
+import { escapeNoncharacters } from './src/escapeNoncharacters';
 import { defineConfig, loadEnv, LibraryFormats, PluginOption } from 'vite';
 import webExtension, { readJsonFile } from 'vite-plugin-web-extension';
 import zip from 'vite-plugin-zip-pack';
@@ -79,6 +80,20 @@ function clerkFrontendApiHost(publishableKey: string): string {
   return Buffer.from(encoded, 'base64').toString().replace(/\$$/, '');
 }
 
+function escapeNoncharactersPlugin(): PluginOption {
+  return {
+    name: 'escape-unicode-noncharacters',
+    apply: 'build',
+    enforce: 'post',
+    generateBundle(_options, bundle) {
+      for (const output of Object.values(bundle)) {
+        if (output.type === 'chunk')
+          output.code = escapeNoncharacters(output.code);
+      }
+    },
+  };
+}
+
 export default defineConfig(({ command, mode }) => {
   const isDevBuild = command === 'serve' || mode === 'development';
   const env = loadEnv(mode, __dirname, 'VITE_');
@@ -119,6 +134,7 @@ export default defineConfig(({ command, mode }) => {
     // Add the webExtension plugin
     plugins: [
       react(),
+      escapeNoncharactersPlugin(),
       webExtension({
         // A function to generate manifest file dynamically.
         manifest: () => {
