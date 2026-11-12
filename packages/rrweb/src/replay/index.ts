@@ -2090,8 +2090,15 @@ export class Replayer {
       return this.debugNodeNotFound(d, d.id);
     }
     try {
-      this.restoreTypingIndicators(d.id);
       (target as HTMLInputElement).checked = d.isChecked;
+      const indicator = this.typingIndicators.get(d.id);
+      if (indicator?.element === target) {
+        // Keep the conveyor visible and preserve its phase. The latest recorded
+        // value is restored when editing ends or playback pauses.
+        indicator.value = d.text;
+        return;
+      }
+      this.restoreTypingIndicators(d.id);
       (target as HTMLInputElement).value = d.text;
     } catch (error) {
       // for safe
