@@ -194,7 +194,7 @@ describe('the popup recording mode switch', () => {
     expect(recorder.toggle).toHaveBeenCalledTimes(1);
   });
 
-  it('the arrow keys move the choice and skip a disabled Cloud', async () => {
+  it('the arrow keys move the choice and skip a disabled Cloud while setting up', async () => {
     await open(ready);
     const group = container.querySelector('[role="radiogroup"]')!;
     const press = (key: string) =>
@@ -212,8 +212,7 @@ describe('the popup recording mode switch', () => {
 
     await reopen({ name: 'signed-out' });
     press('ArrowLeft');
-    expect(checked(radio('Offline'))).toBe(true);
-    expect(checked(radio('Cloud'))).toBe(false);
+    expect(checked(radio('Cloud'))).toBe(true);
   });
 
   it('the choice is remembered when the popup opens again', async () => {
@@ -231,24 +230,89 @@ describe('the popup recording mode switch', () => {
     expect(checked(radio('Cloud'))).toBe(true);
   });
 
-  it('signed out, Cloud is disabled and Offline records', async () => {
-    // A stored Cloud choice must not leak into the signed-out view.
-    fake.store[LocalDataKey.recordingMode] = 'cloud';
-    const { recorder, links } = await open({ name: 'signed-out' });
-    expect(radio('Cloud').disabled).toBe(true);
-    expect(radio('Cloud').textContent).toContain('sign in');
-    expect(checked(radio('Offline'))).toBe(true);
+  const POINTS = [
+    'Share any recording with a link',
+    'AI narration explains what happened in each session',
+  ];
+
+  it('signed out, choosing Cloud pitches sign-up and offers no recording', async () => {
+    const { recorder } = await open({ name: 'signed-out' });
+    expect(radio('Cloud').disabled).toBe(false);
+    expect(radio('Cloud').textContent).not.toContain('sign in');
     act(() => radio('Cloud').click());
-    expect(checked(radio('Cloud'))).toBe(false);
+    expect(checked(radio('Cloud'))).toBe(true);
+    expect(container.textContent).toContain('Save recordings to rrweb Cloud');
+    const items = Array.from(container.querySelectorAll('li')).map((li) =>
+      li.textContent?.trim(),
+    );
+    expect(items).toEqual(POINTS);
+    expect(controlsNamed('Sign up free')).toHaveLength(1);
+    expect(controlsNamed('I already have an account')).toHaveLength(1);
+    expect(controlsNamed('Record offline')).toHaveLength(0);
+    expect(container.textContent).not.toContain('Saved in this browser only.');
+    expect(controlsNamed('Cloud dashboard')).toHaveLength(0);
+    expect(recorder.toggle).not.toHaveBeenCalled();
+  });
+
+  it('signed out, Offline is the default and records offline', async () => {
+    const { recorder, links } = await open({ name: 'signed-out' });
+    expect(checked(radio('Offline'))).toBe(true);
     expect(container.textContent).toContain('Saved in this browser only.');
     expect(container.textContent).not.toContain('share it later');
+    expect(container.querySelectorAll('li')).toHaveLength(0);
     act(() => button('Record offline').click());
     expect(recorder.toggle).toHaveBeenCalledWith({ mode: 'offline' });
-    expect(controlsNamed('Cloud dashboard')).toHaveLength(0);
     act(() => button('Sign up free').click());
     expect(links.openUrl).toHaveBeenCalledWith(`${config.dashboardUrl}/signup`);
     act(() => button('Offline sessions').click());
     expect(links.openSessions).toHaveBeenCalledTimes(1);
+  });
+
+  it('signed out, Sign up free in the pitch opens signup and Log in opens signin', async () => {
+    const { links } = await open({ name: 'signed-out' });
+    act(() => radio('Cloud').click());
+    act(() => button('Sign up free').click());
+    expect(links.openUrl).toHaveBeenCalledWith(`${config.dashboardUrl}/signup`);
+    act(() =>
+      (controlsNamed('I already have an account')[0] as HTMLElement).click(),
+    );
+    expect(links.openUrl).toHaveBeenCalledWith(`${config.dashboardUrl}/signin`);
+  });
+
+  it('a signed-out choice is remembered, and Cloud carries into sign-in', async () => {
+    await open({ name: 'signed-out' });
+    act(() => radio('Cloud').click());
+    expect(fake.store[LocalDataKey.recordingMode]).toBe('cloud');
+    await reopen({ name: 'signed-out' });
+    expect(checked(radio('Cloud'))).toBe(true);
+    expect(container.textContent).toContain('Save recordings to rrweb Cloud');
+    await reopen(ready);
+    expect(checked(radio('Cloud'))).toBe(true);
+    expect(controlsNamed('Start recording')).toHaveLength(1);
+
+    act(() => radio('Offline').click());
+    await reopen({ name: 'signed-out' });
+    expect(checked(radio('Offline'))).toBe(true);
+    expect(controlsNamed('Record offline')).toHaveLength(1);
+  });
+
+  it('while recording signed out, the pitch never replaces the stop controls', async () => {
+    fake.store[LocalDataKey.recordingMode] = 'cloud';
+    for (const active of ['offline', 'cloud'] as const) {
+      const { recorder } = await reopen(
+        { name: 'signed-out' },
+        controls(RecorderStatus.RECORDING, active),
+      );
+      expect(radio('Cloud').disabled).toBe(true);
+      expect(radio('Offline').disabled).toBe(true);
+      expect(checked(radio(active === 'cloud' ? 'Cloud' : 'Offline'))).toBe(
+        true,
+      );
+      expect(container.querySelectorAll('li')).toHaveLength(0);
+      expect(container.textContent).not.toContain('Save recordings to rrweb');
+      act(() => button('Stop recording').click());
+      expect(recorder.toggle).toHaveBeenCalledTimes(1);
+    }
   });
 
   for (const stage of ['validating', 'setting-up', 'setup-slow'] as const) {

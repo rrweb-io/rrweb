@@ -8,11 +8,21 @@ import { SettingUpView } from './SettingUpView';
 import { SignedInView } from './SignedInView';
 import { SignedOutView } from './SignedOutView';
 import { SignedOutSwitch } from './ModeSwitch';
+import { signedOutPanel } from './account';
 import { useRecordingMode } from './useRecordingMode';
 
 type Props = { recorder: PopupRecorder; links: PopupLinks };
 
-function SignedOut({ recorder, links }: Props) {
+function SignedOut({
+  recorder,
+  links,
+  mode,
+}: Props & { mode: ReturnType<typeof useRecordingMode> }) {
+  if (mode.choice.name === 'loading') return <LoadingView />;
+  const { panel, shown } = signedOutPanel({
+    active: recorder.controls.active,
+    stored: mode.choice.stored,
+  });
   return (
     <SignedOutView
       cloud={{
@@ -20,9 +30,12 @@ function SignedOut({ recorder, links }: Props) {
         modeSwitch: (
           <SignedOutSwitch
             recorder={recorder.controls}
+            shown={shown}
+            onChoose={mode.choose}
             onOpenSessions={links.openSessions}
           />
         ),
+        panel,
         onSignUp: () => links.openUrl(`${config.dashboardUrl}/signup`),
         onLogIn: () => links.openUrl(`${config.dashboardUrl}/signin`),
       }}
@@ -32,6 +45,10 @@ function SignedOut({ recorder, links }: Props) {
       sessionUrl={links.sessionUrl}
     />
   );
+}
+
+function Unavailable(props: Props) {
+  return <SignedOut {...props} mode={useRecordingMode()} />;
 }
 
 function Account(props: Props) {
@@ -47,7 +64,7 @@ function Account(props: Props) {
     case 'signing-out':
       return <LoadingView label="Signing out" />;
     case 'signed-out':
-      return <SignedOut {...props} />;
+      return <SignedOut {...props} mode={mode} />;
     case 'validating':
     case 'setting-up':
     case 'setup-slow':
@@ -84,7 +101,7 @@ export default function CloudApp(props: Props) {
     <CloudGate
       afterSignOutUrl={Browser.runtime.getURL('popup/popup.html')}
       loading={<LoadingView />}
-      unavailable={<SignedOut {...props} />}
+      unavailable={<Unavailable {...props} />}
     >
       <Account {...props} />
     </CloudGate>

@@ -46,6 +46,27 @@ export function shownMode(input: {
 }
 
 /**
+ * What the signed-out Chrome popup shows under the switch.
+ * record: the record button (offline) and its note.
+ * cloud-pitch: Cloud is chosen but needs an account, so the pitch replaces the
+ * record button. Nothing can start a recording from it.
+ */
+export type SignedOutPanel = 'record' | 'cloud-pitch';
+
+export function signedOutPanel(input: {
+  active: ActiveRecording;
+  stored: StoredMode;
+}): { panel: SignedOutPanel; shown: RecordingKind } {
+  // A recording still running (even a cloud one, after log out) keeps its
+  // stop controls and its own mode.
+  if (input.active !== 'not-recording')
+    return { panel: 'record', shown: input.active };
+  return input.stored === 'cloud'
+    ? { panel: 'cloud-pitch', shown: 'cloud' }
+    : { panel: 'record', shown: 'offline' };
+}
+
+/**
  * Who reads the note under the record button.
  * signed-in: uploads go to `orgName`.
  * setting-up: signed in, but the account is not ready yet.

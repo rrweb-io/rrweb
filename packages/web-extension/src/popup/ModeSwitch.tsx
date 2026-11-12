@@ -4,15 +4,16 @@ import type { IconType } from 'react-icons';
 import { FiArrowUpRight, FiCloud, FiCloudOff } from 'react-icons/fi';
 import { RecorderStatus, type RecordingKind } from '~/types';
 import type { RecorderControls } from './PopupParts';
-import { shownMode } from './account';
 
 /**
  * The Cloud half of the switch.
  * selectable: the account is ready; its dashboard link sits under it.
- * unavailable: it cannot be picked, and `hint` says why (for example "sign in").
+ * sign-up-first: it can be picked, but a pitch to sign up replaces recording.
+ * unavailable: it cannot be picked, and `hint` says why (for example "setting up").
  */
 export type CloudSegment =
   | { name: 'selectable'; dashboardUrl: string }
+  | { name: 'sign-up-first' }
   | { name: 'unavailable'; hint: string };
 
 type Option = {
@@ -48,7 +49,7 @@ export function ModeSwitch({
       mode: 'cloud',
       label: 'Cloud',
       Icon: FiCloud,
-      available: cloud.name === 'selectable',
+      available: cloud.name !== 'unavailable',
     },
     {
       mode: 'offline',
@@ -164,25 +165,24 @@ export function ModeSwitch({
   );
 }
 
-/** The signed-out switch: Offline chosen, Cloud waiting for sign-in. */
+/** The signed-out switch: Cloud can be picked and then pitches sign-up. */
 export function SignedOutSwitch({
   recorder,
+  shown,
+  onChoose,
   onOpenSessions,
 }: {
   recorder: RecorderControls;
+  shown: RecordingKind;
+  onChoose: (mode: RecordingKind) => void;
   onOpenSessions: () => void;
 }) {
   return (
     <ModeSwitch
-      // Offline, unless a cloud recording from before log out is still stopping.
-      shown={shownMode({
-        active: recorder.active,
-        cloud: 'not-ready',
-        stored: 'not-stored',
-      })}
-      cloud={{ name: 'unavailable', hint: 'sign in' }}
+      shown={shown}
+      cloud={{ name: 'sign-up-first' }}
       disabled={recorder.status !== RecorderStatus.IDLE}
-      onChoose={() => undefined}
+      onChoose={onChoose}
       onOpenSessions={onOpenSessions}
     />
   );
