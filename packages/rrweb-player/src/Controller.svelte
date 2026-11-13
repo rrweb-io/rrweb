@@ -243,9 +243,6 @@
   };
 
   const handleProgressClick = (event: MouseEvent) => {
-    if (speedState === 'skipping') {
-      return;
-    }
     progressSlider.focus();
     const progressRect = progress.getBoundingClientRect();
     const x = event.clientX - progressRect.left;
@@ -262,9 +259,6 @@
   const handleProgressKeydown = (event: KeyboardEvent) => { 
     // Ignore marker keys and the slider event bubbling to the progress wrapper.
     if (event.target !== event.currentTarget) return;
-    if (speedState === 'skipping') {
-      return;
-    }
     let timeOffset: number;
     switch (event.key) {
       case 'ArrowLeft':
@@ -475,7 +469,6 @@
       <span class="rr-timeline__time">{formatTime(currentTime)}</span>
       <div
         class="rr-progress"
-        class:disabled={speedState === 'skipping'}
         bind:this={progress}
         on:click={handleProgressClick}
         on:keydown={handleProgressKeydown}
@@ -490,7 +483,6 @@
           aria-valuemax={Math.floor(meta.totalTime / 1000) * 1000}
           aria-valuenow={accessibleTime}
           aria-valuetext={`${formatTime(accessibleTime)} of ${formatTime(meta.totalTime)}`}
-          aria-disabled={speedState === 'skipping'}
           on:keydown={handleProgressKeydown}
         />
         <div
@@ -512,7 +504,6 @@
               text={event.timelineMarkerText}
               background={event.background}
               position={event.position}
-              disabled={speedState === 'skipping'}
               on:seek={() => goto(event.timeOffset)}
               on:focus-timeline={() => progressSlider.focus()}
             />
@@ -578,9 +569,8 @@
       </button>
       {#each speedOption as s}
         <button
-          class:active={s === speed && speedState !== 'skipping'}
+          class:active={s === speed}
           on:click={() => setSpeed(s)}
-          disabled={speedState === 'skipping'}
         >
           {s}x
         </button>
@@ -600,7 +590,6 @@
       <Switch
         id="skip"
         bind:checked={skipInactive}
-        disabled={speedState === 'skipping'}
         label="skip inactive"
       />
       <button on:click={() => dispatch('fullscreen')}>
