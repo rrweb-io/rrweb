@@ -455,7 +455,7 @@ export class Replayer {
       ] = config[key as keyof playerConfig];
     });
     if (!this.config.skipInactive) {
-      this.backToNormal();
+      this.backToNormalSpeed();
     }
     if (typeof config.speed !== 'undefined') {
       this.speedService.send({
@@ -583,6 +583,7 @@ export class Replayer {
    *   event; defaults to 0 or to the current position while stalled
    */
   public play(timeOffset?: number) {
+    this.backToNormalSpeed();
     timeOffset = timeOffset ?? (this.isStalled() ? this.getCurrentTime() : 0);
     this.stallTimeOffset = null;
     this.stallResumePlay = true;
@@ -720,7 +721,7 @@ export class Replayer {
       if (this.timer.hasUpcomingActions()) return; // if added in 50ms window
       if (!this.service.state.matches('playing')) return;
       this.service.send('END');
-      this.backToNormal();
+      this.backToNormalSpeed();
       this.emitter.emit(ReplayerEvents.Finish);
     }, 50);
   };
@@ -861,7 +862,7 @@ export class Replayer {
           }
           if (event === this.nextUserInteractionEvent) {
             this.nextUserInteractionEvent = null;
-            this.backToNormal();
+            this.backToNormalSpeed();
           }
           if (this.config.skipInactive && !this.nextUserInteractionEvent) {
             for (const _event of this.service.state.context.events) {
@@ -2386,7 +2387,10 @@ export class Replayer {
     );
   }
 
-  private backToNormal() {
+  /**
+   * 'Normal' here means what was last selected in UI, so could be 8x
+   */
+  private backToNormalSpeed() {
     this.nextUserInteractionEvent = null;
     if (this.speedService.state.matches('normal')) {
       return;
