@@ -1,5 +1,3 @@
-export const maskedEditingAttribute = 'data-rrweb-masked-editing';
-
 const rules: (blockClass: string) => string[] = (blockClass: string) => [
   `.${blockClass} { background: currentColor }`,
   'noscript { display: none !important; }',

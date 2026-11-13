@@ -86,9 +86,7 @@ import {
   uniqueTextMutations,
   StyleSheetMirror,
 } from '../utils';
-import getInjectStyleRules, {
-  maskedEditingAttribute,
-} from './styles/inject-style';
+import getInjectStyleRules from './styles/inject-style';
 import './styles/style.css';
 import canvasMutation from './canvas';
 import { deserializeArg } from './canvas/deserialize-args';
@@ -391,7 +389,7 @@ export class Replayer {
     );
     this.service.start();
     this.service.subscribe((state) => {
-      this.syncMaskedTypingIndicator();
+      this.syncMaskedTypingTimer();
       this.emitter.emit(ReplayerEvents.StateChange, {
         player: state,
       });
@@ -909,9 +907,9 @@ export class Replayer {
       }
     }
     for (const id of this.maskedEditingIds) {
-      if (this.mirror.getNode(id)) this.applyMaskedEditingMarker(id);
-      else this.maskedEditingIds.delete(id);
+      if (!this.mirror.getNode(id)) this.maskedEditingIds.delete(id);
     }
+    this.syncMaskedTypingTimer();
     collectedDialogs.forEach((d) => applyDialogToTopLevel(d));
     if (!this.service.state.matches('playing')) {
       this.iframe.contentDocument
@@ -1226,7 +1224,7 @@ export class Replayer {
             (d.maskBlur || this.maskedEditingIds.has(d.id)))
         ) {
           this.updateMaskedEditingState(d);
-          this.applyMaskedEditingMarker(d.id);
+          this.syncMaskedTypingTimer();
         }
         if (
           this.usingVirtualDom &&
@@ -2003,10 +2001,13 @@ export class Replayer {
     this.restoreTypingIndicators();
   }
 
-  private syncMaskedTypingIndicator() {
+  private syncMaskedTypingTimer() {
     if (
       !this.maskedEditingIds.size ||
-      !(this.service.state.matches('playing') || this.service.state.matches('live'))
+      !(
+        this.service.state.matches('playing') ||
+        this.service.state.matches('live')
+      )
     ) {
       this.stopMaskedTypingIndicator();
       return;
@@ -2014,36 +2015,40 @@ export class Replayer {
     if (this.maskedEditingTimer !== undefined) return;
     this.maskedEditingTimer = setInterval(() => {
       for (const id of this.maskedEditingIds) {
-        const node = this.mirror.getNode(id);
-        // Selects and non-text inputs cannot display a synthetic text mask.
-        if (
-          !node?.isConnected ||
-          (node.nodeName !== 'TEXTAREA' &&
-            (node.nodeName !== 'INPUT' ||
-              !['text', 'search', 'url', 'tel', 'email', 'password'].includes(
-                (node as HTMLInputElement).type,
-              )))
-        ) {
-          this.restoreTypingIndicators(id);
-          continue;
-        }
-        const element = node as HTMLInputElement | HTMLTextAreaElement;
-        if (this.typingIndicators.get(id)?.element !== element) {
-          this.restoreTypingIndicators(id);
-          this.typingIndicators.set(id, {
-            element,
-            value: element.value,
-            step: 0,
-          });
-        }
-        // Use a synthetic fixed-length mask so activity is visible even when
-        // the recorded value consists of identical mask characters.
-        const indicator = this.typingIndicators.get(id)!;
-        const pattern = '●••●•●••';
-        const offset = indicator.step++ % pattern.length;
-        element.value = pattern.slice(offset) + pattern.slice(0, offset);
+        this.renderTypingIndicator(id);
       }
     }, 150);
+  }
+
+  private renderTypingIndicator(id: number) {
+    const node = this.mirror.getNode(id);
+    // Selects and non-text inputs cannot display a synthetic text mask.
+    if (
+      !node?.isConnected ||
+      (node.nodeName !== 'TEXTAREA' &&
+        (node.nodeName !== 'INPUT' ||
+          !['text', 'search', 'url', 'tel', 'email', 'password'].includes(
+            (node as HTMLInputElement).type,
+          )))
+    ) {
+      this.restoreTypingIndicators(id);
+      return;
+    }
+    const element = node as HTMLInputElement | HTMLTextAreaElement;
+    if (this.typingIndicators.get(id)?.element !== element) {
+      this.restoreTypingIndicators(id);
+      this.typingIndicators.set(id, {
+        element,
+        value: element.value,
+        step: 0,
+      });
+    }
+    // Use a synthetic fixed-length mask so activity is visible even when
+    // the recorded value consists of identical mask characters.
+    const indicator = this.typingIndicators.get(id)!;
+    const pattern = '●••●•●••';
+    const offset = indicator.step++ % pattern.length;
+    element.value = pattern.slice(offset) + pattern.slice(0, offset);
   }
 
   private updateMaskedEditingState(data: mouseInteractionData) {
@@ -2053,19 +2058,6 @@ export class Replayer {
     } else if (data.type === MouseInteractions.Blur) {
       this.restoreTypingIndicators(data.id);
       this.maskedEditingIds.delete(data.id);
-    }
-  }
-
-  private applyMaskedEditingMarker(id: number) {
-    this.syncMaskedTypingIndicator();
-    const mirror = this.usingVirtualDom ? this.virtualDom.mirror : this.mirror;
-    const target = mirror.getNode(id);
-    if (!target || !('setAttribute' in target)) return;
-    const element = target as Element | RRElement;
-    if (this.maskedEditingIds.has(id)) {
-      element.setAttribute(maskedEditingAttribute, 'true');
-    } else {
-      element.removeAttribute(maskedEditingAttribute);
     }
   }
 
