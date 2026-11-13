@@ -590,6 +590,7 @@ export class Replayer {
    * @param timeOffset - number
    */
   public play(timeOffset = 0) {
+    this.backToNormal();
     if (this.stallController?.stallOnPlay(timeOffset)) {
       return;
     }
