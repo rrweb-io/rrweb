@@ -133,6 +133,7 @@ export class RRDocument extends BaseRRDocument {
   destroyTree() {
     this.firstChild = null;
     this.lastChild = null;
+    this.scrollData = null;
     this.mirror.reset();
   }
 

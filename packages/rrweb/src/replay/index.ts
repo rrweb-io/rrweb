@@ -28,7 +28,6 @@ import type {
   Mirror as RRDOMMirror,
 } from 'rrdom';
 import * as mittProxy from 'mitt';
-import { polyfill as smoothscrollPolyfill } from './smoothscroll';
 import { Timer } from './timer';
 import {
   createPlayerService,
@@ -653,12 +652,7 @@ export class Replayer {
     // hide iframe before first meta event
     this.iframe.style.display = 'none';
     this.disableInteract();
-    if (this.iframe.contentWindow && this.iframe.contentDocument) {
-      smoothscrollPolyfill(
-        this.iframe.contentWindow,
-        this.iframe.contentDocument,
-      );
-
+    if (this.iframe.contentWindow) {
       polyfill(this.iframe.contentWindow as IWindow);
     }
   }

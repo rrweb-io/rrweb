@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/packer",
-  "version": "2.2.0",
+  "version": "2.2.2",
   "publishConfig": {
     "access": "public"
   },
@@ -75,14 +75,14 @@
     "package.json"
   ],
   "devDependencies": {
-    "vite": "^6.0.1",
+    "vite": "^8.3.6",
     "vite-plugin-dts": "^3.9.1",
     "vitest": "^1.6.1",
     "typescript": "^5.4.5"
   },
   "dependencies": {
     "fflate": "^0.4.9",
-    "@rrweb/types": "^2.2.0"
+    "@rrweb/types": "^2.2.2"
   },
   "browserslist": [
     "supports es6-class"
