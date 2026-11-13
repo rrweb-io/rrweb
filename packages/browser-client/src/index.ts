@@ -291,6 +291,10 @@ export function start(
     return;
   }
 
+  if (activeStop) {
+    stop(false);
+  }
+
   const {
     includePii,
     publicApiKey,

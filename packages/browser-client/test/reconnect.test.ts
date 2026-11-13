@@ -579,4 +579,27 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it('stops a running recording when start() is called again without stop()', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { client, socket } = await startClient();
+    socket.reopen();
+
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+    });
+    mockState.emit!(event(5));
+    const second = mockState.sockets[1];
+    second.reopen();
+
+    expect(socket.closedByUser).toBe(true);
+    expect(socket.sent.some((sent) => sent.includes('close-temporary'))).toBe(
+      true,
+    );
+    expect(second).not.toBe(socket);
+    expect(ids(second.sent)).toContain(5);
+    expect(ids(second.sent)).not.toContain(1);
+  });
 });
