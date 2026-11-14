@@ -1,5 +1,17 @@
 # rrweb
 
+## 2.2.3
+
+### Patch Changes
+
+- [#2010](https://github.com/rrweb-io/rrweb/pull/2010) [`9b9b9dd`](https://github.com/rrweb-io/rrweb/commit/9b9b9dd868ed369c2718d6cf581fa1abf7f0d63f) Thanks [@LuggaPugga](https://github.com/LuggaPugga)! - Remove the replayer's bundled smoothscroll polyfill to reduce bundle size
+
+- Updated dependencies [[`3339038`](https://github.com/rrweb-io/rrweb/commit/3339038d31bc15491e9def76fd4f4818b2eae6aa)]:
+  - rrdom@2.2.3
+  - rrweb-snapshot@2.2.3
+  - @rrweb/types@2.2.3
+  - @rrweb/utils@2.2.3
+
 ## 2.2.2
 
 ### Patch Changes

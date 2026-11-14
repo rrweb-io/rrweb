@@ -1,5 +1,13 @@
 # @rrweb/web-extension
 
+## 2.2.3
+
+### Patch Changes
+
+- Updated dependencies [[`9b9b9dd`](https://github.com/rrweb-io/rrweb/commit/9b9b9dd868ed369c2718d6cf581fa1abf7f0d63f)]:
+  - rrweb@2.2.3
+  - rrweb-player@2.2.3
+
 ## 2.2.2
 
 ### Patch Changes
