@@ -1,5 +1,13 @@
 # rrdom-nodejs
 
+## 2.2.3
+
+### Patch Changes
+
+- Updated dependencies [[`3339038`](https://github.com/rrweb-io/rrweb/commit/3339038d31bc15491e9def76fd4f4818b2eae6aa)]:
+  - rrdom@2.2.3
+  - @rrweb/types@2.2.3
+
 ## 2.2.2
 
 ### Patch Changes

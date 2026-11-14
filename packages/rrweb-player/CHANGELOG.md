@@ -1,5 +1,13 @@
 # rrweb-player
 
+## 2.2.3
+
+### Patch Changes
+
+- Updated dependencies [[`9b9b9dd`](https://github.com/rrweb-io/rrweb/commit/9b9b9dd868ed369c2718d6cf581fa1abf7f0d63f), [`3339038`](https://github.com/rrweb-io/rrweb/commit/3339038d31bc15491e9def76fd4f4818b2eae6aa)]:
+  - @rrweb/replay@2.2.3
+  - @rrweb/packer@2.2.3
+
 ## 2.2.2
 
 ### Patch Changes

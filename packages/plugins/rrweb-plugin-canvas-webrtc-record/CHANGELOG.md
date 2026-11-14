@@ -1,5 +1,7 @@
 # @rrweb/rrweb-plugin-canvas-webrtc-record
 
+## 2.2.3
+
 ## 2.2.2
 
 ## 2.2.1
