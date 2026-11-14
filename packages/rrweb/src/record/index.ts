@@ -90,6 +90,7 @@ function record<T = eventWithTime>(
     recordDOM = true,
     recordCanvas = false,
     recordCrossOriginIframes = false,
+    crossOriginIframeTransport,
     recordAfter = options.recordAfter === 'DOMContentLoaded'
       ? options.recordAfter
       : 'load',
@@ -214,7 +215,11 @@ function record<T = eventWithTime>(
         origin: window.location.origin,
         isCheckout,
       };
-      window.parent.postMessage(message, '*');
+      if (crossOriginIframeTransport) {
+        crossOriginIframeTransport.send(message);
+      } else {
+        window.parent.postMessage(message, '*');
+      }
     }
 
     if (e.type === EventType.FullSnapshot) {
@@ -286,6 +291,7 @@ function record<T = eventWithTime>(
     mutationCb: wrappedMutationEmit,
     stylesheetManager: stylesheetManager,
     recordCrossOriginIframes,
+    crossOriginIframeTransport,
     wrappedEmit,
   });
 
