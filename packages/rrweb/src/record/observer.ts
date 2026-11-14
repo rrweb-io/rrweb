@@ -195,12 +195,33 @@ function initMoveObserver({
   });
 }
 
+export function isMasked(
+  target: HTMLElement | null,
+  maskInputOptions: MaskInputOptions,
+): boolean {
+  if (!target || !INPUT_TAGS.includes(target.tagName)) {
+    return false;
+  }
+
+  const type = getInputType(target);
+  if (type === 'radio' || type === 'checkbox') {
+    return false;
+  }
+
+  const tagName = toLowerCase(target.tagName) as keyof MaskInputOptions;
+  return Boolean(
+    maskInputOptions[tagName] ||
+    (type && maskInputOptions[type as keyof MaskInputOptions])
+  );
+}
+
 function initMouseInteractionObserver({
   mouseInteractionCb,
   doc,
   mirror,
   blockClass,
   blockSelector,
+  maskInputOptions,
   sampling,
 }: observerParam): listenerHandler {
   if (sampling.mouseInteraction === false) {
@@ -218,10 +239,22 @@ function initMouseInteractionObserver({
   let currentPointerType: PointerTypes | null = null;
   const getHandler = (eventKey: keyof typeof MouseInteractions) => {
     return (event: MouseEvent | TouchEvent | PointerEvent) => {
-      const target = getEventTarget(event) as Node;
+      const target = getEventTarget(event) as HTMLElement | null;
       if (isBlocked(target, blockClass, blockSelector, true)) {
         return;
       }
+
+      if (eventKey === 'Focus' || eventKey === 'Blur') {
+        const masked = isMasked(target, maskInputOptions);
+        callbackWrapper(mouseInteractionCb)({
+          type: MouseInteractions[eventKey],
+          id: mirror.getId(target),
+          ...(masked &&
+            (eventKey === 'Focus' ? { maskFocus: true } : { maskBlur: true })),
+        });
+        return;
+      }
+
       let pointerType: PointerTypes | null = null;
       let thisEventKey = eventKey;
       if ('pointerType' in event) {
@@ -448,7 +481,7 @@ function initInputObserver({
       target,
       userTriggeredOnInput
         ? { text, isChecked, userTriggered }
-        : { text, isChecked },
+        : { text, isChecked }
     );
     // if a radio was checked
     // the other radios with the same name attribute will be unchecked.

@@ -58,6 +58,7 @@ import type {
   mutationData,
   scrollData,
   inputData,
+  mouseInteractionData,
   canvasMutationData,
   styleValueWithPriority,
   mouseMovePos,
@@ -162,6 +163,17 @@ export class Replayer {
   private mousePos: mouseMovePos | null = null;
   private touchActive: boolean | null = null;
   private lastMouseDownEvent: [Node, Event] | null = null;
+  private maskedEditingIds = new Set<number>();
+  private maskedEditingTimer: ReturnType<typeof setInterval> | undefined;
+  private typingIndicators = new Map<
+    number,
+    {
+      element: HTMLInputElement | HTMLTextAreaElement;
+      value: string;
+      step: number;
+    }
+  >();
+  private pendingFocusInteractions: mouseInteractionData[] = [];
 
   // Keep the rootNode of the last hovered element. So  when hovering a new element, we can remove the last hovered element's :hover style.
   private lastHoveredRootNode: Document | ShadowRoot;
@@ -304,6 +316,13 @@ export class Replayer {
         this.adoptedStyleSheets = [];
       }
 
+      const focusInteractions = this.pendingFocusInteractions;
+      this.pendingFocusInteractions = [];
+      for (const interaction of focusInteractions) {
+        const target = this.mirror.getNode(interaction.id);
+        if (target) this.replayFocusInteraction(interaction, target);
+      }
+
       if (this.mousePos) {
         this.moveAndHover(
           this.mousePos.x,
@@ -335,6 +354,9 @@ export class Replayer {
     });
     this.emitter.on(ReplayerEvents.PlayBack, () => {
       this.firstFullSnapshot = null;
+      this.stopMaskedTypingIndicator();
+      this.maskedEditingIds.clear();
+      this.pendingFocusInteractions = [];
       this.mirror.reset();
       this.styleMirror.reset();
       this.mediaManager.reset();
@@ -366,6 +388,7 @@ export class Replayer {
     );
     this.service.start();
     this.service.subscribe((state) => {
+      this.syncMaskedTypingTimer();
       this.emitter.emit(ReplayerEvents.StateChange, {
         player: state,
       });
@@ -557,6 +580,7 @@ export class Replayer {
    */
   public destroy() {
     this.pause();
+    this.stopMaskedTypingIndicator();
     this.mirror.reset();
     this.styleMirror.reset();
     this.mediaManager.reset();
@@ -839,10 +863,12 @@ export class Replayer {
      * Adding this check to avoid any potential issues.
      */
     if (this.usingVirtualDom) {
+      this.pendingFocusInteractions = [];
       this.virtualDom.destroyTree();
       this.usingVirtualDom = false;
     }
 
+    this.restoreTypingIndicators();
     this.mirror.reset();
     rebuild(event.data.node, {
       doc: this.iframe.contentDocument,
@@ -861,6 +887,23 @@ export class Replayer {
     }
     const { documentElement, head } = this.iframe.contentDocument;
     this.insertStyleRules(documentElement, head);
+    if (isSync) {
+      // Seeking can start at a checkout that omitted the preceding focus event.
+      this.maskedEditingIds.clear();
+      for (const prior of this.service.state.context.events) {
+        if (prior === event) break;
+        if (
+          prior.type === EventType.IncrementalSnapshot &&
+          prior.data.source === IncrementalSource.MouseInteraction
+        ) {
+          this.updateMaskedEditingState(prior.data);
+        }
+      }
+    }
+    for (const id of this.maskedEditingIds) {
+      if (!this.mirror.getNode(id)) this.maskedEditingIds.delete(id);
+    }
+    this.syncMaskedTypingTimer();
     collectedDialogs.forEach((d) => applyDialogToTopLevel(d));
     if (!this.service.state.matches('playing')) {
       this.iframe.contentDocument
@@ -1169,29 +1212,39 @@ export class Replayer {
         if (d.id === -1) {
           break;
         }
-        const event = new Event(toLowerCase(MouseInteractions[d.type]));
+        if (
+          (d.type === MouseInteractions.Focus && d.maskFocus) ||
+          (d.type === MouseInteractions.Blur &&
+            (d.maskBlur || this.maskedEditingIds.has(d.id)))
+        ) {
+          this.updateMaskedEditingState(d);
+          this.syncMaskedTypingTimer();
+        }
+        if (
+          this.usingVirtualDom &&
+          (d.type === MouseInteractions.Focus ||
+            d.type === MouseInteractions.Blur)
+        ) {
+          this.pendingFocusInteractions.push(d);
+          break;
+        }
         const target = this.mirror.getNode(d.id);
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
         }
+        if (
+          d.type === MouseInteractions.Focus ||
+          d.type === MouseInteractions.Blur
+        ) {
+          this.replayFocusInteraction(d, target);
+          break;
+        }
+        const event = new Event(toLowerCase(MouseInteractions[d.type]));
         this.emitter.emit(ReplayerEvents.MouseInteraction, {
           type: d.type,
           target,
         });
-        const { triggerFocus } = this.config;
         switch (d.type) {
-          case MouseInteractions.Blur:
-            if ('blur' in (target as HTMLElement)) {
-              (target as HTMLElement).blur();
-            }
-            break;
-          case MouseInteractions.Focus:
-            if (triggerFocus && (target as HTMLElement).focus) {
-              (target as HTMLElement).focus({
-                preventScroll: true,
-              });
-            }
-            break;
           case MouseInteractions.Click:
           case MouseInteractions.TouchStart:
           case MouseInteractions.TouchEnd:
@@ -1926,6 +1979,97 @@ export class Replayer {
     }
   }
 
+  private restoreTypingIndicators(id?: number) {
+    for (const [key, { element, value }] of this.typingIndicators) {
+      if (id !== undefined && key !== id) continue;
+      element.value = value;
+      this.typingIndicators.delete(key);
+    }
+  }
+
+  private stopMaskedTypingIndicator() {
+    if (this.maskedEditingTimer !== undefined) {
+      clearInterval(this.maskedEditingTimer);
+      this.maskedEditingTimer = undefined;
+    }
+    this.restoreTypingIndicators();
+  }
+
+  private syncMaskedTypingTimer() {
+    if (
+      !this.maskedEditingIds.size ||
+      !(
+        this.service.state.matches('playing') ||
+        this.service.state.matches('live')
+      )
+    ) {
+      this.stopMaskedTypingIndicator();
+      return;
+    }
+    if (this.maskedEditingTimer !== undefined) return;
+    this.maskedEditingTimer = setInterval(() => {
+      for (const id of this.maskedEditingIds) {
+        this.renderTypingIndicator(id);
+      }
+    }, 150);
+  }
+
+  private renderTypingIndicator(id: number) {
+    const node = this.mirror.getNode(id);
+    // Selects and non-text inputs cannot display a synthetic text mask.
+    if (
+      !node?.isConnected ||
+      (node.nodeName !== 'TEXTAREA' &&
+        (node.nodeName !== 'INPUT' ||
+          !['text', 'search', 'url', 'tel', 'email', 'password'].includes(
+            (node as HTMLInputElement).type,
+          )))
+    ) {
+      this.restoreTypingIndicators(id);
+      return;
+    }
+    const element = node as HTMLInputElement | HTMLTextAreaElement;
+    if (this.typingIndicators.get(id)?.element !== element) {
+      this.restoreTypingIndicators(id);
+      this.typingIndicators.set(id, {
+        element,
+        value: element.value,
+        step: 0,
+      });
+    }
+    // Use a synthetic fixed-length mask so activity is visible even when
+    // the recorded value consists of identical mask characters.
+    const indicator = this.typingIndicators.get(id)!;
+    const pattern = '●••●•●••';
+    const offset = indicator.step++ % pattern.length;
+    element.value = pattern.slice(offset) + pattern.slice(0, offset);
+  }
+
+  private updateMaskedEditingState(data: mouseInteractionData) {
+    if (data.id === -1) return;
+    if (data.type === MouseInteractions.Focus && data.maskFocus) {
+      this.maskedEditingIds.add(data.id);
+    } else if (data.type === MouseInteractions.Blur) {
+      this.restoreTypingIndicators(data.id);
+      this.maskedEditingIds.delete(data.id);
+    }
+  }
+
+  private replayFocusInteraction(data: mouseInteractionData, target: Node) {
+    this.emitter.emit(ReplayerEvents.MouseInteraction, {
+      type: data.type,
+      target,
+      ...(data.maskFocus !== undefined && { maskFocus: data.maskFocus }),
+      ...(data.maskBlur !== undefined && { maskBlur: data.maskBlur }),
+    });
+    const element = target as HTMLElement;
+    if (data.type === MouseInteractions.Blur) {
+      element.blur?.();
+    } else if (this.config.triggerFocus) {
+      element.focus?.({ preventScroll: true });
+    }
+  }
+
   private applyInput(d: inputData) {
     const target = this.mirror.getNode(d.id);
     if (!target) {
@@ -1933,6 +2077,14 @@ export class Replayer {
     }
     try {
       (target as HTMLInputElement).checked = d.isChecked;
+      const indicator = this.typingIndicators.get(d.id);
+      if (indicator?.element === target) {
+        // Keep the conveyor visible and preserve its phase. The latest recorded
+        // value is restored when editing ends or playback pauses.
+        indicator.value = d.text;
+        return;
+      }
+      this.restoreTypingIndicators(d.id);
       (target as HTMLInputElement).value = d.text;
     } catch (error) {
       // for safe
