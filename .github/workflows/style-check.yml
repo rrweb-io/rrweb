@@ -12,10 +12,10 @@ jobs:
     if: github.event_name != 'push' && github.event.pull_request.head.repo.full_name != 'rrweb-io/rrweb'
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     name: Format Check
     steps:
-      - uses: actions/checkout@v3
+      - uses: useblacksmith/checkout@v1
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.head_ref }}
@@ -34,12 +34,12 @@ jobs:
   prettier:
     # Skip the format code action in forked PRs
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == 'rrweb-io/rrweb'
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     permissions:
       contents: write
     name: Format Code
     steps:
-      - uses: actions/checkout@v3
+      - uses: useblacksmith/checkout@v1
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.head_ref }}
