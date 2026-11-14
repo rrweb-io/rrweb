@@ -307,6 +307,66 @@ describe('replayer', function () {
     expect(currentState).toEqual('paused');
   });
 
+  [true, false].forEach((useVirtualDom) => {
+    it(`keeps autocomplete disabled after attribute mutations (virtual dom: ${useVirtualDom})`, async () => {
+      await page.evaluate(`
+        const { Replayer, EventType, IncrementalSource } = rrweb;
+        const replayEvents = events.slice(0, 4);
+        const start = events[0].timestamp;
+        replayEvents.push({
+          type: EventType.IncrementalSnapshot,
+          timestamp: start + 1500,
+          data: {
+            source: IncrementalSource.Mutation,
+            texts: [], attributes: [], removes: [],
+            adds: ['input', 'textarea'].map((tagName, index) => ({
+              parentId: 4,
+              nextId: null,
+              node: {
+                type: 2, id: 5 + index, tagName,
+                attributes: { autocomplete: 'on' }, childNodes: [],
+              },
+            })),
+          },
+        });
+        ['on', 'email', null].forEach((autocomplete, index) => {
+          replayEvents.push({
+            type: EventType.IncrementalSnapshot,
+            timestamp: start + 2000 + index * 500,
+            data: {
+              source: IncrementalSource.Mutation,
+              texts: [], adds: [], removes: [],
+              attributes: [5, 6].map((id) => ({
+                id, attributes: { autocomplete, title: 'updated' },
+              })),
+            },
+          });
+        });
+        const replayer = new Replayer(replayEvents, {
+          useVirtualDom: ${useVirtualDom},
+        });
+      `);
+
+      for (const time of [1750, 2250, 2750, 3250]) {
+        await page.evaluate(`replayer.pause(${time});`);
+        await waitForRAF(page);
+        const attributes = await page.evaluate(`
+          [...replayer.iframe.contentDocument.querySelectorAll('input, textarea')]
+            .map((node) => ({
+              autocomplete: node.getAttribute('autocomplete'),
+              title: node.getAttribute('title'),
+            }));
+        `);
+        expect(attributes).toEqual(
+          [5, 6].map(() => ({
+            autocomplete: 'off',
+            title: time === 1750 ? null : 'updated',
+          })),
+        );
+      }
+    });
+  });
+
   it('can fast forward past StyleSheetRule changes on virtual elements', async () => {
     await page.evaluate(`events = ${JSON.stringify(styleSheetRuleEvents)}`);
     const actionLength = await page.evaluate(`
