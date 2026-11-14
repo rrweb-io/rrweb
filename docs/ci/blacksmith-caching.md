@@ -43,6 +43,17 @@ build. Thus WebKit could benefit from image caching, but not native Turbo cachin
 Tests, bundle stats, and ESLint are possible future host-runner candidates.
 Formatter jobs have no Turbo build workload. Release remains on GitHub.
 
+The [Docker build documentation](https://docs.blacksmith.sh/blacksmith-caching/docker-builds#pricing)
+prices its sticky-disk storage at **$0.50 per GB per month**.
+[Checkout caching](https://docs.blacksmith.sh/blacksmith-caching/git-checkout-caching)
+also uses sticky disks at **$0.50 per GB per month**. No checkout cache is
+configured by this PR, and no
+checkout action changes are proposed. Runner-minute sponsorship does not establish
+coverage for disks, Turbo storage, checkout caches, or other extras. Confirm each
+product's entitlement and any charges separately before requesting activation.
+The documented free container-image cache is distinct from paid Docker build
+layer storage. Neither changes this repository's runner-access blocker.
+
 Blacksmith leaves existing `TURBO_API`, `TURBO_TOKEN`, or `TURBO_TEAM` environment
 configuration in place instead of replacing it. The repository has a variable
 named `TURBO_TEAM` with value `rrweb-io`, but no workflow maps it into the job
@@ -128,6 +139,18 @@ or expand permissions. #2021 intentionally requires a reviewed code change to
 remove literal `false`; no variable or dashboard toggle can open those gates.
 
 ## Validation, pilot, and rollback
+
+Track these states separately:
+
+- **Configuration:** this PR fixes local Turbo hash inputs and documents supported
+  options. Workflow files are unchanged.
+- **Activation:** no Blacksmith runner or remote cache has been activated or
+  verified for rrweb-io. Native Turbo requires an authorized org admin to enable
+  **Settings > Caching > Build systems > Turborepo build cache**, after permission
+  and coverage are confirmed. Workflow edits alone cannot prove activation.
+- **Measured cache hits:** none verified. Local dry-run hash checks do not access
+  Blacksmith and do not prove warm remote-cache hits, restored artifact integrity,
+  or a performance gain. Those require a separately authorized cold/warm pilot.
 
 Run the hash verifier using the lockfile's Turbo 2.0.4:
 
