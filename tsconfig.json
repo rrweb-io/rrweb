@@ -25,6 +25,9 @@
       "path": "packages/plugins/rrweb-plugin-console-record"
     },
     {
+      "path": "packages/plugins/rrweb-plugin-keydown-record"
+    },
+    {
       "path": "packages/plugins/rrweb-plugin-network-record"
     },
     {
