@@ -27,7 +27,7 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build",
-    "test": "vitest run",
+    "test": "yarn build && vitest run",
     "prepublishOnly": "yarn build",
     "start": "vite",
     "check-types": "svelte-check --tsconfig ./tsconfig.json",

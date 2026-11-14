@@ -28,13 +28,14 @@ import type {
   Mirror as RRDOMMirror,
 } from 'rrdom';
 import * as mittProxy from 'mitt';
-import { Timer } from './timer';
+import { Timer, addDelay } from './timer';
 import {
   createPlayerService,
   createSpeedService,
   type PlayerMachineState,
   type SpeedMachineState,
 } from './machine';
+import type { StallController } from './stall-controller';
 import type { playerConfig, missingNodeMap } from '../types';
 import {
   NodeType,
@@ -114,6 +115,37 @@ function indicatesTouchDevice(e: eventWithTime) {
   );
 }
 
+function isDuplicateEvent(a: eventWithTime, b: eventWithTime): boolean {
+  if (a.type !== b.type) {
+    return false;
+  }
+  let earlyOut = false;
+  switch (a.type) {
+    case EventType.Asset:
+      return a.data.url === (b as typeof a).data.url;
+    case EventType.IncrementalSnapshot:
+      if (a.data.source !== (b as typeof a).data.source) {
+        earlyOut = true;
+      } else if (a.data.source === IncrementalSource.Mutation) {
+        const bdata = b.data as typeof a.data;
+        earlyOut =
+          a.data.adds.length !== bdata.adds.length ||
+          a.data.removes.length !== bdata.removes.length ||
+          a.data.attributes.length !== bdata.attributes.length ||
+          a.data.texts.length !== bdata.texts.length;
+      }
+      break;
+  }
+  if (earlyOut) {
+    return false;
+  }
+  return stringifyWithoutDelay(a) === stringifyWithoutDelay(b);
+}
+
+function stringifyWithoutDelay(event: eventWithTime): string {
+  return JSON.stringify({ ...event, delay: undefined });
+}
+
 export class Replayer {
   public wrapper: HTMLDivElement;
   public iframe: HTMLIFrameElement;
@@ -177,6 +209,8 @@ export class Replayer {
 
   // Similar to the reason for constructedStyleMutations.
   private adoptedStyleSheets: adoptedStyleSheetData[] = [];
+
+  private stallController?: StallController;
 
   constructor(
     events: Array<eventWithTime | string>,
@@ -342,17 +376,17 @@ export class Replayer {
 
     const timer = new Timer([], {
       speed: this.config.speed,
+      onExhausted: this.onTimerExhausted,
     });
+    const unpackFn = config && config.unpackFn;
+    const initialEvents = (
+      unpackFn
+        ? events.map((e) => unpackFn(e as string))
+        : (events as eventWithTime[])
+    ).sort((a1, a2) => a1.timestamp - a2.timestamp);
     this.service = createPlayerService(
       {
-        events: events
-          .map((e) => {
-            if (config && config.unpackFn) {
-              return config.unpackFn(e as string);
-            }
-            return e as eventWithTime;
-          })
-          .sort((a1, a2) => a1.timestamp - a2.timestamp),
+        events: initialEvents,
         timer,
         timeOffset: 0,
         baselineTime: 0,
@@ -362,6 +396,8 @@ export class Replayer {
         getCastFn: this.getCastFn,
         applyEventsSynchronously: this.applyEventsSynchronously,
         emitter: this.emitter,
+        isStallMarker: (event) =>
+          this.stallController?.isStallMarker(event) ?? false,
       },
     );
     this.service.start();
@@ -387,6 +423,14 @@ export class Replayer {
       emitter: this.emitter,
       getCurrentTime: this.getCurrentTime.bind(this),
     });
+
+    if (this.config.createStallController) {
+      this.stallController = this.config.createStallController(this);
+    }
+
+    for (const event of initialEvents) {
+      this.registerEvent(event); // also register with any controllers
+    }
 
     // rebuild first full snapshot as the poster of the player
     // maybe we can cache it for performance optimization
@@ -421,9 +465,6 @@ export class Replayer {
         );
       }, 1);
     }
-    if (this.service.state.context.events.find(indicatesTouchDevice)) {
-      this.mouse.classList.add('touch-device');
-    }
   }
 
   public on(event: string, handler: Handler) {
@@ -434,6 +475,10 @@ export class Replayer {
   public off(event: string, handler: Handler) {
     this.emitter.off(event, handler);
     return this;
+  }
+
+  public emit(event: string, payload?: unknown) {
+    this.emitter.emit(event, payload);
   }
 
   public setConfig(config: Partial<playerConfig>) {
@@ -485,6 +530,34 @@ export class Replayer {
     };
   }
 
+  public get events(): eventWithTime[] {
+    return this.service.state.context.events;
+  }
+
+  public isPlaying(): boolean {
+    return this.service.state.matches('playing');
+  }
+
+  public isStalled(): boolean {
+    return this.service.state.matches('stalled');
+  }
+
+  public getState(): PlayerMachineState['value'] {
+    return this.service.state.value;
+  }
+
+  public stall() {
+    this.service.send({ type: 'STALL' });
+  }
+
+  public reschedule() {
+    this.service.send({ type: 'RESCHEDULE' });
+  }
+
+  public abortStall() {
+    this.service.send({ type: 'PAUSE' });
+  }
+
   /**
    * Get the actual time offset the player is at now compared to the first event.
    */
@@ -517,12 +590,11 @@ export class Replayer {
    * @param timeOffset - number
    */
   public play(timeOffset = 0) {
-    if (this.service.state.matches('paused')) {
-      this.service.send({ type: 'PLAY', payload: { timeOffset } });
-    } else {
-      this.service.send({ type: 'PAUSE' });
-      this.service.send({ type: 'PLAY', payload: { timeOffset } });
+    this.backToNormal();
+    if (this.stallController?.stallOnPlay(timeOffset)) {
+      return;
     }
+    this.service.send({ type: 'PLAY', payload: { timeOffset } });
     this.iframe.contentDocument
       ?.getElementsByTagName('html')[0]
       ?.classList.remove('rrweb-paused');
@@ -530,7 +602,17 @@ export class Replayer {
   }
 
   public pause(timeOffset?: number) {
-    if (timeOffset === undefined && this.service.state.matches('playing')) {
+    if (
+      typeof timeOffset === 'number' &&
+      this.stallController?.stallOnPause(timeOffset)
+    ) {
+      return;
+    }
+    if (
+      timeOffset === undefined &&
+      (this.service.state.matches('playing') ||
+        this.service.state.matches('stalled'))
+    ) {
       this.service.send({ type: 'PAUSE' });
     }
     if (typeof timeOffset === 'number') {
@@ -569,16 +651,119 @@ export class Replayer {
   }
 
   public addEvent(rawEvent: eventWithTime | string) {
+    // add or append a single event in a live context
+    // will be immediately processed and scheduled
     const event = this.config.unpackFn
       ? this.config.unpackFn(rawEvent as string)
       : (rawEvent as eventWithTime);
+    if (this.injectEvent(event) !== -1) {
+      this.applyOrSchedule(event);
+      this.emitter.emit(ReplayerEvents.EventsUpdated);
+    }
+  }
+
+  public injectEvents(rawEvents: (eventWithTime | string)[]) {
+    const events = rawEvents.map((e) =>
+      typeof e === 'string' && this.config.unpackFn
+        ? this.config.unpackFn(e)
+        : (e as eventWithTime),
+    );
+    const first = events.shift();
+    if (!first) return;
+    const ix = this.injectEvent(first);
+    const next = this.service.state.context.events[ix + 1];
+    if (
+      ix >= 0 &&
+      events.length > 0 &&
+      (!next || events[events.length - 1].timestamp < next.timestamp)
+    ) {
+      // fast track: assumes incoming events are sorted and contain no dupes
+      this.service.state.context.events.splice(ix + 1, 0, ...events);
+      for (const event of events) {
+        this.registerEvent(event);
+      }
+    } else {
+      for (const event of events) {
+        this.injectEvent(event);
+      }
+    }
+    this.emitter.emit(ReplayerEvents.EventsUpdated);
+  }
+
+  private injectEvent(event: eventWithTime): number {
+    const events = this.service.state.context.events;
+    const lastIndex = events.length - 1;
+    if (!events[lastIndex] || events[lastIndex].timestamp < event.timestamp) {
+      // fast track
+      events.push(event);
+      this.registerEvent(event);
+      return lastIndex + 1;
+    }
+    // binary search - events can arrive out of order in a realtime context
+    let start = 0;
+    let end = events.length;
+    while (start < end) {
+      const mid = (start + end) >> 1;
+      if (events[mid].timestamp <= event.timestamp) {
+        start = mid + 1;
+      } else {
+        end = mid;
+      }
+    }
+    for (
+      let i = start - 1;
+      i >= 0 && events[i].timestamp === event.timestamp;
+      i--
+    ) {
+      if (isDuplicateEvent(events[i], event)) {
+        return -1;
+      }
+    }
+    events.splice(start, 0, event);
+    this.registerEvent(event);
+    return start;
+  }
+
+  private applyOrSchedule(event: eventWithTime) {
+    const { baselineTime, timer } = this.service.state.context;
+    addDelay(event, baselineTime);
+    const isSync = event.timestamp < baselineTime;
+    const castFn = this.getCastFn(event, isSync);
+    if (isSync) {
+      castFn();
+    } else if (timer.isActive()) {
+      timer.addAction({
+        doAction: () => {
+          castFn();
+        },
+        delay: event.delay!,
+      });
+    }
+  }
+
+  private registerEvent(event: eventWithTime) {
     if (indicatesTouchDevice(event)) {
       this.mouse.classList.add('touch-device');
     }
-    void Promise.resolve().then(() =>
-      this.service.send({ type: 'ADD_EVENT', payload: { event } }),
-    );
+    this.stallController?.registerEvent(event);
   }
+
+  private onTimerExhausted = () => {
+    if (this.config.liveMode) return;
+    if (!this.service.state.matches('playing')) return;
+    // allow for checking whether new events aren't just about to be loaded in
+    setTimeout(() => {
+      if (this.timer.hasUpcomingActions()) return; // if added in 50ms window
+      if (!this.service.state.matches('playing')) return;
+      this.service.send('END');
+      if (this.service.state.matches('stalled')) {
+        // tried to end, but needed to buffer instead
+        return;
+      }
+      this.backToNormal();
+      this.emitter.emit(ReplayerEvents.Finish);
+    }, 50);
+  };
 
   public enableInteract() {
     this.iframe.setAttribute('scrolling', 'auto');
@@ -763,33 +948,6 @@ export class Replayer {
       }
 
       this.service.send({ type: 'CAST_EVENT', payload: { event } });
-
-      // events are kept sorted by timestamp, check if this is the last event
-      const lastIndex = this.service.state.context.events.length - 1;
-      if (
-        !this.config.liveMode &&
-        event === this.service.state.context.events[lastIndex]
-      ) {
-        const finish = () => {
-          if (lastIndex < this.service.state.context.events.length - 1) {
-            // more events have been added since the setTimeout
-            return;
-          }
-          this.backToNormal();
-          this.service.send('END');
-          this.emitter.emit(ReplayerEvents.Finish);
-        };
-        let finishBuffer = 50; // allow for checking whether new events aren't just about to be loaded in
-        if (
-          event.type === EventType.IncrementalSnapshot &&
-          event.data.source === IncrementalSource.MouseMove &&
-          event.data.positions.length
-        ) {
-          // extend finish event if the last event is a mouse move so that the timer isn't stopped by the service before checking the last event
-          finishBuffer += Math.max(0, -event.data.positions[0].timeOffset);
-        }
-        setTimeout(finish, finishBuffer);
-      }
 
       this.emitter.emit(ReplayerEvents.EventCast, event);
     };

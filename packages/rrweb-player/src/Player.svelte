@@ -98,8 +98,7 @@
   };
 
   export const addEvent: RRwebPlayerExpose['addEvent'] = (event: eventWithTime) => {
-    replayer.addEvent(event);
-    void controller.triggerUpdateMeta();
+    replayer.addEvent(event); // emits 'events-updated' triggering (private) controller.updateMeta
   };
   export const getMetaData: RRwebPlayerExpose['getMetaData'] = () => replayer.getMetaData();
   export const getReplayer: RRwebPlayerExpose['getReplayer'] = () => replayer;
