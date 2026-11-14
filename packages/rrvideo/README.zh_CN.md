@@ -35,6 +35,39 @@ rrvideo --input PATH_TO_YOUR_RRWEB_EVENTS_JSON_FILE --config PATH_TO_YOUR_RRVIDE
 
 rrvideo 配置文件可参考[示例](./rrvideo.config.example.json)。
 
+### 高帧率 / MP4（ffmpeg 后端）
+
+Playwright 的 `recordVideo`（`.webm` 默认路径）走的是 CDP screencast，
+帧率大约只有 10–25fps，编码器也只能写出 VP8 WebM。
+
+ffmpeg 后端启动一次回放，通过受控 JavaScript 时钟推进到每个输出帧，
+截取 JPEG，再把帧送给 ffmpeg（`libx264`）。写入完成后才推进下一帧。
+普通截图不能保证 CSS 动画和原生媒体的时间一致性。
+因此 60fps、120fps 是精确的，即使截图比实时更慢。
+
+```shell
+rrvideo --input PATH_TO_YOUR_RRWEB_EVENTS_FILE --output session.mp4 --fps 60
+```
+
+输出 `.mp4` 或传入 `--fps` 会自动选择该后端。
+配置文件里也可写 `"capture": "ffmpeg"`。
+
+Linux/Windows 可使用 `--capture compositor`，通过 Chrome headless shell 的
+`beginFrame` 和原生虚拟时间同步推进 JavaScript、CSS 动画及浏览器绘制。
+合成器模式最高支持 1000 FPS。缺失图像时会暂停回放时钟，
+按 1 微秒递增绘制时间，最多尝试 10 次，且不会改变后续帧时间。
+帧时间向下取整到毫秒（误差小于 1 毫秒），编码帧率保持不变。
+macOS 可在 Linux Docker 容器中比较两种模式。
+无法播放的媒体只输出诊断信息；受控回放动画循环中的同步异常会使转换失败。
+`--capture ffmpeg` 模式中，Playwright 时钟推进失败（包括定时器回调异常）也会终止转换；
+合成器模式会记录无关的原生定时器异常并继续。
+逐帧捕获要求 `skipInactive: false`。`--replayMode seek` 保留原来的逐帧跳转方式，
+用于基准比较。详见[基准测试说明](benchmark/README.md)。
+
+`speed` 为 2 或 4 时会缩短成片时长，而不是降低编码帧率。
+批量任务请用 `transformMany(jobs, { concurrency })`，
+每个任务独立的 Chromium + ffmpeg 进程。
+
 ## Sponsors
 
 [Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.
