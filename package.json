@@ -25,6 +25,7 @@
   "devDependencies": {
     "@changesets/changelog-github": "^0.7.0",
     "@changesets/cli": "^2.31.0",
+    "@changesets/parse": "^0.4.3",
     "@monorepo-utils/workspaces-to-typescript-project-references": "^2.8.2",
     "@types/prettier": "2.7.3",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
@@ -40,6 +41,7 @@
     "happy-dom": "^14.12.0",
     "markdownlint": "^0.25.1",
     "markdownlint-cli": "^0.31.1",
+    "mri": "^1.2.0",
     "pkg-pr-new": "0.0.88",
     "prettier": "2.8.4",
     "rollup-plugin-visualizer": "^5.12.0",
@@ -48,6 +50,8 @@
     "typescript": "^5.4.5"
   },
   "scripts": {
+    "changeset": "node .github/scripts/changeset.cjs",
+    "changeset:sync": "node .github/scripts/sync-rrweb-changesets.cjs",
     "build:all": "NODE_OPTIONS='--max-old-space-size=4096' yarn turbo run prepublish",
     "references:update": "yarn workspaces-to-typescript-project-references",
     "test": "yarn turbo run test --concurrency=1 --continue",
