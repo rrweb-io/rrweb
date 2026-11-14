@@ -9,6 +9,7 @@ import {
   getShadowHost,
   getNestedRule,
   getPositionsAndIndex,
+  hookSetter,
 } from '../src/utils';
 
 describe('Utilities for other modules', () => {
@@ -335,6 +336,73 @@ describe('Utilities for other modules', () => {
       expect(result).toBeNull();
 
       document.head.removeChild(style);
+    });
+  });
+
+  describe('hookSetter()', () => {
+    const nativeValue = Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      'value',
+    )!;
+
+    afterEach(() => {
+      Object.defineProperty(HTMLInputElement.prototype, 'value', nativeValue);
+    });
+
+    it('keeps the getter and restores the original descriptor', () => {
+      const input = document.createElement('input');
+      const reset = hookSetter(HTMLInputElement.prototype, 'value', {
+        set: () => undefined,
+      });
+      input.value = 'hello';
+      expect(input.value).toBe('hello');
+      reset();
+      expect(
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value'),
+      ).toEqual(nativeValue);
+    });
+
+    it('keeps the getter when defineProperty does not merge descriptors', () => {
+      // Models a Firefox Xray wrapper (extension content script): the prototype
+      // reports the native descriptor, but defineProperty creates a separate
+      // expando property, so fields missing from the new descriptor are not
+      // taken from the existing one.
+      const expando: Record<string, unknown> = {};
+      const xrayLikeWindow = {
+        Object: {
+          getOwnPropertyDescriptor: (target: object, key: string) =>
+            Object.getOwnPropertyDescriptor(expando, key) ||
+            Object.getOwnPropertyDescriptor(target, key),
+          defineProperty: (
+            target: object,
+            key: string,
+            desc: PropertyDescriptor,
+          ) => {
+            try {
+              Object.defineProperty(expando, key, desc);
+            } catch {
+              // Xray silently ignores redefining a non-configurable expando
+            }
+            return target;
+          },
+        },
+      } as unknown as Window;
+      const input = document.createElement('input');
+      input.value = 'hello';
+
+      hookSetter(
+        HTMLInputElement.prototype,
+        'value',
+        { set: () => undefined },
+        false,
+        xrayLikeWindow,
+      );
+      const hooked = Object.getOwnPropertyDescriptor(expando, 'value')!;
+      expect(hooked.get?.call(input)).toBe('hello');
+      hooked.set!.call(input, 'world');
+      expect(input.value).toBe('world');
+      // must stay configurable so the resetter can put the original back
+      expect(hooked.configurable).toBe(true);
     });
   });
 });
