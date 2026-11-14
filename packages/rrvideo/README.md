@@ -29,6 +29,14 @@ Running this command will output a `rrvideo-output.webm` file in the current wor
 rrvideo --input PATH_TO_YOUR_RRWEB_EVENTS_FILE --output OUTPUT_PATH
 ```
 
+### Render an MP4
+
+```shell
+rrvideo --input PATH_TO_YOUR_RRWEB_EVENTS_FILE --output session.mp4 --fps 60
+```
+
+An `.mp4` output is rendered frame by frame (with [ffmpeg](https://ffmpeg.org/) on your PATH) rather than recorded in real time, so it is exactly `--fps` frames per second and comes out the same on a slow or busy machine.
+
 ### Config the replay
 
 You can prepare a rrvideo config file and pass it to CLI.
