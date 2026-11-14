@@ -1,5 +1,5 @@
 import { useRef, type KeyboardEvent } from 'react';
-import { Box, Flex, Grid, Link, Text } from '@chakra-ui/react';
+import { Box, Flex, Grid, Link } from '@chakra-ui/react';
 import type { IconType } from 'react-icons';
 import { FiArrowUpRight, FiCloud, FiCloudOff } from 'react-icons/fi';
 import { RecorderStatus, type RecordingKind } from '~/types';
@@ -7,20 +7,17 @@ import type { RecorderControls } from './PopupParts';
 
 /**
  * The Cloud half of the switch.
- * selectable: the account is ready; its dashboard link sits under it.
- * sign-up-first: it can be picked, but a pitch to sign up replaces recording.
- * unavailable: it cannot be picked, and `hint` says why (for example "setting up").
+ * selectable: an organization is connected; its dashboard link sits under it.
+ * connect-first: it can be picked, but a pitch to connect replaces recording.
  */
 export type CloudSegment =
   | { name: 'selectable'; dashboardUrl: string }
-  | { name: 'sign-up-first' }
-  | { name: 'unavailable'; hint: string };
+  | { name: 'connect-first' };
 
 type Option = {
   mode: RecordingKind;
   label: string;
   Icon: IconType;
-  available: boolean;
 };
 
 // The unchosen side's link stays readable: white at 55% on navy is over 5:1.
@@ -45,24 +42,14 @@ export function ModeSwitch({
   onOpenSessions: () => void;
 }) {
   const options: Option[] = [
-    {
-      mode: 'cloud',
-      label: 'Cloud',
-      Icon: FiCloud,
-      available: cloud.name !== 'unavailable',
-    },
-    {
-      mode: 'offline',
-      label: 'Offline',
-      Icon: FiCloudOff,
-      available: true,
-    },
+    { mode: 'cloud', label: 'Cloud', Icon: FiCloud },
+    { mode: 'offline', label: 'Offline', Icon: FiCloudOff },
   ];
   const refs = useRef<Record<RecordingKind, HTMLButtonElement | null>>({
     cloud: null,
     offline: null,
   });
-  const pickable = options.filter((o) => o.available && !disabled);
+  const pickable = disabled ? [] : options;
 
   const onKeyDown = (event: KeyboardEvent) => {
     const step = {
@@ -91,9 +78,9 @@ export function ModeSwitch({
         p="3px"
         onKeyDown={onKeyDown}
       >
-        {options.map(({ mode, label, Icon, available }) => {
+        {options.map(({ mode, label, Icon }) => {
           const checked = shown === mode;
-          const off = disabled || !available;
+          const off = disabled;
           return (
             <Flex
               key={mode}
@@ -126,11 +113,6 @@ export function ModeSwitch({
             >
               <Icon aria-hidden="true" size="15px" />
               {label}
-              {mode === 'cloud' && cloud.name === 'unavailable' && (
-                <Text as="span" fontSize="11px" fontWeight={500}>
-                  · {cloud.hint}
-                </Text>
-              )}
             </Flex>
           );
         })}
@@ -165,8 +147,8 @@ export function ModeSwitch({
   );
 }
 
-/** The signed-out switch: Cloud can be picked and then pitches sign-up. */
-export function SignedOutSwitch({
+/** The switch with nothing connected: Cloud can be picked and then pitches. */
+export function NotConnectedSwitch({
   recorder,
   shown,
   onChoose,
@@ -180,7 +162,7 @@ export function SignedOutSwitch({
   return (
     <ModeSwitch
       shown={shown}
-      cloud={{ name: 'sign-up-first' }}
+      cloud={{ name: 'connect-first' }}
       disabled={recorder.status !== RecorderStatus.IDLE}
       onChoose={onChoose}
       onOpenSessions={onOpenSessions}

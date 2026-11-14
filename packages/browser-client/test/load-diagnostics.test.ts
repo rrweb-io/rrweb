@@ -82,9 +82,6 @@ vi.mock('websocket-ts', () => {
   }
 
   class Websocket {
-    // An open socket: send() delivers straight away, so stop() sends the
-    // close event over it instead of POSTing to a server that is not there.
-    readyState = 1;
     send = mockState.send;
     close = vi.fn();
     addEventListener = vi.fn();

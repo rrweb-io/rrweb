@@ -10,26 +10,17 @@ import {
   Text,
 } from '@chakra-ui/react';
 import PageChrome, { SESSIONS_HREF } from '~/components/PageChrome';
-import { OrgSwitchNotice } from '~/cloud/OrgSwitchNotice';
-import { OrgPicker, type OrgOption, type OrgSwitch } from '~/cloud/OrgPicker';
-import { SetupSlow, SettingUpText } from '~/popup/SettingUpView';
 import type { CloudAccount } from '~/types';
 
-/** Firefox has no sign-in, so only the offline lines are shown there. */
+/** Firefox has no Cloud, so only the offline lines are shown there. */
 export type AccountOffer =
   | { name: 'unavailable' }
-  | { name: 'available'; signUpUrl: string; logInUrl: string };
+  | { name: 'available'; connectUrl: string; signUpUrl: string };
 
-/** The Account page in the page chrome; `end` is the right of the bar. */
-export function AccountPage({
-  end,
-  children,
-}: {
-  end?: ReactNode;
-  children: ReactNode;
-}) {
+/** The Account page in the page chrome. */
+export function AccountPage({ children }: { children: ReactNode }) {
   return (
-    <PageChrome current="account" end={end}>
+    <PageChrome current="account">
       <Heading as="h1" fontSize="24px" fontWeight={600} mb="24px">
         Account
       </Heading>
@@ -54,23 +45,27 @@ export function SessionListLink() {
   );
 }
 
-export function SignedOutAccount({ offer }: { offer: AccountOffer }) {
+export function NotConnectedAccount({ offer }: { offer: AccountOffer }) {
   return (
     <Column>
       {offer.name === 'available' && (
         <>
           <Button
             as="a"
-            href={offer.signUpUrl}
+            href={offer.connectUrl}
             target="_blank"
             rel="noopener noreferrer"
             variant="signup"
             px="32px"
           >
-            Sign up free
+            Connect your rrweb account
           </Button>
-          <Link href={offer.logInUrl} target="_blank" rel="noopener noreferrer">
-            Log in
+          <Link
+            href={offer.signUpUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Create a free account
           </Link>
         </>
       )}
@@ -82,42 +77,14 @@ export function SignedOutAccount({ offer }: { offer: AccountOffer }) {
   );
 }
 
-export function SettingUpAccount({
-  slow,
-  dashboardUrl,
-  onTryAgain,
-}: {
-  slow: boolean;
-  dashboardUrl: string;
-  onTryAgain: () => void;
-}) {
-  return (
-    <Box maxW="340px">
-      <SettingUpText />
-      {slow && (
-        <SetupSlow dashboardUrl={dashboardUrl} onTryAgain={onTryAgain} />
-      )}
-    </Box>
-  );
-}
-
-export function SignedInAccount({
+export function ConnectedAccount({
   account,
-  orgs,
-  orgSwitch,
-  dashboardUrl,
-  pickerDisabled,
-  onPickOrg,
-  onLogOut,
+  connectUrl,
+  onDisconnect,
 }: {
   account: CloudAccount;
-  orgs: OrgOption[];
-  orgSwitch: OrgSwitch;
-  dashboardUrl: string;
-  /** True while a recording runs, so the organization cannot change under it. */
-  pickerDisabled: boolean;
-  onPickOrg: (org: OrgOption) => void;
-  onLogOut: () => void;
+  connectUrl: string;
+  onDisconnect: () => void;
 }) {
   return (
     <Column>
@@ -125,20 +92,15 @@ export function SignedInAccount({
         <Text fontSize="12px" color="brand.muted" mb="6px">
           Organization
         </Text>
-        <OrgPicker
-          account={account}
-          orgs={orgs}
-          disabled={orgSwitch.name === 'switching' || pickerDisabled}
-          onPick={onPickOrg}
-        />
-        <OrgSwitchNotice
-          orgSwitch={orgSwitch}
-          dashboardUrl={dashboardUrl}
-          mt="8px"
-        />
+        <Text fontSize="16px" fontWeight={600}>
+          {account.orgName}
+        </Text>
       </Box>
-      <Button variant="quiet" onClick={onLogOut}>
-        Log out
+      <Link href={connectUrl} target="_blank" rel="noopener noreferrer">
+        Change organization
+      </Link>
+      <Button variant="quiet" onClick={onDisconnect}>
+        Disconnect
       </Button>
       <SessionListLink />
     </Column>

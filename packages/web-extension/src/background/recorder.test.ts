@@ -1,16 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { eventWithTime } from '@rrweb/types';
-import { createRecorder, KEEPALIVE_INTERVAL_MS } from './recorder';
+import {
+  createRecorder,
+  KEEPALIVE_INTERVAL_MS,
+  START_TIMEOUT_ERROR,
+  uploadFailedMessage,
+} from './recorder';
 import { createBadge, BADGE_COLORS } from './badge';
 import type { RecorderDeps } from './recorder';
 import { ACCOUNT_CHANGED_ERROR, createSink } from './sinks';
+import type { SinkTarget } from './sinks';
 import { watchRecordedPages, RECORDED_PAGE_PORT } from './pageWatch';
 import { RecorderStatus, ServiceName } from '~/types';
-import type { DeliveryResult } from '@rrweb/browser-client';
-import type { CloudAccount, StartRequest } from '~/types';
+import type { CloudAccount, Session, ShareResult, StartRequest } from '~/types';
 
 const account: CloudAccount = {
-  userId: 'user_1',
   orgId: 'org_1',
   orgName: 'Acme',
   publicKey: 'pk_acme',
@@ -19,31 +23,30 @@ const event = (timestamp: number) => ({ timestamp } as eventWithTime);
 const typed = (type: number, timestamp: number) =>
   ({ type, timestamp } as eventWithTime);
 
+const SESSION_URL = 'chrome-extension://abc/pages/index.html#/session/sess-1';
+const DASHBOARD_URL = 'https://app.rrweb.com/recordings/rec-1';
+const SHARED: ShareResult = { name: 'shared', recordingId: 'rec-1' };
+
 function setup(initial: CloudAccount | null) {
-  const transport = {
-    send: vi.fn((sent: eventWithTime) => void sent),
-    flush: vi.fn(),
-    disconnect: vi.fn(),
-    stop: vi.fn(
-      (): Promise<DeliveryResult> => Promise.resolve({ delivered: true }),
-    ),
-  };
-  const createTransport = vi.fn(
-    (options: { publicApiKey: string; meta: Record<string, unknown> }) => {
-      void options;
-      return transport;
-    },
+  const addSession = vi.fn((_session: Session, _events: eventWithTime[]) =>
+    Promise.resolve(),
   );
-  const addSession = vi.fn(() => Promise.resolve());
-  const keepFailedUpload = vi.fn(() => Promise.resolve());
+  const uploadSession = vi.fn(
+    (_sessionId: string, _account: CloudAccount): Promise<ShareResult> =>
+      Promise.resolve(SHARED),
+  );
+  const deleteSession = vi.fn((_sessionId: string) => Promise.resolve());
   const sinkDeps = {
-    createTransport,
     addSession,
-    keepFailedUpload,
-    randomId: () => 'rec-1',
+    uploadSession,
+    deleteSession,
+    randomId: () => 'sess-1',
     getURL: (path: string) => `chrome-extension://abc/${path}`,
     recorderVersion: '2.2.2',
   };
+  /** Every sink the recorder made, and every event it was given. */
+  const sinks: SinkTarget[] = [];
+  const added = vi.fn((sent: eventWithTime) => void sent);
   const state = {
     account: initial,
     now: 1000,
@@ -51,6 +54,8 @@ function setup(initial: CloudAccount | null) {
     currentTab: 1,
     /** Resolves when the tab answers StopRecord; immediately if unset. */
     stopReply: undefined as Promise<void> | undefined,
+    /** The page never confirms StartRecord, and the start limit runs out. */
+    startHangs: false,
     titles: { 1: 'Page title' } as Record<number, string | undefined>,
     /** Runs inside the tab's StartRecord reply, like rrweb's first events. */
     emitOnStart: undefined as (() => void) | undefined,
@@ -76,6 +81,8 @@ function setup(initial: CloudAccount | null) {
         state.emitOnStart?.();
       }
       if (state.refuse) return Promise.reject(new Error('cannot record here'));
+      if (state.startHangs && service === ServiceName.StartRecord)
+        return new Promise(() => undefined);
       if (service === ServiceName.StopRecord)
         return (state.stopReply ?? Promise.resolve()).then(() => ({
           endTimestamp: state.now,
@@ -106,7 +113,12 @@ function setup(initial: CloudAccount | null) {
   });
   const deps: RecorderDeps = {
     onStatus: badge.sync,
-    getAccount: () => Promise.resolve(state.account),
+    getConnection: () =>
+      Promise.resolve(
+        state.account
+          ? { name: 'connected', account: state.account }
+          : { name: 'not-connected' },
+      ),
     getTabUrl: (tabId) => Promise.resolve(state.tabs[tabId]),
     getCurrentTabId: () => Promise.resolve(state.currentTab),
     injectRecorder,
@@ -121,7 +133,16 @@ function setup(initial: CloudAccount | null) {
       return Promise.resolve();
     },
     onSessionUpdated: vi.fn(),
-    createSink: (target) => createSink(target, sinkDeps),
+    createSink: (target) => {
+      sinks.push(target);
+      const sink = createSink(target, sinkDeps);
+      const add = sink.add;
+      sink.add = (e) => {
+        added(e);
+        add(e);
+      };
+      return sink;
+    },
     pingBrowser: keepalive.ping,
     every: (ms, tick) => {
       keepalive.ms = ms;
@@ -131,6 +152,9 @@ function setup(initial: CloudAccount | null) {
     },
     now: () => state.now,
     newToken: () => `token-${++state.tokens}`,
+    // The start limit runs out only in tests that make the page hang.
+    after: () =>
+      state.startHangs ? Promise.resolve() : new Promise(() => undefined),
   };
   const real = createRecorder(deps);
   /**
@@ -142,11 +166,7 @@ function setup(initial: CloudAccount | null) {
     ...real,
     start: (
       request: StartRequest = state.account
-        ? {
-            mode: 'cloud',
-            userId: state.account.userId,
-            orgId: state.account.orgId,
-          }
+        ? { mode: 'cloud', orgId: state.account.orgId }
         : { mode: 'offline' },
     ) => real.start(request),
     add: (
@@ -197,10 +217,12 @@ function setup(initial: CloudAccount | null) {
     log,
     injectRecorder,
     state,
-    transport,
-    createTransport,
+    sinks,
+    added,
     addSession,
-    keepFailedUpload,
+    uploadSession,
+    deleteSession,
+    onSessionUpdated: deps.onSessionUpdated as ReturnType<typeof vi.fn>,
     opened,
     keepalive,
     requestToTab,
@@ -225,18 +247,41 @@ describe('createRecorder', () => {
     });
   });
 
+  it('gives up a start the page never confirms, and frees the record button', async () => {
+    const { recorder, state, requestToTab, sinks, keepalive } = setup(account);
+    state.startHangs = true;
+    await recorder.start();
+    expect(sinks).toEqual([]);
+    expect(keepalive.ticks).toHaveLength(0);
+    expect(recorder.getStatus()).toMatchObject({
+      status: RecorderStatus.IDLE,
+      errorMessage: START_TIMEOUT_ERROR,
+    });
+    // the page is told to stop in case it starts late
+    expect(
+      requestToTab.mock.calls.some((c) => c[1] === ServiceName.StopRecord),
+    ).toBe(true);
+    state.startHangs = false;
+    await recorder.start();
+    expect(recorder.getStatus().status).toBe(RecorderStatus.RECORDING);
+  });
+
+  it('keeps the organization a cloud recording started with in its status', async () => {
+    const cloudRun = setup(account);
+    await cloudRun.recorder.start();
+    expect(cloudRun.recorder.getStatus().uploadsTo).toBe('Acme');
+    const offlineRun = setup(null);
+    await offlineRun.recorder.start();
+    expect(offlineRun.recorder.getStatus().uploadsTo).toBeUndefined();
+  });
+
   it('starts nothing and reports the error when the tab cannot be injected', async () => {
-    const {
-      recorder,
-      injectRecorder,
-      requestToTab,
-      createTransport,
-      keepalive,
-    } = setup(account);
+    const { recorder, injectRecorder, requestToTab, sinks, keepalive } =
+      setup(account);
     injectRecorder.mockRejectedValueOnce(new Error('Cannot access this page'));
     await recorder.start();
     expect(requestToTab).not.toHaveBeenCalled();
-    expect(createTransport).not.toHaveBeenCalled();
+    expect(sinks).toEqual([]);
     expect(keepalive.ticks).toHaveLength(0);
     expect(recorder.getStatus()).toMatchObject({
       status: RecorderStatus.IDLE,
@@ -248,7 +293,7 @@ describe('createRecorder', () => {
   });
 
   it('does not move the recording when another tab activates', async () => {
-    const { recorder, state, transport, browser, settle, log, opened } =
+    const { recorder, state, added, browser, settle, log, opened } =
       setup(account);
     browser.openPage(1);
     await recorder.start();
@@ -268,16 +313,15 @@ describe('createRecorder', () => {
       status: RecorderStatus.RECORDING,
       activeTabId: 1,
     });
-    expect(transport.send.mock.calls.map((c) => c[0].timestamp)).toEqual([
-      1, 2,
-    ]);
+    expect(added.mock.calls.map((c) => c[0].timestamp)).toEqual([1, 2]);
     expect(opened).toEqual([]);
   });
 
   it('finishes like Stop when the recorded tab navigates (cloud)', async () => {
     const {
       recorder,
-      transport,
+      added,
+      uploadSession,
       browser,
       settle,
       opened,
@@ -289,9 +333,9 @@ describe('createRecorder', () => {
     recorder.add(event(1));
     navigateAway();
     await settle();
-    expect(transport.send).toHaveBeenCalledOnce();
-    expect(transport.stop).toHaveBeenCalledWith(true);
-    expect(opened).toEqual(['https://app.rrweb.com/recordings/rec-1']);
+    expect(added).toHaveBeenCalledOnce();
+    expect(uploadSession).toHaveBeenCalledWith('sess-1', account);
+    expect(opened).toEqual([DASHBOARD_URL]);
     expect(keepalive.cancel).toHaveBeenCalledOnce();
     expect(recorder.getStatus().status).toBe(RecorderStatus.IDLE);
     // the old document is gone, so nothing is asked of it
@@ -315,15 +359,20 @@ describe('createRecorder', () => {
     ];
     expect(session.name).toBe('Page title');
     expect(events).toEqual([event(1)]);
-    expect(opened).toEqual([
-      'chrome-extension://abc/pages/index.html#/session/rec-1',
-    ]);
+    expect(opened).toEqual([SESSION_URL]);
     expect(keepalive.cancel).toHaveBeenCalledOnce();
   });
 
   it('finishes like Stop when the recorded tab closes', async () => {
-    const { recorder, transport, browser, settle, opened, keepalive } =
-      setup(account);
+    const {
+      recorder,
+      added,
+      uploadSession,
+      browser,
+      settle,
+      opened,
+      keepalive,
+    } = setup(account);
     const pageGone = browser.openPage(1);
     await recorder.start();
     recorder.add(event(1));
@@ -331,10 +380,10 @@ describe('createRecorder', () => {
     browser.closeTab(1);
     pageGone();
     await settle();
-    expect(transport.send).toHaveBeenCalledOnce();
-    expect(transport.stop).toHaveBeenCalledOnce();
-    expect(transport.stop).toHaveBeenCalledWith(true);
-    expect(opened).toEqual(['https://app.rrweb.com/recordings/rec-1']);
+    expect(added).toHaveBeenCalledOnce();
+    expect(uploadSession).toHaveBeenCalledOnce();
+    expect(uploadSession).toHaveBeenCalledWith('sess-1', account);
+    expect(opened).toEqual([DASHBOARD_URL]);
     expect(keepalive.cancel).toHaveBeenCalledOnce();
     expect(recorder.getStatus().status).toBe(RecorderStatus.IDLE);
   });
@@ -348,13 +397,11 @@ describe('createRecorder', () => {
     browser.closeTab(1);
     await settle();
     expect(addSession).toHaveBeenCalledOnce();
-    expect(opened).toEqual([
-      'chrome-extension://abc/pages/index.html#/session/rec-1',
-    ]);
+    expect(opened).toEqual([SESSION_URL]);
   });
 
   it('ignores same-document navigation', async () => {
-    const { recorder, state, transport, browser, settle, opened } =
+    const { recorder, state, added, uploadSession, browser, settle, opened } =
       setup(account);
     // a hash change or pushState keeps the document, so its port stays open
     browser.openPage(1);
@@ -371,15 +418,20 @@ describe('createRecorder', () => {
       activeTabId: 1,
     });
     expect(opened).toEqual([]);
-    expect(transport.stop).not.toHaveBeenCalled();
-    expect(transport.send.mock.calls.map((c) => c[0].timestamp)).toEqual([
-      1, 2,
-    ]);
+    expect(uploadSession).not.toHaveBeenCalled();
+    expect(added.mock.calls.map((c) => c[0].timestamp)).toEqual([1, 2]);
   });
 
   it('finishes once when the recorded tab closes while Stop is running', async () => {
-    const { recorder, state, transport, browser, settle, opened, addSession } =
-      setup(null);
+    const {
+      recorder,
+      state,
+      uploadSession,
+      browser,
+      settle,
+      opened,
+      addSession,
+    } = setup(null);
     let answerStop = () => undefined as void;
     state.stopReply = new Promise<void>((r) => (answerStop = r));
     browser.openPage(1);
@@ -393,12 +445,13 @@ describe('createRecorder', () => {
     await settle();
     expect(addSession).toHaveBeenCalledOnce();
     expect(opened).toHaveLength(1);
-    expect(transport.stop).not.toHaveBeenCalled();
+    expect(uploadSession).not.toHaveBeenCalled();
     expect(recorder.getStatus().status).toBe(RecorderStatus.IDLE);
   });
 
   it('leaves the next recording alone when a Stop that overlapped the page going away resumes', async () => {
-    const { recorder, state, transport, browser, settle } = setup(account);
+    const { recorder, state, added, uploadSession, browser, settle } =
+      setup(account);
     let answerStop = () => undefined as void;
     state.stopReply = new Promise<void>((r) => (answerStop = r));
     const firstPageGone = browser.openPage(1);
@@ -406,7 +459,7 @@ describe('createRecorder', () => {
     const stopping = recorder.stop(); // waits for the tab to answer StopRecord
     firstPageGone(); // finishes the first recording meanwhile
     await settle();
-    expect(transport.stop).toHaveBeenCalledOnce();
+    expect(uploadSession).toHaveBeenCalledOnce();
     state.stopReply = undefined;
     browser.openPage(1);
     await recorder.start();
@@ -418,8 +471,8 @@ describe('createRecorder', () => {
       status: RecorderStatus.RECORDING,
       activeTabId: 1,
     });
-    expect(transport.stop).toHaveBeenCalledOnce();
-    expect(transport.send.mock.calls.map((c) => c[0].timestamp)).toEqual([2]);
+    expect(uploadSession).toHaveBeenCalledOnce();
+    expect(added.mock.calls.map((c) => c[0].timestamp)).toEqual([2]);
   });
 
   it('ignores a pause reply that arrives after the recorded tab closed', async () => {
@@ -441,8 +494,16 @@ describe('createRecorder', () => {
   });
 
   it('finishes a start whose page went away before the tab confirmed', async () => {
-    const { recorder, state, browser, transport, opened, keepalive, settle } =
-      setup(account);
+    const {
+      recorder,
+      state,
+      browser,
+      added,
+      uploadSession,
+      opened,
+      keepalive,
+      settle,
+    } = setup(account);
     const navigateAway = browser.openPage(1);
     state.emitOnStart = () => {
       recorder.add(typed(4, 10));
@@ -450,15 +511,15 @@ describe('createRecorder', () => {
     };
     await recorder.start();
     await settle();
-    expect(transport.send.mock.calls.map((c) => c[0])).toEqual([typed(4, 10)]);
-    expect(transport.stop).toHaveBeenCalledWith(true);
-    expect(opened).toEqual(['https://app.rrweb.com/recordings/rec-1']);
+    expect(added.mock.calls.map((c) => c[0])).toEqual([typed(4, 10)]);
+    expect(uploadSession).toHaveBeenCalledWith('sess-1', account);
+    expect(opened).toEqual([DASHBOARD_URL]);
     expect(keepalive.cancel).toHaveBeenCalledOnce();
     expect(recorder.getStatus().status).toBe(RecorderStatus.IDLE);
   });
 
-  it('does not rewrite sent cloud events after a pause', async () => {
-    const { recorder, state, transport } = setup(account);
+  it('closes the pause gap in a cloud recording too', async () => {
+    const { recorder, state, addSession } = setup(account);
     await recorder.start();
     const first = event(100);
     recorder.add(first);
@@ -466,8 +527,10 @@ describe('createRecorder', () => {
     await recorder.pauseClicked(); // paused at 5000
     state.now = 8000; // 3000ms paused
     await recorder.resumeClicked();
-    expect(first.timestamp).toBe(100);
-    expect(transport.send).toHaveBeenCalledOnce();
+    await recorder.stop();
+    expect(addSession.mock.calls[0][1].map((e) => e.timestamp)).toEqual([
+      100 + 3000,
+    ]);
   });
 
   it('keeps the offline pause timestamp shift', async () => {
@@ -484,22 +547,22 @@ describe('createRecorder', () => {
     expect(addSession).toHaveBeenCalledOnce();
   });
 
-  it('keeps the started transport when the account changes mid-recording', async () => {
-    const { recorder, state, createTransport } = setup(account);
+  it('uploads to the account it started with when the account changes mid-recording', async () => {
+    const { recorder, state, uploadSession } = setup(account);
     await recorder.start();
     state.account = { ...account, publicKey: 'pk_other' };
     await recorder.pauseClicked();
     await recorder.resumeClicked();
     recorder.add(event(1));
-    expect(createTransport).toHaveBeenCalledOnce();
-    expect(createTransport.mock.calls[0][0].publicApiKey).toBe('pk_acme');
+    await recorder.stop();
+    expect(uploadSession).toHaveBeenCalledWith('sess-1', account);
   });
 
-  it('opens no transport and records the error when the tab refuses', async () => {
-    const { recorder, state, createTransport } = setup(account);
+  it('makes no sink and records the error when the tab refuses', async () => {
+    const { recorder, state, sinks } = setup(account);
     state.refuse = true;
     await recorder.start();
-    expect(createTransport).not.toHaveBeenCalled();
+    expect(sinks).toEqual([]);
     expect(recorder.getStatus()).toMatchObject({
       status: RecorderStatus.IDLE,
       errorMessage: 'cannot record here',
@@ -507,8 +570,7 @@ describe('createRecorder', () => {
   });
 
   it('ignores a second start while the first is starting', async () => {
-    const { recorder, requestToTab, createTransport, keepalive, saved } =
-      setup(account);
+    const { recorder, requestToTab, sinks, keepalive, saved } = setup(account);
     const first = recorder.start();
     expect(recorder.getStatus().status).toBe(RecorderStatus.STARTING);
     const second = recorder.start();
@@ -516,7 +578,7 @@ describe('createRecorder', () => {
     expect(
       requestToTab.mock.calls.filter((c) => c[1] === ServiceName.StartRecord),
     ).toHaveLength(1);
-    expect(createTransport).toHaveBeenCalledOnce();
+    expect(sinks).toHaveLength(1);
     expect(keepalive.ticks).toHaveLength(1);
     expect(saved).toContain(RecorderStatus.STARTING);
     expect(recorder.getStatus().status).toBe(RecorderStatus.RECORDING);
@@ -541,49 +603,56 @@ describe('createRecorder', () => {
     expect(recorder.getStatus().status).toBe(RecorderStatus.RECORDING);
   });
 
-  it('opens the dashboard recording when a cloud recording stops', async () => {
-    const { recorder, transport, opened } = setup(account);
+  it('stores a cloud recording, uploads it and opens it in the dashboard', async () => {
+    const { recorder, addSession, uploadSession, deleteSession, opened } =
+      setup(account);
     await recorder.start();
+    recorder.add(event(1));
     await recorder.stop();
-    expect(transport.stop).toHaveBeenCalledWith(true);
-    expect(opened).toEqual(['https://app.rrweb.com/recordings/rec-1']);
+    expect(addSession.mock.calls[0][1]).toEqual([event(1)]);
+    expect(uploadSession).toHaveBeenCalledWith('sess-1', account);
+    expect(deleteSession).toHaveBeenCalledWith('sess-1');
+    expect(opened).toEqual([DASHBOARD_URL]);
+    expect(recorder.getStatus().errorMessage).toBeUndefined();
   });
 
-  it('opens nothing and keeps the events when the cloud upload fails', async () => {
-    const { recorder, transport, opened, keepFailedUpload } = setup(account);
-    transport.stop.mockResolvedValueOnce({
-      delivered: false,
-      error: new Error('Failed to fetch'),
-      unsent: ['{"e":1}'],
+  it('keeps a cloud recording that did not upload in Offline sessions and says so', async () => {
+    const { recorder, uploadSession, deleteSession, opened, onSessionUpdated } =
+      setup(account);
+    uploadSession.mockResolvedValueOnce({
+      name: 'share-failed',
+      errorMessage: 'Could not reach rrweb: Failed to fetch',
     });
     await recorder.start();
     recorder.add(event(1));
     await recorder.stop();
-    expect(opened).toEqual([]);
-    expect(keepFailedUpload).toHaveBeenCalledWith({
-      recordingId: 'rec-1',
-      userId: 'user_1',
-      publicKey: 'pk_acme',
-      title: 'Page title',
-      unsent: ['{"e":1}'],
+    expect(deleteSession).not.toHaveBeenCalled();
+    expect(opened).toEqual([SESSION_URL]);
+    expect(onSessionUpdated).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'sess-1', name: 'Page title' }),
+    );
+    expect(recorder.getStatus()).toMatchObject({
+      status: RecorderStatus.IDLE,
+      errorMessage: uploadFailedMessage(
+        'Could not reach rrweb: Failed to fetch',
+      ),
     });
-    expect(recorder.getStatus().status).toBe(RecorderStatus.IDLE);
   });
 
   it('records offline when the popup asked for offline, even with an account stored', async () => {
-    const { recorder, createTransport, addSession } = setup(account);
+    const { recorder, uploadSession, addSession } = setup(account);
     await recorder.start({ mode: 'offline' });
     recorder.add(event(1));
     await recorder.stop();
-    expect(createTransport).not.toHaveBeenCalled();
+    expect(uploadSession).not.toHaveBeenCalled();
     expect(addSession).toHaveBeenCalledOnce();
   });
 
   it('refuses a cloud start for an organization that is no longer stored', async () => {
-    const { recorder, injectRecorder, createTransport } = setup(account);
-    await recorder.start({ mode: 'cloud', userId: 'user_1', orgId: 'org_2' });
+    const { recorder, injectRecorder, sinks } = setup(account);
+    await recorder.start({ mode: 'cloud', orgId: 'org_2' });
     expect(injectRecorder).not.toHaveBeenCalled();
-    expect(createTransport).not.toHaveBeenCalled();
+    expect(sinks).toEqual([]);
     expect(recorder.getStatus()).toMatchObject({
       status: RecorderStatus.IDLE,
       errorMessage: ACCOUNT_CHANGED_ERROR,
@@ -591,7 +660,7 @@ describe('createRecorder', () => {
   });
 
   it('accepts events only from the recorded tab, top frame and recording', async () => {
-    const { recorder, transport, state } = setup(account);
+    const { recorder, added, state } = setup(account);
     await recorder.start();
     const token = state.page.token;
     recorder.add(event(1)); // the recorded page
@@ -600,22 +669,31 @@ describe('createRecorder', () => {
     recorder.add(event(4), { token: 'other-recording' });
     recorder.add(event(5), { tabId: undefined }); // not sent from a tab
     recorder.add(event(6), { token });
-    expect(transport.send.mock.calls.map((c) => c[0].timestamp)).toEqual([
-      1, 6,
-    ]);
+    expect(added.mock.calls.map((c) => c[0].timestamp)).toEqual([1, 6]);
   });
 
   it("drops a late event from the previous recording's page", async () => {
-    const { recorder, transport, state } = setup(account);
+    const { recorder, added, state } = setup(account);
     await recorder.start();
     const firstToken = state.page.token;
     await recorder.stop();
-    transport.send.mockClear();
+    added.mockClear();
     await recorder.start(); // same tab, new recording
     expect(state.page.token).not.toBe(firstToken);
     recorder.add(event(1), { token: firstToken });
     recorder.add(event(2));
-    expect(transport.send.mock.calls.map((c) => c[0].timestamp)).toEqual([2]);
+    expect(added.mock.calls.map((c) => c[0].timestamp)).toEqual([2]);
+  });
+
+  it('keeps the starting organization through a pause and resume', async () => {
+    const { recorder } = setup(account);
+    await recorder.start();
+    await recorder.pauseClicked();
+    await recorder.resumeClicked();
+    expect(recorder.getStatus()).toMatchObject({
+      status: RecorderStatus.RECORDING,
+      uploadsTo: 'Acme',
+    });
   });
 
   it('resumes with the same recording token', async () => {
@@ -634,16 +712,14 @@ describe('createRecorder', () => {
   });
 
   it('opens the offline player when an offline recording stops', async () => {
-    const { recorder, opened, createTransport } = setup(null);
+    const { recorder, opened, uploadSession } = setup(null);
     await recorder.start();
     await recorder.stop();
-    expect(createTransport).not.toHaveBeenCalled();
-    expect(opened).toEqual([
-      'chrome-extension://abc/pages/index.html#/session/rec-1',
-    ]);
+    expect(uploadSession).not.toHaveBeenCalled();
+    expect(opened).toEqual([SESSION_URL]);
   });
-  it('keeps the worker alive and flushes the cloud upload while recording', async () => {
-    const { recorder, transport, keepalive } = setup(account);
+  it('keeps the worker alive while recording', async () => {
+    const { recorder, added, uploadSession, keepalive } = setup(account);
     await recorder.start();
     expect(keepalive.ticks).toHaveLength(1);
     expect(keepalive.ms).toBe(KEEPALIVE_INTERVAL_MS);
@@ -651,88 +727,89 @@ describe('createRecorder', () => {
     keepalive.ticks[0]();
     keepalive.ticks[0]();
     expect(keepalive.ping).toHaveBeenCalledTimes(2);
-    expect(transport.flush).toHaveBeenCalledTimes(2);
     // the recording itself keeps working
     recorder.add(event(1));
-    expect(transport.send).toHaveBeenCalledOnce();
+    expect(added).toHaveBeenCalledOnce();
     expect(keepalive.cancel).not.toHaveBeenCalled();
     await recorder.stop();
     expect(keepalive.cancel).toHaveBeenCalledOnce();
-    expect(transport.stop).toHaveBeenCalledWith(true);
+    expect(uploadSession).toHaveBeenCalledOnce();
   });
 
-  it('keeps an offline recording alive without a transport', async () => {
-    const { recorder, keepalive, createTransport, addSession } = setup(null);
+  it('keeps an offline recording alive and uploads nothing', async () => {
+    const { recorder, keepalive, uploadSession, addSession } = setup(null);
     await recorder.start();
     expect(keepalive.ticks).toHaveLength(1);
     keepalive.ticks[0]();
     expect(keepalive.ping).toHaveBeenCalledOnce();
-    expect(createTransport).not.toHaveBeenCalled();
     await recorder.stop();
     expect(keepalive.cancel).toHaveBeenCalledOnce();
     expect(addSession).toHaveBeenCalledOnce();
+    expect(uploadSession).not.toHaveBeenCalled();
   });
 
-  it('keeps the worker alive until a slow final upload is delivered', async () => {
-    const { recorder, transport, keepalive, opened, settle } = setup(account);
-    let deliver: (result: DeliveryResult) => void = () => undefined;
-    transport.stop.mockReturnValueOnce(
-      new Promise<DeliveryResult>((resolve) => (deliver = resolve)),
-    );
-    await recorder.start();
-    const stopping = recorder.stop();
-    await settle();
-    expect(recorder.getStatus().status).toBe(RecorderStatus.IDLE);
-    expect(keepalive.cancel).not.toHaveBeenCalled();
-    keepalive.ticks[0]();
-    expect(keepalive.ping).toHaveBeenCalledOnce();
-    deliver({ delivered: true });
-    await stopping;
-    expect(opened).toEqual(['https://app.rrweb.com/recordings/rec-1']);
-    expect(keepalive.cancel).toHaveBeenCalledOnce();
+  it('keeps the worker alive until a slow upload after Stop settles', async () => {
+    for (const outcome of [
+      SHARED,
+      { name: 'share-failed', errorMessage: 'rrweb refused the upload (503)' },
+    ] as ShareResult[]) {
+      const { recorder, uploadSession, keepalive, opened, settle } =
+        setup(account);
+      let settleUpload: (result: ShareResult) => void = () => undefined;
+      uploadSession.mockReturnValueOnce(
+        new Promise<ShareResult>((resolve) => (settleUpload = resolve)),
+      );
+      await recorder.start();
+      const stopping = recorder.stop();
+      await settle();
+      expect(uploadSession).toHaveBeenCalledOnce();
+      expect(recorder.getStatus().status).toBe(RecorderStatus.IDLE);
+      expect(keepalive.cancel).not.toHaveBeenCalled();
+      keepalive.ticks[0]();
+      expect(keepalive.ping).toHaveBeenCalledOnce();
+      settleUpload(outcome);
+      await stopping;
+      expect(opened).toEqual([
+        outcome.name === 'shared' ? DASHBOARD_URL : SESSION_URL,
+      ]);
+      expect(keepalive.cancel).toHaveBeenCalledOnce();
+    }
   });
 
-  it('keeps the worker alive until a failed final upload is kept', async () => {
-    const { recorder, transport, keepalive, keepFailedUpload, settle } =
+  it('keeps the worker alive until the stopped recording is stored', async () => {
+    const { recorder, keepalive, addSession, uploadSession, settle } =
       setup(account);
-    transport.stop.mockResolvedValueOnce({
-      delivered: false,
-      error: new Error('Failed to fetch'),
-      unsent: ['{"e":1}'],
-    });
-    let kept: () => void = () => undefined;
-    keepFailedUpload.mockReturnValueOnce(
-      new Promise<void>((resolve) => (kept = resolve)),
+    let stored: () => void = () => undefined;
+    addSession.mockReturnValueOnce(
+      new Promise<void>((resolve) => (stored = resolve)),
     );
     await recorder.start();
     const stopping = recorder.stop();
     await settle();
-    expect(keepFailedUpload).toHaveBeenCalledOnce();
+    expect(addSession).toHaveBeenCalledOnce();
+    expect(uploadSession).not.toHaveBeenCalled();
     expect(keepalive.cancel).not.toHaveBeenCalled();
-    kept();
+    stored();
     await stopping;
+    expect(uploadSession).toHaveBeenCalledOnce();
     expect(keepalive.cancel).toHaveBeenCalledOnce();
   });
 
-  it('stops the keepalive when keeping a failed upload throws', async () => {
-    const { recorder, transport, keepalive, keepFailedUpload } = setup(account);
-    transport.stop.mockResolvedValueOnce({
-      delivered: false,
-      error: new Error('Failed to fetch'),
-      unsent: ['{"e":1}'],
-    });
-    keepFailedUpload.mockRejectedValueOnce(new Error('quota exceeded'));
+  it('stops the keepalive and reports the error when storing the recording fails', async () => {
+    const { recorder, keepalive, addSession, uploadSession } = setup(account);
+    addSession.mockRejectedValueOnce(new Error('quota exceeded'));
     await recorder.start();
     await recorder.stop();
     expect(recorder.getStatus().errorMessage).toBe('quota exceeded');
+    expect(uploadSession).not.toHaveBeenCalled();
     expect(keepalive.cancel).toHaveBeenCalledOnce();
   });
 
-  it("leaves a new recording's keepalive alone while the last one uploads", async () => {
-    const { recorder, transport, keepalive, settle } = setup(account);
-    let deliver: (result: DeliveryResult) => void = () => undefined;
-    transport.stop.mockReturnValueOnce(
-      new Promise<DeliveryResult>((resolve) => (deliver = resolve)),
+  it("leaves a new recording's keepalive and status alone while the last one uploads", async () => {
+    const { recorder, uploadSession, keepalive, settle } = setup(account);
+    let settleUpload: (result: ShareResult) => void = () => undefined;
+    uploadSession.mockReturnValueOnce(
+      new Promise<ShareResult>((resolve) => (settleUpload = resolve)),
     );
     await recorder.start();
     const stopping = recorder.stop();
@@ -741,9 +818,12 @@ describe('createRecorder', () => {
     expect(recorder.getStatus().status).toBe(RecorderStatus.RECORDING);
     expect(keepalive.ticks).toHaveLength(2);
     expect(keepalive.cancel).not.toHaveBeenCalled();
-    deliver({ delivered: true });
+    settleUpload({ name: 'share-failed', errorMessage: 'offline' });
     await stopping;
     expect(keepalive.cancel.mock.calls).toEqual([[0]]);
+    // the failed upload's message does not land on the new recording
+    expect(recorder.getStatus().status).toBe(RecorderStatus.RECORDING);
+    expect(recorder.getStatus().errorMessage).toBeUndefined();
     await recorder.stop();
     expect(keepalive.cancel.mock.calls).toEqual([[0], [1]]);
   });
@@ -756,7 +836,7 @@ describe('createRecorder', () => {
   });
 
   it("keeps the first page's Meta and FullSnapshot emitted before the tab confirms (cloud)", async () => {
-    const { recorder, state, transport } = setup(account);
+    const { recorder, state, added } = setup(account);
     const meta = typed(4, 10);
     const snapshot = typed(2, 11);
     state.emitOnStart = () => {
@@ -765,7 +845,7 @@ describe('createRecorder', () => {
     };
     await recorder.start();
     recorder.add(typed(3, 12));
-    expect(transport.send.mock.calls.map((c) => c[0])).toEqual([
+    expect(added.mock.calls.map((c) => c[0])).toEqual([
       meta,
       snapshot,
       typed(3, 12),
@@ -788,19 +868,18 @@ describe('createRecorder', () => {
   });
 
   it('drops events buffered during a refused start', async () => {
-    const { recorder, state, transport, createTransport, addSession } =
-      setup(account);
+    const { recorder, state, added, sinks, addSession } = setup(account);
     state.refuse = true;
     state.emitOnStart = () => recorder.add(typed(4, 10));
     await recorder.start();
-    expect(createTransport).not.toHaveBeenCalled();
-    expect(transport.send).not.toHaveBeenCalled();
+    expect(sinks).toEqual([]);
+    expect(added).not.toHaveBeenCalled();
     // the next successful start does not replay the old event
     state.refuse = false;
     state.emitOnStart = undefined;
     await recorder.start();
     recorder.add(typed(3, 20));
-    expect(transport.send.mock.calls.map((c) => c[0])).toEqual([typed(3, 20)]);
+    expect(added.mock.calls.map((c) => c[0])).toEqual([typed(3, 20)]);
     expect(addSession).not.toHaveBeenCalled();
   });
 
@@ -871,8 +950,11 @@ describe('recording badge', () => {
   });
 
   it('clears the badge when the cloud upload fails', async () => {
-    const { recorder, badgeCalls, transport } = setup(account);
-    transport.stop.mockResolvedValueOnce({ delivered: false } as never);
+    const { recorder, badgeCalls, uploadSession } = setup(account);
+    uploadSession.mockResolvedValueOnce({
+      name: 'share-failed',
+      errorMessage: 'offline',
+    });
     await recorder.start();
     await recorder.stop();
     expect(last(badgeCalls)).toBe('clear:1');

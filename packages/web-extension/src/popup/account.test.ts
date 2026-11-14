@@ -1,214 +1,13 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   activeRecording,
-  checkAccount,
-  derivePopupState,
+  notConnectedPanel,
   recordButtonLook,
   recordingNote,
   shownMode,
   parseStoredMode,
-  fetchPublicKey,
-  SETUP_SLOW_AFTER_MS,
 } from './account';
 import { RecorderStatus } from '~/types';
-import type { CloudAccount } from '~/types';
-
-const orgs = [{ id: 'org_1', name: 'Acme' }];
-const account: CloudAccount = {
-  userId: 'user_1',
-  orgId: 'org_1',
-  orgName: 'Acme',
-  publicKey: 'pk_acme',
-};
-const base = {
-  cloudEnabled: true,
-  isSignedIn: true,
-  userId: 'user_1',
-  memberships: { name: 'loaded', list: orgs } as const,
-  account: null,
-  waitingSinceMs: 1000,
-  nowMs: 1000,
-};
-
-describe('derivePopupState', () => {
-  it('is signed-out when not signed in', () => {
-    expect(derivePopupState({ ...base, isSignedIn: false })).toEqual({
-      name: 'signed-out',
-    });
-  });
-
-  it('is signed-out when cloud is disabled even if signed in', () => {
-    expect(derivePopupState({ ...base, cloudEnabled: false, account })).toEqual(
-      { name: 'signed-out' },
-    );
-  });
-
-  it('is setting-up just before the slow threshold', () => {
-    expect(
-      derivePopupState({
-        ...base,
-        nowMs: base.waitingSinceMs + SETUP_SLOW_AFTER_MS - 1,
-      }),
-    ).toEqual({ name: 'setting-up' });
-  });
-
-  it('is setup-slow at exactly waitingSinceMs + 60000', () => {
-    expect(SETUP_SLOW_AFTER_MS).toBe(60000);
-    expect(
-      derivePopupState({ ...base, nowMs: base.waitingSinceMs + 60000 }),
-    ).toEqual({ name: 'setup-slow' });
-  });
-
-  it('is ready with the account and orgs when an account exists', () => {
-    expect(derivePopupState({ ...base, account })).toEqual({
-      name: 'ready',
-      account,
-      orgs,
-    });
-  });
-
-  it('is ready even after the slow threshold once an account exists', () => {
-    expect(derivePopupState({ ...base, account, nowMs: 10_000_000 })).toEqual({
-      name: 'ready',
-      account,
-      orgs,
-    });
-  });
-
-  it('is validating, never ready, while the membership lookup runs', () => {
-    expect(
-      derivePopupState({ ...base, account, memberships: { name: 'loading' } }),
-    ).toEqual({ name: 'validating' });
-  });
-
-  it('is validating while the signed-in user is not known yet', () => {
-    expect(derivePopupState({ ...base, account, userId: null })).toEqual({
-      name: 'validating',
-    });
-  });
-
-  it('is setting-up when the stored account belongs to another user', () => {
-    expect(
-      derivePopupState({ ...base, account: { ...account, userId: 'user_2' } }),
-    ).toEqual({ name: 'setting-up' });
-  });
-
-  it('is setting-up when the stored account has no user', () => {
-    const { userId: _, ...stored } = account;
-    expect(
-      derivePopupState({ ...base, account: stored as CloudAccount }),
-    ).toEqual({ name: 'setting-up' });
-  });
-
-  it('is setting-up when the user is no longer a member of the organization', () => {
-    expect(
-      derivePopupState({
-        ...base,
-        account,
-        memberships: { name: 'loaded', list: [{ id: 'org_9', name: 'Other' }] },
-      }),
-    ).toEqual({ name: 'setting-up' });
-  });
-
-  it('is setting-up when the membership lookup failed', () => {
-    expect(
-      derivePopupState({ ...base, account, memberships: { name: 'failed' } }),
-    ).toEqual({ name: 'setting-up' });
-  });
-});
-
-describe('checkAccount', () => {
-  const input = {
-    userId: 'user_1',
-    memberships: { name: 'loaded', list: orgs } as const,
-  };
-  it('names each state of the stored account', () => {
-    expect(checkAccount({ ...input, account: null })).toBe('no-account');
-    expect(checkAccount({ ...input, account })).toBe('valid');
-    expect(
-      checkAccount({ ...input, account, memberships: { name: 'loading' } }),
-    ).toBe('validating');
-    expect(
-      checkAccount({ ...input, account: { ...account, userId: 'user_2' } }),
-    ).toBe('invalid');
-    expect(
-      checkAccount({ ...input, account, memberships: { name: 'failed' } }),
-    ).toBe('invalid');
-  });
-});
-
-describe('fetchPublicKey', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
-  const stub = (impl: () => Promise<unknown>) => {
-    const fn = vi.fn(impl);
-    vi.stubGlobal('fetch', fn);
-    return fn;
-  };
-  const json = (body: unknown, status = 200) =>
-    Promise.resolve({
-      ok: status >= 200 && status < 300,
-      status,
-      json: () => Promise.resolve(body),
-    });
-
-  it('returns the key and sends the Bearer header to the org route', async () => {
-    const fetchMock = stub(() => json({ success: true, publicKey: 'pk_x' }));
-    await expect(fetchPublicKey('org_1', 'tok_1')).resolves.toEqual({
-      name: 'key',
-      publicKey: 'pk_x',
-    });
-    const [url, init] = fetchMock.mock.calls[0] as unknown as [
-      string,
-      RequestInit,
-    ];
-    expect(url.endsWith('/get-public-key/org_1')).toBe(true);
-    expect(new Headers(init.headers).get('Authorization')).toBe('Bearer tok_1');
-  });
-
-  it.each([401, 403, 404])('reports failed for status %i', async (status) => {
-    stub(() => json({ success: true, publicKey: 'pk_x' }, status));
-    await expect(fetchPublicKey('org_1', 'tok')).resolves.toEqual({
-      name: 'failed',
-    });
-  });
-
-  it('reports failed on a network error', async () => {
-    stub(() => Promise.reject(new TypeError('offline')));
-    await expect(fetchPublicKey('org_1', 'tok')).resolves.toEqual({
-      name: 'failed',
-    });
-  });
-
-  it('reports no-key when the body has no publicKey', async () => {
-    stub(() => json({ success: true }));
-    await expect(fetchPublicKey('org_1', 'tok')).resolves.toEqual({
-      name: 'no-key',
-    });
-  });
-
-  it('reports no-key for an empty publicKey', async () => {
-    stub(() => json({ success: true, publicKey: '' }));
-    await expect(fetchPublicKey('org_1', 'tok')).resolves.toEqual({
-      name: 'no-key',
-    });
-  });
-
-  it('reports failed when the body is not JSON', async () => {
-    stub(() =>
-      Promise.resolve({
-        ok: true,
-        status: 200,
-        json: () => Promise.reject(new SyntaxError('bad')),
-      }),
-    );
-    await expect(fetchPublicKey('org_1', 'tok')).resolves.toEqual({
-      name: 'failed',
-    });
-  });
-});
 
 describe('activeRecording', () => {
   it('does not claim a recording while a start is in flight', () => {
@@ -225,53 +24,48 @@ describe('activeRecording', () => {
 });
 
 describe('recordingNote', () => {
-  it('names the organization a cloud recording uploads to', () => {
-    expect(recordingNote('cloud', { name: 'signed-in', orgName: 'Acme' })).toBe(
-      'Uploads to Acme. Form fields are masked.',
-    );
-    expect(recordingNote('cloud', { name: 'setting-up' })).toBe(
-      'Uploads to rrweb. Form fields are masked.',
+  it('names the organization a cloud recording uploads to, and when', () => {
+    expect(recordingNote('cloud', { name: 'connected', orgName: 'Acme' })).toBe(
+      'Uploads to Acme when you stop. Form fields are masked.',
     );
   });
 
-  it('offers sharing later only to someone signed in', () => {
+  it('offers sharing later only once an organization is connected', () => {
     expect(
-      recordingNote('offline', { name: 'signed-in', orgName: 'Acme' }),
+      recordingNote('offline', { name: 'connected', orgName: 'Acme' }),
     ).toBe('Saved in this browser only. You can share it later.');
-    expect(recordingNote('offline', { name: 'setting-up' })).toBe(
-      'Saved in this browser only. You can share it later.',
-    );
-    expect(recordingNote('offline', { name: 'signed-out' })).toBe(
+    expect(recordingNote('offline', { name: 'not-connected' })).toBe(
       'Saved in this browser only.',
     );
   });
 });
 
 describe('shownMode', () => {
-  it('defaults to Cloud once ready, then follows the stored choice', () => {
-    const ready = { active: 'not-recording', cloud: 'ready' } as const;
-    expect(shownMode({ ...ready, stored: 'not-stored' })).toBe('cloud');
-    expect(shownMode({ ...ready, stored: 'offline' })).toBe('offline');
-    expect(shownMode({ ...ready, stored: 'cloud' })).toBe('cloud');
-  });
-
-  it('shows Offline while the account is not ready, whatever is stored', () => {
-    expect(
-      shownMode({
-        active: 'not-recording',
-        cloud: 'not-ready',
-        stored: 'cloud',
-      }),
-    ).toBe('offline');
+  it('defaults to Cloud, then follows the stored choice', () => {
+    const idle = { active: 'not-recording' } as const;
+    expect(shownMode({ ...idle, stored: 'not-stored' })).toBe('cloud');
+    expect(shownMode({ ...idle, stored: 'offline' })).toBe('offline');
+    expect(shownMode({ ...idle, stored: 'cloud' })).toBe('cloud');
   });
 
   it("shows a running recording's own mode", () => {
+    expect(shownMode({ active: 'offline', stored: 'cloud' })).toBe('offline');
+    expect(shownMode({ active: 'cloud', stored: 'offline' })).toBe('cloud');
+  });
+});
+
+describe('notConnectedPanel', () => {
+  it('pitches Cloud only when it is picked and nothing is recording', () => {
     expect(
-      shownMode({ active: 'offline', cloud: 'ready', stored: 'cloud' }),
-    ).toBe('offline');
+      notConnectedPanel({ active: 'not-recording', stored: 'cloud' }),
+    ).toEqual({ panel: 'cloud-pitch', shown: 'cloud' });
     expect(
-      shownMode({ active: 'cloud', cloud: 'not-ready', stored: 'offline' }),
-    ).toBe('cloud');
+      notConnectedPanel({ active: 'not-recording', stored: 'not-stored' }),
+    ).toEqual({ panel: 'record', shown: 'offline' });
+    expect(notConnectedPanel({ active: 'cloud', stored: 'offline' })).toEqual({
+      panel: 'record',
+      shown: 'cloud',
+    });
   });
 });
 

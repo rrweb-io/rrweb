@@ -4,8 +4,8 @@ import { act, createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { ChakraProvider } from '@chakra-ui/react';
 import { LocalDataKey, ServiceName } from '~/types';
+import type { RecordingKind } from '~/types';
 import { config } from '~/config';
-import { ACCOUNT_NOT_SET_UP_ERROR } from '~/background/sinks';
 import { ACCOUNT_HREF } from '~/components/PageChrome';
 import { ShareSession } from './ShareSession';
 
@@ -39,7 +39,6 @@ vi.mock('webextension-polyfill', () => ({
 }));
 
 const ACCOUNT = {
-  userId: 'user_1',
   orgId: 'org_1',
   orgName: 'Acme',
   publicKey: 'pk_acme',
@@ -74,7 +73,10 @@ async function render() {
       createElement(
         ChakraProvider,
         null,
-        createElement(ShareSession, { sessionId: 'session-1' }),
+        createElement(ShareSession, {
+          sessionId: 'session-1',
+          recordedAs: 'offline',
+        }),
       ),
     );
   });
@@ -96,19 +98,34 @@ async function click(el: HTMLElement) {
   });
 }
 
-async function renderFor(sessionId: string) {
+async function renderFor(
+  sessionId: string,
+  recordedAs: RecordingKind = 'offline',
+) {
   await act(async () => {
     root.render(
       createElement(
         ChakraProvider,
         null,
-        createElement(ShareSession, { sessionId }),
+        createElement(ShareSession, { sessionId, recordedAs }),
       ),
     );
   });
 }
 
 describe('ShareSession', () => {
+  it('warns about unmasked form fields only for offline recordings', async () => {
+    fake.store[LocalDataKey.cloudAccount] = ACCOUNT;
+    await renderFor('session-1', 'offline');
+    await click(control('Share'));
+    expect(dialog()?.textContent).toContain("Offline recordings don't mask");
+
+    await renderFor('session-2', 'cloud');
+    await click(control('Share'));
+    expect(dialog()?.textContent).toContain('Form fields were masked');
+    expect(dialog()?.textContent).not.toContain("don't mask");
+  });
+
   it("does not carry one session's shared result over to another session", async () => {
     fake.store[LocalDataKey.cloudAccount] = ACCOUNT;
     fake.sendMessage = () =>
@@ -146,7 +163,6 @@ describe('ShareSession', () => {
       'session-1': {
         state: 'pending',
         recordingId: 'rec-1',
-        userId: 'user_1',
         orgId: 'org_1',
         orgName: 'Acme',
       },
@@ -157,24 +173,6 @@ describe('ShareSession', () => {
       'Finish uploading this recording to Acme?',
     );
     expect(dialog()?.textContent).not.toContain('Beta');
-  });
-
-  it('asks to finish setting up an account stored without its user', async () => {
-    const { userId: _userId, ...withoutUser } = ACCOUNT;
-    fake.store[LocalDataKey.cloudAccount] = withoutUser;
-    await render();
-    await click(control('Share'));
-    expect(container.textContent).toContain(ACCOUNT_NOT_SET_UP_ERROR);
-    expect(dialog()).toBeNull();
-    expect(sendMessage).not.toHaveBeenCalled();
-
-    // Once the popup stores the user, Share asks to confirm as usual.
-    act(() => root.unmount());
-    root = createRoot(container);
-    fake.store[LocalDataKey.cloudAccount] = ACCOUNT;
-    await render();
-    await click(control('Share'));
-    expect(dialog()?.textContent).toContain(WARNING);
   });
 
   it('warns before uploading, and Cancel sends nothing', async () => {
@@ -202,7 +200,7 @@ describe('ShareSession', () => {
     expect(JSON.parse(sendMessage.mock.calls[0][0])).toEqual({
       type: 'service',
       service: ServiceName.ShareSession,
-      params: { sessionId: 'session-1', userId: 'user_1', orgId: 'org_1' },
+      params: { sessionId: 'session-1', orgId: 'org_1' },
     });
     expect(container.textContent).toContain('Uploading');
 
@@ -224,10 +222,10 @@ describe('ShareSession', () => {
     expect(dialog()?.textContent).toContain(WARNING);
   });
 
-  it('asks to sign in without an account, and links a shared session', async () => {
+  it('asks to connect without an account, and links a shared session', async () => {
     await render();
-    // The Account page offers sign-up and log-in and connects the organization.
-    const signIn = control('Sign in to share');
+    // The Account page links to the dashboard, which connects the organization.
+    const signIn = control('Connect to share');
     expect(signIn.getAttribute('href')).toBe(ACCOUNT_HREF);
     expect(signIn.getAttribute('target')).toBeNull();
     expect(container.textContent).not.toContain('Open in rrweb');
@@ -253,12 +251,12 @@ describe('ShareSession', () => {
     expect(control('Open in rrweb').getAttribute('href')).toBe(
       `${config.dashboardUrl}/recordings/rec-1`,
     );
-    expect(container.textContent).not.toContain('Sign in to share');
+    expect(container.textContent).not.toContain('Connect to share');
   });
 
   it('offers Share as soon as the Account page connects an organization', async () => {
     await render();
-    expect(control('Sign in to share')).toBeTruthy();
+    expect(control('Connect to share')).toBeTruthy();
 
     fake.store[LocalDataKey.cloudAccount] = ACCOUNT;
     await act(async () => {
@@ -267,6 +265,6 @@ describe('ShareSession', () => {
       );
     });
     expect(control('Share')).toBeTruthy();
-    expect(container.textContent).not.toContain('Sign in to share');
+    expect(container.textContent).not.toContain('Connect to share');
   });
 });

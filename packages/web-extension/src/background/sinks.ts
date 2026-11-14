@@ -1,64 +1,73 @@
-import type { createTransport } from '@rrweb/browser-client';
 import type { eventWithTime } from '@rrweb/types';
 import type { recordOptions } from 'rrweb';
 import { config } from '~/config';
 import type {
   CloudAccount,
+  Connection,
   RecordingKind,
   Session,
+  ShareResult,
   StartRequest,
 } from '~/types';
 import type { addSession } from '~/utils/storage';
 
+/**
+ * Every recording keeps its events here, in the background, until it
+ * finishes. A cloud recording is then stored like an offline one and
+ * uploaded from storage.
+ */
 export type RecordingSink = {
   kind: RecordingKind;
+  /** The organization a cloud recording uploads to, fixed at start. */
+  uploadsTo:
+    | { name: 'organization'; orgName: string }
+    | { name: 'stored-only' };
   recordConfig: recordOptions<eventWithTime>; // sent to the page with StartRecord
   add(event: eventWithTime): void;
-  /** Deliver anything buffered. Cloud only; offline events stay in memory. */
-  flush(): void;
   finish(title: string): Promise<FinishResult>;
-  /**
-   * Offline only: close the gap left by a pause by moving stored events later.
-   * Cloud sinks have none, since events already sent cannot be rewritten.
-   */
-  shiftEvents?(ms: number): void;
+  /** Close the gap left by a pause by moving stored events later. */
+  shiftEvents(ms: number): void;
 };
 
 /**
- * delivered: the recording is complete at `openUrl`.
- * upload-failed: a cloud upload failed; its unsent events were kept for a retry.
+ * saved: an offline recording is stored as `session`, shown at `openUrl`.
+ * uploaded: a cloud recording is in rrweb at `openUrl`; its local copy is gone.
+ * upload-failed: a cloud recording is stored as `session`, shown at
+ * `openUrl`, as a pending share that Share finishes.
  */
 export type FinishResult =
-  | { state: 'delivered'; openUrl: string; session?: Session }
-  | { state: 'upload-failed' };
-
-/** A failed cloud upload, as the cloud sink hands it over to be kept. */
-export type UnsentUpload = {
-  recordingId: string;
-  userId: string;
-  publicKey: string;
-  title: string;
-  unsent: string[];
-};
+  | { state: 'saved'; session: Session; openUrl: string }
+  | { state: 'uploaded'; openUrl: string }
+  | {
+      state: 'upload-failed';
+      session: Session;
+      openUrl: string;
+      errorMessage: string;
+    };
 
 type SinkDeps = {
-  createTransport: typeof createTransport;
   addSession: typeof addSession;
-  keepFailedUpload: (upload: UnsentUpload) => Promise<void>;
+  /** Upload a stored session to `account`'s organization (the Share path). */
+  uploadSession: (
+    sessionId: string,
+    account: CloudAccount,
+  ) => Promise<ShareResult>;
+  /** Delete a stored session and everything its upload kept. */
+  deleteSession: (sessionId: string) => Promise<void>;
   randomId: () => string;
   getURL: (path: string) => string;
   recorderVersion: string;
 };
 
 /**
- * Signed-in recordings mask everything; offline keeps the rrweb defaults.
+ * Cloud recordings mask everything; offline keeps the rrweb defaults.
  * The recorder runs in the top frame only (it is injected through activeTab,
  * which covers the tab's own origin), so cross-origin iframes are not recorded.
  */
 export function recordConfigFor(
-  account: CloudAccount | null,
+  kind: RecordingKind,
 ): recordOptions<eventWithTime> {
-  return account
+  return kind === 'cloud'
     ? {
         recordCrossOriginIframes: false,
         maskAllInputs: true,
@@ -68,21 +77,14 @@ export function recordConfigFor(
     : { recordCrossOriginIframes: false };
 }
 
-/** Where cloud recordings upload, and where the dashboard shows one. */
-export const CLOUD_SERVER_URL = `${config.apiUrl}/recordings/{recordingId}/events/ws`;
+/** Where the dashboard shows a cloud recording. */
 export const dashboardRecordingUrl = (recordingId: string) =>
   `${config.dashboardUrl}/recordings/${recordingId}`;
 
 /** What startRecording decided to record into. */
 export type SinkTarget =
   | { kind: 'offline' }
-  | { kind: 'cloud'; account: CloudAccount; domain: string };
-
-export function createSink(target: SinkTarget, deps: SinkDeps): RecordingSink {
-  if (target.kind === 'cloud')
-    return createCloudSink(target.account, target.domain, deps);
-  return createOfflineSink(deps);
-}
+  | { kind: 'cloud'; account: CloudAccount };
 
 /** The hostname a cloud recording is filed under, if the tab has one. */
 export function hostnameOf(url: string | undefined): string | undefined {
@@ -94,55 +96,22 @@ export function hostnameOf(url: string | undefined): string | undefined {
   }
 }
 
-function createCloudSink(
-  account: CloudAccount,
-  domain: string,
-  deps: SinkDeps,
-): RecordingSink {
-  const recordingId = deps.randomId();
-  const transport = deps.createTransport({
-    publicApiKey: account.publicKey,
-    recordingId,
-    serverUrl: CLOUD_SERVER_URL,
-    meta: {
-      domain,
-      includePii: false,
-      jsEntrypoint: 'chrome-extension',
-    },
-  });
-  return {
-    kind: 'cloud',
-    recordConfig: recordConfigFor(account),
-    add: (event) => transport.send(event),
-    flush: () => transport.flush(),
-    finish: async (title) => {
-      const result = await transport.stop(true); // delivers anything still buffered
-      if (result.delivered)
-        return {
-          state: 'delivered',
-          openUrl: dashboardRecordingUrl(recordingId),
-        };
-      await deps.keepFailedUpload({
-        recordingId,
-        userId: account.userId,
-        publicKey: account.publicKey,
-        title,
-        unsent: result.unsent,
-      });
-      return { state: 'upload-failed' };
-    },
-  };
-}
-
-function createOfflineSink(deps: SinkDeps): RecordingSink {
+/**
+ * The account is the one connected when the recording started: a cloud
+ * recording uploads there even if the dashboard connects another meanwhile.
+ */
+export function createSink(target: SinkTarget, deps: SinkDeps): RecordingSink {
   const events: eventWithTime[] = [];
   return {
-    kind: 'offline',
-    recordConfig: recordConfigFor(null),
+    kind: target.kind,
+    uploadsTo:
+      target.kind === 'cloud'
+        ? { name: 'organization', orgName: target.account.orgName }
+        : { name: 'stored-only' },
+    recordConfig: recordConfigFor(target.kind),
     add: (event) => {
       events.push(event);
     },
-    flush: () => undefined,
     shiftEvents: (ms) => {
       events.forEach((event) => {
         event.timestamp += ms;
@@ -157,12 +126,27 @@ function createOfflineSink(deps: SinkDeps): RecordingSink {
         createTimestamp: now,
         modifyTimestamp: now,
         recorderVersion: deps.recorderVersion,
+        recordedAs: target.kind,
       };
       await deps.addSession(session, events);
+      const openUrl = deps.getURL(`pages/index.html#/session/${session.id}`);
+      if (target.kind === 'offline')
+        return { state: 'saved', session, openUrl };
+      const result = await deps.uploadSession(session.id, target.account);
+      if (result.name === 'share-failed')
+        return {
+          state: 'upload-failed',
+          session,
+          openUrl,
+          errorMessage: result.errorMessage,
+        };
+      // The upload is complete; a local copy left behind is only clutter.
+      await deps
+        .deleteSession(session.id)
+        .catch((e) => console.error('Could not delete the uploaded copy:', e));
       return {
-        state: 'delivered',
-        openUrl: deps.getURL(`pages/index.html#/session/${session.id}`),
-        session,
+        state: 'uploaded',
+        openUrl: dashboardRecordingUrl(result.recordingId),
       };
     },
   };
@@ -174,62 +158,48 @@ export type StartRecordingResult =
   | { state: 'failed'; errorMessage: string }; // the tab started, then was stopped again
 
 export const NO_HOSTNAME_ERROR = 'This tab has no web address to upload from.';
-export const ACCOUNT_NOT_SET_UP_ERROR =
-  'Open the rrweb popup to finish setting up your account.';
 export const INVALID_START_ERROR =
   'The record button sent a request this version cannot read. Reopen the popup and try again.';
 export const ACCOUNT_CHANGED_ERROR =
-  'Your rrweb account changed since this popup opened. Check the organization and press record again.';
+  'The connected rrweb organization changed since this popup opened. Check the organization and press record again.';
 
 /**
- * Whether the stored account is the one a button promised (`expected`).
- * not-set-up: stored without its user (by an older version), so it cannot be
- * checked; the popup sets it up again. changed: none, or another user or org.
+ * The connected account, if it is the organization a button promised
+ * (`expected`); 'changed' if none is connected or it is another one.
  */
 export function checkStoredAccount(
-  account: CloudAccount | null,
-  expected: { userId: string; orgId: string },
-): CloudAccount | 'not-set-up' | 'changed' {
-  if (account && !account.userId) return 'not-set-up';
+  connection: Connection,
+  expected: { orgId: string },
+): CloudAccount | 'changed' {
   if (
-    !account ||
-    account.userId !== expected.userId ||
-    account.orgId !== expected.orgId
+    connection.name !== 'connected' ||
+    connection.account.orgId !== expected.orgId
   )
     return 'changed';
-  return account;
+  return connection.account;
 }
 
-/**
- * Ask the tab to record first, and only then create the sink, so a tab that
- * refuses to record never opens a transport. The destination is the one the
- * pressed button showed: offline records offline whatever is stored, and a
- * cloud start is refused unless the stored account is still that user's
- * organization. A cloud recording needs the tab's hostname, so a tab without
- * one is refused before anything starts. An account stored without its user
- * (by an older version) is refused too: the popup cannot check it, so it sets
- * the account up again.
- */
 /** The start message as it arrives from the popup, if it is well formed. */
 export function parseStartRequest(value: unknown): StartRequest | 'invalid' {
   if (typeof value !== 'object' || value === null) return 'invalid';
-  const { mode, userId, orgId } = value as Record<string, unknown>;
+  const { mode, orgId } = value as Record<string, unknown>;
   if (mode === 'offline') return { mode };
-  if (
-    mode === 'cloud' &&
-    typeof userId === 'string' &&
-    userId !== '' &&
-    typeof orgId === 'string' &&
-    orgId !== ''
-  )
-    return { mode, userId, orgId };
+  if (mode === 'cloud' && typeof orgId === 'string' && orgId !== '')
+    return { mode, orgId };
   return 'invalid';
 }
 
+/**
+ * Ask the tab to record first, and only then create the sink. The
+ * destination is the one the pressed button showed: offline records offline
+ * whatever is connected, and a cloud start is refused unless the connected
+ * organization is still that one. A cloud recording needs the tab's hostname
+ * to be filed under, so a tab without one is refused before anything starts.
+ */
 export async function startRecording(deps: {
   /** Untrusted: it comes from a runtime message. */
   request: unknown;
-  getAccount: () => Promise<CloudAccount | null>;
+  getConnection: () => Promise<Connection>;
   getTabUrl: () => Promise<string | undefined>;
   requestStart: (
     config: recordOptions<eventWithTime>,
@@ -242,20 +212,19 @@ export async function startRecording(deps: {
     return { state: 'refused', errorMessage: INVALID_START_ERROR };
   let target: SinkTarget = { kind: 'offline' };
   if (request.mode === 'cloud') {
-    const account = checkStoredAccount(await deps.getAccount(), request);
-    if (account === 'not-set-up')
-      return { state: 'refused', errorMessage: ACCOUNT_NOT_SET_UP_ERROR };
+    const account = checkStoredAccount(await deps.getConnection(), request);
     if (account === 'changed')
       return { state: 'refused', errorMessage: ACCOUNT_CHANGED_ERROR };
     const domain = hostnameOf(await deps.getTabUrl());
     if (domain === undefined)
       return { state: 'refused', errorMessage: NO_HOSTNAME_ERROR };
-    target = { kind: 'cloud', account, domain };
+    target = { kind: 'cloud', account };
   }
-  const account = target.kind === 'cloud' ? target.account : null;
   let startTimestamp: number;
   try {
-    ({ startTimestamp } = await deps.requestStart(recordConfigFor(account)));
+    ({ startTimestamp } = await deps.requestStart(
+      recordConfigFor(target.kind),
+    ));
   } catch (error) {
     return { state: 'refused', errorMessage: (error as Error).message };
   }

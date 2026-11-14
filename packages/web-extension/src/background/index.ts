@@ -1,25 +1,26 @@
 import Browser from 'webextension-polyfill';
 import Channel from '~/utils/channel';
 import { EventName, LocalDataKey, SyncDataKey } from '~/types';
-import type { FailedUpload, LocalData, Settings, SyncData } from '~/types';
-import { createTransport, postEvents } from '@rrweb/browser-client';
+import type { CloudAccount, LocalData, Settings, SyncData } from '~/types';
 import { config, uninstallSurveyUrl } from '~/config';
+import { parseConnection } from '~/utils/connection';
 import {
   addSession,
-  deleteFailedUpload,
   deleteSessions,
+  deleteUnsentEvents,
   findEvents,
-  getFailedUpload,
   getSession,
-  putFailedUpload,
+  getUnsentEvents,
+  putUnsentEvents,
 } from '~/utils/storage';
-import { createFailedUploads } from './failedUploads';
+import { answerExternalMessage } from './external';
 import { registerHandlers, type BackgroundServices } from './handlers';
 import { watchRecordedPages } from './pageWatch';
 import { createBadge } from './badge';
 import { createRecorder } from './recorder';
 import { createSessionSharing } from './shareSession';
-import { createSink, type UnsentUpload } from './sinks';
+import { createSink } from './sinks';
+import { uploadEvents } from './upload';
 
 // Ask people who remove the extension why they left.
 const manifest = Browser.runtime.getManifest();
@@ -31,6 +32,15 @@ Browser.runtime
     // The survey is optional; recording must keep working without it.
   });
 
+/** The organization the dashboard connected; never one on Firefox. */
+const getConnection = async () => {
+  if (!config.cloudEnabled) return parseConnection(undefined);
+  const stored = (await Browser.storage.local.get(
+    LocalDataKey.cloudAccount,
+  )) as LocalData;
+  return parseConnection(stored[LocalDataKey.cloudAccount]);
+};
+
 // Register every listener before any await: a message that wakes a suspended
 // worker is dispatched during its first synchronous run.
 const channel = new Channel();
@@ -38,6 +48,25 @@ const ready = start();
 // Handlers report their own failures; this keeps the rejection handled.
 ready.catch((error) => console.error('Could not start the background:', error));
 registerHandlers(channel, ready, { shareEnabled: config.cloudEnabled });
+
+// The dashboard connects an organization by messaging the extension.
+if (config.cloudEnabled) {
+  const dashboardOrigin = new URL(config.dashboardUrl).origin;
+  chrome.runtime.onMessageExternal.addListener(
+    (message, sender, sendResponse) => {
+      void answerExternalMessage(message, sender, {
+        dashboardOrigin,
+        version: manifest.version_name ?? manifest.version,
+        getConnection,
+        storeAccount: (account: CloudAccount) =>
+          Browser.storage.local.set({ [LocalDataKey.cloudAccount]: account }),
+        removeAccount: () =>
+          Browser.storage.local.remove(LocalDataKey.cloudAccount),
+      }).then(sendResponse);
+      return true; // the answer is sent asynchronously
+    },
+  );
+}
 
 // One recording is one tab: it finishes when that tab's document goes away.
 watchRecordedPages(
@@ -66,40 +95,43 @@ async function start(): Promise<BackgroundServices> {
     settings,
   } as SyncData);
 
-  const storedAccount = async () => {
-    if (!config.cloudEnabled) return null;
-    const stored = (await Browser.storage.local.get(
-      LocalDataKey.cloudAccount,
-    )) as LocalData;
-    return stored[LocalDataKey.cloudAccount] ?? null;
-  };
-  const failedUploads = createFailedUploads({
-    readList: async () =>
+  // Disconnect keeps the shared map: it only links to the cloud copies.
+  const sharing = createSessionSharing({
+    getConnection,
+    loadSession: async (id) => {
+      const events = await findEvents(id);
+      const session = await getSession(id);
+      return events && session
+        ? { events, recorderVersion: session.recorderVersion }
+        : undefined;
+    },
+    deleteStored: deleteSessions,
+    readShared: async () =>
       (
         (await Browser.storage.local.get(
-          LocalDataKey.failedUploads,
+          LocalDataKey.sharedSessions,
         )) as LocalData
-      )[LocalDataKey.failedUploads] ?? [],
-    writeList: (list: FailedUpload[]) =>
-      Browser.storage.local.set({ [LocalDataKey.failedUploads]: list }),
-    putUpload: putFailedUpload,
-    getUpload: getFailedUpload,
-    deleteUpload: deleteFailedUpload,
-    postEvents,
+      )[LocalDataKey.sharedSessions] ?? {},
+    writeShared: (shared) =>
+      Browser.storage.local.set({ [LocalDataKey.sharedSessions]: shared }),
+    putUnsent: putUnsentEvents,
+    getUnsent: getUnsentEvents,
+    deleteUnsent: deleteUnsentEvents,
+    postEvents: (target, lines) =>
+      uploadEvents({ ...target, apiUrl: config.apiUrl }, lines),
+    randomId: () => crypto.randomUUID(),
     openTab: (url) => Browser.tabs.create({ url }),
-    currentUserId: async () => (await storedAccount())?.userId ?? null,
+    now: () => Date.now(),
   });
-  await failedUploads.recoverAfterRestart();
 
   const sinkDeps = {
-    createTransport,
     addSession,
-    keepFailedUpload: (upload: UnsentUpload) => failedUploads.keep(upload),
+    uploadSession: (id: string, account: CloudAccount) =>
+      sharing.uploadStopped(id, account),
+    deleteSession: (id: string) => sharing.deleteSessions([id]),
     randomId: () => crypto.randomUUID(),
     getURL: (path: string) => Browser.runtime.getURL(path),
-    recorderVersion:
-      Browser.runtime.getManifest().version_name ||
-      Browser.runtime.getManifest().version,
+    recorderVersion: manifest.version_name || manifest.version,
   };
   // MV3 has `action`, MV2 Firefox has `browserAction`.
   const toolbar = Browser.action ?? Browser.browserAction;
@@ -113,7 +145,7 @@ async function start(): Promise<BackgroundServices> {
   });
   const recorder = createRecorder({
     onStatus: badge.sync,
-    getAccount: storedAccount,
+    getConnection,
     getTabUrl: async (tabId) => (await Browser.tabs.get(tabId)).url,
     getTabTitle: async (tabId) => (await Browser.tabs.get(tabId)).title,
     getCurrentTabId: () => channel.getCurrentTabId(),
@@ -127,6 +159,7 @@ async function start(): Promise<BackgroundServices> {
       channel.emit(EventName.SessionUpdated, { session }),
     createSink: (target) => createSink(target, sinkDeps),
     pingBrowser: () => Browser.runtime.getPlatformInfo(),
+    after: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
     every: (ms, tick) => {
       const interval = setInterval(tick, ms);
       return () => clearInterval(interval);
@@ -152,36 +185,7 @@ async function start(): Promise<BackgroundServices> {
     )
     .catch((e) => console.warn('rrweb: clearing stale badges failed', e));
 
-  // Log out keeps the shared map: it only links to the cloud copies.
-  const sharing = createSessionSharing({
-    getAccount: storedAccount,
-    loadSession: async (id) => {
-      const events = await findEvents(id);
-      const session = await getSession(id);
-      return events && session
-        ? { events, recorderVersion: session.recorderVersion }
-        : undefined;
-    },
-    deleteStored: deleteSessions,
-    readShared: async () =>
-      (
-        (await Browser.storage.local.get(
-          LocalDataKey.sharedSessions,
-        )) as LocalData
-      )[LocalDataKey.sharedSessions] ?? {},
-    writeShared: (shared) =>
-      Browser.storage.local.set({ [LocalDataKey.sharedSessions]: shared }),
-    // Share IDs are fresh UUIDs, so they never collide with a failed upload.
-    putUnsent: putFailedUpload,
-    getUnsent: getFailedUpload,
-    deleteUnsent: deleteFailedUpload,
-    postEvents,
-    randomId: () => crypto.randomUUID(),
-    openTab: (url) => Browser.tabs.create({ url }),
-    now: () => Date.now(),
-  });
-
-  return { recorder, failedUploads, sharing };
+  return { recorder, sharing };
 }
 
 /**

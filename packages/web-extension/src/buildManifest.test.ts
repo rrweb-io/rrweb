@@ -11,17 +11,17 @@ const source = JSON.parse(
 
 // eslint-disable-next-line camelcase -- a manifest key
 const base = { version: '2.2.2', version_name: '2.2.2', author: 'rrweb' };
-const clerkHosts = ['https://app.rrweb.com/*', 'https://clerk.rrweb.com/*'];
+const dashboardUrl = 'https://app.rrweb.com';
 
 const chrome = buildManifest(source, {
   browser: 'chrome',
   base,
-  clerkHostPermissions: clerkHosts,
+  dashboardUrl,
 });
 const firefox = buildManifest(source, {
   browser: 'firefox',
   base,
-  clerkHostPermissions: clerkHosts,
+  dashboardUrl,
 });
 
 describe('buildManifest', () => {
@@ -29,13 +29,28 @@ describe('buildManifest', () => {
     expect(chrome.manifest_version).toBe(3);
     expect(chrome).not.toHaveProperty('content_scripts');
     expect(JSON.stringify(chrome)).not.toContain('<all_urls>');
-    expect(chrome.host_permissions).toEqual(clerkHosts);
+    expect(chrome).not.toHaveProperty('host_permissions');
+  });
+
+  it('lets only the dashboard message the Chrome build', () => {
+    expect(chrome.externally_connectable).toEqual({
+      matches: ['https://app.rrweb.com/*'],
+    });
+    const local = buildManifest(source, {
+      browser: 'chrome',
+      base,
+      dashboardUrl: 'http://localhost:3000',
+    });
+    expect(local.externally_connectable).toEqual({
+      matches: ['http://localhost:3000/*'],
+    });
   });
 
   it('lets Chrome inject the recorder into the tab the person records', () => {
     expect(chrome.permissions).toEqual(
-      expect.arrayContaining(['activeTab', 'scripting', 'cookies', 'storage']),
+      expect.arrayContaining(['activeTab', 'scripting', 'storage']),
     );
+    expect(chrome.permissions).not.toContain('cookies');
     // the page-world script is injected with chrome.scripting, not by URL
     expect(chrome).not.toHaveProperty('web_accessible_resources');
     expect(chrome.background).toEqual({
@@ -45,11 +60,12 @@ describe('buildManifest', () => {
     });
   });
 
-  it('gives Firefox no content script, no access to every site and no Clerk', () => {
+  it('gives Firefox no content script, no access to every site and no Cloud', () => {
     expect(firefox.manifest_version).toBe(2);
     expect(firefox).not.toHaveProperty('content_scripts');
     expect(JSON.stringify(firefox)).not.toContain('<all_urls>');
     expect(firefox).not.toHaveProperty('host_permissions');
+    expect(firefox).not.toHaveProperty('externally_connectable');
     expect(firefox.permissions).toEqual(
       expect.arrayContaining(['activeTab', 'storage']),
     );
@@ -63,7 +79,7 @@ describe('buildManifest', () => {
     const dev = buildManifest(source, {
       browser: 'chrome',
       base,
-      clerkHostPermissions: clerkHosts,
+      dashboardUrl,
       key: 'dev-key',
     });
     expect(dev.key).toBe('dev-key');

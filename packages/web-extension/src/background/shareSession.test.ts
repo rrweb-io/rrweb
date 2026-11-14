@@ -1,9 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { DeliveryResult } from '@rrweb/browser-client';
 import { EventType, type eventWithTime } from '@rrweb/types';
 import type { CloudAccount, SharedSessions } from '~/types';
-import type { StoredUpload } from './failedUploads';
-import { ACCOUNT_NOT_SET_UP_ERROR } from './sinks';
+import type { StoredUnsentEvents } from '~/utils/storage';
+import type { UploadResult } from './upload';
 import {
   createSessionSharing,
   parseShareRequest,
@@ -15,13 +14,12 @@ import {
 } from './shareSession';
 
 const ACCOUNT: CloudAccount = {
-  userId: 'user_1',
   orgId: 'org_1',
   orgName: 'Acme',
   publicKey: 'pk_acme',
 };
 
-const OWNER = { userId: 'user_1', orgId: 'org_1', orgName: 'Acme' };
+const OWNER = { orgId: 'org_1', orgName: 'Acme' };
 
 const META = {
   type: EventType.Meta,
@@ -50,13 +48,13 @@ function setup(events: eventWithTime[] = [META, SNAPSHOT, CLICK]) {
     account: ACCOUNT as CloudAccount | null,
     shared: {} as SharedSessions,
     sessions: new Map([['session-1', { events, recorderVersion: '2.2.2' }]]),
-    unsent: new Map<string, StoredUpload>(),
+    unsent: new Map<string, StoredUnsentEvents>(),
     failNextDeleteUnsent: false,
   };
   const opened: string[] = [];
   const postEvents = vi.fn(
-    (..._args: unknown[]): Promise<DeliveryResult> =>
-      Promise.resolve({ delivered: true }),
+    (..._args: unknown[]): Promise<UploadResult> =>
+      Promise.resolve({ state: 'delivered' }),
   );
   const writeShared = vi.fn((shared: SharedSessions) => {
     store.shared = shared;
@@ -66,7 +64,12 @@ function setup(events: eventWithTime[] = [META, SNAPSHOT, CLICK]) {
   // A fresh instance over the same storage, as after a worker restart.
   const restart = () =>
     createSessionSharing({
-      getAccount: () => Promise.resolve(store.account),
+      getConnection: () =>
+        Promise.resolve(
+          store.account
+            ? { name: 'connected', account: store.account }
+            : { name: 'not-connected' },
+        ),
       loadSession: (id) => Promise.resolve(store.sessions.get(id)),
       deleteStored: (ids) => {
         ids.forEach((id) => store.sessions.delete(id));
@@ -95,7 +98,7 @@ function setup(events: eventWithTime[] = [META, SNAPSHOT, CLICK]) {
       },
       now: () => NOW,
     });
-  const request = { sessionId: 'session-1', userId: 'user_1', orgId: 'org_1' };
+  const request = { sessionId: 'session-1', orgId: 'org_1' };
   return {
     store,
     opened,
@@ -111,7 +114,7 @@ function setup(events: eventWithTime[] = [META, SNAPSHOT, CLICK]) {
 /** The events one postEvents call sent, and the recording it sent them to. */
 function sentIn(postEvents: ReturnType<typeof setup>['postEvents'], call = 0) {
   const [options, sent] = postEvents.mock.calls[call] as [
-    { publicApiKey: string; recordingId: string; serverUrl: string },
+    { publicKey: string; recordingId: string },
     string[],
   ];
   return {
@@ -138,9 +141,7 @@ describe('sharing an offline session', () => {
 
     expect(postEvents).toHaveBeenCalledTimes(1);
     const { options, parsed } = sentIn(postEvents);
-    expect(options.publicApiKey).toBe('pk_acme');
-    expect(options.recordingId).toBe('rec-1');
-    expect(options.serverUrl).toContain('/recordings/{recordingId}/events/ws');
+    expect(options).toEqual({ publicKey: 'pk_acme', recordingId: 'rec-1' });
     expect(parsed).toHaveLength(5);
     expect(parsed[0]).toEqual({
       type: EventType.Custom,
@@ -151,7 +152,6 @@ describe('sharing an offline session', () => {
           domain: 'shop.example.com',
           includePii: false,
           jsEntrypoint: 'chrome-extension',
-          offlineShare: true,
           recordVersion: '2.2.2',
         },
       },
@@ -181,7 +181,7 @@ describe('sharing an offline session', () => {
     let release: () => void = () => undefined;
     postEvents.mockReturnValueOnce(
       new Promise((resolve) => {
-        release = () => resolve({ delivered: true });
+        release = () => resolve({ state: 'delivered' });
       }),
     );
     const first = sharing.share(request);
@@ -199,14 +199,9 @@ describe('sharing an offline session', () => {
     });
   });
 
-  it('refuses to share when the stored account changed', async () => {
+  it('refuses to share when the connected organization changed', async () => {
     const { store, opened, postEvents, sharing, request } = setup();
     store.account = { ...ACCOUNT, orgId: 'org_2', orgName: 'Beta' };
-    await expect(sharing.share(request)).resolves.toEqual({
-      name: 'share-failed',
-      errorMessage: SHARE_ACCOUNT_CHANGED_ERROR,
-    });
-    store.account = { ...ACCOUNT, userId: 'user_2' };
     await expect(sharing.share(request)).resolves.toEqual({
       name: 'share-failed',
       errorMessage: SHARE_ACCOUNT_CHANGED_ERROR,
@@ -243,7 +238,7 @@ describe('sharing an offline session', () => {
     const { store, opened, postEvents, sharing, request, idsMade } = setup();
     postEvents.mockImplementationOnce((_options, events) =>
       Promise.resolve({
-        delivered: false,
+        state: 'not-delivered',
         error: new Error('Server answered 503'),
         unsent: (events as string[]).slice(3),
       }),
@@ -273,7 +268,7 @@ describe('sharing an offline session', () => {
     expect(idsMade()).toBe(1);
   });
 
-  it('refuses to resume a pending share for another organization or user, posting nothing', async () => {
+  it('refuses to resume a pending share for another organization, posting nothing', async () => {
     const { store, postEvents, sharing, request } = setup();
     postEvents.mockRejectedValueOnce(new Error('offline'));
     await sharing.share(request);
@@ -288,11 +283,6 @@ describe('sharing an offline session', () => {
     store.account = { ...ACCOUNT, orgId: 'org_2', orgName: 'Beta' };
     await expect(
       sharing.share({ ...request, orgId: 'org_2' }),
-    ).resolves.toEqual(expected);
-    // Signed in as another user.
-    store.account = { ...ACCOUNT, userId: 'user_2' };
-    await expect(
-      sharing.share({ ...request, userId: 'user_2' }),
     ).resolves.toEqual(expected);
     expect(postEvents).toHaveBeenCalledTimes(1);
     expect(store.shared['session-1']).toMatchObject({
@@ -368,6 +358,19 @@ describe('sharing an offline session', () => {
     expect(idsMade()).toBe(0);
   });
 
+  it('drops the kept events when the pending share cannot be stored', async () => {
+    const { store, postEvents, writeShared, sharing, request } = setup();
+    writeShared.mockRejectedValueOnce(new Error('quota exceeded'));
+    await expect(sharing.share(request)).resolves.toMatchObject({
+      name: 'share-failed',
+      errorMessage: 'quota exceeded',
+    });
+    // Nothing points at them, so nothing may be left: deleting the session
+    // would not find them.
+    expect(store.unsent.size).toBe(0);
+    expect(postEvents).not.toHaveBeenCalled();
+  });
+
   it('answers shared when storing the shared state fails after delivery', async () => {
     const { store, postEvents, writeShared, sharing, request } = setup();
     const logged = vi
@@ -399,20 +402,6 @@ describe('sharing an offline session', () => {
       'session-1': { state: 'shared', recordingId: 'rec-1' },
     });
     logged.mockRestore();
-  });
-
-  it('asks to finish setting up an account stored without its user', async () => {
-    const { store, postEvents, sharing, request } = setup();
-    store.account = { ...ACCOUNT, userId: undefined as unknown as string };
-    await expect(sharing.share(request)).resolves.toEqual({
-      name: 'share-failed',
-      errorMessage: ACCOUNT_NOT_SET_UP_ERROR,
-    });
-    expect(postEvents).not.toHaveBeenCalled();
-    store.account = ACCOUNT;
-    await expect(sharing.share(request)).resolves.toMatchObject({
-      name: 'shared',
-    });
   });
 
   it('refuses a session without a Meta event', async () => {
@@ -459,9 +448,9 @@ describe('sharing an offline session', () => {
       42,
       {},
       { sessionId: 'session-1', userId: 'user_1' },
-      { sessionId: '', userId: 'user_1', orgId: 'org_1' },
-      { sessionId: 'session-1', userId: 7, orgId: 'org_1' },
-      { sessionId: ['session-1'], userId: 'user_1', orgId: 'org_1' },
+      { sessionId: '', orgId: 'org_1' },
+      { sessionId: 'session-1', orgId: 7 },
+      { sessionId: ['session-1'], orgId: 'org_1' },
     ];
     for (const value of malformed) {
       expect(parseShareRequest(value)).toBe('invalid');
@@ -473,7 +462,7 @@ describe('sharing an offline session', () => {
     expect(postEvents).not.toHaveBeenCalled();
     expect(
       parseShareRequest({ sessionId: 's', userId: 'u', orgId: 'o', x: 1 }),
-    ).toEqual({ sessionId: 's', userId: 'u', orgId: 'o' });
+    ).toEqual({ sessionId: 's', orgId: 'o' });
 
     // A well formed request from the same channel still uploads.
     await expect(sharing.share(request)).resolves.toMatchObject({
@@ -483,11 +472,58 @@ describe('sharing an offline session', () => {
   });
 });
 
+describe('uploading a cloud recording on Stop', () => {
+  it('uploads to the account it started with, whatever is connected now, and opens nothing', async () => {
+    const { store, opened, postEvents, sharing } = setup();
+    store.account = null; // disconnected while recording
+    await expect(sharing.uploadStopped('session-1', ACCOUNT)).resolves.toEqual({
+      name: 'shared',
+      recordingId: 'rec-1',
+    });
+    const { options, parsed } = sentIn(postEvents);
+    expect(options).toEqual({ publicKey: 'pk_acme', recordingId: 'rec-1' });
+    expect(parsed[0]).toMatchObject({
+      type: EventType.Custom,
+      data: { tag: 'recording-meta' },
+    });
+    expect(parsed[parsed.length - 1]).toMatchObject({
+      type: EventType.Custom,
+      data: { tag: 'close-permanent' },
+    });
+    expect(opened).toEqual([]);
+  });
+
+  it('leaves a failed upload pending, for Share to finish in that organization', async () => {
+    const { store, postEvents, sharing, request } = setup();
+    postEvents.mockImplementationOnce((_options, events) =>
+      Promise.resolve({
+        state: 'not-delivered',
+        error: new Error('Server answered 503'),
+        unsent: (events as string[]).slice(2),
+      }),
+    );
+    await expect(sharing.uploadStopped('session-1', ACCOUNT)).resolves.toEqual({
+      name: 'share-failed',
+      errorMessage: 'Server answered 503',
+    });
+    expect(store.shared).toEqual({
+      'session-1': { state: 'pending', recordingId: 'rec-1', ...OWNER },
+    });
+    const all = sentIn(postEvents, 0).sent;
+
+    await expect(sharing.share(request)).resolves.toEqual({
+      name: 'shared',
+      recordingId: 'rec-1',
+    });
+    expect(sentIn(postEvents, 1).sent).toEqual(all.slice(2));
+  });
+});
+
 describe('deleting offline sessions that were shared', () => {
   const failFirstPost = (setupResult: ReturnType<typeof setup>) =>
     setupResult.postEvents.mockImplementationOnce((_options, events) =>
       Promise.resolve({
-        delivered: false,
+        state: 'not-delivered',
         error: new Error('Server answered 503'),
         unsent: events as string[],
       }),
@@ -555,7 +591,7 @@ describe('deleting offline sessions that were shared', () => {
 
   it('stores nothing for a session deleted while its upload is in flight', async () => {
     const s = setup();
-    let release: (r: DeliveryResult) => void = () => undefined;
+    let release: (r: UploadResult) => void = () => undefined;
     s.postEvents.mockReturnValueOnce(
       new Promise((resolve) => {
         release = resolve;
@@ -569,7 +605,7 @@ describe('deleting offline sessions that were shared', () => {
       name: 'share-failed',
       errorMessage: SESSION_MISSING_ERROR,
     });
-    release({ delivered: true });
+    release({ state: 'delivered' });
     await expect(sharing).resolves.toMatchObject({ name: 'share-failed' });
     await deleting;
 
@@ -580,7 +616,7 @@ describe('deleting offline sessions that were shared', () => {
 
   it('stores nothing when the in-flight upload of a deleted session fails', async () => {
     const s = setup();
-    let release: (r: DeliveryResult) => void = () => undefined;
+    let release: (r: UploadResult) => void = () => undefined;
     s.postEvents.mockReturnValueOnce(
       new Promise((resolve) => {
         release = resolve;
@@ -590,7 +626,7 @@ describe('deleting offline sessions that were shared', () => {
     await vi.waitFor(() => expect(s.postEvents).toHaveBeenCalledTimes(1));
     const deleting = s.sharing.deleteSessions(['session-1']);
     release({
-      delivered: false,
+      state: 'not-delivered',
       error: new Error('Server answered 503'),
       unsent: ['{}'],
     });

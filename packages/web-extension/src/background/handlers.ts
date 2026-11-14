@@ -1,14 +1,12 @@
 import type Channel from '~/utils/channel';
 import { EventName, ServiceName } from '~/types';
 import type { RecordedEvent, ShareResult } from '~/types';
-import type { createFailedUploads } from './failedUploads';
 import type { createRecorder } from './recorder';
 import type { createSessionSharing } from './shareSession';
 
 /** What the handlers act on, once the background has finished starting. */
 export type BackgroundServices = {
   recorder: ReturnType<typeof createRecorder>;
-  failedUploads: ReturnType<typeof createFailedUploads>;
   sharing: ReturnType<typeof createSessionSharing>;
 };
 
@@ -55,30 +53,6 @@ export function registerHandlers(
       }),
     ),
   );
-  // Retry never rejects: a failure is stored as the upload's retry-failed
-  // state, which the popup shows. Discard and log out can fail on storage.
-  channel.on(EventName.RetryUploadClicked, (data) => {
-    const recordingId = stringField(data, 'recordingId');
-    if (recordingId !== 'invalid')
-      whenReady('retry the upload', ({ failedUploads }) =>
-        failedUploads.retry(recordingId),
-      );
-  });
-  channel.on(EventName.DiscardUploadClicked, (data) => {
-    const recordingId = stringField(data, 'recordingId');
-    if (recordingId !== 'invalid')
-      whenReady('discard the recording', ({ failedUploads }) =>
-        failedUploads.discard(recordingId),
-      );
-  });
-  channel.on(EventName.UserLoggedOut, (data) => {
-    const userId = stringField(data, 'userId');
-    if (userId !== 'invalid')
-      whenReady("delete the user's failed uploads", ({ failedUploads }) =>
-        failedUploads.forgetUser(userId),
-      );
-  });
-
   // Deleting sessions also removes what Share kept for them, so it runs here.
   // It rejects if the background could not start or storage failed.
   channel.provide(ServiceName.DeleteSessions, async (params) => {
@@ -96,7 +70,7 @@ export function registerHandlers(
     return undefined;
   });
 
-  // Offline sessions are shared with the stored account (Chromium only).
+  // Offline sessions are shared with the connected account (Chromium only).
   if (options.shareEnabled) {
     channel.provide(
       ServiceName.ShareSession,
@@ -115,11 +89,4 @@ export function registerHandlers(
       },
     );
   }
-}
-
-/** A non-empty string field of a runtime message, or 'invalid'. */
-function stringField(data: unknown, key: string): string | 'invalid' {
-  if (typeof data !== 'object' || data === null) return 'invalid';
-  const value = (data as Record<string, unknown>)[key];
-  return typeof value === 'string' && value !== '' ? value : 'invalid';
 }

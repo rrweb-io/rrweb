@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "rrweb",
-    "description": "Record and replay a browser tab with rrweb. Keep recordings in your browser, or sign in to save them to your rrweb account.",
+    "description": "Record and replay a browser tab with rrweb. Keep recordings in your browser, or connect your rrweb account to save them there.",
     "icons": {
       "16": "icon16.png",
       "48": "icon48.png",

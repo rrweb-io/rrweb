@@ -19,20 +19,20 @@ import {
   RecordingControls,
   type RecorderControls,
 } from './PopupParts';
-import { recordingNote, type SignedOutPanel } from './account';
+import { recordingNote, type NotConnectedPanel } from './account';
 
 /**
- * Firefox has no sign-in, so only offline recording is offered there.
- * `modeSwitch` is passed in, so the Firefox build holds no switch code.
+ * Firefox has no Cloud, so only offline recording is offered there.
+ * `modeSwitch` is passed in, so the Firefox popup shows no switch.
  */
 export type CloudOffer =
   | { name: 'unavailable' }
   | {
       name: 'available';
       modeSwitch: ReactNode;
-      panel: SignedOutPanel;
+      panel: NotConnectedPanel;
+      onConnect: () => void;
       onSignUp: () => void;
-      onLogIn: () => void;
     };
 
 const PITCH_POINTS = [
@@ -73,7 +73,7 @@ function CloudPitch() {
   );
 }
 
-export function SignedOutView({
+export function NotConnectedView({
   cloud,
   recorder,
   newSession,
@@ -106,7 +106,7 @@ export function SignedOutView({
               autoFocus
             />
           </Flex>
-          <Note>{recordingNote('offline', { name: 'signed-out' })}</Note>
+          <Note>{recordingNote('offline', { name: 'not-connected' })}</Note>
           <RecorderError recorder={recorder} />
           {newSession && (
             <Text fontSize="13px" mt="12px">
@@ -124,18 +124,18 @@ export function SignedOutView({
             variant="signup"
             w="100%"
             mt={pitching ? '4px' : '16px'}
-            onClick={cloud.onSignUp}
+            onClick={cloud.onConnect}
           >
-            Sign up free
+            Connect your rrweb account
           </Button>
           <Link
             as="button"
-            onClick={cloud.onLogIn}
+            onClick={cloud.onSignUp}
             alignSelf="center"
             fontSize="13px"
             mt="12px"
           >
-            I already have an account · Log in
+            Create a free account
           </Link>
         </>
       ) : (

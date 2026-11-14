@@ -1,14 +1,15 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, createElement, type ReactNode } from 'react';
+import { act, createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { ChakraProvider } from '@chakra-ui/react';
-import type { CloudAccountView } from '~/cloud/useCloudAccount';
+import type { ConnectionView } from '~/utils/useConnection';
 
 const fake = vi.hoisted(() => ({
   store: {} as Record<string, unknown>,
-  view: { name: 'signed-out' } as { name: string },
+  connection: { name: 'not-connected' } as { name: string },
   failGet: false,
+  disconnect: (() => Promise.resolve()) as () => Promise<void>,
 }));
 
 vi.mock('webextension-polyfill', () => ({
@@ -29,38 +30,24 @@ vi.mock('webextension-polyfill', () => ({
   },
 }));
 
-vi.mock('~/cloud/CloudGate', () => ({
-  default: ({ children }: { children: ReactNode }) => children,
-}));
-
-vi.mock('~/cloud/useCloudAccount', () => ({
-  useCloudAccount: () => ({
-    view: fake.view,
-    orgSwitch: { name: 'idle' },
-    pickOrg: () => undefined,
-    logOut: () => undefined,
-    tryAgain: () => undefined,
-  }),
+vi.mock('~/utils/useConnection', () => ({
+  useConnection: () => fake.connection,
+  disconnect: () => fake.disconnect(),
 }));
 
 import CloudApp from './CloudApp';
-import { SignedOutView } from './SignedOutView';
+import { NotConnectedView } from './NotConnectedView';
 import { config } from '~/config';
 import { LocalDataKey, RecorderStatus } from '~/types';
 import type { RecorderControls } from './PopupParts';
 import type { ActiveRecording } from './account';
 
-const ready: CloudAccountView = {
-  name: 'ready',
-  account: {
-    userId: 'user_1',
-    orgId: 'org_1',
-    orgName: 'Acme',
-    publicKey: 'pk_acme',
-  },
-  orgs: [{ id: 'org_1', name: 'Acme' }],
-  email: 'jane@example.com',
+const ready: ConnectionView = {
+  name: 'connected',
+  account: { orgId: 'org_1', orgName: 'Acme', publicKey: 'pk_acme' },
 };
+const notConnected: ConnectionView = { name: 'not-connected' };
+const CONNECT_URL = `${config.dashboardUrl}/extension/connect`;
 
 let root: Root;
 let container: HTMLDivElement;
@@ -72,14 +59,12 @@ function controls(
   return {
     status,
     active,
+    uploadsTo: { name: 'none' },
     startTime: null,
     errorMessage: null,
     toggle: vi.fn(),
     pause: () => undefined,
     resume: () => undefined,
-    failedUploads: [],
-    retryUpload: () => undefined,
-    discardUpload: () => undefined,
   };
 }
 
@@ -93,11 +78,11 @@ function makeLinks() {
 
 /** Opens the popup and waits for the remembered choice to load. */
 async function open(
-  view: CloudAccountView,
+  view: ConnectionView,
   recorder = controls(),
   links = makeLinks(),
 ) {
-  fake.view = view;
+  fake.connection = view;
   await act(async () => {
     root.render(
       createElement(
@@ -158,19 +143,41 @@ describe('the popup recording mode switch', () => {
 
   afterEach(() => act(() => root.unmount()));
 
-  it('signed in, Cloud is the default and sends the account ids', async () => {
+  it('connected, Cloud is the default and sends the organization', async () => {
     const { recorder } = await open(ready);
     expect(checked(radio('Cloud'))).toBe(true);
     expect(checked(radio('Offline'))).toBe(false);
     expect(container.textContent).toContain(
-      'Uploads to Acme. Form fields are masked.',
+      'Uploads to Acme when you stop. Form fields are masked.',
     );
     act(() => button('Start recording').click());
     expect(recorder.toggle).toHaveBeenCalledWith({
       mode: 'cloud',
-      userId: 'user_1',
       orgId: 'org_1',
     });
+  });
+
+  it('names the organization a running recording started with, not a newer connection', async () => {
+    const running = {
+      ...controls(RecorderStatus.RECORDING, 'cloud'),
+      uploadsTo: { name: 'organization' as const, orgName: 'Old Org' },
+    };
+    await open(ready, running);
+    expect(container.textContent).toContain(
+      'Uploads to Old Org when you stop. Form fields are masked.',
+    );
+  });
+
+  it('connected, it names the organization and offers to change or disconnect it', async () => {
+    const disconnect = vi.fn(() => Promise.resolve());
+    fake.disconnect = disconnect;
+    const { links } = await open(ready);
+    expect(container.textContent).toContain('Acme');
+    act(() => button('Change organization').click());
+    expect(links.openUrl).toHaveBeenCalledWith(CONNECT_URL);
+    expect(disconnect).not.toHaveBeenCalled();
+    act(() => button('Disconnect').click());
+    expect(disconnect).toHaveBeenCalledOnce();
   });
 
   it('a failed read of the saved choice still lets you record', async () => {
@@ -182,7 +189,7 @@ describe('the popup recording mode switch', () => {
     expect(recorder.toggle).toHaveBeenCalledWith({ mode: 'offline' });
   });
 
-  it('signed in, choosing Offline sends an offline start', async () => {
+  it('connected, choosing Offline sends an offline start', async () => {
     const { recorder } = await open(ready);
     act(() => radio('Offline').click());
     expect(checked(radio('Offline'))).toBe(true);
@@ -194,7 +201,7 @@ describe('the popup recording mode switch', () => {
     expect(recorder.toggle).toHaveBeenCalledTimes(1);
   });
 
-  it('the arrow keys move the choice and skip a disabled Cloud while setting up', async () => {
+  it('the arrow keys move the choice, connected or not', async () => {
     await open(ready);
     const group = container.querySelector('[role="radiogroup"]')!;
     const press = (key: string) =>
@@ -210,7 +217,7 @@ describe('the popup recording mode switch', () => {
     press('ArrowLeft');
     expect(checked(radio('Cloud'))).toBe(true);
 
-    await reopen({ name: 'signed-out' });
+    await reopen(notConnected);
     press('ArrowLeft');
     expect(checked(radio('Cloud'))).toBe(true);
   });
@@ -235,10 +242,9 @@ describe('the popup recording mode switch', () => {
     'AI narration explains what happened in each session',
   ];
 
-  it('signed out, choosing Cloud pitches sign-up and offers no recording', async () => {
-    const { recorder } = await open({ name: 'signed-out' });
+  it('not connected, choosing Cloud pitches connecting and offers no recording', async () => {
+    const { recorder } = await open(notConnected);
     expect(radio('Cloud').disabled).toBe(false);
-    expect(radio('Cloud').textContent).not.toContain('sign in');
     act(() => radio('Cloud').click());
     expect(checked(radio('Cloud'))).toBe(true);
     expect(container.textContent).toContain('Save recordings to rrweb Cloud');
@@ -246,44 +252,47 @@ describe('the popup recording mode switch', () => {
       li.textContent?.trim(),
     );
     expect(items).toEqual(POINTS);
-    expect(controlsNamed('Sign up free')).toHaveLength(1);
-    expect(controlsNamed('I already have an account')).toHaveLength(1);
+    expect(controlsNamed('Connect your rrweb account')).toHaveLength(1);
+    expect(controlsNamed('Create a free account')).toHaveLength(1);
     expect(controlsNamed('Record offline')).toHaveLength(0);
     expect(container.textContent).not.toContain('Saved in this browser only.');
     expect(controlsNamed('Cloud dashboard')).toHaveLength(0);
     expect(recorder.toggle).not.toHaveBeenCalled();
   });
 
-  it('signed out, Offline is the default and records offline', async () => {
-    const { recorder, links } = await open({ name: 'signed-out' });
+  it('not connected, Offline is the default and records offline', async () => {
+    const { recorder, links } = await open(notConnected);
     expect(checked(radio('Offline'))).toBe(true);
     expect(container.textContent).toContain('Saved in this browser only.');
     expect(container.textContent).not.toContain('share it later');
     expect(container.querySelectorAll('li')).toHaveLength(0);
     act(() => button('Record offline').click());
     expect(recorder.toggle).toHaveBeenCalledWith({ mode: 'offline' });
-    act(() => button('Sign up free').click());
-    expect(links.openUrl).toHaveBeenCalledWith(`${config.dashboardUrl}/signup`);
+    act(() => button('Connect your rrweb account').click());
+    expect(links.openUrl).toHaveBeenCalledWith(CONNECT_URL);
     act(() => button('Offline sessions').click());
     expect(links.openSessions).toHaveBeenCalledTimes(1);
   });
 
-  it('signed out, Sign up free in the pitch opens signup and Log in opens signin', async () => {
-    const { links } = await open({ name: 'signed-out' });
+  it('not connected, the pitch opens the connect page and the sign-up page', async () => {
+    const { links } = await open(notConnected);
     act(() => radio('Cloud').click());
-    act(() => button('Sign up free').click());
-    expect(links.openUrl).toHaveBeenCalledWith(`${config.dashboardUrl}/signup`);
-    act(() =>
-      (controlsNamed('I already have an account')[0] as HTMLElement).click(),
+    act(() => button('Connect your rrweb account').click());
+    expect(links.openUrl).toHaveBeenCalledWith(CONNECT_URL);
+    act(() => button('Create a free account').click());
+    // New accounts return to the connect page.
+    expect(links.openUrl).toHaveBeenCalledWith(
+      `${config.dashboardUrl}/signup?redirect_url=${encodeURIComponent(
+        CONNECT_URL,
+      )}`,
     );
-    expect(links.openUrl).toHaveBeenCalledWith(`${config.dashboardUrl}/signin`);
   });
 
-  it('a signed-out choice is remembered, and Cloud carries into sign-in', async () => {
-    await open({ name: 'signed-out' });
+  it('a choice made before connecting is remembered, and Cloud carries over', async () => {
+    await open(notConnected);
     act(() => radio('Cloud').click());
     expect(fake.store[LocalDataKey.recordingMode]).toBe('cloud');
-    await reopen({ name: 'signed-out' });
+    await reopen(notConnected);
     expect(checked(radio('Cloud'))).toBe(true);
     expect(container.textContent).toContain('Save recordings to rrweb Cloud');
     await reopen(ready);
@@ -291,16 +300,16 @@ describe('the popup recording mode switch', () => {
     expect(controlsNamed('Start recording')).toHaveLength(1);
 
     act(() => radio('Offline').click());
-    await reopen({ name: 'signed-out' });
+    await reopen(notConnected);
     expect(checked(radio('Offline'))).toBe(true);
     expect(controlsNamed('Record offline')).toHaveLength(1);
   });
 
-  it('while recording signed out, the pitch never replaces the stop controls', async () => {
+  it('while recording with nothing connected, the pitch never replaces the stop controls', async () => {
     fake.store[LocalDataKey.recordingMode] = 'cloud';
     for (const active of ['offline', 'cloud'] as const) {
       const { recorder } = await reopen(
-        { name: 'signed-out' },
+        notConnected,
         controls(RecorderStatus.RECORDING, active),
       );
       expect(radio('Cloud').disabled).toBe(true);
@@ -314,26 +323,6 @@ describe('the popup recording mode switch', () => {
       expect(recorder.toggle).toHaveBeenCalledTimes(1);
     }
   });
-
-  for (const stage of ['validating', 'setting-up', 'setup-slow'] as const) {
-    it(`${stage}: Offline stays usable while Cloud waits`, async () => {
-      fake.store[LocalDataKey.recordingMode] = 'cloud';
-      const { recorder } = await open({ name: stage });
-      expect(radio('Cloud').disabled).toBe(true);
-      expect(checked(radio('Offline'))).toBe(true);
-      expect(radio('Offline').disabled).toBe(false);
-      expect(container.querySelector('[role="status"]')?.textContent).toMatch(
-        stage === 'validating' ? /Checking your account/ : /Setting up/,
-      );
-      const record = button('Record offline');
-      expect(record.disabled).toBe(false);
-      act(() => record.click());
-      expect(recorder.toggle).toHaveBeenCalledWith({ mode: 'offline' });
-      expect(controlsNamed('Try again')).toHaveLength(
-        stage === 'setup-slow' ? 1 : 0,
-      );
-    });
-  }
 
   it('while recording, the switch is locked on the recording’s mode', async () => {
     fake.store[LocalDataKey.recordingMode] = 'cloud';
@@ -378,7 +367,7 @@ describe('the popup recording mode switch', () => {
   });
 });
 
-describe('the popup without sign-in (Firefox)', () => {
+describe('the popup without Cloud (Firefox)', () => {
   beforeEach(() => {
     container = document.createElement('div');
     root = createRoot(container);
@@ -394,7 +383,7 @@ describe('the popup without sign-in (Firefox)', () => {
         createElement(
           ChakraProvider,
           null,
-          createElement(SignedOutView, {
+          createElement(NotConnectedView, {
             cloud: { name: 'unavailable' },
             recorder,
             newSession: null,

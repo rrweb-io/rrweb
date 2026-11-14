@@ -16,15 +16,16 @@ export type ManifestSource = {
  *
  * Neither build has a content script or host access to every site. Pressing
  * record injects the recorder into the current tab only, through `activeTab`
- * (plus `scripting` on Chrome). Clerk sign-in is Chromium only, so only the
- * Chrome manifest gets `cookies` and the Clerk hosts.
+ * (plus `scripting` on Chrome). Cloud is Chrome only, so only the Chrome
+ * manifest lets the dashboard (`dashboardUrl`) message the extension, which is
+ * how the dashboard connects an organization.
  */
 export function buildManifest(
   source: ManifestSource,
   options: {
     browser: 'chrome' | 'firefox';
     base: ManifestPart;
-    clerkHostPermissions: string[];
+    dashboardUrl: string;
     key?: string;
   },
 ): ManifestPart {
@@ -37,9 +38,11 @@ export function buildManifest(
   };
   if (version === 'v3')
     Object.assign(manifest, {
-      permissions: [...source.common.permissions, 'scripting', 'cookies'],
+      permissions: [...source.common.permissions, 'scripting'],
       // eslint-disable-next-line camelcase -- a manifest key
-      host_permissions: [...options.clerkHostPermissions],
+      externally_connectable: {
+        matches: [`${new URL(options.dashboardUrl).origin}/*`],
+      },
       ...(options.key ? { key: options.key } : {}),
     });
   return manifest;

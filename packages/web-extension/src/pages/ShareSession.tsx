@@ -12,13 +12,17 @@ import {
   Link,
   Text,
 } from '@chakra-ui/react';
-import { ACCOUNT_NOT_SET_UP_ERROR } from '~/background/sinks';
 import { ACCOUNT_HREF } from '~/components/PageChrome';
 import { config } from '~/config';
 import { LocalDataKey, ServiceName } from '~/types';
-import type { LocalData, SharedSessions, ShareResult } from '~/types';
+import type {
+  LocalData,
+  RecordingKind,
+  SharedSessions,
+  ShareResult,
+} from '~/types';
 import Channel from '~/utils/channel';
-import { useStoredOrg } from './StoredOrgLabel';
+import { useConnection } from '~/utils/useConnection';
 
 const channel = new Channel();
 
@@ -105,23 +109,41 @@ function shareResultFrom(value: unknown): ShareResult {
 const linkProps = { as: 'a', target: '_blank', rel: 'noreferrer' } as const;
 
 /**
- * "Share" for one offline session: uploads it to the stored account's
+ * "Share" for one offline session: uploads it to the connected
  * organization after the person confirms a warning that form fields are not
  * masked. Once shared it opens the cloud copy instead.
  */
-export function ShareSession({ sessionId }: { sessionId: string }) {
+export function ShareSession({
+  sessionId,
+  recordedAs,
+}: {
+  sessionId: string;
+  recordedAs: RecordingKind;
+}) {
   // Keyed: a table cell can be reused for another session, and nothing about
   // one session's attempt, or its late answer, may reach the next.
-  return <ShareOneSession key={sessionId} sessionId={sessionId} />;
+  return (
+    <ShareOneSession
+      key={sessionId}
+      sessionId={sessionId}
+      recordedAs={recordedAs}
+    />
+  );
 }
 
-function ShareOneSession({ sessionId }: { sessionId: string }) {
-  const org = useStoredOrg();
+function ShareOneSession({
+  sessionId,
+  recordedAs,
+}: {
+  sessionId: string;
+  recordedAs: RecordingKind;
+}) {
+  const connection = useConnection();
   const stored = useStoredShare(sessionId);
   const [attempt, setAttempt] = useState<Attempt>({ name: 'not-shared' });
   const cancelRef = useRef<HTMLButtonElement>(null);
 
-  if (org.name === 'loading' || stored.name === 'loading') return null;
+  if (connection.name === 'loading' || stored.name === 'loading') return null;
   const shared =
     stored.name === 'shared'
       ? stored
@@ -139,24 +161,23 @@ function ShareOneSession({ sessionId }: { sessionId: string }) {
         Open in rrweb
       </Button>
     );
-  if (org.name === 'none')
+  if (connection.name === 'not-connected')
     return (
-      // The Account page, in this tab, signs in and connects the organization;
-      // this page follows the stored account when that is done.
+      // The Account page, in this tab, links to the dashboard that connects
+      // an organization; this page follows the connection when that is done.
       <Button as="a" href={ACCOUNT_HREF} variant="quiet" size="sm">
-        Sign in to share
+        Connect to share
       </Button>
     );
+  const org = connection.account;
 
   const upload = async () => {
-    if (org.name !== 'org') return;
     setAttempt({ name: 'uploading' });
     let result: ShareResult;
     try {
       result = shareResultFrom(
         await channel.request(ServiceName.ShareSession, {
           sessionId,
-          userId: org.userId,
           orgId: org.orgId,
         }),
       );
@@ -176,13 +197,7 @@ function ShareOneSession({ sessionId }: { sessionId: string }) {
         size="sm"
         isLoading={attempt.name === 'uploading'}
         loadingText="Uploading"
-        onClick={() =>
-          setAttempt(
-            org.name === 'not-set-up'
-              ? { name: 'share-failed', errorMessage: ACCOUNT_NOT_SET_UP_ERROR }
-              : { name: 'confirming' },
-          )
-        }
+        onClick={() => setAttempt({ name: 'confirming' })}
       >
         Share
       </Button>
@@ -208,8 +223,9 @@ function ShareOneSession({ sessionId }: { sessionId: string }) {
               {stored.name === 'pending'
                 ? `This finishes the earlier upload to ${stored.orgName} in rrweb.`
                 : `This uploads the recording to ${org.orgName} in rrweb.`}{' '}
-              Offline recordings don't mask form fields, so anything typed into
-              forms on this page will be uploaded. Password fields stay masked.
+              {recordedAs === 'cloud'
+                ? 'Form fields were masked when this was recorded.'
+                : "Offline recordings don't mask form fields, so anything typed into forms on this page will be uploaded. Password fields stay masked."}
               <Text mt="12px">
                 <Link href={config.privacyPolicyUrl} isExternal>
                   Read how rrweb handles your recordings in our privacy policy

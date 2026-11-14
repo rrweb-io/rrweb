@@ -1,7 +1,7 @@
 import type { eventWithTime } from '@rrweb/types';
 import { RecorderStatus, ServiceName } from '~/types';
 import type {
-  CloudAccount,
+  Connection,
   LocalData,
   LocalDataKey,
   RecordedEvent,
@@ -13,13 +13,17 @@ import type { RecordingSink, SinkTarget } from './sinks';
 
 /** Chrome stops an idle MV3 service worker after about 30 s. */
 export const KEEPALIVE_INTERVAL_MS = 25_000;
+/** How long the page may take to confirm a start before it is given up. */
+export const START_TIMEOUT_MS = 15_000;
+export const START_TIMEOUT_ERROR =
+  'The page did not start recording. Reload the tab and try again.';
 
 type Status = LocalData[LocalDataKey.recorderStatus];
 
 export type RecorderDeps = {
   /** Called with the status after every change, for the toolbar badge. */
   onStatus?: (status: Status) => void;
-  getAccount: () => Promise<CloudAccount | null>;
+  getConnection: () => Promise<Connection>;
   getTabUrl: (tabId: number) => Promise<string | undefined>;
   getTabTitle: (tabId: number) => Promise<string | undefined>;
   getCurrentTabId: () => Promise<number>;
@@ -42,10 +46,16 @@ export type RecorderDeps = {
   pingBrowser: () => Promise<unknown>;
   /** Run `tick` every `ms` until the returned function is called. */
   every: (ms: number, tick: () => void) => () => void;
+  /** Resolves after `ms`. */
+  after: (ms: number) => Promise<void>;
   now: () => number;
   /** A fresh, unguessable token for each recording. */
   newToken: () => string;
 };
+
+/** What the popup shows when a cloud recording could not upload on Stop. */
+export const uploadFailedMessage = (reason: string) =>
+  `The recording did not upload (${reason}). It is saved in Offline sessions, where Share tries again.`;
 
 /** Where an event came from, as the browser reports the message sender. */
 export type EventSource = { tabId?: number; frameId?: number };
@@ -56,7 +66,7 @@ export type EventSource = { tabId?: number; frameId?: number };
  * document goes away (a navigation, a reload or the tab closing), the
  * recording finishes the same way Stop does. The sink lives for the whole
  * recording, so the account is read once at start and later account changes
- * are ignored.
+ * are ignored. A cloud recording uploads when it finishes.
  */
 export function createRecorder(deps: RecorderDeps) {
   // One sink per recording, so it also identifies the recording: an async step
@@ -117,14 +127,27 @@ export function createRecorder(deps: RecorderDeps) {
 
     const result = await startRecording({
       request,
-      getAccount: deps.getAccount,
+      getConnection: deps.getConnection,
       getTabUrl: () => deps.getTabUrl(tabId),
       requestStart: async (config) => {
         await deps.injectRecorder(tabId);
-        return deps.requestToTab(tabId, ServiceName.StartRecord, {
+        // A page script blocked by the site never confirms; without a limit
+        // the start would hold the record button forever.
+        const confirmed = deps.requestToTab(tabId, ServiceName.StartRecord, {
           config,
           token,
         }) as Promise<{ startTimestamp: number }>;
+        const timedOut = deps
+          .after(START_TIMEOUT_MS)
+          .then(() => 'timed-out' as const);
+        const first = await Promise.race([confirmed, timedOut]);
+        if (first === 'timed-out') {
+          void deps
+            .requestToTab(tabId, ServiceName.StopRecord, {})
+            .catch(() => undefined);
+          throw new Error(START_TIMEOUT_ERROR);
+        }
+        return first;
       },
       requestStop: () => deps.requestToTab(tabId, ServiceName.StopRecord, {}),
       createSink: deps.createSink,
@@ -146,13 +169,15 @@ export function createRecorder(deps: RecorderDeps) {
       activeTabId: tabId,
       startTimestamp: result.startTimestamp,
       kind: sink.kind,
+      ...(sink.uploadsTo.name === 'organization'
+        ? { uploadsTo: sink.uploadsTo.orgName }
+        : {}),
     });
-    // Keep the service worker, and with it the sink, alive while recording,
-    // even when the page sends no events.
+    // Keep the service worker, and with it the sink's events, alive while
+    // recording, even when the page sends no events.
     stopKeepalive();
     stopKeepalive = deps.every(KEEPALIVE_INTERVAL_MS, () => {
       void deps.pingBrowser().catch(() => undefined);
-      sink?.flush();
     });
     await save();
   }
@@ -185,18 +210,22 @@ export function createRecorder(deps: RecorderDeps) {
       'new session';
     if (!finishingSink || sink !== finishingSink) return;
     sink = null;
-    // The keepalive goes with the sink: unsent events are lost if Chrome stops
-    // the worker before the upload is delivered or kept. A recording started
-    // meanwhile gets its own.
+    // The keepalive goes with the sink, until its events are stored and any
+    // upload has settled: Chrome could stop the worker part way otherwise. A
+    // recording started meanwhile gets its own.
     const stopFinishingKeepalive = stopKeepalive;
     stopKeepalive = () => undefined;
     try {
       status = { status: RecorderStatus.IDLE, activeTabId: -1 };
+      const idle = status;
       await save();
       const result = await finishingSink.finish(title);
-      // upload-failed: the popup lists it from storage, with a retry
-      if (result.state !== 'delivered') return;
-      if (result.session) deps.onSessionUpdated(result.session);
+      if (result.state !== 'uploaded') deps.onSessionUpdated(result.session);
+      // A recording started during the upload keeps its own status.
+      if (result.state === 'upload-failed' && status === idle) {
+        status.errorMessage = uploadFailedMessage(result.errorMessage);
+        void save();
+      }
       await deps.openTab(result.openUrl);
     } catch (e) {
       status.errorMessage = (e as { message: string }).message;
@@ -224,10 +253,9 @@ export function createRecorder(deps: RecorderDeps) {
     const tabId = status.activeTabId;
     const { startTimestamp, pausedTimestamp } = status;
     const pausedTime = pausedTimestamp ? deps.now() - pausedTimestamp : 0;
-    // Decrease the time spent in the pause state and make the offline recording
-    // look continuous. Cloud sinks have no shiftEvents, since events already sent
-    // cannot be rewritten.
-    sink?.shiftEvents?.(pausedTime);
+    // Decrease the time spent in the pause state and make the recording look
+    // continuous.
+    sink?.shiftEvents(pausedTime);
     const startResponse = await deps
       .injectRecorder(tabId)
       .then(() =>
@@ -242,7 +270,7 @@ export function createRecorder(deps: RecorderDeps) {
       });
     if (!startResponse || status.status !== RecorderStatus.PAUSED) {
       // Restore the events data when the recording fails to start.
-      sink?.shiftEvents?.(-pausedTime);
+      sink?.shiftEvents(-pausedTime);
       return;
     }
     status = {
@@ -250,6 +278,7 @@ export function createRecorder(deps: RecorderDeps) {
       activeTabId: tabId,
       startTimestamp: (startTimestamp || deps.now()) + pausedTime,
       kind: status.kind,
+      uploadsTo: status.uploadsTo,
     };
     await save();
   }

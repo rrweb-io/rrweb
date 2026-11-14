@@ -5,6 +5,7 @@ import Replayer from 'rrweb-player';
 import 'rrweb-player/dist/style.css';
 import { Box, Flex, Heading, Link } from '@chakra-ui/react';
 import { getEvents, getSession } from '~/utils/storage';
+import type { RecordingKind } from '~/types';
 import { ShareAction } from './ShareAction';
 
 export default function Player() {
@@ -12,12 +13,14 @@ export default function Player() {
   const playerRef = useRef<Replayer | null>(null);
   const { sessionId } = useParams();
   const [sessionName, setSessionName] = useState('');
+  const [recordedAs, setRecordedAs] = useState<RecordingKind>('offline');
 
   useEffect(() => {
     if (!sessionId) return;
     getSession(sessionId)
       .then((session) => {
         setSessionName(session.name);
+        setRecordedAs(session.recordedAs ?? 'offline');
       })
       .catch((err) => {
         console.error(err);
@@ -71,7 +74,7 @@ export default function Player() {
         </Heading>
         {sessionId && (
           <Box flexShrink={0}>
-            <ShareAction sessionId={sessionId} />
+            <ShareAction sessionId={sessionId} recordedAs={recordedAs} />
           </Box>
         )}
       </Flex>

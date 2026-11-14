@@ -1,18 +1,13 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Browser from 'webextension-polyfill';
 import Channel from '~/utils/channel';
+import { config } from '~/config';
 import { LocalDataKey, RecorderStatus, EventName } from '~/types';
-import type { FailedUpload, LocalData, Session } from '~/types';
-import { LoadingView, type RecorderControls } from './PopupParts';
-import { SignedOutView } from './SignedOutView';
+import type { LocalData, Session } from '~/types';
+import type { RecorderControls } from './PopupParts';
+import { NotConnectedView } from './NotConnectedView';
+import CloudApp from './CloudApp';
 import { activeRecording, type ActiveRecording } from './account';
-
-// Same test as `config.cloudEnabled`, written inline so the bundler folds it
-// and the Firefox build contains no Clerk code at all.
-const CloudApp =
-  import.meta.env.VITE_TARGET_BROWSER !== 'firefox'
-    ? lazy(() => import('./CloudApp'))
-    : 'cloud-disabled';
 
 const channel = new Channel();
 
@@ -37,16 +32,23 @@ const links: PopupLinks = {
 function useRecorder(): PopupRecorder {
   const [status, setStatus] = useState<RecorderStatus>(RecorderStatus.IDLE);
   const [active, setActive] = useState<ActiveRecording>('not-recording');
+  const [uploadsTo, setUploadsTo] = useState<RecorderControls['uploadsTo']>({
+    name: 'none',
+  });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [newSession, setNewSession] = useState<Session | null>(null);
-  const [failedUploads, setFailedUploads] = useState<FailedUpload[]>([]);
 
   useEffect(() => {
     const parseStatusData = (data: LocalData[LocalDataKey.recorderStatus]) => {
       const { status, startTimestamp, pausedTimestamp } = data;
       setStatus(status);
       setActive(activeRecording(data));
+      setUploadsTo(
+        data.uploadsTo
+          ? { name: 'organization', orgName: data.uploadsTo }
+          : { name: 'none' },
+      );
       if (startTimestamp && pausedTimestamp)
         setStartTime(Date.now() - pausedTimestamp + startTimestamp);
       else if (startTimestamp) setStartTime(startTimestamp);
@@ -56,18 +58,9 @@ function useRecorder(): PopupRecorder {
       if (!data || !data[LocalDataKey.recorderStatus]) return;
       parseStatusData((data as LocalData)[LocalDataKey.recorderStatus]);
     });
-    void Browser.storage.local.get(LocalDataKey.failedUploads).then((data) => {
-      setFailedUploads((data as LocalData)[LocalDataKey.failedUploads] ?? []);
-    });
     const onChanged = (
       changes: Record<string, Browser.Storage.StorageChange>,
     ) => {
-      if (changes[LocalDataKey.failedUploads])
-        setFailedUploads(
-          (changes[LocalDataKey.failedUploads].newValue as
-            | FailedUpload[]
-            | undefined) ?? [],
-        );
       if (!changes[LocalDataKey.recorderStatus]) return;
       const data = changes[LocalDataKey.recorderStatus]
         .newValue as LocalData[LocalDataKey.recorderStatus];
@@ -85,6 +78,7 @@ function useRecorder(): PopupRecorder {
     () => ({
       status,
       active,
+      uploadsTo,
       startTime,
       errorMessage,
       toggle: (startAs) => {
@@ -95,22 +89,17 @@ function useRecorder(): PopupRecorder {
       },
       pause: () => void channel.emit(EventName.PauseButtonClicked, {}),
       resume: () => void channel.emit(EventName.ResumeButtonClicked, {}),
-      failedUploads,
-      retryUpload: (recordingId) =>
-        void channel.emit(EventName.RetryUploadClicked, { recordingId }),
-      discardUpload: (recordingId) =>
-        void channel.emit(EventName.DiscardUploadClicked, { recordingId }),
     }),
-    [status, active, startTime, errorMessage, failedUploads],
+    [status, active, uploadsTo, startTime, errorMessage],
   );
   return { controls, newSession };
 }
 
 export function App() {
   const recorder = useRecorder();
-  if (CloudApp === 'cloud-disabled') {
+  if (!config.cloudEnabled) {
     return (
-      <SignedOutView
+      <NotConnectedView
         cloud={{ name: 'unavailable' }}
         recorder={recorder.controls}
         newSession={recorder.newSession}
@@ -119,9 +108,5 @@ export function App() {
       />
     );
   }
-  return (
-    <Suspense fallback={<LoadingView />}>
-      <CloudApp recorder={recorder} links={links} />
-    </Suspense>
-  );
+  return <CloudApp recorder={recorder} links={links} />;
 }

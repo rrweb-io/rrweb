@@ -67,7 +67,6 @@ const SHARED: ShareResult = { name: 'shared', recordingId: 'rec_1' };
 function fakeServices() {
   return {
     recorder: { start: vi.fn(async () => undefined) },
-    failedUploads: {},
     sharing: {
       share: vi.fn(async () => SHARED),
       deleteSessions: vi.fn(async () => undefined),

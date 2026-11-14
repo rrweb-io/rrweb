@@ -77,36 +77,6 @@ and are sent to the server with their original call-time timestamps. Events adde
 during active recording use the same callback and delivery path. Calling `stop()`
 discards events still waiting for the recorder to start.
 
-## Custom Recorders
-
-`createTransport(options)` is the upload half of the client, for callers that run their own recorder and supply the recording id, such as a browser extension that uploads from its service worker. It does not touch `document`, `window`, `sessionStorage`, or cookies.
-
-```js
-import { createTransport, postEvents } from '@rrweb/browser-client';
-
-const transport = createTransport({
-  publicApiKey: 'public_key_rr_...',
-  recordingId: 'rec-123',
-  meta: { domain: 'example.com', jsEntrypoint: 'my-recorder' },
-});
-
-transport.send(event); // an rrweb event
-transport.flush(); // POST anything still buffered
-const result = await transport.stop(true); // POSTs anything still buffered, then sends close-permanent; use false for close-temporary
-if (!result.delivered) {
-  // keep result.unsent and try again later
-  await postEvents({ publicApiKey, recordingId }, result.unsent);
-}
-```
-
-- `publicApiKey` and `recordingId`: required.
-- `serverUrl`: optional, same format and default as for `start()`.
-- `meta`: sent as the first `recording-meta` event. `recordVersion` and `recordCommitHash` are added automatically.
-- `flush()`: POSTs the events waiting in the buffer, unless the socket is open and streaming. Events wait there while the socket connects, reconnects, or is paused by a server error.
-- `stop(permanent)`: never rejects. It resolves to `{ delivered: true }`, or to `{ delivered: false, error, unsent }` when a POST failed. `unsent` lists the serialized events the server did not accept, in order, the close event included.
-- `postEvents({ publicApiKey, recordingId, serverUrl }, unsent)`: POSTs serialized events to the recording and resolves the same way as `stop()`.
-- `disconnect()`: closes the socket without ending the recording. The next `send()` opens a new one.
-
 ## Further Reading
 
 - [Browser Client guide](https://rrweb.com/docs/cloud/browser-client)

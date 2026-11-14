@@ -1,29 +1,47 @@
-import { lazy, Suspense } from 'react';
-import { AccountLoading, AccountPage, SignedOutAccount } from './AccountViews';
-
-// Same test as `config.cloudEnabled`, written inline so the bundler folds it
-// and the Firefox build contains no Clerk code at all.
-const CloudAccountPage =
-  import.meta.env.VITE_TARGET_BROWSER !== 'firefox'
-    ? lazy(() => import('./CloudAccountPage'))
-    : 'cloud-disabled';
+import { config, connectUrl, signUpUrl } from '~/config';
+import { disconnect, useConnection } from '~/utils/useConnection';
+import {
+  AccountLoading,
+  AccountPage,
+  ConnectedAccount,
+  NotConnectedAccount,
+} from './AccountViews';
 
 export default function App() {
-  if (CloudAccountPage === 'cloud-disabled')
+  if (!config.cloudEnabled)
     return (
       <AccountPage>
-        <SignedOutAccount offer={{ name: 'unavailable' }} />
+        <NotConnectedAccount offer={{ name: 'unavailable' }} />
       </AccountPage>
     );
+  return <CloudAccount />;
+}
+
+function CloudAccount() {
+  const connection = useConnection();
   return (
-    <Suspense
-      fallback={
-        <AccountPage>
-          <AccountLoading label="Loading" />
-        </AccountPage>
-      }
-    >
-      <CloudAccountPage />
-    </Suspense>
+    <AccountPage>
+      {connection.name === 'loading' ? (
+        <AccountLoading label="Loading" />
+      ) : connection.name === 'connected' ? (
+        <ConnectedAccount
+          account={connection.account}
+          connectUrl={connectUrl()}
+          onDisconnect={() =>
+            void disconnect().catch((e) =>
+              console.error('Could not disconnect:', e),
+            )
+          }
+        />
+      ) : (
+        <NotConnectedAccount
+          offer={{
+            name: 'available',
+            connectUrl: connectUrl(),
+            signUpUrl: signUpUrl(),
+          }}
+        />
+      )}
+    </AccountPage>
   );
 }

@@ -7,6 +7,7 @@ import type { PackageJson } from 'type-fest';
 import react from '@vitejs/plugin-react';
 import semver from 'semver';
 import { buildManifest } from './src/buildManifest';
+import { dashboardUrlFrom } from './src/dashboardUrl';
 import type { ManifestSource } from './src/buildManifest';
 
 const emptyOutDir = !process.argv.includes('--watch');
@@ -66,19 +67,10 @@ function getExtensionVersion(rrwebVersion: string): string {
   }
 }
 
-const PRODUCTION_CLERK_KEY = 'pk_live_Y2xlcmsucnJ3ZWIuY29tJA';
-const DEV_CLERK_KEY =
-  'pk_test_Ymxlc3NlZC1tdXNrcmF0LTk3LmNsZXJrLmFjY291bnRzLmRldiQ';
 // Public half of the dev signing keypair. It pins the dev extension ID.
 // The private key never lives in this repo.
 const DEV_MANIFEST_KEY =
   'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx4sntShzA4hV5C/Q8vlYLCoiNPv/u9H4pLZdYQ5+u7anviY7FedMukpbJ8iE1XNttjzblzxmMfUPWS2BWABd2TX/2d2n8gq0cYIu0dOcTVeTqHbJ7GNEDpb14sRlojgXCdmWs1S9ZjKa+x6XRA+Oq8HESQRlTrHfM/lHH2W5pH5vpXw+5UiVUgArRCYG+GuHBRMWranuglC5p1QDNp3ip3ZH1p3oVE4VkcIYAI3D1HJnGfvtOqH1E3N+PD9DkahjD3pne3aVSp6aQqWIhHW7ZOqrs2YUYLyUaMKhveFxbQ7oEcDkOzjIYQGO4AnLGI6E+zgONzoI8SLEmY/m4RsvJwIDAQAB';
-
-/** A Clerk publishable key encodes its Frontend API host in base64. */
-function clerkFrontendApiHost(publishableKey: string): string {
-  const encoded = publishableKey.split('_').slice(2).join('_');
-  return Buffer.from(encoded, 'base64').toString().replace(/\$$/, '');
-}
 
 function escapeNoncharactersPlugin(): PluginOption {
   return {
@@ -97,22 +89,6 @@ function escapeNoncharactersPlugin(): PluginOption {
 export default defineConfig(({ command, mode }) => {
   const isDevBuild = command === 'serve' || mode === 'development';
   const env = loadEnv(mode, __dirname, 'VITE_');
-  const clerkKey =
-    env.VITE_CLERK_PUBLISHABLE_KEY ||
-    (isDevBuild ? DEV_CLERK_KEY : PRODUCTION_CLERK_KEY);
-  const syncHost = (
-    env.VITE_CLERK_SYNC_HOST || 'https://app.rrweb.com'
-  ).replace(/\/+$/, '');
-  const clerkHostPermissions = new Set([
-    `${syncHost}/*`,
-    `https://${clerkFrontendApiHost(clerkKey)}/*`,
-    ...(isDevBuild
-      ? [
-          'http://localhost/*',
-          `https://${clerkFrontendApiHost(DEV_CLERK_KEY)}/*`,
-        ]
-      : []),
-  ]);
   return {
     root: 'src',
     envDir: __dirname,
@@ -120,7 +96,6 @@ export default defineConfig(({ command, mode }) => {
       'import.meta.env.VITE_TARGET_BROWSER': JSON.stringify(
         process.env.TARGET_BROWSER,
       ),
-      'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(clerkKey),
     },
     // Configure our outputs - nothing special, this is normal vite config
     build: {
@@ -156,7 +131,7 @@ export default defineConfig(({ command, mode }) => {
                   ? { version_name: rrwebVersion }
                   : {}),
               },
-              clerkHostPermissions: [...clerkHostPermissions],
+              dashboardUrl: dashboardUrlFrom(env.VITE_RRWEB_DASHBOARD_URL),
               key: isDevBuild ? DEV_MANIFEST_KEY : undefined,
             },
           );

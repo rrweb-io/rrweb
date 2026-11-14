@@ -1,23 +1,18 @@
-import type { postEvents } from '@rrweb/browser-client';
 import { EventType, type eventWithTime } from '@rrweb/types';
 import type {
   CloudAccount,
+  Connection,
   SessionShare,
   SharedSessions,
   ShareRequest,
   ShareResult,
 } from '~/types';
-import type { StoredUpload } from './failedUploads';
-import {
-  ACCOUNT_NOT_SET_UP_ERROR,
-  checkStoredAccount,
-  CLOUD_SERVER_URL,
-  dashboardRecordingUrl,
-  hostnameOf,
-} from './sinks';
+import type { StoredUnsentEvents } from '~/utils/storage';
+import { checkStoredAccount, dashboardRecordingUrl, hostnameOf } from './sinks';
+import type { uploadEvents } from './upload';
 
 export type SessionSharingDeps = {
-  getAccount: () => Promise<CloudAccount | null>;
+  getConnection: () => Promise<Connection>;
   /** The session's events and recorder, or undefined if it is no longer stored. */
   loadSession: (
     sessionId: string,
@@ -29,10 +24,14 @@ export type SessionSharingDeps = {
   readShared: () => Promise<SharedSessions>;
   writeShared: (shared: SharedSessions) => Promise<void>;
   /** The events of a pending share the server has not accepted yet. */
-  putUnsent: (upload: StoredUpload) => Promise<void>;
-  getUnsent: (recordingId: string) => Promise<StoredUpload | undefined>;
+  putUnsent: (upload: StoredUnsentEvents) => Promise<void>;
+  getUnsent: (recordingId: string) => Promise<StoredUnsentEvents | undefined>;
   deleteUnsent: (recordingId: string) => Promise<void>;
-  postEvents: typeof postEvents;
+  /** `uploadEvents` with the API address filled in. */
+  postEvents: (
+    target: { recordingId: string; publicKey: string },
+    lines: string[],
+  ) => ReturnType<typeof uploadEvents>;
   randomId: () => string;
   openTab: (url: string) => Promise<unknown>;
   now: () => number;
@@ -41,9 +40,9 @@ export type SessionSharingDeps = {
 export const INVALID_SHARE_ERROR =
   'The Share button sent a request this version cannot read. Reload the page and try again.';
 export const SHARE_ACCOUNT_CHANGED_ERROR =
-  'Your rrweb account changed since this page opened. Check the organization and press Share again.';
+  'The connected rrweb organization changed since this page opened. Check the organization and press Share again.';
 export const PENDING_ELSEWHERE_ERROR = (orgName: string) =>
-  `This recording started uploading to ${orgName}. Switch back to that organization to finish sharing it.`;
+  `This recording started uploading to ${orgName}. Connect that organization again to finish sharing it.`;
 export const SESSION_MISSING_ERROR =
   'This recording is no longer saved in this browser.';
 export const NO_PAGE_ADDRESS_ERROR =
@@ -51,19 +50,19 @@ export const NO_PAGE_ADDRESS_ERROR =
 /** The share message as it arrives from a page, if it is well formed. */
 export function parseShareRequest(value: unknown): ShareRequest | 'invalid' {
   if (typeof value !== 'object' || value === null) return 'invalid';
-  const { sessionId, userId, orgId } = value as Record<string, unknown>;
+  const { sessionId, orgId } = value as Record<string, unknown>;
   const filled = (v: unknown): v is string => typeof v === 'string' && v !== '';
-  if (filled(sessionId) && filled(userId) && filled(orgId))
-    return { sessionId, userId, orgId };
+  if (filled(sessionId) && filled(orgId)) return { sessionId, orgId };
   return 'invalid';
 }
 
 /**
- * Uploads offline sessions to the stored account's organization, each under
- * one cloud recording ID. Before the first POST the events are kept and the
- * share stored as pending; a failure keeps what did not arrive, and the next
- * Share sends only that, to the same recording. It is stored as shared only
- * once every event, the close included, was delivered. `share` never rejects.
+ * Uploads stored sessions to an organization, each under one cloud recording
+ * ID: offline sessions with Share, and cloud recordings when they stop.
+ * Before the first POST the events are kept and the share stored as pending;
+ * a failure keeps what did not arrive, and the next Share sends only that, to
+ * the same recording. It is stored as shared only once every event, the
+ * close included, was delivered. `share` and `uploadStopped` never reject.
  */
 export function createSessionSharing(deps: SessionSharingDeps) {
   // One upload per session at a time: a second press joins the first.
@@ -108,7 +107,7 @@ export function createSessionSharing(deps: SessionSharingDeps) {
     sessionId: string,
     account: CloudAccount,
     recordingId: string | undefined,
-  ): Promise<StoredUpload | ShareResult> {
+  ): Promise<StoredUnsentEvents | ShareResult> {
     const session = await deps.loadSession(sessionId);
     if (!session || session.events.length === 0)
       return failed(SESSION_MISSING_ERROR);
@@ -125,7 +124,7 @@ export function createSessionSharing(deps: SessionSharingDeps) {
       ...e,
       timestamp: e.timestamp + shift,
     }));
-    // The same recording-meta event the cloud sink's transport sends first.
+    // The server reads the recording's details from this first event.
     const metaEvent = {
       type: EventType.Custom,
       timestamp: events[0].timestamp,
@@ -135,7 +134,6 @@ export function createSessionSharing(deps: SessionSharingDeps) {
           domain,
           includePii: false,
           jsEntrypoint: 'chrome-extension',
-          offlineShare: true,
           recordVersion: session.recorderVersion,
         },
       },
@@ -153,7 +151,7 @@ export function createSessionSharing(deps: SessionSharingDeps) {
   }
 
   /** Every event arrived: store it as shared first, then clean up. */
-  async function finish(sessionId: string, upload: StoredUpload) {
+  async function finish(sessionId: string, upload: StoredUnsentEvents) {
     const { recordingId } = upload;
     try {
       await remember(sessionId, { state: 'shared', recordingId });
@@ -168,18 +166,21 @@ export function createSessionSharing(deps: SessionSharingDeps) {
     await deps.deleteUnsent(recordingId).catch(() => undefined); // cleanup only
   }
 
-  async function upload(request: ShareRequest): Promise<ShareResult> {
-    const earlier = (await deps.readShared())[request.sessionId];
+  /**
+   * Upload the session to the account `resolveAccount` gives, or say why
+   * not. A session already shared is not checked against any account.
+   */
+  async function upload(
+    sessionId: string,
+    resolveAccount: () => Promise<CloudAccount | ShareResult>,
+  ): Promise<ShareResult> {
+    const earlier = (await deps.readShared())[sessionId];
     if (earlier?.state === 'shared')
       return { name: 'shared', recordingId: earlier.recordingId };
-    const account = checkStoredAccount(await deps.getAccount(), request);
-    if (account === 'not-set-up') return failed(ACCOUNT_NOT_SET_UP_ERROR);
-    if (account === 'changed') return failed(SHARE_ACCOUNT_CHANGED_ERROR);
+    const account = await resolveAccount();
+    if ('name' in account) return account;
 
-    if (
-      earlier?.state === 'pending' &&
-      (earlier.userId !== request.userId || earlier.orgId !== request.orgId)
-    )
+    if (earlier?.state === 'pending' && earlier.orgId !== account.orgId)
       return failed(PENDING_ELSEWHERE_ERROR(earlier.orgName));
 
     // A pending share resumes with what did not arrive, under the key it
@@ -190,76 +191,89 @@ export function createSessionSharing(deps: SessionSharingDeps) {
         : undefined;
     if (pending) {
       // The kept events outlive a deleted session; they are not shared.
-      if (!(await deps.loadSession(request.sessionId)))
+      if (!(await deps.loadSession(sessionId)))
         return failed(SESSION_MISSING_ERROR);
     } else {
       // Kept events lost (storage cleared): send it all again, same recording.
-      const prepared = await prepare(
-        request.sessionId,
-        account,
-        earlier?.recordingId,
-      );
+      const prepared = await prepare(sessionId, account, earlier?.recordingId);
       if ('name' in prepared) return prepared;
       pending = prepared;
       // events first, so a pending share always has them
       await deps.putUnsent(pending);
-      await remember(request.sessionId, {
-        state: 'pending',
-        recordingId: pending.recordingId,
-        userId: account.userId,
-        orgId: account.orgId,
-        orgName: account.orgName,
-      });
+      try {
+        await remember(sessionId, {
+          state: 'pending',
+          recordingId: pending.recordingId,
+          orgId: account.orgId,
+          orgName: account.orgName,
+        });
+      } catch (error) {
+        // Without the map entry, deleting the session could not find these
+        // events; drop them so nothing is left behind.
+        await deps.deleteUnsent(pending.recordingId).catch(() => undefined);
+        throw error;
+      }
     }
 
-    if (deleting.has(request.sessionId)) return failed(SESSION_MISSING_ERROR);
+    if (deleting.has(sessionId)) return failed(SESSION_MISSING_ERROR);
     if (pending.events.length > 0) {
       const result = await deps.postEvents(
-        {
-          publicApiKey: pending.publicKey,
-          recordingId: pending.recordingId,
-          serverUrl: CLOUD_SERVER_URL,
-        },
+        { recordingId: pending.recordingId, publicKey: pending.publicKey },
         pending.events,
       );
-      if (deleting.has(request.sessionId)) return failed(SESSION_MISSING_ERROR);
-      if (!result.delivered) {
+      if (deleting.has(sessionId)) return failed(SESSION_MISSING_ERROR);
+      if (result.state === 'not-delivered') {
         await deps.putUnsent({ ...pending, events: result.unsent });
         return failed(result.error.message);
       }
     }
-    await finish(request.sessionId, pending);
-    // Shared even if the tab does not open: "Open in rrweb" opens it later.
-    await deps
-      .openTab(dashboardRecordingUrl(pending.recordingId))
-      .catch(() => undefined);
+    await finish(sessionId, pending);
     return { name: 'shared', recordingId: pending.recordingId };
+  }
+
+  /** One upload per session at a time; a second request joins the first. */
+  function run(
+    sessionId: string,
+    resolveAccount: () => Promise<CloudAccount | ShareResult>,
+  ): Promise<ShareResult> {
+    if (deleting.has(sessionId))
+      return Promise.resolve(failed(SESSION_MISSING_ERROR));
+    const running = inFlight.get(sessionId);
+    if (running) return running;
+    const attempt = upload(sessionId, resolveAccount)
+      .catch(
+        (error): ShareResult =>
+          failed(error instanceof Error ? error.message : String(error)),
+      )
+      .finally(() => inFlight.delete(sessionId));
+    inFlight.set(sessionId, attempt);
+    return attempt;
   }
 
   return {
     /** `value` is untrusted: it comes from a runtime message. */
-    share(value: unknown): Promise<ShareResult> {
+    async share(value: unknown): Promise<ShareResult> {
       const request = parseShareRequest(value);
-      if (request === 'invalid')
-        return Promise.resolve({
-          name: 'share-failed',
-          errorMessage: INVALID_SHARE_ERROR,
-        });
-      if (deleting.has(request.sessionId))
-        return Promise.resolve(failed(SESSION_MISSING_ERROR));
-      const running = inFlight.get(request.sessionId);
-      if (running) return running;
-      const attempt = upload(request)
-        .catch(
-          (error): ShareResult => ({
-            name: 'share-failed',
-            errorMessage:
-              error instanceof Error ? error.message : String(error),
-          }),
-        )
-        .finally(() => inFlight.delete(request.sessionId));
-      inFlight.set(request.sessionId, attempt);
-      return attempt;
+      if (request === 'invalid') return failed(INVALID_SHARE_ERROR);
+      const result = await run(request.sessionId, async () => {
+        const account = checkStoredAccount(await deps.getConnection(), request);
+        return account === 'changed'
+          ? failed(SHARE_ACCOUNT_CHANGED_ERROR)
+          : account;
+      });
+      // Shared even if the tab does not open: "Open in rrweb" opens it later.
+      if (result.name === 'shared')
+        await deps
+          .openTab(dashboardRecordingUrl(result.recordingId))
+          .catch(() => undefined);
+      return result;
+    },
+    /**
+     * Upload a cloud recording that just stopped, to the account connected
+     * when it started. The caller opens the result.
+     */
+    uploadStopped(sessionId: string, account: CloudAccount) {
+      return run(sessionId, () => Promise.resolve(account));
     },
     /**
      * Delete offline sessions with everything a share kept for them: the

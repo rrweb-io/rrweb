@@ -128,37 +128,39 @@ export async function downloadSessions(ids: string[]) {
 }
 
 /**
- * Events of cloud recordings whose upload failed, kept until a retry
- * delivers them. A database of its own, so the offline stores keep version 1.
+ * Serialized events of a pending share that the server has not accepted yet,
+ * kept until Share delivers them. A database of its own, so the offline stores
+ * keep version 1. Its name is the one earlier builds gave it.
  */
-const FailedUploadStoreName = 'failed-uploads';
-export type StoredFailedUpload = {
+const UnsentStoreName = 'failed-uploads';
+export type StoredUnsentEvents = {
   recordingId: string;
   publicKey: string;
+  /** Serialized events the server has not accepted yet, in order. */
   events: string[];
 };
 
-function getFailedUploadStore() {
-  return openDB<StoredFailedUpload>(FailedUploadStoreName, 1, {
+function getUnsentStore() {
+  return openDB<StoredUnsentEvents>(UnsentStoreName, 1, {
     upgrade(db) {
-      db.createObjectStore(FailedUploadStoreName, { keyPath: 'recordingId' });
+      db.createObjectStore(UnsentStoreName, { keyPath: 'recordingId' });
     },
   });
 }
 
-export async function putFailedUpload(upload: StoredFailedUpload) {
-  const db = await getFailedUploadStore();
-  await db.put(FailedUploadStoreName, upload);
+export async function putUnsentEvents(upload: StoredUnsentEvents) {
+  const db = await getUnsentStore();
+  await db.put(UnsentStoreName, upload);
 }
 
-export async function getFailedUpload(recordingId: string) {
-  const db = await getFailedUploadStore();
-  return (await db.get(FailedUploadStoreName, recordingId)) as
-    | StoredFailedUpload
+export async function getUnsentEvents(recordingId: string) {
+  const db = await getUnsentStore();
+  return (await db.get(UnsentStoreName, recordingId)) as
+    | StoredUnsentEvents
     | undefined;
 }
 
-export async function deleteFailedUpload(recordingId: string) {
-  const db = await getFailedUploadStore();
-  await db.delete(FailedUploadStoreName, recordingId);
+export async function deleteUnsentEvents(recordingId: string) {
+  const db = await getUnsentStore();
+  await db.delete(UnsentStoreName, recordingId);
 }

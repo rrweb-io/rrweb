@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import {
   Box,
   Button,
@@ -9,22 +9,21 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { FiPause, FiPlay } from 'react-icons/fi';
-import { RecorderStatus, type FailedUpload, type StartRequest } from '~/types';
+import { RecorderStatus, type StartRequest } from '~/types';
 import { Timer } from './Timer';
 import { recordButtonLook, type ActiveRecording } from './account';
 
 export type RecorderControls = {
   status: RecorderStatus;
   active: ActiveRecording;
+  /** A running cloud recording's organization, fixed when it started. */
+  uploadsTo: { name: 'organization'; orgName: string } | { name: 'none' };
   startTime: number | null;
   errorMessage: string | null;
   /** Start recording to `startAs`, or stop the running recording. */
   toggle: (startAs: StartRequest) => void;
   pause: () => void;
   resume: () => void;
-  failedUploads: FailedUpload[];
-  retryUpload: (recordingId: string) => void;
-  discardUpload: (recordingId: string) => void;
 };
 
 export function PopupFrame({ children }: { children: ReactNode }) {
@@ -35,7 +34,7 @@ export function PopupFrame({ children }: { children: ReactNode }) {
   );
 }
 
-/** Shown while Clerk or the stored account is loading, or while signing out. */
+/** Shown while the connected account or the remembered mode is loading. */
 export function LoadingView({ label = 'Loading' }: { label?: string }) {
   return (
     <PopupFrame>
@@ -163,114 +162,11 @@ export function RecordingControls({
   );
 }
 
-/**
- * Cloud recordings whose upload failed: their events are kept in this
- * browser until "Retry upload" delivers them or the person discards them.
- * The caller passes only the signed-in user's uploads.
- */
-export function FailedUploads({
-  uploads,
-  recorder,
-}: {
-  uploads: FailedUpload[];
-  recorder: RecorderControls;
-}) {
-  const shown = uploads.filter((u) => u.state.name !== 'delivered');
-  if (shown.length === 0) return null;
-  return (
-    <Flex direction="column" gap="10px" mt="12px">
-      {shown.map((upload) => (
-        <FailedUploadItem
-          key={upload.recordingId}
-          upload={upload}
-          recorder={recorder}
-        />
-      ))}
-    </Flex>
-  );
-}
-
-/** showing: the upload and its actions; confirming-discard: asking first. */
-type ItemView = 'showing' | 'confirming-discard';
-
-function FailedUploadItem({
-  upload,
-  recorder,
-}: {
-  upload: FailedUpload;
-  recorder: RecorderControls;
-}) {
-  const [view, setView] = useState<ItemView>('showing');
-  const retrying = upload.state.name === 'retrying';
-  const outline = {
-    size: 'sm',
-    flex: '1',
-    variant: 'outline',
-    color: 'white',
-    borderColor: 'brand.line',
-    _hover: { bg: 'brand.field' },
-  } as const;
-  return (
-    <Box role="alert">
-      <Text color="brand.danger" fontSize="13px" noOfLines={2}>
-        Upload failed: {upload.title}
-      </Text>
-      {upload.state.name === 'retry-failed' && (
-        <Text color="brand.danger" fontSize="12px">
-          Retry failed: {upload.state.errorMessage}
-        </Text>
-      )}
-      {view === 'confirming-discard' ? (
-        <>
-          <Text fontSize="12px" color="brand.muted" mb="6px">
-            Discard this recording? It cannot be recovered.
-          </Text>
-          <Flex gap="8px">
-            <Button
-              {...outline}
-              onClick={() => recorder.discardUpload(upload.recordingId)}
-            >
-              Discard recording
-            </Button>
-            <Button {...outline} onClick={() => setView('showing')}>
-              Keep
-            </Button>
-          </Flex>
-        </>
-      ) : (
-        <>
-          <Text fontSize="12px" color="brand.muted" mb="6px">
-            The recording is kept in this browser until it uploads.
-          </Text>
-          <Flex gap="8px">
-            <Button
-              {...outline}
-              isDisabled={retrying}
-              onClick={() => recorder.retryUpload(upload.recordingId)}
-            >
-              {retrying ? 'Retrying upload' : 'Retry upload'}
-            </Button>
-            <Button
-              {...outline}
-              isDisabled={retrying}
-              onClick={() => setView('confirming-discard')}
-            >
-              Discard
-            </Button>
-          </Flex>
-        </>
-      )}
-    </Box>
-  );
-}
-
 export function RecorderError({ recorder }: { recorder: RecorderControls }) {
   if (recorder.errorMessage === null) return null;
   return (
     <Text color="brand.danger" fontSize="13px" mt="12px" role="alert">
       {recorder.errorMessage}
-      <br />
-      Maybe refresh your current tab.
     </Text>
   );
 }

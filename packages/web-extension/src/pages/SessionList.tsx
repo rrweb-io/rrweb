@@ -197,7 +197,10 @@ export function SessionList() {
         // Clicks here, the dialog's included, must not open the player.
         cell: ({ row }) => (
           <Box onClick={(e) => e.stopPropagation()} cursor="default">
-            <ShareAction sessionId={row.original.id} />
+            <ShareAction
+              sessionId={row.original.id}
+              recordedAs={row.original.recordedAs ?? 'offline'}
+            />
           </Box>
         ),
       }),
