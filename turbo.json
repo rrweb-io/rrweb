@@ -15,6 +15,7 @@
       "dependsOn": ["^prepublish", "//#references:update"],
       "env": ["RELATIVE_CI_STATS"],
       "outputs": [
+        "build/**",
         "lib/**",
         "es/**",
         "dist/**",
