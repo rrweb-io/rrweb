@@ -17,7 +17,15 @@ jobs:
     name: Tests
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    # Disabled until rrweb-io sponsorship and runner access are verified.
+    # Activation requires a reviewed edit; keep fork PRs on GitHub runners.
+    # See docs/ci/blacksmith-migration.md.
+    runs-on: >-
+      ${{ false && github.repository == 'rrweb-io/rrweb' &&
+          (github.event_name == 'push' ||
+           (github.event_name == 'pull_request' &&
+            github.event.pull_request.head.repo.full_name == github.repository)) &&
+          'blacksmith-4vcpu-ubuntu-2404' || 'ubuntu-latest' }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
@@ -72,7 +80,15 @@ jobs:
     name: WebKit (Safari engine) tests
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    # Disabled until rrweb-io sponsorship and runner access are verified.
+    # Activation requires a reviewed edit; keep fork PRs on GitHub runners.
+    # See docs/ci/blacksmith-migration.md.
+    runs-on: >-
+      ${{ false && github.repository == 'rrweb-io/rrweb' &&
+          (github.event_name == 'push' ||
+           (github.event_name == 'pull_request' &&
+            github.event.pull_request.head.repo.full_name == github.repository)) &&
+          'blacksmith-4vcpu-ubuntu-2404' || 'ubuntu-latest' }}
     container:
       image: mcr.microsoft.com/playwright:v1.61.1-noble
     steps:

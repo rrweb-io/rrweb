@@ -16,7 +16,15 @@ concurrency:
 
 jobs:
   eslint_check_upload:
-    runs-on: ubuntu-latest
+    # Disabled until rrweb-io sponsorship and runner access are verified.
+    # Activation requires a reviewed edit; keep fork PRs on GitHub runners.
+    # See docs/ci/blacksmith-migration.md.
+    runs-on: >-
+      ${{ false && github.repository == 'rrweb-io/rrweb' &&
+          (github.event_name == 'push' ||
+           (github.event_name == 'pull_request' &&
+            github.event.pull_request.head.repo.full_name == github.repository)) &&
+          'blacksmith-4vcpu-ubuntu-2404' || 'ubuntu-latest' }}
     permissions:
       contents: read
     name: ESLint Check and Report Upload
