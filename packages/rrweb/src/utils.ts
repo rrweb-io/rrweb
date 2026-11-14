@@ -12,7 +12,7 @@ import type {
 } from '@rrweb/types';
 import type { Mirror, SlimDOMOptions } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
-import { RRNode, RRIFrameElement, BaseRRNode } from 'rrdom';
+import type { RRNode, RRIFrameElement } from 'rrdom';
 import dom from '@rrweb/utils';
 export { nowTimestamp } from '@rrweb/utils';
 
@@ -406,7 +406,9 @@ export function hasShadowRoot<T extends Node | RRNode>(
   n: T,
 ): n is T & { shadowRoot: ShadowRoot } {
   if (!n) return false;
-  if (n instanceof BaseRRNode && 'shadowRoot' in n) {
+  // Duck-type RRNodes rather than `instanceof BaseRRNode`, so the recorder
+  // bundle doesn't pull in rrdom.
+  if ('RRNodeType' in n && 'shadowRoot' in n) {
     return Boolean(n.shadowRoot);
   }
   return Boolean(dom.shadowRoot(n as unknown as Element));
