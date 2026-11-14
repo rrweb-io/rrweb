@@ -246,6 +246,9 @@ function initMouseInteractionObserver({
             // we are actually listening on 'pointerup'
             thisEventKey = 'TouchEnd';
           }
+        } else if (eventKey === 'TouchCancel') {
+          // we are listening on 'pointercancel'
+          return;
         } else if (pointerType === PointerTypes.Pen) {
           // TODO: these will get incorrectly emitted as MouseDown/MouseUp
         }
@@ -300,6 +303,10 @@ function initMouseInteractionObserver({
               'mouse',
               'pointer',
             ) as unknown as typeof eventName;
+            break;
+          case MouseInteractions.TouchCancel:
+            // e.g. when the touch scrolls the page, instead of pointerup
+            eventName = 'pointercancel' as unknown as typeof eventName;
             break;
           case MouseInteractions.TouchStart:
           case MouseInteractions.TouchEnd:
