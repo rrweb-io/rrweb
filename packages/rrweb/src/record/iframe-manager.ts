@@ -1,6 +1,9 @@
 import type { Mirror } from 'rrweb-snapshot';
 import { genId } from 'rrweb-snapshot';
-import type { CrossOriginIframeMessageEvent } from '../types';
+import type {
+  CrossOriginIframeMessageEvent,
+  CrossOriginIframeSnapshotRequest,
+} from '../types';
 import CrossOriginIframeMirror from './cross-origin-iframe-mirror';
 import { EventType, NodeType, IncrementalSource } from '@rrweb/types';
 import type {
@@ -61,6 +64,26 @@ export class IframeManager {
     this.iframes.set(iframeEl, true);
     if (iframeEl.contentWindow)
       this.crossOriginIframeMap.set(iframeEl.contentWindow, iframeEl);
+    // postMessage replies run after the snapshot or mutation that serialized this iframe has been emitted.
+    this.requestFullSnapshot(iframeEl);
+  }
+
+  /**
+   * Asks the recorder in a cross-origin iframe for a new full snapshot.
+   * It only sends one when it starts, so without this the iframe replays blank
+   * after every full snapshot of this frame.
+   */
+  private requestFullSnapshot(iframeEl: HTMLIFrameElement) {
+    if (
+      !this.recordCrossOriginIframes ||
+      iframeEl.contentDocument ||
+      !iframeEl.contentWindow
+    )
+      return;
+    const message: CrossOriginIframeSnapshotRequest = {
+      type: 'rrweb-snapshot-request',
+    };
+    iframeEl.contentWindow.postMessage(message, '*');
   }
 
   public addLoadListener(cb: (iframeEl: HTMLIFrameElement) => unknown) {
