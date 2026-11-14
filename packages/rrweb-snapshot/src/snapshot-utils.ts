@@ -14,6 +14,7 @@ export {
   maskInputValue,
   isNativeShadowDom,
   stringifyStylesheet,
+  stringifyRule,
   getInputType,
   toLowerCase,
   extractFileExtension,
