@@ -2,41 +2,35 @@
 import { useRef, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Replayer from 'rrweb-player';
-import {
-  Box,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  Center,
-} from '@chakra-ui/react';
+import 'rrweb-player/dist/style.css';
+import { Box, Flex, Heading, Link } from '@chakra-ui/react';
 import { getEvents, getSession } from '~/utils/storage';
+import type { RecordingKind } from '~/types';
+import { recordingKindOf } from '~/utils';
+import { ShareAction } from './ShareAction';
 
 export default function Player() {
   const playerElRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<Replayer | null>(null);
   const { sessionId } = useParams();
   const [sessionName, setSessionName] = useState('');
+  const [recordedAs, setRecordedAs] = useState<RecordingKind>('offline');
 
   useEffect(() => {
     if (!sessionId) return;
     getSession(sessionId)
       .then((session) => {
         setSessionName(session.name);
+        setRecordedAs(recordingKindOf(session));
       })
       .catch((err) => {
         console.error(err);
       });
     getEvents(sessionId)
       .then((events) => {
-        if (!playerElRef.current) return;
+        if (!events || !playerElRef.current) return;
         if (playerRef.current) return;
 
-        const manifest = chrome.runtime.getManifest();
-        const rrwebPlayerVersion = manifest.version_name || manifest.version;
-        const linkEl = document.createElement('link');
-        linkEl.href = `https://cdn.jsdelivr.net/npm/rrweb-player@${rrwebPlayerVersion}/dist/style.min.css`;
-        linkEl.rel = 'stylesheet';
-        document.head.appendChild(linkEl);
         playerRef.current = new Replayer({
           target: playerElRef.current as HTMLElement,
           props: {
@@ -58,17 +52,43 @@ export default function Player() {
 
   return (
     <>
-      <Breadcrumb mb={5} fontSize="md">
-        <BreadcrumbItem>
-          <BreadcrumbLink href="#">Sessions</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbItem>
-          <BreadcrumbLink>{sessionName}</BreadcrumbLink>
-        </BreadcrumbItem>
-      </Breadcrumb>
-      <Center>
-        <Box ref={playerElRef}></Box>
-      </Center>
+      <Link href="#/" fontSize="14px">
+        All sessions
+      </Link>
+      <Flex
+        justify="space-between"
+        align="flex-start"
+        gap="16px"
+        mt="8px"
+        mb="24px"
+      >
+        <Heading
+          as="h1"
+          fontSize="24px"
+          fontWeight={600}
+          minW={0}
+          noOfLines={1}
+          wordBreak="break-all"
+          title={sessionName}
+        >
+          {sessionName}
+        </Heading>
+        {sessionId && (
+          <Box flexShrink={0}>
+            <ShareAction sessionId={sessionId} recordedAs={recordedAs} />
+          </Box>
+        )}
+      </Flex>
+      <Box
+        bg="brand.surface"
+        border="1px solid"
+        borderColor="brand.rule"
+        borderRadius="12px"
+        p="16px"
+        overflowX="auto"
+      >
+        <Box ref={playerElRef} w="fit-content" mx="auto"></Box>
+      </Box>
     </>
   );
 }

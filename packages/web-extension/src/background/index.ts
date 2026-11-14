@@ -1,27 +1,93 @@
 import Browser from 'webextension-polyfill';
-import { nanoid } from 'nanoid';
-import type { eventWithTime } from '@rrweb/types';
 import Channel from '~/utils/channel';
+import { EventName, LocalDataKey, SyncDataKey } from '~/types';
+import type { CloudAccount, LocalData, Settings, SyncData } from '~/types';
+import { config, uninstallSurveyUrl } from '~/config';
+import { parseConnection } from '~/utils/connection';
 import {
-  EventName,
-  LocalDataKey,
-  MessageName,
-  RecorderStatus,
-  ServiceName,
-  SyncDataKey,
-} from '~/types';
-import type {
-  LocalData,
-  RecordStartedMessage,
-  RecordStoppedMessage,
-  Session,
-  Settings,
-  SyncData,
-} from '~/types';
-import { isFirefox } from '~/utils';
-import { addSession } from '~/utils/storage';
+  addSession,
+  deleteSessions,
+  deleteUnsentEvents,
+  getEvents,
+  getSession,
+  getUnsentEvents,
+  putUnsentEvents,
+} from '~/utils/storage';
+import { createExternalListener } from './external';
+import { registerHandlers, type BackgroundServices } from './handlers';
+import { watchRecordedPages } from './pageWatch';
+import { createBadge } from './badge';
+import { KEEPALIVE_INTERVAL_MS, createRecorder } from './recorder';
+import { createSessionSharing } from './shareSession';
+import { createSink } from './sinks';
+import { uploadEvents } from './upload';
 
-void (async () => {
+// Ask people who remove the extension why they left.
+const manifest = Browser.runtime.getManifest();
+Browser.runtime
+  .setUninstallURL(
+    uninstallSurveyUrl(manifest.version_name ?? manifest.version),
+  )
+  .catch(() => {
+    // The survey is optional; recording must keep working without it.
+  });
+
+/** The organization the dashboard connected; never one on Firefox. */
+const getConnection = async () => {
+  if (!config.cloudEnabled) return parseConnection(undefined);
+  const stored = (await Browser.storage.local.get(
+    LocalDataKey.cloudAccount,
+  )) as LocalData;
+  return parseConnection(stored[LocalDataKey.cloudAccount]);
+};
+
+// Register every listener before any await: a message that wakes a suspended
+// worker is dispatched during its first synchronous run.
+const channel = new Channel();
+const ready = start();
+// Handlers report their own failures; this keeps the rejection handled.
+ready.catch((error) => console.error('Could not start the background:', error));
+registerHandlers(channel, ready, {
+  shareEnabled: config.cloudEnabled,
+  keepAliveWhile: async (work) => {
+    // A browser call resets the idle timer, as the recorder's keepalive does.
+    const interval = setInterval(
+      () => void Browser.runtime.getPlatformInfo(),
+      KEEPALIVE_INTERVAL_MS,
+    );
+    try {
+      return await work;
+    } finally {
+      clearInterval(interval);
+    }
+  },
+});
+
+// The dashboard connects an organization by messaging the extension.
+if (config.cloudEnabled)
+  chrome.runtime.onMessageExternal.addListener(
+    createExternalListener({
+      dashboardUrl: config.dashboardUrl,
+      version: manifest.version_name ?? manifest.version,
+      getConnection,
+      storeAccount: (account: CloudAccount) =>
+        Browser.storage.local.set({ [LocalDataKey.cloudAccount]: account }),
+    }),
+  );
+
+// One recording is one tab: it finishes when that tab's document goes away.
+watchRecordedPages(
+  {
+    onConnect: Browser.runtime.onConnect,
+    onTabRemoved: Browser.tabs.onRemoved,
+  },
+  (tabId) =>
+    void ready
+      .then(({ recorder }) => recorder.pageGone(tabId))
+      .catch((error) => console.error('Could not end the recording:', error)),
+);
+
+async function start(): Promise<BackgroundServices> {
   // assign default value to settings of this extension
   const result =
     ((await Browser.storage.sync.get(SyncDataKey.settings)) as SyncData) ||
@@ -36,217 +102,126 @@ void (async () => {
     settings,
   } as SyncData);
 
-  const events: eventWithTime[] = [];
-  const channel = new Channel();
-  let recorderStatus: LocalData[LocalDataKey.recorderStatus] = {
-    status: RecorderStatus.IDLE,
-    activeTabId: -1,
+  // Disconnect keeps the shared map: it only links to the cloud copies.
+  const sharing = createSessionSharing({
+    getConnection,
+    loadSession: async (id) => {
+      const events = await getEvents(id);
+      const session = await getSession(id);
+      return events && session
+        ? { events, recorderVersion: session.recorderVersion }
+        : undefined;
+    },
+    deleteStored: deleteSessions,
+    readShared: async () =>
+      (
+        (await Browser.storage.local.get(
+          LocalDataKey.sharedSessions,
+        )) as LocalData
+      )[LocalDataKey.sharedSessions] ?? {},
+    writeShared: (shared) =>
+      Browser.storage.local.set({ [LocalDataKey.sharedSessions]: shared }),
+    putUnsent: putUnsentEvents,
+    getUnsent: getUnsentEvents,
+    deleteUnsent: deleteUnsentEvents,
+    postEvents: (target, lines, onDelivered) =>
+      uploadEvents(
+        { ...target, apiUrl: config.apiUrl },
+        lines,
+        fetch,
+        onDelivered,
+      ),
+    randomId: () => crypto.randomUUID(),
+    openTab: (url) => Browser.tabs.create({ url }),
+    now: () => Date.now(),
+  });
+
+  const sinkDeps = {
+    addSession,
+    uploadSession: (id: string, account: CloudAccount) =>
+      sharing.uploadStopped(id, account),
+    deleteSession: (id: string) => sharing.deleteSessions([id]),
+    randomId: () => crypto.randomUUID(),
+    getURL: (path: string) => Browser.runtime.getURL(path),
+    recorderVersion: manifest.version_name || manifest.version,
   };
+  // MV3 has `action`, MV2 Firefox has `browserAction`.
+  const toolbar = Browser.action ?? Browser.browserAction;
+  const badge = createBadge({
+    setBadge: async (tabId, { text, color }) => {
+      await toolbar.setBadgeText({ tabId, text });
+      await toolbar.setBadgeBackgroundColor({ tabId, color });
+      await toolbar.setBadgeTextColor?.({ tabId, color: '#FFFFFF' });
+    },
+    clearBadge: (tabId) => toolbar.setBadgeText({ tabId, text: '' }),
+  });
+  const recorder = createRecorder({
+    onStatus: badge.sync,
+    getConnection,
+    getTabUrl: async (tabId) => (await Browser.tabs.get(tabId)).url,
+    getTabTitle: async (tabId) => (await Browser.tabs.get(tabId)).title,
+    getCurrentTabId: () => channel.getCurrentTabId(),
+    injectRecorder,
+    requestToTab: (tabId, service, params) =>
+      channel.requestToTab(tabId, service, params),
+    saveStatus: (status) =>
+      Browser.storage.local.set({ [LocalDataKey.recorderStatus]: status }),
+    openTab: (url) => Browser.tabs.create({ url }),
+    onSessionsChanged: (change) =>
+      channel.emit(EventName.SessionUpdated, change),
+    createSink: (target) => createSink(target, sinkDeps),
+    pingBrowser: () => Browser.runtime.getPlatformInfo(),
+    after: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+    every: (ms, tick) => {
+      const interval = setInterval(tick, ms);
+      return () => clearInterval(interval);
+    },
+    now: () => Date.now(),
+    newToken: () => crypto.randomUUID(),
+  });
   // Reset recorder status when the extension is reloaded.
   await Browser.storage.local.set({
-    [LocalDataKey.recorderStatus]: recorderStatus,
+    [LocalDataKey.recorderStatus]: recorder.getStatus(),
   });
-
-  channel.on(EventName.StartButtonClicked, async () => {
-    if (recorderStatus.status !== RecorderStatus.IDLE) return;
-    recorderStatus = {
-      status: RecorderStatus.IDLE,
-      activeTabId: -1,
-    };
-    await Browser.storage.local.set({
-      [LocalDataKey.recorderStatus]: recorderStatus,
-    });
-
-    events.length = 0; // clear events before recording
-    const tabId = await channel.getCurrentTabId();
-    if (tabId === -1) return;
-
-    const res = (await channel
-      .requestToTab(tabId, ServiceName.StartRecord, {})
-      .catch(async (error: Error) => {
-        recorderStatus.errorMessage = error.message;
-        await Browser.storage.local.set({
-          [LocalDataKey.recorderStatus]: recorderStatus,
-        });
-      })) as RecordStartedMessage;
-    if (!res) return;
-    Object.assign(recorderStatus, {
-      status: RecorderStatus.RECORDING,
-      activeTabId: tabId,
-      startTimestamp: res.startTimestamp,
-    });
-    await Browser.storage.local.set({
-      [LocalDataKey.recorderStatus]: recorderStatus,
-    });
-  });
-
-  channel.on(EventName.StopButtonClicked, async () => {
-    if (recorderStatus.status === RecorderStatus.IDLE) return;
-
-    if (recorderStatus.status === RecorderStatus.RECORDING)
-      (await channel
-        .requestToTab(recorderStatus.activeTabId, ServiceName.StopRecord, {})
-        .catch(() => ({
-          message: MessageName.RecordStopped,
-          endTimestamp: Date.now(),
-        }))) as RecordStoppedMessage;
-    recorderStatus = {
-      status: RecorderStatus.IDLE,
-      activeTabId: -1,
-    };
-    await Browser.storage.local.set({
-      [LocalDataKey.recorderStatus]: recorderStatus,
-    });
-    const title =
-      (await Browser.tabs
-        .query({ active: true, currentWindow: true })
-        .then((tabs) => tabs[0]?.title)
-        .catch(() => {
-          // ignore error
-        })) ?? 'new session';
-    const newSession = generateSession(title);
-    await addSession(newSession, events).catch((e) => {
-      recorderStatus.errorMessage = (e as { message: string }).message;
-      void Browser.storage.local.set({
-        [LocalDataKey.recorderStatus]: recorderStatus,
-      });
-    });
-    channel.emit(EventName.SessionUpdated, {
-      session: newSession,
-    });
-    events.length = 0;
-  });
-
-  async function pauseRecording(newStatus: RecorderStatus) {
-    if (
-      recorderStatus.status !== RecorderStatus.RECORDING ||
-      recorderStatus.activeTabId === -1
+  // The status is idle now, so no tab may still show a recording badge.
+  Browser.tabs
+    .query({})
+    .then((tabs) =>
+      Promise.all(
+        tabs.map((tab) =>
+          tab.id === undefined
+            ? undefined
+            : toolbar.setBadgeText({ tabId: tab.id, text: '' }),
+        ),
+      ),
     )
-      return;
+    .catch((e) => console.warn('rrweb: clearing stale badges failed', e));
 
-    const stopResponse = (await channel
-      .requestToTab(recorderStatus.activeTabId, ServiceName.StopRecord, {})
-      .catch(() => {
-        // ignore error
-      })) as RecordStoppedMessage | undefined;
-    Object.assign(recorderStatus, {
-      status: newStatus,
-      activeTabId: -1,
-      pausedTimestamp: stopResponse?.endTimestamp,
-    });
-    await Browser.storage.local.set({
-      [LocalDataKey.recorderStatus]: recorderStatus,
-    });
-  }
-  channel.on(EventName.PauseButtonClicked, async () => {
-    if (recorderStatus.status !== RecorderStatus.RECORDING) return;
-    await pauseRecording(RecorderStatus.PAUSED);
-  });
+  return { recorder, sharing };
+}
 
-  async function resumeRecording(newTabId: number) {
-    if (
-      ![RecorderStatus.PAUSED, RecorderStatus.PausedSwitch].includes(
-        recorderStatus.status,
-      )
-    )
-      return;
-    const { startTimestamp, pausedTimestamp } = recorderStatus;
-    // On Firefox, the new tab is not communicable immediately after it is created.
-    if (isFirefox()) await new Promise((r) => setTimeout(r, 50));
-    const pausedTime = pausedTimestamp ? Date.now() - pausedTimestamp : 0;
-    // Decrease the time spent in the pause state and make them look like a continuous recording.
-    events.forEach((event) => {
-      event.timestamp += pausedTime;
-    });
-    const startResponse = (await channel
-      .requestToTab(newTabId, ServiceName.StartRecord, {})
-      .catch((e: { message: string }) => {
-        recorderStatus.errorMessage = e.message;
-        void Browser.storage.local.set({
-          [LocalDataKey.recorderStatus]: recorderStatus,
-        });
-      })) as RecordStartedMessage | undefined;
-    if (!startResponse) {
-      // Restore the events data when the recording fails to start.
-      events.forEach((event) => {
-        event.timestamp -= pausedTime;
-      });
-      return;
-    }
-    recorderStatus = {
-      status: RecorderStatus.RECORDING,
-      activeTabId: newTabId,
-      startTimestamp: (startTimestamp || Date.now()) + pausedTime,
-    };
-    await Browser.storage.local.set({
-      [LocalDataKey.recorderStatus]: recorderStatus,
-    });
-  }
-  channel.on(EventName.ResumeButtonClicked, async () => {
-    if (recorderStatus.status !== RecorderStatus.PAUSED) return;
-    recorderStatus.errorMessage = undefined;
-    await Browser.storage.local.set({
-      [LocalDataKey.recorderStatus]: recorderStatus,
-    });
-    const tabId = await channel.getCurrentTabId();
-    await resumeRecording(tabId);
-  });
-
-  channel.on(EventName.ContentScriptEmitEvent, (data) => {
-    events.push(data as eventWithTime);
-  });
-
-  // When tab is changed during the recording process, pause recording in the old tab and start a new one in the new tab.
-  Browser.tabs.onActivated.addListener((activeInfo) => {
-    void (async () => {
-      if (
-        recorderStatus.status !== RecorderStatus.RECORDING &&
-        recorderStatus.status !== RecorderStatus.PausedSwitch
-      )
-        return;
-      if (activeInfo.tabId === recorderStatus.activeTabId) return;
-      if (recorderStatus.status === RecorderStatus.RECORDING)
-        await pauseRecording(RecorderStatus.PausedSwitch);
-      if (recorderStatus.status === RecorderStatus.PausedSwitch)
-        await resumeRecording(activeInfo.tabId);
-    })();
+/**
+ * Load the recorder into the top frame of `tabId`. The popup's record button
+ * gives the extension `activeTab` access to the current tab, which is what
+ * allows the injection; the extension has no standing access to any site.
+ */
+async function injectRecorder(tabId: number) {
+  if (import.meta.env.VITE_TARGET_BROWSER === 'firefox') {
+    // MV2 has no page-world injection; the content script adds inject.js.
+    await Browser.tabs.executeScript(tabId, { file: '/content/index.js' });
     return;
+  }
+  await chrome.scripting.executeScript({
+    target: { tabId },
+    files: ['content/index.js'],
   });
-
-  // If the recording can't start on an invalid tab, resume it when the tab content is updated.
-  Browser.tabs.onUpdated.addListener(function (tabId, info) {
-    if (info.status !== 'complete') return;
-    if (
-      recorderStatus.status !== RecorderStatus.PausedSwitch ||
-      recorderStatus.activeTabId === tabId
-    )
-      return;
-    void resumeRecording(tabId);
+  // A fresh page-world copy for each start and resume.
+  await chrome.scripting.executeScript({
+    target: { tabId },
+    files: ['content/inject.js'],
+    world: 'MAIN',
   });
-
-  /**
-   * When the current tab is closed, and there's no other tab to resume recording, make sure the recording status is updated to SwitchPaused.
-   */
-  Browser.tabs.onRemoved.addListener((tabId) => {
-    void (async () => {
-      if (
-        recorderStatus.activeTabId !== tabId ||
-        recorderStatus.status !== RecorderStatus.RECORDING
-      )
-        return;
-      // Update the recording status to make it resumable after users switch to other tabs.
-      Object.assign(recorderStatus, {
-        status: RecorderStatus.PausedSwitch,
-        activeTabId: -1,
-        pausedTimestamp: Date.now(),
-      });
-
-      await Browser.storage.local.set({
-        [LocalDataKey.recorderStatus]: recorderStatus,
-      });
-    })();
-  });
-})();
+}
 
 /**
  * Update existed settings with new settings.
@@ -277,16 +252,4 @@ function setDefaultSettings(
       existedSettings[i] = newSettings[i];
     }
   }
-}
-
-function generateSession(title: string) {
-  const newSession: Session = {
-    id: nanoid(),
-    name: title,
-    tags: [],
-    createTimestamp: Date.now(),
-    modifyTimestamp: Date.now(),
-    recorderVersion: Browser.runtime.getManifest().version_name || 'unknown',
-  };
-  return newSession;
 }

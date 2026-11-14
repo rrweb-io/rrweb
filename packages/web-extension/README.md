@@ -33,6 +33,52 @@ yarn dev:chrome
 yarn dev:firefox
 ```
 
+## How recording works
+
+The extension has no content script that runs on every page and no host access to every site. When you press record in the popup, the extension injects the recorder into the current tab only. Opening the popup grants `activeTab` access to that tab; Chrome injects with `chrome.scripting` (the `scripting` permission), Firefox with `tabs.executeScript`.
+
+- One recording is one tab. Switching to another tab does not move the recording.
+- Pause and resume continue in the same tab.
+- When the recorded tab loads a new page, reloads or closes, the recording stops as if you pressed Stop: it is saved in full, then the result opens in a new tab. Changes that keep the page, such as a hash change or `history.pushState`, do not stop it.
+- Only the tab's top frame is recorded. Cross-origin iframes are not recorded.
+
+Chrome permissions: `activeTab`, `scripting`, `storage`, `unlimitedStorage`. Firefox permissions: `activeTab`, `storage`, `unlimitedStorage`.
+
+## Cloud
+
+The Chrome build can save recordings to rrweb Cloud. The Firefox build only records offline.
+
+The extension never signs in. The popup's "Connect your rrweb account" opens the dashboard's `/extension/connect` page, where a signed-in person connects an organization. The dashboard sends the extension that organization's public key with `chrome.runtime.sendMessage`. The manifest's `externally_connectable` lets only the dashboard origin send these messages, and the extension checks the sender's origin again before it answers:
+
+| Message                                                          | Reply                                                          |
+| ---------------------------------------------------------------- | -------------------------------------------------------------- |
+| `{ type: 'rrweb-extension-status' }`                             | `{ ok: true, version, connected: { orgId, orgName } \| null }` |
+| `{ type: 'rrweb-extension-connect', orgId, orgName, publicKey }` | `{ ok: true }` or `{ ok: false, error }`                       |
+
+Any other message gets `{ ok: false, error }`. Disconnecting is done in the extension's popup.
+
+A Cloud recording is kept in the extension while it runs, like an offline one, with typed form input masked. When it stops, it is stored in the browser and then uploaded with the organization's public key to `POST <api>/recordings/<recordingId>/events` (newline-delimited JSON, at most 1 MiB per request). Once the upload is complete, the stored copy is deleted and the recording opens in the dashboard. If the upload fails, the recording stays in Offline sessions, and Share finishes the upload to the same recording, with the public key of the organization connected at that time.
+
+Configure the Chrome build with these variables, for example in a `.env` file in this folder:
+
+| Variable                   | Default                 |
+| -------------------------- | ----------------------- |
+| `VITE_RRWEB_API_URL`       | `https://api.rrweb.com` |
+| `VITE_RRWEB_DASHBOARD_URL` | `https://app.rrweb.com` |
+
+`VITE_RRWEB_DASHBOARD_URL` sets both where the popup links to and the origin in `externally_connectable`.
+
+`yarn dev:chrome` and `yarn build:chrome:dev` are development builds. They embed a fixed public `key` in the manifest so the extension ID is stable:
+
+- Development extension ID: `djilnhkggipaaljnmkpcdbglbdfkgeoe`
+- Published Chrome Web Store ID: `pdaldeopoccdhlkabbkcjmecmmoninhe` (production builds carry no `key`)
+
+The private key for the development ID is not in this repository. For a local dashboard and API:
+
+```bash
+VITE_RRWEB_API_URL=http://localhost:8797 VITE_RRWEB_DASHBOARD_URL=http://localhost:3000 yarn build:chrome:dev
+```
+
 ## Sponsors
 
 [Become a sponsor](https://opencollective.com/rrweb#sponsor) and get your logo on our README on Github with a link to your site.
