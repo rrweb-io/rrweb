@@ -5,13 +5,11 @@
     ".eslintrc.js",
     ".prettierrc",
     "vite.config.default.ts",
+    "tsconfig.base.json",
     "tsconfig.json"
   ],
-  "globalPassThroughEnv": [
-    "PUPPETEER_EXECUTABLE_PATH",
-    "PUPPETEER_HEADLESS",
-    "DISABLE_WORKER_INLINING"
-  ],
+  "globalEnv": ["DISABLE_WORKER_INLINING"],
+  "globalPassThroughEnv": ["PUPPETEER_EXECUTABLE_PATH", "PUPPETEER_HEADLESS"],
   "tasks": {
     "prepublish": {
       "dependsOn": ["^prepublish", "//#references:update"],
