@@ -62,6 +62,8 @@ function deferred<T>() {
   return { promise, resolve, reject };
 }
 
+const passThrough = <T>(work: Promise<T>) => work;
+
 const SHARED: ShareResult = { name: 'shared', recordingId: 'rec_1' };
 
 function fakeServices() {
@@ -78,7 +80,10 @@ describe('registerHandlers', () => {
   it('serves a message that arrives before the background is ready', async () => {
     const { channel, emit, request } = fakeChannel();
     const ready = deferred<BackgroundServices>();
-    registerHandlers(channel, ready.promise, { shareEnabled: true });
+    registerHandlers(channel, ready.promise, {
+      shareEnabled: true,
+      keepAliveWhile: passThrough,
+    });
     const services = fakeServices();
 
     // The waking messages, dispatched before any init await completes.
@@ -98,7 +103,10 @@ describe('registerHandlers', () => {
     const { channel, emit, request } = fakeChannel();
     const ready = deferred<BackgroundServices>();
     const logged = vi.spyOn(console, 'error').mockImplementation(() => {});
-    registerHandlers(channel, ready.promise, { shareEnabled: true });
+    registerHandlers(channel, ready.promise, {
+      shareEnabled: true,
+      keepAliveWhile: passThrough,
+    });
 
     emit(EventName.StartButtonClicked, {});
     const reply = request(ServiceName.ShareSession, { sessionId: 's1' });
@@ -117,11 +125,38 @@ describe('registerHandlers', () => {
     logged.mockRestore();
   });
 
+  it('keeps the worker alive until a Share upload settles', async () => {
+    const { channel, request } = fakeChannel();
+    const services = fakeServices();
+    const upload = deferred<ShareResult>();
+    services.sharing.share.mockReturnValue(upload.promise);
+    let alive = false;
+    registerHandlers(channel, Promise.resolve(services as never), {
+      shareEnabled: true,
+      keepAliveWhile: async (work) => {
+        alive = true;
+        try {
+          return await work;
+        } finally {
+          alive = false;
+        }
+      },
+    });
+
+    const reply = request(ServiceName.ShareSession, { sessionId: 's1' });
+    await vi.waitFor(() => expect(services.sharing.share).toHaveBeenCalled());
+    expect(alive).toBe(true);
+    upload.resolve(SHARED);
+    await expect(reply).resolves.toEqual(SHARED);
+    expect(alive).toBe(false);
+  });
+
   it('deletes sessions through the sharing service, with or without sharing', async () => {
     const { channel, request } = fakeChannel();
     const services = fakeServices();
     registerHandlers(channel, Promise.resolve(services as never), {
       shareEnabled: false,
+      keepAliveWhile: passThrough,
     });
     await request(ServiceName.DeleteSessions, { sessionIds: ['a', 'b'] });
     expect(services.sharing.deleteSessions).toHaveBeenCalledWith(['a', 'b']);

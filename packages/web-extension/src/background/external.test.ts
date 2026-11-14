@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { CloudAccount, Connection } from '~/types';
 import {
   answerExternalMessage,
+  createExternalListener,
   MALFORMED_MESSAGE_ERROR,
   STORAGE_ERROR,
   WRONG_ORIGIN_ERROR,
@@ -20,7 +21,6 @@ function makeDeps(connection: Connection = { name: 'not-connected' }) {
     version: '2.2.2',
     getConnection: vi.fn(async () => connection),
     storeAccount: vi.fn(async (_account: CloudAccount) => undefined),
-    removeAccount: vi.fn(async () => undefined),
   };
 }
 
@@ -64,18 +64,6 @@ describe('answerExternalMessage', () => {
     expect(deps.storeAccount).toHaveBeenCalledWith(account);
   });
 
-  it('disconnects', async () => {
-    const deps = makeDeps({ name: 'connected', account });
-    await expect(
-      answerExternalMessage(
-        { type: 'rrweb-extension-disconnect' },
-        fromDashboard,
-        deps,
-      ),
-    ).resolves.toEqual({ ok: true });
-    expect(deps.removeAccount).toHaveBeenCalledOnce();
-  });
-
   it('changes nothing for any other origin', async () => {
     for (const sender of [
       {},
@@ -87,14 +75,12 @@ describe('answerExternalMessage', () => {
       for (const message of [
         { type: 'rrweb-extension-status' },
         { type: 'rrweb-extension-connect', ...account },
-        { type: 'rrweb-extension-disconnect' },
       ])
         await expect(
           answerExternalMessage(message, sender, deps),
         ).resolves.toEqual({ ok: false, error: WRONG_ORIGIN_ERROR });
       expect(deps.getConnection).not.toHaveBeenCalled();
       expect(deps.storeAccount).not.toHaveBeenCalled();
-      expect(deps.removeAccount).not.toHaveBeenCalled();
     }
   });
 
@@ -105,7 +91,15 @@ describe('answerExternalMessage', () => {
       'rrweb-extension-status',
       {},
       { type: 'rrweb-extension-unknown' },
+      // Disconnecting is the popup's job; the dashboard cannot ask for it.
+      { type: 'rrweb-extension-disconnect' },
       { type: 'rrweb-extension-connect', orgId: 'org_1', orgName: 'Acme' },
+      {
+        type: 'rrweb-extension-connect',
+        orgName: 'Acme',
+        publicKey: 'pk_acme',
+      },
+      { type: 'rrweb-extension-connect', ...account, orgId: '' },
       { type: 'rrweb-extension-connect', ...account, publicKey: '' },
       { type: 'rrweb-extension-connect', ...account, orgName: 7 },
     ]) {
@@ -114,8 +108,17 @@ describe('answerExternalMessage', () => {
         answerExternalMessage(message, fromDashboard, deps),
       ).resolves.toEqual({ ok: false, error: MALFORMED_MESSAGE_ERROR });
       expect(deps.storeAccount).not.toHaveBeenCalled();
-      expect(deps.removeAccount).not.toHaveBeenCalled();
     }
+    // The same channel still connects a well formed message.
+    const deps = makeDeps();
+    await expect(
+      answerExternalMessage(
+        { type: 'rrweb-extension-connect', ...account },
+        fromDashboard,
+        deps,
+      ),
+    ).resolves.toEqual({ ok: true });
+    expect(deps.storeAccount).toHaveBeenCalledWith(account);
   });
 
   it('answers with an error when storage fails', async () => {
@@ -130,5 +133,69 @@ describe('answerExternalMessage', () => {
       ),
     ).resolves.toEqual({ ok: false, error: STORAGE_ERROR });
     logged.mockRestore();
+
+    // Once storage works again, the next connect is stored.
+    deps.storeAccount.mockResolvedValue(undefined);
+    await expect(
+      answerExternalMessage(
+        { type: 'rrweb-extension-connect', ...account },
+        fromDashboard,
+        deps,
+      ),
+    ).resolves.toEqual({ ok: true });
+    expect(deps.storeAccount).toHaveBeenLastCalledWith(account);
+  });
+});
+
+describe('createExternalListener', () => {
+  /** One listener, as the worker registers it, and what it stored. */
+  function listen(dashboardUrl: string) {
+    const deps = makeDeps();
+    const { version, getConnection, storeAccount } = deps;
+    const listener = createExternalListener({
+      dashboardUrl,
+      version,
+      getConnection,
+      storeAccount,
+    });
+    const send = (sender: { origin?: string }, message: unknown) =>
+      new Promise<unknown>((resolve) => {
+        const keepsChannelOpen = listener(message, sender, resolve);
+        expect(keepsChannelOpen).toBe(true);
+      });
+    const stored = () => deps.storeAccount.mock.calls.map(([a]) => a);
+    return { send, stored };
+  }
+  const connect = { type: 'rrweb-extension-connect', ...account };
+
+  it('connects from the configured dashboard origin', async () => {
+    for (const dashboardUrl of [DASHBOARD, `${DASHBOARD}/`]) {
+      const { send, stored } = listen(dashboardUrl);
+      await expect(send({ origin: DASHBOARD }, connect)).resolves.toEqual({
+        ok: true,
+      });
+      expect(stored()).toEqual([account]);
+    }
+  });
+
+  it('changes nothing for a sender from another origin, and still hears the dashboard', async () => {
+    const { send, stored } = listen(DASHBOARD);
+    for (const sender of [
+      { origin: 'https://evil.example' },
+      // a page address is not an origin
+      { origin: `${DASHBOARD}/` },
+      {},
+    ]) {
+      await expect(send(sender, connect)).resolves.toEqual({
+        ok: false,
+        error: WRONG_ORIGIN_ERROR,
+      });
+    }
+    expect(stored()).toEqual([]);
+    // The same listener still connects the dashboard afterwards.
+    await expect(send({ origin: DASHBOARD }, connect)).resolves.toEqual({
+      ok: true,
+    });
+    expect(stored()).toEqual([account]);
   });
 });

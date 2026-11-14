@@ -1,4 +1,5 @@
 import type { CloudAccount, Connection } from '~/types';
+import { filled } from '~/utils';
 
 /**
  * The dashboard's messages to the extension, sent with
@@ -20,16 +21,12 @@ export type ExternalMessageDeps = {
   version: string;
   getConnection: () => Promise<Connection>;
   storeAccount: (account: CloudAccount) => Promise<void>;
-  removeAccount: () => Promise<void>;
 };
 
 export const WRONG_ORIGIN_ERROR = 'Only the rrweb dashboard can do this.';
 export const MALFORMED_MESSAGE_ERROR =
   'The extension cannot read this message.';
 export const STORAGE_ERROR = 'The extension could not save the change.';
-
-const filled = (value: unknown): value is string =>
-  typeof value === 'string' && value !== '';
 
 /**
  * Answer one message from a web page. Only the dashboard origin is heard;
@@ -68,9 +65,6 @@ export async function answerExternalMessage(
         await deps.storeAccount({ orgId, orgName, publicKey });
         return { ok: true };
       }
-      case 'rrweb-extension-disconnect':
-        await deps.removeAccount();
-        return { ok: true };
       default:
         return { ok: false, error: MALFORMED_MESSAGE_ERROR };
     }
@@ -78,4 +72,26 @@ export async function answerExternalMessage(
     console.error('Could not answer the dashboard:', error);
     return { ok: false, error: STORAGE_ERROR };
   }
+}
+
+/**
+ * The worker's `onMessageExternal` listener. The accepted origin is derived
+ * from `dashboardUrl` here, never from the message or its sender.
+ */
+export function createExternalListener({
+  dashboardUrl,
+  ...deps
+}: Omit<ExternalMessageDeps, 'dashboardOrigin'> & { dashboardUrl: string }) {
+  const dashboardOrigin = new URL(dashboardUrl).origin;
+  return (
+    message: unknown,
+    sender: { origin?: string },
+    sendResponse: (reply: ExternalReply) => void,
+  ) => {
+    void answerExternalMessage(message, sender, {
+      ...deps,
+      dashboardOrigin,
+    }).then(sendResponse);
+    return true; // the answer is sent asynchronously
+  };
 }

@@ -11,8 +11,14 @@ import type { RecorderDeps } from './recorder';
 import { ACCOUNT_CHANGED_ERROR, createSink } from './sinks';
 import type { SinkTarget } from './sinks';
 import { watchRecordedPages, RECORDED_PAGE_PORT } from './pageWatch';
-import { RecorderStatus, ServiceName } from '~/types';
-import type { CloudAccount, Session, ShareResult, StartRequest } from '~/types';
+import { ServiceName } from '~/types';
+import type {
+  CloudAccount,
+  RecorderStatus,
+  Session,
+  ShareResult,
+  StartRequest,
+} from '~/types';
 
 const account: CloudAccount = {
   orgId: 'org_1',
@@ -22,6 +28,15 @@ const account: CloudAccount = {
 const event = (timestamp: number) => ({ timestamp } as eventWithTime);
 const typed = (type: number, timestamp: number) =>
   ({ type, timestamp } as eventWithTime);
+
+const recordingIn = (
+  tabId: number,
+): Extract<RecorderStatus, { state: 'recording' }> => ({
+  state: 'recording',
+  tabId,
+  startTimestamp: 1,
+  destination: { name: 'stored-only' },
+});
 
 const SESSION_URL = 'chrome-extension://abc/pages/index.html#/session/sess-1';
 const DASHBOARD_URL = 'https://app.rrweb.com/recordings/rec-1';
@@ -41,7 +56,7 @@ function setup(initial: CloudAccount | null) {
     uploadSession,
     deleteSession,
     randomId: () => 'sess-1',
-    getURL: (path: string) => `chrome-extension://abc/${path}`,
+    getURL: (path: string) => `chrome-extension://abc${path}`,
     recorderVersion: '2.2.2',
   };
   /** Every sink the recorder made, and every event it was given. */
@@ -56,6 +71,14 @@ function setup(initial: CloudAccount | null) {
     stopReply: undefined as Promise<void> | undefined,
     /** The page never confirms StartRecord, and the start limit runs out. */
     startHangs: false,
+    /** Resolves when the tab confirms StartRecord; immediately if unset. */
+    startReply: undefined as Promise<void> | undefined,
+    /** The next save of this state waits for `until`; then it is used up. */
+    holdSave: undefined as
+      | { state: RecorderStatus['state']; until: Promise<void> }
+      | undefined,
+    /** Every `after(ms)` the recorder asked for, in milliseconds. */
+    waits: [] as number[],
     titles: { 1: 'Page title' } as Record<number, string | undefined>,
     /** Runs inside the tab's StartRecord reply, like rrweb's first events. */
     emitOnStart: undefined as (() => void) | undefined,
@@ -87,11 +110,13 @@ function setup(initial: CloudAccount | null) {
         return (state.stopReply ?? Promise.resolve()).then(() => ({
           endTimestamp: state.now,
         }));
+      if (state.startReply)
+        return state.startReply.then(() => ({ startTimestamp: state.now }));
       return Promise.resolve({ startTimestamp: state.now });
     },
   );
   const opened: string[] = [];
-  const saved: RecorderStatus[] = [];
+  const saved: RecorderStatus['state'][] = [];
   const keepalive = {
     ms: 0,
     ticks: [] as (() => void)[],
@@ -124,15 +149,18 @@ function setup(initial: CloudAccount | null) {
     injectRecorder,
     requestToTab,
     saveStatus: (s) => {
-      saved.push(s.status);
-      return Promise.resolve();
+      saved.push(s.state);
+      const hold = state.holdSave;
+      if (hold?.state !== s.state) return Promise.resolve();
+      state.holdSave = undefined;
+      return hold.until;
     },
     getTabTitle: (tabId) => Promise.resolve(state.titles[tabId]),
     openTab: (url) => {
       opened.push(url);
       return Promise.resolve();
     },
-    onSessionUpdated: vi.fn(),
+    onSessionsChanged: vi.fn(),
     createSink: (target) => {
       sinks.push(target);
       const sink = createSink(target, sinkDeps);
@@ -153,8 +181,12 @@ function setup(initial: CloudAccount | null) {
     now: () => state.now,
     newToken: () => `token-${++state.tokens}`,
     // The start limit runs out only in tests that make the page hang.
-    after: () =>
-      state.startHangs ? Promise.resolve() : new Promise(() => undefined),
+    after: (ms) => {
+      state.waits.push(ms);
+      return state.startHangs
+        ? Promise.resolve()
+        : new Promise(() => undefined);
+    },
   };
   const real = createRecorder(deps);
   /**
@@ -222,7 +254,7 @@ function setup(initial: CloudAccount | null) {
     addSession,
     uploadSession,
     deleteSession,
-    onSessionUpdated: deps.onSessionUpdated as ReturnType<typeof vi.fn>,
+    onSessionsChanged: deps.onSessionsChanged as ReturnType<typeof vi.fn>,
     opened,
     keepalive,
     requestToTab,
@@ -242,8 +274,8 @@ describe('createRecorder', () => {
     expect(injectRecorder).toHaveBeenCalledWith(2);
     expect(log).toEqual(['inject:2', `${ServiceName.StartRecord}:2`]);
     expect(recorder.getStatus()).toMatchObject({
-      status: RecorderStatus.RECORDING,
-      activeTabId: 2,
+      state: 'recording',
+      tabId: 2,
     });
   });
 
@@ -251,11 +283,13 @@ describe('createRecorder', () => {
     const { recorder, state, requestToTab, sinks, keepalive } = setup(account);
     state.startHangs = true;
     await recorder.start();
+    // The page gets 15 seconds to confirm.
+    expect(state.waits).toEqual([15_000]);
     expect(sinks).toEqual([]);
     expect(keepalive.ticks).toHaveLength(0);
     expect(recorder.getStatus()).toMatchObject({
-      status: RecorderStatus.IDLE,
-      errorMessage: START_TIMEOUT_ERROR,
+      state: 'idle',
+      lastError: { name: 'failed', message: START_TIMEOUT_ERROR },
     });
     // the page is told to stop in case it starts late
     expect(
@@ -263,16 +297,20 @@ describe('createRecorder', () => {
     ).toBe(true);
     state.startHangs = false;
     await recorder.start();
-    expect(recorder.getStatus().status).toBe(RecorderStatus.RECORDING);
+    expect(recorder.getStatus().state).toBe('recording');
   });
 
   it('keeps the organization a cloud recording started with in its status', async () => {
     const cloudRun = setup(account);
     await cloudRun.recorder.start();
-    expect(cloudRun.recorder.getStatus().uploadsTo).toBe('Acme');
+    expect(cloudRun.recorder.getStatus()).toMatchObject({
+      destination: { name: 'organization', orgName: 'Acme' },
+    });
     const offlineRun = setup(null);
     await offlineRun.recorder.start();
-    expect(offlineRun.recorder.getStatus().uploadsTo).toBeUndefined();
+    expect(offlineRun.recorder.getStatus()).toMatchObject({
+      destination: { name: 'stored-only' },
+    });
   });
 
   it('starts nothing and reports the error when the tab cannot be injected', async () => {
@@ -284,12 +322,12 @@ describe('createRecorder', () => {
     expect(sinks).toEqual([]);
     expect(keepalive.ticks).toHaveLength(0);
     expect(recorder.getStatus()).toMatchObject({
-      status: RecorderStatus.IDLE,
-      errorMessage: 'Cannot access this page',
+      state: 'idle',
+      lastError: { name: 'failed', message: 'Cannot access this page' },
     });
     // the next start on a page that can be recorded works
     await recorder.start();
-    expect(recorder.getStatus().status).toBe(RecorderStatus.RECORDING);
+    expect(recorder.getStatus().state).toBe('recording');
   });
 
   it('does not move the recording when another tab activates', async () => {
@@ -310,8 +348,8 @@ describe('createRecorder', () => {
     await settle();
     expect(log.filter((l) => l.endsWith(':2'))).toEqual([]);
     expect(recorder.getStatus()).toMatchObject({
-      status: RecorderStatus.RECORDING,
-      activeTabId: 1,
+      state: 'recording',
+      tabId: 1,
     });
     expect(added.mock.calls.map((c) => c[0].timestamp)).toEqual([1, 2]);
     expect(opened).toEqual([]);
@@ -337,7 +375,7 @@ describe('createRecorder', () => {
     expect(uploadSession).toHaveBeenCalledWith('sess-1', account);
     expect(opened).toEqual([DASHBOARD_URL]);
     expect(keepalive.cancel).toHaveBeenCalledOnce();
-    expect(recorder.getStatus().status).toBe(RecorderStatus.IDLE);
+    expect(recorder.getStatus().state).toBe('idle');
     // the old document is gone, so nothing is asked of it
     expect(
       requestToTab.mock.calls.filter((c) => c[1] === ServiceName.StopRecord),
@@ -385,7 +423,7 @@ describe('createRecorder', () => {
     expect(uploadSession).toHaveBeenCalledWith('sess-1', account);
     expect(opened).toEqual([DASHBOARD_URL]);
     expect(keepalive.cancel).toHaveBeenCalledOnce();
-    expect(recorder.getStatus().status).toBe(RecorderStatus.IDLE);
+    expect(recorder.getStatus().state).toBe('idle');
   });
 
   it('finishes a paused recording when the recorded tab closes', async () => {
@@ -414,8 +452,8 @@ describe('createRecorder', () => {
     await settle();
     recorder.add(event(2));
     expect(recorder.getStatus()).toMatchObject({
-      status: RecorderStatus.RECORDING,
-      activeTabId: 1,
+      state: 'recording',
+      tabId: 1,
     });
     expect(opened).toEqual([]);
     expect(uploadSession).not.toHaveBeenCalled();
@@ -446,7 +484,7 @@ describe('createRecorder', () => {
     expect(addSession).toHaveBeenCalledOnce();
     expect(opened).toHaveLength(1);
     expect(uploadSession).not.toHaveBeenCalled();
-    expect(recorder.getStatus().status).toBe(RecorderStatus.IDLE);
+    expect(recorder.getStatus().state).toBe('idle');
   });
 
   it('leaves the next recording alone when a Stop that overlapped the page going away resumes', async () => {
@@ -468,8 +506,8 @@ describe('createRecorder', () => {
     await settle();
     recorder.add(event(2));
     expect(recorder.getStatus()).toMatchObject({
-      status: RecorderStatus.RECORDING,
-      activeTabId: 1,
+      state: 'recording',
+      tabId: 1,
     });
     expect(uploadSession).toHaveBeenCalledOnce();
     expect(added.mock.calls.map((c) => c[0].timestamp)).toEqual([2]);
@@ -487,10 +525,10 @@ describe('createRecorder', () => {
     answerStop();
     await pausing;
     expect(recorder.getStatus()).toMatchObject({
-      status: RecorderStatus.IDLE,
-      activeTabId: -1,
+      state: 'idle',
+      lastError: { name: 'none' },
     });
-    expect(saved[saved.length - 1]).toBe(RecorderStatus.IDLE);
+    expect(saved[saved.length - 1]).toBe('idle');
   });
 
   it('finishes a start whose page went away before the tab confirmed', async () => {
@@ -515,7 +553,7 @@ describe('createRecorder', () => {
     expect(uploadSession).toHaveBeenCalledWith('sess-1', account);
     expect(opened).toEqual([DASHBOARD_URL]);
     expect(keepalive.cancel).toHaveBeenCalledOnce();
-    expect(recorder.getStatus().status).toBe(RecorderStatus.IDLE);
+    expect(recorder.getStatus().state).toBe('idle');
   });
 
   it('closes the pause gap in a cloud recording too', async () => {
@@ -564,15 +602,15 @@ describe('createRecorder', () => {
     await recorder.start();
     expect(sinks).toEqual([]);
     expect(recorder.getStatus()).toMatchObject({
-      status: RecorderStatus.IDLE,
-      errorMessage: 'cannot record here',
+      state: 'idle',
+      lastError: { name: 'failed', message: 'cannot record here' },
     });
   });
 
   it('ignores a second start while the first is starting', async () => {
     const { recorder, requestToTab, sinks, keepalive, saved } = setup(account);
     const first = recorder.start();
-    expect(recorder.getStatus().status).toBe(RecorderStatus.STARTING);
+    expect(recorder.getStatus().state).toBe('starting');
     const second = recorder.start();
     await Promise.all([first, second]);
     expect(
@@ -580,8 +618,8 @@ describe('createRecorder', () => {
     ).toHaveLength(1);
     expect(sinks).toHaveLength(1);
     expect(keepalive.ticks).toHaveLength(1);
-    expect(saved).toContain(RecorderStatus.STARTING);
-    expect(recorder.getStatus().status).toBe(RecorderStatus.RECORDING);
+    expect(saved).toContain('starting');
+    expect(recorder.getStatus().state).toBe('recording');
     await recorder.stop();
     expect(keepalive.cancel).toHaveBeenCalledOnce();
   });
@@ -590,35 +628,51 @@ describe('createRecorder', () => {
     const { recorder, state, saved } = setup(account);
     state.refuse = true;
     const starting = recorder.start();
-    expect(recorder.getStatus().status).toBe(RecorderStatus.STARTING);
+    expect(recorder.getStatus().state).toBe('starting');
     await starting;
     expect(recorder.getStatus()).toMatchObject({
-      status: RecorderStatus.IDLE,
-      errorMessage: 'cannot record here',
+      state: 'idle',
+      lastError: { name: 'failed', message: 'cannot record here' },
     });
-    expect(saved[saved.length - 1]).toBe(RecorderStatus.IDLE);
+    expect(saved[saved.length - 1]).toBe('idle');
     // a later start is accepted again
     state.refuse = false;
     await recorder.start();
-    expect(recorder.getStatus().status).toBe(RecorderStatus.RECORDING);
+    expect(recorder.getStatus().state).toBe('recording');
   });
 
   it('stores a cloud recording, uploads it and opens it in the dashboard', async () => {
-    const { recorder, addSession, uploadSession, deleteSession, opened } =
-      setup(account);
+    const {
+      recorder,
+      addSession,
+      uploadSession,
+      deleteSession,
+      opened,
+      onSessionsChanged,
+    } = setup(account);
     await recorder.start();
     recorder.add(event(1));
     await recorder.stop();
     expect(addSession.mock.calls[0][1]).toEqual([event(1)]);
     expect(uploadSession).toHaveBeenCalledWith('sess-1', account);
     expect(deleteSession).toHaveBeenCalledWith('sess-1');
+    // Open session lists drop the local copy the upload replaced.
+    expect(onSessionsChanged).toHaveBeenCalledWith({ name: 'removed' });
     expect(opened).toEqual([DASHBOARD_URL]);
-    expect(recorder.getStatus().errorMessage).toBeUndefined();
+    expect(recorder.getStatus()).toEqual({
+      state: 'idle',
+      lastError: { name: 'none' },
+    });
   });
 
   it('keeps a cloud recording that did not upload in Offline sessions and says so', async () => {
-    const { recorder, uploadSession, deleteSession, opened, onSessionUpdated } =
-      setup(account);
+    const {
+      recorder,
+      uploadSession,
+      deleteSession,
+      opened,
+      onSessionsChanged,
+    } = setup(account);
     uploadSession.mockResolvedValueOnce({
       name: 'share-failed',
       errorMessage: 'Could not reach rrweb: Failed to fetch',
@@ -628,14 +682,16 @@ describe('createRecorder', () => {
     await recorder.stop();
     expect(deleteSession).not.toHaveBeenCalled();
     expect(opened).toEqual([SESSION_URL]);
-    expect(onSessionUpdated).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'sess-1', name: 'Page title' }),
-    );
+    expect(onSessionsChanged).toHaveBeenCalledWith({
+      name: 'saved',
+      session: expect.objectContaining({ id: 'sess-1', name: 'Page title' }),
+    });
     expect(recorder.getStatus()).toMatchObject({
-      status: RecorderStatus.IDLE,
-      errorMessage: uploadFailedMessage(
-        'Could not reach rrweb: Failed to fetch',
-      ),
+      state: 'idle',
+      lastError: {
+        name: 'failed',
+        message: uploadFailedMessage('Could not reach rrweb: Failed to fetch'),
+      },
     });
   });
 
@@ -654,8 +710,15 @@ describe('createRecorder', () => {
     expect(injectRecorder).not.toHaveBeenCalled();
     expect(sinks).toEqual([]);
     expect(recorder.getStatus()).toMatchObject({
-      status: RecorderStatus.IDLE,
-      errorMessage: ACCOUNT_CHANGED_ERROR,
+      state: 'idle',
+      lastError: { name: 'failed', message: ACCOUNT_CHANGED_ERROR },
+    });
+
+    // A start for the organization that is stored records.
+    await recorder.start({ mode: 'cloud', orgId: 'org_1' });
+    expect(recorder.getStatus()).toMatchObject({
+      state: 'recording',
+      destination: { name: 'organization', orgName: 'Acme' },
     });
   });
 
@@ -691,8 +754,8 @@ describe('createRecorder', () => {
     await recorder.pauseClicked();
     await recorder.resumeClicked();
     expect(recorder.getStatus()).toMatchObject({
-      status: RecorderStatus.RECORDING,
-      uploadsTo: 'Acme',
+      state: 'recording',
+      destination: { name: 'organization', orgName: 'Acme' },
     });
   });
 
@@ -763,7 +826,7 @@ describe('createRecorder', () => {
       const stopping = recorder.stop();
       await settle();
       expect(uploadSession).toHaveBeenCalledOnce();
-      expect(recorder.getStatus().status).toBe(RecorderStatus.IDLE);
+      expect(recorder.getStatus().state).toBe('idle');
       expect(keepalive.cancel).not.toHaveBeenCalled();
       keepalive.ticks[0]();
       expect(keepalive.ping).toHaveBeenCalledOnce();
@@ -800,7 +863,10 @@ describe('createRecorder', () => {
     addSession.mockRejectedValueOnce(new Error('quota exceeded'));
     await recorder.start();
     await recorder.stop();
-    expect(recorder.getStatus().errorMessage).toBe('quota exceeded');
+    expect(recorder.getStatus()).toEqual({
+      state: 'idle',
+      lastError: { name: 'failed', message: 'quota exceeded' },
+    });
     expect(uploadSession).not.toHaveBeenCalled();
     expect(keepalive.cancel).toHaveBeenCalledOnce();
   });
@@ -815,15 +881,15 @@ describe('createRecorder', () => {
     const stopping = recorder.stop();
     await settle();
     await recorder.start();
-    expect(recorder.getStatus().status).toBe(RecorderStatus.RECORDING);
+    expect(recorder.getStatus().state).toBe('recording');
     expect(keepalive.ticks).toHaveLength(2);
     expect(keepalive.cancel).not.toHaveBeenCalled();
     settleUpload({ name: 'share-failed', errorMessage: 'offline' });
     await stopping;
     expect(keepalive.cancel.mock.calls).toEqual([[0]]);
     // the failed upload's message does not land on the new recording
-    expect(recorder.getStatus().status).toBe(RecorderStatus.RECORDING);
-    expect(recorder.getStatus().errorMessage).toBeUndefined();
+    expect(recorder.getStatus()).toMatchObject({ state: 'recording' });
+    expect(recorder.getStatus()).not.toHaveProperty('lastError');
     await recorder.stop();
     expect(keepalive.cancel.mock.calls).toEqual([[0], [1]]);
   });
@@ -883,26 +949,392 @@ describe('createRecorder', () => {
     expect(addSession).not.toHaveBeenCalled();
   });
 
-  it('reports which kind of recording is running', async () => {
-    const cloud = setup(account);
-    await cloud.recorder.start();
-    expect(cloud.recorder.getStatus()).toMatchObject({ kind: 'cloud' });
-    cloud.state.now = 5000;
-    await cloud.recorder.pauseClicked();
-    expect(cloud.recorder.getStatus()).toMatchObject({
-      status: RecorderStatus.PAUSED,
-      kind: 'cloud',
+  it('does not start without a current tab, and the next start works', async () => {
+    const { recorder, state, saved, injectRecorder } = setup(null);
+    state.currentTab = -1;
+    await recorder.start();
+    expect(recorder.getStatus()).toEqual({
+      state: 'idle',
+      lastError: { name: 'none' },
     });
-    await cloud.recorder.resumeClicked();
-    expect(cloud.recorder.getStatus()).toMatchObject({
-      status: RecorderStatus.RECORDING,
-      kind: 'cloud',
+    expect(saved).toEqual(['starting', 'idle']);
+    expect(injectRecorder).not.toHaveBeenCalled();
+    state.currentTab = 1;
+    await recorder.start();
+    expect(recorder.getStatus()).toMatchObject({ state: 'recording' });
+  });
+
+  it('holds only the recorded tab’s top-frame events for this start', async () => {
+    const { recorder, state, added } = setup(null);
+    state.emitOnStart = () => {
+      recorder.add(event(1), { token: 'other-recording' });
+      recorder.add(event(2), { tabId: 2 });
+      recorder.add(event(3), { frameId: 3 });
+      recorder.add(event(4));
+    };
+    await recorder.start();
+    expect(added.mock.calls.map((c) => c[0].timestamp)).toEqual([4]);
+  });
+
+  it('keeps a start going when another tab’s page goes away', async () => {
+    const { recorder, state, browser, opened, settle } = setup(null);
+    browser.openPage(1);
+    const otherPageGoes = browser.openPage(2);
+    state.emitOnStart = () => otherPageGoes();
+    await recorder.start();
+    await settle();
+    expect(recorder.getStatus()).toMatchObject({ state: 'recording' });
+    expect(opened).toEqual([]);
+  });
+
+  it('a departed start finishes only its own recording', async () => {
+    const { recorder, state, browser, addSession, settle } = setup(null);
+    let release: () => void = () => undefined;
+    state.holdSave = {
+      state: 'recording',
+      until: new Promise((r) => (release = r)),
+    };
+    const navigateAway = browser.openPage(1);
+    state.emitOnStart = () => {
+      state.emitOnStart = undefined;
+      navigateAway(); // the page goes away before the tab confirms
+    };
+    const first = recorder.start();
+    await settle(); // the start now waits on its recording save
+    await recorder.stop();
+    await recorder.start();
+    release();
+    await first;
+    await settle();
+    expect(recorder.getStatus()).toMatchObject({ state: 'recording' });
+    expect(addSession).toHaveBeenCalledOnce();
+  });
+
+  it('a finished start’s cleanup leaves a newer start in flight alone', async () => {
+    const { recorder, state, settle } = setup(null);
+    let release: () => void = () => undefined;
+    state.holdSave = {
+      state: 'recording',
+      until: new Promise((r) => (release = r)),
+    };
+    const first = recorder.start();
+    await settle();
+    await recorder.stop();
+    let confirm: () => void = () => undefined;
+    state.startReply = new Promise((r) => (confirm = r));
+    const second = recorder.start();
+    await settle();
+    release();
+    await first;
+    expect(recorder.getStatus()).toEqual({ state: 'starting' });
+    confirm();
+    await second;
+    expect(recorder.getStatus()).toMatchObject({ state: 'recording' });
+  });
+
+  it('a storage failure from the last recording leaves a newer one recording', async () => {
+    const { recorder, addSession, settle } = setup(account);
+    let fail: (e: Error) => void = () => undefined;
+    addSession.mockReturnValueOnce(
+      new Promise<void>((_, reject) => (fail = reject)),
+    );
+    await recorder.start();
+    const stopping = recorder.stop();
+    await settle();
+    await recorder.start();
+    fail(new Error('quota exceeded'));
+    await stopping;
+    expect(recorder.getStatus()).toMatchObject({ state: 'recording' });
+    expect(recorder.getStatus()).not.toHaveProperty('lastError');
+  });
+
+  it('ignores a second pause click while the page has not answered the first', async () => {
+    const { recorder, state, requestToTab } = setup(null);
+    await recorder.start();
+    let answer: () => void = () => undefined;
+    state.stopReply = new Promise((r) => (answer = r));
+    const first = recorder.pauseClicked();
+    const second = recorder.pauseClicked();
+    // the popup keeps showing the recording until the page answers
+    expect(recorder.getStatus()).toMatchObject({ state: 'recording' });
+    answer();
+    await Promise.all([first, second]);
+    const stops = requestToTab.mock.calls.filter(
+      (c) => c[1] === ServiceName.StopRecord,
+    );
+    expect(stops).toHaveLength(1);
+    expect(recorder.getStatus()).toMatchObject({ state: 'paused' });
+  });
+
+  it('a late pause reply from a finished recording leaves the next one’s pause alone', async () => {
+    const { recorder, state, browser, settle } = setup(null);
+    let answer: () => void = () => undefined;
+    state.stopReply = new Promise((r) => (answer = r));
+    browser.openPage(1);
+    await recorder.start(); // started at 1000
+    const firstPause = recorder.pauseClicked();
+    browser.closeTab(1); // finishes the first recording meanwhile
+    await settle();
+    state.now = 2000;
+    await recorder.start();
+    const secondPause = recorder.pauseClicked();
+    answer(); // both pages answer now
+    await Promise.all([firstPause, secondPause]);
+    expect(recorder.getStatus()).toMatchObject({
+      state: 'paused',
+      startTimestamp: 2000,
     });
-    await cloud.recorder.stop();
-    expect(cloud.recorder.getStatus().kind).toBeUndefined();
-    const offline = setup(null);
-    await offline.recorder.start();
-    expect(offline.recorder.getStatus()).toMatchObject({ kind: 'offline' });
+  });
+
+  it('ignores a second resume click while the page has not answered the first', async () => {
+    const { recorder, state, injectRecorder, addSession, settle } = setup(null);
+    await recorder.start();
+    recorder.add(event(100));
+    state.now = 5000;
+    await recorder.pauseClicked();
+    state.now = 8000;
+    let injected: () => void = () => undefined;
+    injectRecorder.mockReturnValueOnce(new Promise((r) => (injected = r)));
+    const first = recorder.resumeClicked();
+    await settle(); // the first resume now waits on the page
+    const second = recorder.resumeClicked();
+    injected();
+    await Promise.all([first, second]);
+    expect(injectRecorder).toHaveBeenCalledTimes(2); // the start and one resume
+    expect(recorder.getStatus()).toMatchObject({ state: 'recording' });
+    await recorder.stop();
+    expect(addSession.mock.calls[0][1].map((e) => e.timestamp)).toEqual([
+      100 + 3000,
+    ]);
+  });
+
+  it('a resume that settles after the tab closed leaves the recorder idle', async () => {
+    for (const settles of ['fails', 'succeeds'] as const) {
+      const { recorder, injectRecorder, browser, settle } = setup(null);
+      browser.openPage(1);
+      await recorder.start();
+      await recorder.pauseClicked();
+      let answer: () => void = () => undefined;
+      injectRecorder.mockReturnValueOnce(
+        new Promise<void>((resolve, reject) => {
+          answer = () =>
+            settles === 'fails'
+              ? reject(new Error('Cannot access this page'))
+              : resolve();
+        }),
+      );
+      const resuming = recorder.resumeClicked();
+      await settle();
+      browser.closeTab(1);
+      await settle();
+      answer();
+      await resuming;
+      expect(recorder.getStatus(), settles).toEqual({
+        state: 'idle',
+        lastError: { name: 'none' },
+      });
+    }
+  });
+
+  it('undoes a failed resume’s shift, so the next resume shifts once', async () => {
+    const { recorder, state, injectRecorder, addSession } = setup(null);
+    await recorder.start();
+    recorder.add(event(100));
+    state.now = 5000;
+    await recorder.pauseClicked();
+    state.now = 8000;
+    injectRecorder.mockRejectedValueOnce(new Error('Cannot access this page'));
+    await recorder.resumeClicked();
+    state.now = 9000;
+    await recorder.resumeClicked();
+    await recorder.stop();
+    expect(addSession.mock.calls[0][1].map((e) => e.timestamp)).toEqual([
+      100 + 4000,
+    ]);
+  });
+
+  it('a resume stopped while the page script loads never restarts that recording', async () => {
+    const { recorder, injectRecorder, requestToTab, addSession, settle } =
+      setup(null);
+    await recorder.start(); // token-1
+    await recorder.pauseClicked();
+    let injected: () => void = () => undefined;
+    injectRecorder.mockReturnValueOnce(new Promise((r) => (injected = r)));
+    const resuming = recorder.resumeClicked();
+    await settle(); // the resume waits on the injection
+    await recorder.stop();
+    await recorder.start(); // token-2, in the same tab
+    injected();
+    await resuming;
+    const startTokens = requestToTab.mock.calls
+      .filter((c) => c[1] === ServiceName.StartRecord)
+      .map((c) => (c[2] as { token: string }).token);
+    expect(startTokens).toEqual(['token-1', 'token-2']);
+    recorder.add(event(7)); // the page records under its latest token
+    await recorder.stop();
+    expect(addSession.mock.calls[1][1]).toEqual([event(7)]);
+  });
+
+  it('a resume the page confirms after Stop tells that page to stop', async () => {
+    const { recorder, state, requestToTab, settle } = setup(null);
+    await recorder.start();
+    await recorder.pauseClicked();
+    let confirm: () => void = () => undefined;
+    state.startReply = new Promise((r) => (confirm = r));
+    const resuming = recorder.resumeClicked();
+    await settle(); // StartRecord is with the page
+    await recorder.stop();
+    const stops = () =>
+      requestToTab.mock.calls.filter(
+        (c) => c[0] === 1 && c[1] === ServiceName.StopRecord,
+      ).length;
+    expect(stops()).toBe(1); // the pause's
+    confirm();
+    await resuming;
+    await settle();
+    expect(stops()).toBe(2);
+    expect(recorder.getStatus()).toMatchObject({ state: 'idle' });
+  });
+
+  it('a late resume confirmation leaves a newer recording in that tab recording', async () => {
+    const { recorder, state, requestToTab, addSession, settle } = setup(null);
+    await recorder.start();
+    await recorder.pauseClicked();
+    let confirm: () => void = () => undefined;
+    state.startReply = new Promise((r) => (confirm = r));
+    const resuming = recorder.resumeClicked();
+    await settle();
+    await recorder.stop();
+    const starting = recorder.start(); // the newer start waits on the same page
+    await settle();
+    confirm(); // the page confirms the old resume, then the newer start
+    await Promise.all([resuming, starting]);
+    await settle();
+    const stops = requestToTab.mock.calls.filter(
+      (c) => c[1] === ServiceName.StopRecord,
+    );
+    expect(stops).toHaveLength(1); // only the pause's
+    expect(recorder.getStatus()).toMatchObject({ state: 'recording' });
+    recorder.add(event(9));
+    await recorder.stop();
+    expect(addSession.mock.calls[1][1]).toEqual([event(9)]);
+  });
+
+  it('Stop while a pause waits for the page still stops the page, and the late reply pauses nothing', async () => {
+    const { recorder, state, requestToTab } = setup(null);
+    await recorder.start();
+    let answer: () => void = () => undefined;
+    requestToTab.mockReturnValueOnce(
+      new Promise((r) => (answer = () => r({ endTimestamp: state.now }))),
+    );
+    const pausing = recorder.pauseClicked(); // the page has not answered yet
+    await recorder.stop();
+    answer(); // the pause reply arrives after the recording finished
+    await pausing;
+    const stops = requestToTab.mock.calls.filter(
+      (c) => c[1] === ServiceName.StopRecord,
+    );
+    expect(stops).toHaveLength(2); // the pause's and the Stop's
+    expect(recorder.getStatus()).toEqual({
+      state: 'idle',
+      lastError: { name: 'none' },
+    });
+  });
+
+  it('gives each status exactly the data of its state', async () => {
+    const { recorder, state, saved } = setup(account);
+    expect(recorder.getStatus()).toEqual({
+      state: 'idle',
+      lastError: { name: 'none' },
+    });
+    const starting = recorder.start();
+    expect(recorder.getStatus()).toEqual({ state: 'starting' });
+    await starting;
+    const destination = { name: 'organization', orgName: 'Acme' };
+    expect(recorder.getStatus()).toEqual({
+      state: 'recording',
+      tabId: 1,
+      startTimestamp: 1000,
+      destination,
+    });
+    state.now = 5000;
+    await recorder.pauseClicked();
+    expect(recorder.getStatus()).toEqual({
+      state: 'paused',
+      tabId: 1,
+      startTimestamp: 1000,
+      pausedTimestamp: 5000,
+      destination,
+      lastError: { name: 'none' },
+    });
+    state.now = 7000;
+    await recorder.resumeClicked();
+    // the 2 s pause moves the start later
+    expect(recorder.getStatus()).toEqual({
+      state: 'recording',
+      tabId: 1,
+      startTimestamp: 3000,
+      destination,
+    });
+    await recorder.stop();
+    expect(recorder.getStatus()).toEqual({
+      state: 'idle',
+      lastError: { name: 'none' },
+    });
+    expect(saved).toEqual([
+      'starting',
+      'recording',
+      'paused',
+      'paused',
+      'recording',
+      'idle',
+    ]);
+  });
+
+  it('dates a pause the page did not answer from the click', async () => {
+    const { recorder, state, requestToTab } = setup(null);
+    await recorder.start();
+    state.now = 4000;
+    let refuse: (e: Error) => void = () => undefined;
+    requestToTab.mockReturnValueOnce(
+      new Promise((_, reject) => (refuse = reject)),
+    );
+    const pausing = recorder.pauseClicked();
+    state.now = 4500; // the page takes a while to fail
+    refuse(new Error('page gone quiet'));
+    await pausing;
+    expect(recorder.getStatus()).toMatchObject({
+      state: 'paused',
+      pausedTimestamp: 4000,
+    });
+    state.now = 6000;
+    await recorder.resumeClicked();
+    expect(recorder.getStatus()).toMatchObject({
+      state: 'recording',
+      startTimestamp: 3000,
+    });
+  });
+
+  it('shows a failed resume on the paused status and clears it on the next resume', async () => {
+    const { recorder, injectRecorder } = setup(null);
+    await recorder.start();
+    await recorder.pauseClicked();
+    injectRecorder.mockRejectedValueOnce(new Error('Cannot access this page'));
+    await recorder.resumeClicked();
+    expect(recorder.getStatus()).toMatchObject({
+      state: 'paused',
+      lastError: { name: 'failed', message: 'Cannot access this page' },
+    });
+    let injected: () => void = () => undefined;
+    injectRecorder.mockReturnValueOnce(new Promise((r) => (injected = r)));
+    const resuming = recorder.resumeClicked();
+    expect(recorder.getStatus()).toMatchObject({
+      state: 'paused',
+      lastError: { name: 'none' },
+    });
+    injected();
+    await resuming;
+    expect(recorder.getStatus()).toMatchObject({ state: 'recording' });
   });
 });
 
@@ -926,38 +1358,33 @@ describe('recording badge', () => {
     expect(last(badgeCalls)).toBe(`set:1:REC:${RECORDING}`);
   });
 
-  it('clears the badge when the recording stops', async () => {
-    const { recorder, badgeCalls } = setup(account);
-    await recorder.start();
-    await recorder.stop();
-    expect(last(badgeCalls)).toBe('clear:1');
-  });
-
-  it('clears the badge when the page goes away', async () => {
-    const { recorder, browser, badgeCalls, settle } = setup(account);
-    await recorder.start();
-    browser.openPage(1)();
-    await settle();
-    expect(last(badgeCalls)).toBe('clear:1');
-  });
-
-  it('clears the badge when the tab closes', async () => {
-    const { recorder, browser, badgeCalls, settle } = setup(account);
-    await recorder.start();
-    browser.closeTab(1);
-    await settle();
-    expect(last(badgeCalls)).toBe('clear:1');
-  });
-
-  it('clears the badge when the cloud upload fails', async () => {
-    const { recorder, badgeCalls, uploadSession } = setup(account);
-    uploadSession.mockResolvedValueOnce({
-      name: 'share-failed',
-      errorMessage: 'offline',
-    });
-    await recorder.start();
-    await recorder.stop();
-    expect(last(badgeCalls)).toBe('clear:1');
+  it('clears the badge however the recording finishes', async () => {
+    const endings: [
+      string,
+      (run: ReturnType<typeof setup>) => Promise<void>,
+    ][] = [
+      ['stop', (run) => run.recorder.stop()],
+      ['page gone', (run) => Promise.resolve(run.browser.openPage(1)())],
+      ['tab closed', (run) => Promise.resolve(run.browser.closeTab(1))],
+      [
+        'upload failed',
+        async (run) => {
+          run.uploadSession.mockResolvedValueOnce({
+            name: 'share-failed',
+            errorMessage: 'offline',
+          });
+          await run.recorder.stop();
+        },
+      ],
+    ];
+    for (const [ending, finish] of endings) {
+      const run = setup(account);
+      await run.recorder.start();
+      expect(last(run.badgeCalls), ending).toBe(`set:1:REC:${RECORDING}`);
+      await finish(run);
+      await run.settle();
+      expect(last(run.badgeCalls), ending).toBe('clear:1');
+    }
   });
 
   it('leaves no badge when the start is refused', async () => {
@@ -972,10 +1399,10 @@ describe('recording badge', () => {
     badgeFailure.set = true;
     await recorder.start();
     await new Promise((r) => setTimeout(r, 0));
-    expect(recorder.getStatus().status).toBe(RecorderStatus.RECORDING);
-    expect(saved).toContain(RecorderStatus.RECORDING);
+    expect(recorder.getStatus().state).toBe('recording');
+    expect(saved).toContain('recording');
     await recorder.stop();
-    expect(recorder.getStatus().status).toBe(RecorderStatus.IDLE);
+    expect(recorder.getStatus().state).toBe('idle');
   });
 
   it('contains a badge API that throws synchronously', () => {
@@ -985,9 +1412,7 @@ describe('recording badge', () => {
       },
       clearBadge: () => Promise.resolve(),
     });
-    expect(() =>
-      badge.sync({ status: RecorderStatus.RECORDING, activeTabId: 1 }),
-    ).not.toThrow();
+    expect(() => badge.sync(recordingIn(1))).not.toThrow();
   });
 
   it('registers no timer', () => {
@@ -997,10 +1422,14 @@ describe('recording badge', () => {
         setBadge: () => Promise.resolve(),
         clearBadge: () => Promise.resolve(),
       });
-      const status = { status: RecorderStatus.RECORDING, activeTabId: 1 };
-      badge.sync(status);
-      badge.sync({ ...status, status: RecorderStatus.PAUSED });
-      badge.sync({ ...status, status: RecorderStatus.IDLE });
+      badge.sync(recordingIn(1));
+      badge.sync({
+        ...recordingIn(1),
+        state: 'paused',
+        pausedTimestamp: 2,
+        lastError: { name: 'none' },
+      });
+      badge.sync({ state: 'idle', lastError: { name: 'none' } });
       expect(vi.getTimerCount()).toBe(0);
     } finally {
       vi.useRealTimers();

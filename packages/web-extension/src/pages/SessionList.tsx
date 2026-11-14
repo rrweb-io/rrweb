@@ -36,8 +36,14 @@ import { VscTriangleDown, VscTriangleUp } from 'react-icons/vsc';
 import { FiEdit3 as EditIcon } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import type { eventWithTime } from 'rrweb';
-import { type Session, EventName, ServiceName } from '~/types';
+import {
+  type Session,
+  type SessionsChange,
+  EventName,
+  ServiceName,
+} from '~/types';
 import Channel from '~/utils/channel';
+import { recordingKindOf } from '~/utils';
 import {
   getAllSessions,
   downloadSessions,
@@ -199,7 +205,7 @@ export function SessionList() {
           <Box onClick={(e) => e.stopPropagation()} cursor="default">
             <ShareAction
               sessionId={row.original.id}
-              recordedAs={row.original.recordedAs ?? 'offline'}
+              recordedAs={recordingKindOf(row.original)}
             />
           </Box>
         ),
@@ -299,7 +305,8 @@ export function SessionList() {
     }
     setRowSelection({});
     void updateSessions();
-    channel.emit(EventName.SessionUpdated, {});
+    const removed: SessionsChange = { name: 'removed' };
+    channel.emit(EventName.SessionUpdated, removed);
   };
 
   return (

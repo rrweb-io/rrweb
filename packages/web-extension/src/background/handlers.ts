@@ -22,7 +22,11 @@ export const BACKGROUND_NOT_READY_ERROR =
 export function registerHandlers(
   channel: Pick<Channel, 'on' | 'provide'>,
   ready: Promise<BackgroundServices>,
-  options: { shareEnabled: boolean },
+  options: {
+    shareEnabled: boolean;
+    /** Keep the worker running until `work` settles. */
+    keepAliveWhile: <T>(work: Promise<T>) => Promise<T>;
+  },
 ) {
   const logFailure = (action: string) => (error: unknown) =>
     console.error(`Could not ${action}:`, error);
@@ -85,7 +89,9 @@ export function registerHandlers(
             errorMessage: BACKGROUND_NOT_READY_ERROR,
           };
         }
-        return services.sharing.share(request);
+        // An upload can outlast an idle worker's lifetime when no recording
+        // keeps the worker running.
+        return options.keepAliveWhile(services.sharing.share(request));
       },
     );
   }

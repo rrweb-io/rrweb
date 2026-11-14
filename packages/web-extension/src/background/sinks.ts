@@ -1,9 +1,10 @@
 import type { eventWithTime } from '@rrweb/types';
 import type { recordOptions } from 'rrweb';
-import { config } from '~/config';
+import { dashboardRecordingUrl, sessionPage } from '~/config';
 import type {
   CloudAccount,
   Connection,
+  Destination,
   RecordingKind,
   Session,
   ShareResult,
@@ -17,11 +18,7 @@ import type { addSession } from '~/utils/storage';
  * uploaded from storage.
  */
 export type RecordingSink = {
-  kind: RecordingKind;
-  /** The organization a cloud recording uploads to, fixed at start. */
-  uploadsTo:
-    | { name: 'organization'; orgName: string }
-    | { name: 'stored-only' };
+  destination: Destination;
   recordConfig: recordOptions<eventWithTime>; // sent to the page with StartRecord
   add(event: eventWithTime): void;
   finish(title: string): Promise<FinishResult>;
@@ -77,16 +74,12 @@ export function recordConfigFor(
     : { recordCrossOriginIframes: false };
 }
 
-/** Where the dashboard shows a cloud recording. */
-export const dashboardRecordingUrl = (recordingId: string) =>
-  `${config.dashboardUrl}/recordings/${recordingId}`;
-
 /** What startRecording decided to record into. */
 export type SinkTarget =
   | { kind: 'offline' }
   | { kind: 'cloud'; account: CloudAccount };
 
-/** The hostname a cloud recording is filed under, if the tab has one. */
+/** The hostname a cloud recording is filed under, if the page has one. */
 export function hostnameOf(url: string | undefined): string | undefined {
   if (url === undefined) return undefined;
   try {
@@ -103,8 +96,7 @@ export function hostnameOf(url: string | undefined): string | undefined {
 export function createSink(target: SinkTarget, deps: SinkDeps): RecordingSink {
   const events: eventWithTime[] = [];
   return {
-    kind: target.kind,
-    uploadsTo:
+    destination:
       target.kind === 'cloud'
         ? { name: 'organization', orgName: target.account.orgName }
         : { name: 'stored-only' },
@@ -129,7 +121,7 @@ export function createSink(target: SinkTarget, deps: SinkDeps): RecordingSink {
         recordedAs: target.kind,
       };
       await deps.addSession(session, events);
-      const openUrl = deps.getURL(`pages/index.html#/session/${session.id}`);
+      const openUrl = deps.getURL(sessionPage(session.id));
       if (target.kind === 'offline')
         return { state: 'saved', session, openUrl };
       const result = await deps.uploadSession(session.id, target.account);
@@ -154,10 +146,11 @@ export function createSink(target: SinkTarget, deps: SinkDeps): RecordingSink {
 
 export type StartRecordingResult =
   | { state: 'started'; sink: RecordingSink; startTimestamp: number }
-  | { state: 'refused'; errorMessage: string } // nothing started
-  | { state: 'failed'; errorMessage: string }; // the tab started, then was stopped again
+  | { state: 'refused'; errorMessage: string }; // nothing started
 
-export const NO_HOSTNAME_ERROR = 'This tab has no web address to upload from.';
+/** A cloud start, or a Share, for a page without a hostname to file it under. */
+export const NO_HOSTNAME_ERROR =
+  'This page has no web address to file the recording under.';
 export const INVALID_START_ERROR =
   'The record button sent a request this version cannot read. Reopen the popup and try again.';
 export const ACCOUNT_CHANGED_ERROR =
@@ -204,7 +197,6 @@ export async function startRecording(deps: {
   requestStart: (
     config: recordOptions<eventWithTime>,
   ) => Promise<{ startTimestamp: number }>;
-  requestStop: () => Promise<unknown>;
   createSink: (target: SinkTarget) => RecordingSink;
 }): Promise<StartRecordingResult> {
   const request = parseStartRequest(deps.request);
@@ -228,11 +220,5 @@ export async function startRecording(deps: {
   } catch (error) {
     return { state: 'refused', errorMessage: (error as Error).message };
   }
-  try {
-    return { state: 'started', sink: deps.createSink(target), startTimestamp };
-  } catch (error) {
-    // Do not leave the page recording with nowhere to send events.
-    await deps.requestStop().catch(() => undefined);
-    return { state: 'failed', errorMessage: (error as Error).message };
-  }
+  return { state: 'started', sink: deps.createSink(target), startTimestamp };
 }

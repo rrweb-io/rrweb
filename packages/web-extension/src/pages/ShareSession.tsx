@@ -13,7 +13,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { ACCOUNT_HREF } from '~/components/PageChrome';
-import { config } from '~/config';
+import { config, dashboardRecordingUrl } from '~/config';
 import { LocalDataKey, ServiceName } from '~/types';
 import type {
   LocalData,
@@ -154,7 +154,7 @@ function ShareOneSession({
     return (
       <Button
         {...linkProps}
-        href={`${config.dashboardUrl}/recordings/${shared.recordingId}`}
+        href={dashboardRecordingUrl(shared.recordingId)}
         variant="quiet"
         size="sm"
       >
@@ -224,7 +224,7 @@ function ShareOneSession({
                 ? `This finishes the earlier upload to ${stored.orgName} in rrweb.`
                 : `This uploads the recording to ${org.orgName} in rrweb.`}{' '}
               {recordedAs === 'cloud'
-                ? 'Form fields were masked when this was recorded.'
+                ? 'Typed form input was masked when this was recorded.'
                 : "Offline recordings don't mask form fields, so anything typed into forms on this page will be uploaded. Password fields stay masked."}
               <Text mt="12px">
                 <Link href={config.privacyPolicyUrl} isExternal>

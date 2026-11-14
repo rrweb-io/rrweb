@@ -1,20 +1,73 @@
-import { RecorderStatus } from '~/types';
-import type { LocalData, LocalDataKey, RecordingKind } from '~/types';
+import { isRunning } from '~/types';
+import type {
+  Destination,
+  LastError,
+  RecorderStatus,
+  RecordingKind,
+} from '~/types';
 
 /** What the recorder is doing right now, as the popup shows it. */
 export type ActiveRecording = RecordingKind | 'not-recording';
 
-export function activeRecording(
-  data: Pick<LocalData[LocalDataKey.recorderStatus], 'status' | 'kind'>,
-): ActiveRecording {
-  // STARTING has no kind yet, so it reads as not recording until RECORDING.
+export function activeRecording(status: RecorderStatus): ActiveRecording {
+  // A start in flight has no destination yet, so it reads as not recording.
+  if (!isRunning(status)) return 'not-recording';
+  return status.destination.name === 'organization' ? 'cloud' : 'offline';
+}
+
+const IDLE: RecorderStatus = { state: 'idle', lastError: { name: 'none' } };
+
+/**
+ * The status in storage. Anything else, such as the shape an older version
+ * wrote before the background reset it, reads as idle.
+ */
+export function parseRecorderStatus(value: unknown): RecorderStatus {
+  if (typeof value !== 'object' || value === null) return IDLE;
+  const v = value as Record<string, unknown>;
+  if (v.state === 'starting') return { state: 'starting' };
+  const lastError = parseLastError(v.lastError);
+  if (v.state === 'idle')
+    return lastError === 'invalid' ? IDLE : { state: 'idle', lastError };
+  const destination = parseDestination(v.destination);
+  const { tabId, startTimestamp, pausedTimestamp } = v;
   if (
-    data.status === RecorderStatus.IDLE ||
-    data.status === RecorderStatus.STARTING
+    destination === 'invalid' ||
+    typeof tabId !== 'number' ||
+    typeof startTimestamp !== 'number'
   )
-    return 'not-recording';
-  // The background sets kind on every non-idle status.
-  return data.kind ?? 'offline';
+    return IDLE;
+  if (v.state === 'recording')
+    return { state: 'recording', tabId, startTimestamp, destination };
+  if (
+    v.state === 'paused' &&
+    typeof pausedTimestamp === 'number' &&
+    lastError !== 'invalid'
+  )
+    return {
+      state: 'paused',
+      tabId,
+      startTimestamp,
+      pausedTimestamp,
+      destination,
+      lastError,
+    };
+  return IDLE;
+}
+
+function parseLastError(value: unknown): LastError | 'invalid' {
+  const v = (value ?? {}) as Record<string, unknown>;
+  if (v.name === 'none') return { name: 'none' };
+  if (v.name === 'failed' && typeof v.message === 'string')
+    return { name: 'failed', message: v.message };
+  return 'invalid';
+}
+
+function parseDestination(value: unknown): Destination | 'invalid' {
+  const v = (value ?? {}) as Record<string, unknown>;
+  if (v.name === 'stored-only') return { name: 'stored-only' };
+  if (v.name === 'organization' && typeof v.orgName === 'string')
+    return { name: 'organization', orgName: v.orgName };
+  return 'invalid';
 }
 
 /** The switch's choice in storage: 'not-stored' until the person picks one. */
@@ -72,8 +125,8 @@ export type NoteReader =
 export function recordingNote(mode: RecordingKind, reader: NoteReader): string {
   if (mode === 'cloud')
     return reader.name === 'connected'
-      ? `Uploads to ${reader.orgName} when you stop. Form fields are masked.`
-      : 'Uploads to rrweb when you stop. Form fields are masked.';
+      ? `Uploads to ${reader.orgName} when you stop. Typed form input is masked.`
+      : 'Uploads to rrweb when you stop. Typed form input is masked.';
   return reader.name === 'not-connected'
     ? 'Saved in this browser only.'
     : 'Saved in this browser only. You can share it later.';
@@ -87,11 +140,11 @@ export type RecordButtonLook = {
 };
 
 export function recordButtonLook(
-  status: RecorderStatus,
+  state: RecorderStatus['state'],
   disabled: boolean,
 ): RecordButtonLook {
-  const starting = status === RecorderStatus.STARTING;
-  const idle = status === RecorderStatus.IDLE || starting;
+  const starting = state === 'starting';
+  const idle = state === 'idle' || starting;
   return {
     label: idle ? 'idle' : 'stop',
     mark: idle ? 'dot' : 'square',

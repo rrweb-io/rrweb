@@ -8,13 +8,6 @@ describe('parseConnection', () => {
     expect(parseConnection(account)).toEqual({ name: 'connected', account });
   });
 
-  it('reads an account an older build stored with its user, dropping the user', () => {
-    expect(parseConnection({ ...account, userId: 'user_1' })).toEqual({
-      name: 'connected',
-      account,
-    });
-  });
-
   it('reads anything without an organization and key as not connected', () => {
     for (const value of [
       undefined,

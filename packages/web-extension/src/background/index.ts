@@ -8,16 +8,16 @@ import {
   addSession,
   deleteSessions,
   deleteUnsentEvents,
-  findEvents,
+  getEvents,
   getSession,
   getUnsentEvents,
   putUnsentEvents,
 } from '~/utils/storage';
-import { answerExternalMessage } from './external';
+import { createExternalListener } from './external';
 import { registerHandlers, type BackgroundServices } from './handlers';
 import { watchRecordedPages } from './pageWatch';
 import { createBadge } from './badge';
-import { createRecorder } from './recorder';
+import { KEEPALIVE_INTERVAL_MS, createRecorder } from './recorder';
 import { createSessionSharing } from './shareSession';
 import { createSink } from './sinks';
 import { uploadEvents } from './upload';
@@ -47,26 +47,33 @@ const channel = new Channel();
 const ready = start();
 // Handlers report their own failures; this keeps the rejection handled.
 ready.catch((error) => console.error('Could not start the background:', error));
-registerHandlers(channel, ready, { shareEnabled: config.cloudEnabled });
+registerHandlers(channel, ready, {
+  shareEnabled: config.cloudEnabled,
+  keepAliveWhile: async (work) => {
+    // A browser call resets the idle timer, as the recorder's keepalive does.
+    const interval = setInterval(
+      () => void Browser.runtime.getPlatformInfo(),
+      KEEPALIVE_INTERVAL_MS,
+    );
+    try {
+      return await work;
+    } finally {
+      clearInterval(interval);
+    }
+  },
+});
 
 // The dashboard connects an organization by messaging the extension.
-if (config.cloudEnabled) {
-  const dashboardOrigin = new URL(config.dashboardUrl).origin;
+if (config.cloudEnabled)
   chrome.runtime.onMessageExternal.addListener(
-    (message, sender, sendResponse) => {
-      void answerExternalMessage(message, sender, {
-        dashboardOrigin,
-        version: manifest.version_name ?? manifest.version,
-        getConnection,
-        storeAccount: (account: CloudAccount) =>
-          Browser.storage.local.set({ [LocalDataKey.cloudAccount]: account }),
-        removeAccount: () =>
-          Browser.storage.local.remove(LocalDataKey.cloudAccount),
-      }).then(sendResponse);
-      return true; // the answer is sent asynchronously
-    },
+    createExternalListener({
+      dashboardUrl: config.dashboardUrl,
+      version: manifest.version_name ?? manifest.version,
+      getConnection,
+      storeAccount: (account: CloudAccount) =>
+        Browser.storage.local.set({ [LocalDataKey.cloudAccount]: account }),
+    }),
   );
-}
 
 // One recording is one tab: it finishes when that tab's document goes away.
 watchRecordedPages(
@@ -99,7 +106,7 @@ async function start(): Promise<BackgroundServices> {
   const sharing = createSessionSharing({
     getConnection,
     loadSession: async (id) => {
-      const events = await findEvents(id);
+      const events = await getEvents(id);
       const session = await getSession(id);
       return events && session
         ? { events, recorderVersion: session.recorderVersion }
@@ -117,8 +124,13 @@ async function start(): Promise<BackgroundServices> {
     putUnsent: putUnsentEvents,
     getUnsent: getUnsentEvents,
     deleteUnsent: deleteUnsentEvents,
-    postEvents: (target, lines) =>
-      uploadEvents({ ...target, apiUrl: config.apiUrl }, lines),
+    postEvents: (target, lines, onDelivered) =>
+      uploadEvents(
+        { ...target, apiUrl: config.apiUrl },
+        lines,
+        fetch,
+        onDelivered,
+      ),
     randomId: () => crypto.randomUUID(),
     openTab: (url) => Browser.tabs.create({ url }),
     now: () => Date.now(),
@@ -155,8 +167,8 @@ async function start(): Promise<BackgroundServices> {
     saveStatus: (status) =>
       Browser.storage.local.set({ [LocalDataKey.recorderStatus]: status }),
     openTab: (url) => Browser.tabs.create({ url }),
-    onSessionUpdated: (session) =>
-      channel.emit(EventName.SessionUpdated, { session }),
+    onSessionsChanged: (change) =>
+      channel.emit(EventName.SessionUpdated, change),
     createSink: (target) => createSink(target, sinkDeps),
     pingBrowser: () => Browser.runtime.getPlatformInfo(),
     after: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
@@ -171,7 +183,7 @@ async function start(): Promise<BackgroundServices> {
   await Browser.storage.local.set({
     [LocalDataKey.recorderStatus]: recorder.getStatus(),
   });
-  // The status is IDLE now, so no tab may still show a recording badge.
+  // The status is idle now, so no tab may still show a recording badge.
   Browser.tabs
     .query({})
     .then((tabs) =>

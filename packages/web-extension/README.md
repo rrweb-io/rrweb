@@ -54,9 +54,10 @@ The extension never signs in. The popup's "Connect your rrweb account" opens the
 | ---------------------------------------------------------------- | -------------------------------------------------------------- |
 | `{ type: 'rrweb-extension-status' }`                             | `{ ok: true, version, connected: { orgId, orgName } \| null }` |
 | `{ type: 'rrweb-extension-connect', orgId, orgName, publicKey }` | `{ ok: true }` or `{ ok: false, error }`                       |
-| `{ type: 'rrweb-extension-disconnect' }`                         | `{ ok: true }`                                                 |
 
-A Cloud recording is kept in the extension while it runs, like an offline one, with form fields masked. When it stops, it is stored in the browser and then uploaded with the organization's public key to `POST <api>/recordings/<recordingId>/events` (newline-delimited JSON, at most 1 MiB per request). Once the upload is complete, the stored copy is deleted and the recording opens in the dashboard. If the upload fails, the recording stays in Offline sessions, and Share finishes the upload to the same recording.
+Any other message gets `{ ok: false, error }`. Disconnecting is done in the extension's popup.
+
+A Cloud recording is kept in the extension while it runs, like an offline one, with typed form input masked. When it stops, it is stored in the browser and then uploaded with the organization's public key to `POST <api>/recordings/<recordingId>/events` (newline-delimited JSON, at most 1 MiB per request). Once the upload is complete, the stored copy is deleted and the recording opens in the dashboard. If the upload fails, the recording stays in Offline sessions, and Share finishes the upload to the same recording, with the public key of the organization connected at that time.
 
 Configure the Chrome build with these variables, for example in a `.env` file in this folder:
 

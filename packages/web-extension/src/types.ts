@@ -20,10 +20,7 @@ export enum LocalDataKey {
   recordingMode = 'recording_mode',
 }
 
-/**
- * The organization the dashboard connected, with its public key. Builds that
- * signed in inside the extension also stored a `userId`; it is ignored.
- */
+/** The organization the dashboard connected, with its public key. */
 export type CloudAccount = {
   orgId: string;
   orgName: string;
@@ -82,33 +79,68 @@ export type ShareResult =
   | { name: 'share-failed'; errorMessage: string };
 
 export type LocalData = {
-  /** Read it with `parseConnection`: it may come from an older build. */
+  /** Read it with `parseConnection`, which checks every field. */
   [LocalDataKey.cloudAccount]?: unknown;
   [LocalDataKey.sharedSessions]?: SharedSessions;
   /** The popup switch's last choice; absent until the person picks one. */
   [LocalDataKey.recordingMode]?: RecordingKind;
-  [LocalDataKey.recorderStatus]: {
-    status: RecorderStatus;
-    // the recorded tab, or the tab a start is claiming; -1 when idle
-    activeTabId: number;
-    startTimestamp?: number;
-    // the timestamp when the recording is paused
-    pausedTimestamp?: number;
-    errorMessage?: string; // error message when recording failed
-    // set whenever status is not IDLE
-    kind?: RecordingKind;
-    // a cloud recording's organization, fixed when it started
-    uploadsTo?: string;
-  };
+  /** A `RecorderStatus`; the popup reads it with `parseRecorderStatus`. */
+  [LocalDataKey.recorderStatus]?: unknown;
 };
 
-export enum RecorderStatus {
-  IDLE = 'IDLE',
-  // start() is running: sink, tab and account lookups are still in flight
-  STARTING = 'STARTING',
-  RECORDING = 'RECORDING',
-  PAUSED = 'PAUSED',
+/**
+ * Where a running recording's events go, fixed when it started.
+ * stored-only: this browser only (an offline recording).
+ * organization: uploaded to `orgName` when it finishes (a cloud recording).
+ */
+export type Destination =
+  | { name: 'stored-only' }
+  | { name: 'organization'; orgName: string };
+
+/** Why the last start, resume or finish failed, for the popup to show. */
+export type LastError = { name: 'none' } | { name: 'failed'; message: string };
+
+/**
+ * What the recorder is doing, as the popup and the toolbar badge see it.
+ * idle: nothing is recording; `lastError` is from the last start or finish.
+ * starting: a start is in flight: tab, account and page are still answering.
+ * recording: `tabId` records into `destination`. `startTimestamp` moves later
+ * with every pause, so the time since it leaves the pauses out.
+ * paused: as recording, stopped at `pausedTimestamp`; `lastError` is from the
+ * last resume.
+ */
+export type RecorderStatus =
+  | { state: 'idle'; lastError: LastError }
+  | { state: 'starting' }
+  | {
+      state: 'recording';
+      tabId: number;
+      startTimestamp: number;
+      destination: Destination;
+    }
+  | {
+      state: 'paused';
+      tabId: number;
+      startTimestamp: number;
+      pausedTimestamp: number;
+      destination: Destination;
+      lastError: LastError;
+    };
+
+/** A recording or paused status: one tab has a recording in it. */
+export type RunningStatus = Extract<
+  RecorderStatus,
+  { state: 'recording' | 'paused' }
+>;
+
+export function isRunning(status: RecorderStatus): status is RunningStatus {
+  return status.state === 'recording' || status.state === 'paused';
 }
+
+/** What changed in the stored sessions, sent with `EventName.SessionUpdated`. */
+export type SessionsChange =
+  | { name: 'saved'; session: Session }
+  | { name: 'removed' };
 
 export type Session = {
   id: string;

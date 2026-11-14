@@ -5,7 +5,7 @@ import { LoadingView } from './PopupParts';
 import { ConnectedView } from './ConnectedView';
 import { NotConnectedView } from './NotConnectedView';
 import { NotConnectedSwitch } from './ModeSwitch';
-import { notConnectedPanel } from './account';
+import { activeRecording, notConnectedPanel } from './account';
 import { useRecordingMode } from './useRecordingMode';
 
 type Props = { recorder: PopupRecorder; links: PopupLinks };
@@ -37,7 +37,7 @@ export default function CloudApp({ recorder, links }: Props) {
     );
 
   const { panel, shown } = notConnectedPanel({
-    active: recorder.controls.active,
+    active: activeRecording(recorder.controls.status),
     stored: mode.choice.stored,
   });
   return (

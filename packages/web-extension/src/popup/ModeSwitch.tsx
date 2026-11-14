@@ -2,7 +2,7 @@ import { useRef, type KeyboardEvent } from 'react';
 import { Box, Flex, Grid, Link } from '@chakra-ui/react';
 import type { IconType } from 'react-icons';
 import { FiArrowUpRight, FiCloud, FiCloudOff } from 'react-icons/fi';
-import { RecorderStatus, type RecordingKind } from '~/types';
+import type { RecordingKind } from '~/types';
 import type { RecorderControls } from './PopupParts';
 
 /**
@@ -163,7 +163,7 @@ export function NotConnectedSwitch({
     <ModeSwitch
       shown={shown}
       cloud={{ name: 'connect-first' }}
-      disabled={recorder.status !== RecorderStatus.IDLE}
+      disabled={recorder.status.state !== 'idle'}
       onChoose={onChoose}
       onOpenSessions={onOpenSessions}
     />

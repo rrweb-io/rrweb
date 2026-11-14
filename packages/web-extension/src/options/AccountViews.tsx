@@ -9,7 +9,8 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react';
-import PageChrome, { SESSIONS_HREF } from '~/components/PageChrome';
+import PageChrome from '~/components/PageChrome';
+import { SESSIONS_PAGE } from '~/config';
 import type { CloudAccount } from '~/types';
 
 /** Firefox has no Cloud, so only the offline lines are shown there. */
@@ -39,7 +40,7 @@ function Column({ children }: { children: ReactNode }) {
 
 export function SessionListLink() {
   return (
-    <Link href={SESSIONS_HREF} fontSize="14px">
+    <Link href={SESSIONS_PAGE} fontSize="14px">
       Open Offline Stored Sessions
     </Link>
   );

@@ -9,17 +9,19 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { FiPause, FiPlay } from 'react-icons/fi';
-import { RecorderStatus, type StartRequest } from '~/types';
+import {
+  isRunning,
+  type LastError,
+  type RecorderStatus,
+  type StartRequest,
+} from '~/types';
 import { Timer } from './Timer';
-import { recordButtonLook, type ActiveRecording } from './account';
+import { recordButtonLook } from './account';
 
 export type RecorderControls = {
   status: RecorderStatus;
-  active: ActiveRecording;
-  /** A running cloud recording's organization, fixed when it started. */
-  uploadsTo: { name: 'organization'; orgName: string } | { name: 'none' };
-  startTime: number | null;
-  errorMessage: string | null;
+  /** The last failure reported while this popup is open. */
+  error: LastError;
   /** Start recording to `startAs`, or stop the running recording. */
   toggle: (startAs: StartRequest) => void;
   pause: () => void;
@@ -35,12 +37,12 @@ export function PopupFrame({ children }: { children: ReactNode }) {
 }
 
 /** Shown while the connected account or the remembered mode is loading. */
-export function LoadingView({ label = 'Loading' }: { label?: string }) {
+export function LoadingView() {
   return (
     <PopupFrame>
       <Flex align="center" justify="space-between" minH="24px">
         <Logo />
-        <Spinner size="sm" color="brand.muted" label={label} />
+        <Spinner size="sm" color="brand.muted" label="Loading" />
       </Flex>
     </PopupFrame>
   );
@@ -101,7 +103,7 @@ export function RecordButton({
   disabled?: boolean;
   autoFocus?: boolean;
 }) {
-  const look = recordButtonLook(recorder.status, disabled);
+  const look = recordButtonLook(recorder.status.state, disabled);
   return (
     <Button
       variant="record"
@@ -137,16 +139,16 @@ export function RecordingControls({
 }: {
   recorder: RecorderControls;
 }) {
-  if (
-    recorder.status === RecorderStatus.IDLE ||
-    recorder.status === RecorderStatus.STARTING ||
-    recorder.startTime === null
-  )
-    return null;
-  const recording = recorder.status === RecorderStatus.RECORDING;
+  const { status } = recorder;
+  if (!isRunning(status)) return null;
+  const recording = status.state === 'recording';
+  // While paused, the timer shows the time recorded until the pause.
+  const startTime = recording
+    ? status.startTimestamp
+    : Date.now() - status.pausedTimestamp + status.startTimestamp;
   return (
     <Flex align="center" justify="center" gap="12px" mb="16px">
-      <Timer startTime={recorder.startTime} ticking={recording} />
+      <Timer startTime={startTime} ticking={recording} />
       <IconButton
         aria-label={recording ? 'Pause recording' : 'Resume recording'}
         title={recording ? 'Pause recording' : 'Resume recording'}
@@ -163,10 +165,10 @@ export function RecordingControls({
 }
 
 export function RecorderError({ recorder }: { recorder: RecorderControls }) {
-  if (recorder.errorMessage === null) return null;
+  if (recorder.error.name === 'none') return null;
   return (
     <Text color="brand.danger" fontSize="13px" mt="12px" role="alert">
-      {recorder.errorMessage}
+      {recorder.error.message}
     </Text>
   );
 }

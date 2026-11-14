@@ -44,12 +44,16 @@ export function chunkLines(lines: string[], maxBytes = MAX_CHUNK_BYTES) {
 /**
  * POST serialized events to the public ingest API, one chunk at a time and in
  * order. The first failure stops the upload, so the server never receives
- * events out of order. Never rejects.
+ * events out of order. After each accepted chunk but the last, `onDelivered`
+ * gets what is still unsent, so an upload cut short (the worker stopped, the
+ * browser closed) resumes there instead of sending accepted events again.
+ * Never rejects.
  */
 export async function uploadEvents(
   target: UploadTarget,
   lines: string[],
   fetchFn: typeof fetch = fetch,
+  onDelivered?: (unsent: string[]) => Promise<void>,
 ): Promise<UploadResult> {
   const url = `${target.apiUrl}/recordings/${encodeURIComponent(
     target.recordingId,
@@ -63,6 +67,11 @@ export async function uploadEvents(
         error: failure,
         unsent: chunks.slice(i).flat(),
       };
+    if (onDelivered && i < chunks.length - 1)
+      // A failed checkpoint only risks sending these events twice later.
+      await onDelivered(chunks.slice(i + 1).flat()).catch((error) =>
+        console.error('Could not save the upload progress:', error),
+      );
   }
   return { state: 'delivered' };
 }

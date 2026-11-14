@@ -38,9 +38,9 @@ vi.mock('~/utils/useConnection', () => ({
 import CloudApp from './CloudApp';
 import { NotConnectedView } from './NotConnectedView';
 import { config } from '~/config';
-import { LocalDataKey, RecorderStatus } from '~/types';
+import { LocalDataKey } from '~/types';
+import type { Destination, RecorderStatus } from '~/types';
 import type { RecorderControls } from './PopupParts';
-import type { ActiveRecording } from './account';
 
 const ready: ConnectionView = {
   name: 'connected',
@@ -52,16 +52,29 @@ const CONNECT_URL = `${config.dashboardUrl}/extension/connect`;
 let root: Root;
 let container: HTMLDivElement;
 
-function controls(
-  status = RecorderStatus.IDLE,
-  active: ActiveRecording = 'not-recording',
-): RecorderControls {
+const IDLE: RecorderStatus = { state: 'idle', lastError: { name: 'none' } };
+const ACME: Destination = { name: 'organization', orgName: 'Acme' };
+const OFFLINE: Destination = { name: 'stored-only' };
+
+function running(
+  state: 'recording' | 'paused',
+  destination: Destination,
+): RecorderStatus {
+  const recording = { tabId: 1, startTimestamp: Date.now(), destination };
+  return state === 'recording'
+    ? { state, ...recording }
+    : {
+        state,
+        ...recording,
+        pausedTimestamp: Date.now(),
+        lastError: { name: 'none' },
+      };
+}
+
+function controls(status: RecorderStatus = IDLE): RecorderControls {
   return {
     status,
-    active,
-    uploadsTo: { name: 'none' },
-    startTime: null,
-    errorMessage: null,
+    error: { name: 'none' },
     toggle: vi.fn(),
     pause: () => undefined,
     resume: () => undefined,
@@ -148,7 +161,7 @@ describe('the popup recording mode switch', () => {
     expect(checked(radio('Cloud'))).toBe(true);
     expect(checked(radio('Offline'))).toBe(false);
     expect(container.textContent).toContain(
-      'Uploads to Acme when you stop. Form fields are masked.',
+      'Uploads to Acme when you stop. Typed form input is masked.',
     );
     act(() => button('Start recording').click());
     expect(recorder.toggle).toHaveBeenCalledWith({
@@ -158,14 +171,31 @@ describe('the popup recording mode switch', () => {
   });
 
   it('names the organization a running recording started with, not a newer connection', async () => {
-    const running = {
-      ...controls(RecorderStatus.RECORDING, 'cloud'),
-      uploadsTo: { name: 'organization' as const, orgName: 'Old Org' },
-    };
-    await open(ready, running);
-    expect(container.textContent).toContain(
-      'Uploads to Old Org when you stop. Form fields are masked.',
+    await open(
+      ready,
+      controls(
+        running('recording', { name: 'organization', orgName: 'Old Org' }),
+      ),
     );
+    expect(container.textContent).toContain(
+      'Uploads to Old Org when you stop. Typed form input is masked.',
+    );
+  });
+
+  it('after a disconnect, a running cloud recording still names where it uploads', async () => {
+    await open(
+      notConnected,
+      controls(
+        running('recording', { name: 'organization', orgName: 'Old Org' }),
+      ),
+    );
+    expect(container.textContent).toContain(
+      'Uploads to Old Org when you stop.',
+    );
+    expect(container.textContent).not.toContain('Saved in this browser only');
+    // Once it has finished, recording here is offline again.
+    await open(notConnected);
+    expect(container.textContent).toContain('Saved in this browser only.');
   });
 
   it('connected, it names the organization and offers to change or disconnect it', async () => {
@@ -310,7 +340,7 @@ describe('the popup recording mode switch', () => {
     for (const active of ['offline', 'cloud'] as const) {
       const { recorder } = await reopen(
         notConnected,
-        controls(RecorderStatus.RECORDING, active),
+        controls(running('recording', active === 'cloud' ? ACME : OFFLINE)),
       );
       expect(radio('Cloud').disabled).toBe(true);
       expect(radio('Offline').disabled).toBe(true);
@@ -319,6 +349,11 @@ describe('the popup recording mode switch', () => {
       );
       expect(container.querySelectorAll('li')).toHaveLength(0);
       expect(container.textContent).not.toContain('Save recordings to rrweb');
+      expect(container.textContent).toContain(
+        active === 'cloud'
+          ? 'Uploads to Acme when you stop.'
+          : 'Saved in this browser only.',
+      );
       act(() => button('Stop recording').click());
       expect(recorder.toggle).toHaveBeenCalledTimes(1);
     }
@@ -328,7 +363,7 @@ describe('the popup recording mode switch', () => {
     fake.store[LocalDataKey.recordingMode] = 'cloud';
     const { recorder } = await open(
       ready,
-      controls(RecorderStatus.RECORDING, 'offline'),
+      controls(running('recording', OFFLINE)),
     );
     expect(radio('Cloud').disabled).toBe(true);
     expect(radio('Offline').disabled).toBe(true);
@@ -342,7 +377,7 @@ describe('the popup recording mode switch', () => {
 
   it('while recording, the arrow keys do not change the choice', async () => {
     fake.store[LocalDataKey.recordingMode] = 'cloud';
-    await open(ready, controls(RecorderStatus.PAUSED, 'cloud'));
+    await open(ready, controls(running('paused', ACME)));
     const group = container.querySelector('[role="radiogroup"]')!;
     act(() => {
       group.dispatchEvent(

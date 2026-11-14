@@ -122,7 +122,7 @@ describe('ShareSession', () => {
 
     await renderFor('session-2', 'cloud');
     await click(control('Share'));
-    expect(dialog()?.textContent).toContain('Form fields were masked');
+    expect(dialog()?.textContent).toContain('Typed form input was masked');
     expect(dialog()?.textContent).not.toContain("don't mask");
   });
 

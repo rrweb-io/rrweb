@@ -6,6 +6,7 @@ import 'rrweb-player/dist/style.css';
 import { Box, Flex, Heading, Link } from '@chakra-ui/react';
 import { getEvents, getSession } from '~/utils/storage';
 import type { RecordingKind } from '~/types';
+import { recordingKindOf } from '~/utils';
 import { ShareAction } from './ShareAction';
 
 export default function Player() {
@@ -20,14 +21,14 @@ export default function Player() {
     getSession(sessionId)
       .then((session) => {
         setSessionName(session.name);
-        setRecordedAs(session.recordedAs ?? 'offline');
+        setRecordedAs(recordingKindOf(session));
       })
       .catch((err) => {
         console.error(err);
       });
     getEvents(sessionId)
       .then((events) => {
-        if (!playerElRef.current) return;
+        if (!events || !playerElRef.current) return;
         if (playerRef.current) return;
 
         playerRef.current = new Replayer({

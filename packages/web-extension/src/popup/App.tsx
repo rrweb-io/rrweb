@@ -1,13 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
 import Browser from 'webextension-polyfill';
 import Channel from '~/utils/channel';
-import { config } from '~/config';
-import { LocalDataKey, RecorderStatus, EventName } from '~/types';
-import type { LocalData, Session } from '~/types';
+import { config, SESSIONS_PAGE, sessionPage } from '~/config';
+import { LocalDataKey, EventName } from '~/types';
+import type {
+  LastError,
+  LocalData,
+  RecorderStatus,
+  Session,
+  SessionsChange,
+} from '~/types';
 import type { RecorderControls } from './PopupParts';
 import { NotConnectedView } from './NotConnectedView';
 import CloudApp from './CloudApp';
-import { activeRecording, type ActiveRecording } from './account';
+import { parseRecorderStatus } from './account';
 
 const channel = new Channel();
 
@@ -24,52 +30,43 @@ export type PopupLinks = {
 
 const links: PopupLinks = {
   openUrl: (url) => void Browser.tabs.create({ url }),
-  openSessions: () => void Browser.tabs.create({ url: '/pages/index.html#/' }),
-  sessionUrl: (session) =>
-    Browser.runtime.getURL(`pages/index.html#/session/${session.id}`),
+  openSessions: () => void Browser.tabs.create({ url: SESSIONS_PAGE }),
+  sessionUrl: (session) => Browser.runtime.getURL(sessionPage(session.id)),
 };
 
 function useRecorder(): PopupRecorder {
-  const [status, setStatus] = useState<RecorderStatus>(RecorderStatus.IDLE);
-  const [active, setActive] = useState<ActiveRecording>('not-recording');
-  const [uploadsTo, setUploadsTo] = useState<RecorderControls['uploadsTo']>({
-    name: 'none',
+  const [status, setStatus] = useState<RecorderStatus>({
+    state: 'idle',
+    lastError: { name: 'none' },
   });
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [startTime, setStartTime] = useState<number | null>(null);
+  const [error, setError] = useState<LastError>({ name: 'none' });
   const [newSession, setNewSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    const parseStatusData = (data: LocalData[LocalDataKey.recorderStatus]) => {
-      const { status, startTimestamp, pausedTimestamp } = data;
-      setStatus(status);
-      setActive(activeRecording(data));
-      setUploadsTo(
-        data.uploadsTo
-          ? { name: 'organization', orgName: data.uploadsTo }
-          : { name: 'none' },
-      );
-      if (startTimestamp && pausedTimestamp)
-        setStartTime(Date.now() - pausedTimestamp + startTimestamp);
-      else if (startTimestamp) setStartTime(startTimestamp);
-      else setStartTime(null);
-    };
     void Browser.storage.local.get(LocalDataKey.recorderStatus).then((data) => {
-      if (!data || !data[LocalDataKey.recorderStatus]) return;
-      parseStatusData((data as LocalData)[LocalDataKey.recorderStatus]);
+      setStatus(
+        parseRecorderStatus((data as LocalData)[LocalDataKey.recorderStatus]),
+      );
     });
     const onChanged = (
       changes: Record<string, Browser.Storage.StorageChange>,
     ) => {
       if (!changes[LocalDataKey.recorderStatus]) return;
-      const data = changes[LocalDataKey.recorderStatus]
-        .newValue as LocalData[LocalDataKey.recorderStatus];
-      parseStatusData(data);
-      if (data.errorMessage) setErrorMessage(data.errorMessage);
+      const next = parseRecorderStatus(
+        changes[LocalDataKey.recorderStatus].newValue,
+      );
+      setStatus(next);
+      // A failure stays shown until the popup closes.
+      if (
+        (next.state === 'idle' || next.state === 'paused') &&
+        next.lastError.name === 'failed'
+      )
+        setError(next.lastError);
     };
     Browser.storage.local.onChanged.addListener(onChanged);
     channel.on(EventName.SessionUpdated, (data) => {
-      setNewSession((data as { session: Session }).session);
+      const change = data as SessionsChange;
+      if (change.name === 'saved') setNewSession(change.session);
     });
     return () => Browser.storage.local.onChanged.removeListener(onChanged);
   }, []);
@@ -77,20 +74,17 @@ function useRecorder(): PopupRecorder {
   const controls = useMemo<RecorderControls>(
     () => ({
       status,
-      active,
-      uploadsTo,
-      startTime,
-      errorMessage,
+      error,
       toggle: (startAs) => {
-        if (status === RecorderStatus.STARTING) return;
-        if (status === RecorderStatus.IDLE)
+        if (status.state === 'starting') return;
+        if (status.state === 'idle')
           void channel.emit(EventName.StartButtonClicked, startAs);
         else void channel.emit(EventName.StopButtonClicked, {});
       },
       pause: () => void channel.emit(EventName.PauseButtonClicked, {}),
       resume: () => void channel.emit(EventName.ResumeButtonClicked, {}),
     }),
-    [status, active, uploadsTo, startTime, errorMessage],
+    [status, error],
   );
   return { controls, newSession };
 }

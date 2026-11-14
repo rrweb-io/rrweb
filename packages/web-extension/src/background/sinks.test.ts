@@ -32,7 +32,7 @@ function makeDeps() {
     ),
     deleteSession: vi.fn((_sessionId: string) => Promise.resolve()),
     randomId: vi.fn(() => 'sess-1'),
-    getURL: (path: string) => `chrome-extension://abc/${path}`,
+    getURL: (path: string) => `chrome-extension://abc${path}`,
     recorderVersion: '2.2.2',
   };
 }
@@ -42,7 +42,10 @@ const LOCAL_URL = 'chrome-extension://abc/pages/index.html#/session/sess-1';
 describe('createSink', () => {
   it('cloud sink masks all inputs', () => {
     const sink = createSink(cloud, makeDeps());
-    expect(sink.kind).toBe('cloud');
+    expect(sink.destination).toEqual({
+      name: 'organization',
+      orgName: account.orgName,
+    });
     expect(sink.recordConfig.maskAllInputs).toBe(true);
     expect(sink.recordConfig.slimDOMOptions).toBe('all');
     expect(sink.recordConfig.inlineStylesheet).toBe(true);
@@ -52,7 +55,7 @@ describe('createSink', () => {
   it('offline finish stores the session and uploads nothing', async () => {
     const deps = makeDeps();
     const sink = createSink({ kind: 'offline' }, deps);
-    expect(sink.kind).toBe('offline');
+    expect(sink.destination).toEqual({ name: 'stored-only' });
     expect(sink.recordConfig).toEqual({ recordCrossOriginIframes: false });
     sink.add(event(1));
     sink.add(event(2));
@@ -177,7 +180,6 @@ describe('startRecording', () => {
         };
         return Promise.resolve({ startTimestamp: 5 });
       },
-      requestStop: () => Promise.resolve(),
       createSink: (target) => createSink(target, deps),
     });
     current = {
@@ -198,7 +200,6 @@ describe('startRecording', () => {
       getConnection: () => Promise.resolve(connected),
       getTabUrl: () => Promise.resolve('https://example.com/a'),
       requestStart,
-      requestStop: () => Promise.resolve(),
       createSink: (target) => createSink(target, deps),
     });
     expect(requestStart).toHaveBeenCalledWith({
@@ -217,15 +218,11 @@ describe('startRecording', () => {
       getConnection: () => Promise.resolve(notConnected),
       getTabUrl: () => Promise.resolve('https://example.com/a'),
       requestStart,
-      requestStop: () => Promise.resolve(),
       createSink: (target) => createSink(target, deps),
     });
     expect(requestStart).toHaveBeenCalledWith({
       recordCrossOriginIframes: false,
     });
-    expect(requestStart.mock.calls[0]).toEqual([
-      { recordCrossOriginIframes: false },
-    ]);
   });
 
   it('creates no sink when the tab refuses to record', async () => {
@@ -235,7 +232,6 @@ describe('startRecording', () => {
       getConnection: () => Promise.resolve(connected),
       getTabUrl: () => Promise.resolve('https://example.com/a'),
       requestStart: () => Promise.reject(new Error('cannot record here')),
-      requestStop: () => Promise.resolve(),
       createSink: createSinkSpy,
     });
     expect(result).toEqual({
@@ -253,7 +249,6 @@ describe('startRecording', () => {
         getConnection: () => Promise.resolve(connected),
         getTabUrl: () => Promise.resolve(url),
         requestStart,
-        requestStop: () => Promise.resolve(),
         createSink: (target) => createSink(target, deps),
       });
       expect(result).toEqual({
@@ -271,48 +266,11 @@ describe('startRecording', () => {
       getConnection: () => Promise.resolve(notConnected),
       getTabUrl: () => Promise.resolve(undefined),
       requestStart: () => Promise.resolve({ startTimestamp: 7 }),
-      requestStop: () => Promise.resolve(),
       createSink: (target) => createSink(target, deps),
     });
     expect(result).toMatchObject({ state: 'started', startTimestamp: 7 });
-    if (result.state === 'started') expect(result.sink.kind).toBe('offline');
-  });
-
-  it('stops the tab again and reports the failure when the sink cannot be created', async () => {
-    const order: string[] = [];
-    const requestStop = vi.fn(() => {
-      order.push('stop');
-      return Promise.resolve();
-    });
-    const result = await startRecording({
-      request: cloudRequest,
-      getConnection: () => Promise.resolve(connected),
-      getTabUrl: () => Promise.resolve('https://example.com/a'),
-      requestStart: () => {
-        order.push('start');
-        return Promise.resolve({ startTimestamp: 1 });
-      },
-      requestStop,
-      createSink: () => {
-        throw new Error('no transport');
-      },
-    });
-    expect(result).toEqual({ state: 'failed', errorMessage: 'no transport' });
-    expect(order).toEqual(['start', 'stop']);
-  });
-
-  it('reports the sink failure even when the tab cannot be stopped', async () => {
-    const result = await startRecording({
-      request: cloudRequest,
-      getConnection: () => Promise.resolve(connected),
-      getTabUrl: () => Promise.resolve('https://example.com/a'),
-      requestStart: () => Promise.resolve({ startTimestamp: 1 }),
-      requestStop: () => Promise.reject(new Error('tab closed')),
-      createSink: () => {
-        throw new Error('no transport');
-      },
-    });
-    expect(result).toEqual({ state: 'failed', errorMessage: 'no transport' });
+    if (result.state === 'started')
+      expect(result.sink.destination).toEqual({ name: 'stored-only' });
   });
 
   it('records offline when the popup asked for offline, even with an account stored', async () => {
@@ -323,11 +281,10 @@ describe('startRecording', () => {
       getConnection: () => Promise.resolve(connected),
       getTabUrl: () => Promise.resolve('https://example.com/a'),
       requestStart,
-      requestStop: () => Promise.resolve(),
       createSink: (target) => createSink(target, deps),
     });
     if (result.state !== 'started') throw new Error('expected started');
-    expect(result.sink.kind).toBe('offline');
+    expect(result.sink.destination).toEqual({ name: 'stored-only' });
     expect(requestStart).toHaveBeenCalledWith({
       recordCrossOriginIframes: false,
     });
@@ -347,7 +304,6 @@ describe('startRecording', () => {
         getConnection: () => Promise.resolve(current),
         getTabUrl: () => Promise.resolve('https://example.com/a'),
         requestStart,
-        requestStop: () => Promise.resolve(),
         createSink: (target) => createSink(target, deps),
       });
       expect(result).toEqual({
@@ -356,6 +312,20 @@ describe('startRecording', () => {
       });
       expect(requestStart).not.toHaveBeenCalled();
     }
+
+    // Once that organization is connected again, the same request records.
+    const deps = makeDeps();
+    const result = await startRecording({
+      request: cloudRequest,
+      getConnection: () => Promise.resolve(connected),
+      getTabUrl: () => Promise.resolve('https://example.com/a'),
+      requestStart: () => Promise.resolve({ startTimestamp: 1 }),
+      createSink: (target) => createSink(target, deps),
+    });
+    if (result.state !== 'started') throw new Error('expected started');
+    result.sink.add(event(1));
+    await result.sink.finish('Title');
+    expect(deps.uploadSession).toHaveBeenCalledWith('sess-1', account);
   });
 
   it('refuses a start request that names no valid destination, without throwing', async () => {
@@ -366,7 +336,6 @@ describe('startRecording', () => {
       'offline',
       { mode: 'upload' },
       { mode: 'cloud' },
-      { mode: 'cloud', userId: 'user_1' },
       { mode: 'cloud', orgId: 7 },
       { mode: 'cloud', orgId: '' },
     ];
@@ -379,7 +348,6 @@ describe('startRecording', () => {
         getConnection,
         getTabUrl: () => Promise.resolve('https://example.com/a'),
         requestStart,
-        requestStop: () => Promise.resolve(),
         createSink: (target) => createSink(target, deps),
       });
       expect(result).toEqual({
@@ -389,20 +357,5 @@ describe('startRecording', () => {
       expect(getConnection).not.toHaveBeenCalled();
       expect(requestStart).not.toHaveBeenCalled();
     }
-  });
-
-  it('does not stop the tab after a successful start', async () => {
-    const deps = makeDeps();
-    const requestStop = vi.fn(() => Promise.resolve());
-    const result = await startRecording({
-      request: cloudRequest,
-      getConnection: () => Promise.resolve(connected),
-      getTabUrl: () => Promise.resolve('https://example.com/a'),
-      requestStart: () => Promise.resolve({ startTimestamp: 1 }),
-      requestStop,
-      createSink: (target) => createSink(target, deps),
-    });
-    expect(result.state).toBe('started');
-    expect(requestStop).not.toHaveBeenCalled();
   });
 });

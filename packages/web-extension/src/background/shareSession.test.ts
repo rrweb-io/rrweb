@@ -6,12 +6,12 @@ import type { UploadResult } from './upload';
 import {
   createSessionSharing,
   parseShareRequest,
-  NO_PAGE_ADDRESS_ERROR,
   SESSION_MISSING_ERROR,
   SHARE_ACCOUNT_CHANGED_ERROR,
   INVALID_SHARE_ERROR,
   PENDING_ELSEWHERE_ERROR,
 } from './shareSession';
+import { NO_HOSTNAME_ERROR } from './sinks';
 
 const ACCOUNT: CloudAccount = {
   orgId: 'org_1',
@@ -278,7 +278,6 @@ describe('sharing an offline session', () => {
       name: 'share-failed',
       errorMessage: PENDING_ELSEWHERE_ERROR('Acme'),
     };
-    expect(PENDING_ELSEWHERE_ERROR('Acme')).toContain('Acme');
     // Switched to organization B, which the stored account now names.
     store.account = { ...ACCOUNT, orgId: 'org_2', orgName: 'Beta' };
     await expect(
@@ -343,6 +342,40 @@ describe('sharing an offline session', () => {
     expect(idsMade()).toBe(1);
   });
 
+  it('resumes after the last accepted chunk when the worker stops part way', async () => {
+    const { store, postEvents, sharing, restart, request } = setup();
+    // The first chunk is accepted and saved, then the worker stops while the
+    // next one is in flight.
+    postEvents.mockImplementationOnce(async (...args: unknown[]) => {
+      const [, lines, onDelivered] = args as [
+        unknown,
+        string[],
+        (unsent: string[]) => Promise<void>,
+      ];
+      await onDelivered(lines.slice(2));
+      return new Promise<UploadResult>(() => undefined);
+    });
+    void sharing.share(request);
+    const all = await vi.waitFor(() => {
+      expect(store.unsent.get('rec-1')).toMatchObject({ state: 'unsent' });
+      return sentIn(postEvents, 0).sent;
+    });
+    await vi.waitFor(() =>
+      expect(store.unsent.get('rec-1')).toEqual({
+        recordingId: 'rec-1',
+        state: 'unsent',
+        events: all.slice(2),
+      }),
+    );
+
+    await expect(restart().share(request)).resolves.toEqual({
+      name: 'shared',
+      recordingId: 'rec-1',
+    });
+    // Only what was not accepted is sent again.
+    expect(sentIn(postEvents, 1).sent).toEqual(all.slice(2));
+  });
+
   it('sends a pending share again in full, to the same recording, if its kept events are gone', async () => {
     const { store, postEvents, sharing, request, idsMade } = setup();
     store.shared = {
@@ -369,6 +402,60 @@ describe('sharing an offline session', () => {
     // would not find them.
     expect(store.unsent.size).toBe(0);
     expect(postEvents).not.toHaveBeenCalled();
+
+    // Once storage works, the next Share uploads it in full. No event was
+    // sent to the first recording ID, so a new one is safe.
+    await expect(sharing.share(request)).resolves.toEqual({
+      name: 'shared',
+      recordingId: 'rec-2',
+    });
+    expect(postEvents).toHaveBeenCalledTimes(1);
+    expect(sentIn(postEvents).options.recordingId).toBe('rec-2');
+    expect(sentIn(postEvents).parsed).toHaveLength(5);
+    expect(store.shared).toEqual({
+      'session-1': { state: 'shared', recordingId: 'rec-2' },
+    });
+  });
+
+  it('resumes a pending share with the key connected now, never an earlier one', async () => {
+    const { store, postEvents, sharing, request, idsMade } = setup();
+    postEvents.mockImplementationOnce((_options, events) =>
+      Promise.resolve({
+        state: 'not-delivered',
+        error: new Error('Server answered 503'),
+        unsent: (events as string[]).slice(2),
+      }),
+    );
+    await sharing.share(request);
+    const all = sentIn(postEvents, 0).sent;
+    expect(sentIn(postEvents, 0).options.publicKey).toBe('pk_acme');
+    // What is kept holds the events only, no key.
+    expect(store.unsent.get('rec-1')).toEqual({
+      recordingId: 'rec-1',
+      state: 'unsent',
+      events: all.slice(2),
+    });
+
+    // Disconnected: nothing is sent, and the pending share is kept.
+    store.account = null;
+    await expect(sharing.share(request)).resolves.toEqual({
+      name: 'share-failed',
+      errorMessage: SHARE_ACCOUNT_CHANGED_ERROR,
+    });
+    expect(postEvents).toHaveBeenCalledTimes(1);
+
+    // The dashboard connects the same organization again, with a new key.
+    store.account = { ...ACCOUNT, publicKey: 'pk_rotated' };
+    await expect(sharing.share(request)).resolves.toEqual({
+      name: 'shared',
+      recordingId: 'rec-1',
+    });
+    expect(sentIn(postEvents, 1).options).toEqual({
+      publicKey: 'pk_rotated',
+      recordingId: 'rec-1',
+    });
+    expect(sentIn(postEvents, 1).sent).toEqual(all.slice(2));
+    expect(idsMade()).toBe(1);
   });
 
   it('answers shared when storing the shared state fails after delivery', async () => {
@@ -387,6 +474,10 @@ describe('sharing an offline session', () => {
       recordingId: 'rec-1',
     });
     expect(logged).toHaveBeenCalled();
+    expect(store.unsent.get('rec-1')).toEqual({
+      recordingId: 'rec-1',
+      state: 'delivered',
+    });
 
     // A second press, once storage works, sends nothing again.
     writeShared.mockImplementation((shared) => {
@@ -408,7 +499,7 @@ describe('sharing an offline session', () => {
     const { store, postEvents, sharing, request } = setup([SNAPSHOT, CLICK]);
     await expect(sharing.share(request)).resolves.toEqual({
       name: 'share-failed',
-      errorMessage: NO_PAGE_ADDRESS_ERROR,
+      errorMessage: NO_HOSTNAME_ERROR,
     });
     // A Meta event whose address has no hostname cannot be filed either.
     store.sessions.set('session-1', {
@@ -423,7 +514,7 @@ describe('sharing an offline session', () => {
     });
     await expect(sharing.share(request)).resolves.toEqual({
       name: 'share-failed',
-      errorMessage: NO_PAGE_ADDRESS_ERROR,
+      errorMessage: NO_HOSTNAME_ERROR,
     });
     expect(postEvents).not.toHaveBeenCalled();
     expect(store.shared).toEqual({});
@@ -447,7 +538,6 @@ describe('sharing an offline session', () => {
       'session-1',
       42,
       {},
-      { sessionId: 'session-1', userId: 'user_1' },
       { sessionId: '', orgId: 'org_1' },
       { sessionId: 'session-1', orgId: 7 },
       { sessionId: ['session-1'], orgId: 'org_1' },
@@ -460,9 +550,10 @@ describe('sharing an offline session', () => {
       });
     }
     expect(postEvents).not.toHaveBeenCalled();
-    expect(
-      parseShareRequest({ sessionId: 's', userId: 'u', orgId: 'o', x: 1 }),
-    ).toEqual({ sessionId: 's', orgId: 'o' });
+    expect(parseShareRequest({ sessionId: 's', orgId: 'o', x: 1 })).toEqual({
+      sessionId: 's',
+      orgId: 'o',
+    });
 
     // A well formed request from the same channel still uploads.
     await expect(sharing.share(request)).resolves.toMatchObject({

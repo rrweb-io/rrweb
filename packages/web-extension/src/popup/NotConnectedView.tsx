@@ -9,7 +9,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import type { ReactNode } from 'react';
-import type { Session } from '~/types';
+import { isRunning, type Session } from '~/types';
 import {
   Logo,
   Note,
@@ -87,6 +87,7 @@ export function NotConnectedView({
   sessionUrl: (session: Session) => string;
 }) {
   const pitching = cloud.name === 'available' && cloud.panel === 'cloud-pitch';
+  const { status } = recorder;
   return (
     <PopupFrame>
       <Flex align="center" mb="20px">
@@ -106,7 +107,16 @@ export function NotConnectedView({
               autoFocus
             />
           </Flex>
-          <Note>{recordingNote('offline', { name: 'not-connected' })}</Note>
+          <Note>
+            {isRunning(status) && status.destination.name === 'organization'
+              ? // Disconnecting does not stop a running cloud recording from
+                // uploading to the organization it started with.
+                recordingNote('cloud', {
+                  name: 'connected',
+                  orgName: status.destination.orgName,
+                })
+              : recordingNote('offline', { name: 'not-connected' })}
+          </Note>
           <RecorderError recorder={recorder} />
           {newSession && (
             <Text fontSize="13px" mt="12px">

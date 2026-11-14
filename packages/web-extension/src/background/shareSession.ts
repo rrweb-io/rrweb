@@ -7,8 +7,10 @@ import type {
   ShareRequest,
   ShareResult,
 } from '~/types';
+import { dashboardRecordingUrl } from '~/config';
+import { filled } from '~/utils';
 import type { StoredUnsentEvents } from '~/utils/storage';
-import { checkStoredAccount, dashboardRecordingUrl, hostnameOf } from './sinks';
+import { checkStoredAccount, hostnameOf, NO_HOSTNAME_ERROR } from './sinks';
 import type { uploadEvents } from './upload';
 
 export type SessionSharingDeps = {
@@ -31,6 +33,8 @@ export type SessionSharingDeps = {
   postEvents: (
     target: { recordingId: string; publicKey: string },
     lines: string[],
+    /** Saves what is still unsent after each accepted chunk. */
+    onDelivered: (unsent: string[]) => Promise<void>,
   ) => ReturnType<typeof uploadEvents>;
   randomId: () => string;
   openTab: (url: string) => Promise<unknown>;
@@ -45,13 +49,10 @@ export const PENDING_ELSEWHERE_ERROR = (orgName: string) =>
   `This recording started uploading to ${orgName}. Connect that organization again to finish sharing it.`;
 export const SESSION_MISSING_ERROR =
   'This recording is no longer saved in this browser.';
-export const NO_PAGE_ADDRESS_ERROR =
-  'This recording has no web address to file it under, so it cannot be shared.';
 /** The share message as it arrives from a page, if it is well formed. */
 export function parseShareRequest(value: unknown): ShareRequest | 'invalid' {
   if (typeof value !== 'object' || value === null) return 'invalid';
   const { sessionId, orgId } = value as Record<string, unknown>;
-  const filled = (v: unknown): v is string => typeof v === 'string' && v !== '';
   if (filled(sessionId) && filled(orgId)) return { sessionId, orgId };
   return 'invalid';
 }
@@ -78,18 +79,14 @@ export function createSessionSharing(deps: SessionSharingDeps) {
   };
   // Sessions being deleted: nothing may be stored for them meanwhile.
   const deleting = new Set<string>();
-  /** Drop the sessions' entries from the shared map, and say what they were. */
-  const forget = (sessionIds: string[]) => {
+  /** Drop the sessions' entries from the shared map. */
+  const forget = (sessionIds: string[]): Promise<void> => {
     const next = updating.then(async () => {
       const shared = await deps.readShared();
-      const removed = sessionIds.flatMap((id) =>
-        shared[id] ? [shared[id]] : [],
-      );
-      if (removed.length === 0) return [];
+      if (!sessionIds.some((id) => shared[id])) return;
       const rest = { ...shared };
       for (const id of sessionIds) delete rest[id];
       await deps.writeShared(rest);
-      return removed.map((share) => share.recordingId);
     });
     updating = next.catch(() => undefined);
     return next;
@@ -105,9 +102,8 @@ export function createSessionSharing(deps: SessionSharingDeps) {
    */
   async function prepare(
     sessionId: string,
-    account: CloudAccount,
     recordingId: string | undefined,
-  ): Promise<StoredUnsentEvents | ShareResult> {
+  ): Promise<Extract<StoredUnsentEvents, { state: 'unsent' }> | ShareResult> {
     const session = await deps.loadSession(sessionId);
     if (!session || session.events.length === 0)
       return failed(SESSION_MISSING_ERROR);
@@ -115,7 +111,7 @@ export function createSessionSharing(deps: SessionSharingDeps) {
     const domain = hostnameOf(
       meta?.type === EventType.Meta ? meta.data.href : undefined,
     );
-    if (domain === undefined) return failed(NO_PAGE_ADDRESS_ERROR);
+    if (domain === undefined) return failed(NO_HOSTNAME_ERROR);
 
     // Start the recording now, keeping its timing: billing and the dashboard
     // file a recording under its first event, and late usage is not counted.
@@ -145,21 +141,20 @@ export function createSessionSharing(deps: SessionSharingDeps) {
     };
     return {
       recordingId: recordingId ?? deps.randomId(),
-      publicKey: account.publicKey,
+      state: 'unsent',
       events: [metaEvent, ...events, closeEvent].map((e) => JSON.stringify(e)),
     };
   }
 
   /** Every event arrived: store it as shared first, then clean up. */
-  async function finish(sessionId: string, upload: StoredUnsentEvents) {
-    const { recordingId } = upload;
+  async function finish(sessionId: string, recordingId: string) {
     try {
       await remember(sessionId, { state: 'shared', recordingId });
     } catch (error) {
-      // Still shared. Keep it pending with nothing left, so Share sends nothing.
+      // Still shared. Keep it pending as delivered, so Share sends nothing.
       console.error('Could not store the shared session:', error);
       await deps
-        .putUnsent({ ...upload, events: [] })
+        .putUnsent({ recordingId, state: 'delivered' })
         .catch((e) => console.error('Could not store the shared session:', e));
       return;
     }
@@ -183,8 +178,9 @@ export function createSessionSharing(deps: SessionSharingDeps) {
     if (earlier?.state === 'pending' && earlier.orgId !== account.orgId)
       return failed(PENDING_ELSEWHERE_ERROR(earlier.orgName));
 
-    // A pending share resumes with what did not arrive, under the key it
-    // started with: one session is only ever one recording.
+    // A pending share resumes with what did not arrive, to the same
+    // recording, with the key of the organization connected now: one session
+    // is only ever one recording, and a reconnect may have rotated the key.
     let pending =
       earlier?.state === 'pending'
         ? await deps.getUnsent(earlier.recordingId)
@@ -195,7 +191,7 @@ export function createSessionSharing(deps: SessionSharingDeps) {
         return failed(SESSION_MISSING_ERROR);
     } else {
       // Kept events lost (storage cleared): send it all again, same recording.
-      const prepared = await prepare(sessionId, account, earlier?.recordingId);
+      const prepared = await prepare(sessionId, earlier?.recordingId);
       if ('name' in prepared) return prepared;
       pending = prepared;
       // events first, so a pending share always has them
@@ -216,10 +212,12 @@ export function createSessionSharing(deps: SessionSharingDeps) {
     }
 
     if (deleting.has(sessionId)) return failed(SESSION_MISSING_ERROR);
-    if (pending.events.length > 0) {
+    if (pending.state === 'unsent') {
+      const unsent = pending;
       const result = await deps.postEvents(
-        { recordingId: pending.recordingId, publicKey: pending.publicKey },
-        pending.events,
+        { recordingId: unsent.recordingId, publicKey: account.publicKey },
+        unsent.events,
+        (events) => deps.putUnsent({ ...unsent, events }),
       );
       if (deleting.has(sessionId)) return failed(SESSION_MISSING_ERROR);
       if (result.state === 'not-delivered') {
@@ -227,7 +225,7 @@ export function createSessionSharing(deps: SessionSharingDeps) {
         return failed(result.error.message);
       }
     }
-    await finish(sessionId, pending);
+    await finish(sessionId, pending.recordingId);
     return { name: 'shared', recordingId: pending.recordingId };
   }
 

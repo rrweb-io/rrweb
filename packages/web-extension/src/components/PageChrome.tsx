@@ -1,17 +1,16 @@
 import type { ReactNode } from 'react';
 import { Box, Flex, Link, Text } from '@chakra-ui/react';
 import { FiArrowUpRight } from 'react-icons/fi';
-import { config } from '~/config';
+import { config, SESSIONS_PAGE } from '~/config';
 import { Logo } from '~/popup/PopupParts';
 
 /** The full pages, each with its link in the bar. */
 export type PageName = 'sessions' | 'account';
 
-export const SESSIONS_HREF = '/pages/index.html#/';
 export const ACCOUNT_HREF = '/options/index.html#/';
 
 const PAGES: { name: PageName; label: string; href: string }[] = [
-  { name: 'sessions', label: 'Offline Stored Sessions', href: SESSIONS_HREF },
+  { name: 'sessions', label: 'Offline Stored Sessions', href: SESSIONS_PAGE },
   { name: 'account', label: 'Account', href: ACCOUNT_HREF },
 ];
 
@@ -59,7 +58,7 @@ export default function PageChrome({
           pr="12px"
         >
           <Link
-            href={SESSIONS_HREF}
+            href={SESSIONS_PAGE}
             flexShrink={0}
             textDecoration="none"
             _hover={{ textDecoration: 'none' }}

@@ -58,6 +58,27 @@ describe('uploadEvents', () => {
     expect(fetchFn.mock.calls[1][1]?.body).toBe('{"c":3}');
   });
 
+  it('sends at most 1 MiB in one POST', async () => {
+    const fetchFn = vi.fn((_url: unknown, _init?: RequestInit) =>
+      Promise.resolve(ok()),
+    );
+    // Joined with the newline, exactly 1 MiB.
+    const fits = ['x'.repeat(1_048_574), 'y'];
+    await uploadEvents(target, fits, fetchFn);
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(
+      new TextEncoder().encode(String(fetchFn.mock.calls[0][1]?.body)),
+    ).toHaveLength(1_048_576);
+
+    // One byte more goes in two POSTs, in order.
+    fetchFn.mockClear();
+    await uploadEvents(target, ['x'.repeat(1_048_574), 'yy'], fetchFn);
+    expect(fetchFn.mock.calls.map(([, init]) => init?.body)).toEqual([
+      'x'.repeat(1_048_574),
+      'yy',
+    ]);
+  });
+
   it('stops at a refused POST and returns its lines and every later one', async () => {
     const fetchFn = vi
       .fn()
@@ -77,6 +98,37 @@ describe('uploadEvents', () => {
       expect(result.error.message).toBe(
         'rrweb refused the upload (429 Too Many): quota',
       );
+  });
+
+  it('saves what is still unsent after each accepted POST but the last', async () => {
+    const half = 'y'.repeat(MAX_CHUNK_BYTES / 2 + 1);
+    const lines = ['a' + half, 'b' + half, 'c' + half];
+    const saved: string[][] = [];
+    const fetchFn = vi.fn().mockResolvedValue(ok());
+    const result = await uploadEvents(
+      target,
+      lines,
+      fetchFn,
+      async (unsent) => {
+        saved.push(unsent);
+      },
+    );
+    expect(result).toEqual({ state: 'delivered' });
+    expect(fetchFn).toHaveBeenCalledTimes(3);
+    expect(saved).toEqual([['b' + half, 'c' + half], ['c' + half]]);
+  });
+
+  it('keeps uploading when saving the progress fails', async () => {
+    const half = 'y'.repeat(MAX_CHUNK_BYTES / 2 + 1);
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const fetchFn = vi.fn().mockResolvedValue(ok());
+    await expect(
+      uploadEvents(target, [half, half], fetchFn, () =>
+        Promise.reject(new Error('quota')),
+      ),
+    ).resolves.toEqual({ state: 'delivered' });
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+    logged.mockRestore();
   });
 
   it('keeps every line when the server cannot be reached', async () => {

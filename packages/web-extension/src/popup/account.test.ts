@@ -5,28 +5,76 @@ import {
   recordButtonLook,
   recordingNote,
   shownMode,
+  parseRecorderStatus,
   parseStoredMode,
 } from './account';
-import { RecorderStatus } from '~/types';
+import type { RecorderStatus } from '~/types';
+
+const IDLE: RecorderStatus = { state: 'idle', lastError: { name: 'none' } };
+const RECORDING: RecorderStatus = {
+  state: 'recording',
+  tabId: 3,
+  startTimestamp: 1000,
+  destination: { name: 'organization', orgName: 'Acme' },
+};
+const PAUSED: RecorderStatus = {
+  state: 'paused',
+  tabId: 3,
+  startTimestamp: 1000,
+  pausedTimestamp: 4000,
+  destination: { name: 'stored-only' },
+  lastError: { name: 'failed', message: 'Cannot access this page' },
+};
 
 describe('activeRecording', () => {
   it('does not claim a recording while a start is in flight', () => {
-    expect(activeRecording({ status: RecorderStatus.STARTING })).toBe(
-      'not-recording',
-    );
-    expect(
-      activeRecording({ status: RecorderStatus.IDLE, kind: 'cloud' }),
-    ).toBe('not-recording');
-    expect(
-      activeRecording({ status: RecorderStatus.PAUSED, kind: 'cloud' }),
-    ).toBe('cloud');
+    expect(activeRecording({ state: 'starting' })).toBe('not-recording');
+    expect(activeRecording(IDLE)).toBe('not-recording');
+    expect(activeRecording(RECORDING)).toBe('cloud');
+    expect(activeRecording(PAUSED)).toBe('offline');
+  });
+});
+
+describe('parseRecorderStatus', () => {
+  it('reads every state with its data', () => {
+    const failedIdle: RecorderStatus = {
+      state: 'idle',
+      lastError: { name: 'failed', message: 'quota exceeded' },
+    };
+    for (const status of [
+      IDLE,
+      failedIdle,
+      { state: 'starting' } as const,
+      RECORDING,
+      PAUSED,
+    ])
+      expect(parseRecorderStatus(JSON.parse(JSON.stringify(status)))).toEqual(
+        status,
+      );
+  });
+
+  it('reads anything else as idle, such as the shape an older version stored', () => {
+    for (const value of [
+      undefined,
+      null,
+      'RECORDING',
+      { status: 'RECORDING', activeTabId: 3, startTimestamp: 1000 },
+      { ...RECORDING, destination: { name: 'organization' } },
+      { ...RECORDING, tabId: '3' },
+      { ...RECORDING, startTimestamp: '1000' },
+      { ...RECORDING, state: 'stopped' },
+      { ...PAUSED, pausedTimestamp: undefined },
+      { ...PAUSED, lastError: undefined },
+      { state: 'idle', lastError: { name: 'failed' } },
+    ])
+      expect(parseRecorderStatus(value)).toEqual(IDLE);
   });
 });
 
 describe('recordingNote', () => {
   it('names the organization a cloud recording uploads to, and when', () => {
     expect(recordingNote('cloud', { name: 'connected', orgName: 'Acme' })).toBe(
-      'Uploads to Acme when you stop. Form fields are masked.',
+      'Uploads to Acme when you stop. Typed form input is masked.',
     );
   });
 
@@ -81,7 +129,7 @@ describe('parseStoredMode', () => {
 describe('recordButtonLook', () => {
   it('keeps the idle look while starting and only marks the button busy', () => {
     // Disabling would fade the button under the cursor right after a click.
-    expect(recordButtonLook(RecorderStatus.STARTING, false)).toEqual({
+    expect(recordButtonLook('starting', false)).toEqual({
       label: 'idle',
       mark: 'dot',
       press: 'busy',
@@ -89,12 +137,12 @@ describe('recordButtonLook', () => {
   });
 
   it('is pressable when idle and when recording', () => {
-    expect(recordButtonLook(RecorderStatus.IDLE, false)).toEqual({
+    expect(recordButtonLook('idle', false)).toEqual({
       label: 'idle',
       mark: 'dot',
       press: 'enabled',
     });
-    expect(recordButtonLook(RecorderStatus.RECORDING, false)).toEqual({
+    expect(recordButtonLook('recording', false)).toEqual({
       label: 'stop',
       mark: 'square',
       press: 'enabled',
@@ -102,9 +150,7 @@ describe('recordButtonLook', () => {
   });
 
   it('is disabled only when the view disables it', () => {
-    expect(recordButtonLook(RecorderStatus.IDLE, true).press).toBe('disabled');
-    expect(recordButtonLook(RecorderStatus.STARTING, true).press).toBe(
-      'disabled',
-    );
+    expect(recordButtonLook('idle', true).press).toBe('disabled');
+    expect(recordButtonLook('starting', true).press).toBe('disabled');
   });
 });

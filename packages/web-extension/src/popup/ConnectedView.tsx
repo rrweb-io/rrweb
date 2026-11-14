@@ -1,5 +1,5 @@
 import { Flex, Link, Text } from '@chakra-ui/react';
-import { RecorderStatus, type CloudAccount, type RecordingKind } from '~/types';
+import { isRunning, type CloudAccount, type RecordingKind } from '~/types';
 import {
   Logo,
   Note,
@@ -10,7 +10,12 @@ import {
   type RecorderControls,
 } from './PopupParts';
 import { ModeSwitch } from './ModeSwitch';
-import { recordingNote, shownMode, type StoredMode } from './account';
+import {
+  activeRecording,
+  recordingNote,
+  shownMode,
+  type StoredMode,
+} from './account';
 
 /** The popup once the dashboard has connected an organization. */
 export function ConnectedView({
@@ -33,8 +38,12 @@ export function ConnectedView({
   onOpenSessions: () => void;
 }) {
   // An offline recording started before connecting keeps showing as offline.
-  const mode = shownMode({ active: recorder.active, stored: storedMode });
-  const idle = recorder.status === RecorderStatus.IDLE;
+  const { status } = recorder;
+  const mode = shownMode({
+    active: activeRecording(status),
+    stored: storedMode,
+  });
+  const idle = status.state === 'idle';
   return (
     <PopupFrame>
       <Flex align="center" justify="space-between" gap="12px" mb="20px">
@@ -76,8 +85,8 @@ export function ConnectedView({
           // A running recording uploads where it started, even if the
           // dashboard has connected another organization since.
           orgName:
-            recorder.uploadsTo.name === 'organization'
-              ? recorder.uploadsTo.orgName
+            isRunning(status) && status.destination.name === 'organization'
+              ? status.destination.orgName
               : account.orgName,
         })}
       </Note>

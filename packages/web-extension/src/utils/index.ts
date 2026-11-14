@@ -1,10 +1,16 @@
-export function isFirefox(): boolean {
-  return (
-    (typeof window !== 'undefined' &&
-      window.navigator?.userAgent.toLowerCase().includes('firefox')) ||
-    false
-  );
-}
+import type { RecordingKind, Session } from '~/types';
+
+/** A non-empty string, as every stored or received identifier must be. */
+export const filled = (value: unknown): value is string =>
+  typeof value === 'string' && value !== '';
+
+/**
+ * How a session was recorded. Sessions stored before Cloud mode have no
+ * `recordedAs` and were recorded offline, without input masking.
+ */
+export const recordingKindOf = (
+  session: Pick<Session, 'recordedAs'>,
+): RecordingKind => session.recordedAs ?? 'offline';
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;

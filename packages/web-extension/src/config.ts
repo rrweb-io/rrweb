@@ -28,6 +28,16 @@ export function uninstallSurveyUrl(version: string): string {
   return url.href;
 }
 
+/** Where the dashboard shows a cloud recording. */
+export const dashboardRecordingUrl = (recordingId: string) =>
+  `${config.dashboardUrl}/recordings/${recordingId}`;
+
+/** The extension's list of offline sessions. */
+export const SESSIONS_PAGE = '/pages/index.html#/';
+/** The extension's player for one offline session. */
+export const sessionPage = (sessionId: string) =>
+  `${SESSIONS_PAGE}session/${sessionId}`;
+
 /** The dashboard page that connects an organization to this extension. */
 export const connectUrl = () => `${config.dashboardUrl}/extension/connect`;
 // Clerk returns new accounts to `redirect_url`, so they land back on connect.

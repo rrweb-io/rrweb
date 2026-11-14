@@ -20,8 +20,23 @@ type MarkedWindow = Window & { [LISTENING]?: true };
 
 let stopFn: (() => void) | null = null;
 
-/** `token` names the recording; every event carries it back. */
+function stopRecording() {
+  if (stopFn) {
+    try {
+      stopFn();
+    } catch (e) {
+      //
+    }
+  }
+  stopFn = null;
+}
+
+/**
+ * `token` names the recording; every event carries it back. A newer start
+ * replaces a recording still running here, so the page records one at most.
+ */
 function startRecord(config: recordOptions<eventWithTime>, token: string) {
+  stopRecording();
   stopFn =
     record({
       emit: (event) => {
@@ -53,13 +68,7 @@ const messageHandler = (
       startRecord(data.config || {}, data.token ?? 'no-token');
     },
     [MessageName.StopRecord]: () => {
-      if (stopFn) {
-        try {
-          stopFn();
-        } catch (e) {
-          //
-        }
-      }
+      stopRecording();
       postMessage({
         message: MessageName.RecordStopped,
         endTimestamp: Date.now(),
