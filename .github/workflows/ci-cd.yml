@@ -17,10 +17,10 @@ jobs:
     name: Tests
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: useblacksmith/checkout@v1
         with:
           # This makes Actions fetch all Git history so that Changesets can generate changelogs with the correct commits
           fetch-depth: 0
@@ -72,12 +72,12 @@ jobs:
     name: WebKit (Safari engine) tests
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     container:
       image: mcr.microsoft.com/playwright:v1.61.1-noble
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v3
+        uses: useblacksmith/checkout@v1
 
       - name: Setup Node.js lts/*
         uses: actions/setup-node@v3
