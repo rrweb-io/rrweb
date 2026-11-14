@@ -453,14 +453,22 @@ export function absolutifyURLs(cssText: string | null, href: string): string {
       }
       const filePathNoHash = filePath.split('#')[0];
       const maybeHash = filePath.substring(filePathNoHash.length);
-      const stack = href.split('#')[0].split('/');
+      // the query is not part of the base path, even when it contains a `/`
+      const base = href.split('#')[0].split('?')[0];
+      const stack = base.split('/');
+      // keep `scheme://host`: like `new URL(rel, base)`, a `..` at the root stays at the root
+      const minLength = base.indexOf('//') > -1 ? 3 : 0;
       const parts = filePathNoHash.split('/');
-      stack.pop();
+      if (stack.length > minLength) {
+        stack.pop();
+      }
       for (const part of parts) {
         if (part === '.') {
           continue;
         } else if (part === '..') {
-          stack.pop();
+          if (stack.length > minLength) {
+            stack.pop();
+          }
         } else {
           stack.push(part);
         }

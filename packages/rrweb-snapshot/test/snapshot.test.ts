@@ -55,6 +55,39 @@ describe('absolute url to stylesheet', () => {
     );
   });
 
+  it('does not go above the origin with extra parent levels', () => {
+    expect(
+      absolutifyURLs('url(../fonts/a.woff2)', 'https://example.com/style.css'),
+    ).toEqual(`url(https://example.com/fonts/a.woff2)`);
+    expect(
+      absolutifyURLs(
+        'url(../../../img.png)',
+        'https://example.com/css/style.css',
+      ),
+    ).toEqual(`url(https://example.com/img.png)`);
+  });
+
+  it('can handle a base url without a path', () => {
+    expect(absolutifyURLs('url(a.jpg)', 'http://localhost')).toEqual(
+      `url(http://localhost/a.jpg)`,
+    );
+  });
+
+  it('ignores slashes in the query of the base url', () => {
+    expect(
+      absolutifyURLs(
+        'url(hero.png)',
+        'https://example.com/login?redirect=/dashboard',
+      ),
+    ).toEqual(`url(https://example.com/hero.png)`);
+    expect(
+      absolutifyURLs(
+        'url("../a.jpg")',
+        'http://localhost/css/style.css?v=1/2#e/f',
+      ),
+    ).toEqual(`url("http://localhost/a.jpg")`);
+  });
+
   it('leaves fragment-only references alone', () => {
     expect(absolutifyURLs('url(#filter)', href)).toEqual(`url(#filter)`);
     expect(absolutifyURLs(`url('#filter')`, href)).toEqual(`url('#filter')`);
