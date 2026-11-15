@@ -29,18 +29,20 @@ import type {
 } from 'rrdom';
 import * as mittProxy from 'mitt';
 import { Timer } from './timer';
+import { defaultCursorPack, resolveCursor } from './cursor';
 import {
   createPlayerService,
   createSpeedService,
   type PlayerMachineState,
   type SpeedMachineState,
 } from './machine';
-import type { playerConfig, missingNodeMap } from '../types';
+import type { playerConfig, missingNodeMap, CursorState } from '../types';
 import {
   NodeType,
   EventType,
   IncrementalSource,
   MouseInteractions,
+  PointerTypes,
   ReplayerEvents,
 } from '@rrweb/types';
 import type {
@@ -105,6 +107,17 @@ const defaultMouseTailConfig = {
   strokeStyle: 'red',
 } as const;
 
+// a mousemove can come from a mouse or a pen, so it only ends a touch
+const movePointer = (
+  source: IncrementalSource,
+  current: CursorState['pointerType'],
+) =>
+  source === IncrementalSource.TouchMove
+    ? 'touch'
+    : current === 'touch'
+    ? 'mouse'
+    : current;
+
 function indicatesTouchDevice(e: eventWithTime) {
   return (
     e.type == EventType.IncrementalSnapshot &&
@@ -134,6 +147,12 @@ export class Replayer {
   private mouse: HTMLDivElement;
   private mouseTail: HTMLCanvasElement | null = null;
   private tailPositions: Array<{ x: number; y: number }> = [];
+  private cursorSample: { target: Element; x: number; y: number } | null = null;
+  private cursorPending = false;
+  private cursorState: CursorState | null = null;
+  private cursorPressed = false;
+  private cursorPointer: CursorState['pointerType'] = 'mouse';
+  private lastTouch = { x: NaN, y: NaN };
 
   private emitter: Emitter = mitt();
 
@@ -313,6 +332,10 @@ export class Replayer {
           this.mousePos.debugData,
         );
         this.mousePos = null;
+        this.mouse.classList.toggle(
+          'touch-device',
+          this.cursorPointer === 'touch',
+        );
       }
 
       if (this.touchActive === true) {
@@ -1126,6 +1149,7 @@ export class Replayer {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/restrict-template-expressions
           this.warn(`Exception in mutation ${error.message || error}`, d);
         }
+        this.scheduleCursor();
         break;
       }
       case IncrementalSource.Drag:
@@ -1133,6 +1157,12 @@ export class Replayer {
       case IncrementalSource.MouseMove:
         if (isSync) {
           const lastPosition = d.positions[d.positions.length - 1];
+          this.setPointer(
+            movePointer(d.source, this.cursorPointer),
+            lastPosition.x,
+            lastPosition.y,
+            isSync,
+          );
           this.mousePos = {
             x: lastPosition.x,
             y: lastPosition.y,
@@ -1143,6 +1173,12 @@ export class Replayer {
           d.positions.forEach((p) => {
             const action = {
               doAction: () => {
+                this.setPointer(
+                  movePointer(d.source, this.cursorPointer),
+                  p.x,
+                  p.y,
+                  isSync,
+                );
                 this.moveAndHover(p.x, p.y, p.id, isSync, d);
               },
               delay:
@@ -1178,6 +1214,22 @@ export class Replayer {
           type: d.type,
           target,
         });
+        // the recorder omits pointerType when the interaction type implies it
+        const pointer =
+          d.pointerType !== undefined
+            ? (toLowerCase(
+                PointerTypes[d.pointerType],
+              ) as CursorState['pointerType'])
+            : d.type === MouseInteractions.TouchStart ||
+              d.type === MouseInteractions.TouchEnd
+            ? 'touch'
+            : d.type === MouseInteractions.MouseDown ||
+              d.type === MouseInteractions.MouseUp
+            ? 'mouse'
+            : null;
+        if (pointer) this.setPointer(pointer, d.x || 0, d.y || 0, isSync);
+        if (d.type === MouseInteractions.MouseDown) this.cursorPressed = true;
+        if (d.type === MouseInteractions.MouseUp) this.cursorPressed = false;
         const { triggerFocus } = this.config;
         switch (d.type) {
           case MouseInteractions.Blur:
@@ -2204,6 +2256,71 @@ export class Replayer {
       this.drawMouseTail({ x: _x, y: _y });
     }
     this.hoverElements(target as Element);
+    if (this.config.cursor?.mode === 'state') {
+      this.cursorSample = { target: target as Element, x, y };
+      this.scheduleCursor();
+    }
+  }
+
+  // Shows the touch ring only while the pointer is a finger. Mouse events at
+  // the last touch point are the browser emulating that touch, so skip them.
+  private setPointer(
+    pointer: CursorState['pointerType'],
+    x: number,
+    y: number,
+    isSync: boolean,
+  ) {
+    if (pointer === 'touch') this.lastTouch = { x, y };
+    else if (
+      Math.abs(x - this.lastTouch.x) < 1 &&
+      Math.abs(y - this.lastTouch.y) < 1
+    )
+      return;
+    this.cursorPointer = pointer;
+    if (!isSync)
+      this.mouse.classList.toggle('touch-device', pointer === 'touch');
+  }
+
+  // Called from the timer's rAF, so the timeout runs once after that frame is
+  // painted and reading computed style doesn't force a style recalc.
+  // Seeks finish before it runs.
+  private scheduleCursor() {
+    if (!this.cursorSample || this.cursorPending) return;
+    this.cursorPending = true;
+    setTimeout(() => {
+      this.cursorPending = false;
+      const { target, x, y } = this.cursorSample!;
+      const pressed = this.cursorPressed;
+      const state: CursorState = {
+        cursor: resolveCursor(
+          target,
+          x,
+          y,
+          this.config.cursor?.resolveAuto !== false,
+          pressed,
+        ),
+        pointerType: this.cursorPointer,
+        pressed,
+        target,
+      };
+      const prev = this.cursorState;
+      if (
+        prev?.cursor === state.cursor &&
+        prev.pointerType === state.pointerType &&
+        prev.pressed === pressed
+      )
+        return;
+      this.cursorState = state;
+      const { url, hotspot } =
+        (this.config.cursor?.pack || defaultCursorPack).resolve(state) ||
+        defaultCursorPack.resolve({ ...state, cursor: 'default' })!;
+      this.mouse.dataset.cursor = state.cursor;
+      this.mouse.dataset.pointer = state.pointerType;
+      this.mouse.style.setProperty('--rr-cursor', `url("${url}")`);
+      this.mouse.style.setProperty('--rr-cursor-x', `${hotspot[0]}`);
+      this.mouse.style.setProperty('--rr-cursor-y', `${hotspot[1]}`);
+      this.emitter.emit(ReplayerEvents.CursorChange, state);
+    });
   }
 
   private drawMouseTail(position: { x: number; y: number }) {
