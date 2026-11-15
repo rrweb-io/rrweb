@@ -18,7 +18,7 @@ export function Timer({
     return () => clearInterval(interval);
   }, [startTime, ticking]);
   return (
-    <Stat textAlign="center" mt={4}>
+    <Stat textAlign="center" flex="none">
       <StatNumber fontSize="3xl">{formatTime(time)}</StatNumber>
     </Stat>
   );

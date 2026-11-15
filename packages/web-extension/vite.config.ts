@@ -1,10 +1,14 @@
-import { defineConfig, LibraryFormats, PluginOption } from 'vite';
+import { escapeNoncharacters } from './src/escapeNoncharacters';
+import { defineConfig, loadEnv, LibraryFormats, PluginOption } from 'vite';
 import webExtension, { readJsonFile } from 'vite-plugin-web-extension';
 import zip from 'vite-plugin-zip-pack';
 import * as path from 'path';
 import type { PackageJson } from 'type-fest';
 import react from '@vitejs/plugin-react';
 import semver from 'semver';
+import { buildManifest } from './src/buildManifest';
+import { dashboardUrlFrom } from './src/dashboardUrl';
+import type { ManifestSource } from './src/buildManifest';
 
 const emptyOutDir = !process.argv.includes('--watch');
 
@@ -63,76 +67,108 @@ function getExtensionVersion(rrwebVersion: string): string {
   }
 }
 
-export default defineConfig({
-  root: 'src',
-  // Configure our outputs - nothing special, this is normal vite config
-  build: {
-    outDir: path.resolve(
-      __dirname,
-      'dist',
-      process.env.TARGET_BROWSER as string,
-    ),
-    emptyOutDir,
-  },
-  // Add the webExtension plugin
-  plugins: [
-    react(),
-    webExtension({
-      // A function to generate manifest file dynamically.
-      manifest: () => {
-        const packageJson = readJsonFile('package.json') as PackageJson;
-        type ManifestBase = {
-          common: Record<string, unknown>;
-          chrome: Record<string, unknown>;
-          firefox: Record<string, unknown>;
-        };
-        const originalManifest = readJsonFile('./src/manifest.json') as {
-          common: Record<string, unknown>;
-          v2: ManifestBase;
-          v3: ManifestBase;
-        };
-        const ManifestVersion =
-          process.env.TARGET_BROWSER === 'chrome' ? 'v3' : 'v2';
-        const BrowserName =
-          process.env.TARGET_BROWSER === 'chrome' ? 'chrome' : 'firefox';
-        const commonManifest = originalManifest.common;
-        const rrwebVersion = packageJson.dependencies!.rrweb!.replace('^', '');
-        const manifest = {
-          version: getExtensionVersion(rrwebVersion),
-          author: packageJson.author,
-          version_name: rrwebVersion,
-          ...commonManifest,
-        };
-        Object.assign(
-          manifest,
-          originalManifest[ManifestVersion].common,
-          originalManifest[ManifestVersion][BrowserName],
-        );
-        return manifest;
-      },
-      browser: process.env.TARGET_BROWSER,
-      webExtConfig: {
-        startUrl: ['github.com/rrweb-io/rrweb'],
-        watchIgnored: ['*.md', '*.log'],
-      },
-      additionalInputs: ['pages/index.html', 'content/inject.ts'],
-    }) as PluginOption,
-    // https://github.com/aklinker1/vite-plugin-web-extension/issues/50#issuecomment-1317922947
-    // transfer inject.ts to iife format to avoid error
-    useSpecialFormat(
-      [path.resolve(__dirname, 'src/content/inject.ts')],
-      'iife',
-    ),
-    process.env.ZIP === 'true' &&
-      zip({
-        inDir: `dist/${process.env.TARGET_BROWSER || 'chrome'}`,
-        outDir: 'dist',
-        outFileName: `${process.env.TARGET_BROWSER || 'chrome'}.zip`,
-      }),
-  ],
-  resolve: {
-    alias: {
-      '~': path.resolve(__dirname, './src'),
+// Public half of the dev signing keypair. It pins the dev extension ID.
+// The private key never lives in this repo.
+const DEV_MANIFEST_KEY =
+  'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx4sntShzA4hV5C/Q8vlYLCoiNPv/u9H4pLZdYQ5+u7anviY7FedMukpbJ8iE1XNttjzblzxmMfUPWS2BWABd2TX/2d2n8gq0cYIu0dOcTVeTqHbJ7GNEDpb14sRlojgXCdmWs1S9ZjKa+x6XRA+Oq8HESQRlTrHfM/lHH2W5pH5vpXw+5UiVUgArRCYG+GuHBRMWranuglC5p1QDNp3ip3ZH1p3oVE4VkcIYAI3D1HJnGfvtOqH1E3N+PD9DkahjD3pne3aVSp6aQqWIhHW7ZOqrs2YUYLyUaMKhveFxbQ7oEcDkOzjIYQGO4AnLGI6E+zgONzoI8SLEmY/m4RsvJwIDAQAB';
+
+function escapeNoncharactersPlugin(): PluginOption {
+  return {
+    name: 'escape-unicode-noncharacters',
+    apply: 'build',
+    enforce: 'post',
+    generateBundle(_options, bundle) {
+      for (const output of Object.values(bundle)) {
+        if (output.type === 'chunk')
+          output.code = escapeNoncharacters(output.code);
+      }
     },
-  },
+  };
+}
+
+export default defineConfig(({ command, mode }) => {
+  const isDevBuild = command === 'serve' || mode === 'development';
+  const env = loadEnv(mode, __dirname, 'VITE_');
+  return {
+    root: 'src',
+    envDir: __dirname,
+    define: {
+      'import.meta.env.VITE_TARGET_BROWSER': JSON.stringify(
+        process.env.TARGET_BROWSER,
+      ),
+    },
+    // Configure our outputs - nothing special, this is normal vite config
+    build: {
+      outDir: path.resolve(
+        __dirname,
+        'dist',
+        process.env.TARGET_BROWSER as string,
+      ),
+      emptyOutDir,
+    },
+    // Add the webExtension plugin
+    plugins: [
+      react(),
+      escapeNoncharactersPlugin(),
+      webExtension({
+        // A function to generate manifest file dynamically.
+        manifest: () => {
+          const packageJson = readJsonFile('package.json') as PackageJson;
+          const rrwebVersion = packageJson.dependencies!.rrweb!.replace(
+            '^',
+            '',
+          );
+          return buildManifest(
+            readJsonFile('./src/manifest.json') as ManifestSource,
+            {
+              browser:
+                process.env.TARGET_BROWSER === 'chrome' ? 'chrome' : 'firefox',
+              base: {
+                version: getExtensionVersion(rrwebVersion),
+                author: packageJson.author,
+                // Firefox rejects version_name as an unknown key.
+                ...(process.env.TARGET_BROWSER === 'chrome'
+                  ? { version_name: rrwebVersion }
+                  : {}),
+              },
+              dashboardUrl: dashboardUrlFrom(env.VITE_RRWEB_DASHBOARD_URL),
+              key: isDevBuild ? DEV_MANIFEST_KEY : undefined,
+            },
+          );
+        },
+        browser: process.env.TARGET_BROWSER,
+        webExtConfig: {
+          startUrl: ['github.com/rrweb-io/rrweb'],
+          watchIgnored: ['*.md', '*.log'],
+        },
+        // Not declared as content scripts: the background injects both into
+        // the recorded tab when the person presses record.
+        additionalInputs: [
+          'pages/index.html',
+          'content/index.ts',
+          'content/inject.ts',
+        ],
+      }) as PluginOption,
+      // https://github.com/aklinker1/vite-plugin-web-extension/issues/50#issuecomment-1317922947
+      // injected scripts run as classic scripts, so build them as iife
+      useSpecialFormat(
+        [
+          path.resolve(__dirname, 'src/content/index.ts'),
+          path.resolve(__dirname, 'src/content/inject.ts'),
+        ],
+        'iife',
+      ),
+      process.env.ZIP === 'true' &&
+        zip({
+          inDir: `dist/${process.env.TARGET_BROWSER || 'chrome'}`,
+          outDir: 'dist',
+          outFileName: `${process.env.TARGET_BROWSER || 'chrome'}.zip`,
+        }),
+    ],
+    resolve: {
+      alias: {
+        '~': path.resolve(__dirname, './src'),
+      },
+    },
+  };
 });
