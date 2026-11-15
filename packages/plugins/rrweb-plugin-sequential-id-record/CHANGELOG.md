@@ -1,5 +1,7 @@
 # @rrweb/rrweb-plugin-sequential-id-record
 
+## 2.2.3
+
 ## 2.2.2
 
 ## 2.2.1

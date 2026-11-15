@@ -1,6 +1,6 @@
 {
   "name": "@rrweb/rrweb-plugin-network-record",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "",
   "type": "module",
   "main": "./dist/rrweb-plugin-network-record.umd.cjs",
@@ -48,9 +48,9 @@
   },
   "homepage": "https://github.com/rrweb-io/rrweb#readme",
   "devDependencies": {
-    "@rrweb/types": "^2.2.2",
-    "@rrweb/utils": "^2.2.2",
-    "rrweb": "^2.2.2",
+    "@rrweb/types": "^2.2.3",
+    "@rrweb/utils": "^2.2.3",
+    "rrweb": "^2.2.3",
     "typescript": "^5.4.5",
     "vite": "^8.3.6",
     "vite-plugin-dts": "^3.9.1",
