@@ -22,7 +22,11 @@ export {
 // exports style.css from replay
 import './replay/styles/style.css';
 
-export type { recordOptions, ReplayPlugin } from './types';
+export type {
+  recordOptions,
+  ReplayPlugin,
+  CrossOriginIframeTransport,
+} from './types';
 
 const { addCustomEvent, addAnnotation } = record;
 const { freezePage } = record;

@@ -69,6 +69,11 @@ export type recordOptions<T> = {
   recordDOM?: boolean;
   recordCanvas?: boolean;
   recordCrossOriginIframes?: boolean;
+  /**
+   * Overrides the parent-frame transport when recording cross-origin iframes.
+   * Both send and subscribe must be supplied by every participating recorder.
+   */
+  crossOriginIframeTransport?: CrossOriginIframeTransport<T>;
   recordAfter?: 'DOMContentLoaded' | 'load';
   userTriggeredOnInput?: boolean;
   collectFonts?: boolean;
@@ -230,5 +235,13 @@ export type CrossOriginIframeMessageEventContent<T = eventWithTime> = {
 };
 export type CrossOriginIframeMessageEvent =
   MessageEvent<CrossOriginIframeMessageEventContent>;
+
+export type CrossOriginIframeTransport<T = eventWithTime> = {
+  send(message: CrossOriginIframeMessageEventContent<T>): void;
+  subscribe(
+    targetWindow: Window,
+    receive: (message: MessageEvent) => void,
+  ): listenerHandler;
+};
 
 export type ErrorHandler = (error: unknown) => void | boolean;
