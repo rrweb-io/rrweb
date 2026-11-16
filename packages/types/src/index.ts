@@ -511,6 +511,8 @@ type mouseInteractionParam = {
   x?: number;
   y?: number;
   pointerType?: PointerTypes;
+  maskFocus?: boolean;
+  maskBlur?: boolean;
 };
 
 export type mouseInteractionCallBack = (d: mouseInteractionParam) => void;
