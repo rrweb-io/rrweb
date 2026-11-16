@@ -230,3 +230,66 @@ describe('MutationBuffer shadow DOM mirror cleanup (regression)', () => {
     expect(mirror.getNode(slotId)).toBeNull();
   });
 });
+
+describe('MutationBuffer style diff under a strict CSP', () => {
+  it('detects removed style properties when setAttribute("style") is blocked', () => {
+    const doc = document.implementation.createHTMLDocument();
+    const mirror = new Mirror();
+    const target = doc.createElement('div');
+    // enough remaining declarations that the compact style diff is shorter than the
+    // full attribute string, otherwise emit() falls back to the plain string
+    target.style.cssText =
+      'color: red; background-color: blue; border-top-color: green; display: none;';
+    doc.body.appendChild(target);
+    snapshot(doc, { mirror });
+
+    const emitted: unknown[] = [];
+    const buffer = createBuffer(doc, mirror, (payload) =>
+      emitted.push(payload),
+    );
+
+    // emulate `style-src-attr 'none'`: the browser silently drops style attributes set via
+    // setAttribute, while CSSOM (element.style) stays allowed
+    const originalSetAttribute = Element.prototype.setAttribute;
+    const spy = vi
+      .spyOn(Element.prototype, 'setAttribute')
+      .mockImplementation(function (
+        this: Element,
+        name: string,
+        value: string,
+      ) {
+        if (name.toLowerCase() === 'style') return;
+        originalSetAttribute.call(this, name, value);
+      });
+    try {
+      const oldValue = target.getAttribute('style');
+      target.style.removeProperty('display');
+      buffer.processMutations([
+        {
+          type: 'attributes',
+          target,
+          addedNodes: [] as unknown as NodeList,
+          removedNodes: [] as unknown as NodeList,
+          previousSibling: null,
+          nextSibling: null,
+          attributeName: 'style',
+          attributeNamespace: null,
+          oldValue,
+        } as unknown as MutationRecord,
+      ]);
+    } finally {
+      spy.mockRestore();
+    }
+
+    expect(emitted).toHaveLength(1);
+    const { attributes } = emitted[0] as {
+      attributes: {
+        id: number;
+        attributes: { style: Record<string, unknown> };
+      }[];
+    };
+    expect(attributes).toHaveLength(1);
+    expect(attributes[0].id).toBe(mirror.getId(target));
+    expect(attributes[0].attributes.style).toEqual({ display: false });
+  });
+});
