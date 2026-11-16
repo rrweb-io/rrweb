@@ -22,7 +22,7 @@
   export let replayer: Replayer;
   export let showCaptions = true;
   const updateTimeline = createTimelineIndex();
-  $: timeline = updateTimeline(replayer.service.state.context.events, replayer.config.inactivePeriodThreshold);
+  $: timeline = updateTimeline(replayer.events, replayer.config.inactivePeriodThreshold);
   export let captionText: string | undefined = undefined;
   let activeCaptionText: string | undefined;
   $: captionText = showCaptions ? activeCaptionText : undefined;
@@ -71,7 +71,7 @@
     dispatch('ui-update-current-time', { payload: currentTime });
   }
   let timer: number | null = null;
-  let playerState: 'playing' | 'paused' | 'live';
+  let playerState: PlayerMachineState['value'];
   $: {
     dispatch('ui-update-player-state', { payload: playerState });
   }
@@ -243,9 +243,6 @@
   };
 
   const handleProgressClick = (event: MouseEvent) => {
-    if (speedState === 'skipping') {
-      return;
-    }
     progressSlider.focus();
     const progressRect = progress.getBoundingClientRect();
     const x = event.clientX - progressRect.left;
@@ -262,9 +259,6 @@
   const handleProgressKeydown = (event: KeyboardEvent) => { 
     // Ignore marker keys and the slider event bubbling to the progress wrapper.
     if (event.target !== event.currentTarget) return;
-    if (speedState === 'skipping') {
-      return;
-    }
     let timeOffset: number;
     switch (event.key) {
       case 'ArrowLeft':
@@ -302,17 +296,21 @@
     skipInactive = !skipInactive;
   };
 
-  export const triggerUpdateMeta = () => {
-    return Promise.resolve().then(() => {
+  let updateMetaTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  const updateMeta = () => {
+    if (updateMetaTimeout) return;
+    updateMetaTimeout = setTimeout(() => {
+      updateMetaTimeout = null;
       meta = replayer.getMetaData();
-      timeline = updateTimeline(replayer.service.state.context.events, replayer.config.inactivePeriodThreshold);
-    });
+      timeline = updateTimeline(replayer.events, replayer.config.inactivePeriodThreshold);
+    }, 20); // throttle to protect against rapid calls to addEvent
   };
 
   onMount(() => {
     replayer.on('annotation', handleAnnotation);
     replayer.on('start', restoreCaptionOnSeek);
-    playerState = replayer.service.state.value;
+    playerState = replayer.getState();
     speedState = replayer.speedService.state.value;
     replayer.on(
       'state-change',
@@ -343,6 +341,7 @@
         onPauseHook = null;
       }
     });
+    replayer.on('events-updated', updateMeta);
 
     if (autoPlay) {
       replayer.play();
@@ -359,6 +358,8 @@
     captionUpdatePending = false;
     replayer.off('annotation', handleAnnotation);
     replayer.off('start', restoreCaptionOnSeek);
+    replayer.off('events-updated', updateMeta);
+    if (updateMetaTimeout) clearTimeout(updateMetaTimeout);
     replayer.pause();
     stopTimer();
   });
@@ -475,7 +476,6 @@
       <span class="rr-timeline__time">{formatTime(currentTime)}</span>
       <div
         class="rr-progress"
-        class:disabled={speedState === 'skipping'}
         bind:this={progress}
         on:click={handleProgressClick}
         on:keydown={handleProgressKeydown}
@@ -490,7 +490,6 @@
           aria-valuemax={Math.floor(meta.totalTime / 1000) * 1000}
           aria-valuenow={accessibleTime}
           aria-valuetext={`${formatTime(accessibleTime)} of ${formatTime(meta.totalTime)}`}
-          aria-disabled={speedState === 'skipping'}
           on:keydown={handleProgressKeydown}
         />
         <div
@@ -512,7 +511,6 @@
               text={event.timelineMarkerText}
               background={event.background}
               position={event.position}
-              disabled={speedState === 'skipping'}
               on:seek={() => goto(event.timeOffset)}
               on:focus-timeline={() => progressSlider.focus()}
             />
@@ -578,9 +576,8 @@
       </button>
       {#each speedOption as s}
         <button
-          class:active={s === speed && speedState !== 'skipping'}
+          class:active={s === speed}
           on:click={() => setSpeed(s)}
-          disabled={speedState === 'skipping'}
         >
           {s}x
         </button>
@@ -600,7 +597,6 @@
       <Switch
         id="skip"
         bind:checked={skipInactive}
-        disabled={speedState === 'skipping'}
         label="skip inactive"
       />
       <button on:click={() => dispatch('fullscreen')}>

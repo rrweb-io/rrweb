@@ -12,15 +12,27 @@ export class Timer {
   private actions: actionWithDelay[];
   private raf: number | true | null = null;
   private lastTimestamp: number;
+  private onExhausted?: () => void;
+  private onNearEnd?: () => void;
+  private nearEndLead = 0;
+  private nearEndFired = false;
 
   constructor(
     actions: actionWithDelay[] = [],
     config: {
       speed: number;
+      onExhausted?: () => void;
     },
   ) {
     this.actions = actions;
     this.speed = config.speed;
+    this.onExhausted = config.onExhausted;
+  }
+
+  public armNearEnd(leadMs: number, callback: () => void) {
+    this.nearEndLead = leadMs;
+    this.onNearEnd = callback;
+    this.nearEndFired = false;
   }
   /**
    * Add an action, possibly after the timer starts.
@@ -33,6 +45,7 @@ export class Timer {
     ) {
       // 'fast track'
       this.actions.push(action);
+      this.nearEndFired = false;
     } else {
       // binary search - events can arrive out of order in a realtime context
       const index = this.findActionIndex(action);
@@ -72,8 +85,18 @@ export class Timer {
       }
     }
     if (this.actions.length > 0) {
+      if (this.onNearEnd && !this.nearEndFired) {
+        const lastDelay = this.actions[this.actions.length - 1].delay;
+        if (this.timeOffset >= lastDelay - this.nearEndLead * this.speed) {
+          this.nearEndFired = true;
+          this.onNearEnd();
+        }
+      }
       this.raf = requestAnimationFrame(this.rafCheck.bind(this));
     } else {
+      if (this.onExhausted) {
+        this.onExhausted();
+      }
       this.raf = true; // was active
     }
   }
@@ -86,6 +109,7 @@ export class Timer {
       this.raf = null;
     }
     this.actions.length = 0;
+    this.nearEndFired = false;
   }
 
   public setSpeed(speed: number) {
@@ -94,6 +118,10 @@ export class Timer {
 
   public isActive() {
     return this.raf !== null;
+  }
+
+  public hasUpcomingActions() {
+    return this.actions.length > 0;
   }
 
   private findActionIndex(action: actionWithDelay): number {
