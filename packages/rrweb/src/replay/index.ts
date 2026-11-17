@@ -1423,7 +1423,10 @@ export class Replayer {
     const mirror = this.usingVirtualDom ? this.virtualDom.mirror : this.mirror;
     type TNode = typeof mirror extends Mirror ? Node : RRNode;
 
-    d.removes = d.removes.filter((mutation) => {
+    // filter into a local list rather than reassigning `d.removes`: the event
+    // object is re-applied on every seek, so a node that is only transiently
+    // absent here must not drop the removal from later replays
+    const removes = d.removes.filter((mutation) => {
       // warn of absence from mirror before we start applying each removal
       // as earlier removals could remove a tree that includes a later removal
       if (!mirror.getNode(mutation.id)) {
@@ -1432,7 +1435,7 @@ export class Replayer {
       }
       return true;
     });
-    d.removes.forEach((mutation) => {
+    removes.forEach((mutation) => {
       const target = mirror.getNode(mutation.id);
       if (!target) {
         // no need to warn here, an ancestor may have already been removed
@@ -1747,7 +1750,7 @@ export class Replayer {
     uniqueTextMutations(d.texts).forEach((mutation) => {
       const target = mirror.getNode(mutation.id);
       if (!target) {
-        if (d.removes.find((r) => r.id === mutation.id)) {
+        if (removes.find((r) => r.id === mutation.id)) {
           // no need to warn, element was already removed
           return;
         }
@@ -1774,7 +1777,7 @@ export class Replayer {
     d.attributes.forEach((mutation) => {
       const target = mirror.getNode(mutation.id);
       if (!target) {
-        if (d.removes.find((r) => r.id === mutation.id)) {
+        if (removes.find((r) => r.id === mutation.id)) {
           // no need to warn, element was already removed
           return;
         }
