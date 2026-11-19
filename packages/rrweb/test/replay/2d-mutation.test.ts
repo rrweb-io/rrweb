@@ -6,7 +6,6 @@ import { polyfillWebGLGlobals } from '../utils';
 polyfillWebGLGlobals();
 
 import canvas2DMutation from '../../src/replay/canvas/2d';
-import type { Replayer } from '../../src/replay';
 
 let canvas: HTMLCanvasElement;
 describe('canvas2DMutation', () => {
@@ -41,7 +40,6 @@ describe('canvas2DMutation', () => {
     (global as any).createImageBitmap = createImageBitmapMock;
 
     const mutation = canvas2DMutation({
-      event: {} as Parameters<Replayer['applyIncremental']>[0],
       mutations: [
         {
           property: 'clearRect',

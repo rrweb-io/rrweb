@@ -47,7 +47,6 @@ export default async function canvasMutation({
     }
     // default is '2d' for backwards compatibility (rrweb below 1.1.x)
     await canvas2DMutation({
-      event,
       mutations: commands,
       target,
       imageMap,

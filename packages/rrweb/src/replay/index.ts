@@ -1062,28 +1062,11 @@ export class Replayer {
         promises.push(
           this.deserializeAndPreloadCanvasEvents(event.data, event),
         );
-        const commands =
-          'commands' in event.data ? event.data.commands : [event.data];
-        commands.forEach((c) => {
-          this.preloadImages(c, event);
-        });
       }
     }
     return Promise.all(promises);
   }
 
-  private preloadImages(data: canvasMutationCommand, event: eventWithTime) {
-    if (
-      data.property === 'drawImage' &&
-      typeof data.args[0] === 'string' &&
-      !this.imageMap.has(event)
-    ) {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const imgd = ctx?.createImageData(canvas.width, canvas.height);
-      ctx?.putImageData(imgd!, 0, 0);
-    }
-  }
   private async deserializeAndPreloadCanvasEvents(
     data: canvasMutationData,
     event: eventWithTime,
