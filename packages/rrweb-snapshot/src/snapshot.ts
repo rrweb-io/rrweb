@@ -23,6 +23,7 @@ import {
   isElement,
   isShadowRoot,
   maskInputValue,
+  maskInputChecked,
   isNativeShadowDom,
   stringifyStylesheet,
   getInputType,
@@ -617,10 +618,14 @@ function serializeElementNode(
   // form fields
   if (['input', 'textarea', 'select'].includes(tagName)) {
     const value = (n as HTMLInputElement | HTMLTextAreaElement).value;
-    const checked = (n as HTMLInputElement).checked;
-    if (
-      attributes.type !== 'radio' &&
-      attributes.type !== 'checkbox' &&
+    const inputType = getInputType(n);
+    if (inputType === 'radio' || inputType === 'checkbox') {
+      attributes.checked = maskInputChecked({
+        type: inputType,
+        checked: (n as HTMLInputElement).checked,
+        maskInputOptions,
+      }) || null;
+    } else if (
       attributes.type !== 'submit' &&
       attributes.type !== 'button' &&
       value
@@ -633,8 +638,6 @@ function serializeElementNode(
         maskInputOptions,
         maskInputFn,
       });
-    } else if (checked) {
-      attributes.checked = checked;
     }
   }
   if (tagName === 'option') {
@@ -1309,6 +1312,8 @@ function snapshot(
           textarea: true,
           select: true,
           password: true,
+          checkbox: true,
+          radio: true,
         }
       : maskAllInputs === false
       ? {
