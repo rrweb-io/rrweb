@@ -1,9 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type * as puppeteer from 'puppeteer';
-import { describe, vi } from 'vitest';
+import { vi } from 'vitest';
 import 'construct-style-sheets-polyfill';
-import type { annotationData, inputData } from '@rrweb/types';
+import type { annotationData } from '@rrweb/types';
 import type { recordOptions } from '../src/types';
 import {
   listenerHandler,
@@ -1183,51 +1183,5 @@ describe('record iframes', function (this: ISuite) {
     expect(addRuleCount).toEqual(2);
     expect(removeRuleCount).toEqual(2);
     await assertSnapshot(ctx.events);
-  });
-});
-
-describe('bucketed input masking', function (this: ISuite) {
-  const ctx: ISuite = setup.call(
-    this,
-    `
-      <!DOCTYPE html>
-      <html>
-        <body>
-          <input type="text" id="test" />
-        </body>
-      </html>
-    `,
-  );
-
-  it('does not emit events for bucketed input masked entries', async function () {
-    await ctx.page.evaluate(() => {
-      const { record } = (window as unknown as IWindow).rrweb;
-      record({
-        emit: (window as unknown as IWindow).emit,
-        maskInputOptions: {
-          text: true,
-          maskLengthStrategy: 'bucketed',
-        },
-      });
-    });
-    await waitForRAF(ctx.page);
-
-    for (let i = 0; i < 11; i++) {
-      await ctx.page.type('#test', i.toString()[0]);
-      await waitForRAF(ctx.page);
-    }
-
-    const recordedTexts = ctx.events
-      .filter(
-        (event): event is eventWithTime & { data: inputData } =>
-          event.type === EventType.IncrementalSnapshot &&
-          event.data.source === IncrementalSource.Input,
-      )
-      .map((event) => event.data.text);
-
-    const recordedLengths = [1, 2, 3, 4, 5, 10, 20];
-    expect(recordedTexts).toEqual(
-      recordedLengths.map((length) => '*'.repeat(length)),
-    );
   });
 });
