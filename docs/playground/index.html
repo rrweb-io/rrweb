@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>record-playground.html</title>
+    <title>Recorder playground | rrweb</title>
+    <meta
+      name="description"
+      content="Explore rrweb recording options, captured events, and session replay."
+    />
     <style>
       * {
         box-sizing: border-box;
@@ -11,9 +15,9 @@
       body {
         margin: 0;
         padding: 24px;
-        background: #f4f6f8;
-        color: #182636;
-        font: 14px system-ui, sans-serif;
+        background: var(--page);
+        color: var(--text);
+        font: 14px/1.5 Inter, ui-sans-serif, system-ui, sans-serif;
       }
       h2 {
         margin: 0 0 14px;
@@ -28,8 +32,8 @@
         gap: 18px;
       }
       section {
-        background: white;
-        border: 1px solid #d6dde5;
+        background: var(--surface);
+        border: 1px solid var(--border);
         border-radius: 10px;
         padding: 18px;
         min-width: 0;
@@ -47,16 +51,16 @@
       button,
       select {
         padding: 8px 11px;
-        border: 1px solid #aebac7;
+        border: 1px solid var(--border);
         border-radius: 5px;
-        background: white;
+        background: var(--surface);
         color: inherit;
         cursor: pointer;
       }
       button.primary {
-        background: #185dba;
+        background: var(--brand);
         color: white;
-        border-color: #185dba;
+        border-color: var(--brand);
       }
       button:disabled {
         cursor: default;
@@ -69,7 +73,7 @@
       .config-editor {
         display: flex;
         margin-top: 8px;
-        border: 1px solid #aebac7;
+        border: 1px solid var(--border);
         border-radius: 5px;
         overflow: hidden;
         background: #142235;
@@ -78,7 +82,7 @@
         position: relative;
         flex: 0 0 28px;
         overflow: clip;
-        border-right: 1px solid #536477;
+        border-right: 1px solid var(--muted);
       }
       #boolean-toggles {
         position: absolute;
@@ -107,7 +111,7 @@
         tab-size: 2;
       }
       #config-error {
-        color: #b42318;
+        color: var(--error);
         overflow-wrap: anywhere;
       }
       #field-tools {
@@ -123,7 +127,7 @@
       }
       .iframe-shell {
         overflow: hidden;
-        border: 1px solid #aebac7;
+        border: 1px solid var(--border);
         border-radius: 8px;
         box-shadow: 0 2px 8px #18263612;
       }
@@ -133,9 +137,9 @@
         align-items: center;
         gap: 12px;
         padding: 10px 12px;
-        background: #edf1f5;
-        border-bottom: 1px solid #cbd5df;
-        color: #536477;
+        background: var(--page);
+        border-bottom: 1px solid var(--border);
+        color: var(--muted);
         font-size: 12px;
       }
       .iframe-header span {
@@ -144,7 +148,7 @@
         letter-spacing: 0.06em;
       }
       .iframe-header a {
-        color: #185dba;
+        color: var(--brand);
         font-family: monospace;
       }
       .iframe-header a[aria-current='page'] {
@@ -156,25 +160,25 @@
         width: 100%;
         height: 470px;
         border: 0;
-        background: white;
+        background: var(--surface);
       }
       #status {
         padding: 10px 0;
         font-weight: 600;
       }
       #status.error {
-        color: #b42318;
+        color: var(--error);
       }
       .muted {
-        color: #536477;
+        color: var(--muted);
         font-size: 13px;
       }
       [hidden] {
         display: none !important;
       }
       [role='tab'][aria-selected='true'] {
-        background: #e5efff;
-        border-color: #185dba;
+        background: var(--selected);
+        border-color: var(--brand);
       }
       #player-host iframe {
         height: 550px;
@@ -187,20 +191,20 @@
       #event-list {
         height: 380px;
         overflow: auto;
-        border: 1px solid #d6dde5;
+        border: 1px solid var(--border);
         border-radius: 5px;
       }
       #event-list button {
         display: block;
         width: 100%;
         border: 0;
-        border-bottom: 1px solid #e4e9ee;
+        border-bottom: 1px solid var(--border);
         border-radius: 0;
         text-align: left;
         font: 12px/1.5 monospace;
       }
       #event-list button[aria-pressed='true'] {
-        background: #e5efff;
+        background: var(--selected);
       }
       pre {
         margin: 0;
@@ -223,15 +227,175 @@
           grid-column: auto;
         }
       }
+      :root {
+        color-scheme: light;
+        --page: #f6f6f7;
+        --surface: #fff;
+        --text: #3c3c43;
+        --muted: #67676c;
+        --border: #c2c2c4;
+        --brand: #3451b2;
+        --selected: #e9edfa;
+        --error: #b42318;
+      }
+      :root[data-theme='dark'] {
+        color-scheme: dark;
+        --page: #161618;
+        --surface: #1b1b1f;
+        --text: #dfdfd6;
+        --muted: #a8a8b1;
+        --border: #51515c;
+        --brand: #a8b1ff;
+        --selected: #30334f;
+        --error: #ff9b91;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+          color-scheme: dark;
+          --page: #161618;
+          --surface: #1b1b1f;
+          --text: #dfdfd6;
+          --muted: #a8a8b1;
+          --border: #51515c;
+          --brand: #a8b1ff;
+          --selected: #30334f;
+          --error: #ff9b91;
+        }
+      }
+      a {
+        color: var(--brand);
+      }
+      .page-header,
+      .identity,
+      .page-header nav,
+      .help-heading {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .page-header {
+        justify-content: space-between;
+        margin-bottom: 24px;
+      }
+      .brand {
+        color: var(--text);
+        font-size: 22px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+      }
+      .page-header nav {
+        font-size: 13px;
+      }
+      #help {
+        position: fixed;
+        inset: 80px 24px auto auto;
+        margin: 0;
+        width: min(480px, calc(100vw - 32px));
+        max-height: calc(100dvh - 112px);
+        overflow: auto;
+        padding: 24px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: 0 12px 40px #0003;
+      }
+      .help-heading {
+        justify-content: space-between;
+      }
+      .help-heading h2 {
+        margin: 0;
+      }
+      #help ol {
+        padding-left: 20px;
+      }
+      #help li {
+        margin: 8px 0;
+      }
+      button.primary {
+        background: #3451b2;
+        border-color: #3451b2;
+      }
+      @media (max-width: 800px) {
+        body {
+          padding: 16px;
+        }
+        #help {
+          top: 16px;
+          right: 16px;
+          max-height: calc(100dvh - 32px);
+        }
+      }
     </style>
   </head>
   <body>
+    <header class="page-header">
+      <div class="identity">
+        <a class="brand" href="https://rrweb.com">rrweb</a>
+        <h1>Recorder playground</h1>
+        <span id="build-version" class="muted">rrweb canary (CDN)</span>
+      </div>
+      <nav aria-label="Playground navigation">
+        <a id="back-to-docs" href="https://rrweb.com/docs/events#events"
+          >Back to event documentation</a
+        >
+        <button id="help-button" popovertarget="help">Help</button>
+      </nav>
+    </header>
+    <aside id="help" popover aria-labelledby="help-title">
+      <div class="help-heading">
+        <h2 id="help-title">Use the playground</h2>
+        <button
+          popovertarget="help"
+          popovertargetaction="hide"
+          aria-label="Close help"
+        >
+          Close
+        </button>
+      </div>
+      <ol>
+        <li>
+          Edit the recorder options, then select
+          <strong>Apply &amp; restart</strong>.
+        </li>
+        <li>
+          Interact with <strong>Form interactions</strong> or
+          <strong>DOM changes</strong>.
+        </li>
+        <li>
+          Select an event to inspect it, or open <strong>Raw JSON</strong> to
+          copy the recording.
+        </li>
+        <li>
+          Open <strong>Player</strong> and select
+          <strong>Load latest events</strong> to replay it.
+        </li>
+      </ol>
+      <p>
+        Applying settings or switching examples clears the captured events and
+        player and starts a new recording. Recording continues during playback;
+        load the latest events to include new interactions.
+      </p>
+      <p id="config-help">
+        Removing an option uses rrweb's default. Added values are editable
+        examples. <code>ignoreCSSAttributes</code> accepts an array of strings.
+        The playground supplies <code>emit</code>; callbacks, plugins, and
+        regular expressions require JavaScript and cannot be configured here.
+      </p>
+    </aside>
     <main>
       <section>
         <h2>Recorder settings</h2>
         <label for="config">Recorder options (JSON)</label>
         <a
-          href="https://github.com/rrweb-io/rrweb/blob/main/guide.md#record-options"
+          id="options-docs"
+          href="https://rrweb.com/docs/guide#record-options"
           target="_blank"
           rel="noopener"
           >Docs ↗</a
@@ -256,13 +420,6 @@
           <select id="add-option"></select>
           <button id="add-field">Add</button>
         </div>
-        <p class="muted">
-          Removing an option uses rrweb’s default. Added values are editable
-          examples. <code>ignoreCSSAttributes</code> accepts an array of
-          strings. The playground supplies <code>emit</code>; callbacks, plugins
-          and regular expressions require JavaScript and cannot be configured
-          here.
-        </p>
         <div class="toolbar">
           <button class="primary" id="apply">Apply &amp; restart</button>
           <button id="format-config">Format JSON</button>
@@ -273,17 +430,15 @@
         <h2>Live page</h2>
         <div class="iframe-shell">
           <div class="iframe-header">
-            <span>Iframe</span>
+            <span>Example</span>
             <a
               href="playground-form.html"
               target="form-frame"
               aria-current="page"
             >
-              playground-form.html
+              Form interactions
             </a>
-            <a href="playground-dom.html" target="form-frame"
-              >playground-dom.html</a
-            >
+            <a href="playground-dom.html" target="form-frame">DOM changes</a>
           </div>
           <iframe
             id="form"
@@ -357,10 +512,6 @@ Waiting for a recording…</pre
               aria-live="polite"
             ></span>
           </div>
-          <p class="muted">
-            Playback uses the events captured when loaded. Recording continues;
-            load the latest events to include new interactions.
-          </p>
           <div id="player-host"></div>
         </div>
         <div id="raw-panel" role="tabpanel" aria-labelledby="raw-tab" hidden>
@@ -385,6 +536,25 @@ Waiting for a recording…</pre
     </main>
     <script>
       const $ = (id) => document.getElementById(id);
+      const deployment = {
+        version: 'rrweb canary (CDN)',
+        docsBase: '../',
+        recorderAsset: 'https://cdn.rrweb.com/rrweb/canary/rrweb.umd.cjs',
+        playerAssets: 'https://cdn.rrweb.com/rrweb-player/canary/',
+      };
+      if (deployment.version)
+        $('build-version').textContent = deployment.version;
+      if (deployment.docsBase) {
+        $('back-to-docs').href = deployment.docsBase + 'events#events';
+        $('options-docs').href = deployment.docsBase + 'guide#record-options';
+      }
+      // Reuse the docs theme preference when available, otherwise follow the OS.
+      try {
+        const theme = localStorage.getItem('vitepress-theme-appearance');
+        if (theme === 'dark' || theme === 'light')
+          document.documentElement.dataset.theme = theme;
+      } catch {}
+
       const frame = $('form');
       const formLinks = document.querySelectorAll('.iframe-header a');
       let formPage = 'playground-form.html';
@@ -422,8 +592,7 @@ Waiting for a recording…</pre
         playerFrame = iframe;
         iframe.title = 'Recorded session player';
         iframe.allowFullscreen = true;
-        const assets = new URL('../../../rrweb-player/dist/', location.href);
-        const assetVersion = Date.now();
+        const assets = new URL(deployment.playerAssets, location.href);
         $('player-status').textContent = 'Loading player…';
         iframe.onload = () => {
           if (current !== playerLoad) return;
@@ -431,7 +600,7 @@ Waiting for a recording…</pre
             const bundle = iframe.contentWindow.rrwebPlayer;
             if (!bundle)
               throw new Error(
-                'Cannot load the player bundle. Run yarn build:all from the repository root, then load latest events again.',
+                'Cannot load the player. Reload the page and try again.',
               );
             const Player = bundle.default || bundle;
             player = new Player({
@@ -452,9 +621,9 @@ Waiting for a recording…</pre
           }
         };
         iframe.srcdoc = `<!doctype html><html><head>
-          <link rel="stylesheet" href="${assets}style.css?v=${assetVersion}">
+          <link rel="stylesheet" href="${assets}style.css">
           <style>body { margin: 0; }<\/style>
-          <script src="${assets}rrweb-player.umd.cjs?v=${assetVersion}"><\/script>
+          <script src="${assets}rrweb-player.umd.cjs"><\/script>
           </head><body></body></html>`;
         $('player-host').append(iframe);
       }
@@ -636,13 +805,11 @@ Waiting for a recording…</pre
             return;
           }
           const script = doc.createElement('script');
-          script.src =
-            new URL('../../dist/rrweb.umd.cjs', location.href).href +
-            `?v=${Date.now()}`;
+          script.src = new URL(deployment.recorderAsset, location.href).href;
           script.onerror = () => {
             if (current === generation)
               status(
-                'Cannot load the recorder bundle. Run yarn workspace rrweb build, then Apply again.',
+                'Cannot load the recorder. Reload the page and try again.',
                 true,
               );
           };
@@ -741,12 +908,6 @@ Waiting for a recording…</pre
         'week',
       ];
       for (const type of inputTypes) field(`maskInputOptions.${type}`, true);
-      field(
-        'maskInputOptions.maskLengthStrategy',
-        'fixed',
-        ['string'],
-        ['fixed', 'bucketed'],
-      );
       field('sampling', {}, ['object']);
       field('sampling.mousemove', true, ['boolean', 'number']);
       field('sampling.mouseInteraction', true, ['boolean', 'object']);
@@ -1074,10 +1235,9 @@ Waiting for a recording…</pre
       }
       editor.value = JSON.stringify(
         {
-          maskInputOptions: {
-            ...Object.fromEntries(inputTypes.map((type) => [type, true])),
-            maskLengthStrategy: 'fixed',
-          },
+          maskInputOptions: Object.fromEntries(
+            inputTypes.map((type) => [type, true]),
+          ),
           sampling: { mousemove: true, mouseInteraction: true, input: 'all' },
         },
         null,
