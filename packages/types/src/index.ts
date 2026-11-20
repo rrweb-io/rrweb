@@ -787,6 +787,17 @@ export enum ReplayerEvents {
   StateChange = 'state-change',
   PlayBack = 'play-back',
   Destroy = 'destroy',
+  StallStart = 'stall-start',
+  StallEnd = 'stall-end',
+  EventsUpdated = 'events-updated',
+}
+
+// can be used for deliberate Replayer interruption or to implement buffering
+export interface StallController {
+  registerEvent(event: eventWithTime): void;
+  stallOnPlay(timeOffset: number): boolean;
+  stallOnPause(timeOffset: number): boolean;
+  isStallMarker(event: eventWithTime): boolean;
 }
 
 export type KeepIframeSrcFn = (src: string) => boolean;
