@@ -438,7 +438,7 @@ describe('replayer stall', () => {
     expect((result as { finishedAt: number }).finishedAt).toBeGreaterThan(2500);
   });
 
-  it('addEvent during a seek-stall only clears once the seek target is reached', async () => {
+  it('addEvent during a seek-stall never clears it implicitly', async () => {
     const result = await page.evaluate((stallAt) => {
       const win = window as IWindow;
       const { Replayer, ReplayerEvents } = win.rrweb;
@@ -483,7 +483,6 @@ describe('replayer stall', () => {
         currentTime: replayer.getCurrentTime(),
       };
 
-      held = false;
       replayer.addEvent({
         type: 5,
         data: { tag: 'past-target', payload: {} },
@@ -492,10 +491,19 @@ describe('replayer stall', () => {
       const afterPast = {
         stalled: replayer.isStalled(),
         isPaused: replayer.isPaused(),
+        stallChecks,
         currentTime: replayer.getCurrentTime(),
       };
 
-      return { afterBehind, afterPast };
+      held = false;
+      replayer.clearStall();
+      const afterClear = {
+        stalled: replayer.isStalled(),
+        isPaused: replayer.isPaused(),
+        currentTime: replayer.getCurrentTime(),
+      };
+
+      return { afterBehind, afterPast, afterClear };
     }, 3000);
 
     expect(result.afterBehind).toEqual({
@@ -506,13 +514,19 @@ describe('replayer stall', () => {
       currentTime: 3000,
     });
     expect(result.afterPast).toEqual({
+      stalled: true,
+      isPaused: true,
+      stallChecks: 1,
+      currentTime: 3000,
+    });
+    expect(result.afterClear).toEqual({
       stalled: false,
       isPaused: true,
       currentTime: 3000,
     });
   });
 
-  it('addEvent of an event past the frontier clears a stall', async () => {
+  it('an explicit stall survives addEvent; the caller clears it to resume', async () => {
     const result = await page.evaluate(() => {
       return new Promise((resolve) => {
         const win = window as IWindow;
@@ -522,29 +536,38 @@ describe('replayer stall', () => {
         setTimeout(() => {
           replayer.stall();
           const stalledAt = replayer.getCurrentTime();
-          const wasStalled = replayer.isStalled();
           replayer.addEvent({
             type: 5,
             data: { tag: 'late-arrival', payload: {} },
             timestamp: win.events[0].timestamp + 5000,
           } as (typeof win.events)[0]);
-          resolve({
-            wasStalled,
-            stalledAt,
+          const afterAdd = {
             stalled: replayer.isStalled(),
-            isPlaying: replayer.isPlaying(),
-            resumedAt: replayer.getCurrentTime(),
+            time: replayer.getCurrentTime(),
+          };
+          replayer.clearStall();
+          resolve({
+            stalledAt,
+            afterAdd,
+            resumed: {
+              stalled: replayer.isStalled(),
+              isPlaying: replayer.isPlaying(),
+              time: replayer.getCurrentTime(),
+            },
           });
         }, 150);
       });
     });
 
-    expect(result).toMatchObject({
-      wasStalled: true,
-      stalled: false,
-      isPlaying: true,
-    });
-    const r = result as { stalledAt: number; resumedAt: number };
-    expect(Math.abs(r.resumedAt - r.stalledAt)).toBeLessThan(100);
+    const r = result as {
+      stalledAt: number;
+      afterAdd: { stalled: boolean; time: number };
+      resumed: { stalled: boolean; isPlaying: boolean; time: number };
+    };
+    expect(r.afterAdd.stalled).toBe(true);
+    expect(r.afterAdd.time).toBe(r.stalledAt);
+    expect(r.resumed.stalled).toBe(false);
+    expect(r.resumed.isPlaying).toBe(true);
+    expect(Math.abs(r.resumed.time - r.stalledAt)).toBeLessThan(100);
   });
 });

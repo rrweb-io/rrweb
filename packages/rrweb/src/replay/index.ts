@@ -678,15 +678,7 @@ export class Replayer {
     const { baselineTime, timer } = this.service.state.context;
     const playheadTimestamp = events[0].timestamp + this.getCurrentTime();
     if (this.isStalled()) {
-      if (
-        event.timestamp >= playheadTimestamp &&
-        !this.stallControllers.some((sc) => sc.isStallMarker(event))
-      ) {
-        // assume caller is adding events in correct order, and this is the next one
-        this.clearStall();
-      } else {
-        // don't cast, it will be cast when we exit stall
-      }
+      // the event will be applied by play (or pause) when the stall exits
     } else if (event.timestamp < playheadTimestamp) {
       if (nextEvent && nextEvent.timestamp < playheadTimestamp) {
         // could fix with a debounced play/pause(getCurrentTime())
