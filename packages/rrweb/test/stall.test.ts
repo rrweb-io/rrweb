@@ -55,12 +55,12 @@ describe('replayer stall', () => {
         },
         stallOnPlay(timeOffset: number) {
           if (timeOffset !== stallAt) return false;
-          if (!replayer.isStalled()) replayer.stall();
+          if (!replayer.isStalled()) replayer.stall(timeOffset);
           return true;
         },
         stallOnPause(timeOffset: number) {
           if (timeOffset !== stallAt) return false;
-          if (!replayer.isStalled()) replayer.stall();
+          if (!replayer.isStalled()) replayer.stall(timeOffset);
           return true;
         },
       });
@@ -90,7 +90,7 @@ describe('replayer stall', () => {
         },
         stallOnPlay(timeOffset: number) {
           if (!unheld || timeOffset !== stallAt) return false;
-          if (!replayer.isStalled()) replayer.stall();
+          if (!replayer.isStalled()) replayer.stall(timeOffset);
           return true;
         },
         stallOnPause() {
@@ -144,7 +144,7 @@ describe('replayer stall', () => {
         },
         stallOnPlay(timeOffset: number) {
           if (timeOffset !== stallAt) return false;
-          if (!replayer.isStalled()) replayer.stall();
+          if (!replayer.isStalled()) replayer.stall(timeOffset);
           return true;
         },
         stallOnPause() {
@@ -166,6 +166,41 @@ describe('replayer stall', () => {
     expect(result.abortedTime).not.toBe(3000);
   });
 
+  it('pause(offset) to a buffered point while stalled clears the stall target', async () => {
+    const result = await page.evaluate((stallAt) => {
+      const win = window as IWindow;
+      const { Replayer } = win.rrweb;
+      const replayer = new Replayer(win.events, {});
+      const stallIfTarget = (timeOffset: number) => {
+        if (timeOffset !== stallAt) return false;
+        if (!replayer.isStalled()) replayer.stall(timeOffset);
+        return true;
+      };
+      replayer.addStallController({
+        registerEvent() {},
+        isStallMarker() {
+          return false;
+        },
+        stallOnPlay: stallIfTarget,
+        stallOnPause: stallIfTarget,
+      });
+      replayer.play(stallAt);
+      const stalledTime = replayer.getCurrentTime();
+      replayer.pause(2000);
+      return {
+        stalledTime,
+        stalled: replayer.isStalled(),
+        isPaused: replayer.isPaused(),
+        pausedTime: replayer.getCurrentTime(),
+      };
+    }, 3000);
+
+    expect(result.stalledTime).toBe(3000);
+    expect(result.stalled).toBe(false);
+    expect(result.isPaused).toBe(true);
+    expect(result.pausedTime).toBe(2000);
+  });
+
   it('a seek-stall reflects the caller intent (play vs pause), not the FSM state it entered from', async () => {
     const result = await page.evaluate((stallAt) => {
       const win = window as IWindow;
@@ -177,12 +212,12 @@ describe('replayer stall', () => {
         },
         stallOnPlay(timeOffset: number) {
           if (timeOffset !== stallAt) return false;
-          if (!replayer.isStalled()) replayer.stall();
+          if (!replayer.isStalled()) replayer.stall(timeOffset);
           return true;
         },
         stallOnPause(timeOffset: number) {
           if (timeOffset !== stallAt) return false;
-          if (!replayer.isStalled()) replayer.stall();
+          if (!replayer.isStalled()) replayer.stall(timeOffset);
           return true;
         },
       });
@@ -234,12 +269,12 @@ describe('replayer stall', () => {
           },
           stallOnPlay(timeOffset: number) {
             if (!held || timeOffset !== stallAt) return false;
-            if (!replayer.isStalled()) replayer.stall();
+            if (!replayer.isStalled()) replayer.stall(timeOffset);
             return true;
           },
           stallOnPause(timeOffset: number) {
             if (!held || timeOffset !== stallAt) return false;
-            if (!replayer.isStalled()) replayer.stall();
+            if (!replayer.isStalled()) replayer.stall(timeOffset);
             return true;
           },
           resolve() {
@@ -448,7 +483,7 @@ describe('replayer stall', () => {
       const stallIfHeld = (timeOffset: number) => {
         stallChecks += 1;
         if (!held || timeOffset !== stallAt) return false;
-        if (!replayer.isStalled()) replayer.stall();
+        if (!replayer.isStalled()) replayer.stall(timeOffset);
         return true;
       };
       replayer.addStallController({

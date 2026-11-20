@@ -523,7 +523,10 @@ export class Replayer {
     return this.service.state.matches('stalled');
   }
 
-  public stall() {
+  public stall(timeOffset?: number) {
+    if (timeOffset !== undefined) {
+      this.stallTimeOffset = timeOffset;
+    }
     this.service.send({ type: 'STALL' });
   }
 
@@ -582,7 +585,6 @@ export class Replayer {
     this.stallTimeOffset = null;
     this.stallResumePlay = true;
     if (this.stallControllers.some((sc) => sc.stallOnPlay(timeOffset))) {
-      this.stallTimeOffset = timeOffset;
       return;
     }
     this.service.send({ type: 'PLAY', payload: { timeOffset } });
@@ -601,14 +603,13 @@ export class Replayer {
   public pause(timeOffset?: number) {
     if (timeOffset === undefined && this.stallTimeOffset !== null) {
       timeOffset = this.stallTimeOffset;
-      this.stallTimeOffset = null;
     }
+    this.stallTimeOffset = null;
     this.stallResumePlay = false;
     if (
       typeof timeOffset === 'number' &&
       this.stallControllers.some((sc) => sc.stallOnPause(timeOffset))
     ) {
-      this.stallTimeOffset = timeOffset;
       return;
     }
     if (
