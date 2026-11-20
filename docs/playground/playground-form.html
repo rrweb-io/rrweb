@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>playground-form.html</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 20px;
+        color: #182636;
+        font: 14px system-ui, sans-serif;
+      }
+      form {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+      }
+      .field > label,
+      legend {
+        display: block;
+        margin-bottom: 7px;
+        font-weight: 600;
+      }
+      input[type='text'],
+      input[type='password'],
+      textarea,
+      select {
+        width: 100%;
+        padding: 9px;
+        border: 1px solid #aebac7;
+        border-radius: 5px;
+        font: inherit;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 76px;
+      }
+      fieldset {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        min-width: 0;
+      }
+      .choice {
+        display: block;
+        margin: 8px 0;
+      }
+      :focus-visible {
+        outline: 3px solid #80b4fa;
+        outline-offset: 2px;
+      }
+      @media (max-width: 440px) {
+        form {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <form autocomplete="off" method="get">
+      <div class="field">
+        <label for="text">Text input</label>
+        <input
+          id="text"
+          name="text"
+          type="text"
+          placeholder="Type some test text"
+        />
+      </div>
+      <div class="field">
+        <label for="text">Max length 5 text input</label>
+        <input
+          id="textmaxlength"
+          maxlength="5"
+          name="text"
+          type="text"
+          placeholder="Type some test text"
+        />
+      </div>
+      <div class="field">
+        <label for="password">Password input</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          placeholder="Enter a sample password"
+          autocomplete="new-password"
+        />
+      </div>
+      <fieldset>
+        <legend>Radio buttons</legend>
+        <label class="choice"
+          ><input type="radio" name="toggle" value="on" /> On</label
+        >
+        <label class="choice"
+          ><input type="radio" name="toggle" value="off" checked /> Off
+          (initially selected)</label
+        >
+      </fieldset>
+      <fieldset>
+        <legend>Checkbox</legend>
+        <label class="choice"
+        ><input id="checkbox" name="checkbox" type="checkbox" checked/> Pre-checked
+          option</label
+        >
+        <label class="choice"
+          ><input id="checkbox" name="checkbox" type="checkbox" /> un-checked
+          option</label
+        >
+      </fieldset>
+      <div class="field">
+        <label for="textarea">Text area</label>
+        <textarea
+          id="textarea"
+          name="message"
+          placeholder="Write a test message"
+          data-unmask-example="true"
+        ></textarea>
+      </div>
+      <div class="field">
+        <label for="select">Select menu</label>
+        <select id="select" name="selection">
+          <option value="" disabled selected>Choose an option</option>
+          <option value="1">First option</option>
+          <option value="2">Second option</option>
+        </select>
+        <label for="preselected">Pre-selected menu</label>
+        <select id="preselected" name="selection">
+          <option value="" disabled selected>Choose an option</option>
+          <option value="1" selected>First option</option>
+          <option value="2">Second option</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="prefilled">Prefilled text area</label>
+        <textarea
+          id="prefilled"
+          name="prefilled"
+          placeholder="Replace the initial text"
+        >
+pre value</textarea
+        >
+      </div>
+      <div class="field">
+        <button type="submit">Submit</button>
+      </div>
+    </form>
+  </body>
+</html>
