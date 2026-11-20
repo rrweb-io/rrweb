@@ -315,7 +315,7 @@ describe('player annotations', () => {
     const player = await mount();
     player.addEvent(annotation(7000, 'Added later'));
     player.addEvent(timelineMarker(7000, 'A new timeline marker'));
-    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 50));
     await tick();
     await tick();
     player.goto(7000, false);
@@ -348,7 +348,7 @@ describe('player annotations', () => {
     );
 
     player.addEvent(addedEvent);
-    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 30));
     await tick();
     await tick();
 

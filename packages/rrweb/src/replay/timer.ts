@@ -12,16 +12,20 @@ export class Timer {
   private actions: actionWithDelay[];
   private raf: number | true | null = null;
   private lastTimestamp: number;
+  private onExhausted?: () => void;
 
   constructor(
     actions: actionWithDelay[] = [],
     config: {
       speed: number;
+      onExhausted?: () => void;
     },
   ) {
     this.actions = actions;
     this.speed = config.speed;
+    this.onExhausted = config.onExhausted;
   }
+
   /**
    * Add an action, possibly after the timer starts.
    */
@@ -74,6 +78,9 @@ export class Timer {
     if (this.actions.length > 0) {
       this.raf = requestAnimationFrame(this.rafCheck.bind(this));
     } else {
+      if (this.onExhausted) {
+        this.onExhausted();
+      }
       this.raf = true; // was active
     }
   }
@@ -94,6 +101,10 @@ export class Timer {
 
   public isActive() {
     return this.raf !== null;
+  }
+
+  public hasUpcomingActions() {
+    return this.actions.length > 0;
   }
 
   private findActionIndex(action: actionWithDelay): number {

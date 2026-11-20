@@ -37,10 +37,11 @@ export type PlayerEvent =
   | { type: 'PAUSE' }
   | { type: 'TO_LIVE'; payload: { baselineTime?: number } }
   | {
-      type: 'ADD_EVENT';
-      payload: {
-        event: eventWithTime;
-      };
+      type: 'STALL';
+    }
+  | {
+      type: 'CLEAR_UPCOMING_STALL';
+      payload: { timestamp: number };
     }
   | {
       type: 'END';
@@ -52,6 +53,10 @@ export type PlayerState =
     }
   | {
       value: 'paused';
+      context: PlayerContext;
+    }
+  | {
+      value: 'stalled';
       context: PlayerContext;
     }
   | {
@@ -82,11 +87,34 @@ type PlayerAssets = {
   emitter: Emitter;
   applyEventsSynchronously(events: Array<eventWithTime>): void;
   getCastFn(event: eventWithTime, isSync: boolean): () => void;
+  isStallMarker(event: eventWithTime): boolean;
 };
 export function createPlayerService(
   context: PlayerContext,
-  { getCastFn, applyEventsSynchronously, emitter }: PlayerAssets,
+  { getCastFn, applyEventsSynchronously, emitter, isStallMarker }: PlayerAssets,
 ) {
+  let upcomingStall: number | null = null;
+  const scheduleEvents = (ctx: PlayerContext, events: eventWithTime[]) => {
+    const { timer, baselineTime } = ctx;
+    for (const event of events) {
+      addDelay(event, baselineTime);
+      if (isStallMarker(event)) {
+        upcomingStall = event.timestamp;
+        timer.addAction({
+          doAction: () => undefined, // keep the timer alive
+          delay: event.delay!,
+        });
+        return; // don't schedule events after a stall marker
+      }
+      const castFn = getCastFn(event, false);
+      timer.addAction({
+        doAction: () => {
+          castFn();
+        },
+        delay: event.delay!,
+      });
+    }
+  };
   const playerMachine = createMachine<PlayerContext, PlayerEvent, PlayerState>(
     {
       id: 'player',
@@ -95,6 +123,10 @@ export function createPlayerService(
       states: {
         playing: {
           on: {
+            PLAY: {
+              target: 'playing',
+              actions: ['recordTimeOffset', 'play'],
+            },
             PAUSE: {
               target: 'paused',
               actions: ['pause'],
@@ -103,13 +135,22 @@ export function createPlayerService(
               target: 'playing',
               actions: 'castEvent',
             },
-            END: {
-              target: 'paused',
-              actions: ['resetLastPlayedEvent', 'pause'],
+            END: [
+              {
+                target: 'stalled',
+                cond: () => upcomingStall !== null,
+              },
+              {
+                target: 'paused',
+                actions: ['resetLastPlayedEvent', 'pause'],
+              },
+            ],
+            STALL: {
+              target: 'stalled',
             },
-            ADD_EVENT: {
+            CLEAR_UPCOMING_STALL: {
               target: 'playing',
-              actions: ['addEvent'],
+              actions: ['clearUpcomingStall'],
             },
           },
         },
@@ -123,22 +164,34 @@ export function createPlayerService(
               target: 'paused',
               actions: 'castEvent',
             },
+            STALL: {
+              target: 'stalled',
+            },
             TO_LIVE: {
               target: 'live',
               actions: ['startLive'],
             },
-            ADD_EVENT: {
+          },
+        },
+        stalled: {
+          entry: ['pause', 'stallStart'],
+          exit: ['stallEnd'],
+          on: {
+            PLAY: {
+              target: 'playing',
+              actions: ['recordTimeOffset', 'play'],
+            },
+            PAUSE: {
               target: 'paused',
-              actions: ['addEvent'],
+              actions: ['pause'],
+            },
+            CAST_EVENT: {
+              actions: 'castEvent',
             },
           },
         },
         live: {
           on: {
-            ADD_EVENT: {
-              target: 'live',
-              actions: ['addEvent'],
-            },
             CAST_EVENT: {
               target: 'live',
               actions: ['castEvent'],
@@ -149,6 +202,8 @@ export function createPlayerService(
     },
     {
       actions: {
+        stallStart: () => emitter.emit(ReplayerEvents.StallStart),
+        stallEnd: () => emitter.emit(ReplayerEvents.StallEnd),
         castEvent: assign({
           lastPlayedEvent: (ctx, event) => {
             if (event.type === 'CAST_EVENT') {
@@ -169,8 +224,14 @@ export function createPlayerService(
           };
         }),
         play(ctx) {
+          // We do not have the ability to undo events i.e. apply backwards.
+          // To play at a given target timeOffset (baselineTime) we
+          // gather all events from most recent prior fullFullSnapshot forwards,
+          // casting event before baselineTime synchronously, and scheduling
+          // casting of upcoming events asynchronously with timer
           const { timer, events, baselineTime, lastPlayedEvent } = ctx;
           timer.clear();
+          upcomingStall = null;
 
           for (const event of events) {
             // TODO: improve this API
@@ -192,30 +253,61 @@ export function createPlayerService(
           }
 
           const syncEvents = new Array<eventWithTime>();
-          for (const event of neededEvents) {
+          let scheduleStart = neededEvents.length;
+          for (let i = 0; i < neededEvents.length; i++) {
+            const event = neededEvents[i];
             if (
               lastPlayedTimestamp &&
               lastPlayedTimestamp < baselineTime &&
               (event.timestamp <= lastPlayedTimestamp ||
                 event === lastPlayedEvent)
             ) {
+              // don't reapply already played
               continue;
+            }
+            if (isStallMarker(event)) {
+              // a stall marker prior to requested playhead. break so we
+              // don't apply any syncEvents between stall marker and playhead
+              scheduleStart = i;
+              break;
             }
             if (event.timestamp < baselineTime) {
               syncEvents.push(event);
             } else {
-              const castFn = getCastFn(event, false);
-              timer.addAction({
-                doAction: () => {
-                  castFn();
-                },
-                delay: event.delay!,
-              });
+              scheduleStart = i;
+              break;
             }
           }
           applyEventsSynchronously(syncEvents);
+          scheduleEvents(ctx, neededEvents.slice(scheduleStart));
           emitter.emit(ReplayerEvents.Flush);
           timer.start();
+          return;
+        },
+        clearUpcomingStall(ctx, event) {
+          const { events } = ctx;
+          const from = upcomingStall;
+          if (from === null) {
+            return;
+          }
+          if (
+            event.type === 'CLEAR_UPCOMING_STALL' &&
+            event.payload.timestamp !== from
+          ) {
+            return;
+          }
+          upcomingStall = null;
+          let lo = 0;
+          let hi = events.length;
+          while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (events[mid].timestamp < from) {
+              lo = mid + 1;
+            } else {
+              hi = mid;
+            }
+          }
+          scheduleEvents(ctx, events.slice(lo));
         },
         pause(ctx) {
           ctx.timer.clear();
@@ -234,48 +326,6 @@ export function createPlayerService(
             }
             return Date.now();
           },
-        }),
-        addEvent: assign((ctx, machineEvent) => {
-          const { baselineTime, timer, events } = ctx;
-          if (machineEvent.type === 'ADD_EVENT') {
-            const { event } = machineEvent.payload;
-            addDelay(event, baselineTime);
-
-            let end = events.length - 1;
-            if (!events[end] || events[end].timestamp <= event.timestamp) {
-              // fast track
-              events.push(event);
-            } else {
-              let insertionIndex = -1;
-              let start = 0;
-              while (start <= end) {
-                const mid = Math.floor((start + end) / 2);
-                if (events[mid].timestamp <= event.timestamp) {
-                  start = mid + 1;
-                } else {
-                  end = mid - 1;
-                }
-              }
-              if (insertionIndex === -1) {
-                insertionIndex = start;
-              }
-              events.splice(insertionIndex, 0, event);
-            }
-
-            const isSync = event.timestamp < baselineTime;
-            const castFn = getCastFn(event, isSync);
-            if (isSync) {
-              castFn();
-            } else if (timer.isActive()) {
-              timer.addAction({
-                doAction: () => {
-                  castFn();
-                },
-                delay: event.delay!,
-              });
-            }
-          }
-          return { ...ctx, events };
         }),
       },
     },
