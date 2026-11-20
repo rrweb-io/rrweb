@@ -68,10 +68,10 @@
   }
   let timer: number | null = null;
   let isAdvancing = false;
-  let controlsPlaying = false;
+  let playingInUI = false;
   $: {
     dispatch('ui-update-player-state', {
-      payload: controlsPlaying ? 'playing' : 'paused',
+      payload: playingInUI ? 'playing' : 'paused',
     });
   }
   let speedState: 'normal' | 'skipping';
@@ -175,7 +175,7 @@
   };
 
   export const toggle = () => {
-    if (controlsPlaying) {
+    if (playingInUI) {
       pause();
     } else {
       play();
@@ -183,7 +183,7 @@
   };
 
   export const play = () => {
-    if (controlsPlaying) {
+    if (playingInUI) {
       return;
     }
     if (finished) {
@@ -195,7 +195,7 @@
   };
 
   export const pause = () => {
-    if (!controlsPlaying) {
+    if (!playingInUI) {
       return;
     }
     replayer.pause();
@@ -207,7 +207,7 @@
     pauseAt = false;
     finished = false;
     const resumePlaying =
-      typeof play === 'boolean' ? play : controlsPlaying;
+      typeof play === 'boolean' ? play : playingInUI;
     if (resumePlaying) {
       replayer.play(timeOffset);
     } else {
@@ -280,7 +280,7 @@
   };
 
   export const setSpeed = (newSpeed: number) => {
-    let needFreeze = controlsPlaying;
+    let needFreeze = playingInUI;
     speed = newSpeed;
     if (needFreeze) {
       replayer.pause();
@@ -310,12 +310,13 @@
     replayer.on('annotation', handleAnnotation);
     replayer.on('start', restoreCaptionOnSeek);
     isAdvancing = replayer.isPlaying() && !replayer.isStalled();
-    controlsPlaying = replayer.isPlaying();
+    playingInUI = replayer.isPlaying();
     speedState = replayer.speedService.state.value;
     replayer.on(
       'state-change',
       (states) => {
-        const advancing = replayer.isPlaying() && !replayer.isStalled();
+        playingInUI = replayer.isPlaying();
+        const advancing = playingInUI && !replayer.isStalled();
         if (advancing !== isAdvancing) {
           isAdvancing = advancing;
           if (advancing) {
@@ -323,10 +324,6 @@
           } else {
             stopTimer();
           }
-        }
-        const playing = replayer.isPlaying();
-        if (playing !== controlsPlaying) {
-          controlsPlaying = playing;
         }
         const { speed } = states as { speed?: SpeedMachineState };
         if (speed?.value && speedState !== speed.value) {
@@ -533,7 +530,7 @@
     </div>
     <div class="rr-controller__btns">
       <button on:click={toggle}>
-        {#if controlsPlaying}
+        {#if playingInUI}
           <svg
             class="icon"
             viewBox="0 0 1024 1024"

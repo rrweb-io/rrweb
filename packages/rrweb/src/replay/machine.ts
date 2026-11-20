@@ -40,10 +40,6 @@ export type PlayerEvent =
       type: 'STALL';
     }
   | {
-      type: 'CLEAR_UPCOMING_STALL';
-      payload: { timestamp: number };
-    }
-  | {
       type: 'END';
     };
 export type PlayerState =
@@ -83,6 +79,23 @@ export function discardPriorSnapshots(
   return events;
 }
 
+export function findEventIndex(
+  events: eventWithTime[],
+  timestamp: number,
+): number {
+  let lo = 0;
+  let hi = events.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (events[mid].timestamp < timestamp) {
+      lo = mid + 1;
+    } else {
+      hi = mid;
+    }
+  }
+  return lo;
+}
+
 type PlayerAssets = {
   emitter: Emitter;
   applyEventsSynchronously(events: Array<eventWithTime>): void;
@@ -93,15 +106,13 @@ export function createPlayerService(
   context: PlayerContext,
   { getCastFn, applyEventsSynchronously, emitter, isStallMarker }: PlayerAssets,
 ) {
-  let upcomingStall: number | null = null;
   const scheduleEvents = (ctx: PlayerContext, events: eventWithTime[]) => {
     const { timer, baselineTime } = ctx;
     for (const event of events) {
       addDelay(event, baselineTime);
       if (isStallMarker(event)) {
-        upcomingStall = event.timestamp;
         timer.addAction({
-          doAction: () => undefined, // keep the timer alive
+          doAction: () => stallMarkerReached(event),
           delay: event.delay!,
         });
         return; // don't schedule events after a stall marker
@@ -115,6 +126,25 @@ export function createPlayerService(
       });
     }
   };
+
+  const stallMarkerReached = (marker: eventWithTime) => {
+    const ctx = service.state.context;
+    const markerIndex = ctx.events.indexOf(marker);
+    if (
+      !isStallMarker(marker) || // controller no longer considers event a stall
+      markerIndex === -1 // or has removed the event directly
+    ) {
+      const scheduleFrom =
+        markerIndex !== -1
+          ? markerIndex
+          : findEventIndex(ctx.events, marker.timestamp);
+      scheduleEvents(ctx, ctx.events.slice(scheduleFrom));
+    } else {
+      // marker hasn't been cleared, so enter stall
+      service.send({ type: 'STALL' });
+    }
+  };
+
   const playerMachine = createMachine<PlayerContext, PlayerEvent, PlayerState>(
     {
       id: 'player',
@@ -135,22 +165,12 @@ export function createPlayerService(
               target: 'playing',
               actions: 'castEvent',
             },
-            END: [
-              {
-                target: 'stalled',
-                cond: () => upcomingStall !== null,
-              },
-              {
-                target: 'paused',
-                actions: ['resetLastPlayedEvent', 'pause'],
-              },
-            ],
+            END: {
+              target: 'paused',
+              actions: ['resetLastPlayedEvent', 'pause'],
+            },
             STALL: {
               target: 'stalled',
-            },
-            CLEAR_UPCOMING_STALL: {
-              target: 'playing',
-              actions: ['clearUpcomingStall'],
             },
           },
         },
@@ -231,7 +251,6 @@ export function createPlayerService(
           // casting of upcoming events asynchronously with timer
           const { timer, events, baselineTime, lastPlayedEvent } = ctx;
           timer.clear();
-          upcomingStall = null;
 
           for (const event of events) {
             // TODO: improve this API
@@ -284,31 +303,6 @@ export function createPlayerService(
           timer.start();
           return;
         },
-        clearUpcomingStall(ctx, event) {
-          const { events } = ctx;
-          const from = upcomingStall;
-          if (from === null) {
-            return;
-          }
-          if (
-            event.type === 'CLEAR_UPCOMING_STALL' &&
-            event.payload.timestamp !== from
-          ) {
-            return;
-          }
-          upcomingStall = null;
-          let lo = 0;
-          let hi = events.length;
-          while (lo < hi) {
-            const mid = (lo + hi) >> 1;
-            if (events[mid].timestamp < from) {
-              lo = mid + 1;
-            } else {
-              hi = mid;
-            }
-          }
-          scheduleEvents(ctx, events.slice(lo));
-        },
         pause(ctx) {
           ctx.timer.clear();
         },
@@ -330,7 +324,8 @@ export function createPlayerService(
       },
     },
   );
-  return interpret(playerMachine);
+  const service = interpret(playerMachine);
+  return service;
 }
 
 export type SpeedContext = {

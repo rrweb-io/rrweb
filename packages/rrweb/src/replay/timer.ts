@@ -75,6 +75,10 @@ export class Timer {
         break;
       }
     }
+    if (this.raf === null) {
+      // if an action itself cleared the timer
+      return;
+    }
     if (this.actions.length > 0) {
       this.raf = requestAnimationFrame(this.rafCheck.bind(this));
     } else {
