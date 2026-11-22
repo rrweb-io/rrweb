@@ -23,17 +23,21 @@ type MockWindow = {
   fetch: typeof fetch;
 };
 
+type EntryTiming = Pick<
+  PerformanceResourceTiming,
+  'startTime' | 'responseEnd' | 'duration'
+>;
+
 function createPerformanceEntry(
   url: string,
   initiatorType: 'fetch' | 'xmlhttprequest',
+  timing: EntryTiming = { startTime: 0, responseEnd: 1, duration: 1 },
 ): PerformanceResourceTiming {
   return {
     name: url,
     entryType: 'resource',
     initiatorType,
-    startTime: 0,
-    responseEnd: 1,
-    duration: 1,
+    ...timing,
     toJSON: () => ({
       name: url,
       entryType: 'resource',
@@ -263,5 +267,109 @@ describe('rrweb-plugin-network-record', () => {
 
     expect(downstreamInput).toBe(url);
     expect(downstreamInit).toBe(init);
+  });
+
+  describe('keeps the sub-millisecond start and end times the browser reports', () => {
+    // A real entry: rounding gave startTime 3055 and endTime 3217, 162 ms
+    // apart, while duration said 161.5.
+    const timing = { startTime: 3055.4, responseEnd: 3216.9, duration: 161.5 };
+
+    function expectTiming(
+      request: NetworkData['requests'][number],
+      expected: EntryTiming = timing,
+    ) {
+      expect(request.startTime).toBe(expected.startTime);
+      expect(request.endTime).toBe(expected.responseEnd);
+      expect(request.endTime - request.startTime).toBeCloseTo(
+        request.duration,
+        6,
+      );
+    }
+
+    it('for the initial performance entries', () => {
+      const url = 'https://example.com/initial';
+      const events: NetworkData[] = [];
+      const win = createMockWindow({
+        initialEntries: [createPerformanceEntry(url, 'fetch', timing)],
+      });
+      const plugin = getRecordNetworkPlugin({
+        recordInitialRequests: true,
+        initiatorTypes: ['fetch'],
+      });
+      const cleanup = plugin.observer(
+        (data: NetworkData) => events.push(data),
+        win,
+        plugin.options,
+      );
+      cleanup();
+
+      expectTiming(events[0].requests[0]);
+    });
+
+    it('for entries the PerformanceObserver reports', () => {
+      const url = 'https://example.com/observed';
+      const events: NetworkData[] = [];
+      let report: PerformanceObserverCallback | undefined;
+      class CapturingPerformanceObserver extends MockPerformanceObserver {
+        constructor(callback: PerformanceObserverCallback) {
+          super();
+          report = callback;
+        }
+      }
+      const win = {
+        ...createMockWindow(),
+        PerformanceObserver:
+          CapturingPerformanceObserver as unknown as typeof PerformanceObserver,
+      };
+      const plugin = getRecordNetworkPlugin({ initiatorTypes: ['fetch'] });
+      const cleanup = plugin.observer(
+        (data: NetworkData) => events.push(data),
+        win,
+        plugin.options,
+      );
+      report?.(
+        {
+          getEntries: () => [createPerformanceEntry(url, 'fetch', timing)],
+        } as unknown as PerformanceObserverEntryList,
+        {} as PerformanceObserver,
+      );
+      cleanup();
+
+      expectTiming(events[0].requests[0]);
+    });
+
+    it('for fetch requests recorded with their body', async () => {
+      // The entry must start between the mock clock's readings around the
+      // request (0, 1, 2...) to be matched to it.
+      const fetchTiming = {
+        startTime: 0.4,
+        responseEnd: 161.9,
+        duration: 161.5,
+      };
+      const url = 'https://example.com/api';
+      const events: NetworkData[] = [];
+      const win = createMockWindow({
+        entries: [createPerformanceEntry(url, 'fetch', fetchTiming)],
+      });
+      const plugin = getRecordNetworkPlugin({
+        recordBody: true,
+        initiatorTypes: ['fetch'],
+      });
+      const cleanup = plugin.observer(
+        (data: NetworkData) => events.push(data),
+        win,
+        plugin.options,
+      );
+
+      await win.fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'text/plain' },
+        body: 'hello',
+      });
+      await flushMicrotasks();
+      cleanup();
+
+      expectTiming(events[0].requests[0], fetchTiming);
+    });
   });
 });
