@@ -3,6 +3,7 @@ import type { eventWithTime } from '@rrweb/types';
 import {
   createRecorder,
   KEEPALIVE_INTERVAL_MS,
+  NAVIGATION_TIMEOUT_MS,
   START_TIMEOUT_ERROR,
   uploadFailedMessage,
 } from './recorder';
@@ -79,7 +80,21 @@ function setup(initial: CloudAccount | null) {
       | undefined,
     /** Every `after(ms)` the recorder asked for, in milliseconds. */
     waits: [] as number[],
+    /** Each limit still running, to run out by hand with `expire`. */
+    timers: [] as { ms: number; runOut: () => void }[],
+    /** The next page never loads, and the navigation limit runs out. */
+    navigationHangs: false,
+    /** The browser refuses to inject into the tab's next document. */
+    refuseNextPage: false,
+    /** The tab navigates again while the recorder is injected, which fails. */
+    navigateDuringInject: false,
     titles: { 1: 'Page title' } as Record<number, string | undefined>,
+    /** Resolves when the tab answers for its title; immediately if unset. */
+    titleReply: undefined as Promise<void> | undefined,
+    /** Each tab's load status; a tab not listed has loaded. */
+    tabStatus: {} as Record<number, 'loading' | 'complete'>,
+    /** Resolves when the tab answers for its status; immediately if unset. */
+    statusReply: undefined as Promise<void> | undefined,
     /** Runs inside the tab's StartRecord reply, like rrweb's first events. */
     emitOnStart: undefined as (() => void) | undefined,
     tabs: { 1: 'https://example.com/a', 2: 'https://example.org/b' } as Record<
@@ -94,6 +109,12 @@ function setup(initial: CloudAccount | null) {
   const log: string[] = [];
   const injectRecorder = vi.fn((tabId: number) => {
     log.push(`inject:${tabId}`);
+    if (state.refuseNextPage)
+      return Promise.reject(new Error('Cannot access contents of the page'));
+    if (state.navigateDuringInject) {
+      state.tabStatus[tabId] = 'loading';
+      return Promise.reject(new Error('Frame with ID 0 was removed.'));
+    }
     return Promise.resolve();
   });
   const requestToTab = vi.fn(
@@ -155,7 +176,12 @@ function setup(initial: CloudAccount | null) {
       state.holdSave = undefined;
       return hold.until;
     },
-    getTabTitle: (tabId) => Promise.resolve(state.titles[tabId]),
+    getTabTitle: (tabId) =>
+      (state.titleReply ?? Promise.resolve()).then(() => state.titles[tabId]),
+    getTabStatus: (tabId) => {
+      const status = state.tabStatus[tabId] ?? 'complete';
+      return (state.statusReply ?? Promise.resolve()).then(() => status);
+    },
     openTab: (url) => {
       opened.push(url);
       return Promise.resolve();
@@ -180,12 +206,13 @@ function setup(initial: CloudAccount | null) {
     },
     now: () => state.now,
     newToken: () => `token-${++state.tokens}`,
-    // The start limit runs out only in tests that make the page hang.
+    // A limit runs out only in tests that make the page hang.
     after: (ms) => {
       state.waits.push(ms);
-      return state.startHangs
-        ? Promise.resolve()
-        : new Promise(() => undefined);
+      const expires =
+        ms === NAVIGATION_TIMEOUT_MS ? state.navigationHangs : state.startHangs;
+      if (expires) return Promise.resolve();
+      return new Promise<void>((runOut) => state.timers.push({ ms, runOut }));
     },
   };
   const real = createRecorder(deps);
@@ -215,13 +242,22 @@ function setup(initial: CloudAccount | null) {
   };
   // The browser side of the page watch: one port per recorded document.
   const connectListeners: ((port: never) => void)[] = [];
+  const updatedListeners: ((
+    tabId: number,
+    change: { status?: string },
+  ) => void)[] = [];
   const removedListeners: ((tabId: number) => void)[] = [];
   watchRecordedPages(
     {
       onConnect: { addListener: (cb) => connectListeners.push(cb as never) },
+      onTabUpdated: { addListener: (cb) => updatedListeners.push(cb) },
       onTabRemoved: { addListener: (cb) => removedListeners.push(cb) },
     },
-    (tabId) => void recorder.pageGone(tabId),
+    {
+      documentGone: (tabId) => recorder.documentGone(tabId),
+      documentLoaded: (tabId) => void recorder.documentLoaded(tabId),
+      tabClosed: (tabId) => void recorder.tabClosed(tabId),
+    },
   );
   const browser = {
     /** A content script in `tabId` opens its page port. */
@@ -233,8 +269,26 @@ function setup(initial: CloudAccount | null) {
         onDisconnect: { addListener: (cb: () => void) => disconnects.push(cb) },
       };
       connectListeners.forEach((cb) => cb(port as never));
-      /** The document went away: a navigation, a reload or the tab closing. */
-      return () => disconnects.forEach((cb) => cb());
+      /**
+       * The document went away: a navigation or a reload, which starts the
+       * tab loading its next document, or the tab closing.
+       */
+      return ({ nextLoaded = false } = {}) => {
+        // The next page's load event can arrive before this port closes.
+        state.tabStatus[tabId] = nextLoaded ? 'complete' : 'loading';
+        disconnects.forEach((cb) => cb());
+      };
+    },
+    /** `tabId` started loading its next top-frame document. */
+    startLoading(tabId: number) {
+      state.tabStatus[tabId] = 'loading';
+      updatedListeners.forEach((cb) => cb(tabId, { status: 'loading' }));
+    },
+    /** `tabId` finished loading its top-frame document. */
+    loadPage(tabId: number) {
+      this.startLoading(tabId);
+      state.tabStatus[tabId] = 'complete';
+      updatedListeners.forEach((cb) => cb(tabId, { status: 'complete' }));
     },
     closeTab(tabId: number) {
       removedListeners.forEach((cb) => cb(tabId));
@@ -242,10 +296,16 @@ function setup(initial: CloudAccount | null) {
   };
   /** Let the finish triggered by a browser event run to completion. */
   const settle = () => new Promise((r) => setTimeout(r, 0));
+  /** Run out every `ms` limit the recorder started so far. */
+  const expire = async (ms: number) => {
+    state.timers.filter((t) => t.ms === ms).forEach((t) => t.runOut());
+    await settle();
+  };
   return {
     recorder,
     browser,
     settle,
+    expire,
     log,
     injectRecorder,
     state,
@@ -355,9 +415,395 @@ describe('createRecorder', () => {
     expect(opened).toEqual([]);
   });
 
-  it('finishes like Stop when the recorded tab navigates (cloud)', async () => {
+  it('follows a reload or same-site navigation into the next page', async () => {
     const {
       recorder,
+      state,
+      browser,
+      settle,
+      added,
+      log,
+      opened,
+      uploadSession,
+      requestToTab,
+    } = setup(account);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    recorder.add(event(1));
+    navigateAway();
+    await settle();
+    // Waiting for the next page still reads as recording.
+    expect(recorder.getStatus()).toMatchObject({
+      state: 'recording',
+      tabId: 1,
+    });
+    state.tabs[1] = 'https://example.com/checkout';
+    log.length = 0;
+    browser.openPage(1);
+    browser.loadPage(1);
+    await settle();
+    // The next page records under the same token, from its own snapshot.
+    expect(log).toEqual(['inject:1', `${ServiceName.StartRecord}:1`]);
+    expect(state.page).toEqual({ tabId: 1, token: 'token-1' });
+    recorder.add(typed(4, 2));
+    recorder.add(typed(2, 2));
+    expect(recorder.getStatus()).toMatchObject({
+      state: 'recording',
+      tabId: 1,
+    });
+    expect(uploadSession).not.toHaveBeenCalled();
+    // Stop then stops the page the recording is in now, and uploads one
+    // recording with both pages.
+    await recorder.stop();
+    expect(
+      requestToTab.mock.calls.filter((c) => c[1] === ServiceName.StopRecord),
+    ).toHaveLength(1);
+    expect(added.mock.calls.map((c) => c[0])).toEqual([
+      event(1),
+      typed(4, 2),
+      typed(2, 2),
+    ]);
+    expect(uploadSession).toHaveBeenCalledOnce();
+    expect(opened).toEqual([DASHBOARD_URL]);
+  });
+
+  it('waits for the next page to finish loading before recording it', async () => {
+    const { recorder, browser, settle, injectRecorder } = setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    navigateAway();
+    browser.startLoading(1);
+    await settle();
+    expect(injectRecorder).toHaveBeenCalledOnce();
+    browser.loadPage(1);
+    await settle();
+    expect(injectRecorder).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps recording on the next page when the navigation limit runs out later', async () => {
+    const { recorder, browser, settle, expire, addSession, badgeCalls } =
+      setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    navigateAway();
+    await settle();
+    badgeCalls.length = 0;
+    browser.openPage(1);
+    browser.loadPage(1);
+    await settle();
+    // The badge is set again on the new page.
+    expect(badgeCalls).toEqual([`set:1:REC:${BADGE_COLORS.RECORDING}`]);
+    await expire(NAVIGATION_TIMEOUT_MS);
+    expect(recorder.getStatus().state).toBe('recording');
+    expect(addSession).not.toHaveBeenCalled();
+  });
+
+  it('ignores another tab loading or leaving a page', async () => {
+    const { recorder, browser, settle, injectRecorder, addSession } =
+      setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    // Another tab leaving a page leaves the recording on its page.
+    browser.openPage(2)();
+    await settle();
+    browser.loadPage(1);
+    await settle();
+    expect(injectRecorder).toHaveBeenCalledOnce();
+    // While the recorded tab loads its next page, another tab's load is not it.
+    navigateAway();
+    browser.loadPage(2);
+    await settle();
+    expect(injectRecorder).toHaveBeenCalledOnce();
+    browser.openPage(1);
+    browser.loadPage(1);
+    await settle();
+    expect(injectRecorder).toHaveBeenCalledTimes(2);
+    expect(recorder.getStatus()).toMatchObject({
+      state: 'recording',
+      tabId: 1,
+    });
+    expect(addSession).not.toHaveBeenCalled();
+  });
+
+  it('finishes when the next page never answers, and tells it to stop', async () => {
+    const { recorder, state, browser, settle, addSession, requestToTab } =
+      setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    recorder.add(event(1));
+    navigateAway();
+    await settle();
+    state.startHangs = true; // the next page's script is blocked
+    browser.loadPage(1);
+    await settle();
+    expect(addSession).toHaveBeenCalledOnce();
+    expect(
+      requestToTab.mock.calls.filter((c) => c[1] === ServiceName.StopRecord),
+    ).toHaveLength(1);
+    expect(recorder.getStatus().state).toBe('idle');
+  });
+
+  it.each([
+    ['Stop', (run: ReturnType<typeof setup>) => run.recorder.stop()],
+    [
+      'the tab closing',
+      async (run: ReturnType<typeof setup>) => run.browser.closeTab(1),
+    ],
+  ])(
+    'a next page that confirms after %s is told to stop, once',
+    async (_ending, end) => {
+      const run = setup(null);
+      const { recorder, state, browser, settle, addSession, requestToTab } =
+        run;
+      const navigateAway = browser.openPage(1);
+      await recorder.start();
+      navigateAway();
+      await settle();
+      let confirm = () => undefined as void;
+      state.startReply = new Promise<void>((r) => (confirm = r));
+      browser.loadPage(1);
+      await settle();
+      await end(run);
+      await settle();
+      // Nothing records yet, so the finish asks no page to stop.
+      expect(
+        requestToTab.mock.calls.filter((c) => c[1] === ServiceName.StopRecord),
+      ).toHaveLength(0);
+      confirm();
+      await settle();
+      expect(
+        requestToTab.mock.calls.filter((c) => c[1] === ServiceName.StopRecord),
+      ).toHaveLength(1);
+      expect(addSession).toHaveBeenCalledOnce();
+      expect(recorder.getStatus().state).toBe('idle');
+    },
+  );
+
+  it('a resume whose page leaves as it confirms follows the tab', async () => {
+    const { recorder, state, browser, settle, injectRecorder } = setup(null);
+    const first = browser.openPage(1);
+    await recorder.start();
+    await recorder.pauseClicked();
+    let confirm = () => undefined as void;
+    state.startReply = new Promise<void>((r) => (confirm = r));
+    const resuming = recorder.resumeClicked();
+    await settle();
+    first(); // the port closes before the confirmation arrives
+    confirm();
+    await resuming;
+    state.startReply = undefined;
+    browser.openPage(1);
+    browser.loadPage(1);
+    await settle();
+    // start, resume, and the next page
+    expect(injectRecorder).toHaveBeenCalledTimes(3);
+    expect(recorder.getStatus().state).toBe('recording');
+  });
+
+  it('records a next page whose load arrived before the old page closed', async () => {
+    const { recorder, browser, settle, injectRecorder } = setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    browser.openPage(1);
+    navigateAway({ nextLoaded: true });
+    await settle();
+    expect(injectRecorder).toHaveBeenCalledTimes(2);
+    expect(recorder.getStatus().state).toBe('recording');
+  });
+
+  it('a load found after Stop records nothing', async () => {
+    const { recorder, state, browser, settle, injectRecorder, addSession } =
+      setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    let answerStatus = () => undefined as void;
+    state.statusReply = new Promise<void>((r) => (answerStatus = r));
+    browser.openPage(1);
+    navigateAway({ nextLoaded: true });
+    await recorder.stop();
+    answerStatus();
+    await settle();
+    expect(injectRecorder).toHaveBeenCalledOnce();
+    expect(addSession).toHaveBeenCalledOnce();
+    expect(recorder.getStatus().state).toBe('idle');
+  });
+
+  it('Stop while it waits keeps the recording from following the tab', async () => {
+    const {
+      recorder,
+      state,
+      browser,
+      settle,
+      injectRecorder,
+      addSession,
+      requestToTab,
+    } = setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    let answerTitle = () => undefined as void;
+    state.titleReply = new Promise<void>((r) => (answerTitle = r));
+    const stopping = recorder.stop(); // stops the page, then waits for the title
+    await settle();
+    navigateAway();
+    browser.openPage(1);
+    browser.loadPage(1);
+    await settle();
+    answerTitle();
+    await stopping;
+    expect(injectRecorder).toHaveBeenCalledOnce();
+    expect(
+      requestToTab.mock.calls.filter((c) => c[1] === ServiceName.StopRecord),
+    ).toHaveLength(1);
+    expect(addSession).toHaveBeenCalledOnce();
+    expect(recorder.getStatus().state).toBe('idle');
+  });
+
+  it('a resume injected after its page left records the next page once', async () => {
+    const { recorder, state, browser, settle, injectRecorder } = setup(null);
+    const first = browser.openPage(1);
+    await recorder.start();
+    await recorder.pauseClicked();
+    let saved = () => undefined as void;
+    state.holdSave = {
+      state: 'paused',
+      until: new Promise<void>((r) => (saved = r)),
+    };
+    const resuming = recorder.resumeClicked(); // waits for its status to save
+    first();
+    browser.openPage(1);
+    browser.loadPage(1);
+    saved();
+    await resuming;
+    await settle();
+    // start, and the resume into the page the tab has now
+    expect(injectRecorder).toHaveBeenCalledTimes(2);
+    expect(recorder.getStatus().state).toBe('recording');
+  });
+
+  it('records a next page that loaded while a resume waited for its reply', async () => {
+    const { recorder, state, browser, settle, injectRecorder } = setup(null);
+    const first = browser.openPage(1);
+    await recorder.start();
+    await recorder.pauseClicked();
+    let confirm = () => undefined as void;
+    state.startReply = new Promise<void>((r) => (confirm = r));
+    const resuming = recorder.resumeClicked();
+    await settle();
+    first();
+    browser.openPage(1);
+    browser.loadPage(1); // ignored while the resume waits
+    await settle();
+    state.startReply = undefined;
+    confirm();
+    await resuming;
+    await settle();
+    // start, resume, and the next page, with no second load event
+    expect(injectRecorder).toHaveBeenCalledTimes(3);
+    expect(recorder.getStatus().state).toBe('recording');
+  });
+
+  it('Stop tells a next page that confirms while Stop runs to stop', async () => {
+    const { recorder, state, browser, settle, addSession, requestToTab } =
+      setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    navigateAway();
+    await settle();
+    let confirm = () => undefined as void;
+    state.startReply = new Promise<void>((r) => (confirm = r));
+    browser.loadPage(1);
+    await settle();
+    let answerTitle = () => undefined as void;
+    state.titleReply = new Promise<void>((r) => (answerTitle = r));
+    const stopping = recorder.stop(); // waits for the tab's title
+    confirm(); // the next page records meanwhile
+    await settle();
+    answerTitle();
+    await stopping;
+    await settle();
+    expect(
+      requestToTab.mock.calls.filter((c) => c[1] === ServiceName.StopRecord),
+    ).toHaveLength(1);
+    expect(addSession).toHaveBeenCalledOnce();
+    expect(recorder.getStatus().state).toBe('idle');
+  });
+
+  it('sets the paused badge again when the paused tab loads a page', async () => {
+    const { recorder, browser, settle, badgeCalls } = setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    await recorder.pauseClicked();
+    navigateAway();
+    badgeCalls.length = 0;
+    browser.openPage(1);
+    browser.loadPage(1);
+    await settle();
+    expect(badgeCalls).toEqual([`set:1:REC:${BADGE_COLORS.PAUSED}`]);
+  });
+
+  it('pauses at once while the next page loads, and records nothing until resumed', async () => {
+    const { recorder, state, browser, settle, injectRecorder } = setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    navigateAway();
+    await settle();
+    state.now = 5000;
+    await recorder.pauseClicked();
+    expect(recorder.getStatus()).toMatchObject({
+      state: 'paused',
+      pausedTimestamp: 5000,
+    });
+    browser.openPage(1);
+    browser.loadPage(1);
+    await settle();
+    expect(injectRecorder).toHaveBeenCalledOnce();
+    await recorder.resumeClicked();
+    expect(injectRecorder).toHaveBeenCalledTimes(2);
+    expect(recorder.getStatus().state).toBe('recording');
+  });
+
+  it('a next page that confirms after a pause is told to stop', async () => {
+    const { recorder, state, browser, settle, requestToTab } = setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    navigateAway();
+    await settle();
+    let confirm = () => undefined as void;
+    state.startReply = new Promise<void>((r) => (confirm = r));
+    browser.loadPage(1);
+    await settle();
+    await recorder.pauseClicked();
+    confirm();
+    await settle();
+    expect(
+      requestToTab.mock.calls.filter((c) => c[1] === ServiceName.StopRecord),
+    ).toHaveLength(1);
+    expect(recorder.getStatus().state).toBe('paused');
+  });
+
+  it('waits for the next load when a navigation interrupts the injection', async () => {
+    const { recorder, state, browser, settle, injectRecorder, addSession } =
+      setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    navigateAway();
+    state.navigateDuringInject = true;
+    browser.loadPage(1);
+    await settle();
+    expect(recorder.getStatus().state).toBe('recording');
+    state.navigateDuringInject = false;
+    browser.openPage(1);
+    browser.loadPage(1);
+    await settle();
+    expect(injectRecorder).toHaveBeenCalledTimes(3);
+    expect(recorder.getStatus().state).toBe('recording');
+    expect(addSession).not.toHaveBeenCalled();
+  });
+
+  it('finishes like Stop when the browser refuses the next page (cloud)', async () => {
+    const {
+      recorder,
+      state,
       added,
       uploadSession,
       browser,
@@ -369,26 +815,34 @@ describe('createRecorder', () => {
     const navigateAway = browser.openPage(1);
     await recorder.start();
     recorder.add(event(1));
+    // Another site, or any navigation in Firefox, ends activeTab access.
+    state.refuseNextPage = true;
     navigateAway();
+    browser.loadPage(1);
     await settle();
     expect(added).toHaveBeenCalledOnce();
     expect(uploadSession).toHaveBeenCalledWith('sess-1', account);
     expect(opened).toEqual([DASHBOARD_URL]);
     expect(keepalive.cancel).toHaveBeenCalledOnce();
-    expect(recorder.getStatus().state).toBe('idle');
-    // the old document is gone, so nothing is asked of it
+    expect(recorder.getStatus()).toMatchObject({
+      state: 'idle',
+      lastError: { name: 'none' },
+    });
+    // the old document is gone and the new one has no recorder to ask
     expect(
       requestToTab.mock.calls.filter((c) => c[1] === ServiceName.StopRecord),
     ).toHaveLength(0);
   });
 
-  it('finishes like Stop when the recorded tab navigates (offline)', async () => {
-    const { recorder, browser, settle, opened, addSession, keepalive } =
+  it('finishes like Stop when the browser refuses the next page (offline)', async () => {
+    const { recorder, state, browser, settle, opened, addSession, keepalive } =
       setup(null);
     const navigateAway = browser.openPage(1);
     await recorder.start();
     recorder.add(event(1));
+    state.refuseNextPage = true;
     navigateAway();
+    browser.loadPage(1);
     await settle();
     expect(addSession).toHaveBeenCalledOnce();
     const [session, events] = addSession.mock.calls[0] as unknown as [
@@ -399,6 +853,117 @@ describe('createRecorder', () => {
     expect(events).toEqual([event(1)]);
     expect(opened).toEqual([SESSION_URL]);
     expect(keepalive.cancel).toHaveBeenCalledOnce();
+  });
+
+  it('finishes when the next page does not load in time', async () => {
+    const { recorder, state, browser, settle, addSession, opened } =
+      setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    recorder.add(event(1));
+    state.navigationHangs = true;
+    navigateAway();
+    await settle();
+    expect(state.waits).toContain(NAVIGATION_TIMEOUT_MS);
+    expect(addSession).toHaveBeenCalledOnce();
+    expect(opened).toEqual([SESSION_URL]);
+    expect(recorder.getStatus().state).toBe('idle');
+  });
+
+  it('Stop while the next page loads finishes without asking any page', async () => {
+    const {
+      recorder,
+      browser,
+      settle,
+      addSession,
+      injectRecorder,
+      requestToTab,
+    } = setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    recorder.add(event(1));
+    navigateAway();
+    await settle();
+    await recorder.stop();
+    browser.loadPage(1); // too late: the recording is finished
+    await settle();
+    expect(addSession).toHaveBeenCalledOnce();
+    expect(injectRecorder).toHaveBeenCalledOnce();
+    expect(
+      requestToTab.mock.calls.filter((c) => c[1] === ServiceName.StopRecord),
+    ).toHaveLength(0);
+    expect(recorder.getStatus().state).toBe('idle');
+  });
+
+  it('a page that goes away while it is being recorded waits for the next one', async () => {
+    const {
+      recorder,
+      state,
+      browser,
+      settle,
+      added,
+      uploadSession,
+      injectRecorder,
+      requestToTab,
+    } = setup(account);
+    const first = browser.openPage(1);
+    await recorder.start();
+    first();
+    await settle();
+    // A redirect: the page that loaded goes away before it confirms.
+    let confirm = () => undefined as void;
+    state.startReply = new Promise<void>((r) => (confirm = r));
+    const redirected = browser.openPage(1);
+    browser.loadPage(1);
+    await settle();
+    redirected();
+    confirm();
+    await settle();
+    expect(recorder.getStatus()).toMatchObject({ state: 'recording' });
+    state.startReply = undefined;
+    browser.openPage(1);
+    browser.loadPage(1);
+    await settle();
+    // The page that stayed is the one recorded: start, redirect, final page.
+    expect(injectRecorder).toHaveBeenCalledTimes(3);
+    // The tab's newer page replaced the redirect's, so nothing is stopped.
+    expect(
+      requestToTab.mock.calls.filter((c) => c[1] === ServiceName.StopRecord),
+    ).toHaveLength(0);
+    recorder.add(event(3));
+    expect(added.mock.calls.map((c) => c[0])).toEqual([event(3)]);
+    expect(recorder.getStatus()).toMatchObject({ state: 'recording' });
+    expect(uploadSession).not.toHaveBeenCalled();
+  });
+
+  it('keeps a paused recording paused across a navigation, and resumes on the next page', async () => {
+    const { recorder, browser, settle, addSession, log } = setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    await recorder.pauseClicked();
+    navigateAway();
+    browser.openPage(1);
+    browser.loadPage(1);
+    await settle();
+    expect(recorder.getStatus().state).toBe('paused');
+    expect(addSession).not.toHaveBeenCalled();
+    log.length = 0;
+    await recorder.resumeClicked();
+    expect(log).toEqual(['inject:1', `${ServiceName.StartRecord}:1`]);
+    expect(recorder.getStatus().state).toBe('recording');
+  });
+
+  it('finishes a recording waiting for its next page when the tab closes', async () => {
+    const { recorder, browser, settle, addSession, opened } = setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    navigateAway();
+    await settle();
+    browser.closeTab(1);
+    await settle();
+    expect(addSession).toHaveBeenCalledOnce();
+    expect(opened).toEqual([SESSION_URL]);
+    expect(recorder.getStatus().state).toBe('idle');
   });
 
   it('finishes like Stop when the recorded tab closes', async () => {
@@ -487,30 +1052,33 @@ describe('createRecorder', () => {
     expect(recorder.getStatus().state).toBe('idle');
   });
 
-  it('leaves the next recording alone when a Stop that overlapped the page going away resumes', async () => {
+  it('a Stop that a tab close overlaps delivers the recording, and the next one starts clean', async () => {
     const { recorder, state, added, uploadSession, browser, settle } =
       setup(account);
     let answerStop = () => undefined as void;
     state.stopReply = new Promise<void>((r) => (answerStop = r));
-    const firstPageGone = browser.openPage(1);
+    browser.openPage(1);
     await recorder.start();
+    recorder.add(event(1));
     const stopping = recorder.stop(); // waits for the tab to answer StopRecord
-    firstPageGone(); // finishes the first recording meanwhile
+    browser.closeTab(1); // Stop took the recording, so this finishes nothing
     await settle();
+    expect(uploadSession).not.toHaveBeenCalled();
+    // The page's last event before it answers Stop is kept.
+    recorder.add(event(2));
+    answerStop();
+    await stopping;
     expect(uploadSession).toHaveBeenCalledOnce();
     state.stopReply = undefined;
     browser.openPage(1);
     await recorder.start();
-    answerStop();
-    await stopping;
-    await settle();
-    recorder.add(event(2));
+    recorder.add(event(3));
     expect(recorder.getStatus()).toMatchObject({
       state: 'recording',
       tabId: 1,
     });
     expect(uploadSession).toHaveBeenCalledOnce();
-    expect(added.mock.calls.map((c) => c[0].timestamp)).toEqual([2]);
+    expect(added.mock.calls.map((c) => c[0].timestamp)).toEqual([1, 2, 3]);
   });
 
   it('ignores a pause reply that arrives after the recorded tab closed', async () => {
@@ -1364,7 +1932,14 @@ describe('recording badge', () => {
       (run: ReturnType<typeof setup>) => Promise<void>,
     ][] = [
       ['stop', (run) => run.recorder.stop()],
-      ['page gone', (run) => Promise.resolve(run.browser.openPage(1)())],
+      [
+        'next page refused',
+        async (run) => {
+          run.state.refuseNextPage = true;
+          run.browser.openPage(1)();
+          run.browser.loadPage(1);
+        },
+      ],
       ['tab closed', (run) => Promise.resolve(run.browser.closeTab(1))],
       [
         'upload failed',

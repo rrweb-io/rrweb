@@ -17,6 +17,11 @@ export const KEEPALIVE_INTERVAL_MS = 25_000;
 export const START_TIMEOUT_MS = 15_000;
 export const START_TIMEOUT_ERROR =
   'The page did not start recording. Reload the tab and try again.';
+/**
+ * How long a navigation may take to load the next page before the recording
+ * finishes without it.
+ */
+export const NAVIGATION_TIMEOUT_MS = 30_000;
 
 export type RecorderDeps = {
   /** Called with the status after every change, for the toolbar badge. */
@@ -24,6 +29,8 @@ export type RecorderDeps = {
   getConnection: () => Promise<Connection>;
   getTabUrl: (tabId: number) => Promise<string | undefined>;
   getTabTitle: (tabId: number) => Promise<string | undefined>;
+  /** The tab's load status, such as 'loading' or 'complete'. */
+  getTabStatus: (tabId: number) => Promise<string | undefined>;
   getCurrentTabId: () => Promise<number>;
   /**
    * Load the recorder into the tab's top frame. Safe to call again for the
@@ -88,9 +95,16 @@ type Recording = {
  * `pageGone` records that the page went away meanwhile.
  * recording, pausing, paused, resuming: `recording` runs. pausing waits for
  * the page to stop, since the click at `clickedAt`; resuming waits for it to
- * record again. Each in-flight step owns its phase object, so its reply is
- * applied only while the phase is still that object, and a second click
- * meanwhile does nothing.
+ * record again; `pageGone` records that the page went away meanwhile, since
+ * its reply and its port can arrive in either order.
+ * navigating: the recorded document went away while recording, and the tab
+ * is loading the next one. reattaching: the next document loaded, and the
+ * recorder is injected into it to record under the same token.
+ * finishing: a finish took the recording. It still accepts the page's last
+ * events, and nothing else can take or follow the recording any more.
+ * Each in-flight step owns its phase object, so its reply is applied only
+ * while the phase is still that object, and a second click meanwhile does
+ * nothing.
  */
 type Phase =
   | { name: 'idle'; lastError: LastError }
@@ -121,9 +135,13 @@ type Phase =
       recording: Recording;
       startTimestamp: number;
       pausedTimestamp: number;
-    };
+      pageGone: boolean;
+    }
+  | { name: 'navigating'; recording: Recording; startTimestamp: number }
+  | { name: 'reattaching'; recording: Recording; startTimestamp: number }
+  | { name: 'finishing'; of: Running };
 
-/** A phase with a recording in it. */
+/** A phase with a recording in it that is still running. */
 type Running = Extract<Phase, { recording: Recording }>;
 const isRunningPhase = (phase: Phase): phase is Running => 'recording' in phase;
 
@@ -133,11 +151,11 @@ type StartOutcome =
   | { name: 'started'; recording: Recording; pageGone: boolean };
 
 /**
- * How a resume's request to record again ended.
- * abandoned: the recording finished before StartRecord was sent, so the page
- * was never asked to record under its token again.
+ * How a request to record again, on resume or after a navigation, ended.
+ * abandoned: the phase moved on before StartRecord was sent, so the page was
+ * never asked to record under its token again.
  */
-type ResumeAnswer =
+type RecordAgainAnswer =
   | { name: 'started' }
   | { name: 'no-answer' }
   | { name: 'failed'; message: string }
@@ -147,11 +165,15 @@ const NO_ERROR: LastError = { name: 'none' };
 const failed = (message: string): LastError => ({ name: 'failed', message });
 
 /**
- * pausing still shows as recording and resuming as paused: the popup keeps
- * its controls, and the in-flight phase ignores their clicks.
+ * pausing, navigating and reattaching still show as recording, and resuming
+ * as paused: the popup keeps its controls, and the in-flight phase ignores
+ * their clicks.
  */
 function statusOf(phase: Phase): RecorderStatus {
   switch (phase.name) {
+    case 'finishing':
+      // Shown as it was until the recording is stored.
+      return statusOf(phase.of);
     case 'idle':
       return { state: 'idle', lastError: phase.lastError };
     case 'finding-tab':
@@ -159,6 +181,8 @@ function statusOf(phase: Phase): RecorderStatus {
       return { state: 'starting' };
     case 'recording':
     case 'pausing':
+    case 'navigating':
+    case 'reattaching':
       return {
         state: 'recording',
         tabId: phase.recording.tabId,
@@ -180,11 +204,15 @@ function statusOf(phase: Phase): RecorderStatus {
 
 /**
  * The recording state machine: start, pause, resume and stop. One recording
- * is one tab: it starts in the current tab and stays there. When that tab's
- * document goes away (a navigation, a reload or the tab closing), the
- * recording finishes the same way Stop does. The sink lives for the whole
- * recording, so the account is read once at start and later account changes
- * are ignored. A cloud recording uploads when it finishes.
+ * is one tab: it starts in the current tab and stays there. A reload or a
+ * navigation within the site is followed: the next page is recorded under the
+ * same token, starting with its own FullSnapshot. The browser decides which
+ * pages that is. Chrome keeps `activeTab` access within the origin the record
+ * click granted, and Firefox drops it on any navigation; where the injection
+ * is refused, the recording finishes the same way Stop does. Closing the tab
+ * finishes it too. The sink lives for the whole recording, so the account is
+ * read once at start and later account changes are ignored. A cloud
+ * recording uploads when it finishes.
  */
 export function createRecorder(deps: RecorderDeps) {
   let phase: Phase = { name: 'idle', lastError: NO_ERROR };
@@ -308,10 +336,19 @@ export function createRecorder(deps: RecorderDeps) {
   async function finish({ pageGone }: { pageGone: boolean }) {
     // A start in flight finishes first; the popup disables the button meanwhile.
     if (!isRunningPhase(phase)) return;
-    const { recording } = phase;
+    const running = phase;
+    const { recording } = running;
+    // Claimed before any await: a later finish, navigation or load finds the
+    // recording taken, and a resume or next page still starting sees that it
+    // lost the recording and stops its page itself.
+    phase = { name: 'finishing', of: running };
     // A document that is gone cannot be asked to stop, and events it sent
-    // before going away have already arrived. A paused page is not recording.
-    if (!pageGone && (phase.name === 'recording' || phase.name === 'pausing'))
+    // before going away have already arrived. A paused page is not recording,
+    // and neither is one the recorder is still being injected into.
+    if (
+      !pageGone &&
+      (running.name === 'recording' || running.name === 'pausing')
+    )
       await deps
         .requestToTab(recording.tabId, ServiceName.StopRecord, {})
         .catch(() => undefined);
@@ -320,7 +357,6 @@ export function createRecorder(deps: RecorderDeps) {
         ? undefined
         : await deps.getTabTitle(recording.tabId).catch(() => undefined)) ??
       recording.startTitle;
-    if (!isCurrent(recording)) return;
     let idle: Phase = { name: 'idle', lastError: NO_ERROR };
     phase = idle;
     /** A recording started meanwhile keeps its own status. */
@@ -349,6 +385,19 @@ export function createRecorder(deps: RecorderDeps) {
   }
 
   async function pause() {
+    if (phase.name === 'navigating' || phase.name === 'reattaching') {
+      // No page records while the next one loads, so the pause is immediate.
+      // A next page still starting sees it lost the recording and stops.
+      phase = {
+        name: 'paused',
+        recording: phase.recording,
+        startTimestamp: phase.startTimestamp,
+        pausedTimestamp: deps.now(),
+        lastError: NO_ERROR,
+      };
+      await save();
+      return;
+    }
     if (phase.name !== 'recording') return;
     const pausing: Phase = {
       name: 'pausing',
@@ -384,15 +433,16 @@ export function createRecorder(deps: RecorderDeps) {
       ? phase.tabId === tabId
       : isRunningPhase(phase) && phase.recording.tabId === tabId;
 
-  /** Load the page script again and ask it to record under the same token. */
-  async function recordAgain(
-    resuming: Extract<Phase, { name: 'resuming' }>,
-  ): Promise<ResumeAnswer> {
-    const { recording } = resuming;
+  /**
+   * Load the page script again and ask it to record under the same token,
+   * while `owner` is the phase.
+   */
+  async function recordAgain(owner: Running): Promise<RecordAgainAnswer> {
+    const { recording } = owner;
     try {
       await deps.injectRecorder(recording.tabId);
       // Stopped while injecting: the page must not record under this token.
-      if (phase !== resuming) return { name: 'abandoned' };
+      if (phase !== owner) return { name: 'abandoned' };
       const reply = await deps.requestToTab(
         recording.tabId,
         ServiceName.StartRecord,
@@ -412,6 +462,7 @@ export function createRecorder(deps: RecorderDeps) {
       recording: phase.recording,
       startTimestamp: phase.startTimestamp,
       pausedTimestamp: phase.pausedTimestamp,
+      pageGone: false,
     };
     phase = resuming;
     await save(); // clears the last resume's error
@@ -421,6 +472,9 @@ export function createRecorder(deps: RecorderDeps) {
     // Decrease the time spent in the pause state and make the recording look
     // continuous.
     recording.sink.shiftEvents(pausedTime);
+    // The page the resume injects into is the one the tab has now, so only a
+    // page leaving from here on is followed.
+    resuming.pageGone = false;
     const answer = await recordAgain(resuming);
     if (answer.name !== 'started' || phase !== resuming)
       // Restore the events data when the recording did not start again.
@@ -440,19 +494,102 @@ export function createRecorder(deps: RecorderDeps) {
     }
     if (answer.name !== 'started') {
       phase = {
-        ...resuming,
         name: 'paused',
+        recording,
+        startTimestamp: resuming.startTimestamp,
+        pausedTimestamp: resuming.pausedTimestamp,
         lastError: answer.name === 'failed' ? answer : NO_ERROR,
       };
       await save();
       return;
     }
-    phase = {
+    const recordingPhase: Running = {
       name: 'recording',
       recording,
       startTimestamp: resuming.startTimestamp + pausedTime,
     };
+    // The page that confirmed is already gone: follow the tab to its next one.
+    if (resuming.pageGone) navigate(recordingPhase);
+    else phase = recordingPhase;
     await save();
+  }
+
+  /**
+   * The recorded document went away. Wait for the tab to load the next one,
+   * and finish the recording if it does not in time.
+   */
+  function navigate(running: Running) {
+    const navigating: Phase = {
+      name: 'navigating',
+      recording: running.recording,
+      startTimestamp: running.startTimestamp,
+    };
+    phase = navigating;
+    void deps.after(NAVIGATION_TIMEOUT_MS).then(async () => {
+      if (phase === navigating) await finish({ pageGone: true });
+    });
+    // The next page may have loaded already: its load event and the old
+    // page's port can arrive in either order, and a resume waiting on its
+    // reply ignores loads.
+    void deps
+      .getTabStatus(navigating.recording.tabId)
+      .then(async (status) => {
+        if (status === 'complete' && phase === navigating)
+          await reattach(navigating);
+      })
+      .catch(() => undefined);
+  }
+
+  /** Record the document the tab loaded after a navigation. */
+  async function reattach(navigating: Extract<Phase, { name: 'navigating' }>) {
+    const reattaching: Phase = { ...navigating, name: 'reattaching' };
+    phase = reattaching;
+    const { recording } = reattaching;
+    // A page script blocked by the site never confirms, as on start.
+    const answer = await Promise.race([
+      recordAgain(reattaching),
+      deps.after(START_TIMEOUT_MS).then(() => ({ name: 'no-answer' } as const)),
+    ]);
+    if (phase !== reattaching) {
+      // Stopped, paused, closed or navigated again meanwhile. A page that did
+      // or may still start must stop, unless a newer page or recording has
+      // taken the tab: its StartRecord replaced this one in the page.
+      // Read afresh: the awaits above let any phase in.
+      const now = phase as Phase;
+      const replaced =
+        now.name === 'navigating' ||
+        now.name === 'reattaching' ||
+        (holdsTab(recording.tabId) &&
+          !(isRunningPhase(now) && now.recording === recording));
+      if (
+        (answer.name === 'started' || answer.name === 'no-answer') &&
+        !replaced
+      )
+        void deps
+          .requestToTab(recording.tabId, ServiceName.StopRecord, {})
+          .catch(() => undefined);
+      return;
+    }
+    if (answer.name === 'started') {
+      phase = { ...reattaching, name: 'recording' };
+      // Saved again, which sets the badge on the new page too.
+      await save();
+      return;
+    }
+    if (answer.name === 'no-answer')
+      void deps
+        .requestToTab(recording.tabId, ServiceName.StopRecord, {})
+        .catch(() => undefined);
+    // A tab loading again was navigated before this page took the recorder,
+    // which interrupts the injection: wait for that load instead.
+    const status = await deps
+      .getTabStatus(recording.tabId)
+      .catch(() => undefined);
+    if (phase !== reattaching) return;
+    if (status === 'loading') return navigate(reattaching);
+    // The browser refused the injection (another site, or Firefox after any
+    // navigation), or the page never answered: finish with what was recorded.
+    await finish({ pageGone: true });
   }
 
   return {
@@ -474,15 +611,47 @@ export function createRecorder(deps: RecorderDeps) {
         if (accepts(phase)) phase.held.push(message.event);
       } else if (isRunningPhase(phase)) {
         if (accepts(phase.recording)) phase.recording.sink.add(message.event);
+      } else if (phase.name === 'finishing') {
+        // The page's last events, sent before it answers StopRecord.
+        const { recording } = phase.of;
+        if (accepts(recording)) recording.sink.add(message.event);
       }
     },
     /**
-     * The top-frame document of `tabId` went away, or the tab closed. If that
-     * is the recorded tab, finish the recording as Stop does.
+     * The recorded top-frame document of `tabId` went away. A recording
+     * follows the tab to its next document; a paused one stays paused, and
+     * resume records the document the tab has then.
      */
-    async pageGone(tabId: number) {
+    documentGone(tabId: number) {
       if (phase.name === 'starting') {
         // The start finishes the recording once the tab confirms it.
+        if (tabId === phase.tabId) phase.pageGone = true;
+      } else if (phase.name === 'resuming') {
+        // A resume the page confirms follows the tab instead.
+        if (tabId === phase.recording.tabId) phase.pageGone = true;
+      } else if (
+        (phase.name === 'recording' ||
+          phase.name === 'navigating' ||
+          phase.name === 'reattaching') &&
+        tabId === phase.recording.tabId
+      )
+        // Gone again before it was recorded, as in a redirect: wait anew.
+        navigate(phase);
+    },
+    /**
+     * `tabId` loaded a document. Record it if the recording is waiting; a
+     * paused recording saves its status again, since Firefox clears a tab's
+     * badge when it loads a new page.
+     */
+    async documentLoaded(tabId: number) {
+      if (phase.name === 'navigating' && tabId === phase.recording.tabId)
+        await reattach(phase);
+      else if (phase.name === 'paused' && tabId === phase.recording.tabId)
+        await save();
+    },
+    /** The tab closed: finish its recording as Stop does. */
+    async tabClosed(tabId: number) {
+      if (phase.name === 'starting') {
         if (tabId === phase.tabId) phase.pageGone = true;
       } else if (isRunningPhase(phase) && tabId === phase.recording.tabId)
         await finish({ pageGone: true });

@@ -39,7 +39,8 @@ The extension has no content script that runs on every page and no host access t
 
 - One recording is one tab. Switching to another tab does not move the recording.
 - Pause and resume continue in the same tab.
-- When the recorded tab loads a new page, reloads or closes, the recording stops as if you pressed Stop: it is saved in full, then the result opens in a new tab. Changes that keep the page, such as a hash change or `history.pushState`, do not stop it.
+- In Chrome, a reload or a new page on the same site continues the recording: the recorder is injected into the next page, which starts with its own full snapshot. Changes that keep the page, such as a hash change or `history.pushState`, are recorded as usual.
+- The recording stops as if you pressed Stop when the tab closes, or when the browser no longer gives the extension access to the page: a page on another site in Chrome, or any new page in Firefox. It is saved in full, then the result opens in a new tab.
 - Only the tab's top frame is recorded. Cross-origin iframes are not recorded.
 
 Chrome permissions: `activeTab`, `scripting`, `storage`, `unlimitedStorage`. Firefox permissions: `activeTab`, `storage`, `unlimitedStorage`.

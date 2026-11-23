@@ -75,16 +75,34 @@ if (config.cloudEnabled)
     }),
   );
 
-// One recording is one tab: it finishes when that tab's document goes away.
+// One recording is one tab: it follows that tab's navigations the browser
+// allows, and finishes when the tab closes.
+const onRecorder =
+  (
+    action: (
+      recorder: BackgroundServices['recorder'],
+      tabId: number,
+    ) => unknown,
+  ) =>
+  (tabId: number) =>
+    void ready
+      .then(({ recorder }) => action(recorder, tabId))
+      .catch((error) =>
+        console.error('Could not follow the recorded tab:', error),
+      );
 watchRecordedPages(
   {
     onConnect: Browser.runtime.onConnect,
+    onTabUpdated: Browser.tabs.onUpdated,
     onTabRemoved: Browser.tabs.onRemoved,
   },
-  (tabId) =>
-    void ready
-      .then(({ recorder }) => recorder.pageGone(tabId))
-      .catch((error) => console.error('Could not end the recording:', error)),
+  {
+    documentGone: onRecorder((recorder, tabId) => recorder.documentGone(tabId)),
+    documentLoaded: onRecorder((recorder, tabId) =>
+      recorder.documentLoaded(tabId),
+    ),
+    tabClosed: onRecorder((recorder, tabId) => recorder.tabClosed(tabId)),
+  },
 );
 
 async function start(): Promise<BackgroundServices> {
@@ -160,6 +178,8 @@ async function start(): Promise<BackgroundServices> {
     getConnection,
     getTabUrl: async (tabId) => (await Browser.tabs.get(tabId)).url,
     getTabTitle: async (tabId) => (await Browser.tabs.get(tabId)).title,
+    // A tab's status needs no `tabs` permission, unlike its URL or title.
+    getTabStatus: async (tabId) => (await Browser.tabs.get(tabId)).status,
     getCurrentTabId: () => channel.getCurrentTabId(),
     injectRecorder,
     requestToTab: (tabId, service, params) =>
