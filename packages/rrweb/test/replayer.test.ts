@@ -307,6 +307,76 @@ describe('replayer', function () {
     expect(currentState).toEqual('paused');
   });
 
+  it('restores normal speed when seeking during a skip', async () => {
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play(0);
+      replayer.speedService.send({ type: 'FAST_FORWARD', payload: { speed: 8 } });
+      const whileSkipping = [
+        replayer.speedService.state.value,
+        replayer.speedService.state.context.timer.speed,
+      ];
+      replayer.play(500);
+      const afterSeek = [
+        replayer.speedService.state.value,
+        replayer.speedService.state.context.timer.speed,
+      ];
+      [whileSkipping, afterSeek];
+    `);
+    expect(result).toEqual([
+      ['skipping', 8],
+      ['normal', 1],
+    ]);
+  });
+
+  it('restores normal speed when seeking-and-pausing during a skip', async () => {
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play(0);
+      replayer.speedService.send({ type: 'FAST_FORWARD', payload: { speed: 8 } });
+      const whileSkipping = [
+        replayer.speedService.state.value,
+        replayer.speedService.state.context.timer.speed,
+      ];
+      replayer.pause(500);
+      const afterSeek = [
+        replayer.speedService.state.value,
+        replayer.speedService.state.context.timer.speed,
+      ];
+      [whileSkipping, afterSeek];
+    `);
+    expect(result).toEqual([
+      ['skipping', 8],
+      ['normal', 1],
+    ]);
+  });
+
+  it('freezes the skip on in-place pause and restores it on resume', async () => {
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events);
+      replayer.play(0);
+      replayer.speedService.send({ type: 'FAST_FORWARD', payload: { speed: 8 } });
+      replayer.pause();
+      const whilePaused = [
+        replayer.speedService.state.value,
+        replayer.speedService.state.context.timer.speed,
+      ];
+      replayer.play();
+      const afterResume = [
+        replayer.speedService.state.value,
+        replayer.speedService.state.context.timer.speed,
+      ];
+      [whilePaused, afterResume];
+    `);
+    expect(result).toEqual([
+      ['skipping', 8],
+      ['normal', 1],
+    ]);
+  });
+
   it('can fast forward past StyleSheetRule changes on virtual elements', async () => {
     await page.evaluate(`events = ${JSON.stringify(styleSheetRuleEvents)}`);
     const actionLength = await page.evaluate(`
