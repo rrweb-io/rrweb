@@ -305,7 +305,7 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
   it('does not move events between recordings when a POST settles after stop()', async () => {
     const post = deferredFetch();
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const { client, emit, socket } = await startClient(true);
+    const { client, emit, socket } = await startClient();
     socket.reopen();
     socket.drop();
     emit({ ...event(2), pad: 'x'.repeat(70_000) });
@@ -323,24 +323,24 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     const second = mockState.sockets[1];
     const bufferedForSecond = second.buffer.length();
 
-    post.reject(new TypeError('Lost acknowledgment'));
+    post.resolve(new Response(null, { status: 202 }));
     await vi.advanceTimersByTimeAsync(0);
 
     expect(second.buffer.length()).toBe(bufferedForSecond);
     expect(ids(second.buffer.items)).toEqual([10]);
-    expect(ids(post.bodies())).toEqual([2, 3]);
     expect(post.urls().every((url) => url === firstUrl)).toBe(true);
   });
 
   it('does not requeue a failed POST into the next recording', async () => {
     const post = deferredFetch();
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const { client, emit, socket } = await startClient();
+    const { client, emit, socket } = await startClient(true);
     socket.reopen();
     socket.drop();
     emit(event(2));
     await vi.advanceTimersByTimeAsync(5000);
 
+    emit(event(3));
     client.stop(true);
     client.start({
       serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
@@ -353,6 +353,8 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     const second = mockState.sockets[1];
     second.reopen();
     expect(ids(second.sent)).toEqual([10]);
+    expect(ids(post.bodies())).toEqual([2, 3]);
+    expect(new Set(post.urls()).size).toBe(1);
   });
 
   it('does not move events between recordings when stop() follows a freeze', async () => {

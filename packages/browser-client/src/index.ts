@@ -209,7 +209,6 @@ async function postData(
   const keepaliveLimit = 65000;
   let done = false;
   const responses: Response[] = [];
-  let networkError: unknown;
   do {
     const toSend: string[] = [];
     let body;
@@ -250,18 +249,15 @@ async function postData(
         keepalive: new Blob([body]).size < keepaliveLimit,
       });
     } catch (error) {
-      if (!requeueFailedBatches) {
-        networkError ??= error;
-        continue;
-      }
-      if (buffer instanceof ArrayQueue) {
+      if (requeueFailedBatches && buffer instanceof ArrayQueue) {
         requeue(buffer, toSend);
       }
       throw error;
     }
     responses.push(response);
-    if (!response.ok && requeueFailedBatches) {
+    if (!response.ok) {
       if (buffer instanceof ArrayQueue) {
+        if (!requeueFailedBatches) throw new Error(`HTTP ${response.status}`);
         // re-queue events in case we can reconnect next time or with ws
         requeue(buffer, toSend);
       }
@@ -270,7 +266,6 @@ async function postData(
       break;
     }
   } while (!done);
-  if (networkError) throw networkError;
   const badResponse = responses.find((r) => r.status >= 300);
   if (badResponse) {
     let badResponseInfo = `${badResponse.status} ${badResponse.statusText}`;
@@ -608,9 +603,12 @@ export function start(
       ws?.close();
       ws = undefined;
       if (buffer.length()) {
-        void postBuffered().catch((error) => {
-          console.error('Error POSTing events on stop:', error);
-        });
+        const flush = async () => {
+          do {
+            await postBuffered().catch(console.error);
+          } while (retireBufferedEvents && buffer.length());
+        };
+        void flush();
       }
     }
   };
