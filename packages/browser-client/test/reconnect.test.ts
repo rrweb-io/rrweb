@@ -153,7 +153,7 @@ function deferredFetch() {
   };
 }
 
-async function startClient() {
+async function startClient(retireBufferedEvents = false) {
   vi.useFakeTimers();
   vi.resetModules();
   mockState.sockets = [];
@@ -162,6 +162,7 @@ async function startClient() {
   client.start({
     serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
     publicApiKey: 'public_key_rr_test',
+    retireBufferedEvents,
   });
   const emit = mockState.emit!;
   emit(event(1));
@@ -304,7 +305,7 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
   it('does not move events between recordings when a POST settles after stop()', async () => {
     const post = deferredFetch();
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    const { client, emit, socket } = await startClient();
+    const { client, emit, socket } = await startClient(true);
     socket.reopen();
     socket.drop();
     emit({ ...event(2), pad: 'x'.repeat(70_000) });
@@ -322,11 +323,12 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     const second = mockState.sockets[1];
     const bufferedForSecond = second.buffer.length();
 
-    post.resolve(new Response(null, { status: 202 }));
+    post.reject(new TypeError('Lost acknowledgment'));
     await vi.advanceTimersByTimeAsync(0);
 
     expect(second.buffer.length()).toBe(bufferedForSecond);
     expect(ids(second.buffer.items)).toEqual([10]);
+    expect(ids(post.bodies())).toEqual([2, 3]);
     expect(post.urls().every((url) => url === firstUrl)).toBe(true);
   });
 

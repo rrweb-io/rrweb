@@ -30,6 +30,7 @@ export type clientConfig = {
   jsSource?: string;
   jsEntrypoint?: string;
   meta?: nameValues;
+  retireBufferedEvents?: boolean;
 };
 
 export type nameValues = Record<string, string | boolean | number>;
@@ -203,10 +204,12 @@ async function postData(
   postUrl: string,
   publicApiKey: string,
   buffer: ArrayQueue<string> | string,
+  requeueFailedBatches = true,
 ) {
   const keepaliveLimit = 65000;
   let done = false;
   const responses: Response[] = [];
+  let networkError: unknown;
   do {
     const toSend: string[] = [];
     let body;
@@ -244,16 +247,20 @@ async function postData(
           Authorization: `Bearer ${publicApiKey}`,
         },
         body,
-        keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
+        keepalive: new Blob([body]).size < keepaliveLimit,
       });
     } catch (error) {
+      if (!requeueFailedBatches) {
+        networkError ??= error;
+        continue;
+      }
       if (buffer instanceof ArrayQueue) {
         requeue(buffer, toSend);
       }
       throw error;
     }
     responses.push(response);
-    if (!response.ok) {
+    if (!response.ok && requeueFailedBatches) {
       if (buffer instanceof ArrayQueue) {
         // re-queue events in case we can reconnect next time or with ws
         requeue(buffer, toSend);
@@ -263,6 +270,7 @@ async function postData(
       break;
     }
   } while (!done);
+  if (networkError) throw networkError;
   const badResponse = responses.find((r) => r.status >= 300);
   if (badResponse) {
     let badResponseInfo = `${badResponse.status} ${badResponse.statusText}`;
@@ -300,6 +308,7 @@ export function start(
     publicApiKey,
     jsSource: rawJsSource,
     jsEntrypoint,
+    retireBufferedEvents = false,
     ...recordOptions
   } = options;
   let { serverUrl = defaultServerUrl } = options;
@@ -356,6 +365,8 @@ export function start(
   let ws: Websocket | undefined;
   let wsRejected = false;
   const buffer = new ArrayQueue<string>();
+  const postBuffered = () =>
+    postData(postUrl, publicApiKey, buffer, !retireBufferedEvents);
   let cancelFallbackPosting: () => void = () => undefined;
 
   const handleMessage = (_: Websocket, ev: MessageEvent) => {
@@ -411,7 +422,7 @@ export function start(
         if (!fallbackCancelled) scheduleFallbackPost();
       }, fallbackPostStallTimeout);
       fallbackStallTimer = stallTimer;
-      postData(postUrl, publicApiKey, buffer)
+      postBuffered()
         .then(() => {
           if (!stalled) fallbackDelay = fallbackPostDelay;
         })
@@ -581,10 +592,8 @@ export function start(
 
   const myStop = (resetRecordingId: boolean) => {
     cancelFallbackPosting();
-    // Clear old events before send, so websocket-ts can buffer the close event
-    // for the HTTP fallback when the socket is not currently open.
-    buffer.clear();
-    if (ws) {
+    if (!retireBufferedEvents) buffer.clear();
+    if (ws || buffer.length()) {
       const closeEvent: customEventWithTime = {
         timestamp: nowTimestamp(),
         type: EventType.Custom,
@@ -593,14 +602,14 @@ export function start(
           payload: {},
         },
       };
-      ws.send(JSON.stringify(closeEvent));
-      ws.close();
+      const payload = JSON.stringify(closeEvent);
+      if (buffer.length()) buffer.add(payload);
+      else ws?.send(payload);
+      ws?.close();
       ws = undefined;
-      // The socket wasn't open, so the close event is still in the buffer and
-      // nothing else will send it now that fallback posting has stopped.
       if (buffer.length()) {
-        void postData(postUrl, publicApiKey, buffer).catch((error) => {
-          console.error('Error POSTing close event on stop:', error);
+        void postBuffered().catch((error) => {
+          console.error('Error POSTing events on stop:', error);
         });
       }
     }
@@ -645,7 +654,7 @@ export function start(
               (!ws || wsRejected || ws.readyState !== wsReadyStateOpen) &&
               buffer.length()
             ) {
-              void postData(postUrl, publicApiKey, buffer).catch((error) => {
+              void postBuffered().catch((error) => {
                 console.error('Error POSTing events on page hide:', error);
               });
             }
