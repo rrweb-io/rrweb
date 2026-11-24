@@ -198,6 +198,22 @@ function requeue(buffer: ArrayQueue<string>, taken: string[]) {
   [...taken, ...drain(buffer)].forEach((eventStr) => buffer.add(eventStr));
 }
 
+async function describePostFailure(response: Response): Promise<Error> {
+  let info = `${response.status} ${response.statusText}`;
+  if (!response.bodyUsed) {
+    let bodyTimer: ReturnType<typeof setTimeout> | undefined;
+    const body = await Promise.race([
+      response.text().catch(() => ''),
+      new Promise<string>((resolve) => {
+        bodyTimer = setTimeout(() => resolve(''), 2000);
+      }),
+    ]);
+    clearTimeout(bodyTimer);
+    if (body) info += '\nresponse body:' + body;
+  }
+  return new Error(`Bad response from POST: ${info}`);
+}
+
 async function postData(
   postUrl: string,
   publicApiKey: string,
@@ -208,7 +224,6 @@ async function postData(
   // eslint-disable-next-line compat/compat -- browser-client targets modern browsers with UTF-8 encoding support.
   const encoder = new TextEncoder();
   let done = false;
-  const responses: Response[] = [];
   do {
     const toSend: string[] = [];
     let body;
@@ -265,36 +280,13 @@ async function postData(
       }
       throw error;
     }
-    responses.push(response);
     if (!response.ok) {
       if (buffer instanceof ArrayQueue) {
-        // re-queue events in case we can reconnect next time or with ws
         requeue(buffer, toSend);
       }
-      break;
-    } else if (done) {
-      break;
+      throw await describePostFailure(response);
     }
   } while (!done);
-  const badResponse = responses.find((r) => r.status >= 300);
-  if (badResponse) {
-    let badResponseInfo = `${badResponse.status} ${badResponse.statusText}`;
-    if (!badResponse.bodyUsed) {
-      let bodyTimer: ReturnType<typeof setTimeout> | undefined;
-      const responseBody = await Promise.race([
-        badResponse.text().catch(() => ''),
-        new Promise<string>((resolve) => {
-          bodyTimer = setTimeout(() => resolve(''), 2000);
-        }),
-      ]);
-      clearTimeout(bodyTimer);
-      if (responseBody) {
-        badResponseInfo += '\nresponse body:' + responseBody;
-      }
-    }
-    throw new Error(`Bad response from POST: ${badResponseInfo}`);
-  }
-  return responses;
 }
 
 export function start(
@@ -386,21 +378,7 @@ export function start(
     }
   };
 
-  const connect = () => {
-    const wsUrl = new URL(serverUrl);
-    if (publicApiKey) {
-      wsUrl.searchParams.set('token', publicApiKey);
-    }
-    wsUrl.protocol = wsUrl.protocol.replace('http', 'ws'); // testing/puppeteer: SyntaxError: Failed to construct 'WebSocket': The URL's scheme must be either 'ws' or 'wss'. 'https' is not allowed.
-
-    const socket = new WebsocketBuilder(wsUrl.href)
-      .withBuffer(buffer) // when disconnected
-      .withBackoff(
-        new ExponentialBackoff(500 + Math.round(1000 * Math.random()), 6),
-      ) // retry around every 1s, 2s, 4s, 8s, maxing out with a retry every ~1minute
-      .build();
-    ws = socket;
-
+  const startFallbackPosting = (socket: Websocket) => {
     let fallbackDelay = fallbackPostDelay;
     let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
     let fallbackStallTimer: ReturnType<typeof setTimeout> | undefined;
@@ -444,15 +422,30 @@ export function start(
       fallbackTimer = setTimeout(fallbackPostTick, fallbackDelay);
     };
     scheduleFallbackPost();
-    cancelFallbackPosting();
-    cancelFallbackPosting = () => {
+    return () => {
       fallbackCancelled = true;
       clearTimeout(fallbackTimer);
       clearTimeout(fallbackStallTimer);
     };
+  };
 
-    // Add event listeners
+  const connect = () => {
+    const wsUrl = new URL(serverUrl);
+    if (publicApiKey) {
+      wsUrl.searchParams.set('token', publicApiKey);
+    }
+    wsUrl.protocol = wsUrl.protocol.replace('http', 'ws');
+
+    const socket = new WebsocketBuilder(wsUrl.href)
+      .withBuffer(buffer)
+      .withBackoff(
+        new ExponentialBackoff(500 + Math.round(1000 * Math.random()), 6),
+      ) // retry around every 1s, 2s, 4s, 8s, maxing out at ~1 minute
+      .build();
+    ws = socket;
     socket.addEventListener(WebsocketEvent.message, handleMessage);
+    cancelFallbackPosting();
+    cancelFallbackPosting = startFallbackPosting(socket);
   };
 
   if (includePii) {
