@@ -622,4 +622,71 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     expect(ids(second.sent)).toContain(5);
     expect(ids(second.sent)).not.toContain(1);
   });
+
+  it('keeps the running recording when a second start() has an invalid URL', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { client, socket } = await startClient();
+    socket.reopen();
+
+    expect(() =>
+      client.start({ serverUrl: 'foo', publicApiKey: 'public_key_rr_test' }),
+    ).toThrow();
+
+    mockState.emit!(event(5));
+    expect(socket.closedByUser).toBe(false);
+    expect(ids(socket.sent)).toContain(5);
+    expect(mockState.sockets).toHaveLength(1);
+  });
+
+  it('does not upload anything on stop() when the recorder never emitted', async () => {
+    vi.useFakeTimers();
+    vi.resetModules();
+    mockState.sockets = [];
+    mockState.emit = undefined;
+    const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const client = await import('../src/index');
+    client.start({
+      serverUrl: 'http://localhost:8787/recordings/{recordingId}/events/ws',
+      publicApiKey: 'public_key_rr_test',
+    });
+
+    client.stop(true);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(mockState.sockets).toHaveLength(0);
+  });
+
+  it('removes its visibilitychange and freeze listeners on stop()', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const removeSpy = vi.spyOn(document, 'removeEventListener');
+    const { client, socket } = await startClient();
+    socket.reopen();
+
+    client.stop(true);
+
+    const removed = removeSpy.mock.calls.map(([type]) => type);
+    expect(removed).toContain('visibilitychange');
+    expect(removed).toContain('freeze');
+  });
+
+  it('sizes the keepalive gate in UTF-8 bytes, not string length', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    const multibyte = '„'.repeat(23000);
+    emit({ type: 3, timestamp: 2, data: { id: 2, pad: multibyte } });
+    await vi.advanceTimersByTimeAsync(5000);
+
+    const lastInit = fetchMock.mock.calls.at(-1)?.[1];
+    expect(String(lastInit?.body).length).toBeLessThan(65000);
+    expect(new Blob([String(lastInit?.body)]).size).toBeGreaterThan(65000);
+    expect(lastInit?.keepalive).toBe(false);
+  });
 });

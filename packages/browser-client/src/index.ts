@@ -244,7 +244,7 @@ async function postData(
           Authorization: `Bearer ${publicApiKey}`,
         },
         body,
-        keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
+        keepalive: new Blob([body]).size < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
       });
     } catch (error) {
       if (buffer instanceof ArrayQueue) {
@@ -289,10 +289,6 @@ export function start(
 ) {
   if (!hasDocument()) {
     return;
-  }
-
-  if (activeStop) {
-    stop(false);
   }
 
   const {
@@ -353,8 +349,13 @@ export function start(
   }
   const postUrl = sURL.href;
 
+  if (activeStop) {
+    stop(false);
+  }
+
   let ws: Websocket | undefined;
   let wsRejected = false;
+  let recorderEmitted = false;
   const buffer = new ArrayQueue<string>();
   let cancelFallbackPosting: () => void = () => undefined;
 
@@ -490,6 +491,7 @@ export function start(
   buffer.add(JSON.stringify(metaEvent));
 
   const emitEvent = (event: eventWithTime) => {
+    recorderEmitted = true;
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
       connect();
@@ -579,8 +581,18 @@ export function start(
       );
   };
 
+  const lifecycleListeners: [string, EventListener][] = [];
+
   const myStop = (resetRecordingId: boolean) => {
     cancelFallbackPosting();
+    lifecycleListeners.forEach(([type, handler]) =>
+      document.removeEventListener(type, handler, false),
+    );
+    if (!recorderEmitted) {
+      ws?.close();
+      ws = undefined;
+      return;
+    }
     const closeEvent: customEventWithTime = {
       timestamp: nowTimestamp(),
       type: EventType.Custom,
@@ -608,56 +620,47 @@ export function start(
   activeStop = myStop;
 
   let startWhenVisible = false;
-  if (!document.hidden) {
-    startRrwebRecording();
-  } else {
-    startWhenVisible = true;
-  }
-  if (typeof document.hidden !== 'undefined') {
-    document.addEventListener(
-      'visibilitychange',
-      () => {
-        if (activeStop !== myStop) {
-          return;
-        }
-        if (!document.hidden && startWhenVisible) {
-          startRrwebRecording();
-          startWhenVisible = false;
-          return;
-        }
-        try {
-          // either of 'page-hidden' or 'page-visible'
-          record.addCustomEvent('page-' + document.visibilityState, {});
-          if (document.hidden) {
-            /*
+
+  const onVisibilityChange = () => {
+    if (activeStop !== myStop) {
+      return;
+    }
+    if (!document.hidden && startWhenVisible) {
+      startRrwebRecording();
+      startWhenVisible = false;
+      return;
+    }
+    try {
+      // either of 'page-hidden' or 'page-visible'
+      record.addCustomEvent('page-' + document.visibilityState, {});
+      if (document.hidden) {
+        /*
             - a user navigates to a new page
             - switches tabs
             - closes the tab
             - minimizes or closes the browser
             - switches from the browser to a different app
           */
-            // don't record background animations etc. while page isn't visible
-            record.freezePage();
+        // don't record background animations etc. while page isn't visible
+        record.freezePage();
 
-            // document.hidden is better than beforeunload, see:
-            // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
-            if (
-              (!ws || wsRejected || ws.readyState !== wsReadyStateOpen) &&
-              buffer.length()
-            ) {
-              void postData(postUrl, publicApiKey, buffer).catch((error) => {
-                console.error('Error POSTing events on page hide:', error);
-              });
-            }
-          }
-        } catch (e) {
-          // ignore, recording may not be active yet
+        // document.hidden is better than beforeunload, see:
+        // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
+        if (
+          (!ws || wsRejected || ws.readyState !== wsReadyStateOpen) &&
+          buffer.length()
+        ) {
+          void postData(postUrl, publicApiKey, buffer).catch((error) => {
+            console.error('Error POSTing events on page hide:', error);
+          });
         }
-      },
-      false,
-    );
-  }
-  document.addEventListener('freeze', () => {
+      }
+    } catch (e) {
+      // ignore, recording may not be active yet
+    }
+  };
+
+  const onFreeze = () => {
     if (activeStop !== myStop) {
       return;
     }
@@ -674,7 +677,19 @@ export function start(
       rrwebStopFn();
       startWhenVisible = true;
     }
-  });
+  };
+
+  if (!document.hidden) {
+    startRrwebRecording();
+  } else {
+    startWhenVisible = true;
+  }
+  if (typeof document.hidden !== 'undefined') {
+    document.addEventListener('visibilitychange', onVisibilityChange, false);
+    lifecycleListeners.push(['visibilitychange', onVisibilityChange]);
+  }
+  document.addEventListener('freeze', onFreeze);
+  lifecycleListeners.push(['freeze', onFreeze]);
 }
 
 function addClientEvent(event: ClientEvent) {
