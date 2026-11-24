@@ -583,7 +583,7 @@ export function start(
 
   const lifecycleListeners: [string, EventListener][] = [];
 
-  const myStop = (resetRecordingId: boolean) => {
+  const stopThisRecording = (resetRecordingId: boolean) => {
     cancelFallbackPosting();
     lifecycleListeners.forEach(([type, handler]) =>
       document.removeEventListener(type, handler, false),
@@ -617,12 +617,12 @@ export function start(
       });
     }
   };
-  activeStop = myStop;
+  activeStop = stopThisRecording;
 
   let startWhenVisible = false;
 
   const onVisibilityChange = () => {
-    if (activeStop !== myStop) {
+    if (activeStop !== stopThisRecording) {
       return;
     }
     if (!document.hidden && startWhenVisible) {
@@ -661,7 +661,7 @@ export function start(
   };
 
   const onFreeze = () => {
-    if (activeStop !== myStop) {
+    if (activeStop !== stopThisRecording) {
       return;
     }
     // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
