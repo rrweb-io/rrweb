@@ -702,6 +702,58 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     expect(fetchMock.mock.calls[0][1]?.keepalive).toBe(true);
   });
 
+  it.each(['x', '„'])(
+    'batches %s events by UTF-8 bytes on stop',
+    async (character) => {
+      const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+      vi.stubGlobal('fetch', fetchMock);
+      const { client, emit, socket } = await startClient();
+      socket.reopen();
+      socket.drop();
+
+      const pad = character.repeat(16000);
+      for (let id = 2; id <= 6; id++) {
+        emit({ ...event(id), pad });
+      }
+      client.stop(true);
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(fetchMock.mock.calls.length).toBeGreaterThan(1);
+      for (const [, init] of fetchMock.mock.calls) {
+        expect(
+          new TextEncoder().encode(String(init?.body)).byteLength,
+        ).toBeLessThan(65000);
+        expect(init?.keepalive).toBe(true);
+      }
+      expect(
+        ids(fetchMock.mock.calls.map(([, init]) => String(init?.body))),
+      ).toEqual([2, 3, 4, 5, 6]);
+    },
+  );
+
+  it('counts newline separators when a batch would reach the limit', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { client, emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    const first = { ...event(2), pad: '' };
+    first.pad = 'x'.repeat(
+      64999 - JSON.stringify(first).length - JSON.stringify(event(3)).length,
+    );
+    emit(first);
+    emit(event(3));
+    client.stop(true);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(ids([String(fetchMock.mock.calls[0][1]?.body)])).toEqual([2]);
+    expect(ids([String(fetchMock.mock.calls[1][1]?.body)])).toEqual([3]);
+    expect(fetchMock.mock.calls.every(([, init]) => init?.keepalive)).toBe(
+      true,
+    );
+  });
+
   it('sizes the keepalive gate in UTF-8 bytes, not string length', async () => {
     const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
     vi.stubGlobal('fetch', fetchMock);
@@ -714,7 +766,9 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     client.stop(true);
     await vi.advanceTimersByTimeAsync(0);
 
-    const init = fetchMock.mock.calls.at(-1)?.[1];
+    const init = fetchMock.mock.calls.find(([, init]) =>
+      String(init?.body).includes(multibyte),
+    )?.[1];
     expect(String(init?.body).length).toBeLessThan(65000);
     expect(new Blob([String(init?.body)]).size).toBeGreaterThan(65000);
     expect(init?.keepalive).toBe(false);

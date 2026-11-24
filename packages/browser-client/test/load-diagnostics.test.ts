@@ -476,10 +476,7 @@ describe('@rrweb/browser-client HTTP fallback batching', () => {
           .split('\n')
           .map((event) => JSON.parse(event).id),
       ),
-    ).toEqual([
-      [0, 1, 2],
-      [3, 4],
-    ]);
+    ).toEqual([[0, 1], [2, 3], [4]]);
     expect(buffer.length()).toBe(0);
   });
 
@@ -495,7 +492,9 @@ describe('@rrweb/browser-client HTTP fallback batching', () => {
     await vi.advanceTimersByTimeAsync(5000);
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(buffer.items.map((event) => JSON.parse(event).id)).toEqual([3, 4]);
+    expect(buffer.items.map((event) => JSON.parse(event).id)).toEqual([
+      2, 3, 4,
+    ]);
   });
 
   it('requeues the failed batch ahead of events buffered during the request', async () => {

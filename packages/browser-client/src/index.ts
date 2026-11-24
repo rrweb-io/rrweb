@@ -69,7 +69,6 @@ const fallbackPostMaxDelay = 60 * 1000;
 // How long a fallback POST may run before the next tick is scheduled anyway.
 // The slow request is left running; later events go out in a new POST.
 const fallbackPostStallTimeout = 30 * 1000;
-const errorBodyTimeout = 2 * 1000;
 
 let activeStop: ((resetRecordingId: boolean) => void) | undefined;
 
@@ -206,23 +205,35 @@ async function postData(
   keepaliveForUnload = false,
 ) {
   const keepaliveLimit = 65000;
+  // eslint-disable-next-line compat/compat -- browser-client targets modern browsers with UTF-8 encoding support.
+  const encoder = new TextEncoder();
   let done = false;
   const responses: Response[] = [];
   do {
     const toSend: string[] = [];
     let body;
+    let bodySize = 0;
     if (buffer instanceof ArrayQueue) {
-      // this clears the buffer so no need to call buffer.clear()
-      let sendSize = 0;
       done = true;
       for (
         let eventStr = buffer.read();
         eventStr !== undefined;
         eventStr = buffer.read()
       ) {
+        const eventSize = encoder.encode(eventStr).byteLength;
+        const separatorSize = toSend.length ? 1 : 0;
+        if (
+          toSend.length &&
+          bodySize + separatorSize + eventSize >= keepaliveLimit
+        ) {
+          requeue(buffer, [eventStr]);
+          done = false;
+          break;
+        }
         toSend.push(eventStr);
-        sendSize += eventStr.length;
-        if (sendSize > keepaliveLimit) {
+        bodySize += separatorSize + eventSize;
+        // A single oversized event cannot be split; send it without keepalive.
+        if (bodySize >= keepaliveLimit) {
           done = false;
           break;
         }
@@ -233,6 +244,7 @@ async function postData(
       body = toSend.join('\n');
     } else {
       body = buffer;
+      bodySize = encoder.encode(body).byteLength;
       done = true;
     }
     let response: Response;
@@ -245,7 +257,7 @@ async function postData(
           Authorization: `Bearer ${publicApiKey}`,
         },
         body,
-        keepalive: keepaliveForUnload && new Blob([body]).size < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
+        keepalive: keepaliveForUnload && bodySize < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
       });
     } catch (error) {
       if (buffer instanceof ArrayQueue) {
@@ -272,7 +284,7 @@ async function postData(
       const responseBody = await Promise.race([
         badResponse.text().catch(() => ''),
         new Promise<string>((resolve) => {
-          bodyTimer = setTimeout(() => resolve(''), errorBodyTimeout);
+          bodyTimer = setTimeout(() => resolve(''), 2000);
         }),
       ]);
       clearTimeout(bodyTimer);
