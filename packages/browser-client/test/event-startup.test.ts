@@ -125,6 +125,9 @@ describe('@rrweb/browser-client event startup', () => {
         }[],
         queuedFrom: (window as any).__queuedFrom as number,
         queuedUntil: (window as any).__queuedUntil as number,
+        storedSequenceId: sessionStorage.getItem(
+          'rrweb-browser-client-sequence-id',
+        ),
       }));
       const isAddedEvent = (event: { type: number; data: { tag?: string } }) =>
         event.type === EventType.Annotation ||
@@ -140,17 +143,21 @@ describe('@rrweb/browser-client event startup', () => {
       expect(result.readyStateAtStart).toBe('loading');
       expect(result.annotationError).toBeNull();
       expect(recordedEvents).toHaveLength(6);
-      expect(sentEvents).toEqual(recordedEvents);
-      expect(
-        recordedEvents.map((event) => event.data.tag ?? event.data.text),
-      ).toEqual([
-        'before-start',
-        'Before start',
-        'during-start',
-        'Startup caption',
-        'after-start',
-        'After start',
-      ]);
+      expect(sentEvents).toMatchObject(recordedEvents);
+
+      // Every event of the recording is numbered in sending order, with none
+      // skipped. Metadata, which the server keeps apart, takes no number.
+      const all = result.sentEvents.map((event) => JSON.parse(event));
+      const isMetadata = (event: { type: number; data: { tag?: string } }) =>
+        event.type === EventType.Custom && event.data.tag === 'recording-meta';
+      const numbered = all.filter((event) => !isMetadata(event));
+      expect(all.filter(isMetadata)).toHaveLength(1);
+      expect(all.filter(isMetadata)[0]).not.toHaveProperty('sequenceId');
+      expect(numbered.map((event) => event.sequenceId)).toEqual(
+        numbered.map((_, index) => index),
+      );
+      // The next page in this tab carries on from here.
+      expect(result.storedSequenceId).toBe(String(numbered.length));
       for (const event of recordedEvents.slice(0, 4)) {
         expect(event.timestamp).toBeGreaterThanOrEqual(result.queuedFrom);
         expect(event.timestamp).toBeLessThanOrEqual(result.queuedUntil);
