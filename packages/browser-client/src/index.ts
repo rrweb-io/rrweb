@@ -623,9 +623,6 @@ export function start(
   let startWhenVisible = false;
 
   const onVisibilityChange = () => {
-    if (activeStop !== stopThisRecording) {
-      return;
-    }
     if (!document.hidden && startWhenVisible) {
       startRrwebRecording();
       startWhenVisible = false;
@@ -662,9 +659,6 @@ export function start(
   };
 
   const onFreeze = () => {
-    if (activeStop !== stopThisRecording) {
-      return;
-    }
     // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
     // "In particular, it's important that you ... close any open Web Socket connections
     if (ws) {
