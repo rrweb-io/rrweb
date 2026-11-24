@@ -5,10 +5,9 @@
   export let text: string;
   export let background: string;
   export let position: string;
-  export let disabled = false;
   export let dismissalVersion = 0;
 
-  const dispatch = createEventDispatcher<{ seek: void; 'focus-timeline': void }>();
+  const dispatch = createEventDispatcher<{ seek: void }>();
   let dismissed = false;
   let marker: HTMLButtonElement;
   let panel: HTMLDivElement;
@@ -16,8 +15,7 @@
 
   function dismiss() {
     if (panel?.contains(document.activeElement)) {
-      if (disabled) dispatch('focus-timeline');
-      else marker.focus();
+      marker.focus();
     }
     dismissed = true;
   }
@@ -34,7 +32,6 @@
     class="rr-custom-event"
     aria-label={`${name}: ${text}`}
     aria-haspopup="dialog"
-    {disabled}
     on:click|stopPropagation={() => dispatch('seek')}
     on:mouseenter={() => dismissed = false}
     on:focus={() => dismissed = false}
@@ -90,10 +87,6 @@
     outline: 2px solid rgb(73, 80, 246);
     outline-offset: 2px;
     border-radius: 3px;
-  }
-
-  .rr-custom-event:disabled {
-    cursor: not-allowed;
   }
 
   .rr-custom-event__tick {

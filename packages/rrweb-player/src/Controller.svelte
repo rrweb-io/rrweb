@@ -505,7 +505,6 @@
               background={event.background}
               position={event.position}
               on:seek={() => goto(event.timeOffset)}
-              on:focus-timeline={() => progressSlider.focus()}
             />
           {:else}
             <div
