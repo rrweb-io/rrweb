@@ -584,7 +584,7 @@ export function start(
 
   const lifecycleListeners: [string, EventListener][] = [];
 
-  const stopThisRecording = (resetRecordingId: boolean) => {
+  activeStop = (resetRecordingId: boolean) => {
     cancelFallbackPosting();
     lifecycleListeners.forEach(([type, handler]) =>
       document.removeEventListener(type, handler, false),
@@ -618,7 +618,6 @@ export function start(
       });
     }
   };
-  activeStop = stopThisRecording;
 
   let startWhenVisible = false;
 
