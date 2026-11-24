@@ -203,6 +203,7 @@ async function postData(
   postUrl: string,
   publicApiKey: string,
   buffer: ArrayQueue<string> | string,
+  keepaliveForUnload = false,
 ) {
   const keepaliveLimit = 65000;
   let done = false;
@@ -244,7 +245,7 @@ async function postData(
           Authorization: `Bearer ${publicApiKey}`,
         },
         body,
-        keepalive: new Blob([body]).size < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
+        keepalive: keepaliveForUnload && new Blob([body]).size < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
       });
     } catch (error) {
       if (buffer instanceof ArrayQueue) {
@@ -612,7 +613,7 @@ export function start(
     ws?.close();
     ws = undefined;
     if (buffer.length()) {
-      void postData(postUrl, publicApiKey, buffer).catch((error) => {
+      void postData(postUrl, publicApiKey, buffer, true).catch((error) => {
         console.error('Error flushing events on stop:', error);
       });
     }
@@ -650,7 +651,7 @@ export function start(
           (!ws || wsRejected || ws.readyState !== wsReadyStateOpen) &&
           buffer.length()
         ) {
-          void postData(postUrl, publicApiKey, buffer).catch((error) => {
+          void postData(postUrl, publicApiKey, buffer, true).catch((error) => {
             console.error('Error POSTing events on page hide:', error);
           });
         }

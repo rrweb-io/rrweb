@@ -673,20 +673,50 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     expect(removed).toContain('freeze');
   });
 
-  it('sizes the keepalive gate in UTF-8 bytes, not string length', async () => {
+  it('does not use keepalive for the periodic fallback POST', async () => {
     const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
     vi.stubGlobal('fetch', fetchMock);
     const { emit, socket } = await startClient();
     socket.reopen();
     socket.drop();
 
-    const multibyte = '„'.repeat(23000);
-    emit({ type: 3, timestamp: 2, data: { id: 2, pad: multibyte } });
+    emit(event(2));
     await vi.advanceTimersByTimeAsync(5000);
 
-    const lastInit = fetchMock.mock.calls.at(-1)?.[1];
-    expect(String(lastInit?.body).length).toBeLessThan(65000);
-    expect(new Blob([String(lastInit?.body)]).size).toBeGreaterThan(65000);
-    expect(lastInit?.keepalive).toBe(false);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][1]?.keepalive).toBe(false);
+  });
+
+  it('uses keepalive for the stop() flush so it survives unload', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { client, emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    emit(event(2));
+    client.stop(true);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][1]?.keepalive).toBe(true);
+  });
+
+  it('sizes the keepalive gate in UTF-8 bytes, not string length', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { client, emit, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+
+    const multibyte = '„'.repeat(23000);
+    emit({ type: 3, timestamp: 2, data: { id: 2, pad: multibyte } });
+    client.stop(true);
+    await vi.advanceTimersByTimeAsync(0);
+
+    const init = fetchMock.mock.calls.at(-1)?.[1];
+    expect(String(init?.body).length).toBeLessThan(65000);
+    expect(new Blob([String(init?.body)]).size).toBeGreaterThan(65000);
+    expect(init?.keepalive).toBe(false);
   });
 });
