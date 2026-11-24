@@ -295,15 +295,9 @@
     skipInactive = !skipInactive;
   };
 
-  let updateMetaTimeout: ReturnType<typeof setTimeout> | null = null;
-
   const updateMeta = () => {
-    if (updateMetaTimeout) return;
-    updateMetaTimeout = setTimeout(() => {
-      updateMetaTimeout = null;
-      meta = replayer.getMetaData();
-      timeline = updateTimeline(replayer.events, replayer.config.inactivePeriodThreshold);
-    }, 20); // throttle to protect against rapid calls to addEvent
+    meta = replayer.getMetaData();
+    timeline = updateTimeline(replayer.events, replayer.config.inactivePeriodThreshold);
   };
 
   onMount(() => {
@@ -356,7 +350,6 @@
     replayer.off('annotation', handleAnnotation);
     replayer.off('start', restoreCaptionOnSeek);
     replayer.off('events-updated', updateMeta);
-    if (updateMetaTimeout) clearTimeout(updateMetaTimeout);
     replayer.pause();
     stopTimer();
   });
