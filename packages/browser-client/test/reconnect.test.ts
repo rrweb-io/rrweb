@@ -375,7 +375,8 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     post.resolve(new Response(null, { status: 202 }));
     await vi.advanceTimersByTimeAsync(0);
 
-    expect(post.urls()).toHaveLength(1);
+    expect(post.urls()).toHaveLength(2);
+    expect(new Set(post.urls()).size).toBe(1);
     expect(ids(second.buffer.items)).toEqual([10]);
   });
 
@@ -404,7 +405,7 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
     expect(ids(socket.sent)).toEqual([1, 2, 3, 4]);
   });
 
-  it('POSTs the close event when stop() runs before the socket first opens', async () => {
+  it('flushes queued events and the close event when stop() runs before the socket first opens', async () => {
     const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
     vi.stubGlobal('fetch', fetchMock);
     const { client } = await startClient();
@@ -414,11 +415,30 @@ describe('@rrweb/browser-client reconnect behaviour', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const body = String(fetchMock.mock.calls[0][1]?.body);
-    expect(body.split('\n').map((line) => JSON.parse(line))).toEqual([
-      expect.objectContaining({
-        data: { tag: 'close-permanent', payload: {} },
-      }),
-    ]);
+    const events = body.split('\n').map((line) => JSON.parse(line));
+    expect(ids([body])).toEqual([1]);
+    expect(events.at(-1)).toMatchObject({
+      data: { tag: 'close-permanent', payload: {} },
+    });
+  });
+
+  it('flushes events buffered while the socket was down under the old recording id on stop', async () => {
+    const fetchMock = vi.fn(async () => new Response(null, { status: 202 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const { client, socket } = await startClient();
+    socket.reopen();
+    socket.drop();
+    mockState.emit!(event(2));
+    mockState.emit!(event(3));
+
+    client.stop(true);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const body = String(fetchMock.mock.calls[0][1]?.body);
+    expect(ids([body])).toEqual([2, 3]);
+    expect(body).toContain('"tag":"close-permanent"');
+    expect(String(fetchMock.mock.calls[0][0])).toContain('localhost:8787');
   });
 
   it('POSTs the close event when stop() runs while the socket is down', async () => {

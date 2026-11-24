@@ -581,28 +581,28 @@ export function start(
 
   const myStop = (resetRecordingId: boolean) => {
     cancelFallbackPosting();
-    // Clear old events before send, so websocket-ts can buffer the close event
-    // for the HTTP fallback when the socket is not currently open.
-    buffer.clear();
-    if (ws) {
-      const closeEvent: customEventWithTime = {
-        timestamp: nowTimestamp(),
-        type: EventType.Custom,
-        data: {
-          tag: 'close-' + (resetRecordingId ? 'permanent' : 'temporary'),
-          payload: {},
-        },
-      };
-      ws.send(JSON.stringify(closeEvent));
-      ws.close();
-      ws = undefined;
-      // The socket wasn't open, so the close event is still in the buffer and
-      // nothing else will send it now that fallback posting has stopped.
-      if (buffer.length()) {
-        void postData(postUrl, publicApiKey, buffer).catch((error) => {
-          console.error('Error POSTing close event on stop:', error);
-        });
-      }
+    const closeEvent: customEventWithTime = {
+      timestamp: nowTimestamp(),
+      type: EventType.Custom,
+      data: {
+        tag: 'close-' + (resetRecordingId ? 'permanent' : 'temporary'),
+        payload: {},
+      },
+    };
+    const closeStr = JSON.stringify(closeEvent);
+    if (ws && ws.readyState === wsReadyStateOpen && !wsRejected) {
+      const socket = ws;
+      drain(buffer).forEach((eventStr) => socket.send(eventStr));
+      socket.send(closeStr);
+    } else {
+      buffer.add(closeStr);
+    }
+    ws?.close();
+    ws = undefined;
+    if (buffer.length()) {
+      void postData(postUrl, publicApiKey, buffer).catch((error) => {
+        console.error('Error flushing events on stop:', error);
+      });
     }
   };
   activeStop = myStop;
