@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pack } from '@rrweb/packer';
 import { tick } from 'svelte';
 import { EventType, IncrementalSource } from '@rrweb/types';
@@ -51,6 +51,14 @@ const recording = (): eventWithTime[] => [
 ];
 let player: Player | undefined;
 let target: HTMLDivElement;
+/** Mounts the player with the opt-in toolbar and jump buttons. */
+async function mountToolbar(props: Record<string, unknown> = {}) {
+  return mount({
+    ...props,
+    features: { toolbar: true, jump: {}, ...(props.features as object) },
+  });
+}
+
 async function mount(props = {}) {
   target = document.createElement('div');
   document.body.append(target);
@@ -111,6 +119,29 @@ describe('player customization', () => {
     ).not.toBeNull();
     expect(arrow(document.body)).toBe(true);
     expect(player.getReplayer().getCurrentTime()).toBe(0);
+  });
+
+  it('keeps the classic controls unless the host opts into the toolbar', async () => {
+    const player = await mount();
+    expect(target.querySelector('.rr-controller__btns')).not.toBeNull();
+    expect(
+      target.querySelectorAll('.rr-timeline .rr-timeline__time'),
+    ).toHaveLength(2);
+    expect(target.querySelector('.rr-toolbar')).toBeNull();
+    expect(target.querySelector('.rr-player--toolbar')).toBeNull();
+
+    player.$set({ features: { toolbar: true } });
+    await tick();
+    expect(target.querySelector('.rr-toolbar')).not.toBeNull();
+    expect(target.querySelector('.rr-controller__btns')).toBeNull();
+    expect(
+      target.querySelectorAll('.rr-timeline .rr-timeline__time'),
+    ).toHaveLength(0);
+    expect(target.querySelector('[role="timer"]')?.textContent).toMatch(
+      /00:00\s*\/\s*00:10/,
+    );
+    // Jump buttons still follow features.jump.
+    expect(target.querySelector('[aria-label="Back 10 seconds"]')).toBeNull();
   });
 
   it('describes configured jumps with their source and supports unsubscribing', async () => {
@@ -1160,7 +1191,174 @@ describe('player transport', () => {
   });
 });
 
+describe('player fullscreen', () => {
+  let fullscreenElement: Element | null;
+  const exitFullscreen = vi.fn(() => Promise.resolve());
+
+  beforeEach(() => {
+    fullscreenElement = null;
+    exitFullscreen.mockClear();
+    Object.defineProperties(document, {
+      fullscreen: { configurable: true, get: () => fullscreenElement !== null },
+      fullscreenElement: { configurable: true, get: () => fullscreenElement },
+      exitFullscreen: { configurable: true, value: exitFullscreen },
+    });
+  });
+
+  afterEach(() => {
+    for (const property of [
+      'fullscreen',
+      'fullscreenElement',
+      'exitFullscreen',
+    ]) {
+      Reflect.deleteProperty(document, property);
+    }
+  });
+
+  it('fits fullscreen around the controls and restores the latest embedded size', async () => {
+    const player = await mount({ width: 640, height: 360, maxScale: 0 });
+    const root = target.querySelector<HTMLElement>('.rr-player')!;
+    const viewport = root.querySelector<HTMLElement>('.rr-player__viewport')!;
+    Object.defineProperties(root, {
+      clientWidth: { value: 1200 },
+      clientHeight: { value: 800 },
+    });
+    // The recording is 800 by 400; the replay scales to fit the viewport.
+    const { iframe, wrapper } = player.getReplayer();
+    Object.defineProperties(iframe, {
+      offsetWidth: { value: 800 },
+      offsetHeight: { value: 400 },
+    });
+
+    fullscreenElement = root;
+    document.dispatchEvent(new Event('fullscreenchange'));
+    await tick();
+    expect([viewport.style.width, viewport.style.height]).toEqual([
+      '1200px',
+      '720px',
+    ]);
+    expect(wrapper.style.transform).toContain('scale(1.5)');
+
+    player.$set({ width: 500, height: 280, showController: false });
+    await tick();
+    expect([viewport.style.width, viewport.style.height]).toEqual([
+      '1200px',
+      '800px',
+    ]);
+
+    fullscreenElement = null;
+    document.dispatchEvent(new Event('fullscreenchange'));
+    await tick();
+    expect([viewport.style.width, viewport.style.height]).toEqual([
+      '500px',
+      '280px',
+    ]);
+    expect(wrapper.style.transform).toContain('scale(0.625)');
+  });
+
+  it('keeps the replay scale while a hidden player is resized', async () => {
+    const player = await mount();
+    const { wrapper } = player.getReplayer();
+    // A hidden player has no layout, so the replay frame measures 0 by 0.
+    wrapper.style.transform = 'scale(0.8) translate(-50%, -50%)';
+    player.$set({ width: 700, height: 400 });
+    await tick();
+    expect(wrapper.style.transform).toContain('scale(0.8)');
+  });
+
+  it('only exits fullscreen when this player owns it', async () => {
+    const player = await mount();
+    const root = target.querySelector<HTMLElement>('.rr-player')!;
+    const requestFullscreen = vi.fn(() => Promise.resolve());
+    Object.defineProperty(root, 'requestFullscreen', {
+      value: requestFullscreen,
+    });
+
+    fullscreenElement = target;
+    player.toggleFullscreen();
+    expect(requestFullscreen).toHaveBeenCalledOnce();
+    expect(exitFullscreen).not.toHaveBeenCalled();
+
+    fullscreenElement = root;
+    player.toggleFullscreen();
+    expect(exitFullscreen).toHaveBeenCalledOnce();
+  });
+});
+
 describe('player annotations', () => {
+  it('retains a cast-only annotation across a later unannotated segment', async () => {
+    const player = await mountToolbar({
+      events: recording().filter(
+        (event) => event.type !== EventType.Annotation,
+      ),
+    });
+    click('[aria-label="Replay settings"]');
+    await tick();
+    const toggle = () => target.querySelector('[aria-label="Annotations"]');
+    expect(toggle()).toBeNull();
+
+    // Emit the engine notification without adding the annotation to its public list.
+    player
+      .getReplayer()
+      ['emitter'].emit('event-cast', annotation(1000, 'Order placed'));
+    await tick();
+    expect(toggle()).not.toBeNull();
+    player.addEvent({
+      type: EventType.Custom,
+      timestamp: start + 12000,
+      data: { tag: 'segment-end', payload: {} },
+    });
+    // The Replayer reports appended events on the next animation frame.
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await tick();
+    expect(toggle()).not.toBeNull();
+  });
+
+  it('keeps annotations hidden across caption prop changes and appended events', async () => {
+    const initialEvents = recording().filter(
+      (event) => event.type !== EventType.Annotation,
+    );
+    const player = await mountToolbar({ events: initialEvents });
+    click('[aria-label="Replay settings"]');
+    await tick();
+    const switchControl = () =>
+      target.querySelector<HTMLInputElement>(
+        '[role="switch"][aria-label="Annotations"]',
+      );
+    expect(switchControl()).toBeNull();
+
+    player.addEvent(annotation(11000, 'Appended caption'));
+    player.addEvent(timelineMarker(11000, 'Appended note'));
+    // The Replayer reports appended events on the next animation frame.
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await tick();
+    player.goto(11000, false);
+    await tick();
+    expect(switchControl()?.checked).toBe(true);
+    expect(target.querySelector('.rr-player__caption')?.textContent).toBe(
+      'Appended caption',
+    );
+
+    switchControl()?.click();
+    player.$set({ showCaptions: false });
+    await tick();
+    player.$set({ showCaptions: true });
+    player.addEvent(timelineMarker(12000, 'Another note'));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await tick();
+    expect(switchControl()?.checked).toBe(false);
+    expect(target.querySelector('.rr-player__caption')).toBeNull();
+    expect(target.querySelector('.rr-custom-event')).toBeNull();
+    expect(target.querySelector('[title="ordinary"]')).not.toBeNull();
+
+    switchControl()?.click();
+    await tick();
+    expect(target.querySelector('.rr-player__caption')?.textContent).toBe(
+      'Appended caption',
+    );
+    expect(target.querySelectorAll('.rr-custom-event')).toHaveLength(2);
+  });
+
   it('keeps scrollable timeline marker panels outside the seek button and prevents timeline marker panel clicks from seeking', async () => {
     const player = await mount();
     player.goto(3000, false);
@@ -1238,20 +1436,747 @@ describe('player annotations', () => {
       'Click Save',
     );
     expect(target.querySelector('[title="ordinary"]')).not.toBeNull();
-    const captionsToggle = target.querySelector<HTMLButtonElement>(
-      'button[aria-label="CC captions"]',
-    );
-    expect(captionsToggle?.getAttribute('aria-pressed')).toBe('false');
-    captionsToggle?.click();
+    player.$set({ showCaptions: true });
     await tick();
-    expect(captionsToggle?.getAttribute('aria-pressed')).toBe('true');
     expect(target.querySelector('.rr-player__caption')).not.toBeNull();
-    captionsToggle?.click();
+    player.$set({ showCaptions: false });
     await tick();
-    expect(captionsToggle?.getAttribute('aria-pressed')).toBe('false');
     expect(target.querySelector('.rr-player__caption')).toBeNull();
+    expect(target.querySelector('[role="dialog"]')?.textContent).toContain(
+      'Click Save',
+    );
   });
 
+  it.each([true, false])(
+    'toggles all annotations from settings with showCaptions initially %s',
+    async (showCaptions) => {
+      const player = await mountToolbar({ showCaptions });
+      player.goto(2500, false);
+      await tick();
+      // Captions and timeline notes start in the state the switch shows.
+      expect(!!target.querySelector('.rr-player__caption')).toBe(showCaptions);
+      expect(!!target.querySelector('.rr-custom-event')).toBe(showCaptions);
+      click('[aria-label="Replay settings"]');
+      await tick();
+      const toggle = target.querySelector<HTMLInputElement>(
+        '[role="switch"][aria-label="Annotations"]',
+      )!;
+      // The switch shows the host's showCaptions instead of overriding it.
+      expect(toggle.checked).toBe(showCaptions);
+      if (!showCaptions) {
+        toggle.click();
+        await tick();
+        expect(target.querySelector('.rr-player__caption')).not.toBeNull();
+      }
+      toggle.click();
+      await tick();
+      expect(target.querySelector('.rr-player__caption')).toBeNull();
+      expect(target.querySelector('.rr-custom-event')).toBeNull();
+      expect(target.querySelector('[title="ordinary"]')).not.toBeNull();
+      toggle.click();
+      await tick();
+      expect(target.querySelector('.rr-player__caption')).not.toBeNull();
+      expect(target.querySelector('.rr-custom-event')).not.toBeNull();
+    },
+  );
+
+  it('restores classic timeline notes and captions when the toolbar is turned off', async () => {
+    const player = await mountToolbar();
+    player.goto(2500, false);
+    await tick();
+    click('[aria-label="Replay settings"]');
+    await tick();
+    click('[role="switch"][aria-label="Annotations"]');
+    await tick();
+    expect(target.querySelector('.rr-custom-event')).toBeNull();
+
+    player.$set({ features: {} });
+    await tick();
+    expect(target.querySelector('.rr-custom-event')).not.toBeNull();
+    // The switch also turned captions off; the classic CC button restores them.
+    expect(target.querySelector('.rr-player__caption')).toBeNull();
+    click('[aria-label="CC captions"]');
+    await tick();
+    expect(target.querySelector('.rr-player__caption')).not.toBeNull();
+  });
+
+  it('leaves out the toolbar controls a host turns off and keeps the rest', async () => {
+    const player = await mountToolbar({
+      controls: { speed: false, settings: false, time: false },
+    });
+    expect(target.querySelector('[role="timer"]')).toBeNull();
+    expect(target.querySelector('[aria-label="Playback speed"]')).toBeNull();
+    expect(target.querySelector('[aria-label="Replay settings"]')).toBeNull();
+    expect(target.querySelector('[aria-label="Play"]')).not.toBeNull();
+    expect(
+      target.querySelector('[aria-label="Back 10 seconds"]'),
+    ).not.toBeNull();
+    expect(target.querySelector('[aria-label="Fullscreen"]')).not.toBeNull();
+
+    player.$set({ controls: { play: false, jump: false, fullscreen: false } });
+    await tick();
+    expect(target.querySelector('[role="timer"]')).not.toBeNull();
+    expect(target.querySelector('[aria-label="Play"]')).toBeNull();
+    expect(target.querySelector('[aria-label="Back 10 seconds"]')).toBeNull();
+    expect(target.querySelector('[aria-label="Fullscreen"]')).toBeNull();
+    expect(
+      target.querySelector('[aria-label="Playback speed"]'),
+    ).not.toBeNull();
+  });
+
+  it('draws host icons in the toolbar and the built-in ones otherwise', async () => {
+    const seen: string[] = [];
+    const icon = ({
+      name,
+      seconds,
+      document: doc,
+    }: {
+      name: string;
+      seconds: number;
+      document: Document;
+    }) => {
+      seen.push(`${name}:${seconds}`);
+      const svg = doc.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('data-icon', name);
+      return svg;
+    };
+    const player = await mountToolbar({
+      icons: { play: icon, 'jump-back': icon },
+    });
+    const play = target.querySelector('[aria-label="Play"]')!;
+    const custom = play.querySelector('svg[data-icon="play"]')!;
+    expect(custom.getAttribute('aria-hidden')).toBe('true');
+    expect(custom.getAttribute('focusable')).toBe('false');
+    expect(seen).toContain('jump-back:10');
+    // Icons the host did not replace stay built in.
+    expect(
+      target.querySelector('[aria-label="Forward 10 seconds"] svg[data-icon]'),
+    ).toBeNull();
+    expect(
+      target.querySelector('[aria-label="Forward 10 seconds"] svg'),
+    ).not.toBeNull();
+
+    player.$set({ icons: {} });
+    await tick();
+    expect(target.querySelector('svg[data-icon]')).toBeNull();
+  });
+
+  it('ignores controls and icons without the toolbar', async () => {
+    await mount({
+      features: { jump: {} },
+      controls: { play: false, jump: false },
+      icons: {
+        play: ({ document: doc }: { document: Document }) =>
+          doc.createElementNS('http://www.w3.org/2000/svg', 'svg'),
+      },
+    });
+    expect(target.querySelector('.rr-toolbar')).toBeNull();
+    expect(
+      target.querySelector('[aria-label="Back 10 seconds"]'),
+    ).not.toBeNull();
+    expect(target.querySelector('.rr-icon-override')).toBeNull();
+  });
+
+  it('runs the timeline across the player with the toolbar only', async () => {
+    const player = await mount();
+    expect(target.querySelector('.rr-timeline--toolbar')).toBeNull();
+    player.$set({ features: { toolbar: true } });
+    await tick();
+    expect(target.querySelector('.rr-timeline--toolbar')).not.toBeNull();
+  });
+
+  it('shows when the recording started on hovering the time', async () => {
+    const player = await mountToolbar({ recordingTimeZone: 'Asia/Tokyo' });
+    const time = target.querySelector<HTMLElement>('[role="timer"]')!;
+    expect(time.tabIndex).toBe(0);
+    time.dispatchEvent(new PointerEvent('pointerenter'));
+    await tick();
+    const tooltip = target.querySelector('[role="tooltip"]')!;
+    expect(tooltip.textContent).toContain('Recording started');
+    expect(tooltip.textContent).toContain('Your local time');
+    expect(tooltip.textContent).toContain('Recorded user’s local time');
+    expect(tooltip.textContent).toContain('Asia/Tokyo');
+    // The recording starts at the first event, shown in each zone.
+    const startIn = (timeZone: string) =>
+      new Intl.DateTimeFormat(undefined, {
+        timeZone,
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZoneName: 'short',
+      }).format(start);
+    const viewerZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    expect(tooltip.textContent).toContain(startIn('Asia/Tokyo'));
+    expect(tooltip.textContent).toContain(startIn(viewerZone));
+    expect(time.getAttribute('aria-describedby')).toBe(tooltip.id);
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await tick();
+    expect(target.querySelector('[role="tooltip"]')).toBeNull();
+
+    // Leaving closes it at once, unless the pointer moves onto the popup.
+    const leave = (from: Element, to: Element | null) =>
+      from.dispatchEvent(
+        new PointerEvent('pointerleave', { relatedTarget: to }),
+      );
+    time.dispatchEvent(new PointerEvent('pointerenter'));
+    await tick();
+    const popup = target.querySelector('[role="tooltip"]')!;
+    leave(time, popup);
+    await tick();
+    expect(target.querySelector('[role="tooltip"]')).toBe(popup);
+    leave(popup, document.body);
+    await tick();
+    expect(target.querySelector('[role="tooltip"]')).toBeNull();
+    time.dispatchEvent(new PointerEvent('pointerenter'));
+    await tick();
+    leave(time, document.body);
+    await tick();
+    expect(target.querySelector('[role="tooltip"]')).toBeNull();
+
+    // Focus from a click does not keep it open; keyboard focus does.
+    time.dispatchEvent(new PointerEvent('pointerenter'));
+    time.dispatchEvent(new PointerEvent('pointerdown'));
+    time.focus();
+    await tick();
+    leave(time, document.body);
+    await tick();
+    expect(target.querySelector('[role="tooltip"]')).toBeNull();
+    // A second click on the focused pill fires no focus event; keyboard focus
+    // after leaving and coming back still keeps the popup.
+    time.dispatchEvent(new PointerEvent('pointerdown'));
+    time.blur();
+    time.focus();
+    await tick();
+    leave(time, document.body);
+    await tick();
+    expect(target.querySelector('[role="tooltip"]')).not.toBeNull();
+    time.blur();
+
+    // A tap focuses the pill and keeps the popup until focus moves away,
+    // since touch screens send pointerleave right after the tap.
+    time.blur();
+    time.dispatchEvent(
+      new PointerEvent('pointerenter', { pointerType: 'touch' }),
+    );
+    time.dispatchEvent(
+      new PointerEvent('pointerdown', { pointerType: 'touch' }),
+    );
+    time.focus();
+    await tick();
+    leave(time, document.body);
+    await tick();
+    expect(target.querySelector('[role="tooltip"]')).not.toBeNull();
+    time.blur();
+    await tick();
+    expect(target.querySelector('[role="tooltip"]')).toBeNull();
+
+    player.$set({ recordingTimeZone: 'America/New_York' });
+    time.dispatchEvent(new PointerEvent('pointerenter'));
+    await tick();
+    expect(target.querySelector('[role="tooltip"]')!.textContent).toContain(
+      startIn('America/New_York'),
+    );
+    time.dispatchEvent(new PointerEvent('pointerleave'));
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await tick();
+
+    // An unknown time zone leaves out only that line.
+    player.$set({ recordingTimeZone: 'Not/AZone' });
+    time.dispatchEvent(new FocusEvent('focus'));
+    await tick();
+    const again = target.querySelector('[role="tooltip"]')!;
+    expect(again.textContent).toContain('Your local time');
+    expect(again.textContent).not.toContain('Recorded user’s local time');
+  });
+
+  it('keeps the speed slider keys away from page shortcuts in a closed shadow root', async () => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const shadow = host.attachShadow({ mode: 'closed' });
+    const inner = document.createElement('div');
+    shadow.append(inner);
+    const shadowPlayer = new Player({
+      target: inner,
+      props: {
+        events: recording(),
+        autoPlay: false,
+        features: { toolbar: true, jump: { keyboard: 'page' } },
+      },
+    });
+    try {
+      await tick();
+      vi.spyOn(
+        inner.querySelector<HTMLElement>('.rr-player')!,
+        'getBoundingClientRect',
+      ).mockReturnValue(new DOMRect(0, 0, 400, 360));
+      shadowPlayer.goto(0, false);
+      inner
+        .querySelector<HTMLButtonElement>('[aria-label="Playback speed"]')!
+        .click();
+      await tick();
+      const slider = inner.querySelector<HTMLInputElement>(
+        '[aria-label="Playback speed"][type="range"]',
+      )!;
+      // Browsers hide a closed root's internals from the page; happy-dom does
+      // not, so report the path the page would see once the key leaves it.
+      inner.addEventListener(
+        'keydown',
+        (event) =>
+          Object.defineProperty(event, 'composedPath', {
+            value: () => [
+              host,
+              document.body,
+              document.documentElement,
+              document,
+            ],
+          }),
+        { once: true },
+      );
+      slider.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowRight',
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+        }),
+      );
+      expect(shadowPlayer.getReplayer().getCurrentTime()).toBe(0);
+    } finally {
+      shadowPlayer.$destroy();
+      host.remove();
+    }
+  });
+
+  it('offers the JSON download and host links in a Download menu', async () => {
+    const blobs: Blob[] = [];
+    const create = vi
+      .spyOn(URL, 'createObjectURL')
+      .mockImplementation((blob) => {
+        blobs.push(blob as Blob);
+        return 'blob:recording';
+      });
+    const revoke = vi
+      .spyOn(URL, 'revokeObjectURL')
+      .mockImplementation(() => {});
+    const names: string[] = [];
+    const hrefs: string[] = [];
+    const clickLink = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(function (this: HTMLAnchorElement) {
+        names.push(this.download);
+        hrefs.push(this.getAttribute('href') ?? '');
+      });
+    const menu = () =>
+      target.querySelector('[role="dialog"][aria-label="Download"]');
+    const json = () =>
+      Array.from(menu()?.querySelectorAll('button') ?? []).find(
+        (button) => button.textContent === 'rrweb events (JSON)',
+      );
+    try {
+      let player = await mountToolbar();
+      expect(target.querySelector('[aria-label="Download"]')).toBeNull();
+      player.$destroy();
+      target.remove();
+
+      player = await mountToolbar({ features: { download: true } });
+      player.addEvent({
+        type: EventType.Custom,
+        timestamp: start + 12000,
+        data: { tag: 'late', payload: {} },
+      });
+      // The toolbar button opens the menu; it does not download by itself.
+      click('button[aria-label="Download"]');
+      await tick();
+      expect(names).toEqual([]);
+      expect(menu()?.querySelectorAll('li')).toHaveLength(1);
+      json()!.click();
+      expect(names).toEqual(['rrweb-2023-11-14T22-13-20-000Z.json']);
+      // The link points at the blob that holds the events.
+      expect(hrefs).toEqual(['blob:recording']);
+      const saved = JSON.parse(await blobs[0].text()) as eventWithTime[];
+      expect(saved).toHaveLength(recording().length + 1);
+      expect(saved.at(-1)?.timestamp).toBe(start + 12000);
+      expect(blobs[0].type).toBe('application/json');
+
+      player.$set({
+        features: {
+          toolbar: true,
+          download: {
+            fileName: 'session-42.json',
+            links: [
+              {
+                label: 'Video (MP4)',
+                href: 'https://example.com/session-42.mp4',
+                description: 'Rendered on our servers',
+              },
+              { label: 'Unsafe', href: ' javascript:alert(1)' },
+            ],
+          },
+        },
+      });
+      await tick();
+      json()!.click();
+      expect(names.at(-1)).toBe('session-42.json');
+      const links = menu()!.querySelectorAll('a');
+      expect(links).toHaveLength(1);
+      expect(links[0].getAttribute('href')).toBe(
+        'https://example.com/session-42.mp4',
+      );
+      expect(links[0].target).toBe('_blank');
+      expect(links[0].rel).toBe('noopener noreferrer');
+      expect(links[0].textContent).toBe('Video (MP4)Rendered on our servers');
+
+      // Links alone, without the JSON item.
+      player.$set({
+        features: {
+          toolbar: true,
+          download: {
+            json: false,
+            links: [{ label: 'Screenshot', href: 'blob:screenshot' }],
+          },
+        },
+      });
+      await tick();
+      expect(json()).toBeUndefined();
+      expect(menu()!.querySelectorAll('a')).toHaveLength(1);
+
+      // Nothing to offer, or the host hides it: no button.
+      player.$set({
+        features: { toolbar: true, download: { json: false, links: [] } },
+      });
+      await tick();
+      expect(target.querySelector('button[aria-label="Download"]')).toBeNull();
+      player.$set({
+        features: { toolbar: true, download: true },
+        controls: { download: false },
+      });
+      await tick();
+      expect(target.querySelector('[aria-label="Download"]')).toBeNull();
+    } finally {
+      create.mockRestore();
+      revoke.mockRestore();
+      clickLink.mockRestore();
+    }
+  });
+
+  it('keeps the chosen speed when features change', async () => {
+    const player = await mount({ speedOption: [1, 2, 4] });
+    const active = () => target.querySelector('.rr-controller__btns .active');
+    [
+      ...target.querySelectorAll<HTMLButtonElement>(
+        '.rr-controller__btns button',
+      ),
+    ]
+      .find((button) => button.textContent?.trim() === '4x')!
+      .click();
+    await tick();
+    expect(active()?.textContent?.trim()).toBe('4x');
+    player.$set({ features: {} });
+    await tick();
+    expect(active()?.textContent?.trim()).toBe('4x');
+    expect(player.getReplayer().config.speed).toBe(4);
+  });
+
+  it('shows the replay speed when the toolbar is turned on later', async () => {
+    const player = await mount({ speed: 2, speedOption: [1, 2, 4] });
+    player.$set({ features: { toolbar: true } });
+    await tick();
+    click('[aria-label="Playback speed"]');
+    await tick();
+    expect(target.querySelector('.rr-control-value')?.textContent).toBe(
+      '2.00×',
+    );
+  });
+
+  it('hides toolbar timeline notes when the host turns captions off', async () => {
+    const player = await mountToolbar();
+    player.goto(2500, false);
+    await tick();
+    expect(target.querySelector('.rr-custom-event')).not.toBeNull();
+    player.$set({ showCaptions: false });
+    await tick();
+    expect(target.querySelector('.rr-custom-event')).toBeNull();
+    click('[aria-label="Replay settings"]');
+    await tick();
+    expect(
+      target.querySelector<HTMLInputElement>(
+        '[role="switch"][aria-label="Annotations"]',
+      )!.checked,
+    ).toBe(false);
+  });
+
+  it('changes the replay speed and skip setting from the toolbar panels', async () => {
+    const player = await mountToolbar({ speedOption: [1, 2, 4] });
+    const replayer = player.getReplayer();
+    click('[aria-label="Playback speed"]');
+    await tick();
+    const slider = target.querySelector<HTMLInputElement>(
+      '[aria-label="Playback speed"][type="range"]',
+    )!;
+    // Any speed in the range is valid, so custom speed lists keep their ends.
+    expect(slider.step).toBe('any');
+    slider.value = '4';
+    slider.dispatchEvent(new Event('input', { bubbles: true }));
+    await tick();
+    expect(replayer.config.speed).toBe(4);
+    expect(replayer.timer.speed).toBe(4);
+
+    click('[aria-label="Replay settings"]');
+    await tick();
+    const skip = () =>
+      target.querySelector<HTMLInputElement>(
+        '[role="switch"][aria-label="Skip inactive"]',
+      )!;
+    const before = replayer.config.skipInactive;
+    skip().click();
+    await tick();
+    expect(replayer.config.skipInactive).toBe(!before);
+    skip().click();
+    await tick();
+    expect(replayer.config.skipInactive).toBe(before);
+  });
+
+  it('shows the replay speed in the toolbar from the start', async () => {
+    await mountToolbar({ speed: 2 });
+    click('[aria-label="Playback speed"]');
+    await tick();
+    expect(target.querySelector('.rr-control-value')?.textContent).toBe(
+      '2.00×',
+    );
+  });
+
+  it('follows the host showCaptions when the toolbar starts with captions off', async () => {
+    const player = await mountToolbar({ showCaptions: false });
+    player.goto(2500, false);
+    await tick();
+    expect(target.querySelector('.rr-custom-event')).toBeNull();
+    player.$set({ showCaptions: true });
+    await tick();
+    expect(target.querySelector('.rr-custom-event')).not.toBeNull();
+    expect(target.querySelector('.rr-player__caption')).not.toBeNull();
+  });
+
+  it('keeps a panel open when it is pressed inside a closed shadow root', async () => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const shadow = host.attachShadow({ mode: 'closed' });
+    const inner = document.createElement('div');
+    shadow.append(inner);
+    const shadowPlayer = new Player({
+      target: inner,
+      props: {
+        events: recording(),
+        autoPlay: false,
+        features: { toolbar: true },
+      },
+    });
+    try {
+      await tick();
+      inner
+        .querySelector<HTMLButtonElement>('[aria-label="Playback speed"]')!
+        .click();
+      await tick();
+      const preset = inner.querySelector<HTMLButtonElement>(
+        '[aria-label="2× speed"]',
+      )!;
+      // Browsers hide a closed root's internals from composedPath(), so the
+      // document sees only the host. happy-dom does not, so once the press
+      // has passed the panel, report the path the document would see.
+      const press = new PointerEvent('pointerdown', {
+        bubbles: true,
+        composed: true,
+      });
+      inner.addEventListener(
+        'pointerdown',
+        (event) =>
+          Object.defineProperty(event, 'composedPath', {
+            value: () => [
+              host,
+              document.body,
+              document.documentElement,
+              document,
+            ],
+          }),
+        { once: true },
+      );
+      expect(inner.querySelector('.rr-control-panel')).not.toBeNull();
+      preset.dispatchEvent(press);
+      await tick();
+      expect(inner.querySelector('.rr-control-panel')).not.toBeNull();
+    } finally {
+      shadowPlayer.$destroy();
+      host.remove();
+    }
+  });
+
+  it('ignores the result of a prefixed fullscreen request', async () => {
+    const player = await mount();
+    const element = target.querySelector<HTMLElement>('.rr-player')!;
+    Object.assign(element, {
+      requestFullscreen: undefined,
+      webkitRequestFullscreen: () => undefined,
+    });
+    expect(() => player.toggleFullscreen()).not.toThrow();
+  });
+
+  it('bounds ten-second skips and preserves playback state', async () => {
+    const player = await mountToolbar();
+    const position = () =>
+      target
+        .querySelector('[aria-label="Playback position"]')
+        ?.getAttribute('aria-valuenow');
+    click('[aria-label="Back 10 seconds"]');
+    await tick();
+    expect(position()).toBe('0');
+    click('[aria-label="Forward 10 seconds"]');
+    await tick();
+    expect(position()).toBe('10000');
+    expect(target.querySelector('[aria-label="Play"]')).not.toBeNull();
+    click('[aria-label="Forward 10 seconds"]');
+    await tick();
+    expect(position()).toBe('10000');
+    player.goto(1000, true);
+    click('[aria-label="Back 10 seconds"]');
+    await tick();
+    expect(position()).toBe('0');
+    expect(target.querySelector('[aria-label="Pause"]')).not.toBeNull();
+  });
+
+  it('disables ten-second skips during live playback', async () => {
+    const player = await mountToolbar();
+    const forward = target.querySelector<HTMLButtonElement>(
+      '[aria-label="Forward 10 seconds"]',
+    )!;
+    const back = target.querySelector<HTMLButtonElement>(
+      '[aria-label="Back 10 seconds"]',
+    )!;
+    expect(forward.disabled).toBe(false);
+    expect(back.disabled).toBe(false);
+    player.getReplayer().startLive();
+    await tick();
+    expect(forward.disabled).toBe(true);
+    expect(back.disabled).toBe(true);
+  });
+
+  it('pins a hover-open popup on click and supports custom speed presets', async () => {
+    const player = await mountToolbar({ speedOption: [1, 1.25, 3, 10] });
+    const trigger = target.querySelector<HTMLButtonElement>(
+      '[aria-label="Playback speed"]',
+    )!;
+    trigger.dispatchEvent(
+      new PointerEvent('pointerenter', { pointerType: 'mouse' }),
+    );
+    await tick();
+    const popup = target.querySelector<HTMLElement>(
+      '[role="dialog"][aria-label="Playback speed"]',
+    )!;
+    expect(popup).not.toBeNull();
+    trigger.click();
+    await tick();
+    expect(document.activeElement).toBe(popup);
+    const fractionalPreset = popup.querySelector<HTMLButtonElement>(
+      '[aria-label="1.25× speed"]',
+    )!;
+    expect(fractionalPreset.textContent?.trim()).toBe('1.25');
+    fractionalPreset.click();
+    await tick();
+    expect(player.getReplayer().config.speed).toBe(1.25);
+    click('[aria-label="10× speed"]');
+    await tick();
+    expect(player.getReplayer().config.speed).toBe(10);
+    trigger.click();
+    await tick();
+    expect(
+      target.querySelector('[role="dialog"][aria-label="Playback speed"]'),
+    ).toBeNull();
+  });
+
+  it('keeps a focused popup open on sibling hover and switches on click', async () => {
+    await mountToolbar();
+    const speedTrigger = target.querySelector<HTMLButtonElement>(
+      'button[aria-label="Playback speed"]',
+    )!;
+    const settingsTrigger = target.querySelector<HTMLButtonElement>(
+      'button[aria-label="Replay settings"]',
+    )!;
+    const dialogs = () =>
+      Array.from(target.querySelectorAll('.rr-toolbar [role="dialog"]'));
+    const hover = (element: HTMLElement) => {
+      element.dispatchEvent(
+        new PointerEvent('pointerenter', { pointerType: 'mouse' }),
+      );
+    };
+
+    hover(speedTrigger);
+    await tick();
+    hover(settingsTrigger);
+    await tick();
+    expect(
+      dialogs().map((dialog) => dialog.getAttribute('aria-label')),
+    ).toEqual(['Replay settings']);
+
+    speedTrigger.click();
+    await tick();
+    const preset = target.querySelector<HTMLButtonElement>(
+      'button[aria-label="2× speed"]',
+    )!;
+    preset.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    preset.focus();
+    hover(settingsTrigger);
+    await tick();
+    expect(
+      dialogs().map((dialog) => dialog.getAttribute('aria-label')),
+    ).toEqual(['Playback speed']);
+    expect(document.activeElement).toBe(preset);
+
+    settingsTrigger.click();
+    await tick();
+    expect(
+      dialogs().map((dialog) => dialog.getAttribute('aria-label')),
+    ).toEqual(['Replay settings']);
+    expect(document.activeElement).toBe(dialogs()[0]);
+  });
+
+  it('keeps speed controls available while skipping inactivity', async () => {
+    const player = await mountToolbar({ skipInactive: true });
+    click('button[aria-label="Playback speed"]');
+    await tick();
+    const dialog = target.querySelector(
+      '[role="dialog"][aria-label="Playback speed"]',
+    )!;
+    const range = dialog.querySelector<HTMLInputElement>(
+      'input[type="range"]',
+    )!;
+    const preset = dialog.querySelector<HTMLButtonElement>(
+      'button[aria-label="2× speed"]',
+    )!;
+
+    const { speedService } = player.getReplayer();
+    speedService.send({ type: 'FAST_FORWARD', payload: { speed: 5 } });
+    await tick();
+    // Controls stay usable while skipping, as in rrweb-io/rrweb#2020.
+    expect(range.disabled).toBe(false);
+    expect(preset.disabled).toBe(false);
+    preset.click();
+    await tick();
+    expect(preset.getAttribute('aria-pressed')).toBe('true');
+
+    // A speed change during a playing skip keeps the replay playing.
+    const replayer = player.getReplayer();
+    replayer.play();
+    speedService.send({ type: 'FAST_FORWARD', payload: { speed: 5 } });
+    await tick();
+    dialog
+      .querySelector<HTMLButtonElement>('button[aria-label="1× speed"]')!
+      .click();
+    await tick();
+    expect(replayer.service.state.value).toBe('playing');
+    expect(replayer.config.speed).toBe(1);
+  });
   it('supports accessible keyboard seeking on the timeline slider', async () => {
     const player = await mount();
     player.goto(3000, false);

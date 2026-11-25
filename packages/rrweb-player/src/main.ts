@@ -25,4 +25,12 @@ export default Player;
 
 export type { annotationData } from '@rrweb/types';
 
-export type { PlayerFeatures, JumpEvent } from './features';
+export type {
+  PlayerFeatures,
+  DownloadLink,
+  PlayerControls,
+  PlayerIcons,
+  PlayerIconName,
+  PlayerIconContext,
+  JumpEvent,
+} from './features';

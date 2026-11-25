@@ -40,9 +40,16 @@
   import Switch from './components/Switch.svelte';
   import CustomEventMarker from './components/CustomEventMarker.svelte';
   import { parseAnnotationEvent, getActiveCaption } from './annotations';
+  import PlayerToolbar from './components/PlayerToolbar.svelte';
   import { createTimelineIndex } from './timeline-index';
 
-  import { jumpSeconds, type PlayerFeatures, type JumpEvent } from './features';
+  import {
+    jumpSeconds,
+    type PlayerControls,
+    type PlayerFeatures,
+    type PlayerIcons,
+    type JumpEvent,
+  } from './features';
   export let features: PlayerFeatures = {};
   // The Player's root element, which arrow keys are routed by.
   export let playerElement: HTMLElement | undefined = undefined;
@@ -55,6 +62,38 @@
       showController && features.jump?.keyboard === 'page',
     );
   }
+  /** The player's `controls` prop: toolbar controls to leave out. */
+  export let controlVisibility: PlayerControls = {};
+  export let icons: PlayerIcons = {};
+  export let recordingTimeZone: string | undefined = undefined;
+
+  /**
+   * Saves the events the player holds, including any appended since it
+   * loaded, as a JSON file.
+   */
+  function downloadRecording() {
+    const option = features.download;
+    if (!option) return;
+    const named = typeof option === 'object' ? option.fileName?.trim() : '';
+    const started = new Date(replayer.getMetaData().startTime);
+    const stamp = Number.isNaN(started.getTime())
+      ? 'recording'
+      : started.toISOString().replace(/[:.]/g, '-');
+    const fileName = named || `rrweb-${stamp}.json`;
+    const doc = container?.ownerDocument ?? document;
+    const view = doc.defaultView ?? window;
+    const url = view.URL.createObjectURL(
+      new view.Blob([JSON.stringify(replayer.events)], {
+        type: 'application/json',
+      }),
+    );
+    const link = doc.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    // Let the browser start the download before the URL goes away.
+    view.setTimeout(() => view.URL.revokeObjectURL(url), 0);
+  }
   $: seconds = jumpSeconds(features.jump);
   const dispatch = createEventDispatcher();
 
@@ -64,7 +103,12 @@
   let timeline = updateTimeline(replayer.events, replayer.config.inactivePeriodThreshold);
   export let captionText: string | undefined = undefined;
   let activeCaptionText: string | undefined;
-  $: captionText = showCaptions ? activeCaptionText : undefined;
+  // The opt-in toolbar's Annotations switch hides captions and timeline
+  // notes together, starting from showCaptions. The classic controls keep
+  // timeline notes visible.
+  let showMarkers = true;
+  $: markersShown = !features.toolbar || (showCaptions && showMarkers);
+  $: captionText = showCaptions && markersShown ? activeCaptionText : undefined;
   // Index changes and seeks reconcile state; playback updates come from annotation events.
   $: activeCaptionText = resolveCaption(timeline);
 
@@ -77,6 +121,16 @@
 
   function restoreCaption(index: ReturnType<typeof updateTimeline>) {
     activeCaptionText = resolveCaption(index);
+  }
+
+  // Whether the recording has captions or timeline notes; once seen it stays
+  // true, since a streamed annotation can be cast before it is in the events.
+  let hasAnnotations = false;
+  $: if (timeline.hasCaptions || timeline.markers.some((marker) => marker.text))
+    hasAnnotations = true;
+
+  function detectAnnotation(event: unknown) {
+    if (parseAnnotationEvent(event)?.text) hasAnnotations = true;
   }
 
   function handleAnnotation(event: unknown) {
@@ -100,7 +154,22 @@
   export let autoPlay: boolean;
   export let skipInactive: boolean;
   export let speedOption: number[];
-  export let speed = speedOption.length ? speedOption[0] : 1;
+  // The toolbar shows the replay's actual speed; the classic controls keep
+  // highlighting the first speedOption until one is chosen.
+  export let speed = features.toolbar
+    ? replayer.config.speed
+    : speedOption.length
+      ? speedOption[0]
+      : 1;
+  // Turning the toolbar on later shows the speed the replay is playing at.
+  let toolbarShown = !!features.toolbar;
+  $: if (!!features.toolbar !== toolbarShown) {
+    toolbarShown = !!features.toolbar;
+    if (toolbarShown) speed = replayer.config.speed;
+  }
+  /** The player element; positions the toolbar's panels. */
+  export let container: HTMLElement;
+  export let fullscreen = false;
   export let tags: Record<string, string> = {};
   export let timelineMarkerColor = 'rgb(73, 80, 246)';
   export let inactiveColor: string;
@@ -635,6 +704,7 @@
 
   onMount(() => {
     replayer.on('annotation', handleAnnotation);
+    replayer.on('event-cast', detectAnnotation);
     replayer.on('start', restoreCaptionOnSeek);
     isAdvancing = replayer.isPlaying() && !replayer.isStalled();
     playingInUI = replayer.isPlaying();
@@ -687,6 +757,7 @@
     replayer.off('annotation', handleAnnotation);
     replayer.off('start', restoreCaptionOnSeek);
     replayer.off('events-updated', updateMeta);
+    replayer.off('event-cast', detectAnnotation);
     replayer.pause();
     stopTimer();
   });
@@ -695,6 +766,26 @@
 <svelte:window on:keydown={handleWindowKeydown} />
 
 <style>
+  .rr-controller.rr-controller--toolbar {
+    background: var(--rr-surface);
+    color: var(--rr-text);
+  }
+  /* The timeline uses stronger mixes than the shared track and soft accent,
+     so the track and the played part stand out on light and dark surfaces. */
+  .rr-controller--toolbar .rr-progress {
+    background: color-mix(in srgb, var(--rr-text) 24%, var(--rr-surface));
+    border-color: var(--rr-surface);
+  }
+  .rr-controller--toolbar .rr-progress__step {
+    background: color-mix(in srgb, var(--rr-accent) 55%, var(--rr-surface));
+  }
+  .rr-controller--toolbar .rr-progress__handler {
+    background: var(--rr-accent);
+  }
+  .rr-controller--toolbar .rr-progress__slider:focus-visible {
+    outline-color: var(--rr-focus);
+  }
+
   .rr-controller {
     width: 100%;
     height: 80px;
@@ -706,6 +797,13 @@
     border-radius: 0 0 5px 5px;
   }
 
+  /* With the toolbar, the timeline spans the player, inset from its edges. */
+  .rr-timeline.rr-timeline--toolbar {
+    --rr-timeline-inset: 12px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 var(--rr-timeline-inset);
+  }
   .rr-timeline {
     width: 80%;
     display: flex;
@@ -806,9 +904,11 @@
 </style>
 
 {#if showController}
-  <div class="rr-controller" bind:this={controls}>
-    <div class="rr-timeline">
-      <span class="rr-timeline__time">{formatTime(currentTime)}</span>
+  <div class="rr-controller" class:rr-controller--toolbar={features.toolbar} bind:this={controls}>
+    <div class="rr-timeline" class:rr-timeline--toolbar={features.toolbar}>
+      {#if !features.toolbar}
+        <span class="rr-timeline__time">{formatTime(currentTime)}</span>
+      {/if}
       <div
         class="rr-progress"
         class:disabled={speedState === 'skipping'}
@@ -842,6 +942,7 @@
         {/each}
         {#each customEvents as event}
           {#if event.timelineMarkerText}
+            {#if markersShown}
             <CustomEventMarker
               dismissalVersion={timelineMarkerDismissalVersion}
               name={event.name}
@@ -852,6 +953,7 @@
               on:seek={() => goto(event.timeOffset)}
               on:focus-timeline={() => progressSlider.focus()}
             />
+            {/if}
           {:else}
             <div
               title={event.name}
@@ -864,8 +966,40 @@
 
         <div class="rr-progress__handler" style="left: {percentage}" />
       </div>
-      <span class="rr-timeline__time">{formatTime(meta.totalTime)}</span>
+      {#if !features.toolbar}
+        <span class="rr-timeline__time">{formatTime(meta.totalTime)}</span>
+      {/if}
     </div>
+    {#if features.toolbar}
+      <PlayerToolbar
+        {features}
+        startedAt={meta.startTime}
+        {recordingTimeZone}
+        controls={controlVisibility}
+        {icons}
+        {seconds}
+        {fullscreen}
+        {container}
+        {currentTime}
+        totalTime={meta.totalTime}
+        playing={playingInUI}
+        canJump={!live}
+        {hasAnnotations}
+        {speed}
+        {speedOption}
+        annotations={showCaptions && showMarkers}
+        bind:skipInactive
+        on:toggle={toggle}
+        on:fullscreen={() => dispatch('fullscreen')}
+        on:download={downloadRecording}
+        on:speed={(event) => setSpeed(event.detail)}
+        on:annotations={(event) => {
+          showMarkers = event.detail;
+          showCaptions = event.detail;
+        }}
+        on:jump={(event) => jump(event.detail < 0 ? -1 : 1)}
+      />
+    {:else}
     <div class="rr-controller__btns">
       <button on:click={toggle}>
         {#if playingInUI}
@@ -983,5 +1117,6 @@
         </svg>
       </button>
     </div>
+    {/if}
   </div>
 {/if}

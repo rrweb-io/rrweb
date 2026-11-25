@@ -2,7 +2,12 @@ import type { eventWithTime } from '@rrweb/types';
 import type { Replayer, playerConfig } from '@rrweb/replay';
 import type { Mirror } from 'rrweb-snapshot';
 
-import type { PlayerFeatures, JumpEvent } from './features';
+import type {
+  PlayerControls,
+  PlayerFeatures,
+  PlayerIcons,
+  JumpEvent,
+} from './features';
 
 export type RRwebPlayerOptions = {
   target: HTMLElement;
@@ -17,6 +22,24 @@ export type RRwebPlayerOptions = {
      * @defaultValue `{}`
      */
     features?: PlayerFeatures;
+    /**
+     * Toolbar controls to leave out, for example `{ speed: false }`. Applies
+     * only with `features.toolbar`.
+     * @defaultValue `{}`
+     */
+    controls?: PlayerControls;
+    /**
+     * Replacement toolbar icons. Each function returns an SVG element for
+     * the named control. Applies only with `features.toolbar`.
+     * @defaultValue `{}`
+     */
+    icons?: PlayerIcons;
+    /**
+     * The recorded user's IANA time zone, such as `'America/New_York'`. With
+     * the toolbar, hovering or focusing the time shows when the recording
+     * started in the viewer's local time, and in this time zone when set.
+     */
+    recordingTimeZone?: string;
     /**
      * The width of the replayer
      * @defaultValue `1024`
@@ -108,7 +131,14 @@ export type RRwebPlayerExpose = {
     options: Partial<
       Pick<
         RRwebPlayerOptions['props'],
-        'width' | 'height' | 'features' | 'clickToPlay' | 'showPlayOverlay'
+        | 'width'
+        | 'height'
+        | 'features'
+        | 'clickToPlay'
+        | 'showPlayOverlay'
+        | 'controls'
+        | 'icons'
+        | 'recordingTimeZone'
       >
     >,
   ) => void;

@@ -7,16 +7,24 @@
     inlineCss,
     openFullscreen,
     exitFullscreen,
-    isFullscreen,
+    getFullscreenElement,
     onFullscreenChange,
     typeOf,
   } from './utils';
   import Controller from './Controller.svelte';
   import type { RRwebPlayerOptions, RRwebPlayerExpose } from './types';
 
-  import type { PlayerFeatures, JumpEvent } from './features';
+  import type {
+    PlayerControls,
+    PlayerFeatures,
+    PlayerIcons,
+    JumpEvent,
+  } from './features';
   import { jumpSeconds } from './features';
   export let features: PlayerFeatures = {};
+  export let controls: PlayerControls = {};
+  export let icons: PlayerIcons = {};
+  export let recordingTimeZone: string | undefined = undefined;
   const jumpListeners = new Set<(event: JumpEvent) => unknown>();
   export const jump: RRwebPlayerExpose['jump'] = (direction) => {
     controller?.jump(
@@ -107,18 +115,29 @@
   }
 
   let fullscreenListener: undefined | (() => void);
-  let _width: number = width;
-  let _height: number = height;
+  // Measured while this player is fullscreen; null otherwise, so the
+  // embedded width and height props are never overwritten.
+  let fullscreenSize: { width: number; height: number } | null = null;
+  let fullscreenObserver: ResizeObserver | undefined;
   let controller: {
     toggle: () => void;
     setSpeed: (speed: number) => void;
     toggleSkipInactive: () => void;
   } & Controller;
 
+  $: viewportSize = {
+    width: fullscreenSize?.width ?? width,
+    height: fullscreenSize
+      ? Math.max(
+          1,
+          fullscreenSize.height - (showController ? controllerHeight : 0),
+        )
+      : height,
+  };
   let style: string;
   $: style = inlineCss({
-    width: `${width}px`,
-    height: `${height}px`,
+    width: `${viewportSize.width}px`,
+    height: `${viewportSize.height}px`,
   });
   let playerStyle: string;
   $: playerStyle = inlineCss({
@@ -128,27 +147,41 @@
 
   const updateScale = (
     el: HTMLElement,
+    viewport: { width: number; height: number },
     frameDimension: { width: number; height: number },
   ) => {
-    const widthScale = width / frameDimension.width;
-    const heightScale = height / frameDimension.height;
+    const widthScale = viewport.width / frameDimension.width;
+    const heightScale = viewport.height / frameDimension.height;
     const scale = [widthScale, heightScale];
     if (maxScale) scale.push(maxScale);
     el.style.transform =
       `scale(${Math.min(...scale)})` + 'translate(-50%, -50%)';
   };
 
-  export const triggerResize: RRwebPlayerExpose['triggerResize'] = () => {
-    updateScale(replayer.wrapper, {
+  const resizeReplay = (viewport: { width: number; height: number }) => {
+    const frame = {
       width: replayer.iframe.offsetWidth,
       height: replayer.iframe.offsetHeight,
-    });
+    };
+    // A hidden player has no layout; keep the scale it already has.
+    if (!frame.width || !frame.height) return;
+    updateScale(replayer.wrapper, viewport, frame);
+  };
+  $: if (replayer) resizeReplay(viewportSize);
+
+  export const triggerResize: RRwebPlayerExpose['triggerResize'] = () => {
+    resizeReplay(viewportSize);
   };
 
   export const toggleFullscreen: RRwebPlayerExpose['toggleFullscreen'] = () => {
-    if (player) {
-      isFullscreen() ? exitFullscreen() : openFullscreen(player);
-    }
+    if (!player) return;
+    // A browser can refuse fullscreen, for example without a user gesture.
+    const request =
+      getFullscreenElement(player) === player
+        ? exitFullscreen(player.ownerDocument)
+        : openFullscreen(player);
+    // Prefixed APIs in older browsers return nothing.
+    void Promise.resolve(request).catch(() => undefined);
   };
 
   export const addEventListener: RRwebPlayerExpose['addEventListener'] = (
@@ -223,7 +256,13 @@
     }
 
     // Player-only props are not Replayer options.
-    const { features: _features, ...replayProps } = $$props;
+    const {
+      features: _features,
+      controls: _controls,
+      icons: _icons,
+      recordingTimeZone: _recordingTimeZone,
+      ...replayProps
+    } = $$props;
     replayer = new Replayer(events, {
       speed,
       root: frame,
@@ -235,36 +274,37 @@
     replayer.on('resize', (dimension) => {
       updateScale(
         replayer.wrapper,
+        viewportSize,
         dimension as { width: number; height: number },
       );
     });
 
-    fullscreenListener = onFullscreenChange(() => {
-      if (isFullscreen()) {
-        setTimeout(() => {
-          _width = width;
-          _height = height;
-          width = player.offsetWidth;
-          height =
-            player.offsetHeight - (showController ? controllerHeight : 0);
-          updateScale(replayer.wrapper, {
-            width: replayer.iframe.offsetWidth,
-            height: replayer.iframe.offsetHeight,
-          });
-        }, 0);
+    const measureFullscreen = () => {
+      if (player && getFullscreenElement(player) === player) {
+        fullscreenSize = {
+          width: player.clientWidth,
+          height: player.clientHeight,
+        };
+      }
+    };
+    fullscreenListener = onFullscreenChange(player.ownerDocument, () => {
+      if (getFullscreenElement(player) === player) {
+        measureFullscreen();
+        if (!fullscreenObserver && typeof ResizeObserver !== 'undefined') {
+          fullscreenObserver = new ResizeObserver(measureFullscreen);
+          fullscreenObserver.observe(player);
+        }
       } else {
-        width = _width;
-        height = _height;
-        updateScale(replayer.wrapper, {
-          width: replayer.iframe.offsetWidth,
-          height: replayer.iframe.offsetHeight,
-        });
+        fullscreenObserver?.disconnect();
+        fullscreenObserver = undefined;
+        fullscreenSize = null;
       }
     });
   });
 
   onDestroy(() => {
     replayer?.off('state-change', syncPaused);
+    fullscreenObserver?.disconnect();
     fullscreenListener && fullscreenListener();
   });
 </script>
@@ -278,6 +318,35 @@
     float: left;
     border-radius: 5px;
     box-shadow: 0 24px 48px rgba(17, 16, 62, 0.12);
+  }
+
+  .rr-player:fullscreen {
+    width: 100vw !important;
+    height: 100vh !important;
+    border-radius: 0;
+  }
+
+  /* The opt-in toolbar adapts its spacing to the player's width. */
+  /* The toolbar derives every color from four custom properties the host
+     can set: surface, text, accent and focus ring. */
+  .rr-player.rr-player--toolbar {
+    container-type: inline-size;
+    --rr-surface: var(--rrweb-player-surface, #fff);
+    --rr-text: var(--rrweb-player-text, #11103e);
+    --rr-accent: var(--rrweb-player-accent, #4950f6);
+    --rr-focus: var(--rrweb-player-focus-ring, var(--rr-accent));
+    --rr-subtle: color-mix(in srgb, var(--rr-text) 10%, var(--rr-surface));
+    --rr-track: color-mix(in srgb, var(--rr-text) 16%, var(--rr-surface));
+    --rr-line: color-mix(in srgb, var(--rr-text) 22%, var(--rr-surface));
+    --rr-muted: color-mix(in srgb, var(--rr-text) 68%, var(--rr-surface));
+    --rr-accent-soft: color-mix(in srgb, var(--rr-accent) 28%, var(--rr-surface));
+    background: var(--rr-surface);
+    color: var(--rr-text);
+  }
+  /* A browser paints an unstyled page white, so the replayed page keeps a
+     white canvas; only the letterbox around it takes the surface color. */
+  .rr-player--toolbar :global(.replayer-wrapper) {
+    background: #fff;
   }
 
   .rr-player__viewport {
@@ -383,6 +452,7 @@
 
 <div
   class="rr-player"
+  class:rr-player--toolbar={features.toolbar === true}
   tabindex={showController && features.jump?.keyboard === 'player'
     ? 0
     : showPlayOverlay
@@ -390,8 +460,8 @@
       : undefined}
   bind:this={player}
   style={playerStyle}
-  style:--rr-timeline-marker-panel-width={`${Math.min(280, width * 0.7)}px`}
-  style:--rr-timeline-marker-panel-height={`${Math.max(48, height - 32)}px`}
+  style:--rr-timeline-marker-panel-width={`${Math.min(280, viewportSize.width * 0.7)}px`}
+  style:--rr-timeline-marker-panel-height={`${Math.max(48, viewportSize.height - 32)}px`}
 >
   <div class="rr-player__viewport" {style}>
     {#if clickToPlay === true}
@@ -426,6 +496,11 @@
       bind:this={controller}
       {features}
       playerElement={player}
+      controlVisibility={controls}
+      {icons}
+      {recordingTimeZone}
+      container={player}
+      fullscreen={fullscreenSize !== null}
       on:ui-jump={({ detail }) => [...jumpListeners].forEach(listener => listener(detail))}
       {replayer}
       bind:captionText
