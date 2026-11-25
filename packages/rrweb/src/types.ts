@@ -177,6 +177,11 @@ export type { Replayer } from './replay';
 export type playerConfig = {
   speed: number;
   maxSpeed: number;
+  /**
+   * Off unless `true`. Sets the skip speed from the length of each inactive
+   * gap, aiming at one to three seconds per gap. `maxSpeed` still applies.
+   */
+  adaptiveSkip?: boolean;
   root: Element;
   loadTimeout: number;
   skipInactive: boolean;

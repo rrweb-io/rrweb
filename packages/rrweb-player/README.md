@@ -106,6 +106,29 @@ steps, or use Home/End to jump to the start/end.
 See the [annotation recipe](../../docs/recipes/annotations.md)
 for replay callbacks, keyboard interactions, seeking, and TypeScript usage.
 
+## Skipping inactivity
+
+With `skipInactive`, the replay fast-forwards through gaps longer than
+`inactivePeriodThreshold`. Two options are off unless you set them:
+
+- `adaptiveSkip: true` sets the skip speed from the length of each gap,
+  aiming at one to three seconds per gap. `maxSpeed` (default 360) still
+  caps it, so a one-hour gap takes ten seconds unless you raise it.
+- `showSkipIndicator: true` shows a fast-forward indicator over the replay
+  while it skips, with or without the controller.
+
+```js
+new rrwebPlayer({
+  target: document.body,
+  props: {
+    events,
+    adaptiveSkip: true,
+    maxSpeed: 1000,
+    showSkipIndicator: true,
+  },
+});
+```
+
 ## Methods on the rrwebPlayer component
 
 ```ts

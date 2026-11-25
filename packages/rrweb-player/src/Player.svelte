@@ -29,7 +29,17 @@
   // color of inactive periods indicator
   export let inactiveColor: NonNullable<RRwebPlayerOptions['props']['inactiveColor']> = '#D4D4D4';
 
+  export let showSkipIndicator: NonNullable<RRwebPlayerOptions['props']['showSkipIndicator']> = false;
   let replayer: Replayer;
+  let skipping = false;
+  // Shown only while a skip plays: a pause or stall holds the skip without
+  // moving, and the skip can resume without a new skip-start.
+  const syncSkip = () => {
+    const { state } = replayer.service;
+    skipping =
+      (state.matches('playing') || state.matches('live')) &&
+      replayer.speedService.state.matches('skipping');
+  };
   let captionText: string | undefined;
 
   export const getMirror = () => replayer.getMirror();
@@ -160,6 +170,7 @@
       ...$$props,
     });
 
+    replayer.on('state-change', syncSkip);
     replayer.on('resize', (dimension) => {
       updateScale(
         replayer.wrapper,
@@ -192,6 +203,7 @@
   });
 
   onDestroy(() => {
+    replayer?.off('state-change', syncSkip);
     fullscreenListener && fullscreenListener();
   });
 </script>
@@ -209,6 +221,32 @@
 
   .rr-player__viewport {
     position: relative;
+  }
+
+  .rr-player__skip-indicator {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgb(0 0 0 / 15%);
+    pointer-events: none;
+  }
+
+  .rr-player__skip-indicator > span {
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #222;
+    color: #fff;
+    font: 32px/1 system-ui, sans-serif;
+  }
+
+  .rr-player__skip-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   .rr-player__caption {
@@ -258,6 +296,16 @@
 >
   <div class="rr-player__viewport" {style}>
     <div class="rr-player__frame" bind:this={frame} {style} />
+    {#if showSkipIndicator}
+      {#if skipping}
+        <div class="rr-player__skip-indicator" aria-hidden="true">
+          <span>⏩︎</span>
+        </div>
+      {/if}
+      <div class="rr-player__skip-status" role="status">
+        {skipping ? 'Skipping inactivity' : ''}
+      </div>
+    {/if}
     <div role="status" aria-live="polite" aria-atomic="true">
       {#if captionText !== undefined}
         <div class="rr-player__caption">{captionText}</div>

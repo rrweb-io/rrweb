@@ -199,6 +199,9 @@
       return;
     }
     replayer.pause();
+    // The UI time is sampled once a frame, so it can lag the replay, by a
+    // lot while skipping. Resume from where the replay actually paused.
+    currentTime = replayer.getCurrentTime();
     pauseAt = false;
   };
 

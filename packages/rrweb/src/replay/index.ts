@@ -28,6 +28,7 @@ import type {
   Mirror as RRDOMMirror,
 } from 'rrdom';
 import * as mittProxy from 'mitt';
+import { adaptiveSkipSpeed } from './inactivity';
 import { Timer, addDelay, getEarliestTimestamp } from './timer';
 import {
   createPlayerService,
@@ -1036,10 +1037,9 @@ export class Replayer {
       this.backToNormalSpeed();
       return;
     }
-    const speed = Math.min(
-      Math.round(gap / SKIP_TIME_INTERVAL),
-      this.config.maxSpeed,
-    );
+    const speed = this.config.adaptiveSkip
+      ? adaptiveSkipSpeed(gap, this.config.speed, this.config.maxSpeed)
+      : Math.min(Math.round(gap / SKIP_TIME_INTERVAL), this.config.maxSpeed);
     this.nextUserInteractionEvent = nEvent;
     // A speed setting puts the speed service back to normal, so the skip is
     // resumed without announcing it again.
