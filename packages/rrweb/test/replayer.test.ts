@@ -310,7 +310,7 @@ describe('replayer', function () {
   it('restores normal speed when seeking during a skip', async () => {
     const result = await page.evaluate(`
       const { Replayer } = rrweb;
-      const replayer = new Replayer(events);
+      const replayer = new Replayer(events, { skipInactive: true });
       replayer.play(0);
       replayer.speedService.send({ type: 'FAST_FORWARD', payload: { speed: 8 } });
       const whileSkipping = [
@@ -333,7 +333,7 @@ describe('replayer', function () {
   it('restores normal speed when seeking-and-pausing during a skip', async () => {
     const result = await page.evaluate(`
       const { Replayer } = rrweb;
-      const replayer = new Replayer(events);
+      const replayer = new Replayer(events, { skipInactive: true });
       replayer.play(0);
       replayer.speedService.send({ type: 'FAST_FORWARD', payload: { speed: 8 } });
       const whileSkipping = [
@@ -356,7 +356,7 @@ describe('replayer', function () {
   it('freezes the skip on in-place pause and restores it on resume', async () => {
     const result = await page.evaluate(`
       const { Replayer } = rrweb;
-      const replayer = new Replayer(events);
+      const replayer = new Replayer(events, { skipInactive: true });
       replayer.play(0);
       replayer.speedService.send({ type: 'FAST_FORWARD', payload: { speed: 8 } });
       replayer.pause();
