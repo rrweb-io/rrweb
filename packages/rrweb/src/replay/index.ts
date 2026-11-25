@@ -583,7 +583,6 @@ export class Replayer {
    *   event; defaults to 0 or to the current position while stalled
    */
   public play(timeOffset?: number) {
-    this.backToNormalSpeed();
     timeOffset = timeOffset ?? (this.isStalled() ? this.getCurrentTime() : 0);
     this.stallTimeOffset = null;
     this.stallResumePlay = true;
@@ -790,15 +789,16 @@ export class Replayer {
     }
   };
 
-  private applyEventsSynchronously = (
-    events: Array<eventWithTime>,
-    baselineTime: number,
-  ) => {
+  private applyEventsSynchronously = (events: Array<eventWithTime>) => {
+    let gapStart = null;
     for (const event of events) {
+      if (gapStart === null || this.isUserInteraction(event)) {
+        gapStart = event.timestamp;
+      }
       this.getCastFn(event, true)();
     }
-    if (this.config.skipInactive) {
-      this.checkSkipping(baselineTime);
+    if (this.config.skipInactive && gapStart !== null) {
+      this.checkSkipping(gapStart);
     }
   };
 
@@ -849,9 +849,6 @@ export class Replayer {
       case EventType.IncrementalSnapshot:
         castFn = () => {
           this.applyIncremental(event, isSync);
-          if (!isSync && this.config.skipInactive) {
-            this.checkSkipping(event.timestamp);
-          }
         };
         break;
       default:
@@ -860,7 +857,9 @@ export class Replayer {
       if (castFn) {
         castFn();
       }
-
+      if (!isSync && this.config.skipInactive && this.isUserInteraction(event)) {
+        this.checkSkipping(event.timestamp);
+      }
       for (const plugin of this.config.plugins || []) {
         if (plugin.handler) plugin.handler(event, isSync, { replayer: this });
       }
@@ -878,27 +877,24 @@ export class Replayer {
       this.nextUserInteractionEvent.timestamp <= fromTimestamp
     ) {
       this.nextUserInteractionEvent = null;
-      this.backToNormalSpeed();
     }
     let nEvent: eventWithTime | null = null;
-    if (!this.nextUserInteractionEvent) {
-      const { events } = this.service.state.context;
-      for (
-        let i = findEventIndex(events, fromTimestamp) + 1;
-        i < events.length;
-        i++
-      ) {
-        if (this.isUserInteraction(events[i])) {
-          nEvent = events[i];
-          break;
-        }
+    const { events } = this.service.state.context;
+    for (
+      let i = findEventIndex(events, fromTimestamp) + 1;
+      i < events.length;
+      i++
+    ) {
+      if (this.isUserInteraction(events[i])) {
+        nEvent = events[i];
+        break;
       }
     }
-    if (nEvent) {
+    if (nEvent && nEvent !== this.nextUserInteractionEvent) {
       const gap = getEarliestTimestamp(nEvent) - fromTimestamp;
       const skipThreshold =
         this.config.inactivePeriodThreshold *
-        this.speedService.state.context.timer.speed;
+        this.speedService.state.context.normalSpeed;
 
       if (skipThreshold < gap) {
         const payload = {
@@ -910,7 +906,12 @@ export class Replayer {
         this.nextUserInteractionEvent = nEvent;
         this.speedService.send({ type: 'FAST_FORWARD', payload });
         this.emitter.emit(ReplayerEvents.SkipStart, payload);
+      } else {
+        this.nextUserInteractionEvent = null; // we are now in a different gap/section
       }
+    }
+    if (!this.nextUserInteractionEvent) {
+      this.backToNormalSpeed();
     }
   }
 

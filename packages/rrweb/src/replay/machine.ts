@@ -98,10 +98,7 @@ export function findEventIndex(
 
 type PlayerAssets = {
   emitter: Emitter;
-  applyEventsSynchronously(
-    events: Array<eventWithTime>,
-    baselineTime: number,
-  ): void;
+  applyEventsSynchronously(events: Array<eventWithTime>): void;
   getCastFn(event: eventWithTime, isSync: boolean): () => void;
   isStallMarker(event: eventWithTime): boolean;
 };
@@ -300,7 +297,7 @@ export function createPlayerService(
               break;
             }
           }
-          applyEventsSynchronously(syncEvents, baselineTime);
+          applyEventsSynchronously(syncEvents);
           scheduleEvents(ctx, neededEvents.slice(scheduleStart));
           emitter.emit(ReplayerEvents.Flush);
           timer.start();
@@ -380,6 +377,10 @@ export function createSpeedService(context: SpeedContext) {
         },
         skipping: {
           on: {
+            FAST_FORWARD: {
+              target: 'skipping',
+              actions: ['setSpeed'],
+            },
             BACK_TO_NORMAL: {
               target: 'normal',
               actions: ['restoreSpeed'],

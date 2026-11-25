@@ -4,4 +4,4 @@
 "@rrweb/rrweb-player": patch
 ---
 
-Ensure `play()` (and `replayer.pause()`) reverts any ongoing fast-forward/skip-inactivity so 'Skip inactivity' can be used in rrweb-player without disabling controls
+Get 'Skip inactivity' working correctly no matter whether currently playing, or jumping into an inactive area. This allows it to be used interactively in rrweb-player without needing to disable controls

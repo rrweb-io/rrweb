@@ -377,6 +377,53 @@ describe('replayer', function () {
     ]);
   });
 
+  it('re-targets skip speed while already skipping without losing the normal speed', async () => {
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events, { speed: 2 });
+      replayer.speedService.send({ type: 'FAST_FORWARD', payload: { speed: 5 } });
+      const first = [
+        replayer.speedService.state.value,
+        replayer.speedService.state.context.timer.speed,
+        replayer.speedService.state.context.normalSpeed,
+      ];
+      replayer.speedService.send({ type: 'FAST_FORWARD', payload: { speed: 9 } });
+      const second = [
+        replayer.speedService.state.value,
+        replayer.speedService.state.context.timer.speed,
+        replayer.speedService.state.context.normalSpeed,
+      ];
+      replayer.speedService.send({ type: 'BACK_TO_NORMAL' });
+      const back = [
+        replayer.speedService.state.value,
+        replayer.speedService.state.context.timer.speed,
+      ];
+      [first, second, back];
+    `);
+    expect(result).toEqual([
+      ['skipping', 5, 2],
+      ['skipping', 9, 2],
+      ['normal', 2],
+    ]);
+  });
+
+  it('exits skip mode when seeking back out of an inactive gap', async () => {
+    const skipGapEvents = events.map((e, i) =>
+      i === events.length - 1 ? { ...e, timestamp: e.timestamp + 30000 } : e,
+    );
+    await page.evaluate(`events = ${JSON.stringify(skipGapEvents)}`);
+    const result = await page.evaluate(`
+      const { Replayer } = rrweb;
+      const replayer = new Replayer(events, { skipInactive: true });
+      replayer.pause(10000);
+      const inGap = replayer.speedService.state.value;
+      replayer.pause(2500);
+      const afterBack = replayer.speedService.state.value;
+      [inGap, afterBack];
+    `);
+    expect(result).toEqual(['skipping', 'normal']);
+  });
+
   it('can fast forward past StyleSheetRule changes on virtual elements', async () => {
     await page.evaluate(`events = ${JSON.stringify(styleSheetRuleEvents)}`);
     const actionLength = await page.evaluate(`
