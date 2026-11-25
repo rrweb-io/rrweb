@@ -8,21 +8,34 @@ import {
 import webglMutation from './webgl';
 import canvas2DMutation from './2d';
 
-export default async function canvasMutation({
-  event,
-  mutation,
-  target,
-  imageMap,
-  canvasEventMap,
-  errorHandler,
-}: {
+type CanvasMutationOptions = {
   event: Parameters<Replayer['applyIncremental']>[0];
   mutation: canvasMutationData;
   target: HTMLCanvasElement;
   imageMap: Replayer['imageMap'];
   canvasEventMap: Replayer['canvasEventMap'];
   errorHandler: Replayer['warnCanvasMutationFailed'];
-}): Promise<void> {
+};
+
+const pendingMutations = new WeakMap<HTMLCanvasElement, Promise<void>>();
+
+export default function canvasMutation(
+  options: CanvasMutationOptions,
+): Promise<void> {
+  const previous = pendingMutations.get(options.target) ?? Promise.resolve();
+  const current = previous.then(() => applyCanvasMutation(options));
+  pendingMutations.set(options.target, current);
+  return current;
+}
+
+async function applyCanvasMutation({
+  event,
+  mutation,
+  target,
+  imageMap,
+  canvasEventMap,
+  errorHandler,
+}: CanvasMutationOptions): Promise<void> {
   try {
     const precomputedMutation: canvasMutationParam =
       canvasEventMap.get(event) || mutation;
