@@ -130,23 +130,22 @@ export class Timer {
   }
 }
 
-// TODO: add speed to mouse move timestamp calculation
-export function addDelay(event: eventWithTime, baselineTime: number): number {
-  // Mouse move events was recorded in a throttle function,
-  // so we need to find the real timestamp by traverse the time offsets.
+export function getEarliestTimestamp(event: eventWithTime): number {
+  // Multiple mouse move events can be throttled to a single batch
+  // with earlier mvoements emitted with negative `timeOffset`
+  let negOffset = 0;
   if (
     event.type === EventType.IncrementalSnapshot &&
     event.data.source === IncrementalSource.MouseMove &&
     event.data.positions &&
     event.data.positions.length
   ) {
-    const firstOffset = event.data.positions[0].timeOffset;
-    // timeOffset is a negative offset to event.timestamp
-    const firstTimestamp = event.timestamp + firstOffset;
-    event.delay = firstTimestamp - baselineTime;
-    return firstTimestamp - baselineTime;
+    negOffset = event.data.positions[0].timeOffset;
   }
+  return event.timestamp + negOffset;
+}
 
-  event.delay = event.timestamp - baselineTime;
+export function addDelay(event: eventWithTime, baselineTime: number): number {
+  event.delay = getEarliestTimestamp(event) - baselineTime;
   return event.delay;
 }

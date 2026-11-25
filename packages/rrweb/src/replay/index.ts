@@ -28,7 +28,7 @@ import type {
   Mirror as RRDOMMirror,
 } from 'rrdom';
 import * as mittProxy from 'mitt';
-import { Timer, addDelay } from './timer';
+import { Timer, addDelay, getEarliestTimestamp } from './timer';
 import {
   createPlayerService,
   createSpeedService,
@@ -790,22 +790,15 @@ export class Replayer {
     }
   };
 
-  private applyEventsSynchronously = (events: Array<eventWithTime>) => {
+  private applyEventsSynchronously = (
+    events: Array<eventWithTime>,
+    baselineTime: number,
+  ) => {
     for (const event of events) {
-      switch (event.type) {
-        case EventType.DomContentLoaded:
-        case EventType.Load:
-          continue;
-        case EventType.FullSnapshot:
-        case EventType.Meta:
-        case EventType.Plugin:
-        case EventType.IncrementalSnapshot:
-          break;
-        default:
-          break;
-      }
-      const castFn = this.getCastFn(event, true);
-      castFn();
+      this.getCastFn(event, true)();
+    }
+    if (this.config.skipInactive) {
+      this.checkSkipping(baselineTime);
     }
   };
 
@@ -856,44 +849,8 @@ export class Replayer {
       case EventType.IncrementalSnapshot:
         castFn = () => {
           this.applyIncremental(event, isSync);
-          if (isSync) {
-            // do not check skip in sync
-            return;
-          }
-          if (event === this.nextUserInteractionEvent) {
-            this.nextUserInteractionEvent = null;
-            this.backToNormalSpeed();
-          }
-          if (this.config.skipInactive && !this.nextUserInteractionEvent) {
-            for (const _event of this.service.state.context.events) {
-              if (_event.timestamp <= event.timestamp) {
-                continue;
-              }
-              if (this.isUserInteraction(_event)) {
-                if (
-                  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                  _event.delay! - event.delay! >
-                  this.config.inactivePeriodThreshold *
-                    this.speedService.state.context.timer.speed
-                ) {
-                  this.nextUserInteractionEvent = _event;
-                }
-                break;
-              }
-            }
-            if (this.nextUserInteractionEvent) {
-              const skipTime =
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                this.nextUserInteractionEvent.delay! - event.delay!;
-              const payload = {
-                speed: Math.min(
-                  Math.round(skipTime / SKIP_TIME_INTERVAL),
-                  this.config.maxSpeed,
-                ),
-              };
-              this.speedService.send({ type: 'FAST_FORWARD', payload });
-              this.emitter.emit(ReplayerEvents.SkipStart, payload);
-            }
+          if (!isSync && this.config.skipInactive) {
+            this.checkSkipping(event.timestamp);
           }
         };
         break;
@@ -914,6 +871,48 @@ export class Replayer {
     };
     return wrappedCastFn;
   };
+
+  private checkSkipping(fromTimestamp: number) {
+    if (
+      this.nextUserInteractionEvent &&
+      this.nextUserInteractionEvent.timestamp <= fromTimestamp
+    ) {
+      this.nextUserInteractionEvent = null;
+      this.backToNormalSpeed();
+    }
+    let nEvent: eventWithTime | null = null;
+    if (!this.nextUserInteractionEvent) {
+      const { events } = this.service.state.context;
+      for (
+        let i = findEventIndex(events, fromTimestamp) + 1;
+        i < events.length;
+        i++
+      ) {
+        if (this.isUserInteraction(events[i])) {
+          nEvent = events[i];
+          break;
+        }
+      }
+    }
+    if (nEvent) {
+      const gap = getEarliestTimestamp(nEvent) - fromTimestamp;
+      const skipThreshold =
+        this.config.inactivePeriodThreshold *
+        this.speedService.state.context.timer.speed;
+
+      if (skipThreshold < gap) {
+        const payload = {
+          speed: Math.min(
+            Math.round(gap / SKIP_TIME_INTERVAL),
+            this.config.maxSpeed,
+          ),
+        };
+        this.nextUserInteractionEvent = nEvent;
+        this.speedService.send({ type: 'FAST_FORWARD', payload });
+        this.emitter.emit(ReplayerEvents.SkipStart, payload);
+      }
+    }
+  }
 
   private rebuildFullSnapshot(
     event: fullSnapshotEvent & { timestamp: number },

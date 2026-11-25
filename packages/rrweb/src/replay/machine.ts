@@ -98,7 +98,10 @@ export function findEventIndex(
 
 type PlayerAssets = {
   emitter: Emitter;
-  applyEventsSynchronously(events: Array<eventWithTime>): void;
+  applyEventsSynchronously(
+    events: Array<eventWithTime>,
+    baselineTime: number,
+  ): void;
   getCastFn(event: eventWithTime, isSync: boolean): () => void;
   isStallMarker(event: eventWithTime): boolean;
 };
@@ -297,7 +300,7 @@ export function createPlayerService(
               break;
             }
           }
-          applyEventsSynchronously(syncEvents);
+          applyEventsSynchronously(syncEvents, baselineTime);
           scheduleEvents(ctx, neededEvents.slice(scheduleStart));
           emitter.emit(ReplayerEvents.Flush);
           timer.start();
