@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pack } from '@rrweb/packer';
 import { tick } from 'svelte';
-import { EventType, IncrementalSource } from '@rrweb/types';
+import { EventType, IncrementalSource, NodeType } from '@rrweb/types';
 import type { eventWithTime } from '@rrweb/types';
 import Player from '../src/Player.svelte';
 import * as annotations from '../src/annotations';
@@ -2335,6 +2335,114 @@ describe('player annotations', () => {
     expect(target.querySelector('.rr-player__caption')?.textContent).toBe(
       'Added later',
     );
+  });
+
+  it('reprojects the paused playhead and exact markers after earlier events arrive', async () => {
+    const input = (offset: number): eventWithTime => ({
+      type: EventType.IncrementalSnapshot,
+      timestamp: start + offset,
+      data: {
+        source: IncrementalSource.Input,
+        id: 1,
+        text: '',
+        isChecked: false,
+      },
+    });
+    const custom = (offset: number, tag: string): eventWithTime => ({
+      type: EventType.Custom,
+      timestamp: start + offset,
+      data: { tag, payload: {} },
+    });
+    const player = await mount({
+      events: [
+        recording()[0],
+        {
+          type: EventType.FullSnapshot,
+          timestamp: start + 9000,
+          data: {
+            node: {
+              id: 1,
+              type: NodeType.Document,
+              childNodes: [
+                {
+                  id: 2,
+                  type: NodeType.Element,
+                  tagName: 'html',
+                  attributes: {},
+                  childNodes: [],
+                },
+              ],
+            },
+            initialOffset: { left: 0, top: 0 },
+          },
+        },
+        input(12000),
+        input(13543),
+        timelineMarker(13543, 'Mark'),
+        custom(72000, 'End'),
+      ],
+      features: { timeline: { compressInactive: true } },
+    });
+    const replayer = player.getReplayer();
+    // Happy DOM does not expose the sandboxed iframe through frameElement.
+    Object.defineProperty(replayer.iframe.contentWindow, 'frameElement', {
+      value: replayer.iframe,
+    });
+    player.goto(13543, false);
+    await tick();
+
+    const progress = vi.fn();
+    player.addEventListener('ui-update-progress', progress);
+    replayer.addEvent(custom(-2000, 'Earlier start'));
+    replayer.addEvent(custom(5000, 'inactive period'));
+    replayer.addEvent(input(7000));
+    replayer.addEvent(input(10500));
+    replayer.addEvent(input(21000));
+    // The Replayer reports appended events on the next animation frame.
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await tick();
+
+    const track = target.querySelector<HTMLElement>('.rr-progress')!;
+    const idle = track.querySelectorAll<HTMLElement>('.rr-inactive-period');
+    expect(idle).toHaveLength(1);
+    expect(parseFloat(idle[0].style.left)).toBeCloseTo(80);
+    expect(parseFloat(idle[0].style.width)).toBeCloseTo(20);
+    const playhead = track.querySelector<HTMLElement>('.rr-progress__handler')!;
+    const annotation = track.querySelector<HTMLElement>(
+      '.rr-custom-event-container',
+    )!;
+    const tag = track.querySelector<HTMLElement>(
+      '[title="inactive period"]:not(.rr-inactive-period)',
+    )!;
+    const markerPosition = (80 * 15543) / 23000;
+    expect(parseFloat(annotation.style.left)).toBeCloseTo(markerPosition, 6);
+    expect(parseFloat(tag.style.left)).toBeCloseTo((80 * 7000) / 23000, 6);
+    expect(parseFloat(playhead.style.left)).toBeCloseTo(markerPosition, 6);
+    expect(progress).toHaveBeenLastCalledWith({ payload: 15543 / 74000 });
+
+    vi.spyOn(track, 'getBoundingClientRect').mockReturnValue(
+      new DOMRect(0, 0, 1000, 12),
+    );
+    track.dispatchEvent(
+      new MouseEvent('click', { bubbles: true, clientX: 900 }),
+    );
+    expect(replayer.getCurrentTime()).toBeCloseTo(48500, 6);
+    click('.rr-custom-event');
+    expect(replayer.getCurrentTime()).toBe(15543);
+  });
+
+  it('refreshes timeline metadata once for a synchronous batch from both append APIs', async () => {
+    const player = await mount();
+    const replayer = player.getReplayer();
+    const metadata = vi.spyOn(replayer, 'getMetaData');
+    player.addEvent(timelineMarker(15000, 'One'));
+    replayer.addEvent(timelineMarker(20000, 'Two'));
+    player.addEvent(timelineMarker(25000, 'Three'));
+    // Appends are reported once, on the next animation frame.
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await tick();
+    expect(target.querySelectorAll('.rr-custom-event')).toHaveLength(4);
+    expect(metadata).toHaveBeenCalledTimes(1);
   });
 
   async function expectPausedCaptionUpdate(

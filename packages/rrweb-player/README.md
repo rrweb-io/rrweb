@@ -122,6 +122,40 @@ replay offsets in milliseconds and name the source: `'button'`,
 `'keyboard'` or `'api'`. Jumps are ignored during live replay. While the
 replay is stalled, a jump moves the position it resumes from.
 
+### Timeline
+
+`features.timeline` groups the timeline options. Each one is off unless you
+set it.
+
+`compressInactive` shrinks inactive periods so that together they take at
+most `maxIdleShare` of the timeline's width. The share defaults to `0.2` and
+accepts `0.001` to `1`; `true` uses the default. Without it the timeline stays
+linear.
+
+```js
+new rrwebPlayer({
+  target: document.body,
+  props: {
+    events,
+    features: {
+      timeline: { compressInactive: { maxIdleShare: 0.25 }, seekPreview: true },
+    },
+  },
+});
+```
+
+The timeline draws compressed periods as hatched bands in `inactiveColor`, or
+in a shade of the toolbar's text color with the toolbar. That includes the
+inactivity after the last interaction. Markers, the playhead and seeking use
+the same mapping, while playback time, progress events and `goto()` stay in
+recording time. When no part of the recording counts as active, the timeline
+stays linear.
+
+`seekPreview: true` shows a dashed line and the time a click would seek to,
+while a mouse or pen is over the timeline. It follows the same mapping as the
+timeline, compression included. `seekPreview: { time: false }` shows the line
+without the time, for embeds where the recording's timing is beside the point.
+
 ### Toolbar
 
 `features.toolbar: true` replaces the classic button row with a compact

@@ -22,6 +22,22 @@ export type PlayerFeatures = {
   download?:
     | boolean
     | { fileName?: string; json?: boolean; links?: DownloadLink[] };
+  /** Options for the timeline. */
+  timeline?: {
+    /**
+     * Off unless set. Compresses inactive periods so they take at most
+     * `maxIdleShare` of the timeline's width (default 0.2, clamped to
+     * 0.001-1). `true` uses the default. Times and seeking keep their real
+     * values.
+     */
+    compressInactive?: boolean | { maxIdleShare?: number };
+    /**
+     * Off unless set. While a mouse or pen is over the timeline, shows a
+     * dashed line and the time where a click would seek. `time: false` shows
+     * the line alone. `true` uses the defaults.
+     */
+    seekPreview?: boolean | { time?: boolean };
+  };
 };
 
 /** A download the host provides, opened from the toolbar's Download menu. */

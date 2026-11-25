@@ -37,10 +37,15 @@
     afterUpdate,
   } from 'svelte';
   import { formatTime } from './utils';
+  import SeekPreview from './components/SeekPreview.svelte';
   import Switch from './components/Switch.svelte';
-  import CustomEventMarker from './components/CustomEventMarker.svelte';
+  import CustomEventMarker, {
+    markersHandle,
+  } from './components/CustomEventMarker.svelte';
   import { parseAnnotationEvent, getActiveCaption } from './annotations';
   import PlayerToolbar from './components/PlayerToolbar.svelte';
+  import { scaleForTimelineIndex } from './recording-timeline';
+  import { DEFAULT_MAX_IDLE_SHARE } from './timeline-scale';
   import { createTimelineIndex } from './timeline-index';
 
   import {
@@ -114,9 +119,21 @@
 
   let captionUpdatePending = false;
 
+  // Before playback starts the Replayer has no clock (a negative time), so
+  // the cached time holds the playhead, also after earlier events arrive.
+  function playhead() {
+    const time = replayer.getCurrentTime();
+    if (time >= 0) return time;
+    if (!compressing) return currentTime;
+    // Events that arrived before the first one move the start earlier. The
+    // cached time catches up on the next update; until then, shift it here.
+    const { startTime } = replayer.getMetaData();
+    return currentTime + Math.max(0, meta.startTime - startTime);
+  }
+
   function resolveCaption(index: ReturnType<typeof updateTimeline>) {
     captionUpdatePending = false;
-    return getActiveCaption(index.captions, Math.max(0, replayer.getCurrentTime()))?.text;
+    return getActiveCaption(index.captions, Math.max(0, playhead()))?.text;
   }
 
   function restoreCaption(index: ReturnType<typeof updateTimeline>) {
@@ -200,10 +217,57 @@
 
   let meta: playerMetaData = replayer.getMetaData();
   $: accessibleTime = Math.max(0, Math.min(meta.totalTime, Math.floor(currentTime / 1000) * 1000));
+  $: compressInactive = features.timeline?.compressInactive;
+  $: compressing = Boolean(compressInactive);
+  $: seekPreviewOption = features.timeline?.seekPreview;
+  $: seekPreview =
+    seekPreviewOption === true ||
+    (!!seekPreviewOption && typeof seekPreviewOption === 'object');
+  $: seekPreviewTime =
+    typeof seekPreviewOption !== 'object' || seekPreviewOption?.time !== false;
+  // Linear unless the host opts into compression: a cap of 1 gives inactive
+  // periods their real share of the width.
+  $: scale = scaleForTimelineIndex(
+    timeline,
+    replayer.config.inactivePeriodThreshold,
+    compressing
+      ? ((typeof compressInactive === 'object'
+          ? compressInactive.maxIdleShare
+          : undefined) ?? DEFAULT_MAX_IDLE_SHARE)
+      : 1,
+  );
+  /**
+   * Classic position of a moment on the linear timeline, in percent with
+   * two decimals.
+   */
+  function position(startTime: number, endTime: number, tagTime: number) {
+    const sessionDuration = endTime - startTime;
+    if (sessionDuration <= 0) return '0.00';
+    const eventDuration = endTime - tagTime;
+    const eventPosition = 100 - (eventDuration / sessionDuration) * 100;
+    return eventPosition.toFixed(2);
+  }
+
+  // The classic bars mark each inactive period at its real position; the
+  // compressed spans replace them only when the host opts in.
+  $: inactivePeriods = timeline.periods.map(([start, end]) => ({
+    left: `${position(timeline.start, timeline.end, start)}%`,
+    width:
+      timeline.end > timeline.start
+        ? `${(((end - start) / (timeline.end - timeline.start)) * 100).toFixed(2)}%`
+        : '0.00%',
+  }));
   let percentage: string;
   $: {
-    const percent = Math.min(1, currentTime / meta.totalTime);
-    percentage = `${100 * percent}%`;
+    // The classic timeline keeps its original arithmetic.
+    const percent = compressing
+      ? meta.totalTime > 0
+        ? Math.min(1, currentTime / meta.totalTime)
+        : 0
+      : Math.min(1, currentTime / meta.totalTime);
+    percentage = compressing
+      ? `${100 * scale.timeToPosition(currentTime)}%`
+      : `${100 * percent}%`;
     dispatch('ui-update-progress', { payload: percent });
   }
   type CustomEvent = {
@@ -214,43 +278,14 @@
     timelineMarkerText: string | undefined;
   };
 
-  /**
-   * Calculate the tag position (percent) to be displayed on the progress bar.
-   * @param startTime - The start time of the session.
-   * @param endTime - The end time of the session.
-   * @param tagTime - The time of the tag.
-   * @returns The position of the tag. unit: percentage
-   */
-  function position(startTime: number, endTime: number, tagTime: number) {
-    const sessionDuration = endTime - startTime;
-    if (sessionDuration <= 0) return '0.00';
-    const eventDuration = endTime - tagTime;
-    const eventPosition = 100 - (eventDuration / sessionDuration) * 100;
-    return eventPosition.toFixed(2);
-  }
-
   $: customEvents = timeline.markers.map((marker): CustomEvent => ({
     name: marker.tag ?? 'Timeline marker',
     timeOffset: marker.timestamp - timeline.start,
     timelineMarkerText: marker.text,
     background: marker.tag === undefined ? timelineMarkerColor : tags[marker.tag] || 'rgb(73, 80, 246)',
-    position: `${position(timeline.start, timeline.end, marker.timestamp)}%`,
-  }));
-
-  let inactivePeriods: {
-    name: string;
-    background: string;
-    position: string;
-    width: string;
-  }[];
-  $: inactivePeriods = timeline.periods.map(([start, end]) => ({
-    name: 'inactive period',
-    background: inactiveColor,
-    position: `${position(timeline.start, timeline.end, start)}%`,
-    width:
-      timeline.end > timeline.start
-        ? `${(((end - start) / (timeline.end - timeline.start)) * 100).toFixed(2)}%`
-        : '0.00%',
+    position: compressing
+      ? `${scale.timeToPosition(marker.timestamp - timeline.start) * 100}%`
+      : `${position(timeline.start, timeline.end, marker.timestamp)}%`,
   }));
 
   const loopTimer = () => {
@@ -302,7 +337,7 @@
       replayer.play();
       finished = false;
     } else {
-      replayer.play(currentTime);
+      replayer.play(compressing ? playhead() : currentTime);
     }
   };
 
@@ -409,7 +444,7 @@
     if (live) return;
     // meta updates a frame after appended events; read the length now.
     const { totalTime } = replayer.getMetaData();
-    const now = Math.max(0, Math.min(totalTime, replayer.getCurrentTime()));
+    const now = Math.max(0, Math.min(totalTime, playhead()));
     const toMs = Math.max(
       0,
       Math.min(totalTime, now + direction * seconds * 1000),
@@ -618,8 +653,63 @@
     jump(event.key === 'ArrowLeft' ? -1 : 1, 'keyboard');
   }
 
+  // Whether the track ignores clicks and keys. The seek preview follows it,
+  // so the preview shows exactly where a click on the track would seek.
+  $: trackDisabled = speedState === 'skipping';
+
+  // Where a click on the timeline would seek, while a mouse or pen is over
+  // it. The pointer's place on the track is kept and the time derived from
+  // it, so the preview follows when the timeline's mapping changes.
+  let previewPosition: number | null = null;
+  $: previewTime =
+    previewPosition === null ? null : scale.positionToTime(previewPosition);
+  $: if (!seekPreview || trackDisabled) previewPosition = null;
+  function previewSeek(event: PointerEvent) {
+    if (!seekPreview || event.pointerType === 'touch' || trackDisabled)
+      return;
+    // A click on a marker opens it instead of seeking.
+    if (markersHandle(event)) {
+      previewPosition = null;
+      return;
+    }
+    const rect = progress.getBoundingClientRect();
+    if (!rect.width) return;
+    previewPosition = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+  }
+
+  const clearPreview = () => {
+    previewPosition = null;
+  };
+  // Only players with the seek preview listen for pointer movement.
+  function listenForPreview(node: HTMLElement, on: boolean) {
+    // A resized track puts a different moment under the pointer, so the
+    // preview waits for the next movement.
+    let resize: ResizeObserver | undefined;
+    const set = (next: boolean) => {
+      const method = next ? 'addEventListener' : 'removeEventListener';
+      node[method]('pointermove', previewSeek as EventListener);
+      node[method]('pointerleave', clearPreview);
+      resize?.disconnect();
+      resize =
+        next && typeof ResizeObserver !== 'undefined'
+          ? new ResizeObserver(clearPreview)
+          : undefined;
+      resize?.observe(node);
+    };
+    set(on);
+    return {
+      update(next: boolean) {
+        if (next !== on) set((on = next));
+      },
+      destroy() {
+        set(false);
+        clearPreview();
+      },
+    };
+  }
+
   const handleProgressClick = (event: MouseEvent) => {
-    if (speedState === 'skipping') {
+    if (trackDisabled) {
       return;
     }
     progressSlider.focus();
@@ -631,14 +721,14 @@
     } else if (percent > 1) {
       percent = 1;
     }
-    const timeOffset = meta.totalTime * percent;
+    const timeOffset = scale.positionToTime(percent);
     goto(timeOffset);
   };
 
   const handleProgressKeydown = (event: KeyboardEvent) => { 
     // Ignore marker keys and the slider event bubbling to the progress wrapper.
     if (event.target !== event.currentTarget) return;
-    if (speedState === 'skipping') {
+    if (trackDisabled) {
       return;
     }
     let timeOffset: number;
@@ -679,7 +769,21 @@
   };
 
   const updateMeta = () => {
-    meta = replayer.getMetaData();
+    const nextMeta = replayer.getMetaData();
+    // Events prepended before the first one move the start; keep the
+    // compressed timeline's playhead on the same moment.
+    // Offsets count from the first event, so an earlier start moves the
+    // same moment later. Once the Replayer has a position it already counts
+    // from the new start, including after a seek that came first; before
+    // playback starts it has none, so shift the cached time instead.
+    if (compressing && nextMeta.startTime !== meta.startTime) {
+      const time = replayer.getCurrentTime();
+      currentTime =
+        time >= 0
+          ? time
+          : Math.max(0, currentTime + meta.startTime - nextMeta.startTime);
+    }
+    meta = nextMeta;
     timeline = updateTimeline(replayer.events, replayer.config.inactivePeriodThreshold);
   };
 
@@ -776,6 +880,11 @@
     background: color-mix(in srgb, var(--rr-text) 24%, var(--rr-surface));
     border-color: var(--rr-surface);
   }
+  /* With the toolbar, the hatching follows the theme so it shows on light and
+     dark surfaces alike. */
+  .rr-controller--toolbar .rr-inactive-period {
+    color: color-mix(in srgb, var(--rr-text) 45%, var(--rr-surface));
+  }
   .rr-controller--toolbar .rr-progress__step {
     background: color-mix(in srgb, var(--rr-accent) 55%, var(--rr-surface));
   }
@@ -797,6 +906,13 @@
     border-radius: 0 0 5px 5px;
   }
 
+  .rr-inactive-period {
+    position: absolute;
+    height: 50%;
+    top: 25%;
+    pointer-events: none;
+    background: repeating-linear-gradient(135deg, currentColor 0 2px, transparent 2px 5px);
+  }
   /* With the toolbar, the timeline spans the player, inset from its edges. */
   .rr-timeline.rr-timeline--toolbar {
     --rr-timeline-inset: 12px;
@@ -843,6 +959,13 @@
     cursor: not-allowed;
   }
 
+  /* With the seek preview, a taller invisible band around the thin track takes
+     hover and clicks, so the preview is easy to bring up. */
+  .rr-progress--preview::before {
+    content: '';
+    position: absolute;
+    inset: -10px 0;
+  }
   .rr-progress__step {
     height: 100%;
     position: absolute;
@@ -911,10 +1034,12 @@
       {/if}
       <div
         class="rr-progress"
-        class:disabled={speedState === 'skipping'}
+        class:disabled={trackDisabled}
         bind:this={progress}
         on:click={handleProgressClick}
         on:keydown={handleProgressKeydown}
+        class:rr-progress--preview={seekPreview}
+        use:listenForPreview={seekPreview}
       >
         <div
           class="rr-progress__slider"
@@ -926,20 +1051,39 @@
           aria-valuemax={Math.floor(meta.totalTime / 1000) * 1000}
           aria-valuenow={accessibleTime}
           aria-valuetext={`${formatTime(accessibleTime)} of ${formatTime(meta.totalTime)}`}
-          aria-disabled={speedState === 'skipping'}
+          aria-disabled={trackDisabled}
           on:keydown={handleProgressKeydown}
         />
         <div
           class="rr-progress__step"
           style="width: {percentage}"
         />
-        {#each inactivePeriods as period}
-          <div
-            title={period.name}
-            style="width: {period.width};height: 4px;position: absolute;background: {period.background};left:
-            {period.position};"
+        {#if previewTime !== null}
+          <SeekPreview
+            time={previewTime}
+            position={previewPosition ?? 0}
+            showTime={seekPreviewTime}
           />
-        {/each}
+        {/if}
+        {#if compressing}
+          {#each scale.spans.filter((span) => span.idle) as span}
+            <div
+              title="inactive period"
+              class="rr-inactive-period"
+              style:left={`${span.left * 100}%`}
+              style:width={`${(span.right - span.left) * 100}%`}
+              style:color={features.toolbar ? undefined : inactiveColor}
+            />
+          {/each}
+        {:else}
+          {#each inactivePeriods as period}
+            <div
+              title="inactive period"
+              style="width: {period.width};height: 4px;position: absolute;background: {inactiveColor};left:
+              {period.left};"
+            />
+          {/each}
+        {/if}
         {#each customEvents as event}
           {#if event.timelineMarkerText}
             {#if markersShown}

@@ -9,7 +9,6 @@ export function createTimelineIndex() {
   let count = 0;
   let lastEvent: eventWithTime | undefined;
   let threshold: number | undefined;
-  let lastActiveTime = 0;
   let state = empty();
 
   function empty(): {
@@ -19,6 +18,7 @@ export function createTimelineIndex() {
     markers: { timestamp: number; tag?: string; text?: string }[];
     periods: [number, number][];
     hasCaptions: boolean;
+    lastActive: number;
   } {
     return {
       start: 0,
@@ -27,10 +27,11 @@ export function createTimelineIndex() {
       markers: [],
       periods: [],
       hasCaptions: false,
+      lastActive: 0,
     };
   }
 
-  return (events: eventWithTime[], inactiveThreshold: number) => {
+  return (events: readonly eventWithTime[], inactiveThreshold: number) => {
     if (
       threshold !== inactiveThreshold ||
       events.length < count ||
@@ -42,7 +43,7 @@ export function createTimelineIndex() {
     threshold = inactiveThreshold;
     if (!count) {
       state.start = events[0]?.timestamp ?? 0;
-      lastActiveTime = state.start;
+      state.lastActive = state.start;
     }
     for (; count < events.length; count++) {
       const event = events[count];
@@ -69,10 +70,10 @@ export function createTimelineIndex() {
         });
       }
       if (isUserInteraction(event)) {
-        if (event.timestamp - lastActiveTime > inactiveThreshold) {
-          state.periods.push([lastActiveTime, event.timestamp]);
+        if (event.timestamp - state.lastActive > inactiveThreshold) {
+          state.periods.push([state.lastActive, event.timestamp]);
         }
-        lastActiveTime = event.timestamp;
+        state.lastActive = event.timestamp;
       }
     }
     lastEvent = events[count - 1];
