@@ -22,6 +22,15 @@ export type PlayerFeatures = {
   download?:
     | boolean
     | { fileName?: string; json?: boolean; links?: DownloadLink[] };
+  /**
+   * Off unless set. Lets the replay be zoomed up to `max` times its fitted
+   * size (default 4) and panned by dragging or with the arrow keys. While
+   * zoomed, the view follows the recorded cursor; `follow: false` starts
+   * with that off. With the toolbar, a Zoom panel holds these controls,
+   * with a True size mark where the replay shows at its recorded size;
+   * `trueSize: false` leaves that out.
+   */
+  zoom?: { max?: number; follow?: boolean; trueSize?: boolean };
 };
 
 /** A download the host provides, opened from the toolbar's Download menu. */
@@ -35,7 +44,14 @@ export type DownloadLink = {
 /** Toolbar controls a host can hide with the `controls` prop. */
 export type PlayerControls = Partial<
   Record<
-    'play' | 'jump' | 'time' | 'speed' | 'settings' | 'download' | 'fullscreen',
+    | 'play'
+    | 'jump'
+    | 'time'
+    | 'speed'
+    | 'zoom'
+    | 'settings'
+    | 'download'
+    | 'fullscreen',
     boolean
   >
 >;
@@ -45,6 +61,7 @@ export type PlayerIconName =
   | 'play'
   | 'pause'
   | 'speed'
+  | 'zoom'
   | 'settings'
   | 'download'
   | 'enter-fullscreen'
@@ -60,6 +77,14 @@ export type PlayerIconContext = {
 export type PlayerIcons = Partial<
   Record<PlayerIconName, (context: PlayerIconContext) => SVGElement>
 >;
+
+export function maxZoom(zoom: PlayerFeatures['zoom']) {
+  if (!zoom) return 1;
+  const value = zoom.max;
+  return typeof value === 'number' && Number.isFinite(value)
+    ? Math.max(1, value)
+    : 4;
+}
 
 export type JumpEvent = {
   fromMs: number;

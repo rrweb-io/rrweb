@@ -111,6 +111,13 @@ export type RRwebPlayerOptions = {
 };
 
 export type RRwebPlayerExpose = {
+  /**
+   * Zoom relative to the fitted replay, clamped between 1 and
+   * `features.zoom.max`. Does nothing unless `features.zoom` is set.
+   */
+  setZoom: (scale: number) => void;
+  /** Return to the fitted replay. */
+  fit: () => void;
   /** Jump back or forward by `features.jump.seconds` (default 10). */
   jump: (direction: 'back' | 'forward') => void;
   addEventListener: {

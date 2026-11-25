@@ -1,5 +1,6 @@
 <script context="module" lang="ts">
   let nextToolbar = 0;
+  export const ZOOM_LABEL = 'Zoom';
 </script>
 
 <script lang="ts">
@@ -33,8 +34,53 @@
   export let hasAnnotations: boolean;
   export let startedAt: number;
   export let recordingTimeZone: string | undefined = undefined;
+  export let maxZoom = 1;
+  export let zoom = 1;
+  /** The zoom that shows the recording at the size it was recorded. */
+  export let trueZoom = 1;
+  export let trueSize = false;
+  export let followCursor = true;
+  // True size is offered when it is larger than the fitted size and within
+  // the maximum zoom, unless the host turns it off.
+  $: canTrueSize =
+    features.zoom?.trueSize !== false && trueZoom > 1.005 && trueZoom <= maxZoom;
+  // When the label goes away while it has focus, as after a resize that
+  // makes true size the fitted size, focus moves to the slider. This runs
+  // before the label leaves the page.
+  let zoomSlider: HTMLInputElement | undefined;
+  let trueSizeLabel: HTMLButtonElement | undefined;
+  $: if (
+    !canTrueSize &&
+    trueSizeLabel &&
+    (trueSizeLabel.getRootNode() as Document | ShadowRoot).activeElement ===
+      trueSizeLabel
+  )
+    zoomSlider?.focus();
+  // It is described as True size only while the zoom is at it: a lower
+  // maximum or a resize can hold the zoom elsewhere.
+  $: atTrueSize = trueSize && Math.abs(zoom - trueZoom) < 0.005;
+  // Where true size sits on the slider, as a fraction of its range.
+  $: trueSizeAt = maxZoom > 1 ? (trueZoom - 1) / (maxZoom - 1) : 0;
+  $: maxText = `${Number(maxZoom.toFixed(2))}×`;
+  // The slider moves freely; a drag that ends near the true size mark snaps
+  // to it when released. Keys step past it.
+  let dragging = false;
+  function slide(value: number) {
+    trueSize = false;
+    zoom = value / 100;
+  }
+  function release() {
+    if (!dragging) return;
+    dragging = false;
+    if (canTrueSize && Math.abs(zoom - trueZoom) <= (maxZoom - 1) * 0.04) trueSize = true;
+  }
+  $: zoomText = atTrueSize
+    ? `True size · ${Math.round(trueZoom * 100)}%`
+    : zoom === 1
+      ? 'Fit'
+      : `${Math.round(zoom * 100)}%`;
   const dispatch = createEventDispatcher();
-  let panel: 'speed' | 'settings' | 'download' | null = null;
+  let panel: 'speed' | 'zoom' | 'settings' | 'download' | null = null;
   $: download = typeof features.download === 'object' ? features.download : {};
   $: downloadJson = Boolean(features.download) && download.json !== false;
   // Only links a browser can open safely; a javascript: URL would run.
@@ -47,6 +93,7 @@
     controls.download !== false && (downloadJson || downloadLinks.length > 0);
   $: if (
     (panel === 'speed' && controls.speed === false) ||
+    (panel === 'zoom' && (maxZoom <= 1 || controls.zoom === false)) ||
     (panel === 'settings' && controls.settings === false) ||
     (panel === 'download' && !showDownload)
   )
@@ -155,6 +202,83 @@
       {/each}
     </div>
   </ControlPopover>
+  {/if}
+  {#if maxZoom > 1 && controls.zoom !== false}
+    <ControlPopover
+      {icons}
+      label={ZOOM_LABEL}
+      icon="zoom"
+      {container}
+      bind:active={panel}
+    >
+      <p class="rr-control-value" aria-live="polite">
+        {zoomText}
+      </p>
+      <div class="rr-control-range">
+        <button
+          type="button"
+          aria-label="Fit replay to window"
+          on:click={() => {
+            trueSize = false;
+            zoom = 1;
+          }}>Fit</button
+        >
+        <!-- The slider, with a mark where true size sits and its label under
+             it, which goes there. -->
+        <div class="rr-zoom-track">
+          <input
+            bind:this={zoomSlider}
+            type="range"
+            min="100"
+            max={maxZoom * 100}
+            step="1"
+            value={zoom * 100}
+            aria-label="Replay zoom"
+            aria-valuetext={atTrueSize
+              ? 'True size'
+              : zoom === 1
+                ? 'Fit to window'
+                : `${Math.round(zoom * 100)}% of fitted size`}
+            on:pointerdown={() => (dragging = true)}
+            on:pointerup={release}
+            on:pointercancel={() => (dragging = false)}
+            on:input={(event) => slide(Number(event.currentTarget.value))}
+            on:keydown={keepSliderKeys}
+          />
+          {#if canTrueSize}
+            <!-- At true size the thumb stands in for it. -->
+            <span
+              class="rr-zoom-mark"
+              class:covered={atTrueSize}
+              aria-hidden="true"
+              style:--rr-mark-at={trueSizeAt}
+            />
+            <button
+              bind:this={trueSizeLabel}
+              type="button"
+              class="rr-zoom-mark-label"
+              class:start={trueSizeAt < 0.15}
+              class:end={trueSizeAt > 0.85}
+              style:--rr-mark-at={trueSizeAt}
+              aria-pressed={atTrueSize}
+              aria-label="Show the replay at its recorded size"
+              on:click={() => (trueSize = true)}>True size</button
+            >
+          {/if}
+        </div>
+        <span class="rr-zoom-max" aria-hidden="true">{maxText}</span>
+      </div>
+      <label for={switchId + '-follow-cursor'} class="rr-setting"
+        ><span>Follow cursor</span><ToolbarSwitch
+          id={switchId + '-follow-cursor'}
+          label="Follow cursor"
+          bind:checked={followCursor}
+        /></label
+      >
+      <p class="rr-control-hint">
+        Drag the replay to move around. Escape returns to Fit.
+      </p>
+    </ControlPopover>
   {/if}
   {#if controls.settings !== false}
   <ControlPopover
@@ -288,6 +412,8 @@
   }
   .rr-control-range button {
     min-width: 28px;
+    padding: 0 10px;
+    white-space: nowrap;
     height: 28px;
     border-radius: 999px;
     background: var(--rr-subtle);
@@ -348,7 +474,8 @@
     border-radius: 999px;
     font-size: 11px;
   }
-  .rr-speed-presets button[aria-pressed='true'] {
+  .rr-speed-presets button[aria-pressed='true'],
+  .rr-control-range button[aria-pressed='true'] {
     background: var(--rr-accent-soft);
   }
   .normal {
@@ -395,6 +522,69 @@
   .rr-downloads a:focus-visible {
     outline: 2px solid var(--rr-focus);
     outline-offset: -2px;
+  }
+  /* The zoom controls and the settings under them are set apart by a rule,
+     as settings are from each other. */
+  .rr-control-range + .rr-setting {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--rr-line);
+  }
+  .rr-zoom-track {
+    position: relative;
+    display: flex;
+    flex: 1;
+    min-width: 0;
+  }
+  .rr-zoom-track > input { flex: 1; }
+  /* A thumb is 14px wide, so its center runs from 7px to 7px short of the end. */
+  .rr-zoom-mark {
+    position: absolute;
+    top: 50%;
+    left: calc(7px + var(--rr-mark-at) * (100% - 14px));
+    width: 2px;
+    height: 12px;
+    margin: -6px 0 0 -1px;
+    border-radius: 1px;
+    background: var(--rr-text);
+    pointer-events: none;
+  }
+  .rr-zoom-mark.covered { visibility: hidden; }
+  .rr-control-range .rr-zoom-mark-label {
+    position: absolute;
+    top: 100%;
+    left: calc(7px + var(--rr-mark-at) * (100% - 14px));
+    transform: translateX(-50%);
+    min-width: 0;
+    height: auto;
+    padding: 0 4px;
+    border-radius: 4px;
+    background: none;
+    color: var(--rr-muted);
+    font-size: 11px;
+    line-height: 16px;
+  }
+  .rr-control-range .rr-zoom-mark-label.start { transform: translateX(-11px); }
+  .rr-control-range .rr-zoom-mark-label.end { transform: translateX(calc(-100% + 11px)); }
+  .rr-control-range .rr-zoom-mark-label:hover { background: var(--rr-subtle); color: var(--rr-text); }
+  /* Chosen, the thumb on the mark and the panel's value already say so; the
+     label only drops its muted color. */
+  .rr-control-range .rr-zoom-mark-label[aria-pressed='true'] {
+    background: none;
+    color: var(--rr-text);
+  }
+  /* Room under the slider for the mark's label. */
+  .rr-control-range:has(.rr-zoom-mark-label) { padding-bottom: 16px; }
+  .rr-zoom-max {
+    flex: none;
+    color: var(--rr-muted);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+  .rr-control-hint {
+    margin: 12px 0 0;
+    color: var(--rr-muted);
+    font-size: 11px;
   }
   .rr-setting + .rr-setting {
     margin-top: 12px;

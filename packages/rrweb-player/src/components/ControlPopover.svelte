@@ -1,3 +1,23 @@
+<script context="module" lang="ts">
+  // The trigger buttons of popovers with this label inside root, including
+  // any in nested players.
+  export function popoverTriggers(root: ParentNode, label: string) {
+    return Array.from(
+      root.querySelectorAll<HTMLElement>(
+        `.rr-toolbar__control[aria-label="${label}"]`,
+      ),
+    );
+  }
+  // Whether an element is inside the trigger or panel of that popover.
+  export function inPopover(element: Element, label: string): boolean {
+    return element.closest(`[aria-label="${label}"]`) !== null;
+  }
+  // The popover panels open inside root, including any in nested players.
+  export function openPopovers(root: ParentNode): Element[] {
+    return Array.from(root.querySelectorAll('.rr-control-panel'));
+  }
+</script>
+
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import ControlIcon from './ControlIcon.svelte';
@@ -5,8 +25,8 @@
   import type { PlayerIcons } from '../features';
   export let icons: PlayerIcons = {};
   export let label: string;
-  export let icon: 'speed' | 'settings' | 'download';
-  export let active: 'speed' | 'settings' | 'download' | null = null;
+  export let icon: 'speed' | 'zoom' | 'settings' | 'download';
+  export let active: 'speed' | 'zoom' | 'settings' | 'download' | null = null;
   $: open = active === icon;
   function setOpen(value: boolean) {
     if (value) active = icon;

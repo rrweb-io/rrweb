@@ -11,7 +11,14 @@
     onFullscreenChange,
     typeOf,
   } from './utils';
-  import Controller from './Controller.svelte';
+  import Controller, { keyOwner, playerOf } from './Controller.svelte';
+  import ZoomPan, { isZoomSurface } from './components/ZoomPan.svelte';
+  import {
+    inPopover,
+    openPopovers,
+    popoverTriggers,
+  } from './components/ControlPopover.svelte';
+  import { ZOOM_LABEL } from './components/PlayerToolbar.svelte';
   import type { RRwebPlayerOptions, RRwebPlayerExpose } from './types';
 
   import type {
@@ -20,7 +27,7 @@
     PlayerIcons,
     JumpEvent,
   } from './features';
-  import { jumpSeconds } from './features';
+  import { jumpSeconds, maxZoom } from './features';
   export let features: PlayerFeatures = {};
   export let controls: PlayerControls = {};
   export let icons: PlayerIcons = {};
@@ -76,42 +83,92 @@
   const controllerHeight = 80;
   let player: HTMLElement;
   let frame: HTMLElement;
-  let press: { x: number; y: number; id: number } | undefined;
-  let dragged = false;
-
-  function startPress(event: PointerEvent) {
-    if (event.button !== 0 || !event.isPrimary) return;
-    press = { x: event.clientX, y: event.clientY, id: event.pointerId };
-    dragged = false;
+  let zoom = 1;
+  // The viewer's choice; features.zoom.follow only sets where it starts.
+  let followCursor = features.zoom?.follow !== false;
+  $: zoomLimit = maxZoom(features.zoom);
+  $: if (zoom > zoomLimit) zoom = zoomLimit;
+  // The scale that fits the recording into the player, and the zoom that
+  // shows it at the size it was recorded. updateScale sets both: it runs from
+  // a later reactive statement when the player resizes, which would leave a
+  // reactive declaration here with the previous size.
+  let fitScale = 1;
+  let trueZoom = 1;
+  // Whether the viewer chose true size. The zoom then follows the fitted
+  // scale as the player resizes, until another zoom is chosen.
+  let trueSize = false;
+  // A resize sets the zoom through updateScale, so it runs before the
+  // statements below that read the zoom.
+  $: if (replayer) resizeReplay(viewportSize);
+  // Zoom does not go below Fit: where the fitted scale already enlarges the
+  // recording, true size stays at Fit, and the toolbar shows the actual zoom.
+  const trueSizeZoom = () => Math.max(1, Math.min(trueZoom, zoomLimit));
+  // Written out, not through trueSizeZoom(), so it reruns when the maximum
+  // or true size changes.
+  $: if (trueSize) zoom = Math.max(1, Math.min(trueZoom, zoomLimit));
+  $: hasSurface = !!replayer && (clickToPlay || zoom > 1);
+  export const setZoom: RRwebPlayerExpose['setZoom'] = (value) => {
+    if (!Number.isFinite(value)) return;
+    trueSize = false;
+    zoom = Math.max(1, Math.min(maxZoom(features.zoom), value));
+  };
+  export const fit: RRwebPlayerExpose['fit'] = () => {
+    trueSize = false;
+    zoom = 1;
+  };
+  // The viewport surface goes away at the fitted size unless it also plays
+  // and pauses, whether by fit(), setZoom(1), Escape or a lower maximum.
+  // This runs before the DOM update, so focus moves while it still exists.
+  // The Zoom button and its panel stay only while zoom is on in the toolbar.
+  $: zoomButtonStays =
+    zoomLimit > 1 && showController && features.toolbar === true && controls.zoom !== false;
+  // Focus inside this player, leaving focus in a nested player to that one.
+  function focusedInPlayer() {
+    const root = player?.getRootNode() as Document | ShadowRoot | undefined;
+    const focused = root?.activeElement;
+    return focused && playerOf(focused) === player ? focused : null;
   }
-
-  function trackPress(event: PointerEvent) {
-    if (
-      press?.id === event.pointerId &&
-      Math.hypot(event.clientX - press.x, event.clientY - press.y) > 4
-    ) {
-      dragged = true;
-    }
+  function holdFocus() {
+    holdingFocus = true;
+    // The tabindex binding applies on the next update; focus needs it now.
+    if (!player.hasAttribute('tabindex')) player.tabIndex = -1;
+    player.focus();
   }
-
-  function leavePress(event: PointerEvent) {
-    if (press?.id === event.pointerId) dragged = true;
+  function keepFocusInPlayer() {
+    const focused = focusedInPlayer();
+    if (!isZoomSurface(focused)) return;
+    const zoomButton = zoomButtonStays
+      ? popoverTriggers(player, ZOOM_LABEL).find(
+          (trigger) => playerOf(trigger) === player,
+        )
+      : undefined;
+    if (zoomButton) return zoomButton.focus();
+    holdFocus();
   }
-
-  function finishPress(event: PointerEvent) {
-    if (press?.id !== event.pointerId) return;
-    trackPress(event);
-    press = undefined;
+  // Focus on the Zoom button or in its panel moves to the player before they
+  // are removed.
+  function keepFocusFromZoomControls() {
+    const focused = focusedInPlayer();
+    if (focused && inPopover(focused, ZOOM_LABEL)) holdFocus();
   }
-
-  function cancelPress(event: PointerEvent) {
-    if (press?.id !== event.pointerId) return;
-    dragged = true;
-    press = undefined;
-  }
-
-  function handleSurfaceClick(event: MouseEvent) {
-    if (!event.detail || !dragged) toggle();
+  $: if (!zoomButtonStays) keepFocusFromZoomControls();
+  // Keeps the player focusable while it holds focus taken from the viewport,
+  // even if the host has just turned zoom off.
+  let holdingFocus = false;
+  $: if (!hasSurface) keepFocusInPlayer();
+  function fitOnEscape(event: KeyboardEvent) {
+    // While one of this player's toolbar panels is open, Escape only closes
+    // it. Panels of a nested player are that player's.
+    const panelOpen = openPopovers(player).some(
+      (panel) => playerOf(panel) === player,
+    );
+    // A chosen True size counts as zoomed even while it equals Fit.
+    if (event.key !== 'Escape' || (zoom === 1 && !trueSize) || panelOpen || event.defaultPrevented)
+      return;
+    // Escape pressed in a player nested inside this one belongs to it.
+    if (keyOwner(event) !== player) return;
+    event.preventDefault();
+    fit();
   }
 
   let fullscreenListener: undefined | (() => void);
@@ -154,8 +211,10 @@
     const heightScale = viewport.height / frameDimension.height;
     const scale = [widthScale, heightScale];
     if (maxScale) scale.push(maxScale);
-    el.style.transform =
-      `scale(${Math.min(...scale)})` + 'translate(-50%, -50%)';
+    fitScale = Math.min(...scale);
+    trueZoom = fitScale > 0 ? 1 / fitScale : 1;
+    if (trueSize) zoom = trueSizeZoom();
+    el.style.transform = `scale(${fitScale})` + 'translate(-50%, -50%)';
   };
 
   const resizeReplay = (viewport: { width: number; height: number }) => {
@@ -167,7 +226,6 @@
     if (!frame.width || !frame.height) return;
     updateScale(replayer.wrapper, viewport, frame);
   };
-  $: if (replayer) resizeReplay(viewportSize);
 
   export const triggerResize: RRwebPlayerExpose['triggerResize'] = () => {
     resizeReplay(viewportSize);
@@ -302,6 +360,12 @@
     });
   });
 
+  // Escape is delegated from any control or the replay inside the player.
+  onMount(() => {
+    player.addEventListener('keydown', fitOnEscape);
+    return () => player.removeEventListener('keydown', fitOnEscape);
+  });
+
   onDestroy(() => {
     replayer?.off('state-change', syncPaused);
     fullscreenObserver?.disconnect();
@@ -351,17 +415,6 @@
 
   .rr-player__viewport {
     position: relative;
-  }
-
-  .rr-player__surface {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    background: transparent;
-    border: 0;
-    cursor: pointer;
   }
 
   /* Shows while the pointer is on the replay or the button has focus. Only
@@ -432,7 +485,7 @@
   }
 
   /* The iframe can still receive input when the Replayer enables interaction. */
-  .rr-player__surface + .rr-player__frame {
+  .rr-player__frame.with-surface {
     position: relative;
     pointer-events: none;
   }
@@ -455,29 +508,34 @@
   class:rr-player--toolbar={features.toolbar === true}
   tabindex={showController && features.jump?.keyboard === 'player'
     ? 0
-    : showPlayOverlay
+    : features.zoom || holdingFocus || showPlayOverlay
       ? -1
       : undefined}
+  on:blur={() => (holdingFocus = false)}
   bind:this={player}
   style={playerStyle}
   style:--rr-timeline-marker-panel-width={`${Math.min(280, viewportSize.width * 0.7)}px`}
   style:--rr-timeline-marker-panel-height={`${Math.max(48, viewportSize.height - 32)}px`}
 >
   <div class="rr-player__viewport" {style}>
-    {#if clickToPlay === true}
-      <button
-        type="button"
-        class="rr-player__surface"
-        aria-label={paused ? 'Play replay' : 'Pause replay'}
-        on:pointerdown={startPress}
-        on:pointermove={trackPress}
-        on:pointerleave={leavePress}
-        on:pointerup={finishPress}
-        on:pointercancel={cancelPress}
-        on:click={handleSurfaceClick}
+    {#if hasSurface}
+      <ZoomPan
+        {clickToPlay}
+        {paused}
+        {frame}
+        replay={replayer.wrapper}
+        {replayer}
+        {zoom}
+        bind:followCursor
+        on:toggle={toggle}
       />
     {/if}
-    <div class="rr-player__frame" bind:this={frame} {style} />
+    <div
+      class="rr-player__frame"
+      class:with-surface={hasSurface}
+      bind:this={frame}
+      {style}
+    />
     {#if showPlayOverlay && paused}
       <div class="rr-player__play-overlay">
         <button type="button" aria-label="Play" on:click={playFromOverlay}
@@ -503,6 +561,11 @@
       fullscreen={fullscreenSize !== null}
       on:ui-jump={({ detail }) => [...jumpListeners].forEach(listener => listener(detail))}
       {replayer}
+      maxZoom={zoomLimit}
+      {trueZoom}
+      bind:zoom
+      bind:trueSize
+      bind:followCursor
       bind:captionText
       bind:showCaptions
       {showController}

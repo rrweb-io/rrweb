@@ -25,6 +25,36 @@
       pagePlayers.delete(element);
     };
   }
+
+  // The innermost player around a node, across shadow roots.
+  export function playerOf(node: Node): Element | undefined {
+    for (
+      let current: Node | null = node;
+      current;
+      current =
+        current.parentNode ??
+        ((current as ShadowRoot).host as Node | undefined) ??
+        null
+    ) {
+      if (current instanceof HTMLElement && allPlayers.has(current))
+        return current;
+    }
+    return undefined;
+  }
+
+  // The innermost player a key was pressed in: the one a shadow root's
+  // listener claimed, or else the nearest player on the key's path.
+  export function keyOwner(event: Event): Element | undefined {
+    return (
+      claimedBy.get(event) ??
+      event
+        .composedPath()
+        .find(
+          (node): node is HTMLElement =>
+            node instanceof HTMLElement && allPlayers.has(node),
+        )
+    );
+  }
 </script>
 
 <script lang="ts">
@@ -98,6 +128,11 @@
   const dispatch = createEventDispatcher();
 
   export let replayer: Replayer;
+  export let maxZoom = 1;
+  export let zoom = 1;
+  export let trueZoom = 1;
+  export let trueSize = false;
+  export let followCursor = true;
   export let showCaptions = true;
   const updateTimeline = createTimelineIndex();
   let timeline = updateTimeline(replayer.events, replayer.config.inactivePeriodThreshold);
@@ -987,6 +1022,11 @@
         {hasAnnotations}
         {speed}
         {speedOption}
+        {maxZoom}
+        {trueZoom}
+        bind:zoom
+        bind:trueSize
+        bind:followCursor
         annotations={showCaptions && showMarkers}
         bind:skipInactive
         on:toggle={toggle}

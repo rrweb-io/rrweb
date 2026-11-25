@@ -184,8 +184,8 @@ Two props adjust the toolbar. Neither does anything without it.
   `speed`, `settings`, `download` and `fullscreen`.
 - `icons` replaces built-in icons. Each entry is a function that receives
   `{ name, seconds, document }` and returns an SVG element. The names are
-  `play`, `pause`, `jump-back`, `jump-forward`, `speed`, `settings`, `download`,
-  `enter-fullscreen` and `exit-fullscreen`. Create the SVG with `document`,
+  `play`, `pause`, `jump-back`, `jump-forward`, `speed`, `zoom`, `settings`,
+  `download`, `enter-fullscreen` and `exit-fullscreen`. Create the SVG with `document`,
   which may be the player's own, and give it a size: the built-in icons are
   16 pixels.
 
@@ -217,6 +217,33 @@ Both can be changed later with `player.$set`.
 
 The built-in toolbar icons come from [Lucide](https://lucide.dev) (ISC
 license, see `LICENSE-lucide`).
+
+### Zoom
+
+`features.zoom` lets viewers zoom into the replay. It is off unless you set
+it.
+
+```js
+const player = new rrwebPlayer({
+  target: document.body,
+  props: { events, features: { toolbar: true, zoom: { max: 3 } } },
+});
+player.setZoom(2);
+player.fit();
+```
+
+The scale is relative to the fitted replay, from 1 up to `max` (default 4).
+A zoomed replay can be dragged or moved with the arrow keys, and Escape
+returns it to the fitted size. Dragging or panning turns cursor following
+off; the toolbar's Follow cursor switch turns it back on. While zoomed, the view follows the recorded
+cursor; set `follow: false` to start with that off. With `features.toolbar`,
+a Zoom panel has a Fit button, a slider and a Follow cursor switch. When the
+recording is shown smaller than it was recorded and its recorded size is within
+`max`, a mark on the slider shows where the recorded size falls, and its True
+size label shows the replay at that size and keeps it there when the player
+resizes. A drag that ends near the mark snaps to it. `trueSize: false` leaves
+the mark out.
+`controls: { zoom: false }` leaves that panel out, and `icons.zoom` replaces its icon.
 
 ## Captions and timeline markers
 
