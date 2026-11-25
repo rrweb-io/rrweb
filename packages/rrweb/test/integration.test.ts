@@ -1071,18 +1071,22 @@ describe('record integration tests', function (this: ISuite) {
   it('should record moved shadow DOM', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
+    // page.on('console', (msg) => console.log(msg.text()));
+
     await page.setContent(getHtml.call(this, 'blank.html'));
 
     await page.evaluate(() => {
       return new Promise((resolve) => {
         const el = document.createElement('div') as HTMLDivElement;
+        el.id = 'shadowHost';
         el.attachShadow({ mode: 'open' });
-        (el.shadowRoot as ShadowRoot).appendChild(
-          document.createElement('input'),
-        );
+        const inp = document.createElement('input') as HTMLInputElement;
+        inp.id = 'shadowContent';
+        (el.shadowRoot as ShadowRoot).appendChild(inp);
         document.body.append(el);
         setTimeout(() => {
           const newEl = document.createElement('div') as HTMLDivElement;
+          newEl.id = 'newParent';
           document.body.append(newEl);
           newEl.append(el);
           resolve(null);
@@ -1210,7 +1214,7 @@ describe('record integration tests', function (this: ISuite) {
     await assertSnapshot(snapshots);
   });
 
-  // https://github.com/webcomponents/polyfills/tree/master/packages/shadydom
+  // https://github.com/webcomponents/polyfills/tree/HEAD/packages/shadydom
   it('should record shadow doms polyfilled by shadydom', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');
@@ -1244,7 +1248,7 @@ describe('record integration tests', function (this: ISuite) {
     await assertSnapshot(snapshots);
   });
 
-  // https://github.com/salesforce/lwc/tree/master/packages/%40lwc/synthetic-shadow
+  // https://github.com/salesforce/lwc/tree/HEAD/packages/%40lwc/synthetic-shadow
   it('should record shadow doms polyfilled by synthetic-shadow', async () => {
     const page: puppeteer.Page = await browser.newPage();
     await page.goto('about:blank');

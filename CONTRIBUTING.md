@@ -12,7 +12,7 @@ the process for contributing will follow standard GitHub protocol.
 
 We actively welcome your pull requests (PRs)!
 
-1. Fork the repo and create your branch from `master`.
+1. Fork the repo and create your branch from `main`.
 2. If you've added code that should be tested, add tests
 3. Ensure the test suite passes or ask for help as to why tests are failing
 4. We use [changesets](https://github.com/changesets/changesets/blob/main/docs/intro-to-using-changesets.md) to enable you to easily document your PR so that it can be packaged up into the next release. A github plugin will prompt you to fill in your changeset if you haven't already done so.
@@ -68,7 +68,7 @@ docker run --rm -e BROWSER=webkit \
   rrweb-webkit-test bash -c 'yarn workspace rrweb-snapshot vitest run --config vitest.config.webkit.ts'
 ```
 
-The image is based on `mcr.microsoft.com/playwright:v1.60.0-jammy` which has all required system libraries pre-installed. The same image can be used to run webkit tests from any package in the monorepo by changing the `yarn workspace` command. Rebuild the image after updating the `playwright` package version or adding new test files.
+The image is based on `mcr.microsoft.com/playwright:v1.61.1-jammy` which has all required system libraries pre-installed. The same image can be used to run webkit tests from any package in the monorepo by changing the `yarn workspace` command. Rebuild the image after updating the `playwright` package version or adding new test files.
 
 - Lint: `yarn lint`
 - Rewrite files with prettier: `yarn format` or `yarn format:head`
@@ -79,7 +79,7 @@ See [documentation](docs/development/coding-style.md)
 
 ## License
 
-rrweb is [MIT licensed](https://github.com/rrweb-io/rrweb/blob/master/LICENSE).
+rrweb is [MIT licensed](LICENSE).
 
 By contributing to rrweb, you agree that your contributions will be licensed
 under its MIT license.

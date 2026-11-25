@@ -1,10 +1,13 @@
 {
   "name": "@rrweb/browser-client",
-  "version": "2.0.1",
+  "version": "2.2.2",
   "publishConfig": {
     "access": "public"
   },
   "keywords": [
+    "devtools",
+    "product-analytics",
+    "real-user-monitoring",
     "rrweb",
     "@rrweb/browser-client",
     "websocket"
@@ -31,13 +34,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rrweb-io/rrweb.git"
+    "url": "git+https://github.com/rrweb-io/rrweb.git",
+    "directory": "packages/browser-client"
   },
   "license": "MIT",
   "type": "module",
   "main": "./dist/browser-client.cjs",
   "module": "./dist/browser-client.js",
   "unpkg": "./dist/browser-client.umd.cjs",
+  "jsdelivr": "./umd/browser-client.js",
   "typings": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -59,16 +64,15 @@
   "devDependencies": {
     "puppeteer": "^20.9.0",
     "typescript": "^5.4.5",
-    "vite": "^6.0.1",
+    "vite": "^8.3.6",
     "vite-plugin-dts": "^3.9.1",
-    "vitest": "^1.4.0"
+    "vitest": "^1.6.1"
   },
   "dependencies": {
-    "@rrweb/record": "^2.0.1",
-    "@rrweb/rrweb-plugin-sequential-id-record": "^2.0.1",
-    "@rrweb/types": "^2.0.1",
-    "@rrweb/utils": "^2.0.1",
-    "rrweb": "^2.0.1",
+    "@rrweb/record": "^2.2.2",
+    "@rrweb/types": "^2.2.2",
+    "@rrweb/utils": "^2.2.2",
+    "rrweb": "^2.2.2",
     "websocket-ts": "^2.2.1"
   },
   "browserslist": [

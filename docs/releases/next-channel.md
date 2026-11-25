@@ -21,19 +21,19 @@ The `next` branch intentionally carries `.changeset/pre.json`:
 Keep this file in prerelease mode on `next`. The `tag` must stay `next` so
 Changesets publishes prerelease packages with the npm `next` dist-tag.
 
-Do not put `master` into the `next` prerelease mode. Current `master` should not
-have `.changeset/pre.json`; stable releases from `master` continue to publish as
+Do not put `main` into the `next` prerelease mode. Current `main` should not
+have `.changeset/pre.json`; stable releases from `main` continue to publish as
 normal and move `latest` only through the regular stable release process.
 
 ## Regular operation
 
-Bring stable branch updates into `next` as needed, either by merging `master` or
+Bring stable branch updates into `next` as needed, either by merging `main` or
 by cherry-picking specific commits:
 
 ```sh
 git switch next
 git fetch origin
-git merge origin/master
+git merge origin/main
 ```
 
 If the merge conflicts on `.changeset/pre.json`, resolve the conflict by keeping
@@ -44,20 +44,20 @@ before promotion. Include normal Changesets for user-facing package changes; the
 release workflow will turn those changesets into generated prerelease version
 commits on `next`.
 
-## Promoting work back to master
+## Promoting work back to main
 
-Do not merge `next` wholesale back to `master`. Promotion should copy only the
+Do not merge `next` wholesale back to `main`. Promotion should copy only the
 human-authored feature work that is ready for stable release:
 
 ```sh
-git switch master
+git switch main
 git fetch origin
 git cherry-pick <feature-commit-sha>
 ```
 
 Cherry-pick source, docs, tests, and normal changeset commits that describe the
 feature. Never cherry-pick generated `Version Packages (next)` commits from
-`next` to `master`.
+`next` to `main`.
 
 When promoting, exclude release-generated files from the cherry-pick if they are
 present in the selected commits:
@@ -67,12 +67,12 @@ present in the selected commits:
 - version-only `package.json` changes
 
 Those files are generated separately by the stable release workflow after the
-promoted changesets land on `master`.
+promoted changesets land on `main`.
 
 If a cherry-pick includes both feature code and generated release changes, use a
 non-committing cherry-pick and reset generated release files before committing.
 Restore prerelease metadata and generated changelogs outright, then inspect
-package manifests hunk-by-hunk so version-only changes do not move to `master`:
+package manifests hunk-by-hunk so version-only changes do not move to `main`:
 
 ```sh
 git cherry-pick --no-commit <feature-commit-sha>
@@ -92,17 +92,45 @@ metadata changes only when they are part of the promoted feature.
 
 ## Release workflow and Chrome extension
 
-The release workflow runs on both `master` and `next`. On `next`, Changesets
+The release workflow runs on both `main` and `next`. On `next`, Changesets
 publishes prerelease packages to npm using the `next` dist-tag.
 
 Chrome extension publication is also branch-specific:
 
-- `master` publishes the production extension listing. Its extension ID is
-  hard-coded in `.github/workflows/release.yml`, and it uses the existing
-  `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, and `CWS_REFRESH_TOKEN` secrets.
+- `main` publishes the production extension listing. Its extension ID is
+  hard-coded in `.github/workflows/release.yml`, and it uses the
+  `CWS_PUBLISHER_ID`, `CWS_CLIENT_ID`, `CWS_CLIENT_SECRET`, and
+  `CWS_REFRESH_TOKEN` secrets.
 - `next` publishes the prerelease extension listing with
-  `NEXT_CWS_EXTENSION_ID`, `NEXT_CWS_CLIENT_ID`, `NEXT_CWS_CLIENT_SECRET`, and
-  `NEXT_CWS_REFRESH_TOKEN`.
+  `NEXT_CWS_EXTENSION_ID`, `NEXT_CWS_PUBLISHER_ID`, `NEXT_CWS_CLIENT_ID`,
+  `NEXT_CWS_CLIENT_SECRET`, and `NEXT_CWS_REFRESH_TOKEN`.
 
 Keep those listings and credentials separate. Changes to the `next` listing
-should not affect the production Chrome Web Store listing used by `master`.
+should not affect the production Chrome Web Store listing used by `main`.
+
+## Manual Chrome extension recovery
+
+Use this fallback only when the npm release was recovered separately and the
+automatic Chrome step did not publish the matching extension version.
+
+1. Check out the exact `main` or `next` release commit whose extension version
+   should be published.
+2. Install dependencies and build the archive:
+
+   ```sh
+   yarn install --frozen-lockfile
+   NODE_OPTIONS='--max-old-space-size=4096' \
+     DISABLE_WORKER_INLINING=true \
+     yarn turbo run prepublish --filter=@rrweb/web-extension
+   unzip -t packages/web-extension/dist/chrome.zip
+   ```
+
+3. Confirm that `packages/web-extension/dist/chrome/manifest.json` contains the
+   intended version.
+4. In the Chrome Web Store developer dashboard, select the production listing
+   for `main` or the prerelease listing for `next`, upload
+   `packages/web-extension/dist/chrome.zip`, and submit it for review.
+
+GitHub Actions secrets cannot be read back for local CLI use, so dashboard upload
+is the supported manual recovery path. Keep production and prerelease listings
+separate.

@@ -1,29 +1,65 @@
 <script lang="ts">
-  import { EventType } from '@rrweb/types';
   import type { playerMetaData } from '@rrweb/types';
-  import type {
-    Replayer,
-    PlayerMachineState,
-    SpeedMachineState,
-  } from '@rrweb/replay';
+  import type { Replayer, SpeedMachineState } from '@rrweb/replay';
   import {
     onMount,
     onDestroy,
     createEventDispatcher,
     afterUpdate,
   } from 'svelte';
-  import { formatTime, getInactivePeriods } from './utils';
+  import { formatTime } from './utils';
   import Switch from './components/Switch.svelte';
+  import CustomEventMarker from './components/CustomEventMarker.svelte';
+  import { parseAnnotationEvent, getActiveCaption } from './annotations';
+  import { createTimelineIndex } from './timeline-index';
 
   const dispatch = createEventDispatcher();
 
   export let replayer: Replayer;
+  export let showCaptions = true;
+  const updateTimeline = createTimelineIndex();
+  let timeline = updateTimeline(replayer.events, replayer.config.inactivePeriodThreshold);
+  export let captionText: string | undefined = undefined;
+  let activeCaptionText: string | undefined;
+  $: captionText = showCaptions ? activeCaptionText : undefined;
+  // Index changes and seeks reconcile state; playback updates come from annotation events.
+  $: activeCaptionText = resolveCaption(timeline);
+
+  let captionUpdatePending = false;
+
+  function resolveCaption(index: ReturnType<typeof updateTimeline>) {
+    captionUpdatePending = false;
+    return getActiveCaption(index.captions, Math.max(0, replayer.getCurrentTime()))?.text;
+  }
+
+  function restoreCaption(index: ReturnType<typeof updateTimeline>) {
+    activeCaptionText = resolveCaption(index);
+  }
+
+  function handleAnnotation(event: unknown) {
+    const annotation = parseAnnotationEvent(event);
+    if (annotation?.type !== 'caption' || captionUpdatePending) return;
+    captionUpdatePending = true;
+    void Promise.resolve().then(() => {
+      if (captionUpdatePending) restoreCaption(timeline);
+    });
+  }
+
+  function restoreCaptionOnSeek() {
+    restoreCaption(timeline);
+  }
+  let timelineMarkerDismissalVersion = 0;
+
+  function dismissTimelineMarkersOnEscape(event: KeyboardEvent) {
+    if (event.key === 'Escape') timelineMarkerDismissalVersion += 1;
+  }
   export let showController: boolean;
   export let autoPlay: boolean;
   export let skipInactive: boolean;
   export let speedOption: number[];
   export let speed = speedOption.length ? speedOption[0] : 1;
   export let tags: Record<string, string> = {};
+  export let timelineMarkerColor = 'rgb(73, 80, 246)';
   export let inactiveColor: string;
 
   let currentTime = 0;
@@ -31,12 +67,16 @@
     dispatch('ui-update-current-time', { payload: currentTime });
   }
   let timer: number | null = null;
-  let playerState: 'playing' | 'paused' | 'live';
+  let isAdvancing = false;
+  let playingInUI = false;
   $: {
-    dispatch('ui-update-player-state', { payload: playerState });
+    dispatch('ui-update-player-state', {
+      payload: playingInUI ? 'playing' : 'paused',
+    });
   }
   let speedState: 'normal' | 'skipping';
   let progress: HTMLElement;
+  let progressSlider: HTMLElement;
   let finished: boolean;
 
   let pauseAt: number | false = false;
@@ -46,8 +86,8 @@
     end: number;
   } | null = null;
 
-  let meta: playerMetaData;
-  $: meta = replayer.getMetaData();
+  let meta: playerMetaData = replayer.getMetaData();
+  $: accessibleTime = Math.max(0, Math.min(meta.totalTime, Math.floor(currentTime / 1000) * 1000));
   let percentage: string;
   $: {
     const percent = Math.min(1, currentTime / meta.totalTime);
@@ -58,6 +98,8 @@
     name: string;
     background: string;
     position: string;
+    timeOffset: number;
+    timelineMarkerText: string | undefined;
   };
 
   /**
@@ -69,37 +111,19 @@
    */
   function position(startTime: number, endTime: number, tagTime: number) {
     const sessionDuration = endTime - startTime;
+    if (sessionDuration <= 0) return '0.00';
     const eventDuration = endTime - tagTime;
     const eventPosition = 100 - (eventDuration / sessionDuration) * 100;
     return eventPosition.toFixed(2);
   }
 
-  let customEvents: CustomEvent[];
-  $: customEvents = (() => {
-    const { context } = replayer.service.state;
-    const totalEvents = context.events.length;
-    const start = context.events[0].timestamp;
-    const end = context.events[totalEvents - 1].timestamp;
-    const customEvents: CustomEvent[] = [];
-
-    // loop through all the events and find out custom event.
-    context.events.forEach((event) => {
-      /**
-       * we are only interested in custom event and calculate it's position
-       * to place it in player's timeline.
-       */
-      if (event.type === EventType.Custom) {
-        const customEvent = {
-          name: event.data.tag,
-          background: tags[event.data.tag] || 'rgb(73, 80, 246)',
-          position: `${position(start, end, event.timestamp)}%`,
-        };
-        customEvents.push(customEvent);
-      }
-    });
-
-    return customEvents;
-  })();
+  $: customEvents = timeline.markers.map((marker): CustomEvent => ({
+    name: marker.tag ?? 'Timeline marker',
+    timeOffset: marker.timestamp - timeline.start,
+    timelineMarkerText: marker.text,
+    background: marker.tag === undefined ? timelineMarkerColor : tags[marker.tag] || 'rgb(73, 80, 246)',
+    position: `${position(timeline.start, timeline.end, marker.timestamp)}%`,
+  }));
 
   let inactivePeriods: {
     name: string;
@@ -107,36 +131,15 @@
     position: string;
     width: string;
   }[];
-  $: inactivePeriods = (() => {
-    try {
-      const { context } = replayer.service.state;
-      const totalEvents = context.events.length;
-      const start = context.events[0].timestamp;
-      const end = context.events[totalEvents - 1].timestamp;
-      const periods = getInactivePeriods(context.events, replayer.config.inactivePeriodThreshold);
-      // calculate the indicator width.
-      const getWidth = (
-        startTime: number,
-        endTime: number,
-        tagStart: number,
-        tagEnd: number,
-      ) => {
-        const sessionDuration = endTime - startTime;
-        const eventDuration = tagEnd - tagStart;
-        const width = (eventDuration / sessionDuration) * 100;
-        return width.toFixed(2);
-      };
-      return periods.map((period) => ({
-        name: 'inactive period',
-        background: inactiveColor,
-        position: `${position(start, end, period[0])}%`,
-        width: `${getWidth(start, end, period[0], period[1])}%`,
-      }));
-    } catch (e) {
-      // For safety concern, if there is any error, the main function won't be affected.
-      return [];
-    }
-  })();
+  $: inactivePeriods = timeline.periods.map(([start, end]) => ({
+    name: 'inactive period',
+    background: inactiveColor,
+    position: `${position(timeline.start, timeline.end, start)}%`,
+    width:
+      timeline.end > timeline.start
+        ? `${(((end - start) / (timeline.end - timeline.start)) * 100).toFixed(2)}%`
+        : '0.00%',
+  }));
 
   const loopTimer = () => {
     stopTimer();
@@ -156,7 +159,7 @@
         }
       }
 
-      if (currentTime < meta.totalTime) {
+      if (currentTime < replayer.getMetaData().totalTime) {
         timer = requestAnimationFrame(update);
       }
     }
@@ -172,20 +175,15 @@
   };
 
   export const toggle = () => {
-    switch (playerState) {
-      case 'playing':
-        pause();
-        break;
-      case 'paused':
-        play();
-        break;
-      default:
-        break;
+    if (playingInUI) {
+      pause();
+    } else {
+      play();
     }
   };
 
   export const play = () => {
-    if (playerState !== 'paused') {
+    if (playingInUI) {
       return;
     }
     if (finished) {
@@ -197,7 +195,7 @@
   };
 
   export const pause = () => {
-    if (playerState !== 'playing') {
+    if (!playingInUI) {
       return;
     }
     replayer.pause();
@@ -209,7 +207,7 @@
     pauseAt = false;
     finished = false;
     const resumePlaying =
-      typeof play === 'boolean' ? play : playerState === 'playing';
+      typeof play === 'boolean' ? play : playingInUI;
     if (resumePlaying) {
       replayer.play(timeOffset);
     } else {
@@ -241,6 +239,7 @@
     if (speedState === 'skipping') {
       return;
     }
+    progressSlider.focus();
     const progressRect = progress.getBoundingClientRect();
     const x = event.clientX - progressRect.left;
     let percent = x / progressRect.width;
@@ -254,18 +253,34 @@
   };
 
   const handleProgressKeydown = (event: KeyboardEvent) => { 
+    // Ignore marker keys and the slider event bubbling to the progress wrapper.
+    if (event.target !== event.currentTarget) return;
     if (speedState === 'skipping') {
       return;
     }
-    if (event.key === 'ArrowLeft') {
-      goto(currentTime - 5);
-    } else if (event.key === 'ArrowRight') {
-      goto(currentTime + 5);
+    let timeOffset: number;
+    switch (event.key) {
+      case 'ArrowLeft':
+        timeOffset = currentTime - 5000;
+        break;
+      case 'ArrowRight':
+        timeOffset = currentTime + 5000;
+        break;
+      case 'Home':
+        timeOffset = 0;
+        break;
+      case 'End':
+        timeOffset = meta.totalTime;
+        break;
+      default:
+        return;
     }
+    event.preventDefault();
+    goto(Math.max(0, Math.min(meta.totalTime, timeOffset)));
   };
 
   export const setSpeed = (newSpeed: number) => {
-    let needFreeze = playerState === 'playing';
+    let needFreeze = playingInUI;
     speed = newSpeed;
     if (needFreeze) {
       replayer.pause();
@@ -280,32 +295,31 @@
     skipInactive = !skipInactive;
   };
 
-  export const triggerUpdateMeta = () => {
-    return Promise.resolve().then(() => {
-      meta = replayer.getMetaData();
-    });
+  const updateMeta = () => {
+    meta = replayer.getMetaData();
+    timeline = updateTimeline(replayer.events, replayer.config.inactivePeriodThreshold);
   };
 
   onMount(() => {
-    playerState = replayer.service.state.value;
+    replayer.on('annotation', handleAnnotation);
+    replayer.on('start', restoreCaptionOnSeek);
+    isAdvancing = replayer.isPlaying() && !replayer.isStalled();
+    playingInUI = replayer.isPlaying();
     speedState = replayer.speedService.state.value;
     replayer.on(
       'state-change',
       (states) => {
-        const { player, speed } = states as { player?: PlayerMachineState; speed?: SpeedMachineState };
-        if (player?.value && playerState !== player.value) {
-          playerState = player.value;
-          switch (playerState) {
-            case 'playing':
-              loopTimer();
-              break;
-            case 'paused':
-              stopTimer();
-              break;
-            default:
-              break;
+        playingInUI = replayer.isPlaying();
+        const advancing = playingInUI && !replayer.isStalled();
+        if (advancing !== isAdvancing) {
+          isAdvancing = advancing;
+          if (advancing) {
+            loopTimer();
+          } else {
+            stopTimer();
           }
         }
+        const { speed } = states as { speed?: SpeedMachineState };
         if (speed?.value && speedState !== speed.value) {
           speedState = speed.value;
         }
@@ -318,6 +332,7 @@
         onPauseHook = null;
       }
     });
+    replayer.on('events-updated', updateMeta);
 
     if (autoPlay) {
       replayer.play();
@@ -331,10 +346,16 @@
   });
 
   onDestroy(() => {
+    captionUpdatePending = false;
+    replayer.off('annotation', handleAnnotation);
+    replayer.off('start', restoreCaptionOnSeek);
+    replayer.off('events-updated', updateMeta);
     replayer.pause();
     stopTimer();
   });
 </script>
+
+<svelte:window on:keydown={dismissTimelineMarkersOnEscape} />
 
 <style>
   .rr-controller {
@@ -373,6 +394,16 @@
     border-bottom: solid 4px #fff;
   }
 
+  .rr-progress__slider {
+    position: absolute;
+    inset: -4px 0;
+    pointer-events: none;
+    border-radius: 3px;
+  }
+  .rr-progress__slider:focus-visible {
+    outline: 2px solid rgb(73, 80, 246);
+    outline-offset: 2px;
+  }
   .rr-progress.disabled {
     cursor: not-allowed;
   }
@@ -441,6 +472,19 @@
         on:keydown={handleProgressKeydown}
       >
         <div
+          class="rr-progress__slider"
+          bind:this={progressSlider}
+          role="slider"
+          tabindex="0"
+          aria-label="Playback position"
+          aria-valuemin="0"
+          aria-valuemax={Math.floor(meta.totalTime / 1000) * 1000}
+          aria-valuenow={accessibleTime}
+          aria-valuetext={`${formatTime(accessibleTime)} of ${formatTime(meta.totalTime)}`}
+          aria-disabled={speedState === 'skipping'}
+          on:keydown={handleProgressKeydown}
+        />
+        <div
           class="rr-progress__step"
           style="width: {percentage}"
         />
@@ -452,12 +496,25 @@
           />
         {/each}
         {#each customEvents as event}
-          <div
-            title={event.name}
-            style="width: 10px;height: 5px;position: absolute;top:
-            2px;transform: translate(-50%, -50%);background: {event.background};left:
-            {event.position};"
-          />
+          {#if event.timelineMarkerText}
+            <CustomEventMarker
+              dismissalVersion={timelineMarkerDismissalVersion}
+              name={event.name}
+              text={event.timelineMarkerText}
+              background={event.background}
+              position={event.position}
+              disabled={speedState === 'skipping'}
+              on:seek={() => goto(event.timeOffset)}
+              on:focus-timeline={() => progressSlider.focus()}
+            />
+          {:else}
+            <div
+              title={event.name}
+              style="width: 10px;height: 5px;position: absolute;top:
+              2px;transform: translate(-50%, -50%);background: {event.background};left:
+              {event.position};"
+            />
+          {/if}
         {/each}
 
         <div class="rr-progress__handler" style="left: {percentage}" />
@@ -466,7 +523,7 @@
     </div>
     <div class="rr-controller__btns">
       <button on:click={toggle}>
-        {#if playerState === 'playing'}
+        {#if playingInUI}
           <svg
             class="icon"
             viewBox="0 0 1024 1024"
@@ -519,6 +576,18 @@
           {s}x
         </button>
       {/each}
+      {#if timeline.hasCaptions}
+        <button
+          type="button"
+          class:active={showCaptions}
+          aria-label="CC captions"
+          aria-pressed={showCaptions}
+          title={showCaptions ? 'Hide captions' : 'Show captions'}
+          on:click={() => (showCaptions = !showCaptions)}
+        >
+          CC
+        </button>
+      {/if}
       <Switch
         id="skip"
         bind:checked={skipInactive}

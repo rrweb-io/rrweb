@@ -22,14 +22,10 @@ record({
   plugins: [
     getRecordSequentialIdPlugin({
       key: '_sid', // default value
-      startId: 0, // next generated id will be startId + 1
-      preserveExisting: false, // keep current overwrite behavior by default
     }),
   ],
 });
 ```
-
-Use `startId` when recording resumes from a known last ID. Set `preserveExisting` to `true` if another event processor may already provide a valid positive integer at the configured key.
 
 ## Sponsors
 
@@ -140,7 +136,7 @@ Use `startId` when recording resumes from a known last ID. Set `preserveExisting
   <tr>
     <td align="center">
       <a href="http://www.smartx.com/" target="_blank">
-        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/master/static/logos/smartx.png" alt="SmartX">
+        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/HEAD/static/logos/smartx.png" alt="SmartX">
       </a>
     </td>
     <td align="center">

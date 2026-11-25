@@ -1,8 +1,10 @@
 # @rrweb/browser-client
 
+## Overview
+
 Browser client for recording rrweb sessions to an rrweb Cloud-compatible API. It wraps rrweb recording, streams events over WebSocket, and falls back to HTTP POST for buffered events.
 
-This README covers the npm/ESM package. For the hosted script snippet and broader rrweb Cloud setup, see the [JavaScript SDK guide](https://rrweb.com/docs/cloud/javascript-sdk).
+This README covers the npm/ESM package. For the hosted script snippet and broader rrweb Cloud setup, see the [Browser Client guide](https://rrweb.com/docs/cloud/browser-client).
 
 ## Installation
 
@@ -17,6 +19,7 @@ import rrwebBrowserClient, {
   start,
   stop,
   addMeta,
+  addAnnotation,
   getRecordingId,
 } from '@rrweb/browser-client';
 
@@ -30,6 +33,7 @@ start({
 });
 
 addMeta({ plan: 'pro' });
+addAnnotation({ type: 'timelineMarker', text: 'Checkout started' });
 
 console.log('recording id', getRecordingId());
 stop(false);
@@ -62,14 +66,22 @@ rrwebBrowserClient.start({
 - `getRecordingId()`: returns the current recording id, creating it before `start()` if needed. Recording ids are stored in `sessionStorage`, so separate tabs get separate recording contexts.
 - `addMeta(payload)`: adds or updates recording metadata after recording has started.
 - `addPageviewMeta(payload)`: adds metadata for the current page view.
-- `addCustomEvent(tag, payload)`: queues a custom rrweb event.
+- `addCustomEvent(tag, payload)`: records a custom rrweb event.
+- `addAnnotation(annotation)`: records a caption or timeline marker annotation.
 - `stop(resetRecordingId)`: stops rrweb recording and closes the WebSocket. Pass `true` to clear the stored recording id before a future `start()`.
 
-Browser-client events sent to rrweb Cloud include a top-level `sequenceId`. The client stores the latest assigned sequence ID in `sessionStorage` per recording ID, so same-tab page navigations continue ordering from the previous page. Sequence IDs are persisted when events are queued or sent, so gaps can appear if a page exits before an event reaches the server.
+Both `addCustomEvent()` and `addAnnotation()` queue events until the recorder is ready,
+including calls made before `start()` or while the document is still loading.
+When recording starts, queued events pass through the configured `emit` callback
+and are sent to the server with their original call-time timestamps. Events added
+during active recording use the same callback and delivery path. Calling `stop()`
+discards events still waiting for the recorder to start.
+
+Every event the client uploads carries a top-level `sequenceId`: its place in the recording, counting from 0 with no number skipped. The next number is kept in `sessionStorage` beside the recording id, so a page load in the same tab carries on from the previous page, and `stop(true)` resets it. Recording metadata (`addMeta`) is stored apart from the recording's events and takes no number.
 
 ## Further Reading
 
-- [JavaScript SDK guide](https://rrweb.com/docs/cloud/javascript-sdk)
+- [Browser Client guide](https://rrweb.com/docs/cloud/browser-client)
 - [WebSocket event streaming](https://rrweb.com/docs/cloud/websocket-ingest)
 - [Application Metadata](https://rrweb.com/docs/cloud/application-meta)
 - [Replaying Guide](https://rrweb.com/docs/cloud/replaying-guide)

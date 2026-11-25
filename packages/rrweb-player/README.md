@@ -1,10 +1,14 @@
 # rrweb-player
 
-Since rrweb's replayer only provides a basic UI, you can choose rrweb-replayer which is based on rrweb's public APIs but has a feature-rich replayer UI.
+## Overview
 
-## How is this different from `rrweb.Replayer`?
+Use this package to get a feature-rich playback UI out of the box; if you want to build your own UI use the [@rrweb/replay](../../packages/replay/README.md) package.
 
-rrweb-player uses rrweb's Replayer under the hood, but as Replayer doesn't include any UI for controls, rrweb-player adds those.
+This is the same replayer used in the [cloud dashboard](https://app.rrweb.com/), if you want to try out a replay of your website, you can sign up and make a quick recording using the 'Test record any webpage' bookmarklet.
+
+## How is this different from `new Replayer()`?
+
+`new Replayer()` is from the more foundational [@rrweb/replay](../../packages/replay/README.md) package, which renders and rebuilds an rrweb event stream within an iframe. This package builds on that to provide UI in the form of play/pause controls and a timeline using the [Svelte](https://svelte.dev/) UI framework. The similar naming is unfortunate, and we aim to fix that in a future major version.
 
 ## Installation
 
@@ -61,21 +65,48 @@ new rrwebPlayer({
 
 ## Options
 
-| key            | default      | description                                                                                                         |
-| -------------- | ------------ | ------------------------------------------------------------------------------------------------------------------- |
-| events         | []           | the events for replaying                                                                                            |
-| width          | 1024         | the width of the replayer                                                                                           |
-| height         | 576          | the height of the replayer                                                                                          |
-| maxScale       | 1            | the maximum scale of the replayer (1 = 100%), set to 0 for unlimited                                                |
-| autoPlay       | true         | whether to autoplay                                                                                                 |
-| speed          | 1            | The default speed to play at                                                                                        |
-| speedOption    | [1, 2, 4, 8] | speed options in UI                                                                                                 |
-| showController | true         | whether to show the controller UI                                                                                   |
-| tags           | {}           | customize the custom events style with a key-value map                                                              |
-| inactiveColor  | #D4D4D4      | Customize the color of inactive periods indicator in the progress bar with a valid CSS color string.                |
-| ...            | -            | all the [rrweb Replayer options](https://github.com/rrweb-io/rrweb/blob/master/guide.md#options-1) will be bypassed |
+| key                 | default          | description                                                                                                       |
+| ------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------- |
+| events              | []               | the events for replaying                                                                                          |
+| width               | 1024             | the width of the replayer                                                                                         |
+| height              | 576              | the height of the replayer                                                                                        |
+| maxScale            | 1                | the maximum scale of the replayer (1 = 100%), set to 0 for unlimited                                              |
+| autoPlay            | true             | whether to autoplay                                                                                               |
+| speed               | 1                | The default speed to play at                                                                                      |
+| speedOption         | [1, 2, 4, 8]     | speed options in UI                                                                                               |
+| showCaptions        | true             | display timed captions from annotation events; viewers can toggle them with CC                                    |
+| showController      | true             | whether to show the controller UI                                                                                 |
+| timelineMarkerColor | rgb(73, 80, 246) | color of timeline marker annotations                                                                              |
+| tags                | {}               | customize the custom events style with a key-value map                                                            |
+| inactiveColor       | #D4D4D4          | Customize the color of inactive periods indicator in the progress bar with a valid CSS color string.              |
+| ...                 | -                | all the [rrweb Replayer options](https://github.com/rrweb-io/rrweb/blob/main/guide.md#options-1) will be bypassed |
 
-## methods on the rrwebPlayer component
+## Captions and timeline markers
+
+Use `record.addAnnotation()` to add captions and timeline markers. Captions are
+shown by default; set `showCaptions: false` to hide them initially. Viewers can
+toggle them with CC.
+
+```js
+record.addAnnotation({ type: 'caption', text: 'Click Save.' });
+record.addAnnotation({
+  type: 'timelineMarker',
+  text: 'Saving also creates a default workspace.',
+});
+record.addAnnotation({ type: 'caption', text: '' });
+```
+
+Captions persist until replaced or cleared with `''` or `false`.
+`timelineMarkerColor` controls annotation marker colors independently of custom
+event `tags`. Text is plain text; HTML is not interpreted.
+
+Tab to the playback position slider to seek with the arrow keys in five-second
+steps, or use Home/End to jump to the start/end.
+
+See the [annotation recipe](../../docs/recipes/annotations.md)
+for replay callbacks, keyboard interactions, seeking, and TypeScript usage.
+
+## Methods on the rrwebPlayer component
 
 ```ts
 addEventListener(event: string, handler: (params: any) => unknown): void;
@@ -263,7 +294,7 @@ playRange(
   <tr>
     <td align="center">
       <a href="http://www.smartx.com/" target="_blank">
-        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/master/static/logos/smartx.png" alt="SmartX">
+        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/HEAD/static/logos/smartx.png" alt="SmartX">
       </a>
     </td>
     <td align="center">

@@ -1,5 +1,131 @@
 # @rrweb/browser-client
 
+## 2.2.2
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb@2.2.2
+  - @rrweb/record@2.2.2
+  - @rrweb/types@2.2.2
+  - @rrweb/utils@2.2.2
+
+## 2.2.1
+
+### Patch Changes
+
+- Updated dependencies [[`f2cfd83`](https://github.com/rrweb-io/rrweb/commit/f2cfd8326756f6e2790d9739c4dd3e853702ef68), [`339683f`](https://github.com/rrweb-io/rrweb/commit/339683f34bf2dd5df2e7cc18fe59fb924b65661b), [`031ef19`](https://github.com/rrweb-io/rrweb/commit/031ef19a124704eb474066c6c064fdeb67deb90c), [`2bc4f89`](https://github.com/rrweb-io/rrweb/commit/2bc4f89beb7f99a987817703031e3a15c75d0c10)]:
+  - @rrweb/record@2.2.1
+  - rrweb@2.2.1
+  - @rrweb/utils@2.2.1
+  - @rrweb/types@2.2.1
+
+## 2.2.0
+
+### Minor Changes
+
+- [#1928](https://github.com/rrweb-io/rrweb/pull/1928) [`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80) Thanks [@Juice10](https://github.com/Juice10)! - Expose `addAnnotation()` through named and default exports. Calls record annotations immediately during an active session or queue them with their call-time timestamp until the recorder is ready, including calls immediately after `start()` while the document is still loading.
+
+### Patch Changes
+
+- [#1928](https://github.com/rrweb-io/rrweb/pull/1928) [`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80) Thanks [@Juice10](https://github.com/Juice10)! - Deliver queued custom events and annotations through the configured `emit` callback when the recorder is ready, preserving their original call-time timestamps. Previously, queued events bypassed the callback and were sent only to the server.
+
+  Queue custom events added while the document is still loading instead of calling the recorder before it is ready and throwing an error.
+
+- Updated dependencies [[`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80), [`235ae85`](https://github.com/rrweb-io/rrweb/commit/235ae85e501bae64db7a46b2a773b8390737822c), [`009b2dd`](https://github.com/rrweb-io/rrweb/commit/009b2dd4971ea575bd481f1f591822d319ab078b), [`009b2dd`](https://github.com/rrweb-io/rrweb/commit/009b2dd4971ea575bd481f1f591822d319ab078b)]:
+  - rrweb@2.2.0
+  - @rrweb/types@2.2.0
+  - @rrweb/record@2.2.0
+  - @rrweb/utils@2.2.0
+
+## 2.1.7
+
+### Patch Changes
+
+- Updated dependencies [[`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804), [`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804)]:
+  - rrweb@2.1.7
+  - @rrweb/record@2.1.7
+  - @rrweb/types@2.1.7
+  - @rrweb/utils@2.1.7
+
+## 2.1.6
+
+### Patch Changes
+
+- [#1946](https://github.com/rrweb-io/rrweb/pull/1946) [`2aad394`](https://github.com/rrweb-io/rrweb/commit/2aad394fe4de86438ed6e59592f0aeab3646f762) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Preserve event order when an HTTP fallback upload fails. The failed batch is now re-queued at the front of the buffer, ahead of events that were recorded while the request was in flight, instead of being appended to the back and arriving out of order.
+
+- [#1943](https://github.com/rrweb-io/rrweb/pull/1943) [`a5dbd21`](https://github.com/rrweb-io/rrweb/commit/a5dbd218b750b02ed3c96573d5abe79d6ef4636c) Thanks [@Juice10](https://github.com/Juice10)! - Fix HTTP fallback uploads resending earlier successful batches when flushing a large event buffer. Failed uploads now requeue only their own batch.
+
+- Updated dependencies []:
+  - rrweb@2.1.6
+  - @rrweb/record@2.1.6
+  - @rrweb/types@2.1.6
+  - @rrweb/utils@2.1.6
+
+## 2.1.5
+
+### Patch Changes
+
+- Updated dependencies [[`5869344`](https://github.com/rrweb-io/rrweb/commit/5869344a16ec04873c2a0bef3ced0be9c906fcbb), [`5869344`](https://github.com/rrweb-io/rrweb/commit/5869344a16ec04873c2a0bef3ced0be9c906fcbb)]:
+  - rrweb@2.1.5
+  - @rrweb/record@2.1.5
+  - @rrweb/types@2.1.5
+  - @rrweb/utils@2.1.5
+
+## 2.1.4
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb@2.1.4
+  - @rrweb/record@2.1.4
+  - @rrweb/types@2.1.4
+  - @rrweb/utils@2.1.4
+
+## 2.1.3
+
+### Patch Changes
+
+- Updated dependencies [[`7b10fba`](https://github.com/rrweb-io/rrweb/commit/7b10fba6f9736acd89b60d26974eeeb7d7874597)]:
+  - rrweb@2.1.3
+  - @rrweb/record@2.1.3
+  - @rrweb/types@2.1.3
+  - @rrweb/utils@2.1.3
+
+## 2.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`956fc48`](https://github.com/rrweb-io/rrweb/commit/956fc48e4c7624d343dd456b4498563b1f6f90bb), [`129a805`](https://github.com/rrweb-io/rrweb/commit/129a8052364f062f134bbe717c7ee3be6105e808)]:
+  - rrweb@2.1.2
+  - @rrweb/record@2.1.2
+  - @rrweb/types@2.1.2
+  - @rrweb/utils@2.1.2
+
+## 2.1.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb@2.1.1
+  - @rrweb/record@2.1.1
+  - @rrweb/types@2.1.1
+  - @rrweb/utils@2.1.1
+
+## 2.1.0
+
+### Patch Changes
+
+- [#1885](https://github.com/rrweb-io/rrweb/pull/1885) [`4e501fd`](https://github.com/rrweb-io/rrweb/commit/4e501fdc7fb54c93f644e037b05225ae70471b4a) Thanks [@kevinvandijk](https://github.com/kevinvandijk)! - Make autostart and includePii attributes optional on initialization
+
+- [#1884](https://github.com/rrweb-io/rrweb/pull/1884) [`907f744`](https://github.com/rrweb-io/rrweb/commit/907f744246f70476008d6a8ad7ef2c456a3d2db8) Thanks [@kevinvandijk](https://github.com/kevinvandijk)! - Add compatibility for importing browser-client in projects which use SSR
+
+- Updated dependencies [[`b08a06f`](https://github.com/rrweb-io/rrweb/commit/b08a06f8f5445e7779fe0744d301a7ceb8d857c3), [`7f0f75f`](https://github.com/rrweb-io/rrweb/commit/7f0f75f14d96fc7043ab6cfb52dfe8bbb73b499e), [`6fe4fed`](https://github.com/rrweb-io/rrweb/commit/6fe4fed0fdce46b0562a0770a056f77e326bed79)]:
+  - @rrweb/record@2.1.0
+  - rrweb@2.1.0
+  - @rrweb/types@2.1.0
+  - @rrweb/utils@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes

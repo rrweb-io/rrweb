@@ -1,8 +1,10 @@
 # @rrweb/packer
 
-`@rrweb/packer` is a tool to compress rrweb events into a smaller size.
+## Overview
 
-See the [storage recipe](../../docs/recipes/optimize-storage.md#compression) for more info on how this works.
+`@rrweb/packer` compresses rrweb events on the frontend before network transmission. It uses [fflate](https://github.com/101arrowz/fflate) for zlib compression and compresses each rrweb event separately as it is emitted. The encoder is needed on the recording side and adds roughly 17KB minified to your bundle (less after gzip). Decompression at replay time is handled separately via the `@rrweb/packer/unpack` entry point.
+
+See the [storage recipe](../../docs/recipes/optimize-storage.md#compression) for more info on how it works.
 And the [guide](../../guide.md) for more info on rrweb.
 
 ## Sponsors
@@ -114,7 +116,7 @@ And the [guide](../../guide.md) for more info on rrweb.
   <tr>
     <td align="center">
       <a href="http://www.smartx.com/" target="_blank">
-        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/master/static/logos/smartx.png" alt="SmartX">
+        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/HEAD/static/logos/smartx.png" alt="SmartX">
       </a>
     </td>
     <td align="center">

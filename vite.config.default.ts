@@ -7,6 +7,7 @@ import { resolve, dirname } from 'path';
 import { umdWrapper } from 'esbuild-plugin-umd-wrapper';
 import * as fs from 'node:fs';
 import { visualizer } from 'rollup-plugin-visualizer';
+import { bundleToWebpackStats } from 'rollup-plugin-webpack-stats/transform';
 
 // don't empty out dir if --watch flag is passed
 const emptyOutDir = !process.argv.includes('--watch');
@@ -16,30 +17,73 @@ const emptyOutDir = !process.argv.includes('--watch');
  */
 const disableWorkerInlining = process.env.DISABLE_WORKER_INLINING === 'true';
 
-function minifyAndUMDPlugin({
+function relativeCIStatsPlugin(outDir: string): Plugin {
+  type Stats = ReturnType<typeof bundleToWebpackStats>;
+  let canonicalStats: Stats | undefined;
+  let outputDirectory = resolve(outDir);
+
+  return {
+    name: 'relative-ci-stats',
+    buildStart() {
+      canonicalStats = undefined;
+    },
+    generateBundle(outputOptions, bundle) {
+      outputDirectory = resolve(outputOptions.dir || outDir);
+      // Use one module graph: combining equivalent output formats would make
+      // RelativeCI report every source module as duplicated.
+      if (outputOptions.format === 'es' || !canonicalStats) {
+        canonicalStats = bundleToWebpackStats(bundle);
+      }
+    },
+    closeBundle() {
+      if (!canonicalStats) return;
+      // writeBundle also creates UMD and minified files outside Rollup's bundle.
+      const assets = fs
+        .readdirSync(outputDirectory, { withFileTypes: true })
+        .filter(
+          (entry) => entry.isFile() && /\.(js|cjs|mjs|css)$/.test(entry.name),
+        )
+        .map(({ name }) => ({
+          name,
+          size: fs.statSync(resolve(outputDirectory, name)).size,
+        }));
+      const stats: Stats = {
+        builtAt: Date.now(),
+        assets,
+        chunks: canonicalStats.chunks,
+        modules: canonicalStats.modules,
+      };
+      fs.writeFileSync(
+        resolve(outputDirectory, 'webpack-stats.json'),
+        JSON.stringify(stats),
+      );
+    },
+  };
+}
+
+export function minifyAndUMDPlugin({
   name,
   outDir,
+  umdExport,
 }: {
   name: LibraryOptions['name'];
   outDir: string;
+  umdExport?: 'default';
 }): Plugin {
   return {
     name: 'minify-plugin',
     async writeBundle(outputOptions, bundle) {
       for (const file of Object.values(bundle)) {
-        if (
-          file.type === 'asset' &&
-          (file.fileName.endsWith('.cjs.map') || file.fileName.endsWith('.css'))
-        ) {
-          const isCSS = file.fileName.endsWith('.css');
-          const inputFilePath = resolve(
-            outputOptions.dir!,
-            file.fileName,
-          ).replace(/\.map$/, '');
-          const baseFileName = file.fileName.replace(
-            /(\.cjs|\.css)(\.map)?$/,
-            '',
-          );
+        // Facade chunks can re-export other entries without a source map.
+        // Only public entries need UMD builds, not their shared chunks.
+        const isEntry =
+          outputOptions.format === 'cjs' &&
+          file.type === 'chunk' &&
+          file.isEntry;
+        const isCSS = file.type === 'asset' && file.fileName.endsWith('.css');
+        if (isEntry || isCSS) {
+          const inputFilePath = resolve(outputOptions.dir!, file.fileName);
+          const baseFileName = file.fileName.replace(/\.(cjs|js|mjs|css)$/, '');
           const outputFilePath = resolve(outputOptions.dir!, baseFileName);
           // console.log(outputFilePath, 'minifying', file.fileName);
           if (isCSS) {
@@ -51,38 +95,29 @@ function minifyAndUMDPlugin({
               outDir,
             });
           } else {
-            const umdDir = dirname(outputFilePath).replace('/dist', '/umd');
+            const umdDir = resolve(dirname(outputOptions.dir!), 'umd');
             if (!existsSync(umdDir)) {
               mkdirSync(umdDir);
             }
-            const outUmd = `${outputFilePath}.umd.cjs`;
-            await buildFile({
-              name,
-              input: inputFilePath,
-              output: outUmd,
-              minify: false,
-              isCss: false,
-              outDir,
-            });
-            // Workaround because jsdelivr does use correct mime types for .umd.cjs
-            // More info: https://github.com/jsdelivr/jsdelivr/issues/18584 https://github.com/rrweb-io/rrweb/pull/1704
-            copyFileSync(
-              outUmd,
-              `${outputFilePath.replace('/dist/', '/umd/')}.js`,
-            );
-            const outUmdMin = `${outputFilePath}.umd.min.cjs`;
-            await buildFile({
-              name,
-              input: inputFilePath,
-              output: outUmdMin,
-              minify: true,
-              isCss: false,
-              outDir,
-            });
-            copyFileSync(
-              outUmdMin,
-              `${outputFilePath.replace('/dist/', '/umd/')}.min.js`,
-            );
+            for (const minify of [false, true]) {
+              const suffix = minify ? '.min' : '';
+              const output = `${outputFilePath}.umd${suffix}.cjs`;
+              await buildFile({
+                name,
+                input: inputFilePath,
+                output,
+                umdExport,
+                minify,
+                isCss: false,
+                outDir,
+              });
+              // Workaround because jsDelivr does not use correct MIME types for .umd.cjs.
+              // More info: https://github.com/jsdelivr/jsdelivr/issues/18584 https://github.com/rrweb-io/rrweb/pull/1704
+              copyFileSync(
+                output,
+                resolve(umdDir, `${baseFileName}${suffix}.js`),
+              );
+            }
           }
         }
       }
@@ -97,6 +132,7 @@ async function buildFile({
   minify,
   isCss,
   outDir,
+  umdExport,
 }: {
   name?: LibraryOptions['name'];
   input: string;
@@ -104,22 +140,33 @@ async function buildFile({
   outDir: string;
   minify: boolean;
   isCss: boolean;
+  umdExport?: 'default';
 }) {
   await build({
     entryPoints: [input],
+    // UMD entrypoints must also work without a CommonJS loader or sibling files.
+    bundle: !isCss,
     outfile: output,
     minify,
     sourcemap: true,
     format: isCss ? undefined : ('umd' as Format),
     target: isCss ? undefined : 'es2017',
     treeShaking: !isCss,
+    // Run before the UMD wrapper returns the CommonJS exports.
+    footer:
+      umdExport === 'default'
+        ? { js: 'module.exports = module.exports.default;' }
+        : undefined,
     plugins: [
       umdWrapper({
         libraryName: name,
       }),
     ],
   });
-  const filename = output.replace(new RegExp(`^.+/(${outDir}/)`), '$1');
+  const filename = output.replace(
+    new RegExp(`^.+[/\\\\](${outDir}[/\\\\])`),
+    '$1',
+  );
   console.log(filename);
   console.log(`${filename}.map`);
 }
@@ -127,9 +174,21 @@ async function buildFile({
 export default function (
   entry: LibraryOptions['entry'],
   name: LibraryOptions['name'],
-  options?: { outputDir?: string; fileName?: string; plugins?: Plugin[] },
+  options?: {
+    outputDir?: string;
+    fileName?: string;
+    plugins?: Plugin[];
+    bundleStats?: boolean;
+    umdExport?: 'default';
+  },
 ) {
-  const { fileName, outputDir: outDir = 'dist', plugins = [] } = options || {};
+  const {
+    fileName,
+    outputDir: outDir = 'dist',
+    plugins = [],
+    bundleStats = true,
+    umdExport,
+  } = options || {};
 
   let formats: LibraryFormats[] = ['es', 'cjs'];
 
@@ -173,7 +232,7 @@ export default function (
           });
         },
       }),
-      minifyAndUMDPlugin({ name, outDir }),
+      minifyAndUMDPlugin({ name, outDir, umdExport }),
       visualizer({
         filename: resolve(__dirname, name + '-bundle-analysis.html'), // Path for the HTML report
         open: false, // don't Automatically open the report in the browser
@@ -192,6 +251,9 @@ export default function (
         },
       },
       ...plugins,
+      ...(process.env.RELATIVE_CI_STATS === 'true' && bundleStats
+        ? [relativeCIStatsPlugin(outDir)]
+        : []),
     ],
   }));
 }

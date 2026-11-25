@@ -1,7 +1,10 @@
 # @rrweb/record
 
-This package contains all the record related code in rrweb.
-See the [guide](../../guide.md) for more info on rrweb.
+## Overview
+
+This package contains all the record related code in rrweb and is designed to be published in a frontend app/webpage. See [Getting Started](../../guide.md#getting-started) in the rrweb guide for more information including the [record options](../../guide.md#record-options).
+
+For websocket based recording against the rrweb cloud API use the [browser-client](https://rrweb.com/docs/cloud/browser-client) which builds on this package and accepts the same record options.
 
 ## Installation
 
@@ -166,7 +169,7 @@ All `record` related code will get moved here in the future.
   <tr>
     <td align="center">
       <a href="http://www.smartx.com/" target="_blank">
-        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/master/static/logos/smartx.png" alt="SmartX">
+        <img width="195px" src="https://raw.githubusercontent.com/rrweb-io/web/HEAD/static/logos/smartx.png" alt="SmartX">
       </a>
     </td>
     <td align="center">

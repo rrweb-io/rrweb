@@ -1,5 +1,106 @@
 # rrweb-player
 
+## 2.2.2
+
+### Patch Changes
+
+- Updated dependencies [[`756765f`](https://github.com/rrweb-io/rrweb/commit/756765f898c654696d25781c3d588f24177cfbc7)]:
+  - @rrweb/packer@2.2.2
+  - @rrweb/replay@2.2.2
+
+## 2.2.1
+
+### Patch Changes
+
+- Updated dependencies [[`b706a91`](https://github.com/rrweb-io/rrweb/commit/b706a91fa52966e4cd43a8f2469a35d752da6e24), [`339683f`](https://github.com/rrweb-io/rrweb/commit/339683f34bf2dd5df2e7cc18fe59fb924b65661b)]:
+  - @rrweb/replay@2.2.1
+  - @rrweb/packer@2.2.1
+
+## 2.2.0
+
+### Minor Changes
+
+- [#1928](https://github.com/rrweb-io/rrweb/pull/1928) [`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80) Thanks [@Juice10](https://github.com/Juice10)! - Display annotation events as captions and timeline markers. Captions stay visible until replaced or cleared with `text: ''`, `text: null`, or `text: false`. Seeking restores the caption for that replay time. Hovering or focusing timeline markers reveals their text, and clicking seeks to their timestamp.
+
+  Captions are shown by default; set `showCaptions: false` to hide them initially. Recordings with nonempty captions show a CC toggle when the controls are visible. Use `timelineMarkerColor` to configure annotation marker colors separately from custom-event `tags`.
+
+- [#1928](https://github.com/rrweb-io/rrweb/pull/1928) [`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80) Thanks [@Juice10](https://github.com/Juice10)! - Make the playback timeline a keyboard-focusable slider with an accessible playback position. Use Home and End to seek to the start and end of the recording. Clicking the timeline focuses the slider so keyboard seeking can continue after scrubbing.
+
+### Patch Changes
+
+- [#1928](https://github.com/rrweb-io/rrweb/pull/1928) [`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80) Thanks [@Juice10](https://github.com/Juice10)! - Fix the playback timeline's ArrowLeft and ArrowRight keys to seek backward and forward by five seconds instead of five milliseconds.
+
+- Updated dependencies [[`9b9a1ff`](https://github.com/rrweb-io/rrweb/commit/9b9a1ff30dd281d00317b0fbece3dbd90a9e0a80), [`0d6fc66`](https://github.com/rrweb-io/rrweb/commit/0d6fc6685a0e99eb0cc7fd310e1d7e8164c74568)]:
+  - @rrweb/replay@2.2.0
+  - @rrweb/packer@2.2.0
+
+## 2.1.7
+
+### Patch Changes
+
+- Updated dependencies [[`c6724f5`](https://github.com/rrweb-io/rrweb/commit/c6724f5f65beff1a8d5f925d4c8b8d7be4943804)]:
+  - @rrweb/replay@2.1.7
+  - @rrweb/packer@2.1.7
+
+## 2.1.6
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @rrweb/replay@2.1.6
+  - @rrweb/packer@2.1.6
+
+## 2.1.5
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @rrweb/replay@2.1.5
+  - @rrweb/packer@2.1.5
+
+## 2.1.4
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @rrweb/replay@2.1.4
+  - @rrweb/packer@2.1.4
+
+## 2.1.3
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @rrweb/replay@2.1.3
+  - @rrweb/packer@2.1.3
+
+## 2.1.2
+
+### Patch Changes
+
+- [#1769](https://github.com/rrweb-io/rrweb/pull/1769) [`956fc48`](https://github.com/rrweb-io/rrweb/commit/956fc48e4c7624d343dd456b4498563b1f6f90bb) Thanks [@heathdutton](https://github.com/heathdutton)! - Emit custom events even when skipping over them, eg. when seeking to a specific time
+- Updated dependencies [[`956fc48`](https://github.com/rrweb-io/rrweb/commit/956fc48e4c7624d343dd456b4498563b1f6f90bb)]:
+  - @rrweb/replay@2.1.2
+  - @rrweb/packer@2.1.2
+
+## 2.1.1
+
+### Patch Changes
+
+- [#1901](https://github.com/rrweb-io/rrweb/pull/1901) [`a11f8ef`](https://github.com/rrweb-io/rrweb/commit/a11f8ef7cedbfe0f39e3c8f806bad299aa50f50d) Thanks [@kevinvandijk](https://github.com/kevinvandijk)! - Fix the rrweb-player production build so Svelte lifecycle APIs resolve to the browser runtime instead of to stubs
+
+- Updated dependencies []:
+  - @rrweb/replay@2.1.1
+  - @rrweb/packer@2.1.1
+
+## 2.1.0
+
+### Patch Changes
+
+- Updated dependencies [[`7f0f75f`](https://github.com/rrweb-io/rrweb/commit/7f0f75f14d96fc7043ab6cfb52dfe8bbb73b499e)]:
+  - @rrweb/replay@2.1.0
+  - @rrweb/packer@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes
@@ -58,39 +159,15 @@
   - @rrweb/replay@2.0.0
   - @rrweb/packer@2.0.0
 
-## 2.0.0-alpha.20
+## 2.0.0-alpha.16&mdash;20
 
-### Patch Changes
-
-- Updated dependencies []:
-  - @rrweb/replay@2.0.0-alpha.20
-  - @rrweb/packer@2.0.0-alpha.20
-
-## 2.0.0-alpha.19
-
-### Patch Changes
-
-- Updated dependencies []:
-  - @rrweb/replay@2.0.0-alpha.19
-  - @rrweb/packer@2.0.0-alpha.19
-
-## 2.0.0-alpha.18
-
-### Patch Changes
-
-- Updated dependencies []:
-  - @rrweb/replay@2.0.0-alpha.18
-  - @rrweb/packer@2.0.0-alpha.18
-
-## 2.0.0-alpha.17
+Patch Changes only following changes to @rrweb/replay and @rrweb/packer
 
 ### Patch Changes
 
 - Updated dependencies [[`db20184`](https://github.com/rrweb-io/rrweb/commit/db201841accd2b5df3cd7c88779aa62ab158501c)]:
-  - @rrweb/packer@2.0.0-alpha.17
-  - @rrweb/replay@2.0.0-alpha.17
-
-## 2.0.0-alpha.16
+  - @rrweb/replay (2.0.0-alpha.16&mdash;20)
+  - @rrweb/packer (2.0.0-alpha.16&mdash;20)
 
 ## 2.0.0-alpha.15
 
@@ -104,26 +181,14 @@
   - @rrweb/packer@2.0.0-alpha.15
   - @rrweb/replay@2.0.0-alpha.15
 
-## 2.0.0-alpha.14
+## 2.0.0-alpha.12&mdash;14
+
+Patch Changes only following changes to rrweb
 
 ### Patch Changes
 
-- Updated dependencies [[`03b5216`](https://github.com/rrweb-io/rrweb/commit/03b5216a9403f1509b4f69d1d71ef9874277fe91), [`ae6908d`](https://github.com/rrweb-io/rrweb/commit/ae6908dcdcd7c732c1ce79eea19de5240bec1151), [`46f1b25`](https://github.com/rrweb-io/rrweb/commit/46f1b252a5919c68c68e825bd6089cc2e7d34e7c), [`cbbd1e5`](https://github.com/rrweb-io/rrweb/commit/cbbd1e55f1f7fa2eed9fa11e4152b509bdfd88f7), [`e96f668`](https://github.com/rrweb-io/rrweb/commit/e96f668c86bd0ab5dc190bb2957a170271bb2ebc)]:
-  - rrweb@2.0.0-alpha.14
-
-## 2.0.0-alpha.13
-
-### Patch Changes
-
-- Updated dependencies [[`3d1877c`](https://github.com/rrweb-io/rrweb/commit/3d1877cff83d9a018630674fb6e730050ceef812), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`02f50d2`](https://github.com/rrweb-io/rrweb/commit/02f50d260cfe72209c94de1679336737f238e216)]:
-  - rrweb@2.0.0-alpha.13
-
-## 2.0.0-alpha.12
-
-### Patch Changes
-
-- Updated dependencies [[`af0962c`](https://github.com/rrweb-io/rrweb/commit/af0962cc6c80b693bbc622520032d17342685cf6), [`57a940a`](https://github.com/rrweb-io/rrweb/commit/57a940afac0bdd14cd82937915d53110b5311673), [`8aea5b0`](https://github.com/rrweb-io/rrweb/commit/8aea5b00a4dfe5a6f59bd2ae72bb624f45e51e81), [`9c6edfe`](https://github.com/rrweb-io/rrweb/commit/9c6edfe2261680b4e92284be69f9d183b1eca8f4), [`1e0b273`](https://github.com/rrweb-io/rrweb/commit/1e0b27382210db0168d2a79d82c13698082b0983), [`1fe39ab`](https://github.com/rrweb-io/rrweb/commit/1fe39ab0db7f5d2b04f4a4f39fb5c0cfee33a1f8), [`05478c3`](https://github.com/rrweb-io/rrweb/commit/05478c36dde03a118099783d908bb3e465e9859c), [`58c9104`](https://github.com/rrweb-io/rrweb/commit/58c9104eddc8b7994a067a97daae5684e42f892f), [`980a38c`](https://github.com/rrweb-io/rrweb/commit/980a38c816d763833fc3491f56d03c959a41122d), [`a2be77b`](https://github.com/rrweb-io/rrweb/commit/a2be77b82826c4be0e7f3c7c9f7ee50476d5f6f8), [`a7c33f2`](https://github.com/rrweb-io/rrweb/commit/a7c33f2093c4d92faf7ae25e8bb0e088d122c13b), [`314a8dd`](https://github.com/rrweb-io/rrweb/commit/314a8dde5a13095873b89d07bac7c949918bf817), [`7c0dc9d`](https://github.com/rrweb-io/rrweb/commit/7c0dc9dfe1564c9d6624557c5b394e7844955882), [`07ac5c9`](https://github.com/rrweb-io/rrweb/commit/07ac5c9e1371824ec3ffb705f9250bbe10f4b73e)]:
-  - rrweb@2.0.0-alpha.12
+- Updated dependencies [[`03b5216`](https://github.com/rrweb-io/rrweb/commit/03b5216a9403f1509b4f69d1d71ef9874277fe91), [`ae6908d`](https://github.com/rrweb-io/rrweb/commit/ae6908dcdcd7c732c1ce79eea19de5240bec1151), [`46f1b25`](https://github.com/rrweb-io/rrweb/commit/46f1b252a5919c68c68e825bd6089cc2e7d34e7c), [`cbbd1e5`](https://github.com/rrweb-io/rrweb/commit/cbbd1e55f1f7fa2eed9fa11e4152b509bdfd88f7), [`e96f668`](https://github.com/rrweb-io/rrweb/commit/e96f668c86bd0ab5dc190bb2957a170271bb2ebc), [`3d1877c`](https://github.com/rrweb-io/rrweb/commit/3d1877cff83d9a018630674fb6e730050ceef812), [`123a81e`](https://github.com/rrweb-io/rrweb/commit/123a81e12d072cd95d701231176d7eb2d03b3961), [`02f50d2`](https://github.com/rrweb-io/rrweb/commit/02f50d260cfe72209c94de1679336737f238e216), [`af0962c`](https://github.com/rrweb-io/rrweb/commit/af0962cc6c80b693bbc622520032d17342685cf6), [`57a940a`](https://github.com/rrweb-io/rrweb/commit/57a940afac0bdd14cd82937915d53110b5311673), [`8aea5b0`](https://github.com/rrweb-io/rrweb/commit/8aea5b00a4dfe5a6f59bd2ae72bb624f45e51e81), [`9c6edfe`](https://github.com/rrweb-io/rrweb/commit/9c6edfe2261680b4e92284be69f9d183b1eca8f4), [`1e0b273`](https://github.com/rrweb-io/rrweb/commit/1e0b27382210db0168d2a79d82c13698082b0983), [`1fe39ab`](https://github.com/rrweb-io/rrweb/commit/1fe39ab0db7f5d2b04f4a4f39fb5c0cfee33a1f8), [`05478c3`](https://github.com/rrweb-io/rrweb/commit/05478c36dde03a118099783d908bb3e465e9859c), [`58c9104`](https://github.com/rrweb-io/rrweb/commit/58c9104eddc8b7994a067a97daae5684e42f892f), [`980a38c`](https://github.com/rrweb-io/rrweb/commit/980a38c816d763833fc3491f56d03c959a41122d), [`a2be77b`](https://github.com/rrweb-io/rrweb/commit/a2be77b82826c4be0e7f3c7c9f7ee50476d5f6f8), [`a7c33f2`](https://github.com/rrweb-io/rrweb/commit/a7c33f2093c4d92faf7ae25e8bb0e088d122c13b), [`314a8dd`](https://github.com/rrweb-io/rrweb/commit/314a8dde5a13095873b89d07bac7c949918bf817), [`7c0dc9d`](https://github.com/rrweb-io/rrweb/commit/7c0dc9dfe1564c9d6624557c5b394e7844955882), [`07ac5c9`](https://github.com/rrweb-io/rrweb/commit/07ac5c9e1371824ec3ffb705f9250bbe10f4b73e)]:
+  - rrweb (2.0.0-alpha.12&mdash;14)
 
 ## 2.0.0-alpha.11
 

@@ -204,12 +204,14 @@ export function transformAttribute(
 }
 
 export function ignoreAttribute(
-  tagName: string,
+  tagName: Lowercase<string>,
   name: string,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _value: unknown,
 ): boolean {
-  return ['video', 'audio'].includes(tagName) && name === 'autoplay';
+  return (
+    ['video', 'audio'].includes(tagName) && toLowerCase(name) === 'autoplay'
+  );
 }
 
 export function _isBlockedElement(
@@ -1134,7 +1136,8 @@ export function serializeNodeWithId(
 
   if (
     serializedNode.type === NodeType.Element &&
-    serializedNode.tagName === 'iframe'
+    serializedNode.tagName === 'iframe' &&
+    !_isBlockedElement(n as HTMLElement, blockClass, blockSelector)
   ) {
     onceIframeLoaded(
       n as HTMLIFrameElement,

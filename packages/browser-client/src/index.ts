@@ -1,8 +1,13 @@
 import { record } from '@rrweb/record';
-import { getRecordSequentialIdPlugin } from '@rrweb/rrweb-plugin-sequential-id-record';
 
 import { EventType } from '@rrweb/types';
-import type { customEvent, eventWithTime, listenerHandler } from '@rrweb/types';
+import type {
+  annotationData,
+  annotationEvent,
+  customEvent,
+  eventWithTime,
+  listenerHandler,
+} from '@rrweb/types';
 import { nowTimestamp } from '@rrweb/utils';
 import type { recordOptions } from 'rrweb';
 
@@ -20,8 +25,8 @@ declare const __RRWEB_BROWSER_CLIENT_COMMIT_HASH__: string;
 export type clientConfig = {
   serverUrl?: string;
   publicApiKey: string;
-  autostart: boolean;
-  includePii: boolean;
+  autostart?: boolean;
+  includePii?: boolean;
   jsSource?: string;
   jsEntrypoint?: string;
   meta?: nameValues;
@@ -47,14 +52,7 @@ export type customEventWithTime = customEvent & {
   timestamp: number;
 };
 
-type eventWithSequenceId = eventWithTime & {
-  sequenceId?: unknown;
-};
-
-type SequenceState = {
-  recordingId: string;
-  sequenceId: number;
-};
+type ClientEvent = customEvent | annotationEvent;
 
 const defaultServerUrl =
   'https://api.rrweb.com/recordings/{recordingId}/events/ws';
@@ -65,17 +63,27 @@ let defaultClientConfig: clientConfig = {
   includePii: false,
 };
 const sessionStorageName = 'rrweb-browser-client-recording-id';
-const sequenceStoragePrefix = 'rrweb-browser-client-sequence-id:';
-const browserClientStartTokenPrefix = '__rrweb_browser_client_start_token__:';
+const sequenceStorageName = 'rrweb-browser-client-sequence-id';
 const wsLimit = 10e5; // this is approximate and depends on the browser, also on how unicode is encoded (we are comparing against the length of a javascript string)
-let sequenceState: SequenceState | undefined;
 
 let ws: Websocket | undefined;
 let wsConnectionPaused = false;
 
 const buffer: ArrayQueue<string> = new ArrayQueue();
-const activeStartTokenNames = new Set<string>();
 let rrwebStopFn: listenerHandler | undefined;
+let recorderReady = false;
+const pendingEvents: (ClientEvent & { timestamp: number })[] = [];
+let cancelRecordingStartListener: listenerHandler | undefined;
+
+function resetRecordingState() {
+  recorderReady = false;
+  cancelRecordingStartListener?.();
+  cancelRecordingStartListener = undefined;
+}
+
+function hasDocument(): boolean {
+  return typeof document !== 'undefined';
+}
 
 function isServerMessage(value: unknown): value is ServerMessage {
   return typeof value === 'object' && value !== null;
@@ -100,19 +108,14 @@ function scriptSourceFromElement(
 }
 
 export function stop(resetRecordingId: boolean) {
-  if (resetRecordingId) {
-    invalidateActiveStart();
-  }
   // reset all state so that start() can start afresh
+  resetRecordingState();
+  pendingEvents.length = 0;
   if (rrwebStopFn !== undefined) {
     rrwebStopFn();
     rrwebStopFn = undefined;
   }
   if (ws) {
-    const recordingId = getCurrentRecordingId();
-    const activeSequenceState = recordingId
-      ? getSequenceState(recordingId)
-      : undefined;
     const closeEvent: customEventWithTime = {
       timestamp: nowTimestamp(),
       type: EventType.Custom,
@@ -124,13 +127,7 @@ export function stop(resetRecordingId: boolean) {
     // Clear old events before send, so websocket-ts can buffer the close event
     // for the HTTP fallback when the socket is not currently open.
     buffer.clear();
-    ws.send(
-      JSON.stringify(
-        activeSequenceState
-          ? ensureSequenceId(closeEvent, activeSequenceState)
-          : closeEvent,
-      ),
-    );
+    ws.send(serialize(closeEvent));
     ws.close();
     wsConnectionPaused = false;
     ws = undefined; // so `emit` can restart it again if page is unfrozen
@@ -138,35 +135,47 @@ export function stop(resetRecordingId: boolean) {
     buffer.clear();
   }
   if (resetRecordingId) {
-    const recordingId = getCurrentRecordingId();
-    if (recordingId) {
-      removeSequenceId(recordingId);
-    }
     removeRecordingId();
   }
 }
 
-function removeRecordingId(): void {
-  try {
-    sessionStorage.removeItem(sessionStorageName);
-  } catch {
-    // Best-effort cleanup only.
+// The number the next event gets within its recording, counting from 0.
+// Stored beside the recording id, so a page load in the same tab carries on
+// from where the last page stopped.
+let nextSequenceId = 0;
+
+/**
+ * Serializes an event for sending, numbered in the order the recording's
+ * events are sent. Timestamps cannot give that order: events share them, and
+ * a retried upload can reach the server after newer events.
+ *
+ * Recording metadata takes no number: the server keeps it apart from the
+ * recording's events, so numbering it would leave a gap among them.
+ */
+function serialize(event: eventWithTime | customEventWithTime): string {
+  if (event.type === EventType.Custom && event.data.tag === 'recording-meta') {
+    return JSON.stringify(event);
   }
+  try {
+    nextSequenceId = Math.max(
+      nextSequenceId,
+      Number(sessionStorage.getItem(sequenceStorageName)) || 0,
+    );
+    sessionStorage.setItem(sequenceStorageName, String(nextSequenceId + 1));
+  } catch {
+    // Without storage the numbering restarts on the next page load.
+  }
+  return JSON.stringify({ ...event, sequenceId: nextSequenceId++ });
 }
 
-function invalidateActiveStart(): void {
-  const recordingId = getCurrentRecordingId();
-  const windowState = window as unknown as Record<string, unknown>;
-  if (recordingId) {
-    const tokenName = browserClientStartTokenName(recordingId);
-    delete windowState[tokenName];
-    activeStartTokenNames.delete(tokenName);
-    return;
+function removeRecordingId(): void {
+  nextSequenceId = 0;
+  try {
+    sessionStorage.removeItem(sequenceStorageName);
+    sessionStorage.removeItem(sessionStorageName);
+  } catch {
+    // Ignore environments without sessionStorage, such as SSR.
   }
-  activeStartTokenNames.forEach((tokenName) => {
-    delete windowState[tokenName];
-    activeStartTokenNames.delete(tokenName);
-  });
 }
 
 function getSetVisitorId() {
@@ -212,111 +221,6 @@ function getSetRecordingId(): string | null {
     value = null;
   }
   return value;
-}
-
-function sequenceStorageName(recordingId: string): string {
-  return `${sequenceStoragePrefix}${recordingId}`;
-}
-
-function browserClientStartTokenName(recordingId: string): string {
-  return `${browserClientStartTokenPrefix}${recordingId}`;
-}
-
-function isValidSequenceId(value: unknown): value is number {
-  return typeof value === 'number' && Number.isInteger(value) && value > 0;
-}
-
-function readSequenceId(recordingId: string): number {
-  try {
-    const value = Number(
-      sessionStorage.getItem(sequenceStorageName(recordingId)),
-    );
-    return Number.isInteger(value) && value >= 0 ? value : 0;
-  } catch {
-    return 0;
-  }
-}
-
-function persistSequenceId(state: SequenceState): void {
-  try {
-    sessionStorage.setItem(
-      sequenceStorageName(state.recordingId),
-      String(state.sequenceId),
-    );
-  } catch {
-    // Best-effort only; keep in-memory sequencing for this page.
-  }
-}
-
-function getCurrentRecordingId(): string | null {
-  try {
-    return sessionStorage.getItem(sessionStorageName);
-  } catch {
-    return null;
-  }
-}
-
-function getSequenceState(recordingId: string): SequenceState {
-  if (sequenceState?.recordingId === recordingId) {
-    return sequenceState;
-  }
-  sequenceState = {
-    recordingId,
-    sequenceId: readSequenceId(recordingId),
-  };
-  return sequenceState;
-}
-
-function removeSequenceId(recordingId: string): void {
-  try {
-    sessionStorage.removeItem(sequenceStorageName(recordingId));
-  } catch {
-    // Best-effort cleanup only.
-  }
-  if (sequenceState?.recordingId === recordingId) {
-    sequenceState = undefined;
-  }
-}
-
-function ensureSequenceId(
-  event: eventWithTime,
-  state: SequenceState,
-): eventWithTime & { sequenceId: number } {
-  const eventWithSequence = event as eventWithSequenceId;
-  if (
-    isValidSequenceId(eventWithSequence.sequenceId) &&
-    eventWithSequence.sequenceId > state.sequenceId
-  ) {
-    state.sequenceId = eventWithSequence.sequenceId;
-    persistSequenceId(state);
-    return eventWithSequence as eventWithTime & { sequenceId: number };
-  }
-  state.sequenceId += 1;
-  eventWithSequence.sequenceId = state.sequenceId;
-  persistSequenceId(state);
-  return eventWithSequence as eventWithTime & { sequenceId: number };
-}
-
-function getSetSequenceState(): SequenceState | undefined {
-  const recordingId = getSetRecordingId();
-  return recordingId ? getSequenceState(recordingId) : undefined;
-}
-
-function buildRecordOptionsWithSequencePlugin(
-  recordOptions: Omit<browserClientRecordOptions, keyof clientConfig>,
-  state: SequenceState,
-): Omit<browserClientRecordOptions, keyof clientConfig> {
-  return {
-    ...recordOptions,
-    plugins: [
-      ...(recordOptions.plugins || []),
-      getRecordSequentialIdPlugin({
-        key: 'sequenceId',
-        startId: state.sequenceId,
-        preserveExisting: true,
-      }),
-    ],
-  };
 }
 
 // if API client requests the recording ID prior to start,
@@ -367,8 +271,8 @@ async function postData(
   const keepaliveLimit = 65000;
   let done = false;
   const responses: Response[] = [];
-  const toSend: string[] = [];
   do {
+    const toSend: string[] = [];
     let body;
     if (buffer instanceof ArrayQueue) {
       // this clears the buffer so no need to call buffer.clear()
@@ -405,7 +309,15 @@ async function postData(
     if (!response.ok) {
       if (buffer instanceof ArrayQueue) {
         // re-queue events in case we can reconnect next time or with ws
-        toSend.forEach((eventStr) => buffer.add(eventStr));
+        const rest: string[] = [];
+        for (
+          let eventStr = buffer.read();
+          eventStr !== undefined;
+          eventStr = buffer.read()
+        ) {
+          rest.push(eventStr);
+        }
+        [...toSend, ...rest].forEach((eventStr) => buffer.add(eventStr));
       }
       break;
     } else if (done) {
@@ -427,6 +339,10 @@ async function postData(
 export function start(
   options: browserClientRecordOptions = defaultClientConfig,
 ) {
+  if (!hasDocument()) {
+    return;
+  }
+
   const {
     includePii,
     publicApiKey,
@@ -475,14 +391,6 @@ export function start(
     );
     return;
   }
-  const activeSequenceState = getSequenceState(recordingId);
-  const startToken = Symbol('rrweb-browser-client-start');
-  const windowState = window as unknown as Record<string, unknown>;
-  const startTokenName = browserClientStartTokenName(recordingId);
-  windowState[startTokenName] = startToken;
-  activeStartTokenNames.add(startTokenName);
-
-  const isActiveStart = () => windowState[startTokenName] === startToken;
 
   const initialPayload: nameValues = {
     domain: document.location.hostname || document.location.href.split('?')[0], // latter is for debugging (e.g. a file:// url)
@@ -553,10 +461,9 @@ export function start(
     },
   };
   // metadata event should be the first seen server side
-  buffer.add(JSON.stringify(ensureSequenceId(metaEvent, activeSequenceState)));
+  buffer.add(serialize(metaEvent));
 
-  recordOptions.emit = (event: eventWithTime) => {
-    const sequencedEvent = ensureSequenceId(event, activeSequenceState);
+  const emitEvent = (event: eventWithTime) => {
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
       ws = connect(serverUrl, postUrl, publicApiKey, handleMessage);
@@ -568,7 +475,7 @@ export function start(
     }
     if (configEmit !== undefined) {
       if (typeof configEmit === 'function') {
-        configEmit(sequencedEvent);
+        configEmit(event);
       } else if (
         typeof (window as unknown as Record<string, unknown>)[configEmit] ===
         'function'
@@ -576,13 +483,13 @@ export function start(
         const emit = (window as unknown as Record<string, unknown>)[
           configEmit
         ] as (event: eventWithTime) => void;
-        emit(sequencedEvent);
+        emit(event);
       } else {
         console.error('Could not understand emit config option:', configEmit);
       }
     }
-    if (sequencedEvent.type === EventType.Meta && includePii) {
-      const metaData = sequencedEvent.data as typeof sequencedEvent.data & {
+    if (event.type === EventType.Meta && includePii) {
+      const metaData = event.data as typeof event.data & {
         title?: string;
         referrer?: string;
       };
@@ -590,7 +497,7 @@ export function start(
       metaData.referrer = document.referrer; // could potentially contain PII
     }
 
-    const eventStr = JSON.stringify(sequencedEvent);
+    const eventStr = serialize(event);
     // TODO: add browser native compression
     if (eventStr.length > wsLimit) {
       // Assuming wsLimit is a defined constant, and eventStr.length is intended.
@@ -602,18 +509,56 @@ export function start(
     }
   };
 
-  const startRecording = () => {
-    rrwebStopFn = record(
-      buildRecordOptionsWithSequencePlugin(
-        recordOptions,
-        activeSequenceState,
-      ) as recordOptions<eventWithTime>,
+  recordOptions.emit = emitEvent;
+
+  const markRecorderReady = () => {
+    recorderReady = true;
+    cancelRecordingStartListener = undefined;
+    // Preserve call-time timestamps and use the same callback and transport as
+    // recorder events. Remove each event before emitting to avoid redelivery.
+    while (recorderReady && pendingEvents.length) {
+      const event = pendingEvents.shift();
+      if (event) emitEvent(event);
+    }
+  };
+
+  const startRrwebRecording = () => {
+    resetRecordingState();
+    const startsImmediately =
+      document.readyState === 'interactive' ||
+      document.readyState === 'complete';
+    rrwebStopFn = record(recordOptions as recordOptions<eventWithTime>);
+    if (rrwebStopFn === undefined) {
+      return;
+    }
+    if (startsImmediately) {
+      markRecorderReady();
+      return;
+    }
+
+    const startEvent =
+      recordOptions.recordAfter === 'DOMContentLoaded'
+        ? { target: document, type: 'DOMContentLoaded' }
+        : { target: window, type: 'load' };
+    const listenerOptions = { capture: true, once: true };
+    // rrweb installs its capture listener during record(). Registering after it
+    // waits for rrweb's initializer to set its internal recording flag.
+    startEvent.target.addEventListener(
+      startEvent.type,
+      markRecorderReady,
+      listenerOptions,
     );
+    cancelRecordingStartListener = () =>
+      startEvent.target.removeEventListener(
+        startEvent.type,
+        markRecorderReady,
+        listenerOptions,
+      );
   };
 
   let startWhenVisible = false;
   if (!document.hidden) {
-    startRecording();
+    startRrwebRecording();
   } else {
     startWhenVisible = true;
   }
@@ -621,9 +566,8 @@ export function start(
     document.addEventListener(
       'visibilitychange',
       () => {
-        if (!isActiveStart()) return;
         if (!document.hidden && startWhenVisible) {
-          startRecording();
+          startRrwebRecording();
           startWhenVisible = false;
           return;
         }
@@ -655,7 +599,6 @@ export function start(
     );
   }
   document.addEventListener('freeze', () => {
-    if (!isActiveStart()) return;
     // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
     // "In particular, it's important that you ... close any open Web Socket connections
     if (ws) {
@@ -664,35 +607,51 @@ export function start(
       ws = undefined; // so `emit` can restart it again if page is unfrozen
     }
     if (rrwebStopFn !== undefined) {
+      resetRecordingState();
       rrwebStopFn();
-      rrwebStopFn = undefined;
       startWhenVisible = true;
     }
   });
 }
 
-export const addCustomEvent = <T>(tag: string, payload: T) => {
-  if (rrwebStopFn !== undefined) {
-    record.addCustomEvent(tag, payload);
-  } else {
-    const customEvent: customEventWithTime = {
-      timestamp: nowTimestamp(),
-      type: EventType.Custom,
-      data: {
-        tag,
-        payload,
-      },
-    };
-    // let websocket buffer handle it
-    const state = getSetSequenceState();
-    if (!state) {
-      console.error(
-        '@rrweb/browser-client: Unable to addCustomEvent(); sessionStorage unavailable',
-      );
-      return;
+function addClientEvent(event: ClientEvent) {
+  if (!recorderReady) {
+    const timestamp = nowTimestamp();
+    // Snapshot queued data at call time, as the transport buffer did before.
+    if (event.type === EventType.Custom) {
+      const serialized = JSON.stringify(event.data.payload);
+      const payload: unknown =
+        serialized === undefined ? undefined : JSON.parse(serialized);
+      pendingEvents.push({
+        type: event.type,
+        timestamp,
+        data: { tag: event.data.tag, payload },
+      });
+    } else {
+      pendingEvents.push({
+        type: event.type,
+        timestamp,
+        data: { ...event.data },
+      });
     }
-    buffer.add(JSON.stringify(ensureSequenceId(customEvent, state)));
+    return;
   }
+  switch (event.type) {
+    case EventType.Custom:
+      record.addCustomEvent(event.data.tag, event.data.payload);
+      break;
+    case EventType.Annotation:
+      record.addAnnotation(event.data);
+      break;
+  }
+}
+
+export const addCustomEvent = <T>(tag: string, payload: T) => {
+  addClientEvent({ type: EventType.Custom, data: { tag, payload } });
+};
+
+export const addAnnotation = (annotation: annotationData) => {
+  addClientEvent({ type: EventType.Annotation, data: annotation });
 };
 
 export function addMeta(payload: nameValues) {
@@ -704,7 +663,7 @@ export function addPageviewMeta(payload: nameValues) {
   addCustomEvent('pageview-meta', payload);
 }
 
-if (document && document.currentScript) {
+if (hasDocument() && document.currentScript) {
   let config = defaultClientConfig;
   const truthyAttr: readonly (string | null)[] = ['', 'yes', 'on', 'true', '1']; // empty string allows setting plain html5 attributes without values
   const self = document.currentScript as HTMLScriptElement;
@@ -767,5 +726,6 @@ export default {
   addMeta,
   addPageviewMeta,
   addCustomEvent,
+  addAnnotation,
   getRecordingId,
 };

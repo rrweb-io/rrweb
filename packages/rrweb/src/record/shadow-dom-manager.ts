@@ -1,5 +1,6 @@
 import type { MutationBufferParam } from '../types';
 import type {
+  listenerHandler,
   mutationCallBack,
   scrollCallback,
   SamplingStrategy,
@@ -22,7 +23,8 @@ type BypassOptions = Omit<
 };
 
 export class ShadowDomManager {
-  private shadowDoms = new WeakSet<ShadowRoot>();
+  /** Observed shadow roots and the handlers that stop observing them. */
+  private shadowDoms = new Map<ShadowRoot, listenerHandler[]>();
   private mutationCb: mutationCallBack;
   private scrollCb: scrollCallback;
   private bypassOptions: BypassOptions;
@@ -52,8 +54,9 @@ export class ShadowDomManager {
   public addShadowRoot(shadowRoot: ShadowRoot, doc: Document) {
     if (!isNativeShadowDom(shadowRoot)) return;
     if (this.shadowDoms.has(shadowRoot)) return;
-    this.shadowDoms.add(shadowRoot);
-    const [observer] = initMutationObserver(
+    const handlers: listenerHandler[] = [];
+    this.shadowDoms.set(shadowRoot, handlers);
+    const stopMutationObserver = initMutationObserver(
       {
         ...this.bypassOptions,
         doc,
@@ -63,8 +66,8 @@ export class ShadowDomManager {
       },
       shadowRoot,
     );
-    this.restoreHandlers.push(() => observer.disconnect());
-    this.restoreHandlers.push(
+    handlers.push(stopMutationObserver);
+    handlers.push(
       initScrollObserver({
         ...this.bypassOptions,
         scrollCb: this.scrollCb,
@@ -76,6 +79,8 @@ export class ShadowDomManager {
     );
     // Defer this to avoid adoptedStyleSheet events being created before the full snapshot is created or attachShadow action is recorded.
     setTimeout(() => {
+      // The shadow root was released, or the manager reset, in the meantime.
+      if (this.shadowDoms.get(shadowRoot) !== handlers) return;
       if (
         shadowRoot.adoptedStyleSheets &&
         shadowRoot.adoptedStyleSheets.length > 0
@@ -84,7 +89,7 @@ export class ShadowDomManager {
           shadowRoot.adoptedStyleSheets,
           this.mirror.getId(dom.host(shadowRoot)),
         );
-      this.restoreHandlers.push(
+      handlers.push(
         initAdoptedStyleSheetObserver(
           {
             mirror: this.mirror,
@@ -94,6 +99,24 @@ export class ShadowDomManager {
         ),
       );
     }, 0);
+  }
+
+  public removeShadowRootsIn(n: Node) {
+    if (this.shadowDoms.size === 0) return;
+    const shadowRoot = dom.shadowRoot(n);
+    if (shadowRoot) {
+      if (this.shadowDoms.has(shadowRoot)) {
+        this.removeShadowRoot(shadowRoot);
+      }
+      this.removeShadowRootsIn(shadowRoot);
+    }
+    dom.childNodes(n).forEach((child) => this.removeShadowRootsIn(child));
+  }
+
+  private removeShadowRoot(shadowRoot: ShadowRoot) {
+    const handlers = this.shadowDoms.get(shadowRoot);
+    this.shadowDoms.delete(shadowRoot);
+    handlers?.forEach(runHandler);
   }
 
   /**
@@ -144,14 +167,18 @@ export class ShadowDomManager {
   }
 
   public reset() {
-    this.restoreHandlers.forEach((handler) => {
-      try {
-        handler();
-      } catch (e) {
-        //
-      }
-    });
+    this.restoreHandlers.forEach(runHandler);
     this.restoreHandlers = [];
-    this.shadowDoms = new WeakSet();
+    const shadowDoms = this.shadowDoms;
+    this.shadowDoms = new Map();
+    shadowDoms.forEach((handlers) => handlers.forEach(runHandler));
+  }
+}
+
+function runHandler(handler: listenerHandler) {
+  try {
+    handler();
+  } catch (e) {
+    //
   }
 }

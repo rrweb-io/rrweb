@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import snapshot, {
   _isBlockedElement,
+  ignoreAttribute,
   serializeNodeWithId,
 } from '../src/snapshot';
 import { elementNode, serializedNodeWithId } from '../src/types';
@@ -52,6 +53,12 @@ describe('absolute url to stylesheet', () => {
     expect(absolutifyURLs('url("../a.jpg#c/d")', href + '#e/f')).toEqual(
       `url("http://localhost/a.jpg#c/d")`,
     );
+  });
+
+  it('leaves fragment-only references alone', () => {
+    expect(absolutifyURLs('url(#filter)', href)).toEqual(`url(#filter)`);
+    expect(absolutifyURLs(`url('#filter')`, href)).toEqual(`url('#filter')`);
+    expect(absolutifyURLs('url("#filter")', href)).toEqual(`url("#filter")`);
   });
 
   it('can handle absolute path', () => {
@@ -131,6 +138,25 @@ describe('absolute url to stylesheet', () => {
   it('can handle empty path', () => {
     expect(absolutifyURLs(`url('')`, href)).toEqual(`url('')`);
   });
+
+  it('can handle blob url', () => {
+    expect(
+      absolutifyURLs(
+        'url(blob:http://localhost/0d2e6c0c-5b1f-4a39-9d3f-2b5a1b8b7c11)',
+        href,
+      ),
+    ).toEqual(
+      'url(blob:http://localhost/0d2e6c0c-5b1f-4a39-9d3f-2b5a1b8b7c11)',
+    );
+    expect(
+      absolutifyURLs(
+        'background-image: url("blob:http://localhost/0d2e6c0c-5b1f-4a39-9d3f-2b5a1b8b7c11");',
+        href,
+      ),
+    ).toEqual(
+      'background-image: url("blob:http://localhost/0d2e6c0c-5b1f-4a39-9d3f-2b5a1b8b7c11");',
+    );
+  });
 });
 
 describe('isBlockedElement()', () => {
@@ -156,6 +182,23 @@ describe('isBlockedElement()', () => {
     expect(
       subject('<div data-rr-block />', { blockSelector: '[data-rr-block]' }),
     ).toEqual(true);
+  });
+});
+
+describe('ignoreAttribute()', () => {
+  it('ignores autoplay on lowercase media tag names', () => {
+    expect(ignoreAttribute('video', 'autoplay', '')).toEqual(true);
+    expect(ignoreAttribute('audio', 'autoplay', '')).toEqual(true);
+  });
+
+  it('ignores autoplay regardless of attribute-name case', () => {
+    expect(ignoreAttribute('video', 'AUTOPLAY', '')).toEqual(true);
+    expect(ignoreAttribute('audio', 'AutoPlay', '')).toEqual(true);
+  });
+
+  it('does not ignore other attributes or other elements', () => {
+    expect(ignoreAttribute('video', 'src', '')).toEqual(false);
+    expect(ignoreAttribute('div', 'autoplay', '')).toEqual(false);
   });
 });
 

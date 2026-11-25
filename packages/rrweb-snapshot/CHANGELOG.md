@@ -1,5 +1,57 @@
 # rrweb-snapshot
 
+## 2.2.2
+
+## 2.2.1
+
+### Patch Changes
+
+- [#1998](https://github.com/rrweb-io/rrweb/pull/1998) [`b706a91`](https://github.com/rrweb-io/rrweb/commit/b706a91fa52966e4cd43a8f2469a35d752da6e24) Thanks [@roggernaut](https://github.com/roggernaut)! - Bump bundled postcss to 8.5.32 (CVE-2026-41305)
+
+- [#1993](https://github.com/rrweb-io/rrweb/pull/1993) [`f2cfd83`](https://github.com/rrweb-io/rrweb/commit/f2cfd8326756f6e2790d9739c4dd3e853702ef68) Thanks [@andrewfader](https://github.com/andrewfader)! - Don't absolutify fragment-only css urls like `url(#filter)`, which refer to the current document
+
+- [#1956](https://github.com/rrweb-io/rrweb/pull/1956) [`031ef19`](https://github.com/rrweb-io/rrweb/commit/031ef19a124704eb474066c6c064fdeb67deb90c) Thanks [@sarmah-rup](https://github.com/sarmah-rup)! - Keep `blob:` urls unchanged when absolutifying `url()`s in stylesheets and inline style attributes
+
+- [#1964](https://github.com/rrweb-io/rrweb/pull/1964) [`7cdbadf`](https://github.com/rrweb-io/rrweb/commit/7cdbadf927a33987235a80295782091522024a9b) Thanks [@arivyiii](https://github.com/arivyiii)! - fix: do not record the document of an iframe that is blocked via blockClass/blockSelector
+
+## 2.2.0
+
+### Patch Changes
+
+- [#1958](https://github.com/rrweb-io/rrweb/pull/1958) [`009b2dd`](https://github.com/rrweb-io/rrweb/commit/009b2dd4971ea575bd481f1f591822d319ab078b) Thanks [@salzahrani-salla](https://github.com/salzahrani-salla)! - fix: release removed shadow trees from the mirror
+
+  Removing a shadow host from DOM was leaving references to shadow descendants, so e.g. repeatedly replacing web components mem-leaked their detached trees. Fix by recursing into shadow roots during removal, including nested hosts and releasing strong references from the mirror.
+
+## 2.1.7
+
+## 2.1.6
+
+## 2.1.5
+
+## 2.1.4
+
+## 2.1.3
+
+### Patch Changes
+
+- [#1921](https://github.com/rrweb-io/rrweb/pull/1921) [`7b10fba`](https://github.com/rrweb-io/rrweb/commit/7b10fba6f9736acd89b60d26974eeeb7d7874597) Thanks [@roggernaut](https://github.com/roggernaut)! - Ignore `autoplay` attribute mutations on `<video>`/`<audio>` regardless of tag-name case.
+
+- [#1771](https://github.com/rrweb-io/rrweb/pull/1771) [`170e716`](https://github.com/rrweb-io/rrweb/commit/170e71672b3863789c79774fdbc4b0f61ea3af40) Thanks [@heathdutton](https://github.com/heathdutton)! - Disable autocomplete on input fields during replay
+
+## 2.1.2
+
+### Patch Changes
+
+- [#1712](https://github.com/rrweb-io/rrweb/pull/1712) [`129a805`](https://github.com/rrweb-io/rrweb/commit/129a8052364f062f134bbe717c7ee3be6105e808) Thanks [@pauldambra](https://github.com/pauldambra)! - Use the provided logger from player config instead of directly calling console.warn
+
+## 2.1.1
+
+## 2.1.0
+
+### Patch Changes
+
+- [#1865](https://github.com/rrweb-io/rrweb/pull/1865) [`b08a06f`](https://github.com/rrweb-io/rrweb/commit/b08a06f8f5445e7779fe0744d301a7ceb8d857c3) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fix conversion of absolute to relative urls if url contains a hash
+
 ## 2.0.1
 
 ### Patch Changes
@@ -172,8 +224,6 @@
 - [#903](https://github.com/rrweb-io/rrweb/pull/903) [`058c457`](https://github.com/rrweb-io/rrweb/commit/058c4579530414f6e55434fb28f9227443ed3b6d) Thanks [@Juice10](https://github.com/Juice10)! - Speed up snapshotting of many newly added DOM nodes.
 
 - [#909](https://github.com/rrweb-io/rrweb/pull/909) [`d5d877e`](https://github.com/rrweb-io/rrweb/commit/d5d877e3c19364784abf08f6e3eea4ba911fe4e3) Thanks [@Juice10](https://github.com/Juice10)! - Inline stylesheets when they load so late stylesheet content is captured.
-
-## 2.0.0-alpha.20
 
 ## 2.0.0-alpha.19
 

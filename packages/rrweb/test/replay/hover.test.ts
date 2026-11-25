@@ -24,7 +24,7 @@ describe('replayer', function () {
   let page: ISuite['page'];
 
   beforeAll(async () => {
-    browser = await launchPuppeteer({ devtools: true });
+    browser = await launchPuppeteer();
 
     const bundlePath = path.resolve(__dirname, '../../dist/rrweb.umd.cjs');
     const stylePath = path.resolve(
