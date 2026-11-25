@@ -160,6 +160,7 @@ export enum IncrementalSource {
   Selection,
   AdoptedStyleSheet,
   CustomElement,
+  FocusInteraction,
 }
 
 export type mutationData = {
@@ -177,6 +178,11 @@ export type mousemoveData = {
 export type mouseInteractionData = {
   source: IncrementalSource.MouseInteraction;
 } & mouseInteractionParam;
+
+export type focusInteractionData = {
+  source: IncrementalSource.FocusInteraction;
+  id: number;
+} & ({ type: 'focus'; masked?: boolean } | { type: 'blur' });
 
 export type scrollData = {
   source: IncrementalSource.Scroll;
@@ -227,6 +233,7 @@ export type incrementalData =
   | mutationData
   | mousemoveData
   | mouseInteractionData
+  | focusInteractionData
   | scrollData
   | viewportResizeData
   | inputData
