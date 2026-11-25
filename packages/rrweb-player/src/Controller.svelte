@@ -1,10 +1,6 @@
 <script lang="ts">
   import type { playerMetaData } from '@rrweb/types';
-  import type {
-    Replayer,
-    PlayerMachineState,
-    SpeedMachineState,
-  } from '@rrweb/replay';
+  import type { Replayer, SpeedMachineState } from '@rrweb/replay';
   import {
     onMount,
     onDestroy,
@@ -22,7 +18,7 @@
   export let replayer: Replayer;
   export let showCaptions = true;
   const updateTimeline = createTimelineIndex();
-  $: timeline = updateTimeline(replayer.service.state.context.events, replayer.config.inactivePeriodThreshold);
+  let timeline = updateTimeline(replayer.events, replayer.config.inactivePeriodThreshold);
   export let captionText: string | undefined = undefined;
   let activeCaptionText: string | undefined;
   $: captionText = showCaptions ? activeCaptionText : undefined;
@@ -71,9 +67,12 @@
     dispatch('ui-update-current-time', { payload: currentTime });
   }
   let timer: number | null = null;
-  let playerState: 'playing' | 'paused' | 'live';
+  let isAdvancing = false;
+  let playingInUI = false;
   $: {
-    dispatch('ui-update-player-state', { payload: playerState });
+    dispatch('ui-update-player-state', {
+      payload: playingInUI ? 'playing' : 'paused',
+    });
   }
   let speedState: 'normal' | 'skipping';
   let progress: HTMLElement;
@@ -87,8 +86,7 @@
     end: number;
   } | null = null;
 
-  let meta: playerMetaData;
-  $: meta = replayer.getMetaData();
+  let meta: playerMetaData = replayer.getMetaData();
   $: accessibleTime = Math.max(0, Math.min(meta.totalTime, Math.floor(currentTime / 1000) * 1000));
   let percentage: string;
   $: {
@@ -161,7 +159,7 @@
         }
       }
 
-      if (currentTime < meta.totalTime) {
+      if (currentTime < replayer.getMetaData().totalTime) {
         timer = requestAnimationFrame(update);
       }
     }
@@ -177,20 +175,15 @@
   };
 
   export const toggle = () => {
-    switch (playerState) {
-      case 'playing':
-        pause();
-        break;
-      case 'paused':
-        play();
-        break;
-      default:
-        break;
+    if (playingInUI) {
+      pause();
+    } else {
+      play();
     }
   };
 
   export const play = () => {
-    if (playerState !== 'paused') {
+    if (playingInUI) {
       return;
     }
     if (finished) {
@@ -202,7 +195,7 @@
   };
 
   export const pause = () => {
-    if (playerState !== 'playing') {
+    if (!playingInUI) {
       return;
     }
     replayer.pause();
@@ -214,7 +207,7 @@
     pauseAt = false;
     finished = false;
     const resumePlaying =
-      typeof play === 'boolean' ? play : playerState === 'playing';
+      typeof play === 'boolean' ? play : playingInUI;
     if (resumePlaying) {
       replayer.play(timeOffset);
     } else {
@@ -287,7 +280,7 @@
   };
 
   export const setSpeed = (newSpeed: number) => {
-    let needFreeze = playerState === 'playing';
+    let needFreeze = playingInUI;
     speed = newSpeed;
     if (needFreeze) {
       replayer.pause();
@@ -302,35 +295,31 @@
     skipInactive = !skipInactive;
   };
 
-  export const triggerUpdateMeta = () => {
-    return Promise.resolve().then(() => {
-      meta = replayer.getMetaData();
-      timeline = updateTimeline(replayer.service.state.context.events, replayer.config.inactivePeriodThreshold);
-    });
+  const updateMeta = () => {
+    meta = replayer.getMetaData();
+    timeline = updateTimeline(replayer.events, replayer.config.inactivePeriodThreshold);
   };
 
   onMount(() => {
     replayer.on('annotation', handleAnnotation);
     replayer.on('start', restoreCaptionOnSeek);
-    playerState = replayer.service.state.value;
+    isAdvancing = replayer.isPlaying() && !replayer.isStalled();
+    playingInUI = replayer.isPlaying();
     speedState = replayer.speedService.state.value;
     replayer.on(
       'state-change',
       (states) => {
-        const { player, speed } = states as { player?: PlayerMachineState; speed?: SpeedMachineState };
-        if (player?.value && playerState !== player.value) {
-          playerState = player.value;
-          switch (playerState) {
-            case 'playing':
-              loopTimer();
-              break;
-            case 'paused':
-              stopTimer();
-              break;
-            default:
-              break;
+        playingInUI = replayer.isPlaying();
+        const advancing = playingInUI && !replayer.isStalled();
+        if (advancing !== isAdvancing) {
+          isAdvancing = advancing;
+          if (advancing) {
+            loopTimer();
+          } else {
+            stopTimer();
           }
         }
+        const { speed } = states as { speed?: SpeedMachineState };
         if (speed?.value && speedState !== speed.value) {
           speedState = speed.value;
         }
@@ -343,6 +332,7 @@
         onPauseHook = null;
       }
     });
+    replayer.on('events-updated', updateMeta);
 
     if (autoPlay) {
       replayer.play();
@@ -359,6 +349,7 @@
     captionUpdatePending = false;
     replayer.off('annotation', handleAnnotation);
     replayer.off('start', restoreCaptionOnSeek);
+    replayer.off('events-updated', updateMeta);
     replayer.pause();
     stopTimer();
   });
@@ -532,7 +523,7 @@
     </div>
     <div class="rr-controller__btns">
       <button on:click={toggle}>
-        {#if playerState === 'playing'}
+        {#if playingInUI}
           <svg
             class="icon"
             viewBox="0 0 1024 1024"
