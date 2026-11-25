@@ -857,7 +857,11 @@ export class Replayer {
       if (castFn) {
         castFn();
       }
-      if (!isSync && this.config.skipInactive && this.isUserInteraction(event)) {
+      if (
+        !isSync &&
+        this.config.skipInactive &&
+        this.isUserInteraction(event)
+      ) {
         this.checkSkipping(event.timestamp);
       }
       for (const plugin of this.config.plugins || []) {
