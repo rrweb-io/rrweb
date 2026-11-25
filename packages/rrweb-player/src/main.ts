@@ -33,4 +33,5 @@ export type {
   PlayerIconName,
   PlayerIconContext,
   JumpEvent,
+  ActivityLayer,
 } from './features';

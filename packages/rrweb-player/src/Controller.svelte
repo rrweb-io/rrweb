@@ -39,6 +39,15 @@
   import { formatTime } from './utils';
   import SeekPreview from './components/SeekPreview.svelte';
   import Switch from './components/Switch.svelte';
+  import {
+    ACTIVITY_LAYERS,
+    activitySamples,
+    bucketReplayActivity,
+    clickMarks,
+    replayClickTimes,
+    replayNavigationTimes,
+  } from './timeline-activity';
+  import TimelineActivity from './components/TimelineActivity.svelte';
   import CustomEventMarker, {
     markersHandle,
   } from './components/CustomEventMarker.svelte';
@@ -191,6 +200,65 @@
   export let timelineMarkerColor = 'rgb(73, 80, 246)';
   export let inactiveColor: string;
 
+  const allLayers = [
+    'inputs',
+    'scroll',
+    'mouse',
+    'clicks',
+    'navigation',
+  ] as const;
+  // The activity graph is computed only when the host turns it on.
+  $: activityGraph = features.timeline?.activityGraph;
+  $: showsActivity = Boolean(activityGraph);
+  $: allowedLayers =
+    (typeof activityGraph === 'object' ? activityGraph.layers : undefined) ??
+    allLayers;
+  // Viewer choices from the toolbar's panel.
+  let activityVisible = true;
+  let layers = {
+    inputs: true,
+    scroll: true,
+    mouse: true,
+    clicks: true,
+    navigation: true,
+  };
+  $: visibleLayers = {
+    inputs: layers.inputs && allowedLayers.includes('inputs'),
+    scroll: layers.scroll && allowedLayers.includes('scroll'),
+    mouse: layers.mouse && allowedLayers.includes('mouse'),
+    clicks: layers.clicks && allowedLayers.includes('clicks'),
+    navigation: layers.navigation && allowedLayers.includes('navigation'),
+  };
+  // Taking `timeline` as an argument recomputes the graph whenever
+  // updateMeta replaces it with newly arrived events.
+  const eventsOf = (_timeline: typeof timeline) => replayer.events;
+  $: activityEvents = eventsOf(timeline);
+  $: buckets = showsActivity
+    ? bucketReplayActivity(activityEvents, scale.total)
+    : new Map();
+  $: marks = showsActivity
+    ? clickMarks(replayClickTimes(activityEvents), scale)
+    : [];
+  // Navigations close together share one mark, as clicks do.
+  $: navigationMarks = showsActivity
+    ? clickMarks(replayNavigationTimes(activityEvents), scale)
+    : [];
+  $: samples = showsActivity ? activitySamples(buckets, scale) : [];
+  $: hasActivity =
+    (allowedLayers.includes('clicks') && marks.length > 0) ||
+    (allowedLayers.includes('navigation') && navigationMarks.length > 0) ||
+    ACTIVITY_LAYERS.some(
+      (layer, index) =>
+        allowedLayers.includes(layer) &&
+        samples.some((sample) => sample.layers[index] > 0),
+    );
+  $: hasVisibleActivity =
+    (visibleLayers.clicks && marks.length > 0) ||
+    (visibleLayers.navigation && navigationMarks.length > 0) ||
+    ACTIVITY_LAYERS.some(
+      (layer, index) =>
+        visibleLayers[layer] && samples.some((sample) => sample.layers[index] > 0),
+    );
   let currentTime = 0;
   $: {
     dispatch('ui-update-current-time', { payload: currentTime });
@@ -843,9 +911,7 @@
     });
     replayer.on('events-updated', updateMeta);
 
-    if (autoPlay) {
-      replayer.play();
-    }
+    if (autoPlay) replayer.play();
   });
 
   afterUpdate(() => {
@@ -1084,6 +1150,24 @@
             />
           {/each}
         {/if}
+        {#if showsActivity && activityVisible && hasVisibleActivity}
+          <TimelineActivity
+            {scale}
+            {samples}
+            {marks}
+            {navigationMarks}
+            icons={features.toolbar ? icons : {}}
+            layers={visibleLayers}
+            {currentTime}
+            {container}
+            hoverEnabled={showController}
+            seekable={!trackDisabled && !live}
+            preview={seekPreview}
+            {previewTime}
+            on:seek={(event) => goto(event.detail)}
+            on:preview={(event) => (previewPosition = event.detail)}
+          />
+        {/if}
         {#each customEvents as event}
           {#if event.timelineMarkerText}
             {#if markersShown}
@@ -1128,6 +1212,10 @@
         totalTime={meta.totalTime}
         playing={playingInUI}
         canJump={!live}
+        hasActivity={showsActivity && hasActivity}
+        bind:activityVisible
+        bind:layers
+        {allowedLayers}
         {hasAnnotations}
         {speed}
         {speedOption}

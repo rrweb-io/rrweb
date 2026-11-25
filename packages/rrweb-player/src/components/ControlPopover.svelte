@@ -5,8 +5,14 @@
   import type { PlayerIcons } from '../features';
   export let icons: PlayerIcons = {};
   export let label: string;
-  export let icon: 'speed' | 'settings' | 'download';
-  export let active: 'speed' | 'settings' | 'download' | null = null;
+  export let icon: 'speed' | 'settings' | 'activityGraph' | 'download';
+  export let active:
+    | 'speed'
+    | 'settings'
+    | 'activityGraph'
+    | 'download'
+    | null =
+    null;
   $: open = active === icon;
   function setOpen(value: boolean) {
     if (value) active = icon;

@@ -215,13 +215,14 @@ features: {
 Two props adjust the toolbar. Neither does anything without it.
 
 - `controls` leaves out the controls set to `false`: `play`, `jump`, `time`,
-  `speed`, `settings`, `download` and `fullscreen`.
+  `speed`, `activityGraph`, `settings`, `download` and `fullscreen`.
 - `icons` replaces built-in icons. Each entry is a function that receives
   `{ name, seconds, document }` and returns an SVG element. The names are
-  `play`, `pause`, `jump-back`, `jump-forward`, `speed`, `settings`, `download`,
-  `enter-fullscreen` and `exit-fullscreen`. Create the SVG with `document`,
-  which may be the player's own, and give it a size: the built-in icons are
-  16 pixels.
+  `play`, `pause`, `jump-back`, `jump-forward`, `speed`, `activityGraph`,
+  `settings`, `download`, `enter-fullscreen` and `exit-fullscreen`, plus
+  `click` and `navigation` for the activity graph's marks. Create the SVG with
+  `document`, which may be the player's own, and give it a size: the built-in
+  icons are 16 pixels.
 
 ```js
 new rrwebPlayer({
@@ -251,6 +252,44 @@ Both can be changed later with `player.$set`.
 
 The built-in toolbar icons come from [Lucide](https://lucide.dev) (ISC
 license, see `LICENSE-lucide`).
+
+### Activity graph
+
+`features.timeline.activityGraph` draws an activity graph over the timeline.
+It is off unless you set it; `true` offers every layer.
+
+```js
+new rrwebPlayer({
+  target: document.body,
+  props: {
+    events,
+    features: {
+      toolbar: true,
+      timeline: { activityGraph: { layers: ['clicks', 'inputs'] } },
+    },
+  },
+});
+```
+
+The graph appears while the pointer is over the timeline or the controls. Three
+stacked bands show input events, scroll distance and pointer movement, each
+scaled to its own peak, and a lane marks each click with a dot and each page
+load at a new URL with a hollow dot. A page load is a Meta event whose URL differs from the one
+before it. rrweb records periodic checkouts the same way, so a reload that
+keeps the URL is not marked. A single-page app changes its URL without a Meta
+event, so its route changes show at the next checkout, if at all. A click on the graph
+seeks the replay, and so do the arrow keys followed by Enter. With
+`timeline.seekPreview`, the seek preview runs across the graph. The graph
+uses the same scale as the timeline, compression included.
+
+`layers` limits the layers to `inputs`, `scroll`, `mouse`, `clicks` and
+`navigation`, all five by default. With `features.toolbar`, a Timeline
+activity panel lets the viewer hide the graph or any recorded layer.
+`controls: { activityGraph: false }` leaves that panel out, and
+`icons.activityGraph` replaces its icon. With the toolbar, `icons.click` and
+`icons.navigation` replace the click and navigation dots on the graph and in
+the panel, for example with a pointer or a page icon. Marks close together
+share one icon. An icon of about 12 pixels fits the lane.
 
 ## Captions and timeline markers
 

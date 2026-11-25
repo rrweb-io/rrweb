@@ -2,7 +2,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pack } from '@rrweb/packer';
 import { tick } from 'svelte';
-import { EventType, IncrementalSource, NodeType } from '@rrweb/types';
+import {
+  EventType,
+  IncrementalSource,
+  MouseInteractions,
+  NodeType,
+} from '@rrweb/types';
 import type { eventWithTime } from '@rrweb/types';
 import Player from '../src/Player.svelte';
 import * as annotations from '../src/annotations';
@@ -22,6 +27,17 @@ const clear = (offset: number): eventWithTime => ({
   type: EventType.Annotation,
   timestamp: start + offset,
   data: { type: 'caption', text: null },
+});
+const replayClick = (offset: number): eventWithTime => ({
+  type: EventType.IncrementalSnapshot,
+  timestamp: start + offset,
+  data: {
+    source: IncrementalSource.MouseInteraction,
+    type: MouseInteractions.Click,
+    id: 1,
+    x: 20,
+    y: 20,
+  },
 });
 const recording = (): eventWithTime[] => [
   {
@@ -1282,6 +1298,117 @@ describe('player fullscreen', () => {
     fullscreenElement = root;
     player.toggleFullscreen();
     expect(exitFullscreen).toHaveBeenCalledOnce();
+  });
+});
+
+describe('timeline activity', () => {
+  it('shows a late click while paused and lets the viewer choose a seek time', async () => {
+    const player = await mount({
+      features: { timeline: { activityGraph: true } },
+    });
+    player.goto(0, false);
+    await tick();
+    expect(target.querySelector('.rr-activity')).toBeNull();
+    player.addEvent(replayClick(4000));
+    // The Replayer reports appended events on the next animation frame.
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await tick();
+    const graph = target.querySelector<HTMLButtonElement>('.rr-activity')!;
+    expect(graph?.querySelector('line')).toBeTruthy();
+    graph.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+    );
+    expect(player.getReplayer().getCurrentTime()).toBe(0);
+    graph.click();
+    await tick();
+    expect(player.getReplayer().getCurrentTime()).toBe(1000);
+    expect(player.getReplayer().service.state.value).toBe('paused');
+  });
+
+  it('clears the keyboard choice after a pointer seek', async () => {
+    const player = await mount({
+      events: [...recording(), replayClick(4000)],
+      features: { timeline: { activityGraph: true } },
+    });
+    const graph = target.querySelector<HTMLButtonElement>('.rr-activity')!;
+    vi.spyOn(graph, 'getBoundingClientRect').mockReturnValue(
+      new DOMRect(80, 0, 400, 60),
+    );
+    const chooseNext = () =>
+      graph.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'ArrowRight',
+          bubbles: true,
+        }),
+      );
+    chooseNext();
+
+    graph.dispatchEvent(
+      new MouseEvent('click', { clientX: 180, detail: 1, bubbles: true }),
+    );
+    await tick();
+
+    expect(player.getReplayer().getCurrentTime()).toBe(2500);
+    expect(graph.querySelector('[stroke-dasharray]')).toBeNull();
+    chooseNext();
+    graph.click();
+    expect(player.getReplayer().getCurrentTime()).toBe(3500);
+  });
+
+  it('keeps the graph visible as the pointer moves over its upper portion', async () => {
+    await mount({
+      events: [...recording(), replayClick(4000)],
+      features: { timeline: { activityGraph: true } },
+    });
+    const container = target.querySelector('.rr-player')!;
+    const graph = target.querySelector('.rr-activity')!;
+    vi.spyOn(container, 'getBoundingClientRect').mockReturnValue(
+      new DOMRect(0, 0, 400, 200),
+    );
+    // The graph spans 110 to 150, just above the track.
+    vi.spyOn(graph, 'getBoundingClientRect').mockReturnValue(
+      new DOMRect(0, 110, 400, 40),
+    );
+    const move = (element: Element, clientY: number) =>
+      element.dispatchEvent(
+        new PointerEvent('pointermove', {
+          bubbles: true,
+          pointerType: 'mouse',
+          clientY,
+        }),
+      );
+    move(container, 160);
+    await tick();
+    expect(graph.classList.contains('shown')).toBe(true);
+
+    move(graph, 120);
+    await tick();
+    expect(graph.classList.contains('shown')).toBe(true);
+
+    move(container, 100);
+    await tick();
+    expect(graph.classList.contains('shown')).toBe(false);
+  });
+
+  it('hides the graph when the only recorded layer is turned off', async () => {
+    await mount({
+      events: [...recording(), replayClick(4000)],
+      features: { toolbar: true, timeline: { activityGraph: true } },
+    });
+    expect(target.querySelector('.rr-activity')).toBeTruthy();
+
+    click('[aria-label="Timeline activity"]');
+    await tick();
+    const labels = [...target.querySelectorAll('label')];
+    labels
+      .find((label) => label.textContent?.trim() === 'Clicks')
+      ?.control?.click();
+    await tick();
+
+    expect(target.querySelector('.rr-activity')).toBeNull();
+    expect(
+      target.querySelector('[aria-label="Timeline activity"]'),
+    ).toBeTruthy();
   });
 });
 

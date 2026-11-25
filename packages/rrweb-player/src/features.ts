@@ -1,3 +1,11 @@
+/** Activity graph layers: three stacked bands, and a lane of dots for clicks
+ * and for page loads at a new URL. Marks close together share one dot. */
+export type ActivityLayer =
+  | 'clicks'
+  | 'mouse'
+  | 'scroll'
+  | 'inputs'
+  | 'navigation';
 export type PlayerFeatures = {
   /**
    * Off unless set. Adds back and forward jump buttons to the controller.
@@ -37,6 +45,15 @@ export type PlayerFeatures = {
      * the line alone. `true` uses the defaults.
      */
     seekPreview?: boolean | { time?: boolean };
+    /**
+     * Off unless set. Draws an activity graph over the timeline from the
+     * recording's input events, scrolling, pointer movement, clicks and
+     * page loads at a new URL.
+     * `layers` limits which of them are available (default all); `true`
+     * offers all of them. With the toolbar, a panel lets the viewer show or
+     * hide each one.
+     */
+    activityGraph?: boolean | { layers?: ActivityLayer[] };
   };
 };
 
@@ -51,7 +68,14 @@ export type DownloadLink = {
 /** Toolbar controls a host can hide with the `controls` prop. */
 export type PlayerControls = Partial<
   Record<
-    'play' | 'jump' | 'time' | 'speed' | 'settings' | 'download' | 'fullscreen',
+    | 'play'
+    | 'jump'
+    | 'time'
+    | 'speed'
+    | 'settings'
+    | 'activityGraph'
+    | 'download'
+    | 'fullscreen',
     boolean
   >
 >;
@@ -63,8 +87,13 @@ export type PlayerIconName =
   | 'speed'
   | 'settings'
   | 'download'
+  | 'activityGraph'
   | 'enter-fullscreen'
-  | 'exit-fullscreen';
+  | 'exit-fullscreen'
+  /** The activity graph's click mark and its legend swatch. */
+  | 'click'
+  /** The activity graph's page change mark and its legend swatch. */
+  | 'navigation';
 export type PlayerIconContext = {
   name: PlayerIconName;
   /** The jump length, for icons that show it. */

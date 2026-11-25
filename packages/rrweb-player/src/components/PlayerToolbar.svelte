@@ -9,7 +9,9 @@
   import ToolbarSwitch from './ToolbarSwitch.svelte';
   import ControlIcon from './ControlIcon.svelte';
   import ControlPopover from './ControlPopover.svelte';
+  import IconOverride from './IconOverride.svelte';
   import type {
+    ActivityLayer,
     DownloadLink,
     PlayerControls,
     PlayerFeatures,
@@ -30,11 +32,33 @@
   export let speedOption: number[];
   export let annotations: boolean;
   export let skipInactive: boolean;
+  export let hasActivity = false;
+  export let activityVisible = true;
+  export let layers = {
+    inputs: true,
+    scroll: true,
+    mouse: true,
+    clicks: true,
+    navigation: true,
+  };
+  export let allowedLayers: readonly ActivityLayer[] = [
+    'inputs',
+    'scroll',
+    'mouse',
+    'clicks',
+    'navigation',
+  ];
+  const legend = [
+    ['inputs','Input events',0.65], ['scroll','Scroll',0.36],
+    ['mouse','Mouse movement',0.17], ['clicks','Clicks',1],
+    ['navigation','Page changes',1],
+  ] as const;
   export let hasAnnotations: boolean;
   export let startedAt: number;
   export let recordingTimeZone: string | undefined = undefined;
   const dispatch = createEventDispatcher();
-  let panel: 'speed' | 'settings' | 'download' | null = null;
+  let panel: 'speed' | 'settings' | 'activityGraph' | 'download' | null =
+    null;
   $: download = typeof features.download === 'object' ? features.download : {};
   $: downloadJson = Boolean(features.download) && download.json !== false;
   // Only links a browser can open safely; a javascript: URL would run.
@@ -48,6 +72,8 @@
   $: if (
     (panel === 'speed' && controls.speed === false) ||
     (panel === 'settings' && controls.settings === false) ||
+    (panel === 'activityGraph' &&
+      (!hasActivity || controls.activityGraph === false)) ||
     (panel === 'download' && !showDownload)
   )
     panel = null;
@@ -184,6 +210,59 @@
     >
   </ControlPopover>
   {/if}
+  {#if hasActivity && controls.activityGraph !== false}
+    <ControlPopover
+      {icons}
+      label="Timeline activity"
+      icon="activityGraph"
+      {container}
+      bind:active={panel}
+    >
+      <label for={switchId + '-activity'} class="rr-setting rr-activity-toggle"
+        ><span
+          ><strong>Activity graph</strong><small
+            >Input, scrolling, pointer movement, clicks and page changes</small
+          ></span
+        ><ToolbarSwitch
+          id={switchId + '-activity'}
+          label="Activity graph"
+          bind:checked={activityVisible}
+        /></label
+      >
+      {#if activityVisible}
+        <div class="rr-layer-list">
+          {#each legend.filter(([key]) => allowedLayers.includes(key)) as [key, label, opacity]}
+            <label for={`${switchId}-${key}`} class="rr-layer-row">
+              <span
+                aria-hidden="true"
+                class="rr-swatch"
+                data-legend-swatch={key}
+                class:click-dot={key === 'clicks' || key === 'navigation'}
+              >
+                {#if key === 'clicks'}
+                  <IconOverride {icons} name="click">
+                    <i style:background="var(--rr-text)" style:opacity />
+                  </IconOverride>
+                {:else if key === 'navigation'}
+                  <IconOverride {icons} name="navigation">
+                    <i class="ring-dot" />
+                  </IconOverride>
+                {:else}
+                  <i style:background="var(--rr-text)" style:opacity />
+                {/if}
+              </span>
+              <span>{label}</span>
+              <ToolbarSwitch
+                id={`${switchId}-${key}`}
+                {label}
+                bind:checked={layers[key]}
+              />
+            </label>
+          {/each}
+        </div>
+      {/if}
+    </ControlPopover>
+  {/if}
   {#if showDownload}
   <ControlPopover
     {icons}
@@ -227,6 +306,32 @@
 </div>
 
 <style>
+  .rr-activity-toggle { padding-block: 8px; gap: 16px; }
+  .rr-activity-toggle strong { font-weight: 500; }
+  .rr-activity-toggle small { font-size: 11px; color: var(--rr-muted); }
+  .rr-layer-list { padding-left: 12px; border-left: 1px solid var(--rr-line); }
+  .rr-layer-row > :global(.switch) { margin-left: auto; }
+  .rr-layer-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-block: 4px;
+    cursor: pointer;
+  }
+  .rr-swatch {
+    width: 12px;
+    height: 12px;
+    flex: none;
+    box-shadow: 0 0 0 1px var(--rr-line);
+    border-radius: 3px;
+  }
+  .rr-swatch i { display: block; width: 100%; height: 100%; border-radius: inherit; }
+  .rr-swatch.click-dot { box-shadow: none; }
+  .click-dot i { width: 8px; height: 8px; margin: 2px; border-radius: 50%; }
+  .click-dot i.ring-dot { box-sizing: border-box; border: 2px solid var(--rr-text); }
+  /* A host icon fills the swatch, whatever size it was drawn at. */
+  .rr-swatch :global(.rr-icon-override),
+  .rr-swatch :global(.rr-icon-override svg) { display: block; width: 100%; height: 100%; }
   .rr-toolbar {
     display: flex;
     align-items: center;
