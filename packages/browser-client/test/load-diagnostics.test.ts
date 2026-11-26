@@ -255,7 +255,13 @@ describe('@rrweb/browser-client load diagnostics', () => {
         mockState.send.mock.calls
           .map(([event]) => JSON.parse(event))
           .filter((event) => event.type !== EventType.Meta),
-      ).toEqual(expected);
+      ).toEqual(
+        // Sent events carry their place in the recording as well.
+        expected.map((event) => ({
+          ...event,
+          sequenceId: expect.any(Number),
+        })),
+      );
       expect(mockState.addAnnotation).not.toHaveBeenCalled();
       expect(mockState.addCustomEvent).not.toHaveBeenCalled();
       expect(

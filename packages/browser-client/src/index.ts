@@ -63,6 +63,7 @@ let defaultClientConfig: clientConfig = {
   includePii: false,
 };
 const sessionStorageName = 'rrweb-browser-client-recording-id';
+const sequenceStorageName = 'rrweb-browser-client-sequence-id';
 const wsLimit = 10e5; // this is approximate and depends on the browser, also on how unicode is encoded (we are comparing against the length of a javascript string)
 
 let ws: Websocket | undefined;
@@ -126,7 +127,7 @@ export function stop(resetRecordingId: boolean) {
     // Clear old events before send, so websocket-ts can buffer the close event
     // for the HTTP fallback when the socket is not currently open.
     buffer.clear();
-    ws.send(JSON.stringify(closeEvent));
+    ws.send(serialize(closeEvent));
     ws.close();
     wsConnectionPaused = false;
     ws = undefined; // so `emit` can restart it again if page is unfrozen
@@ -138,8 +139,39 @@ export function stop(resetRecordingId: boolean) {
   }
 }
 
-function removeRecordingId(): void {
+// The number the next event gets within its recording, counting from 0.
+// Stored beside the recording id, so a page load in the same tab carries on
+// from where the last page stopped.
+let nextSequenceId = 0;
+
+/**
+ * Serializes an event for sending, numbered in the order the recording's
+ * events are sent. Timestamps cannot give that order: events share them, and
+ * a retried upload can reach the server after newer events.
+ *
+ * Recording metadata takes no number: the server keeps it apart from the
+ * recording's events, so numbering it would leave a gap among them.
+ */
+function serialize(event: eventWithTime | customEventWithTime): string {
+  if (event.type === EventType.Custom && event.data.tag === 'recording-meta') {
+    return JSON.stringify(event);
+  }
   try {
+    nextSequenceId = Math.max(
+      nextSequenceId,
+      Number(sessionStorage.getItem(sequenceStorageName)) || 0,
+    );
+    sessionStorage.setItem(sequenceStorageName, String(nextSequenceId + 1));
+  } catch {
+    // Without storage the numbering restarts on the next page load.
+  }
+  return JSON.stringify({ ...event, sequenceId: nextSequenceId++ });
+}
+
+function removeRecordingId(): void {
+  nextSequenceId = 0;
+  try {
+    sessionStorage.removeItem(sequenceStorageName);
     sessionStorage.removeItem(sessionStorageName);
   } catch {
     // Ignore environments without sessionStorage, such as SSR.
@@ -429,7 +461,7 @@ export function start(
     },
   };
   // metadata event should be the first seen server side
-  buffer.add(JSON.stringify(metaEvent));
+  buffer.add(serialize(metaEvent));
 
   const emitEvent = (event: eventWithTime) => {
     if (!ws) {
@@ -465,7 +497,7 @@ export function start(
       metaData.referrer = document.referrer; // could potentially contain PII
     }
 
-    const eventStr = JSON.stringify(event);
+    const eventStr = serialize(event);
     // TODO: add browser native compression
     if (eventStr.length > wsLimit) {
       // Assuming wsLimit is a defined constant, and eventStr.length is intended.

@@ -77,6 +77,8 @@ and are sent to the server with their original call-time timestamps. Events adde
 during active recording use the same callback and delivery path. Calling `stop()`
 discards events still waiting for the recorder to start.
 
+Every event the client uploads carries a top-level `sequenceId`: its place in the recording, counting from 0 with no number skipped. The next number is kept in `sessionStorage` beside the recording id, so a page load in the same tab carries on from the previous page, and `stop(true)` resets it. Recording metadata (`addMeta`) is stored apart from the recording's events and takes no number.
+
 ## Further Reading
 
 - [Browser Client guide](https://rrweb.com/docs/cloud/browser-client)
