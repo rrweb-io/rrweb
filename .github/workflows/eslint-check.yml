@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   eslint_check_upload:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     permissions:
       contents: read
     name: ESLint Check and Report Upload
@@ -24,14 +24,14 @@ jobs:
     steps:
       - name: Checkout pull request head
         if: github.event_name == 'pull_request'
-        uses: actions/checkout@v4
+        uses: useblacksmith/checkout@v1
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
       - name: Checkout current branch
         if: github.event_name != 'pull_request'
-        uses: actions/checkout@v4
+        uses: useblacksmith/checkout@v1
         with:
           persist-credentials: false
       - name: Setup Node

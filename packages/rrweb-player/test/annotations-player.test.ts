@@ -313,9 +313,12 @@ describe('player annotations', () => {
 
   it('refreshes annotations when events are added after mounting', async () => {
     const player = await mount();
+    const updated = new Promise((r) =>
+      player.getReplayer().on('events-updated', () => r(undefined)),
+    );
     player.addEvent(annotation(7000, 'Added later'));
     player.addEvent(timelineMarker(7000, 'A new timeline marker'));
-    await Promise.resolve();
+    await updated;
     await tick();
     await tick();
     player.goto(7000, false);
@@ -347,8 +350,11 @@ describe('player annotations', () => {
       'Existing caption',
     );
 
+    const updated = new Promise((r) =>
+      player.getReplayer().on('events-updated', () => r(undefined)),
+    );
     player.addEvent(addedEvent);
-    await Promise.resolve();
+    await updated;
     await tick();
     await tick();
 
