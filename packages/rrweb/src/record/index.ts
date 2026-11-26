@@ -29,7 +29,10 @@ import {
   type canvasMutationParam,
   type adoptedStyleSheetParam,
 } from '@rrweb/types';
-import type { CrossOriginIframeMessageEventContent } from '../types';
+import type {
+  CrossOriginIframeMessageEventContent,
+  CrossOriginIframeSnapshotRequest,
+} from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
 import { CanvasManager } from './observers/canvas/canvas-manager';
@@ -63,6 +66,17 @@ try {
 }
 
 const mirror = createMirror();
+
+// Whether `source` is a frame above this one. A cross-origin iframe nested in same-origin iframes is asked for snapshots by the topmost of them.
+function isAncestorWindow(source: MessageEventSource | null) {
+  let win: Window = window;
+  while (win !== win.parent) {
+    win = win.parent;
+    if (win === source) return true;
+  }
+  return false;
+}
+
 function record<T = eventWithTime>(
   options: recordOptions<T> = {},
 ): listenerHandler | undefined {
@@ -109,6 +123,7 @@ function record<T = eventWithTime>(
     : true;
 
   let passEmitsToParent = false;
+  let answeringSnapshotRequest = false;
   if (!inEmittingFrame) {
     try {
       // throws if parent is cross-origin
@@ -214,6 +229,7 @@ function record<T = eventWithTime>(
         origin: window.location.origin,
         isCheckout,
       };
+      if (answeringSnapshotRequest) message.isSnapshotResponse = true;
       window.parent.postMessage(message, '*');
     }
 
@@ -576,6 +592,31 @@ function record<T = eventWithTime>(
         console.warn(error);
       }
     });
+
+    if (passEmitsToParent) {
+      handlers.push(
+        on(
+          'message',
+          (event: MessageEvent) => {
+            if (
+              !recording ||
+              (event.data as CrossOriginIframeSnapshotRequest | undefined)
+                ?.type !== 'rrweb-snapshot-request' ||
+              !isAncestorWindow(event.source)
+            )
+              return;
+            answeringSnapshotRequest = true;
+            try {
+              takeFullSnapshot();
+            } finally {
+              answeringSnapshotRequest = false;
+            }
+          },
+          window,
+        ),
+      );
+    }
+
     iframeManager.addUnloadListener((doc) => {
       const stopObserving = iframeObservers.get(doc);
       if (!stopObserving) return;
