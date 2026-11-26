@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Recorder playground | rrweb</title>
+    <meta
+      name="description"
+      content="Explore rrweb recording options, captured events, and session replay."
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 24px;
+        background: var(--page);
+        color: var(--text);
+        font: 14px/1.5 Inter, ui-sans-serif, system-ui, sans-serif;
+      }
+      h2 {
+        margin: 0 0 14px;
+        font-size: 17px;
+      }
+      p {
+        line-height: 1.5;
+      }
+      main {
+        display: grid;
+        grid-template-columns: minmax(280px, 1fr) minmax(400px, 2fr);
+        gap: 18px;
+      }
+      section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 18px;
+        min-width: 0;
+      }
+      .wide {
+        grid-column: 1 / -1;
+      }
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 12px 0;
+      }
+      button,
+      select {
+        padding: 8px 11px;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        background: var(--surface);
+        color: inherit;
+        cursor: pointer;
+      }
+      button.primary {
+        background: var(--brand);
+        color: white;
+        border-color: var(--brand);
+      }
+      button:disabled {
+        cursor: default;
+        opacity: 0.5;
+      }
+      :focus-visible {
+        outline: 3px solid #80b4fa;
+        outline-offset: 2px;
+      }
+      .config-editor {
+        display: flex;
+        margin-top: 8px;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        overflow: hidden;
+        background: #142235;
+      }
+      #boolean-gutter {
+        position: relative;
+        flex: 0 0 28px;
+        overflow: clip;
+        border-right: 1px solid var(--muted);
+      }
+      #boolean-toggles {
+        position: absolute;
+        inset: 0;
+      }
+      #boolean-toggles input {
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        margin: 0;
+        accent-color: #80b4fa;
+        cursor: pointer;
+      }
+      #config {
+        display: block;
+        flex: 1;
+        min-width: 0;
+        width: 100%;
+        min-height: 440px;
+        resize: vertical;
+        padding: 12px;
+        border: 0;
+        background: #142235;
+        color: #dce8f5;
+        font: 13px/21px monospace;
+        tab-size: 2;
+      }
+      #config-error {
+        color: var(--error);
+        overflow-wrap: anywhere;
+      }
+      #field-tools {
+        min-height: 36px;
+        overflow-wrap: anywhere;
+      }
+      #field-tools code {
+        flex-basis: 100%;
+      }
+      #add-option {
+        min-width: 0;
+        max-width: 100%;
+      }
+      .iframe-shell {
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: 0 2px 8px #18263612;
+      }
+      .iframe-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        background: var(--page);
+        border-bottom: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .iframe-header span {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .iframe-header a {
+        color: var(--brand);
+        font-family: monospace;
+      }
+      .iframe-header a[aria-current='page'] {
+        font-weight: 600;
+        text-decoration-thickness: 2px;
+      }
+      iframe {
+        display: block;
+        width: 100%;
+        height: 470px;
+        border: 0;
+        background: var(--surface);
+      }
+      #status {
+        padding: 10px 0;
+        font-weight: 600;
+      }
+      #status.error {
+        color: var(--error);
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      [role='tab'][aria-selected='true'] {
+        background: var(--selected);
+        border-color: var(--brand);
+      }
+      #player-host iframe {
+        height: 550px;
+      }
+      .events {
+        display: grid;
+        grid-template-columns: minmax(250px, 1fr) minmax(300px, 2fr);
+        gap: 14px;
+      }
+      #event-list {
+        height: 380px;
+        overflow: auto;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+      }
+      #event-list button {
+        display: block;
+        width: 100%;
+        border: 0;
+        border-bottom: 1px solid var(--border);
+        border-radius: 0;
+        text-align: left;
+        font: 12px/1.5 monospace;
+      }
+      #event-list button[aria-pressed='true'] {
+        background: var(--selected);
+      }
+      pre {
+        margin: 0;
+        padding: 14px;
+        height: 380px;
+        overflow: auto;
+        background: #142235;
+        color: #dce8f5;
+        border-radius: 5px;
+        font: 12px/1.5 monospace;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      @media (max-width: 800px) {
+        main,
+        .events {
+          grid-template-columns: 1fr;
+        }
+        .wide {
+          grid-column: auto;
+        }
+      }
+      :root {
+        color-scheme: light;
+        --page: #f6f6f7;
+        --surface: #fff;
+        --text: #3c3c43;
+        --muted: #67676c;
+        --border: #c2c2c4;
+        --brand: #3451b2;
+        --selected: #e9edfa;
+        --error: #b42318;
+      }
+      :root[data-theme='dark'] {
+        color-scheme: dark;
+        --page: #161618;
+        --surface: #1b1b1f;
+        --text: #dfdfd6;
+        --muted: #a8a8b1;
+        --border: #51515c;
+        --brand: #a8b1ff;
+        --selected: #30334f;
+        --error: #ff9b91;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+          color-scheme: dark;
+          --page: #161618;
+          --surface: #1b1b1f;
+          --text: #dfdfd6;
+          --muted: #a8a8b1;
+          --border: #51515c;
+          --brand: #a8b1ff;
+          --selected: #30334f;
+          --error: #ff9b91;
+        }
+      }
+      a {
+        color: var(--brand);
+      }
+      .page-header,
+      .identity,
+      .page-header nav,
+      .help-heading {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .page-header {
+        justify-content: space-between;
+        margin-bottom: 24px;
+      }
+      .brand {
+        color: var(--text);
+        font-size: 22px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+      h1 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+      }
+      .page-header nav {
+        font-size: 13px;
+      }
+      #help {
+        position: fixed;
+        inset: 80px 24px auto auto;
+        margin: 0;
+        width: min(480px, calc(100vw - 32px));
+        max-height: calc(100dvh - 112px);
+        overflow: auto;
+        padding: 24px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: 0 12px 40px #0003;
+      }
+      .help-heading {
+        justify-content: space-between;
+      }
+      .help-heading h2 {
+        margin: 0;
+      }
+      #help ol {
+        padding-left: 20px;
+      }
+      #help li {
+        margin: 8px 0;
+      }
+      button.primary {
+        background: #3451b2;
+        border-color: #3451b2;
+      }
+      @media (max-width: 800px) {
+        body {
+          padding: 16px;
+        }
+        #help {
+          top: 16px;
+          right: 16px;
+          max-height: calc(100dvh - 32px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="page-header">
+      <div class="identity">
+        <a class="brand" href="https://rrweb.com">rrweb</a>
+        <h1>Recorder playground</h1>
+        <span id="build-version" class="muted">rrweb canary (CDN)</span>
+      </div>
+      <nav aria-label="Playground navigation">
+        <a id="back-to-docs" href="https://rrweb.com/docs/events#events"
+          >Back to event documentation</a
+        >
+        <button id="help-button" popovertarget="help">Help</button>
+      </nav>
+    </header>
+    <aside id="help" popover aria-labelledby="help-title">
+      <div class="help-heading">
+        <h2 id="help-title">Use the playground</h2>
+        <button
+          popovertarget="help"
+          popovertargetaction="hide"
+          aria-label="Close help"
+        >
+          Close
+        </button>
+      </div>
+      <ol>
+        <li>
+          Edit the recorder options, then select
+          <strong>Apply &amp; restart</strong>.
+        </li>
+        <li>
+          Interact with <strong>Form interactions</strong> or
+          <strong>DOM changes</strong>.
+        </li>
+        <li>
+          Select an event to inspect it, or open <strong>Raw JSON</strong> to
+          copy the recording.
+        </li>
+        <li>
+          Open <strong>Player</strong> and select
+          <strong>Load latest events</strong> to replay it.
+        </li>
+      </ol>
+      <p>
+        Applying settings or switching examples clears the captured events and
+        player and starts a new recording. Recording continues during playback;
+        load the latest events to include new interactions.
+      </p>
+      <p id="config-help">
+        Removing an option uses rrweb's default. Added values are editable
+        examples. <code>ignoreCSSAttributes</code> accepts an array of strings.
+        The playground supplies <code>emit</code>; callbacks, plugins, and
+        regular expressions require JavaScript and cannot be configured here.
+      </p>
+    </aside>
+    <main>
+      <section>
+        <h2>Recorder settings</h2>
+        <label for="config">Recorder options (JSON)</label>
+        <a
+          id="options-docs"
+          href="https://rrweb.com/docs/guide#record-options"
+          target="_blank"
+          rel="noopener"
+          >Docs ↗</a
+        >
+        <div class="config-editor">
+          <div id="boolean-gutter"><div id="boolean-toggles"></div></div>
+          <textarea
+            id="config"
+            spellcheck="false"
+            wrap="off"
+            aria-describedby="config-help config-error"
+          ></textarea>
+        </div>
+        <p id="config-error" role="status" aria-live="polite"></p>
+        <div
+          id="field-tools"
+          class="toolbar"
+          aria-label="Selected field controls"
+        ></div>
+        <div class="toolbar">
+          <label for="add-option">Add option</label>
+          <select id="add-option"></select>
+          <button id="add-field">Add</button>
+        </div>
+        <div class="toolbar">
+          <button class="primary" id="apply">Apply &amp; restart</button>
+          <button id="format-config">Format JSON</button>
+        </div>
+        <div id="status" role="status" aria-live="polite">Loading…</div>
+      </section>
+      <section>
+        <h2>Live page</h2>
+        <div class="iframe-shell">
+          <div class="iframe-header">
+            <span>Example</span>
+            <a
+              href="playground-form.html"
+              target="form-frame"
+              aria-current="page"
+            >
+              Form interactions
+            </a>
+            <a href="playground-dom.html" target="form-frame">DOM changes</a>
+          </div>
+          <iframe
+            id="form"
+            name="form-frame"
+            title="Page being recorded"
+          ></iframe>
+        </div>
+      </section>
+      <section class="wide">
+        <h2>Captured events</h2>
+        <div class="toolbar" role="tablist" aria-label="Recording viewer">
+          <button
+            id="events-tab"
+            role="tab"
+            aria-selected="true"
+            aria-controls="events-panel"
+          >
+            Events
+          </button>
+          <button
+            id="player-tab"
+            role="tab"
+            aria-selected="false"
+            aria-controls="player-panel"
+            tabindex="-1"
+          >
+            Player
+          </button>
+          <button
+            id="raw-tab"
+            role="tab"
+            aria-selected="false"
+            aria-controls="raw-panel"
+            tabindex="-1"
+          >
+            Raw JSON
+          </button>
+        </div>
+        <div id="events-panel" role="tabpanel" aria-labelledby="events-tab">
+          <div class="toolbar">
+            <label for="filter">Show</label>
+            <select id="filter">
+              <option value="relevant">
+                Snapshots, mutations &amp; inputs
+              </option>
+              <option value="all">All events</option>
+              <option value="input">Input events</option>
+              <option value="mutation">Mutations</option>
+            </select>
+            <span id="count">0 captured</span>
+          </div>
+          <div class="events">
+            <div id="event-list" aria-label="Captured event list"></div>
+            <pre id="detail" tabindex="0" aria-label="Selected event JSON">
+Waiting for a recording…</pre
+            >
+          </div>
+        </div>
+        <div
+          id="player-panel"
+          role="tabpanel"
+          aria-labelledby="player-tab"
+          hidden
+        >
+          <div class="toolbar">
+            <button id="refresh-player">Load latest events</button>
+            <span
+              id="player-status"
+              class="muted"
+              role="status"
+              aria-live="polite"
+            ></span>
+          </div>
+          <div id="player-host"></div>
+        </div>
+        <div id="raw-panel" role="tabpanel" aria-labelledby="raw-tab" hidden>
+          <div class="toolbar">
+            <button id="copy-json">Copy</button>
+            <span
+              id="copy-status"
+              class="muted"
+              role="status"
+              aria-live="polite"
+            ></span>
+          </div>
+          <pre
+            id="raw-json"
+            tabindex="0"
+            aria-label="All captured events as JSON"
+          >
+[]</pre
+          >
+        </div>
+      </section>
+    </main>
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const deployment = {
+        version: 'rrweb canary (CDN)',
+        docsBase: '../',
+        recorderAsset: 'https://cdn.rrweb.com/rrweb/canary/rrweb.umd.cjs',
+        playerAssets: 'https://cdn.rrweb.com/rrweb-player/canary/',
+      };
+      if (deployment.version)
+        $('build-version').textContent = deployment.version;
+      if (deployment.docsBase) {
+        $('back-to-docs').href = deployment.docsBase + 'events#events';
+        $('options-docs').href = deployment.docsBase + 'guide#record-options';
+      }
+      // Reuse the docs theme preference when available, otherwise follow the OS.
+      try {
+        const theme = localStorage.getItem('vitepress-theme-appearance');
+        if (theme === 'dark' || theme === 'light')
+          document.documentElement.dataset.theme = theme;
+      } catch {}
+
+      const frame = $('form');
+      const formLinks = document.querySelectorAll('.iframe-header a');
+      let formPage = 'playground-form.html';
+      const events = [];
+      let stopRecording;
+      let selected = -1;
+      let generation = 0;
+      let renderPending = false;
+      let scrollToLatest = false;
+      let recorderEnums = {};
+
+      let player;
+      let playerFrame;
+      let playerLoad = 0;
+      function clearPlayer() {
+        playerLoad++;
+        if (player) {
+          player.getReplayer().destroy();
+          player.$destroy();
+          player = undefined;
+        }
+        playerFrame = undefined;
+        $('player-host').replaceChildren();
+      }
+      function loadPlayer() {
+        clearPlayer();
+        if (events.length < 2 || !events.some((event) => event.type === 2)) {
+          $('player-status').textContent =
+            'Waiting for a full snapshot. Load latest events once recording is ready.';
+          return;
+        }
+        const snapshot = JSON.parse(JSON.stringify(events));
+        const current = playerLoad;
+        const iframe = document.createElement('iframe');
+        playerFrame = iframe;
+        iframe.title = 'Recorded session player';
+        iframe.allowFullscreen = true;
+        const assets = new URL(deployment.playerAssets, location.href);
+        $('player-status').textContent = 'Loading player…';
+        iframe.onload = () => {
+          if (current !== playerLoad) return;
+          try {
+            const bundle = iframe.contentWindow.rrwebPlayer;
+            if (!bundle)
+              throw new Error(
+                'Cannot load the player. Reload the page and try again.',
+              );
+            const Player = bundle.default || bundle;
+            player = new Player({
+              target: iframe.contentDocument.body,
+              props: {
+                events: snapshot,
+                width: iframe.clientWidth,
+                height: 470,
+                autoPlay: false,
+              },
+            });
+            $(
+              'player-status',
+            ).textContent = `Loaded ${snapshot.length} events.`;
+          } catch (error) {
+            clearPlayer();
+            $('player-status').textContent = error.message;
+          }
+        };
+        iframe.srcdoc = `<!doctype html><html><head>
+          <link rel="stylesheet" href="${assets}style.css">
+          <style>body { margin: 0; }<\/style>
+          <script src="${assets}rrweb-player.umd.cjs"><\/script>
+          </head><body></body></html>`;
+        $('player-host').append(iframe);
+      }
+      const viewerTabs = ['events', 'player', 'raw'];
+      $('copy-json').onclick = async () => {
+        $('copy-status').textContent = '';
+        try {
+          await navigator.clipboard.writeText(JSON.stringify(events, null, 2));
+          $('copy-status').textContent = 'Copied!';
+        } catch {
+          $('copy-status').textContent =
+            'Could not copy. Select the JSON and copy it manually.';
+        }
+      };
+      function renderRawJSON() {
+        if (!$('raw-panel').hidden)
+          $('raw-json').textContent = JSON.stringify(events, null, 2);
+      }
+      function selectViewer(view) {
+        for (const name of viewerTabs) {
+          const active = name === view;
+          $(`${name}-tab`).setAttribute('aria-selected', String(active));
+          $(`${name}-tab`).tabIndex = active ? 0 : -1;
+          $(`${name}-panel`).hidden = !active;
+        }
+        if (view === 'player') loadPlayer();
+        else clearPlayer();
+        renderRawJSON();
+      }
+      for (const name of viewerTabs) {
+        $(`${name}-tab`).onclick = () => selectViewer(name);
+        $(`${name}-tab`).onkeydown = (event) => {
+          if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key))
+            return;
+          event.preventDefault();
+          const next =
+            event.key === 'Home'
+              ? viewerTabs[0]
+              : event.key === 'End'
+              ? viewerTabs[viewerTabs.length - 1]
+              : viewerTabs[
+                  (viewerTabs.indexOf(name) +
+                    (event.key === 'ArrowRight' ? 1 : -1) +
+                    viewerTabs.length) %
+                    viewerTabs.length
+                ];
+          selectViewer(next);
+          $(`${next}-tab`).focus();
+        };
+      }
+      $('refresh-player').onclick = loadPlayer;
+      new ResizeObserver(() => {
+        if (player && playerFrame?.clientWidth) {
+          player.$set({ width: playerFrame.clientWidth });
+          requestAnimationFrame(() => player?.triggerResize());
+        }
+      }).observe($('player-host'));
+
+      function enumName(name, value) {
+        const member = recorderEnums[name]?.[value];
+        return member === undefined ? `${name}(${value})` : `${name}.${member}`;
+      }
+      function eventLabel(event) {
+        let label = enumName('EventType', event.type);
+        if (event.type === recorderEnums.EventType?.IncrementalSnapshot) {
+          label += ` · ${enumName('IncrementalSource', event.data.source)}`;
+          if (
+            event.data.source ===
+            recorderEnums.IncrementalSource?.MouseInteraction
+          )
+            label += ` · ${enumName('MouseInteractions', event.data.type)}`;
+        }
+        return label;
+      }
+
+      function status(message, error = false) {
+        $('status').textContent = message;
+        $('status').classList.toggle('error', error);
+      }
+      function matches(event) {
+        const mode = $('filter').value;
+        const source = event.type === 3 ? event.data.source : -1;
+        return (
+          mode === 'all' ||
+          (mode === 'input' && source === 5) ||
+          (mode === 'mutation' && source === 0) ||
+          (mode === 'relevant' &&
+            (event.type === 2 || source === 0 || source === 5))
+        );
+      }
+      function render() {
+        renderPending = false;
+        renderRawJSON();
+        const list = $('event-list');
+        const previousScrollTop = list.scrollTop;
+        const visible = events
+          .map((event, index) => ({ event, index }))
+          .filter(({ event }) => matches(event));
+        $(
+          'count',
+        ).textContent = `${events.length} captured · ${visible.length} matching`;
+        list.replaceChildren();
+        // Keep the rendered list limited to the latest 300 matching events.
+        for (const { event, index } of visible.slice(-300)) {
+          const button = document.createElement('button');
+          const label = eventLabel(event);
+          const target =
+            event.data && event.data.id !== undefined
+              ? ` · node ${event.data.id}`
+              : '';
+          button.textContent = `#${index + 1} +${
+            event.timestamp - events[0].timestamp
+          }ms ${label}${target}`;
+          button.setAttribute('aria-pressed', String(index === selected));
+          button.onclick = () => {
+            selected = index;
+            render();
+          };
+          list.append(button);
+        }
+        list.scrollTop = scrollToLatest ? list.scrollHeight : previousScrollTop;
+        scrollToLatest = false;
+        $('detail').textContent =
+          selected < 0
+            ? 'No event selected.'
+            : JSON.stringify(events[selected], null, 2);
+      }
+      function capture(event) {
+        events.push(event);
+        if (matches(event)) scrollToLatest = true;
+        if (selected < 0 || (event.type === 2 && events[selected].type !== 2))
+          selected = events.length - 1;
+        if (!renderPending) {
+          renderPending = true;
+          requestAnimationFrame(render);
+        }
+      }
+      function stop() {
+        if (stopRecording) stopRecording();
+        stopRecording = undefined;
+      }
+      function restart(page = formPage) {
+        let options;
+        try {
+          options = readConfig();
+          if (options.ignoreCSSAttributes)
+            options.ignoreCSSAttributes = new Set(options.ignoreCSSAttributes);
+        } catch (error) {
+          status(`Cannot apply settings: ${error.message}`, true);
+          return;
+        }
+        if (location.protocol === 'file:') {
+          status(
+            'Serve the repository over HTTP: python3 -m http.server 8000, then open this page through localhost:8000.',
+            true,
+          );
+          return;
+        }
+        formPage = page;
+        for (const link of formLinks) {
+          if (link.getAttribute('href') === page)
+            link.setAttribute('aria-current', 'page');
+          else link.removeAttribute('aria-current');
+        }
+        const current = ++generation;
+        stop();
+        clearPlayer();
+        $('player-status').textContent =
+          'Recording restarted. Load latest events when ready.';
+        events.length = 0;
+        selected = -1;
+        render();
+        status('Loading page and recorder…');
+        frame.onload = () => {
+          if (current !== generation) return;
+          const doc = frame.contentDocument;
+          if (!doc?.body) {
+            status(`Could not load ${page}.`, true);
+            return;
+          }
+          const script = doc.createElement('script');
+          script.src = new URL(deployment.recorderAsset, location.href).href;
+          script.onerror = () => {
+            if (current === generation)
+              status(
+                'Cannot load the recorder. Reload the page and try again.',
+                true,
+              );
+          };
+          script.onload = () => {
+            if (current !== generation) return;
+            try {
+              recorderEnums = frame.contentWindow.rrweb;
+              stopRecording = frame.contentWindow.rrweb.record({
+                ...options,
+                emit: capture,
+              });
+              if (typeof stopRecording !== 'function')
+                throw new Error(
+                  'Recorder did not start. Check the browser console.',
+                );
+              status('Recording — settings applied.');
+            } catch (error) {
+              stop();
+              status(error.message, true);
+            }
+          };
+          doc.head.append(script);
+        };
+        frame.src = `${page}?session=${current}`;
+      }
+      $('apply').onclick = () => restart();
+      for (const link of formLinks) {
+        link.onclick = (event) => {
+          if (
+            event.button !== 0 ||
+            event.ctrlKey ||
+            event.metaKey ||
+            event.shiftKey ||
+            event.altKey
+          )
+            return;
+          event.preventDefault();
+          restart(link.getAttribute('href'));
+        };
+      }
+      $('filter').onchange = render;
+      const editor = $('config');
+      // This catalog supplies add-option examples and controls. Unknown JSON
+      // fields remain intact, so newer recorder options can still be entered.
+      const fields = new Map();
+      function field(path, example, types = [typeof example], choices) {
+        fields.set(path, { example, types, choices });
+      }
+      for (const name of [
+        'maskAllInputs',
+        'inlineStylesheet',
+        'recordDOM',
+        'recordCanvas',
+        'recordCrossOriginIframes',
+        'userTriggeredOnInput',
+        'collectFonts',
+        'inlineImages',
+      ])
+        field(name, ['inlineStylesheet', 'recordDOM'].includes(name));
+      for (const [name, example] of Object.entries({
+        blockClass: 'rr-block',
+        blockSelector: '.private',
+        ignoreClass: 'rr-ignore',
+        ignoreSelector: '.ignored',
+        maskTextClass: 'rr-mask',
+        maskTextSelector: '.sensitive',
+      }))
+        field(name, example);
+      for (const name of [
+        'checkoutEveryNth',
+        'checkoutEveryNms',
+        'mousemoveWait',
+      ])
+        field(name, name === 'checkoutEveryNth' ? 100 : 1000);
+      field('recordAfter', 'load', ['string'], ['DOMContentLoaded', 'load']);
+      field('ignoreCSSAttributes', [], ['array']);
+      field('maskInputOptions', {}, ['object']);
+      const inputTypes = [
+        'text',
+        'password',
+        'checkbox',
+        'radio',
+        'textarea',
+        'select',
+        'color',
+        'date',
+        'datetime-local',
+        'email',
+        'month',
+        'number',
+        'range',
+        'search',
+        'tel',
+        'time',
+        'url',
+        'week',
+      ];
+      for (const type of inputTypes) field(`maskInputOptions.${type}`, true);
+      field('sampling', {}, ['object']);
+      field('sampling.mousemove', true, ['boolean', 'number']);
+      field('sampling.mouseInteraction', true, ['boolean', 'object']);
+      for (const name of ['mousemoveCallback', 'scroll', 'media'])
+        field(`sampling.${name}`, 150);
+      field('sampling.input', 'all', ['string'], ['all', 'last']);
+      field('sampling.canvas', 'all', ['string', 'number'], ['all']);
+      field(
+        'slimDOMOptions',
+        {},
+        ['object', 'boolean', 'string'],
+        [true, 'all'],
+      );
+      for (const name of [
+        'script',
+        'comment',
+        'headFavicon',
+        'headWhitespace',
+        'headMetaDescKeywords',
+        'headMetaSocial',
+        'headMetaRobots',
+        'headMetaHttpEquiv',
+        'headMetaAuthorship',
+        'headMetaVerification',
+        'headTitleMutations',
+      ])
+        field(`slimDOMOptions.${name}`, true);
+      field('dataURLOptions', {}, ['object']);
+      field('dataURLOptions.type', 'image/webp');
+      field('dataURLOptions.quality', 0.8);
+
+      function readConfig() {
+        const config = JSON.parse(editor.value);
+        const kind = (value) =>
+          value === null
+            ? 'null'
+            : Array.isArray(value)
+            ? 'array'
+            : typeof value;
+        if (kind(config) !== 'object')
+          throw new Error('Recorder options must be a JSON object.');
+        for (const name of [
+          'emit',
+          'maskInputFn',
+          'maskTextFn',
+          'hooks',
+          'packFn',
+          'plugins',
+          'keepIframeSrcFn',
+          'errorHandler',
+        ]) {
+          if (Object.hasOwn(config, name))
+            throw new Error(
+              `${name} requires JavaScript and cannot be set here.`,
+            );
+        }
+        for (const [path, spec] of fields) {
+          let value = config;
+          for (const key of path.split('.')) {
+            value =
+              value && typeof value === 'object' && Object.hasOwn(value, key)
+                ? value[key]
+                : undefined;
+          }
+          if (value === undefined) continue;
+          if (!spec.types.includes(kind(value)))
+            throw new Error(`${path} must be ${spec.types.join(' or ')}.`);
+          if (
+            spec.choices &&
+            typeof value === 'string' &&
+            !spec.choices.includes(value)
+          )
+            throw new Error(
+              `${path}: choose ${spec.choices
+                .map((value) => JSON.stringify(value))
+                .join(', ')}.`,
+            );
+        }
+        if (
+          config.ignoreCSSAttributes?.some((value) => typeof value !== 'string')
+        )
+          throw new Error('ignoreCSSAttributes must contain only strings.');
+        return config;
+      }
+
+      // Locate properties using JSON tokens, so escaped strings, nested objects
+      // and repeated keys in different objects resolve to the correct field.
+      function propertyRanges() {
+        const tokens = Array.from(
+          editor.value.matchAll(
+            /"(?:[^"\\]|\\.)*"|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|true|false|null|[{}[\]:,]/g,
+          ),
+        );
+        const ranges = [];
+        let index = 0;
+        function value(path) {
+          const token = tokens[index++];
+          if (token[0] === '{') {
+            while (tokens[index][0] !== '}') {
+              const key = tokens[index++];
+              index++; // colon
+              const child = [...path, JSON.parse(key[0])];
+              const start = tokens[index].index;
+              const end = value(child);
+              ranges.push({ path: child, start, end, keyStart: key.index });
+              if (tokens[index][0] !== ',') break;
+              index++;
+            }
+            return tokens[index++].index + 1;
+          }
+          if (token[0] === '[') {
+            let item = 0;
+            while (tokens[index][0] !== ']') {
+              value([...path, item++]);
+              if (tokens[index][0] !== ',') break;
+              index++;
+            }
+            return tokens[index++].index + 1;
+          }
+          const end = token.index + token[0].length;
+          // Array items have no property key, but still need boolean controls.
+          if (typeof path[path.length - 1] === 'number')
+            ranges.push({
+              path,
+              start: token.index,
+              end,
+              keyStart: token.index,
+            });
+          return end;
+        }
+        value([]);
+        return ranges;
+      }
+      let renderedBooleanJSON;
+      function renderBooleanCheckboxes(ranges) {
+        const source = ranges ? editor.value : undefined;
+        if (renderedBooleanJSON === source) return;
+        renderedBooleanJSON = source;
+        const toggles = $('boolean-toggles');
+        toggles.replaceChildren();
+        const columns = new Map();
+        let width = 28;
+        for (const range of (ranges || []).sort((a, b) => a.start - b.start)) {
+          const value = editor.value.slice(range.start, range.end);
+          if (value !== 'true' && value !== 'false') continue;
+          const line =
+            editor.value.slice(0, range.start).split('\n').length - 1;
+          const column = columns.get(line) || 0;
+          columns.set(line, column + 1);
+          width = Math.max(width, (column + 1) * 24 + 4);
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.checked = value === 'true';
+          checkbox.dataset.start = range.start;
+          checkbox.setAttribute('aria-label', range.path.join('.'));
+          checkbox.title = `${range.path.join('.')}: ${value}`;
+          checkbox.style.top = `${12 + line * 21 + 2}px`;
+          checkbox.style.left = `${6 + column * 24}px`;
+          checkbox.onfocus = () => {
+            const top = 12 + line * 21;
+            if (top < editor.scrollTop) editor.scrollTop = top;
+            else if (top + 21 > editor.scrollTop + editor.clientHeight)
+              editor.scrollTop = top + 21 - editor.clientHeight;
+            syncBooleanScroll();
+          };
+          checkbox.onchange = () => {
+            // Replace just this token, preserving the rest of the JSON text.
+            editor.setRangeText(
+              String(checkbox.checked),
+              range.start,
+              range.end,
+              'preserve',
+            );
+            editor.dispatchEvent(new Event('input'));
+            toggles
+              .querySelector(`[data-start="${range.start}"]`)
+              ?.focus({ preventScroll: true });
+          };
+          toggles.append(checkbox);
+        }
+        $('boolean-gutter').style.flexBasis = `${width}px`;
+        syncBooleanScroll();
+      }
+      function syncBooleanScroll() {
+        $(
+          'boolean-toggles',
+        ).style.transform = `translateY(${-editor.scrollTop}px)`;
+      }
+      editor.addEventListener('scroll', syncBooleanScroll);
+      $('boolean-gutter').addEventListener(
+        'wheel',
+        (event) => {
+          if (event.ctrlKey) return;
+          const scale =
+            event.deltaMode === 1
+              ? 21
+              : event.deltaMode === 2
+              ? editor.clientHeight
+              : 1;
+          const previous = editor.scrollTop;
+          editor.scrollTop += event.deltaY * scale;
+          if (editor.scrollTop !== previous) event.preventDefault();
+        },
+        { passive: false },
+      );
+      function updateEditor() {
+        const tools = $('field-tools');
+        tools.replaceChildren();
+        let config;
+        try {
+          config = readConfig();
+          $('config-error').textContent = '';
+          editor.setAttribute('aria-invalid', 'false');
+        } catch (error) {
+          $('config-error').textContent = error.message;
+          editor.setAttribute('aria-invalid', 'true');
+        }
+        for (const id of ['apply', 'format-config', 'add-field', 'add-option'])
+          $(id).disabled = !config;
+        const ranges = config ? propertyRanges() : undefined;
+        renderBooleanCheckboxes(ranges);
+        if (!config) return;
+        const picker = $('add-option');
+        const previous = picker.value;
+        picker.replaceChildren();
+        for (const path of fields.keys()) {
+          let target = config;
+          const keys = path.split('.');
+          const key = keys.pop();
+          for (const part of keys) {
+            if (target === undefined) break;
+            target =
+              target !== null &&
+              typeof target === 'object' &&
+              !Array.isArray(target)
+                ? target[part]
+                : null;
+          }
+          // Never replace an existing scalar parent just to add a child.
+          if (
+            target === null ||
+            (target !== undefined &&
+              (typeof target !== 'object' ||
+                Array.isArray(target) ||
+                Object.hasOwn(target, key)))
+          )
+            continue;
+          picker.add(new Option(path, path));
+        }
+        if ([...picker.options].some((option) => option.value === previous))
+          picker.value = previous;
+        $('add-field').disabled = picker.options.length === 0;
+        const cursor = editor.selectionStart;
+        const selectedField = ranges
+          .filter((range) => cursor >= range.keyStart && cursor <= range.end)
+          .sort((a, b) => a.end - a.keyStart - (b.end - b.keyStart))[0];
+        if (!selectedField) {
+          tools.textContent = 'Select a JSON field to show its controls.';
+          return;
+        }
+        const path = selectedField.path;
+        const label = document.createElement('code');
+        label.textContent = path.join('.');
+        tools.append(label);
+        const current = path.reduce((value, key) => value[key], config);
+        const spec = fields.get(path.join('.'));
+        if (spec?.choices) {
+          const choices = document.createElement('select');
+          choices.setAttribute('aria-label', `${path.join('.')} value`);
+          const values = [...spec.choices];
+          if (
+            !values.some(
+              (value) => JSON.stringify(value) === JSON.stringify(current),
+            )
+          )
+            values.unshift(current);
+          values.forEach((value, index) =>
+            choices.add(new Option(JSON.stringify(value), String(index))),
+          );
+          choices.value = String(
+            values.findIndex(
+              (value) => JSON.stringify(value) === JSON.stringify(current),
+            ),
+          );
+          choices.onchange = () =>
+            changeField(path, values[Number(choices.value)]);
+          tools.append(choices);
+        }
+        const remove = document.createElement('button');
+        remove.textContent = 'Remove option';
+        remove.onclick = () => changeField(path, undefined, true);
+        tools.append(remove);
+      }
+      function changeField(path, value, remove = false) {
+        const config = readConfig();
+        let target = config;
+        for (const key of path.slice(0, -1)) {
+          if (!Object.hasOwn(target, key))
+            Object.defineProperty(target, key, {
+              value: {},
+              enumerable: true,
+              configurable: true,
+              writable: true,
+            });
+          target = target[key];
+        }
+        const key = path[path.length - 1];
+        if (remove && Array.isArray(target)) target.splice(Number(key), 1);
+        else if (remove) delete target[key];
+        else
+          Object.defineProperty(target, key, {
+            value,
+            enumerable: true,
+            configurable: true,
+            writable: true,
+          });
+        editor.value = JSON.stringify(config, null, 2);
+        const range = propertyRanges().find(
+          (range) => JSON.stringify(range.path) === JSON.stringify(path),
+        );
+        editor.focus();
+        editor.setSelectionRange(range?.start || 0, range?.start || 0);
+        updateEditor();
+        status('Settings changed — Apply & restart to use them.');
+      }
+      editor.value = JSON.stringify(
+        {
+          maskInputOptions: Object.fromEntries(
+            inputTypes.map((type) => [type, true]),
+          ),
+          sampling: { mousemove: true, mouseInteraction: true, input: 'all' },
+        },
+        null,
+        2,
+      );
+      editor.addEventListener('input', () => {
+        updateEditor();
+        status('Settings changed — Apply & restart to use them.');
+      });
+      for (const event of ['click', 'keyup', 'select'])
+        editor.addEventListener(event, updateEditor);
+      $('add-field').onclick = () => {
+        const path = $('add-option').value;
+        if (path) changeField(path.split('.'), fields.get(path).example);
+      };
+      $('format-config').onclick = () => {
+        editor.value = JSON.stringify(readConfig(), null, 2);
+        updateEditor();
+      };
+      updateEditor();
+      window.addEventListener('beforeunload', stop);
+      restart();
+    </script>
+  </body>
+</html>
