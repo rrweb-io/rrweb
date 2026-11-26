@@ -218,7 +218,7 @@ async function postData(
   postUrl: string,
   publicApiKey: string,
   buffer: ArrayQueue<string> | string,
-  keepaliveForUnload = false,
+  unloading = false,
 ) {
   const keepaliveLimit = 65000;
   // eslint-disable-next-line compat/compat -- browser-client targets modern browsers with UTF-8 encoding support.
@@ -272,7 +272,7 @@ async function postData(
           Authorization: `Bearer ${publicApiKey}`,
         },
         body,
-        keepalive: keepaliveForUnload && bodySize < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
+        keepalive: unloading && bodySize < keepaliveLimit,
       });
     } catch (error) {
       if (buffer instanceof ArrayQueue) {
