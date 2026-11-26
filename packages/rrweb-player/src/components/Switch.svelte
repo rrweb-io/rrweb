@@ -1,5 +1,4 @@
 <script lang="ts">
-  export let disabled: boolean;
   export let checked: boolean;
   export let id: string;
   export let label: string;
@@ -10,10 +9,6 @@
     height: 1em;
     display: flex;
     align-items: center;
-  }
-
-  .switch.disabled {
-    opacity: 0.5;
   }
 
   .label {
@@ -31,10 +26,6 @@
     position: relative;
     cursor: pointer;
     display: block;
-  }
-
-  .switch.disabled label {
-    cursor: not-allowed;
   }
 
   .switch label:before {
@@ -72,8 +63,8 @@
   }
 </style>
 
-<div class="switch" class:disabled>
-  <input type="checkbox" {id} bind:checked {disabled} />
+<div class="switch">
+  <input type="checkbox" {id} bind:checked />
   <label for={id} />
   <span class="label">{label}</span>
 </div>

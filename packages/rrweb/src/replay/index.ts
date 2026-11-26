@@ -28,7 +28,7 @@ import type {
   Mirror as RRDOMMirror,
 } from 'rrdom';
 import * as mittProxy from 'mitt';
-import { Timer, addDelay } from './timer';
+import { Timer, addDelay, getEarliestTimestamp } from './timer';
 import {
   createPlayerService,
   createSpeedService,
@@ -455,7 +455,7 @@ export class Replayer {
       ] = config[key as keyof playerConfig];
     });
     if (!this.config.skipInactive) {
-      this.backToNormal();
+      this.backToNormalSpeed();
     }
     if (typeof config.speed !== 'undefined') {
       this.speedService.send({
@@ -720,7 +720,7 @@ export class Replayer {
       if (this.timer.hasUpcomingActions()) return; // if added in 50ms window
       if (!this.service.state.matches('playing')) return;
       this.service.send('END');
-      this.backToNormal();
+      this.backToNormalSpeed();
       this.emitter.emit(ReplayerEvents.Finish);
     }, 50);
   };
@@ -790,21 +790,15 @@ export class Replayer {
   };
 
   private applyEventsSynchronously = (events: Array<eventWithTime>) => {
+    let gapStart = null;
     for (const event of events) {
-      switch (event.type) {
-        case EventType.DomContentLoaded:
-        case EventType.Load:
-          continue;
-        case EventType.FullSnapshot:
-        case EventType.Meta:
-        case EventType.Plugin:
-        case EventType.IncrementalSnapshot:
-          break;
-        default:
-          break;
+      if (gapStart === null || this.isUserInteraction(event)) {
+        gapStart = event.timestamp;
       }
-      const castFn = this.getCastFn(event, true);
-      castFn();
+      this.getCastFn(event, true)();
+    }
+    if (this.config.skipInactive && gapStart !== null) {
+      this.checkSkipping(gapStart);
     }
   };
 
@@ -855,45 +849,6 @@ export class Replayer {
       case EventType.IncrementalSnapshot:
         castFn = () => {
           this.applyIncremental(event, isSync);
-          if (isSync) {
-            // do not check skip in sync
-            return;
-          }
-          if (event === this.nextUserInteractionEvent) {
-            this.nextUserInteractionEvent = null;
-            this.backToNormal();
-          }
-          if (this.config.skipInactive && !this.nextUserInteractionEvent) {
-            for (const _event of this.service.state.context.events) {
-              if (_event.timestamp <= event.timestamp) {
-                continue;
-              }
-              if (this.isUserInteraction(_event)) {
-                if (
-                  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                  _event.delay! - event.delay! >
-                  this.config.inactivePeriodThreshold *
-                    this.speedService.state.context.timer.speed
-                ) {
-                  this.nextUserInteractionEvent = _event;
-                }
-                break;
-              }
-            }
-            if (this.nextUserInteractionEvent) {
-              const skipTime =
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                this.nextUserInteractionEvent.delay! - event.delay!;
-              const payload = {
-                speed: Math.min(
-                  Math.round(skipTime / SKIP_TIME_INTERVAL),
-                  this.config.maxSpeed,
-                ),
-              };
-              this.speedService.send({ type: 'FAST_FORWARD', payload });
-              this.emitter.emit(ReplayerEvents.SkipStart, payload);
-            }
-          }
         };
         break;
       default:
@@ -902,7 +857,13 @@ export class Replayer {
       if (castFn) {
         castFn();
       }
-
+      if (
+        !isSync &&
+        this.config.skipInactive &&
+        this.isUserInteraction(event)
+      ) {
+        this.checkSkipping(event.timestamp);
+      }
       for (const plugin of this.config.plugins || []) {
         if (plugin.handler) plugin.handler(event, isSync, { replayer: this });
       }
@@ -913,6 +874,50 @@ export class Replayer {
     };
     return wrappedCastFn;
   };
+
+  private checkSkipping(fromTimestamp: number) {
+    if (
+      this.nextUserInteractionEvent &&
+      this.nextUserInteractionEvent.timestamp <= fromTimestamp
+    ) {
+      this.nextUserInteractionEvent = null;
+    }
+    let nEvent: eventWithTime | null = null;
+    const { events } = this.service.state.context;
+    for (
+      let i = findEventIndex(events, fromTimestamp) + 1;
+      i < events.length;
+      i++
+    ) {
+      if (this.isUserInteraction(events[i])) {
+        nEvent = events[i];
+        break;
+      }
+    }
+    if (nEvent && nEvent !== this.nextUserInteractionEvent) {
+      const gap = getEarliestTimestamp(nEvent) - fromTimestamp;
+      const skipThreshold =
+        this.config.inactivePeriodThreshold *
+        this.speedService.state.context.normalSpeed;
+
+      if (skipThreshold < gap) {
+        const payload = {
+          speed: Math.min(
+            Math.round(gap / SKIP_TIME_INTERVAL),
+            this.config.maxSpeed,
+          ),
+        };
+        this.nextUserInteractionEvent = nEvent;
+        this.speedService.send({ type: 'FAST_FORWARD', payload });
+        this.emitter.emit(ReplayerEvents.SkipStart, payload);
+      } else {
+        this.nextUserInteractionEvent = null; // we are now in a different gap/section
+      }
+    }
+    if (!this.nextUserInteractionEvent) {
+      this.backToNormalSpeed();
+    }
+  }
 
   private rebuildFullSnapshot(
     event: fullSnapshotEvent & { timestamp: number },
@@ -2386,7 +2391,10 @@ export class Replayer {
     );
   }
 
-  private backToNormal() {
+  /**
+   * 'Normal' here means what was last selected in UI, so could be 8x
+   */
+  private backToNormalSpeed() {
     this.nextUserInteractionEvent = null;
     if (this.speedService.state.matches('normal')) {
       return;

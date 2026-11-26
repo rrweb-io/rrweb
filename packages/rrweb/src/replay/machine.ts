@@ -377,6 +377,10 @@ export function createSpeedService(context: SpeedContext) {
         },
         skipping: {
           on: {
+            FAST_FORWARD: {
+              target: 'skipping',
+              actions: ['setSpeed'],
+            },
             BACK_TO_NORMAL: {
               target: 'normal',
               actions: ['restoreSpeed'],
