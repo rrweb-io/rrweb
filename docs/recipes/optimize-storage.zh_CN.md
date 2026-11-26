@@ -60,8 +60,6 @@ record({
       Click: false,
       ContextMenu: false,
       DblClick: false,
-      Focus: false,
-      Blur: false,
       TouchStart: false,
       TouchEnd: false,
     },

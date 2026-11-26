@@ -18,6 +18,7 @@ import type {
   canvasMutationCallback,
   customElementCallback,
   eventWithTime,
+  focusInteractionCallBack,
   fontCallback,
   hooksParam,
   inputCallback,
@@ -40,7 +41,6 @@ import type {
   UnpackFn,
 } from '@rrweb/types';
 import type ProcessedNodeManager from './record/processed-node-manager';
-import type { focusInteractionCallBack } from '@rrweb/types/src';
 
 export type recordOptions<T> = {
   emit?: (e: T, isCheckout?: boolean) => void;

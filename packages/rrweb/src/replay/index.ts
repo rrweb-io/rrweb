@@ -58,7 +58,7 @@ import type {
   mutationData,
   scrollData,
   inputData,
-  mouseInteractionData,
+  focusInteractionData,
   canvasMutationData,
   styleValueWithPriority,
   mouseMovePos,
@@ -173,7 +173,7 @@ export class Replayer {
       step: number;
     }
   >();
-  private pendingFocusInteractions: mouseInteractionData[] = [];
+  private pendingFocusInteractions: focusInteractionData[] = [];
 
   // Keep the rootNode of the last hovered element. So  when hovering a new element, we can remove the last hovered element's :hover style.
   private lastHoveredRootNode: Document | ShadowRoot;
@@ -320,7 +320,7 @@ export class Replayer {
       this.pendingFocusInteractions = [];
       for (const interaction of focusInteractions) {
         const target = this.mirror.getNode(interaction.id);
-        if (target) this.replayFocusInteraction(interaction, target);
+        if (target) this.replayFocusInteraction(interaction.type, target);
       }
 
       if (this.mousePos) {
@@ -894,7 +894,7 @@ export class Replayer {
         if (prior === event) break;
         if (
           prior.type === EventType.IncrementalSnapshot &&
-          prior.data.source === IncrementalSource.MouseInteraction
+          prior.data.source === IncrementalSource.FocusInteraction
         ) {
           this.updateMaskedEditingState(prior.data);
         }
@@ -1205,6 +1205,9 @@ export class Replayer {
           });
         }
         break;
+      case IncrementalSource.FocusInteraction:
+        this.applyFocusInteraction(d);
+        break;
       case IncrementalSource.MouseInteraction: {
         /**
          * Same as the situation of missing input target.
@@ -1212,32 +1215,9 @@ export class Replayer {
         if (d.id === -1) {
           break;
         }
-        if (
-          (d.type === MouseInteractions.Focus && d.maskFocus) ||
-          (d.type === MouseInteractions.Blur &&
-            (d.maskBlur || this.maskedEditingIds.has(d.id)))
-        ) {
-          this.updateMaskedEditingState(d);
-          this.syncMaskedTypingTimer();
-        }
-        if (
-          this.usingVirtualDom &&
-          (d.type === MouseInteractions.Focus ||
-            d.type === MouseInteractions.Blur)
-        ) {
-          this.pendingFocusInteractions.push(d);
-          break;
-        }
         const target = this.mirror.getNode(d.id);
         if (!target) {
           return this.debugNodeNotFound(d, d.id);
-        }
-        if (
-          d.type === MouseInteractions.Focus ||
-          d.type === MouseInteractions.Blur
-        ) {
-          this.replayFocusInteraction(d, target);
-          break;
         }
         const event = new Event(toLowerCase(MouseInteractions[d.type]));
         this.emitter.emit(ReplayerEvents.MouseInteraction, {
@@ -1245,6 +1225,12 @@ export class Replayer {
           target,
         });
         switch (d.type) {
+          case MouseInteractions.Focus:
+            this.replayFocusInteraction('focus', target);
+            break;
+          case MouseInteractions.Blur:
+            this.replayFocusInteraction('blur', target);
+            break;
           case MouseInteractions.Click:
           case MouseInteractions.TouchStart:
           case MouseInteractions.TouchEnd:
@@ -2045,25 +2031,35 @@ export class Replayer {
     element.value = pattern.slice(offset) + pattern.slice(0, offset);
   }
 
-  private updateMaskedEditingState(data: mouseInteractionData) {
+  private updateMaskedEditingState(data: focusInteractionData) {
     if (data.id === -1) return;
-    if (data.type === MouseInteractions.Focus && data.maskFocus) {
+    if (data.type === 'focus' && data.masked) {
       this.maskedEditingIds.add(data.id);
-    } else if (data.type === MouseInteractions.Blur) {
+    } else if (data.type === 'blur') {
       this.restoreTypingIndicators(data.id);
       this.maskedEditingIds.delete(data.id);
     }
   }
 
-  private replayFocusInteraction(data: mouseInteractionData, target: Node) {
-    this.emitter.emit(ReplayerEvents.MouseInteraction, {
-      type: data.type,
-      target,
-      ...(data.maskFocus !== undefined && { maskFocus: data.maskFocus }),
-      ...(data.maskBlur !== undefined && { maskBlur: data.maskBlur }),
-    });
+  private applyFocusInteraction(data: focusInteractionData) {
+    if (data.id === -1) return;
+    this.updateMaskedEditingState(data);
+    this.syncMaskedTypingTimer();
+    if (this.usingVirtualDom) {
+      this.pendingFocusInteractions.push(data);
+      return;
+    }
+    const target = this.mirror.getNode(data.id);
+    if (!target) return this.debugNodeNotFound(data, data.id);
+    this.replayFocusInteraction(data.type, target);
+  }
+
+  private replayFocusInteraction(
+    type: focusInteractionData['type'],
+    target: Node,
+  ) {
     const element = target as HTMLElement;
-    if (data.type === MouseInteractions.Blur) {
+    if (type === 'blur') {
       element.blur?.();
     } else if (this.config.triggerFocus) {
       element.focus?.({ preventScroll: true });
@@ -2415,8 +2411,9 @@ export class Replayer {
       return false;
     }
     return (
-      event.data.source > IncrementalSource.Mutation &&
-      event.data.source <= IncrementalSource.Input
+      event.data.source === IncrementalSource.FocusInteraction ||
+      (event.data.source > IncrementalSource.Mutation &&
+        event.data.source <= IncrementalSource.Input)
     );
   }
 

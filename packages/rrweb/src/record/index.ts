@@ -1,4 +1,9 @@
-import { createMirror, type MaskInputOptions, slimDOMDefaults, snapshot, } from 'rrweb-snapshot';
+import {
+  createMirror,
+  type MaskInputOptions,
+  slimDOMDefaults,
+  snapshot,
+} from 'rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
 import {
   getWindowHeight,
@@ -11,7 +16,10 @@ import {
   on,
   polyfill,
 } from '../utils';
-import type { CrossOriginIframeMessageEventContent, recordOptions } from '../types';
+import type {
+  CrossOriginIframeMessageEventContent,
+  recordOptions,
+} from '../types';
 import {
   type adoptedStyleSheetParam,
   type annotationData,
@@ -19,6 +27,7 @@ import {
   EventType,
   type eventWithoutTime,
   type eventWithTime,
+  type focusInteractionParam,
   FocusInteractions,
   IncrementalSource,
   type listenerHandler,
@@ -30,9 +39,12 @@ import { ShadowDomManager } from './shadow-dom-manager';
 import { CanvasManager } from './observers/canvas/canvas-manager';
 import { StylesheetManager } from './stylesheet-manager';
 import ProcessedNodeManager from './processed-node-manager';
-import { callbackWrapper, registerErrorHandler, unregisterErrorHandler, } from './error-handler';
+import {
+  callbackWrapper,
+  registerErrorHandler,
+  unregisterErrorHandler,
+} from './error-handler';
 import dom from '@rrweb/utils';
-import type { focusInteractionParam } from '@rrweb/types/src';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
 

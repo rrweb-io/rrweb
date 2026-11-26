@@ -160,7 +160,8 @@ export function isUserInteraction(event: eventWithTime): boolean {
     return false;
   }
   return (
-    event.data.source > IncrementalSource.Mutation &&
-    event.data.source <= IncrementalSource.Input
+    event.data.source === IncrementalSource.FocusInteraction ||
+    (event.data.source > IncrementalSource.Mutation &&
+      event.data.source <= IncrementalSource.Input)
   );
 }

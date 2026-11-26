@@ -454,6 +454,7 @@ export enum MouseInteractions {
   Click,
   ContextMenu,
   DblClick,
+  // Preserve the event values used by recordings before FocusInteraction.
   Focus,
   Blur,
   TouchStart,
@@ -523,12 +524,9 @@ type mouseInteractionParam = {
   x?: number;
   y?: number;
   pointerType?: PointerTypes;
-  maskFocus?: boolean;
-  maskBlur?: boolean;
 };
 
 export type mouseInteractionCallBack = (d: mouseInteractionParam) => void;
-
 
 export type focusInteractionParam = {
   type: FocusInteractions;

@@ -212,51 +212,45 @@ export function isMasked(
   const tagName = toLowerCase(target.tagName) as keyof MaskInputOptions;
   return Boolean(
     maskInputOptions[tagName] ||
-    (type && maskInputOptions[type as keyof MaskInputOptions])
+      (type && maskInputOptions[type as keyof MaskInputOptions]),
   );
 }
 
-
 function initFocusObserver({
-                                        focusInteractionCb,
-                                        doc,
-                                        mirror,
-                                        blockClass,
-                                        blockSelector,
-                                        maskInputOptions,
-                                        }: observerParam): listenerHandler {
+  focusInteractionCb,
+  doc,
+  mirror,
+  blockClass,
+  blockSelector,
+  maskInputOptions,
+}: observerParam): listenerHandler {
   const HTMLElementCtor = (doc.defaultView as IWindow | null)?.HTMLElement;
 
-  function focusBlurHandler(event: Event)  {
-    const type = event.type;
-
+  const focusBlurHandler = callbackWrapper((event: Event) => {
     const target = getEventTarget(event);
     if (!HTMLElementCtor || !(target instanceof HTMLElementCtor)) {
       return;
     }
     if (isBlocked(target, blockClass, blockSelector, true)) {
-      return true;
+      return;
     }
 
     const id = mirror.getId(target);
-
-    const masked = isMasked(target, maskInputOptions);
-
-    if (type === 'focus') {
-      focusInteractionCb({type: FocusInteractions.Focus, id, masked})
-      return
+    if (event.type === 'focus') {
+      focusInteractionCb({
+        type: FocusInteractions.Focus,
+        id,
+        masked: isMasked(target, maskInputOptions),
+      });
+    } else {
+      focusInteractionCb({ type: FocusInteractions.Blur, id });
     }
-    if (type === 'blur') {
-      focusInteractionCb({type: FocusInteractions.Blur, id})
-      return
-    }
+  });
 
-  }
-
-  const handlers : listenerHandler[] = [];
-  for (const type of ['focus', 'blur']) {
-    handlers.push(on(type, focusBlurHandler, doc))
-  }
+  const handlers = [
+    on('focus', focusBlurHandler, doc),
+    on('blur', focusBlurHandler, doc),
+  ];
 
   return callbackWrapper(() => {
     handlers.forEach((remove) => remove());
@@ -356,6 +350,8 @@ function initMouseInteractionObserver({
       (key) =>
         Number.isNaN(Number(key)) &&
         !key.endsWith('_Departed') &&
+        key !== 'Focus' &&
+        key !== 'Blur' &&
         disableMap[key] !== false,
     )
     .forEach((eventKey: keyof typeof MouseInteractions) => {
@@ -517,7 +513,7 @@ function initInputObserver({
       target,
       userTriggeredOnInput
         ? { text, isChecked, userTriggered }
-        : { text, isChecked }
+        : { text, isChecked },
     );
     // if a radio was checked
     // the other radios with the same name attribute will be unchecked.
