@@ -123,6 +123,7 @@ function record<T = eventWithTime>(
     : true;
 
   let passEmitsToParent = false;
+  let answeringSnapshotRequest = false;
   if (!inEmittingFrame) {
     try {
       // throws if parent is cross-origin
@@ -228,6 +229,7 @@ function record<T = eventWithTime>(
         origin: window.location.origin,
         isCheckout,
       };
+      if (answeringSnapshotRequest) message.isSnapshotResponse = true;
       window.parent.postMessage(message, '*');
     }
 
@@ -603,7 +605,12 @@ function record<T = eventWithTime>(
               !isAncestorWindow(event.source)
             )
               return;
-            takeFullSnapshot();
+            answeringSnapshotRequest = true;
+            try {
+              takeFullSnapshot();
+            } finally {
+              answeringSnapshotRequest = false;
+            }
           },
           window,
         ),

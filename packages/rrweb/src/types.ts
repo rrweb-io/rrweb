@@ -227,6 +227,8 @@ export type CrossOriginIframeMessageEventContent<T = eventWithTime> = {
   // The origin of the iframe which originally emits this message. It is used to check the integrity of message and to filter out the rrweb messages which are forwarded by some sites.
   origin: string;
   isCheckout?: boolean;
+  // Set on events a child emits while answering a CrossOriginIframeSnapshotRequest.
+  isSnapshotResponse?: boolean;
 };
 export type CrossOriginIframeMessageEvent =
   MessageEvent<CrossOriginIframeMessageEventContent>;

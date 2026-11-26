@@ -418,6 +418,77 @@ describe('cross origin iframes', function (this: ISuite) {
       expect(events.filter(addsMarker)).toHaveLength(1);
     });
 
+    it('should attach the iframe once when its own full snapshot overlaps the requested one', async () => {
+      await waitForRAF(ctx.page);
+      // Stop the top frame and hold back the messages the iframe sends it, so the iframe's own full snapshot arrives only after the top frame has serialized the iframe and asked it for one.
+      await ctx.page.evaluate(() => {
+        const win = window as unknown as IWindow & {
+          heldMessages: MessageEvent[];
+          holdMessages: (event: MessageEvent) => void;
+          iframeFullSnapshots: number;
+        };
+        win.stopRecording?.();
+        win.snapshots = [];
+        win.heldMessages = [];
+        win.iframeFullSnapshots = 0;
+        win.holdMessages = (event) => {
+          if ((event.data as { type?: string })?.type !== 'rrweb') return;
+          event.stopImmediatePropagation();
+          win.heldMessages.push(event);
+        };
+        window.addEventListener('message', win.holdMessages, true);
+        window.addEventListener('message', (event) => {
+          const data = event.data as { type?: string; event?: eventWithTime };
+          if (data?.type === 'rrweb' && data.event?.type === 2)
+            win.iframeFullSnapshots++;
+        });
+      });
+      const frame = ctx.page.mainFrame().childFrames()[0];
+      await frame.evaluate(() => {
+        (window as unknown as IWindow).rrweb.record.takeFullSnapshot();
+      });
+      await ctx.page.waitForFunction(
+        () =>
+          (
+            window as unknown as { heldMessages: MessageEvent[] }
+          ).heldMessages.some(
+            (event) =>
+              (event.data as { event: eventWithTime }).event.type === 2,
+          ),
+        { timeout: 10_000 },
+      );
+      await ctx.page.evaluate(() => {
+        const win = window as unknown as IWindow & {
+          heldMessages: MessageEvent[];
+          holdMessages: (event: MessageEvent) => void;
+        };
+        win.stopRecording = win.rrweb.record({
+          recordCrossOriginIframes: true,
+          emit(event) {
+            win.snapshots.push(event);
+          },
+        });
+        window.removeEventListener('message', win.holdMessages, true);
+        for (const { data, origin, source } of win.heldMessages)
+          window.dispatchEvent(
+            new MessageEvent('message', { data, origin, source }),
+          );
+      });
+      // the held full snapshot, then the iframe's answer to the top frame's request
+      await ctx.page.waitForFunction(
+        () =>
+          (window as unknown as { iframeFullSnapshots: number })
+            .iframeFullSnapshots >= 2,
+        { timeout: 10_000 },
+      );
+      await waitForRAF(ctx.page);
+
+      const events = (await ctx.page.evaluate(
+        'window.snapshots',
+      )) as eventWithTime[];
+      expect(attachesAfterLastFullSnapshot(events)).toHaveLength(1);
+    });
+
     it('should map input events correctly', async () => {
       const frame = ctx.page.mainFrame().childFrames()[0];
       await frame.type('input[type="text"]', 'test');

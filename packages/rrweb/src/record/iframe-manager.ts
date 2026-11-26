@@ -19,6 +19,9 @@ import { on } from '../utils';
 
 export class IframeManager {
   private iframes: WeakMap<HTMLIFrameElement, true> = new WeakMap();
+  // Whether a full snapshot of the iframe was attached since this frame last asked it for one.
+  private attachedSinceRequest: WeakMap<HTMLIFrameElement, boolean> =
+    new WeakMap();
   private crossOriginIframeMap: WeakMap<MessageEventSource, HTMLIFrameElement> =
     new WeakMap();
   public crossOriginIframeMirror = new CrossOriginIframeMirror(genId);
@@ -80,6 +83,7 @@ export class IframeManager {
       !iframeEl.contentWindow
     )
       return;
+    this.attachedSinceRequest.set(iframeEl, false);
     const message: CrossOriginIframeSnapshotRequest = {
       type: 'rrweb-snapshot-request',
     };
@@ -181,6 +185,16 @@ export class IframeManager {
 
     const iframeEl = this.crossOriginIframeMap.get(message.source);
     if (!iframeEl) return;
+
+    if (crossOriginMessageEvent.data.event.type === EventType.FullSnapshot) {
+      // The child already sent a full snapshot of its own since our request (e.g. it started recording at the same time), so the answer is a duplicate.
+      if (
+        crossOriginMessageEvent.data.isSnapshotResponse &&
+        this.attachedSinceRequest.get(iframeEl)
+      )
+        return;
+      this.attachedSinceRequest.set(iframeEl, true);
+    }
 
     const transformedEvent = this.transformCrossOriginEvent(
       iframeEl,
