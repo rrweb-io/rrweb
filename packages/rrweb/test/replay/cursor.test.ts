@@ -121,6 +121,17 @@ describe('replayer cursor', () => {
     ]);
   });
 
+  it('shows the default arrow before the first pointer event', async () => {
+    const seen = await page.evaluate(`(async () => {
+      const cursorOf = (replayer) =>
+        replayer.wrapper.querySelector('.replayer-mouse').dataset.cursor ?? 'none';
+      const dot = new rrweb.Replayer(events);
+      const state = new rrweb.Replayer(events, { cursor: { mode: 'state' } });
+      return [cursorOf(dot), cursorOf(state)];
+    })()`);
+    expect(seen).toEqual(['none', 'default']);
+  });
+
   it('follows the current pointer in a session with touch events', async () => {
     const seen = await page.evaluate(`(async () => {
       const id = events.find((e) => e.type === 3 && e.data.source === 1).data.positions[0].id;
@@ -254,7 +265,9 @@ describe('replayer cursor', () => {
       }
       return { changes, cursors, pointer: m.dataset.pointer };
     })()`);
-    expect(r.cursors).toEqual(['pointer', 'text', 'default']);
+    // The default arrow shows from the start; CursorChange fires only for
+    // the cursors the pointer resolves.
+    expect(r.cursors).toEqual(['default', 'pointer', 'text', 'default']);
     expect(r.changes).toEqual([
       'pointer/mouse/false',
       'text/mouse/false',

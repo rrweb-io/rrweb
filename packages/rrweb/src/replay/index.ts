@@ -774,6 +774,15 @@ export class Replayer {
     this.mouse = document.createElement('div');
     this.mouse.classList.add('replayer-mouse');
     this.wrapper.appendChild(this.mouse);
+    // Before the first pointer event there is no element to read a cursor
+    // from, so show the pack's default arrow rather than the dot mode image.
+    if (this.config.cursor?.mode === 'state')
+      this.showCursor({
+        cursor: 'default',
+        pointerType: 'mouse',
+        pressed: false,
+        target: null,
+      });
 
     if (this.config.mouseTail !== false) {
       this.mouseTail = document.createElement('canvas');
@@ -2429,16 +2438,20 @@ export class Replayer {
       )
         return;
       this.cursorState = state;
-      const { url, hotspot } =
-        (this.config.cursor?.pack || defaultCursorPack).resolve(state) ||
-        defaultCursorPack.resolve({ ...state, cursor: 'default' })!;
-      this.mouse.dataset.cursor = state.cursor;
-      this.mouse.dataset.pointer = state.pointerType;
-      this.mouse.style.setProperty('--rr-cursor', `url("${url}")`);
-      this.mouse.style.setProperty('--rr-cursor-x', `${hotspot[0]}`);
-      this.mouse.style.setProperty('--rr-cursor-y', `${hotspot[1]}`);
+      this.showCursor(state);
       this.emitter.emit(ReplayerEvents.CursorChange, state);
     });
+  }
+
+  private showCursor(state: CursorState) {
+    const { url, hotspot } =
+      (this.config.cursor?.pack || defaultCursorPack).resolve(state) ||
+      defaultCursorPack.resolve({ ...state, cursor: 'default' })!;
+    this.mouse.dataset.cursor = state.cursor;
+    this.mouse.dataset.pointer = state.pointerType;
+    this.mouse.style.setProperty('--rr-cursor', `url("${url}")`);
+    this.mouse.style.setProperty('--rr-cursor-x', `${hotspot[0]}`);
+    this.mouse.style.setProperty('--rr-cursor-y', `${hotspot[1]}`);
   }
 
   private drawMouseTail(position: { x: number; y: number }) {
