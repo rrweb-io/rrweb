@@ -1656,9 +1656,10 @@ exports[`record integration tests > can record and replay textarea mutations cor
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 22
+      \\"source\\": 17,
+      \\"id\\": 22,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -2486,9 +2487,10 @@ exports[`record integration tests > can record clicks 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 21
+      \\"source\\": 17,
+      \\"id\\": 21,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -2999,9 +3001,10 @@ exports[`record integration tests > can record form interactions 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 22
+      \\"source\\": 17,
+      \\"id\\": 22,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -3051,17 +3054,18 @@ exports[`record integration tests > can record form interactions 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 22
+      \\"source\\": 17,
+      \\"id\\": 22,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 27
+      \\"source\\": 17,
+      \\"id\\": 27,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -3110,17 +3114,18 @@ exports[`record integration tests > can record form interactions 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 27
+      \\"source\\": 17,
+      \\"id\\": 27,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 37
+      \\"source\\": 17,
+      \\"id\\": 37,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -3152,17 +3157,18 @@ exports[`record integration tests > can record form interactions 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 37
+      \\"source\\": 17,
+      \\"id\\": 37,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 42
+      \\"source\\": 17,
+      \\"id\\": 42,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -3827,9 +3833,10 @@ exports[`record integration tests > can record node mutations 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 42
+      \\"source\\": 17,
+      \\"id\\": 42,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -4983,9 +4990,10 @@ exports[`record integration tests > can use maskInputOptions to configure which 
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 22
+      \\"source\\": 17,
+      \\"id\\": 22,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -5035,17 +5043,18 @@ exports[`record integration tests > can use maskInputOptions to configure which 
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 22
+      \\"source\\": 17,
+      \\"id\\": 22,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 27
+      \\"source\\": 17,
+      \\"id\\": 27,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -5094,17 +5103,18 @@ exports[`record integration tests > can use maskInputOptions to configure which 
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 27
+      \\"source\\": 17,
+      \\"id\\": 27,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 37
+      \\"source\\": 17,
+      \\"id\\": 37,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -5136,17 +5146,18 @@ exports[`record integration tests > can use maskInputOptions to configure which 
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 37
+      \\"source\\": 17,
+      \\"id\\": 37,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 42
+      \\"source\\": 17,
+      \\"id\\": 42,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -5269,17 +5280,18 @@ exports[`record integration tests > can use maskInputOptions to configure which 
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 42
+      \\"source\\": 17,
+      \\"id\\": 42,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 59
+      \\"source\\": 17,
+      \\"id\\": 59,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": true
     }
   },
   {
@@ -6075,9 +6087,10 @@ exports[`record integration tests > mutations should work when blocked class is 
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 42
+      \\"source\\": 17,
+      \\"id\\": 42,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -6199,17 +6212,18 @@ exports[`record integration tests > mutations should work when blocked class is 
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 42
+      \\"source\\": 17,
+      \\"id\\": 42,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 68
+      \\"source\\": 17,
+      \\"id\\": 68,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -6810,9 +6824,10 @@ exports[`record integration tests > should mask inputs via function call 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 22
+      \\"source\\": 17,
+      \\"id\\": 22,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": true
     }
   },
   {
@@ -6862,17 +6877,18 @@ exports[`record integration tests > should mask inputs via function call 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 22
+      \\"source\\": 17,
+      \\"id\\": 22,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 27
+      \\"source\\": 17,
+      \\"id\\": 27,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -6921,17 +6937,18 @@ exports[`record integration tests > should mask inputs via function call 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 27
+      \\"source\\": 17,
+      \\"id\\": 27,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 37
+      \\"source\\": 17,
+      \\"id\\": 37,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -6963,17 +6980,18 @@ exports[`record integration tests > should mask inputs via function call 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 37
+      \\"source\\": 17,
+      \\"id\\": 37,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 59
+      \\"source\\": 17,
+      \\"id\\": 59,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": true
     }
   },
   {
@@ -7051,17 +7069,18 @@ exports[`record integration tests > should mask inputs via function call 1`] = `
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 59
+      \\"source\\": 17,
+      \\"id\\": 59,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 42
+      \\"source\\": 17,
+      \\"id\\": 42,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": true
     }
   },
   {
@@ -7411,9 +7430,10 @@ exports[`record integration tests > should mask password value attribute with ma
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 18
+      \\"source\\": 17,
+      \\"id\\": 18,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": true
     }
   },
   {
@@ -7481,17 +7501,18 @@ exports[`record integration tests > should mask password value attribute with ma
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 18
+      \\"source\\": 17,
+      \\"id\\": 18,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 20
+      \\"source\\": 17,
+      \\"id\\": 20,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -7548,17 +7569,18 @@ exports[`record integration tests > should mask password value attribute with ma
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 20
+      \\"source\\": 17,
+      \\"id\\": 20,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 18
+      \\"source\\": 17,
+      \\"id\\": 18,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": true
     }
   },
   {
@@ -7590,17 +7612,18 @@ exports[`record integration tests > should mask password value attribute with ma
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 18
+      \\"source\\": 17,
+      \\"id\\": 18,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 20
+      \\"source\\": 17,
+      \\"id\\": 20,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -9663,41 +9686,44 @@ exports[`record integration tests > should not record input events on ignored el
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 22
+      \\"source\\": 17,
+      \\"id\\": 22,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 22
+      \\"source\\": 17,
+      \\"id\\": 22,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 27
+      \\"source\\": 17,
+      \\"id\\": 27,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 27
+      \\"source\\": 17,
+      \\"id\\": 27,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 32
+      \\"source\\": 17,
+      \\"id\\": 32,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -10015,9 +10041,10 @@ exports[`record integration tests > should not record input values if dynamicall
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 22
+      \\"source\\": 17,
+      \\"id\\": 22,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": true
     }
   },
   {
@@ -10050,17 +10077,18 @@ exports[`record integration tests > should not record input values if dynamicall
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 22
+      \\"source\\": 17,
+      \\"id\\": 22,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 21
+      \\"source\\": 17,
+      \\"id\\": 21,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": true
     }
   },
   {
@@ -10638,9 +10666,10 @@ exports[`record integration tests > should not record input values if maskAllInp
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 22
+      \\"source\\": 17,
+      \\"id\\": 22,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": true
     }
   },
   {
@@ -10690,17 +10719,18 @@ exports[`record integration tests > should not record input values if maskAllInp
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 22
+      \\"source\\": 17,
+      \\"id\\": 22,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 27
+      \\"source\\": 17,
+      \\"id\\": 27,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -10749,17 +10779,18 @@ exports[`record integration tests > should not record input values if maskAllInp
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 27
+      \\"source\\": 17,
+      \\"id\\": 27,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 37
+      \\"source\\": 17,
+      \\"id\\": 37,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -10791,17 +10822,18 @@ exports[`record integration tests > should not record input values if maskAllInp
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 37
+      \\"source\\": 17,
+      \\"id\\": 37,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 59
+      \\"source\\": 17,
+      \\"id\\": 59,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": true
     }
   },
   {
@@ -10879,17 +10911,18 @@ exports[`record integration tests > should not record input values if maskAllInp
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 59
+      \\"source\\": 17,
+      \\"id\\": 59,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 42
+      \\"source\\": 17,
+      \\"id\\": 42,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": true
     }
   },
   {
@@ -13752,9 +13785,10 @@ exports[`record integration tests > should record input userTriggered values if 
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 22
+      \\"source\\": 17,
+      \\"id\\": 22,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -13808,17 +13842,18 @@ exports[`record integration tests > should record input userTriggered values if 
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 22
+      \\"source\\": 17,
+      \\"id\\": 22,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 27
+      \\"source\\": 17,
+      \\"id\\": 27,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -13869,17 +13904,18 @@ exports[`record integration tests > should record input userTriggered values if 
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 27
+      \\"source\\": 17,
+      \\"id\\": 27,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 37
+      \\"source\\": 17,
+      \\"id\\": 37,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -13912,17 +13948,18 @@ exports[`record integration tests > should record input userTriggered values if 
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 37
+      \\"source\\": 17,
+      \\"id\\": 37,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 59
+      \\"source\\": 17,
+      \\"id\\": 59,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": true
     }
   },
   {
@@ -14008,17 +14045,18 @@ exports[`record integration tests > should record input userTriggered values if 
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 59
+      \\"source\\": 17,
+      \\"id\\": 59,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 42
+      \\"source\\": 17,
+      \\"id\\": 42,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {

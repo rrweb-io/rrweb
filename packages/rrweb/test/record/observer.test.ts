@@ -2,12 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, expect, it } from 'vitest';
-import {
-  EventType,
-  IncrementalSource,
-  MouseInteractions,
-  type eventWithTime,
-} from '@rrweb/types';
+import { EventType, IncrementalSource, type eventWithTime } from '@rrweb/types';
 import record from '../../src/record';
 import { isMasked } from '../../src/record/observer';
 
@@ -52,6 +47,11 @@ it.each([
     options: { maskInputOptions: { text: true } },
     state: 'masked',
   },
+  {
+    name: 'mouse interaction sampling disabled',
+    options: { maskAllInputs: true, sampling: { mouseInteraction: false } },
+    state: 'masked',
+  },
   { name: 'rr-mask', html: '<input class="rr-mask">', state: 'unmasked' },
   {
     name: 'maskTextSelector',
@@ -91,7 +91,8 @@ it.each([
         .filter(
           (event) =>
             event.type === EventType.IncrementalSnapshot &&
-            event.data.source === IncrementalSource.MouseInteraction,
+            (event.data.source === IncrementalSource.FocusInteraction ||
+              event.data.source === IncrementalSource.MouseInteraction),
         )
         .map((event) => event.data);
       if (state === 'blocked') {
@@ -102,16 +103,15 @@ it.each([
       const id = record.mirror.getId(input);
       expect(interactions).toEqual([
         {
-          source: IncrementalSource.MouseInteraction,
-          type: MouseInteractions.Focus,
+          source: IncrementalSource.FocusInteraction,
+          type: 'focus',
           id,
-          ...(masked && { maskFocus: true }),
+          masked,
         },
         {
-          source: IncrementalSource.MouseInteraction,
-          type: MouseInteractions.Blur,
+          source: IncrementalSource.FocusInteraction,
+          type: 'blur',
           id,
-          ...(masked && { maskBlur: true }),
         },
       ]);
     } finally {

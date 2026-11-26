@@ -1474,9 +1474,10 @@ exports[`cross origin iframes > form.html > should map input events correctly 1`
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 34
+      \\"source\\": 17,
+      \\"id\\": 34,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -1526,17 +1527,18 @@ exports[`cross origin iframes > form.html > should map input events correctly 1`
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 34
+      \\"source\\": 17,
+      \\"id\\": 34,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 39
+      \\"source\\": 17,
+      \\"id\\": 39,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -1585,17 +1587,18 @@ exports[`cross origin iframes > form.html > should map input events correctly 1`
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 39
+      \\"source\\": 17,
+      \\"id\\": 39,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 49
+      \\"source\\": 17,
+      \\"id\\": 49,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
@@ -1627,17 +1630,18 @@ exports[`cross origin iframes > form.html > should map input events correctly 1`
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 49
+      \\"source\\": 17,
+      \\"id\\": 49,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 71
+      \\"source\\": 17,
+      \\"id\\": 71,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": true
     }
   },
   {
@@ -1715,17 +1719,18 @@ exports[`cross origin iframes > form.html > should map input events correctly 1`
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 6,
-      \\"id\\": 71
+      \\"source\\": 17,
+      \\"id\\": 71,
+      \\"type\\": \\"blur\\"
     }
   },
   {
     \\"type\\": 3,
     \\"data\\": {
-      \\"source\\": 2,
-      \\"type\\": 5,
-      \\"id\\": 54
+      \\"source\\": 17,
+      \\"id\\": 54,
+      \\"type\\": \\"focus\\",
+      \\"masked\\": false
     }
   },
   {
