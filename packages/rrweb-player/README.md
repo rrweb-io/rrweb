@@ -72,6 +72,8 @@ new rrwebPlayer({
 | height              | 576              | the height of the replayer                                                                                        |
 | maxScale            | 1                | the maximum scale of the replayer (1 = 100%), set to 0 for unlimited                                              |
 | autoPlay            | true             | whether to autoplay                                                                                               |
+| clickToPlay         | false            | whether a click on the replay plays or pauses it                                                                  |
+| showPlayOverlay     | false            | whether a paused replay shows a play button on hover                                                              |
 | speed               | 1                | The default speed to play at                                                                                      |
 | speedOption         | [1, 2, 4, 8]     | speed options in UI                                                                                               |
 | showCaptions        | true             | display timed captions from annotation events; viewers can toggle them with CC                                    |
@@ -80,6 +82,45 @@ new rrwebPlayer({
 | tags                | {}               | customize the custom events style with a key-value map                                                            |
 | inactiveColor       | #D4D4D4          | Customize the color of inactive periods indicator in the progress bar with a valid CSS color string.              |
 | ...                 | -                | all the [rrweb Replayer options](https://github.com/rrweb-io/rrweb/blob/main/guide.md#options-1) will be bypassed |
+
+## Playback controls
+
+These features are off unless you turn them on, so upgrading changes nothing
+for an existing player.
+
+- `features.jump` adds back and forward buttons that jump by `seconds`
+  (default 10). Its `keyboard` option lets the left and right arrows jump and
+  Space play or pause: `'player'` while focus is in the player, or `'page'`
+  from anywhere on the page when this is the only visible player with page
+  shortcuts. Inputs, sliders, dialogs and other players keep their arrow keys,
+  and buttons, links and other controls keep Space. These keys need the
+  controller.
+- The `clickToPlay` prop lets a click on the replay play or pause it, with or
+  without the controller. A drag does not count as a click.
+- The `showPlayOverlay` prop shows a play button over a paused replay while the
+  pointer is on it, and touch screens show it whenever the replay is paused.
+
+```js
+const player = new rrwebPlayer({
+  target: document.body,
+  props: { events, features: { jump: { seconds: 5, keyboard: 'player' } } },
+});
+
+const unsubscribe = player.addEventListener(
+  'ui-jump',
+  ({ fromMs, toMs, source }) => {
+    console.log(fromMs, toMs, source);
+  },
+);
+player.jump('forward');
+player.$set({ features: { jump: { seconds: 15 } } });
+unsubscribe();
+```
+
+`player.jump()` works whether or not the buttons are shown. Jump events give
+replay offsets in milliseconds and name the source: `'button'`,
+`'keyboard'` or `'api'`. Jumps are ignored during live replay. While the
+replay is stalled, a jump moves the position it resumes from.
 
 ## Captions and timeline markers
 
@@ -109,7 +150,7 @@ for replay callbacks, keyboard interactions, seeking, and TypeScript usage.
 ## Methods on the rrwebPlayer component
 
 ```ts
-addEventListener(event: string, handler: (params: any) => unknown): void;
+addEventListener(event: string, handler: (params: any) => unknown): () => void;
 ```
 
 ```ts

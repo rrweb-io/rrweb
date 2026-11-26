@@ -2,6 +2,8 @@ import type { eventWithTime } from '@rrweb/types';
 import type { Replayer, playerConfig } from '@rrweb/replay';
 import type { Mirror } from 'rrweb-snapshot';
 
+import type { PlayerFeatures, JumpEvent } from './features';
+
 export type RRwebPlayerOptions = {
   target: HTMLElement;
   props: {
@@ -10,6 +12,11 @@ export type RRwebPlayerOptions = {
      * @default `[]`
      */
     events: eventWithTime[];
+    /**
+     * Opt-in player features. Every feature is off unless set.
+     * @defaultValue `{}`
+     */
+    features?: PlayerFeatures;
     /**
      * The width of the replayer
      * @defaultValue `1024`
@@ -30,6 +37,18 @@ export type RRwebPlayerOptions = {
      * @defaultValue `true`
      */
     autoPlay?: boolean;
+    /**
+     * Whether a click on the replay plays or pauses it, with or without the
+     * controller. A drag does not count as a click.
+     * @defaultValue `false`
+     */
+    clickToPlay?: boolean;
+    /**
+     * Whether a paused replay shows a play button over it while the pointer
+     * is on the replay. Touch screens show it while paused.
+     * @defaultValue `false`
+     */
+    showPlayOverlay?: boolean;
     /**
      * The default speed to play at
      * @defaultValue `1`
@@ -69,10 +88,12 @@ export type RRwebPlayerOptions = {
 };
 
 export type RRwebPlayerExpose = {
-  addEventListener: (
-    event: string,
-    handler: (params: unknown) => unknown,
-  ) => void;
+  /** Jump back or forward by `features.jump.seconds` (default 10). */
+  jump: (direction: 'back' | 'forward') => void;
+  addEventListener: {
+    (event: 'ui-jump', handler: (detail: JumpEvent) => unknown): () => void;
+    (event: string, handler: (detail: unknown) => unknown): () => void;
+  };
   addEvent: (event: eventWithTime) => void;
   getMetaData: Replayer['getMetaData'];
   getReplayer: () => Replayer;
@@ -83,7 +104,14 @@ export type RRwebPlayerExpose = {
   toggleSkipInactive: () => void;
   toggleFullscreen: () => void;
   triggerResize: () => void;
-  $set: (options: { width: number; height: number }) => void;
+  $set: (
+    options: Partial<
+      Pick<
+        RRwebPlayerOptions['props'],
+        'width' | 'height' | 'features' | 'clickToPlay' | 'showPlayOverlay'
+      >
+    >,
+  ) => void;
   play: () => void;
   pause: () => void;
   goto: (timeOffset: number, play?: boolean) => void;

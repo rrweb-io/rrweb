@@ -1,6 +1,13 @@
 import _Player from './Player.svelte';
-import type { RRwebPlayerOptions } from './types';
-export class Player extends _Player {
+import type { RRwebPlayerOptions, RRwebPlayerExpose } from './types';
+import type { SvelteComponent } from 'svelte';
+
+// A clean build initially sees Svelte's generic declaration for this import.
+const PlayerComponent = _Player as new (
+  options: RRwebPlayerOptions,
+) => SvelteComponent<RRwebPlayerOptions['props']> & RRwebPlayerExpose;
+
+export class Player extends PlayerComponent {
   constructor(
     options: {
       // for compatibility
@@ -17,3 +24,5 @@ export class Player extends _Player {
 export default Player;
 
 export type { annotationData } from '@rrweb/types';
+
+export type { PlayerFeatures, JumpEvent } from './features';
