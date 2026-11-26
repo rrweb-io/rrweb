@@ -110,3 +110,5 @@
 packages/rrweb-player/.svelte-kit/generated/*
 packages/rrweb-player/.svelte-kit/ambient.d.ts
 packages/rrweb-player/.svelte-kit/non-ambient.d.ts
+
+docs/cloud/browser-client.md
