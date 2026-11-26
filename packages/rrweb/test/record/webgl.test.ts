@@ -287,6 +287,13 @@ describe('record webgl', function (this: ISuite) {
     );
 
     it('should record snapshots', async () => {
+      const canvasEvents = () =>
+        ctx.events.filter(
+          (event) =>
+            event.type === EventType.IncrementalSnapshot &&
+            event.data.source === IncrementalSource.CanvasMutation,
+        );
+
       await ctx.page.evaluate(() => {
         const canvas = document.getElementById('canvas') as HTMLCanvasElement;
         const gl = canvas.getContext('webgl', { preserveDrawingBuffer: true })!;
@@ -297,7 +304,7 @@ describe('record webgl', function (this: ISuite) {
         gl.clear(gl.COLOR_BUFFER_BIT);
       });
 
-      await ctx.page.waitForTimeout(200); // give it some time buffer
+      await vi.waitFor(() => expect(canvasEvents()).toHaveLength(1));
 
       await ctx.page.evaluate(() => {
         const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -307,9 +314,12 @@ describe('record webgl', function (this: ISuite) {
         gl.clear(gl.COLOR_BUFFER_BIT);
       });
 
+      await vi.waitFor(() => expect(canvasEvents()).toHaveLength(2));
+      // An unchanged canvas should not emit additional frames.
       await ctx.page.waitForTimeout(200);
 
       await waitForRAF(ctx.page);
+      expect(canvasEvents()).toHaveLength(2);
 
       // should yield a frame for each change at a max of 60fps
       await assertSnapshot(stripBase64(ctx.events));

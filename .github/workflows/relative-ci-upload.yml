@@ -15,7 +15,7 @@ jobs:
       (github.event.workflow_run.event == 'pull_request' ||
       github.event.workflow_run.event == 'push')
     name: RelativeCI (${{ matrix.name }})
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     permissions:
       actions: read
     strategy:

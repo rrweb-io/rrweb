@@ -42,7 +42,6 @@ export type browserClientRecordOptions = Omit<
     emit?: recordOptions<eventWithTime>['emit'] | string;
   };
 
-type websocketListenerHandler = (i: Websocket, ev: MessageEvent) => void;
 type ServerMessage =
   | { type: 'error' }
   | { type: 'upstream-result'; ok?: boolean }
@@ -64,11 +63,15 @@ let defaultClientConfig: clientConfig = {
 };
 const sessionStorageName = 'rrweb-browser-client-recording-id';
 const wsLimit = 10e5; // this is approximate and depends on the browser, also on how unicode is encoded (we are comparing against the length of a javascript string)
+const wsReadyStateOpen = 1; // WebSocket.OPEN
+const fallbackPostDelay = 5 * 1000;
+const fallbackPostMaxDelay = 60 * 1000;
+// How long a fallback POST may run before the next tick is scheduled anyway.
+// The slow request is left running; later events go out in a new POST.
+const fallbackPostStallTimeout = 30 * 1000;
 
-let ws: Websocket | undefined;
-let wsConnectionPaused = false;
+let activeStop: ((resetRecordingId: boolean) => void) | undefined;
 
-const buffer: ArrayQueue<string> = new ArrayQueue();
 let rrwebStopFn: listenerHandler | undefined;
 let recorderReady = false;
 const pendingEvents: (ClientEvent & { timestamp: number })[] = [];
@@ -114,25 +117,9 @@ export function stop(resetRecordingId: boolean) {
     rrwebStopFn();
     rrwebStopFn = undefined;
   }
-  if (ws) {
-    const closeEvent: customEventWithTime = {
-      timestamp: nowTimestamp(),
-      type: EventType.Custom,
-      data: {
-        tag: 'close-' + (resetRecordingId ? 'permanent' : 'temporary'),
-        payload: {},
-      },
-    };
-    // Clear old events before send, so websocket-ts can buffer the close event
-    // for the HTTP fallback when the socket is not currently open.
-    buffer.clear();
-    ws.send(JSON.stringify(closeEvent));
-    ws.close();
-    wsConnectionPaused = false;
-    ws = undefined; // so `emit` can restart it again if page is unfrozen
-  } else {
-    buffer.clear();
-  }
+  const teardown = activeStop;
+  activeStop = undefined;
+  teardown?.(resetRecordingId);
   if (resetRecordingId) {
     removeRecordingId();
   }
@@ -195,113 +182,111 @@ function getSetRecordingId(): string | null {
 // set it immediately so that it will be the eventual id used
 export const getRecordingId = getSetRecordingId;
 
-function connect(
-  serverUrl: string,
-  postUrl: string,
-  publicApiKey: string,
-  messageHandler: websocketListenerHandler,
-): Websocket {
-  const wsUrl = new URL(serverUrl);
-  if (publicApiKey) {
-    wsUrl.searchParams.set('token', publicApiKey);
+function drain(buffer: ArrayQueue<string>): string[] {
+  const events: string[] = [];
+  for (
+    let eventStr = buffer.read();
+    eventStr !== undefined;
+    eventStr = buffer.read()
+  ) {
+    events.push(eventStr);
   }
-  wsUrl.protocol = wsUrl.protocol.replace('http', 'ws'); // testing/puppeteer: SyntaxError: Failed to construct 'WebSocket': The URL's scheme must be either 'ws' or 'wss'. 'https' is not allowed.
+  return events;
+}
 
-  const ws = new WebsocketBuilder(wsUrl.href)
-    .withBuffer(buffer) // when disconnected
-    .withBackoff(
-      new ExponentialBackoff(500 + Math.round(1000 * Math.random()), 6),
-    ) // retry around every 1s, 2s, 4s, 8s, maxing out with a retry every ~1minute
-    .build();
+function requeue(buffer: ArrayQueue<string>, taken: string[]) {
+  [...taken, ...drain(buffer)].forEach((eventStr) => buffer.add(eventStr));
+}
 
-  const fallbackPosting = setInterval(() => {
-    if (buffer.length()) {
-      void postData(postUrl, publicApiKey, buffer).catch((error) => {
-        clearInterval(fallbackPosting);
-        console.error('Error periodically POSTing events:', error);
-      });
-    }
-  }, 5 * 1000);
-
-  // Add event listeners
-  ws.addEventListener(WebsocketEvent.open, () => {
-    clearInterval(fallbackPosting);
-  });
-  ws.addEventListener(WebsocketEvent.message, messageHandler);
-  return ws;
+async function describePostFailure(response: Response): Promise<Error> {
+  let info = `${response.status} ${response.statusText}`;
+  if (!response.bodyUsed) {
+    let bodyTimer: ReturnType<typeof setTimeout> | undefined;
+    const body = await Promise.race([
+      response.text().catch(() => ''),
+      new Promise<string>((resolve) => {
+        bodyTimer = setTimeout(() => resolve(''), 2000);
+      }),
+    ]);
+    clearTimeout(bodyTimer);
+    if (body) info += '\nresponse body:' + body;
+  }
+  return new Error(`Bad response from POST: ${info}`);
 }
 
 async function postData(
   postUrl: string,
   publicApiKey: string,
   buffer: ArrayQueue<string> | string,
+  unloading = false,
 ) {
   const keepaliveLimit = 65000;
+  // eslint-disable-next-line compat/compat -- browser-client targets modern browsers with UTF-8 encoding support.
+  const encoder = new TextEncoder();
   let done = false;
-  const responses: Response[] = [];
   do {
     const toSend: string[] = [];
     let body;
+    let bodySize = 0;
     if (buffer instanceof ArrayQueue) {
-      // this clears the buffer so no need to call buffer.clear()
-      let sendSize = 0;
       done = true;
       for (
         let eventStr = buffer.read();
         eventStr !== undefined;
         eventStr = buffer.read()
       ) {
+        const eventSize = encoder.encode(eventStr).byteLength;
+        const separatorSize = toSend.length ? 1 : 0;
+        if (
+          toSend.length &&
+          bodySize + separatorSize + eventSize >= keepaliveLimit
+        ) {
+          requeue(buffer, [eventStr]);
+          done = false;
+          break;
+        }
         toSend.push(eventStr);
-        sendSize += eventStr.length;
-        if (sendSize > keepaliveLimit) {
+        bodySize += separatorSize + eventSize;
+        // A single oversized event cannot be split; send it without keepalive.
+        if (bodySize >= keepaliveLimit) {
           done = false;
           break;
         }
       }
+      if (toSend.length === 0) {
+        break;
+      }
       body = toSend.join('\n');
     } else {
       body = buffer;
+      bodySize = encoder.encode(body).byteLength;
       done = true;
     }
-    // eslint-disable-next-line compat/compat -- fetch is the runtime transport for POST fallback in supported browsers.
-    const response = await fetch(postUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-ndjson',
-        Authorization: `Bearer ${publicApiKey}`,
-      },
-      body,
-      keepalive: body.length < keepaliveLimit, // don't abort POST after end of session (must be under the limit)
-    });
-    responses.push(response);
+    let response: Response;
+    try {
+      // eslint-disable-next-line compat/compat -- fetch is the runtime transport for POST fallback in supported browsers.
+      response = await fetch(postUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-ndjson',
+          Authorization: `Bearer ${publicApiKey}`,
+        },
+        body,
+        keepalive: unloading && bodySize < keepaliveLimit,
+      });
+    } catch (error) {
+      if (buffer instanceof ArrayQueue) {
+        requeue(buffer, toSend);
+      }
+      throw error;
+    }
     if (!response.ok) {
       if (buffer instanceof ArrayQueue) {
-        // re-queue events in case we can reconnect next time or with ws
-        const rest: string[] = [];
-        for (
-          let eventStr = buffer.read();
-          eventStr !== undefined;
-          eventStr = buffer.read()
-        ) {
-          rest.push(eventStr);
-        }
-        [...toSend, ...rest].forEach((eventStr) => buffer.add(eventStr));
+        requeue(buffer, toSend);
       }
-      break;
-    } else if (done) {
-      break;
+      throw await describePostFailure(response);
     }
   } while (!done);
-  const badResponse = responses.find((r) => r.status >= 300);
-  if (badResponse) {
-    let badResponseInfo = `${badResponse.status} ${badResponse.statusText}`;
-    if (!badResponse.bodyUsed) {
-      badResponseInfo +=
-        '\nresponse body:' + JSON.stringify(await badResponse.json());
-    }
-    throw new Error(`Bad response from POST: ${badResponseInfo}`);
-  }
-  return responses;
 }
 
 export function start(
@@ -333,20 +318,6 @@ export function start(
   }
 
   const configEmit = recordOptions.emit;
-
-  const handleMessage = (_: Websocket, ev: MessageEvent) => {
-    const parsedEvent: unknown = JSON.parse(String(ev.data));
-    if (
-      isServerMessage(parsedEvent) &&
-      (parsedEvent.type === 'error' ||
-        (parsedEvent.type === 'upstream-result' && !parsedEvent.ok))
-    ) {
-      console.warn('received error, pausing websockets:', parsedEvent);
-      wsConnectionPaused = true;
-    } else {
-      console.log(`received message: ${String(ev.data)}`);
-    }
-  };
 
   const recordingId = getSetRecordingId();
   if (!recordingId) {
@@ -382,6 +353,100 @@ export function start(
     sURL.pathname = sURL.pathname.slice(0, -3);
   }
   const postUrl = sURL.href;
+
+  if (activeStop) {
+    stop(false);
+  }
+
+  let ws: Websocket | undefined;
+  let wsRejected = false;
+  let recorderEmitted = false;
+  const buffer = new ArrayQueue<string>();
+  let cancelFallbackPosting: () => void = () => undefined;
+
+  const handleMessage = (_: Websocket, ev: MessageEvent) => {
+    const parsedEvent: unknown = JSON.parse(String(ev.data));
+    if (
+      isServerMessage(parsedEvent) &&
+      (parsedEvent.type === 'error' ||
+        (parsedEvent.type === 'upstream-result' && !parsedEvent.ok))
+    ) {
+      console.warn('received error, pausing websockets:', parsedEvent);
+      wsRejected = true;
+    } else {
+      console.log(`received message: ${String(ev.data)}`);
+    }
+  };
+
+  const startFallbackPosting = (socket: Websocket) => {
+    let fallbackDelay = fallbackPostDelay;
+    let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
+    let fallbackStallTimer: ReturnType<typeof setTimeout> | undefined;
+    let fallbackCancelled = false;
+    const fallbackPostTick = () => {
+      if (!buffer.length()) {
+        scheduleFallbackPost();
+        return;
+      }
+      if (socket.readyState === wsReadyStateOpen && !wsRejected) {
+        drain(buffer).forEach((eventStr) => socket.send(eventStr));
+        scheduleFallbackPost();
+        return;
+      }
+      // Once a POST has stalled, the loop has moved on: its late outcome
+      // still requeues its events on failure, but no longer changes the
+      // backoff or schedules a tick.
+      let stalled = false;
+      const stallTimer = setTimeout(() => {
+        stalled = true;
+        fallbackDelay = Math.min(fallbackDelay * 2, fallbackPostMaxDelay);
+        if (!fallbackCancelled) scheduleFallbackPost();
+      }, fallbackPostStallTimeout);
+      fallbackStallTimer = stallTimer;
+      postData(postUrl, publicApiKey, buffer)
+        .then(() => {
+          if (!stalled) fallbackDelay = fallbackPostDelay;
+        })
+        .catch((error) => {
+          if (!stalled) {
+            fallbackDelay = Math.min(fallbackDelay * 2, fallbackPostMaxDelay);
+          }
+          console.error('Error periodically POSTing events:', error);
+        })
+        .finally(() => {
+          clearTimeout(stallTimer);
+          if (!stalled && !fallbackCancelled) scheduleFallbackPost();
+        });
+    };
+    const scheduleFallbackPost = () => {
+      fallbackTimer = setTimeout(fallbackPostTick, fallbackDelay);
+    };
+    scheduleFallbackPost();
+    return () => {
+      fallbackCancelled = true;
+      clearTimeout(fallbackTimer);
+      clearTimeout(fallbackStallTimer);
+    };
+  };
+
+  const connect = () => {
+    const wsUrl = new URL(serverUrl);
+    if (publicApiKey) {
+      wsUrl.searchParams.set('token', publicApiKey);
+    }
+    wsUrl.protocol = wsUrl.protocol.replace('http', 'ws');
+
+    const socket = new WebsocketBuilder(wsUrl.href)
+      .withBuffer(buffer)
+      .withBackoff(
+        new ExponentialBackoff(500 + Math.round(1000 * Math.random()), 6),
+      ) // retry around every 1s, 2s, 4s, 8s, maxing out at ~1 minute
+      .build();
+    ws = socket;
+    socket.addEventListener(WebsocketEvent.message, handleMessage);
+    cancelFallbackPosting();
+    cancelFallbackPosting = startFallbackPosting(socket);
+  };
 
   if (includePii) {
     initialPayload.visitor = getSetVisitorId();
@@ -432,14 +497,10 @@ export function start(
   buffer.add(JSON.stringify(metaEvent));
 
   const emitEvent = (event: eventWithTime) => {
+    recorderEmitted = true;
     if (!ws) {
       // don't make a connection until rrweb starts (looks at document.readyState and waits for DOMContentLoaded or load)
-      ws = connect(serverUrl, postUrl, publicApiKey, handleMessage);
-
-      ws.addEventListener(WebsocketEvent.close, () => {
-        // fallback to postData while backoff algorithm is in effect
-        wsConnectionPaused = true;
-      });
+      connect();
     }
     if (configEmit !== undefined) {
       if (typeof configEmit === 'function') {
@@ -469,8 +530,10 @@ export function start(
     // TODO: add browser native compression
     if (eventStr.length > wsLimit) {
       // Assuming wsLimit is a defined constant, and eventStr.length is intended.
-      void postData(postUrl, publicApiKey, eventStr);
-    } else if (ws && !wsConnectionPaused) {
+      void postData(postUrl, publicApiKey, eventStr).catch((error) => {
+        console.error('Error POSTing oversized event:', error);
+      });
+    } else if (ws && !wsRejected) {
       ws.send(eventStr);
     } else {
       buffer.add(eventStr);
@@ -524,54 +587,88 @@ export function start(
       );
   };
 
+  const lifecycleListeners: [string, EventListener][] = [];
+
+  activeStop = (resetRecordingId: boolean) => {
+    cancelFallbackPosting();
+    lifecycleListeners.forEach(([type, handler]) =>
+      document.removeEventListener(type, handler, false),
+    );
+    if (!recorderEmitted) {
+      ws?.close();
+      ws = undefined;
+      return;
+    }
+    const closeEvent: customEventWithTime = {
+      timestamp: nowTimestamp(),
+      type: EventType.Custom,
+      data: {
+        tag: 'close-' + (resetRecordingId ? 'permanent' : 'temporary'),
+        payload: {},
+      },
+    };
+    const closeStr = JSON.stringify(closeEvent);
+    if (ws && ws.readyState === wsReadyStateOpen && !wsRejected) {
+      const socket = ws;
+      drain(buffer).forEach((eventStr) => socket.send(eventStr));
+      socket.send(closeStr);
+    } else {
+      buffer.add(closeStr);
+    }
+    ws?.close();
+    ws = undefined;
+    if (buffer.length()) {
+      void postData(postUrl, publicApiKey, buffer, true).catch((error) => {
+        console.error('Error flushing events on stop:', error);
+      });
+    }
+  };
+
   let startWhenVisible = false;
-  if (!document.hidden) {
-    startRrwebRecording();
-  } else {
-    startWhenVisible = true;
-  }
-  if (typeof document.hidden !== 'undefined') {
-    document.addEventListener(
-      'visibilitychange',
-      () => {
-        if (!document.hidden && startWhenVisible) {
-          startRrwebRecording();
-          startWhenVisible = false;
-          return;
-        }
-        try {
-          // either of 'page-hidden' or 'page-visible'
-          record.addCustomEvent('page-' + document.visibilityState, {});
-          if (document.hidden) {
-            /*
+
+  const onVisibilityChange = () => {
+    if (!document.hidden && startWhenVisible) {
+      startRrwebRecording();
+      startWhenVisible = false;
+      return;
+    }
+    try {
+      // either of 'page-hidden' or 'page-visible'
+      record.addCustomEvent('page-' + document.visibilityState, {});
+      if (document.hidden) {
+        /*
             - a user navigates to a new page
             - switches tabs
             - closes the tab
             - minimizes or closes the browser
             - switches from the browser to a different app
           */
-            // don't record background animations etc. while page isn't visible
-            record.freezePage();
+        // don't record background animations etc. while page isn't visible
+        record.freezePage();
 
-            // document.hidden is better than beforeunload, see:
-            // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
-            if ((!ws || wsConnectionPaused) && buffer.length()) {
-              void postData(postUrl, publicApiKey, buffer);
-            }
-          }
-        } catch (e) {
-          // ignore, recording may not be active yet
+        // document.hidden is better than beforeunload, see:
+        // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
+        if (
+          (!ws || wsRejected || ws.readyState !== wsReadyStateOpen) &&
+          buffer.length()
+        ) {
+          void postData(postUrl, publicApiKey, buffer, true).catch((error) => {
+            console.error('Error POSTing events on page hide:', error);
+          });
         }
-      },
-      false,
-    );
-  }
-  document.addEventListener('freeze', () => {
+      }
+    } catch (e) {
+      // ignore, recording may not be active yet
+    }
+  };
+
+  const onFreeze = () => {
     // https://developer.chrome.com/docs/web-platform/page-lifecycle-api
     // "In particular, it's important that you ... close any open Web Socket connections
     if (ws) {
       ws.close();
-      wsConnectionPaused = false;
+      cancelFallbackPosting();
+      wsRejected = false;
       ws = undefined; // so `emit` can restart it again if page is unfrozen
     }
     if (rrwebStopFn !== undefined) {
@@ -579,7 +676,19 @@ export function start(
       rrwebStopFn();
       startWhenVisible = true;
     }
-  });
+  };
+
+  if (!document.hidden) {
+    startRrwebRecording();
+  } else {
+    startWhenVisible = true;
+  }
+  if (typeof document.hidden !== 'undefined') {
+    document.addEventListener('visibilitychange', onVisibilityChange, false);
+    lifecycleListeners.push(['visibilitychange', onVisibilityChange]);
+  }
+  document.addEventListener('freeze', onFreeze);
+  lifecycleListeners.push(['freeze', onFreeze]);
 }
 
 function addClientEvent(event: ClientEvent) {

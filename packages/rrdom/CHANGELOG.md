@@ -1,5 +1,35 @@
 # rrdom
 
+## 2.3.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb-snapshot@2.3.1
+
+## 2.3.0
+
+### Patch Changes
+
+- [#1995](https://github.com/rrweb-io/rrweb/pull/1995) [`3339038`](https://github.com/rrweb-io/rrweb/commit/3339038d31bc15491e9def76fd4f4818b2eae6aa) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - fix that after a skip forward which passed over scrolling, followed by a skip back to an earlier full snapshot, a stale scroll offset would be applied to the iframe window
+
+- Updated dependencies []:
+  - rrweb-snapshot@2.3.0
+
+## 2.2.2
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb-snapshot@2.2.2
+
+## 2.2.1
+
+### Patch Changes
+
+- Updated dependencies [[`b706a91`](https://github.com/rrweb-io/rrweb/commit/b706a91fa52966e4cd43a8f2469a35d752da6e24), [`f2cfd83`](https://github.com/rrweb-io/rrweb/commit/f2cfd8326756f6e2790d9739c4dd3e853702ef68), [`031ef19`](https://github.com/rrweb-io/rrweb/commit/031ef19a124704eb474066c6c064fdeb67deb90c), [`7cdbadf`](https://github.com/rrweb-io/rrweb/commit/7cdbadf927a33987235a80295782091522024a9b)]:
+  - rrweb-snapshot@2.2.1
+
 ## 2.2.0
 
 ### Patch Changes

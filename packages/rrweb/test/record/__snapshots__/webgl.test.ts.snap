@@ -89,6 +89,88 @@ exports[`record webgl > recordCanvas FPS > should record snapshots 1`] = `
         \\"top\\": 0
       }
     }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 9,
+      \\"id\\": 9,
+      \\"type\\": 0,
+      \\"commands\\": [
+        {
+          \\"property\\": \\"clearRect\\",
+          \\"args\\": [
+            0,
+            0,
+            300,
+            150
+          ]
+        },
+        {
+          \\"property\\": \\"drawImage\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"ImageBitmap\\",
+              \\"args\\": [
+                {
+                  \\"rr_type\\": \\"Blob\\",
+                  \\"data\\": [
+                    {
+                      \\"rr_type\\": \\"ArrayBuffer\\",
+                      \\"base64\\": \\"base64-0\\"
+                    }
+                  ],
+                  \\"type\\": \\"image/png\\"
+                }
+              ]
+            },
+            0,
+            0
+          ]
+        }
+      ]
+    }
+  },
+  {
+    \\"type\\": 3,
+    \\"data\\": {
+      \\"source\\": 9,
+      \\"id\\": 9,
+      \\"type\\": 0,
+      \\"commands\\": [
+        {
+          \\"property\\": \\"clearRect\\",
+          \\"args\\": [
+            0,
+            0,
+            300,
+            150
+          ]
+        },
+        {
+          \\"property\\": \\"drawImage\\",
+          \\"args\\": [
+            {
+              \\"rr_type\\": \\"ImageBitmap\\",
+              \\"args\\": [
+                {
+                  \\"rr_type\\": \\"Blob\\",
+                  \\"data\\": [
+                    {
+                      \\"rr_type\\": \\"ArrayBuffer\\",
+                      \\"base64\\": \\"base64-1\\"
+                    }
+                  ],
+                  \\"type\\": \\"image/png\\"
+                }
+              ]
+            },
+            0,
+            0
+          ]
+        }
+      ]
+    }
   }
 ]"
 `;

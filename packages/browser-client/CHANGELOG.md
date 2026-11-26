@@ -1,5 +1,47 @@
 # @rrweb/browser-client
 
+## 2.3.1
+
+### Patch Changes
+
+- [#2016](https://github.com/rrweb-io/rrweb/pull/2016) [`b91b66c`](https://github.com/rrweb-io/rrweb/commit/b91b66cc2704047417eeabced1cc84072ed294b2) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Resume sending over the WebSocket after it reconnects, keep the fallback POST timer running for the life of the connection, keep events when a fallback POST fails at the network level, keep in-flight fallback POSTs from leaking events between recordings across stop()/start(), flush queued events (and the close event) under the current recording id on stop() instead of discarding them, and keep the fallback POSTing later events when an earlier POST never answers
+
+- Updated dependencies []:
+  - rrweb@2.3.1
+  - @rrweb/record@2.3.1
+  - @rrweb/types@2.3.1
+  - @rrweb/utils@2.3.1
+
+## 2.3.0
+
+### Patch Changes
+
+- Updated dependencies [[`41a9117`](https://github.com/rrweb-io/rrweb/commit/41a9117f397125e0614c25c3ef7149634c419b5b), [`41a9117`](https://github.com/rrweb-io/rrweb/commit/41a9117f397125e0614c25c3ef7149634c419b5b), [`9b9b9dd`](https://github.com/rrweb-io/rrweb/commit/9b9b9dd868ed369c2718d6cf581fa1abf7f0d63f)]:
+  - rrweb@2.3.0
+  - @rrweb/record@2.3.0
+  - @rrweb/types@2.3.0
+  - @rrweb/utils@2.3.0
+
+## 2.2.2
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb@2.2.2
+  - @rrweb/record@2.2.2
+  - @rrweb/types@2.2.2
+  - @rrweb/utils@2.2.2
+
+## 2.2.1
+
+### Patch Changes
+
+- Updated dependencies [[`f2cfd83`](https://github.com/rrweb-io/rrweb/commit/f2cfd8326756f6e2790d9739c4dd3e853702ef68), [`339683f`](https://github.com/rrweb-io/rrweb/commit/339683f34bf2dd5df2e7cc18fe59fb924b65661b), [`031ef19`](https://github.com/rrweb-io/rrweb/commit/031ef19a124704eb474066c6c064fdeb67deb90c), [`2bc4f89`](https://github.com/rrweb-io/rrweb/commit/2bc4f89beb7f99a987817703031e3a15c75d0c10)]:
+  - @rrweb/record@2.2.1
+  - rrweb@2.2.1
+  - @rrweb/utils@2.2.1
+  - @rrweb/types@2.2.1
+
 ## 2.2.0
 
 ### Minor Changes

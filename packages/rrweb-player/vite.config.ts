@@ -74,6 +74,7 @@ const baseConfig = config(
   'rrwebPlayer',
   {
     plugins: [viteSvelteDts(), ...sveltePlugins],
+    umdExport: 'default',
   },
 );
 
