@@ -12,6 +12,7 @@ The plugin API is designed to enable extending the functionality of rrweb withou
 - [@rrweb/rrweb-plugin-canvas-webrtc-replay](packages/plugins/rrweb-plugin-canvas-webrtc-replay): A plugin for playing streamed `<canvas>` via WebRTC.
 - [@rrweb/rrweb-plugin-network-record](packages/plugins/rrweb-plugin-network-record): A plugin for recording network requests (xhr/fetch).
 - [@rrweb/rrweb-plugin-network-replay](packages/plugins/rrweb-plugin-network-replay): A plugin for replaying network requests (xhr/fetch).
+- [@rrweb/rrweb-plugin-keydown-record](packages/plugins/rrweb-plugin-keydown-record): A plugin for recording key presses that leave no input event.
 
 ## Interface
 
