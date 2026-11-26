@@ -1,5 +1,23 @@
 # @rrweb/replay
 
+## 2.3.0
+
+### Minor Changes
+
+- [#2031](https://github.com/rrweb-io/rrweb/pull/2031) [`41a9117`](https://github.com/rrweb-io/rrweb/commit/41a9117f397125e0614c25c3ef7149634c419b5b) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Introduce a STALL state in the Replayer to support pausing replay programmatically (e.g. for confirmation or buffering)
+
+### Patch Changes
+
+- [#2031](https://github.com/rrweb-io/rrweb/pull/2031) [`41a9117`](https://github.com/rrweb-io/rrweb/commit/41a9117f397125e0614c25c3ef7149634c419b5b) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - Fixes to Replayer.addEvent to better define how it applies events in a non-live context
+
+- [#2010](https://github.com/rrweb-io/rrweb/pull/2010) [`9b9b9dd`](https://github.com/rrweb-io/rrweb/commit/9b9b9dd868ed369c2718d6cf581fa1abf7f0d63f) Thanks [@LuggaPugga](https://github.com/LuggaPugga)! - Remove the replayer's bundled smoothscroll polyfill to reduce bundle size
+
+- [#1995](https://github.com/rrweb-io/rrweb/pull/1995) [`3339038`](https://github.com/rrweb-io/rrweb/commit/3339038d31bc15491e9def76fd4f4818b2eae6aa) Thanks [@eoghanmurray](https://github.com/eoghanmurray)! - fix that after a skip forward which passed over scrolling, followed by a skip back to an earlier full snapshot, a stale scroll offset would be applied to the iframe window
+
+- Updated dependencies [[`41a9117`](https://github.com/rrweb-io/rrweb/commit/41a9117f397125e0614c25c3ef7149634c419b5b), [`41a9117`](https://github.com/rrweb-io/rrweb/commit/41a9117f397125e0614c25c3ef7149634c419b5b), [`9b9b9dd`](https://github.com/rrweb-io/rrweb/commit/9b9b9dd868ed369c2718d6cf581fa1abf7f0d63f)]:
+  - rrweb@2.3.0
+  - @rrweb/types@2.3.0
+
 ## 2.2.2
 
 ### Patch Changes

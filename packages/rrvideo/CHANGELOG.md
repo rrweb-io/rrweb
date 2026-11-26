@@ -1,5 +1,12 @@
 # rrvideo
 
+## 2.3.0
+
+### Patch Changes
+
+- Updated dependencies [[`41a9117`](https://github.com/rrweb-io/rrweb/commit/41a9117f397125e0614c25c3ef7149634c419b5b)]:
+  - rrweb-player@2.3.0
+
 ## 2.2.2
 
 ### Patch Changes
