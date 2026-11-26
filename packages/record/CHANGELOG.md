@@ -1,5 +1,14 @@
 # @rrweb/record
 
+## 2.3.0
+
+### Patch Changes
+
+- Updated dependencies [[`41a9117`](https://github.com/rrweb-io/rrweb/commit/41a9117f397125e0614c25c3ef7149634c419b5b), [`41a9117`](https://github.com/rrweb-io/rrweb/commit/41a9117f397125e0614c25c3ef7149634c419b5b), [`9b9b9dd`](https://github.com/rrweb-io/rrweb/commit/9b9b9dd868ed369c2718d6cf581fa1abf7f0d63f)]:
+  - rrweb@2.3.0
+  - @rrweb/types@2.3.0
+  - @rrweb/utils@2.3.0
+
 ## 2.2.2
 
 ### Patch Changes
