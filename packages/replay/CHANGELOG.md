@@ -1,5 +1,13 @@
 # @rrweb/replay
 
+## 2.3.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - rrweb@2.3.1
+  - @rrweb/types@2.3.1
+
 ## 2.3.0
 
 ### Minor Changes

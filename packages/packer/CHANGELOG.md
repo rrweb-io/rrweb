@@ -1,5 +1,12 @@
 # @rrweb/packer
 
+## 2.3.1
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @rrweb/types@2.3.1
+
 ## 2.3.0
 
 ### Patch Changes

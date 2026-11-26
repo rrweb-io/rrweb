@@ -1,5 +1,7 @@
 # @rrweb/rrweb-plugin-console-replay
 
+## 2.3.1
+
 ## 2.3.0
 
 ## 2.2.2
