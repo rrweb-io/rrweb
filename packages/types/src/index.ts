@@ -462,6 +462,11 @@ export enum MouseInteractions {
   TouchCancel,
 }
 
+export enum FocusInteractions {
+  Focus,
+  Blur,
+}
+
 export enum PointerTypes {
   Mouse,
   Pen,
@@ -523,6 +528,15 @@ type mouseInteractionParam = {
 };
 
 export type mouseInteractionCallBack = (d: mouseInteractionParam) => void;
+
+
+export type focusInteractionParam = {
+  type: FocusInteractions;
+  id: number;
+  masked?: boolean;
+};
+
+export type focusInteractionCallBack = (d: focusInteractionParam) => void;
 
 export type scrollPosition = {
   id: number;

@@ -1,46 +1,38 @@
-import {
-  snapshot,
-  slimDOMDefaults,
-  type MaskInputOptions,
-  createMirror,
-} from 'rrweb-snapshot';
+import { createMirror, type MaskInputOptions, slimDOMDefaults, snapshot, } from 'rrweb-snapshot';
 import { initObservers, mutationBuffers } from './observer';
 import {
-  on,
-  getWindowWidth,
   getWindowHeight,
   getWindowScroll,
-  polyfill,
+  getWindowWidth,
   hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
   nowTimestamp,
+  on,
+  polyfill,
 } from '../utils';
-import type { recordOptions } from '../types';
+import type { CrossOriginIframeMessageEventContent, recordOptions } from '../types';
 import {
-  EventType,
+  type adoptedStyleSheetParam,
   type annotationData,
+  type canvasMutationParam,
+  EventType,
   type eventWithoutTime,
   type eventWithTime,
+  FocusInteractions,
   IncrementalSource,
   type listenerHandler,
   type mutationCallbackParam,
   type scrollCallback,
-  type canvasMutationParam,
-  type adoptedStyleSheetParam,
 } from '@rrweb/types';
-import type { CrossOriginIframeMessageEventContent } from '../types';
 import { IframeManager } from './iframe-manager';
 import { ShadowDomManager } from './shadow-dom-manager';
 import { CanvasManager } from './observers/canvas/canvas-manager';
 import { StylesheetManager } from './stylesheet-manager';
 import ProcessedNodeManager from './processed-node-manager';
-import {
-  callbackWrapper,
-  registerErrorHandler,
-  unregisterErrorHandler,
-} from './error-handler';
+import { callbackWrapper, registerErrorHandler, unregisterErrorHandler, } from './error-handler';
 import dom from '@rrweb/utils';
+import type { focusInteractionParam } from '@rrweb/types/src';
 
 let wrappedEmit!: (e: eventWithoutTime, isCheckout?: boolean) => void;
 
@@ -448,6 +440,19 @@ function record<T = eventWithTime>(
                 ...d,
               },
             }),
+          focusInteractionCb: function (d: focusInteractionParam) {
+            const type = d.type === FocusInteractions.Focus ? 'focus' : 'blur';
+            return wrappedEmit({
+              type: EventType.IncrementalSnapshot,
+              data: {
+                source: IncrementalSource.FocusInteraction,
+                id: d.id,
+                type,
+                ...(type === 'focus' ? { masked: d.masked } : {}),
+              },
+            });
+          },
+
           scrollCb: wrappedScrollEmit,
           viewportResizeCb: (d) =>
             wrappedEmit({

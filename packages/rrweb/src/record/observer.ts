@@ -25,6 +25,7 @@ import {
   MouseInteractions,
   PointerTypes,
   MediaInteractions,
+  FocusInteractions,
 } from '@rrweb/types';
 import type {
   mutationCallBack,
@@ -215,13 +216,59 @@ export function isMasked(
   );
 }
 
+
+function initFocusObserver({
+                                        focusInteractionCb,
+                                        doc,
+                                        mirror,
+                                        blockClass,
+                                        blockSelector,
+                                        maskInputOptions,
+                                        }: observerParam): listenerHandler {
+  const HTMLElementCtor = (doc.defaultView as IWindow | null)?.HTMLElement;
+
+  function focusBlurHandler(event: Event)  {
+    const type = event.type;
+
+    const target = getEventTarget(event);
+    if (!HTMLElementCtor || !(target instanceof HTMLElementCtor)) {
+      return;
+    }
+    if (isBlocked(target, blockClass, blockSelector, true)) {
+      return true;
+    }
+
+    const id = mirror.getId(target);
+
+    const masked = isMasked(target, maskInputOptions);
+
+    if (type === 'focus') {
+      focusInteractionCb({type: FocusInteractions.Focus, id, masked})
+      return
+    }
+    if (type === 'blur') {
+      focusInteractionCb({type: FocusInteractions.Blur, id})
+      return
+    }
+
+  }
+
+  const handlers : listenerHandler[] = [];
+  for (const type of ['focus', 'blur']) {
+    handlers.push(on(type, focusBlurHandler, doc))
+  }
+
+  return callbackWrapper(() => {
+    handlers.forEach((remove) => remove());
+  });
+}
+
 function initMouseInteractionObserver({
   mouseInteractionCb,
   doc,
   mirror,
   blockClass,
   blockSelector,
-  maskInputOptions,
   sampling,
 }: observerParam): listenerHandler {
   if (sampling.mouseInteraction === false) {
@@ -241,17 +288,6 @@ function initMouseInteractionObserver({
     return (event: MouseEvent | TouchEvent | PointerEvent) => {
       const target = getEventTarget(event) as HTMLElement | null;
       if (isBlocked(target, blockClass, blockSelector, true)) {
-        return;
-      }
-
-      if (eventKey === 'Focus' || eventKey === 'Blur') {
-        const masked = isMasked(target, maskInputOptions);
-        callbackWrapper(mouseInteractionCb)({
-          type: MouseInteractions[eventKey],
-          id: mirror.getId(target),
-          ...(masked &&
-            (eventKey === 'Focus' ? { maskFocus: true } : { maskBlur: true })),
-        });
         return;
       }
 
@@ -1353,6 +1389,7 @@ export function initObservers(
   }
   const mousemoveHandler = initMoveObserver(o);
   const mouseInteractionHandler = initMouseInteractionObserver(o);
+  const focusHandler = initFocusObserver(o);
   const scrollHandler = initScrollObserver(o);
   const viewportResizeHandler = initViewportResizeObserver(o, {
     win: currentWindow,
@@ -1393,6 +1430,7 @@ export function initObservers(
     stopMutationObserver?.();
     mousemoveHandler();
     mouseInteractionHandler();
+    focusHandler();
     scrollHandler();
     viewportResizeHandler();
     inputHandler();

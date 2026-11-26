@@ -40,6 +40,7 @@ import type {
   UnpackFn,
 } from '@rrweb/types';
 import type ProcessedNodeManager from './record/processed-node-manager';
+import type { focusInteractionCallBack } from '@rrweb/types/src';
 
 export type recordOptions<T> = {
   emit?: (e: T, isCheckout?: boolean) => void;
@@ -88,6 +89,7 @@ export type observerParam = {
   mutationCb: mutationCallBack;
   mousemoveCb: mousemoveCallBack;
   mouseInteractionCb: mouseInteractionCallBack;
+  focusInteractionCb: focusInteractionCallBack;
   scrollCb: scrollCallback;
   viewportResizeCb: viewportResizeCallback;
   inputCb: inputCallback;
