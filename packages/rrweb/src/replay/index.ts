@@ -106,6 +106,7 @@ const defaultMouseTailConfig = {
   lineCap: 'round',
   lineWidth: 3,
   strokeStyle: 'red',
+  taper: false,
 } as const;
 
 function indicatesTouchDevice(e: eventWithTime) {
@@ -210,7 +211,6 @@ export class Replayer {
       triggerFocus: true,
       UNSAFE_replayCanvas: false,
       pauseAnimation: true,
-      smoothCursor: false,
       smoothScroll: false,
       mouseTail: defaultMouseTailConfig,
       useVirtualDom: true, // Virtual-dom optimization is enabled by default.
@@ -2319,7 +2319,7 @@ export class Replayer {
 
     this.mouse.style.left = `${_x}px`;
     this.mouse.style.top = `${_y}px`;
-    if (!isSync && !this.config.smoothCursor) {
+    if (!isSync && !this.config.cursor?.smooth) {
       this.drawMouseTail({ x: _x, y: _y });
     }
     this.hoverElements(target as Element);
@@ -2330,7 +2330,7 @@ export class Replayer {
       return;
     }
 
-    const { lineCap, lineWidth, strokeStyle, duration } =
+    const { lineCap, lineWidth, strokeStyle, duration, taper } =
       this.config.mouseTail === true
         ? defaultMouseTailConfig
         : Object.assign({}, defaultMouseTailConfig, this.config.mouseTail);
@@ -2346,7 +2346,7 @@ export class Replayer {
       ctx.clearRect(0, 0, this.mouseTail.width, this.mouseTail.height);
       ctx.lineCap = lineCap;
       ctx.strokeStyle = strokeStyle;
-      if (this.config.smoothCursor) {
+      if (taper) {
         return drawTaperedTrail(ctx, this.tailPositions, lineWidth);
       }
       ctx.beginPath();

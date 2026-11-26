@@ -35,7 +35,7 @@ const events: eventWithTime[] = [
   },
 ];
 
-describe('smoothCursor', () => {
+describe('cursor.smooth', () => {
   vi.setConfig({ testTimeout: 20_000, hookTimeout: 30_000 });
   let browser: puppeteer.Browser;
   let page: puppeteer.Page;
@@ -56,7 +56,7 @@ describe('smoothCursor', () => {
     await page.evaluate(code);
     await page.evaluate(`let events = ${JSON.stringify(events)}`);
     const r = await page.evaluate(`(async () => {
-      const replayer = new rrweb.Replayer(events, { smoothCursor: true });
+      const replayer = new rrweb.Replayer(events, { cursor: { smooth: true } });
       replayer.play(500);
       const m = document.querySelector('.replayer-mouse');
       const seen = [];
@@ -135,7 +135,7 @@ describe('smoothScroll', () => {
     await page.evaluate(code);
     await page.evaluate(`let events = ${JSON.stringify(ev)}`);
     const tops = await page.evaluate(`(async () => {
-      const replayer = new rrweb.Replayer(events, { smoothCursor: true, smoothScroll: true });
+      const replayer = new rrweb.Replayer(events, { cursor: { smooth: true }, smoothScroll: true });
       replayer.play(800);
       const m = document.querySelector('.replayer-mouse');
       const seen = new Set();
@@ -148,5 +148,54 @@ describe('smoothScroll', () => {
     })()`);
     expect(tops.length).toBe(1);
     await page.close();
+  });
+});
+
+describe('mouseTail.taper', () => {
+  vi.setConfig({ testTimeout: 20_000, hookTimeout: 30_000 });
+  let browser: puppeteer.Browser;
+  let code: string;
+
+  beforeAll(async () => {
+    browser = await launchPuppeteer();
+    code = fs.readFileSync(
+      path.resolve(__dirname, '../../dist/rrweb.umd.cjs'),
+      'utf8',
+    );
+  });
+  afterAll(async () => browser.close());
+
+  // The widths each tail stroke used while the cursor moved.
+  const strokeWidths = async (mouseTail: unknown) => {
+    const page = await browser.newPage();
+    await page.goto('about:blank');
+    await page.evaluate(code);
+    await page.evaluate(`let events = ${JSON.stringify(events)}`);
+    const widths = await page.evaluate(`(async () => {
+      const widths = new Set();
+      const stroke = CanvasRenderingContext2D.prototype.stroke;
+      CanvasRenderingContext2D.prototype.stroke = function (...args) {
+        widths.add(this.lineWidth);
+        return stroke.apply(this, args);
+      };
+      const replayer = new rrweb.Replayer(events, { mouseTail: ${JSON.stringify(
+        mouseTail,
+      )} });
+      replayer.play(500);
+      await new Promise((r) => setTimeout(r, 1500));
+      return [...widths];
+    })()`);
+    await page.close();
+    return widths as number[];
+  };
+
+  it('narrows the trail toward its end', async () => {
+    const widths = await strokeWidths({ lineWidth: 3, taper: true });
+    expect(widths.length).toBeGreaterThan(2);
+    expect(Math.min(...widths)).toBeLessThan(3);
+  });
+
+  it('keeps one width without it', async () => {
+    expect(await strokeWidths({ lineWidth: 3 })).toEqual([3]);
   });
 });

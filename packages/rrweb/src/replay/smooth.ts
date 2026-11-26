@@ -210,7 +210,7 @@ const cursorSamples = (e: eventWithTime): CursorSample[] => {
 };
 
 /**
- * Drives the smoothCursor and smoothScroll options from the replayer's events:
+ * Drives the cursor.smooth and smoothScroll options from the replayer's events:
  * rebuilds its state on Start, follows casts after that, and moves the cursor
  * and scroll offsets every animation frame while playing.
  */
@@ -257,7 +257,8 @@ export class SmoothReplay {
 
   /** Applies the replayer config; a no-op unless an option changed. */
   configure() {
-    const { smoothCursor = false, smoothScroll = false } = this.replayer.config;
+    const smoothCursor = this.replayer.config.cursor?.smooth ?? false;
+    const { smoothScroll = false } = this.replayer.config;
     if (smoothCursor === this.cursorOn && smoothScroll === this.scrollOn)
       return;
     this.cursorOn = smoothCursor;

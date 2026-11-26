@@ -189,8 +189,14 @@ export type playerConfig = {
   triggerFocus: boolean;
   UNSAFE_replayCanvas: boolean;
   pauseAnimation?: boolean;
-  smoothCursor?: boolean;
   smoothScroll?: boolean;
+  cursor?: {
+    /**
+     * Interpolates the cursor between recorded mouse samples and shrinks
+     * its halo as it speeds up.
+     */
+    smooth?: boolean;
+  };
   mouseTail:
     | boolean
     | {
@@ -198,6 +204,8 @@ export type playerConfig = {
         lineCap?: string;
         lineWidth?: number;
         strokeStyle?: string;
+        /** Narrows the trail from full width at the cursor to nothing at its end. */
+        taper?: boolean;
       };
   unpackFn?: UnpackFn;
   useVirtualDom: boolean;
