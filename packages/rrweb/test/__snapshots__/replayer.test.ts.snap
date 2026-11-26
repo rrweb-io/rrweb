@@ -269,6 +269,8 @@ file-cid-0
 
 noscript { display: none !important; }
 
+html { text-size-adjust: 100%; }
+
 html.rrweb-paused *, html.rrweb-paused ::before, html.rrweb-paused ::after { animation-play-state: paused !important; }
 "
 `;
@@ -320,6 +322,8 @@ file-cid-0
 
 noscript { display: none !important; }
 
+html { text-size-adjust: 100%; }
+
 html.rrweb-paused *, html.rrweb-paused ::before, html.rrweb-paused ::after { animation-play-state: paused !important; }
 "
 `;
@@ -370,6 +374,8 @@ file-cid-0
 .rr-block { background: currentcolor; }
 
 noscript { display: none !important; }
+
+html { text-size-adjust: 100%; }
 
 html.rrweb-paused *, html.rrweb-paused ::before, html.rrweb-paused ::after { animation-play-state: paused !important; }
 "

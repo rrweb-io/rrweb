@@ -729,6 +729,21 @@ describe('replayer', function () {
         (element) => window.getComputedStyle(element).display,
       ),
     ).toEqual('none');
+    // phones must not enlarge the scaled-down replay's text
+    expect(
+      await iframeOneDocument!.$eval('style', (style) =>
+        Array.from((style as HTMLStyleElement).sheet!.cssRules)
+          .map((rule) => rule.cssText)
+          .join(' '),
+      ),
+    ).toContain('html { text-size-adjust: 100%; }');
+    // it comes before every recorded stylesheet, so a page's own value wins
+    expect(
+      await iframeOneDocument!.$eval(
+        'html',
+        (html) => html.firstElementChild?.tagName,
+      ),
+    ).toBe('STYLE');
 
     // add 'iframe two' and 'iframe three' at 1000
     await page.evaluate('replayer.play(0);');
