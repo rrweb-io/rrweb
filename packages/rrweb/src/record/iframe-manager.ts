@@ -1,6 +1,9 @@
 import type { Mirror } from 'rrweb-snapshot';
 import { genId } from 'rrweb-snapshot';
-import type { CrossOriginIframeMessageEvent } from '../types';
+import type {
+  CrossOriginIframeMessageEvent,
+  CrossOriginIframeTransport,
+} from '../types';
 import CrossOriginIframeMirror from './cross-origin-iframe-mirror';
 import { EventType, NodeType, IncrementalSource } from '@rrweb/types';
 import type {
@@ -34,18 +37,25 @@ export class IframeManager {
     this.handleMessage(message as MessageEvent);
   private stylesheetManager: StylesheetManager;
   private recordCrossOriginIframes: boolean;
+  private crossOriginIframeTransport?: Pick<
+    CrossOriginIframeTransport,
+    'subscribe'
+  >;
+  private stopListening?: listenerHandler;
 
   constructor(options: {
     mirror: Mirror;
     mutationCb: mutationCallBack;
     stylesheetManager: StylesheetManager;
     recordCrossOriginIframes: boolean;
+    crossOriginIframeTransport?: Pick<CrossOriginIframeTransport, 'subscribe'>;
     wrappedEmit: (e: eventWithoutTime, isCheckout?: boolean) => void;
   }) {
     this.mutationCb = options.mutationCb;
     this.wrappedEmit = options.wrappedEmit;
     this.stylesheetManager = options.stylesheetManager;
     this.recordCrossOriginIframes = options.recordCrossOriginIframes;
+    this.crossOriginIframeTransport = options.crossOriginIframeTransport;
     this.crossOriginIframeStyleMirror = new CrossOriginIframeMirror(
       this.stylesheetManager.styleMirror.generateId.bind(
         this.stylesheetManager.styleMirror,
@@ -53,7 +63,16 @@ export class IframeManager {
     );
     this.mirror = options.mirror;
     if (this.recordCrossOriginIframes) {
-      window.addEventListener('message', this.messageHandler);
+      if (this.crossOriginIframeTransport) {
+        this.stopListening = this.crossOriginIframeTransport.subscribe(
+          window,
+          this.messageHandler,
+        );
+      } else {
+        window.addEventListener('message', this.messageHandler);
+        this.stopListening = () =>
+          window.removeEventListener('message', this.messageHandler);
+      }
     }
   }
 
@@ -105,7 +124,8 @@ export class IframeManager {
   }
 
   public destroy() {
-    window.removeEventListener('message', this.messageHandler);
+    this.stopListening?.();
+    this.stopListening = undefined;
     this.attachedWindows.forEach((stop) => stop());
   }
 
@@ -127,7 +147,11 @@ export class IframeManager {
 
     // Receive messages (events) coming from cross-origin iframes that are nested in this same-origin iframe.
     if (this.recordCrossOriginIframes) {
-      handlers.push(on('message', this.messageHandler, win));
+      handlers.push(
+        this.crossOriginIframeTransport
+          ? this.crossOriginIframeTransport.subscribe(win, this.messageHandler)
+          : on('message', this.messageHandler, win),
+      );
     }
     handlers.push(
       on(
