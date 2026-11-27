@@ -17,7 +17,7 @@ import { config, dashboardRecordingUrl } from '~/config';
 import { LocalDataKey, ServiceName } from '~/types';
 import type {
   LocalData,
-  RecordingKind,
+  SessionSource,
   SharedSessions,
   ShareResult,
 } from '~/types';
@@ -118,7 +118,7 @@ export function ShareSession({
   recordedAs,
 }: {
   sessionId: string;
-  recordedAs: RecordingKind;
+  recordedAs: SessionSource;
 }) {
   // Keyed: a table cell can be reused for another session, and nothing about
   // one session's attempt, or its late answer, may reach the next.
@@ -136,7 +136,7 @@ function ShareOneSession({
   recordedAs,
 }: {
   sessionId: string;
-  recordedAs: RecordingKind;
+  recordedAs: SessionSource;
 }) {
   const connection = useConnection();
   const stored = useStoredShare(sessionId);
@@ -225,6 +225,8 @@ function ShareOneSession({
                 : `This uploads the recording to ${org.orgName} in rrweb.`}{' '}
               {recordedAs === 'cloud'
                 ? 'Typed form input was masked when this was recorded.'
+                : recordedAs === 'unknown'
+                ? 'This session may have been imported, so it may contain anything typed on the recorded page, passwords included.'
                 : "Offline recordings don't mask form fields, so anything typed into forms on this page will be uploaded. Password fields stay masked."}
               <Text mt="12px">
                 <Link href={config.privacyPolicyUrl} isExternal>

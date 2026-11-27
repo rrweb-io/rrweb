@@ -8,6 +8,7 @@ import {
   type StartRecordPayload,
   type RecordedEvent,
   EventName,
+  OTHER_SITE_ERROR,
 } from '~/types';
 import Channel from '~/utils/channel';
 import { RECORDED_PAGE_PORT } from '~/background/pageWatch';
@@ -18,15 +19,13 @@ import { RECORDED_PAGE_PORT } from '~/background/pageWatch';
  * and the page-world script (`inject.ts`), which runs rrweb itself.
  */
 
-declare global {
-  interface Window {
-    __rrwebExtensionContentLoaded?: boolean;
-  }
-}
-
 // Record and resume inject this script again; the first copy keeps working.
-if (!window.__rrwebExtensionContentLoaded) {
-  window.__rrwebExtensionContentLoaded = true;
+// The mark lives on the content script's own global: Firefox can clear a
+// property on the page's window across Back while keeping this script's
+// listeners, and a second copy would forward every event twice.
+const contentGlobal = globalThis as { __rrwebExtensionContentLoaded?: true };
+if (!contentGlobal.__rrwebExtensionContentLoaded) {
+  contentGlobal.__rrwebExtensionContentLoaded = true;
   init();
 }
 
@@ -59,11 +58,26 @@ function init() {
     );
   };
 
+  // A page kept in the back/forward cache can keep its port open in older
+  // Chrome versions, so leaving it says the document is gone explicitly.
+  // The page script stops itself at the same moment, so a restored page
+  // records nothing and needs a fresh page script to start again.
+  window.addEventListener('pagehide', () => {
+    pagePort?.disconnect();
+    pagePort = null;
+    pendingStart = undefined;
+    pageScriptReady = false;
+  });
+
   let startResponseCb: ((response: RecordStartedMessage) => void) | undefined =
     undefined;
   channel.provide(ServiceName.StartRecord, async (params) => {
+    const start = params as StartRecordPayload;
+    // The tab may have moved to another site since the background checked.
+    if (start.origin !== undefined && start.origin !== location.origin)
+      throw new Error(OTHER_SITE_ERROR);
     keepPagePort();
-    pendingStart = params as StartRecordPayload;
+    pendingStart = start;
     // Chrome injects the page script into the page world itself. Firefox has
     // no page-world injection, so this script adds it as a <script> tag.
     if (!pageScriptReady && import.meta.env.VITE_TARGET_BROWSER === 'firefox')
@@ -76,6 +90,15 @@ function init() {
   let stopResponseCb: ((response: RecordStoppedMessage) => void) | undefined =
     undefined;
   channel.provide(ServiceName.StopRecord, () => {
+    // A start still waiting for the page script must not begin after Stop.
+    pendingStart = undefined;
+    // Nothing records before the page script is ready, so there is nothing
+    // to stop and nobody to answer.
+    if (!pageScriptReady)
+      return Promise.resolve({
+        message: MessageName.RecordStopped,
+        endTimestamp: Date.now(),
+      });
     window.postMessage({ message: MessageName.StopRecord });
     return new Promise((resolve) => {
       stopResponseCb = (response: RecordStoppedMessage) => {

@@ -1,4 +1,4 @@
-import type { RecordingKind, Session } from '~/types';
+import type { Session, SessionSource } from '~/types';
 
 /** A non-empty string, as every stored or received identifier must be. */
 export const filled = (value: unknown): value is string =>
@@ -6,11 +6,11 @@ export const filled = (value: unknown): value is string =>
 
 /**
  * How a session was recorded. Sessions stored before Cloud mode have no
- * `recordedAs` and were recorded offline, without input masking.
+ * `recordedAs`; they may have been imported, so their masking is unknown.
  */
 export const recordingKindOf = (
   session: Pick<Session, 'recordedAs'>,
-): RecordingKind => session.recordedAs ?? 'offline';
+): SessionSource => session.recordedAs ?? 'unknown';
 
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;

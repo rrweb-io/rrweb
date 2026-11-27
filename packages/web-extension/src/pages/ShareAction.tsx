@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import type { RecordingKind } from '~/types';
+import type { SessionSource } from '~/types';
 
 // Same test as `config.cloudEnabled`, written inline so the bundler folds it
 // and the Firefox build, which has no Cloud, contains no Share code.
@@ -16,7 +16,7 @@ export function ShareAction({
   recordedAs,
 }: {
   sessionId: string;
-  recordedAs: RecordingKind;
+  recordedAs: SessionSource;
 }) {
   if (ShareSession === 'share-disabled') return null;
   return (

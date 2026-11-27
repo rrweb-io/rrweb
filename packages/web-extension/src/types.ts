@@ -34,6 +34,15 @@ export type Connection =
 
 /** Where a recording goes: this browser only, or uploaded to rrweb. */
 export type RecordingKind = 'offline' | 'cloud';
+/**
+ * How a stored session was recorded. unknown: imported from a file, or
+ * stored by a version that did not say, so nothing is known about masking.
+ */
+export type SessionSource = RecordingKind | 'unknown';
+
+/** Why a page refused a start: it is not on the recording's site. */
+export const OTHER_SITE_ERROR =
+  'This tab is on another site now. Go back to the site you were recording to resume, or stop to save the recording.';
 
 /**
  * What the record button the person pressed promised: offline, or an upload
@@ -150,10 +159,11 @@ export type Session = {
   modifyTimestamp: number;
   recorderVersion: string;
   /**
-   * cloud: recorded in Cloud mode, so form fields were masked. Sessions from
-   * older versions have no value and were recorded offline.
+   * cloud: recorded in Cloud mode, so form fields were masked. offline:
+   * recorded with rrweb's defaults. unknown, or no value from older versions:
+   * possibly imported, so nothing is known about masking.
    */
-  recordedAs?: RecordingKind;
+  recordedAs?: SessionSource;
 };
 
 // all service names for channel
@@ -193,6 +203,8 @@ export enum MessageName {
 export type StartRecordPayload = {
   config: recordOptions<eventWithTime>;
   token: string;
+  /** The recording's origin; a page on another one refuses to start. */
+  origin?: string;
 };
 
 export type RecordStartedMessage = {

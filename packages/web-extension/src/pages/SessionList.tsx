@@ -251,13 +251,21 @@ export function SessionList() {
     reader.onload = async (e) => {
       try {
         const content = e.target?.result as string;
-        const data = JSON.parse(content) as {
+        const data = JSON.parse(content) as Partial<{
           session: Session;
           events: eventWithTime[];
-        };
-        const id = nanoid();
-        data.session.id = id;
-        await addSession(data.session, data.events);
+        }> | null;
+        if (
+          typeof data?.session !== 'object' ||
+          data.session === null ||
+          !Array.isArray(data.events)
+        )
+          throw new Error('This file is not an rrweb session export.');
+        // How a file was recorded is unknown, whatever it says.
+        await addSession(
+          { ...data.session, id: nanoid(), recordedAs: 'unknown' },
+          data.events,
+        );
         toast({
           title: 'Session imported',
           description: 'The session was successfully imported.',

@@ -205,6 +205,7 @@ describe('startRecording', () => {
     expect(requestStart).toHaveBeenCalledWith({
       recordCrossOriginIframes: false,
       maskAllInputs: true,
+      maskTextSelector: '[contenteditable]:not([contenteditable="false"])',
       slimDOMOptions: 'all',
       inlineStylesheet: true,
     });

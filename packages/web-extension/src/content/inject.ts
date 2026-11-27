@@ -73,8 +73,7 @@ const messageHandler = (
         message: MessageName.RecordStopped,
         endTimestamp: Date.now(),
       });
-      window.removeEventListener('message', messageHandler);
-      delete (window as MarkedWindow)[LISTENING];
+      stopListening();
     },
   } as Record<MessageName, () => void>;
   if (eventHandler[data.message]) eventHandler[data.message]();
@@ -84,9 +83,25 @@ function postMessage(message: unknown) {
   window.postMessage(message, location.origin);
 }
 
+function stopListening() {
+  window.removeEventListener('message', messageHandler);
+  window.removeEventListener('pagehide', onPageHide);
+  delete (window as MarkedWindow)[LISTENING];
+}
+
+/**
+ * Leaving the page, maybe into the back/forward cache, stops recording at
+ * once: a message posted now could wait until the page is restored.
+ */
+function onPageHide() {
+  stopRecording();
+  stopListening();
+}
+
 if (!(window as MarkedWindow)[LISTENING]) {
   (window as MarkedWindow)[LISTENING] = true;
   window.addEventListener('message', messageHandler);
+  window.addEventListener('pagehide', onPageHide);
 }
 
 window.postMessage(

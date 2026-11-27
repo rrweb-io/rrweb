@@ -5,7 +5,7 @@ import Replayer from 'rrweb-player';
 import 'rrweb-player/dist/style.css';
 import { Box, Flex, Heading, Link } from '@chakra-ui/react';
 import { getEvents, getSession } from '~/utils/storage';
-import type { RecordingKind } from '~/types';
+import type { SessionSource } from '~/types';
 import { recordingKindOf } from '~/utils';
 import { ShareAction } from './ShareAction';
 
@@ -14,12 +14,16 @@ export default function Player() {
   const playerRef = useRef<Replayer | null>(null);
   const { sessionId } = useParams();
   const [sessionName, setSessionName] = useState('');
-  const [recordedAs, setRecordedAs] = useState<RecordingKind>('offline');
+  // Share waits for this: its warning depends on how the session was made.
+  const [recordedAs, setRecordedAs] = useState<SessionSource | undefined>();
 
   useEffect(() => {
     if (!sessionId) return;
+    let current = true;
+    setRecordedAs(undefined);
     getSession(sessionId)
       .then((session) => {
+        if (!current) return;
         setSessionName(session.name);
         setRecordedAs(recordingKindOf(session));
       })
@@ -43,6 +47,7 @@ export default function Player() {
         console.error(err);
       });
     return () => {
+      current = false;
       // eslint-disable-next-line
       playerRef.current?.pause();
       // eslint-disable-next-line
@@ -73,7 +78,7 @@ export default function Player() {
         >
           {sessionName}
         </Heading>
-        {sessionId && (
+        {sessionId && recordedAs && (
           <Box flexShrink={0}>
             <ShareAction sessionId={sessionId} recordedAs={recordedAs} />
           </Box>

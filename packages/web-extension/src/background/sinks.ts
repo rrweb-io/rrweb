@@ -68,6 +68,9 @@ export function recordConfigFor(
     ? {
         recordCrossOriginIframes: false,
         maskAllInputs: true,
+        // Rich-text editors, such as chat and email composers, are not form
+        // fields: their typed text is page text, masked here too.
+        maskTextSelector: '[contenteditable]:not([contenteditable="false"])',
         slimDOMOptions: 'all',
         inlineStylesheet: true,
       }

@@ -4,7 +4,9 @@ import {
   createRecorder,
   KEEPALIVE_INTERVAL_MS,
   NAVIGATION_TIMEOUT_MS,
+  OTHER_SITE_ERROR,
   START_TIMEOUT_ERROR,
+  STOP_TIMEOUT_MS,
   uploadFailedMessage,
 } from './recorder';
 import { createBadge, BADGE_COLORS } from './badge';
@@ -84,10 +86,18 @@ function setup(initial: CloudAccount | null) {
     timers: [] as { ms: number; runOut: () => void }[],
     /** The next page never loads, and the navigation limit runs out. */
     navigationHangs: false,
+    /** The page never answers Stop, and the stop limit runs out. */
+    stopHangs: false,
+    /** Saving the status in this state fails. */
+    failSave: undefined as RecorderStatus['state'] | undefined,
     /** The browser refuses to inject into the tab's next document. */
     refuseNextPage: false,
     /** The tab navigates again while the recorder is injected, which fails. */
     navigateDuringInject: false,
+    /** The page stalls the injection, which never finishes. */
+    injectHangs: false,
+    /** Resolves when the injection finishes; immediately if unset. */
+    injectReply: undefined as Promise<void> | undefined,
     titles: { 1: 'Page title' } as Record<number, string | undefined>,
     /** Resolves when the tab answers for its title; immediately if unset. */
     titleReply: undefined as Promise<void> | undefined,
@@ -111,6 +121,8 @@ function setup(initial: CloudAccount | null) {
     log.push(`inject:${tabId}`);
     if (state.refuseNextPage)
       return Promise.reject(new Error('Cannot access contents of the page'));
+    if (state.injectHangs) return new Promise<void>(() => undefined);
+    if (state.injectReply) return state.injectReply;
     if (state.navigateDuringInject) {
       state.tabStatus[tabId] = 'loading';
       return Promise.reject(new Error('Frame with ID 0 was removed.'));
@@ -171,6 +183,8 @@ function setup(initial: CloudAccount | null) {
     requestToTab,
     saveStatus: (s) => {
       saved.push(s.state);
+      if (state.failSave === s.state)
+        return Promise.reject(new Error('storage is full'));
       const hold = state.holdSave;
       if (hold?.state !== s.state) return Promise.resolve();
       state.holdSave = undefined;
@@ -210,7 +224,11 @@ function setup(initial: CloudAccount | null) {
     after: (ms) => {
       state.waits.push(ms);
       const expires =
-        ms === NAVIGATION_TIMEOUT_MS ? state.navigationHangs : state.startHangs;
+        ms === NAVIGATION_TIMEOUT_MS
+          ? state.navigationHangs
+          : ms === STOP_TIMEOUT_MS
+          ? state.stopHangs
+          : state.startHangs;
       if (expires) return Promise.resolve();
       return new Promise<void>((runOut) => state.timers.push({ ms, runOut }));
     },
@@ -798,6 +816,269 @@ describe('createRecorder', () => {
     expect(injectRecorder).toHaveBeenCalledTimes(3);
     expect(recorder.getStatus().state).toBe('recording');
     expect(addSession).not.toHaveBeenCalled();
+  });
+
+  it('does not resume on another site the popup was opened on', async () => {
+    const { recorder, state, browser, settle, injectRecorder, addSession } =
+      setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    await recorder.pauseClicked();
+    navigateAway();
+    // Opening the popup there grants access to the other site.
+    state.tabs[1] = 'https://other.example/';
+    browser.openPage(1);
+    browser.loadPage(1);
+    await settle();
+    await recorder.resumeClicked();
+    expect(recorder.getStatus()).toMatchObject({
+      state: 'paused',
+      lastError: { name: 'failed', message: OTHER_SITE_ERROR },
+    });
+    expect(injectRecorder).toHaveBeenCalledOnce();
+    expect(addSession).not.toHaveBeenCalled();
+  });
+
+  it('finishes when the next page is on another site, without injecting', async () => {
+    const { recorder, state, browser, settle, injectRecorder, addSession } =
+      setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    recorder.add(event(1));
+    navigateAway();
+    state.tabs[1] = 'https://other.example/';
+    browser.loadPage(1);
+    await settle();
+    expect(injectRecorder).toHaveBeenCalledOnce();
+    expect(addSession).toHaveBeenCalledOnce();
+    expect(recorder.getStatus().state).toBe('idle');
+  });
+
+  it('a next page that confirms after a pause and a resume leaves the resumed page recording', async () => {
+    const { recorder, state, browser, settle, requestToTab } = setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    navigateAway();
+    await settle();
+    let confirm = () => undefined as void;
+    state.startReply = new Promise<void>((r) => (confirm = r));
+    browser.openPage(1);
+    browser.loadPage(1);
+    await settle();
+    await recorder.pauseClicked();
+    state.startReply = undefined;
+    await recorder.resumeClicked();
+    expect(recorder.getStatus().state).toBe('recording');
+    confirm(); // the next page's late answer
+    await settle();
+    expect(
+      requestToTab.mock.calls.filter((c) => c[1] === ServiceName.StopRecord),
+    ).toHaveLength(0);
+    expect(recorder.getStatus().state).toBe('recording');
+  });
+
+  it('a resume the page never confirms stays paused and can be resumed again', async () => {
+    const { recorder, state, requestToTab } = setup(null);
+    await recorder.start();
+    await recorder.pauseClicked();
+    state.startHangs = true; // the page script is blocked
+    await recorder.resumeClicked();
+    expect(recorder.getStatus().state).toBe('paused');
+    expect(
+      requestToTab.mock.calls.filter((c) => c[1] === ServiceName.StopRecord),
+    ).toHaveLength(2); // the pause's, and the unconfirmed resume's
+    state.startHangs = false;
+    await recorder.resumeClicked();
+    expect(recorder.getStatus().state).toBe('recording');
+  });
+
+  it('Stop saves the recording when the page never answers', async () => {
+    const { recorder, state, addSession } = setup(null);
+    await recorder.start();
+    recorder.add(event(1));
+    state.stopReply = new Promise(() => undefined);
+    state.stopHangs = true;
+    await recorder.stop();
+    expect(state.waits).toContain(STOP_TIMEOUT_MS);
+    expect(addSession).toHaveBeenCalledOnce();
+    expect(recorder.getStatus().state).toBe('idle');
+  });
+
+  it('stores the recording even when its status cannot be saved', async () => {
+    const { recorder, state, addSession, opened } = setup(null);
+    await recorder.start();
+    recorder.add(event(1));
+    state.failSave = 'idle';
+    await recorder.stop();
+    expect(addSession).toHaveBeenCalledOnce();
+    expect(opened).toEqual([SESSION_URL]);
+  });
+
+  it('keeps nothing a page sends while paused', async () => {
+    const { recorder, addSession } = setup(null);
+    await recorder.start();
+    recorder.add(event(1));
+    await recorder.pauseClicked();
+    // A page restored from the back/forward cache, still recording.
+    recorder.add(event(2));
+    await recorder.stop();
+    const [, events] = addSession.mock.calls[0] as unknown as [
+      unknown,
+      eventWithTime[],
+    ];
+    expect(events).toEqual([event(1)]);
+  });
+
+  it('a resume that confirms after Stop is stopped while a newer start has not asked the page yet', async () => {
+    const { recorder, state, settle, requestToTab } = setup(null);
+    await recorder.start();
+    await recorder.pauseClicked();
+    let confirm = () => undefined as void;
+    state.startReply = new Promise<void>((r) => (confirm = r));
+    const resuming = recorder.resumeClicked();
+    await settle();
+    await recorder.stop();
+    // The next start waits for the tab's title, and is refused afterwards.
+    let answerTitle = () => undefined as void;
+    state.titleReply = new Promise<void>((r) => (answerTitle = r));
+    const starting = recorder.start({ mode: 'cloud', orgId: 'org_gone' });
+    await settle();
+    confirm();
+    await resuming;
+    await settle();
+    answerTitle();
+    await starting;
+    expect(
+      requestToTab.mock.calls.filter((c) => c[1] === ServiceName.StopRecord),
+    ).toHaveLength(2); // the pause's, and the late resume's
+    expect(recorder.getStatus().state).toBe('idle');
+  });
+
+  it('resumes even when clearing the last error cannot be saved', async () => {
+    const { recorder, state } = setup(null);
+    await recorder.start();
+    await recorder.pauseClicked();
+    state.failSave = 'paused';
+    await recorder.resumeClicked();
+    state.failSave = undefined;
+    expect(recorder.getStatus().state).toBe('recording');
+  });
+
+  it('an injection that finishes after the start gave up asks the page nothing', async () => {
+    const { recorder, state, settle, requestToTab } = setup(null);
+    let injected = () => undefined as void;
+    state.injectReply = new Promise<void>((r) => (injected = r));
+    state.startHangs = true; // the limit runs out first
+    await recorder.start();
+    expect(recorder.getStatus().state).toBe('idle');
+    injected();
+    await settle();
+    expect(requestToTab).not.toHaveBeenCalled();
+  });
+
+  it('gives up a start whose injection never finishes, and asks the page nothing', async () => {
+    const { recorder, state, requestToTab } = setup(null);
+    state.injectHangs = true;
+    state.startHangs = true;
+    await recorder.start();
+    expect(recorder.getStatus()).toEqual({
+      state: 'idle',
+      lastError: { name: 'failed', message: START_TIMEOUT_ERROR },
+    });
+    expect(requestToTab).not.toHaveBeenCalled();
+  });
+
+  it('tells each page the recording’s site, and pauses when the page says it moved', async () => {
+    const { recorder, requestToTab } = setup(null);
+    await recorder.start();
+    await recorder.pauseClicked();
+    // The content script refuses a start on a page of another site.
+    requestToTab.mockImplementationOnce(() =>
+      Promise.reject(new Error(OTHER_SITE_ERROR)),
+    );
+    await recorder.resumeClicked();
+    const starts = requestToTab.mock.calls.filter(
+      (c) => c[1] === ServiceName.StartRecord,
+    );
+    expect(starts.map((c) => (c[2] as { origin?: string }).origin)).toEqual([
+      'https://example.com',
+      'https://example.com',
+    ]);
+    expect(recorder.getStatus()).toMatchObject({
+      state: 'paused',
+      lastError: { name: 'failed', message: OTHER_SITE_ERROR },
+    });
+  });
+
+  it('a next page given up while its injection runs is never asked to record', async () => {
+    const { recorder, state, browser, settle, requestToTab } = setup(null);
+    const navigateAway = browser.openPage(1);
+    await recorder.start();
+    navigateAway();
+    await settle();
+    let injected = () => undefined as void;
+    state.injectReply = new Promise<void>((r) => (injected = r));
+    let answerStatus = () => undefined as void;
+    state.statusReply = new Promise<void>((r) => (answerStatus = r));
+    state.startHangs = true; // the start limit runs out first
+    browser.loadPage(1);
+    await settle();
+    injected(); // finishes while the recorder checks the tab's status
+    await settle();
+    answerStatus();
+    await settle();
+    expect(
+      requestToTab.mock.calls.filter((c) => c[1] === ServiceName.StartRecord),
+    ).toHaveLength(1); // only the first page's
+  });
+
+  it('pauses at the click when the page never answers', async () => {
+    const { recorder, state } = setup(null);
+    await recorder.start();
+    state.stopReply = new Promise(() => undefined);
+    state.stopHangs = true;
+    state.now = 4000;
+    await recorder.pauseClicked();
+    expect(recorder.getStatus()).toMatchObject({
+      state: 'paused',
+      pausedTimestamp: 4000,
+    });
+  });
+
+  it('keeps a resumed page’s first events only once it confirms', async () => {
+    const { recorder, state, addSession } = setup(null);
+    await recorder.start();
+    state.now = 2000;
+    recorder.add(event(2000));
+    await recorder.pauseClicked();
+    state.now = 5000; // paused for three seconds
+    // The resume the page never confirms sends its snapshot first.
+    state.startHangs = true;
+    state.emitOnStart = () => recorder.add(typed(2, 5000));
+    await recorder.resumeClicked();
+    state.startHangs = false;
+    state.now = 6000;
+    state.emitOnStart = () => recorder.add(typed(2, 6000));
+    await recorder.resumeClicked();
+    await recorder.stop();
+    const [, events] = addSession.mock.calls[0] as unknown as [
+      unknown,
+      eventWithTime[],
+    ];
+    // The first event moves up by the pause; the confirmed page's snapshot
+    // keeps its own time, and the unconfirmed one is gone.
+    expect(events).toEqual([event(6000), typed(2, 6000)]);
+  });
+
+  it('names a recording stopped while paused after its first page', async () => {
+    const { recorder, state, addSession } = setup(null);
+    await recorder.start();
+    await recorder.pauseClicked();
+    // The tab shows another site by now.
+    state.titles[1] = 'Another site';
+    await recorder.stop();
+    const [session] = addSession.mock.calls[0] as unknown as [{ name: string }];
+    expect(session.name).toBe('Page title');
   });
 
   it('finishes like Stop when the browser refuses the next page (cloud)', async () => {
@@ -1788,21 +2069,32 @@ describe('createRecorder', () => {
     expect(addSession.mock.calls[1][1]).toEqual([event(9)]);
   });
 
-  it('Stop while a pause waits for the page still stops the page, and the late reply pauses nothing', async () => {
-    const { recorder, state, requestToTab } = setup(null);
+  it('Stop while a pause waits for the page waits for that answer, and keeps its last events', async () => {
+    const { recorder, state, requestToTab, addSession, settle } = setup(null);
     await recorder.start();
     let answer: () => void = () => undefined;
     requestToTab.mockReturnValueOnce(
       new Promise((r) => (answer = () => r({ endTimestamp: state.now }))),
     );
     const pausing = recorder.pauseClicked(); // the page has not answered yet
-    await recorder.stop();
-    answer(); // the pause reply arrives after the recording finished
+    // A page that already stopped for the pause never answers a second
+    // StopRecord, so Stop waits for the pause's answer instead.
+    const stopping = recorder.stop();
+    await settle();
+    recorder.add(event(7)); // sent by the page before it answers the pause
+    expect(addSession).not.toHaveBeenCalled();
+    answer();
+    await stopping;
     await pausing;
+    const [, events] = addSession.mock.calls[0] as unknown as [
+      unknown,
+      eventWithTime[],
+    ];
+    expect(events).toContainEqual(event(7));
     const stops = requestToTab.mock.calls.filter(
       (c) => c[1] === ServiceName.StopRecord,
     );
-    expect(stops).toHaveLength(2); // the pause's and the Stop's
+    expect(stops).toHaveLength(1); // the pause's
     expect(recorder.getStatus()).toEqual({
       state: 'idle',
       lastError: { name: 'none' },
