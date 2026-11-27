@@ -50,11 +50,13 @@ export function resolveCaptionStyle(style: unknown): ResolvedCaptionStyle {
       ? (style as Record<string, unknown>)
       : {};
   const outline = cssValue('color', s.outline);
+  // CSS-wide keywords such as `inherit` are valid colors but not shadow colors.
+  const textShadow = outline && cssValue('text-shadow', outlineShadow(outline));
   return {
     position: positions.find((p) => p === s.position) ?? 'bottom',
     fontSize: cssValue('font-size', s.fontSize),
     color: cssValue('color', s.color),
     background: cssValue('background-color', s.background),
-    textShadow: outline && outlineShadow(outline),
+    textShadow,
   };
 }

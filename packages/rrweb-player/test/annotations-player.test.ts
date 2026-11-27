@@ -588,6 +588,21 @@ describe('player annotations', () => {
     expect(target.querySelector('[role="dialog"]')).not.toBeNull();
   });
 
+  it('marks a marker as covering captions only while its panel can show', async () => {
+    await mount();
+    const container = () =>
+      target.querySelector('.rr-custom-event-container')!.classList;
+    expect(container().contains('rr-player__caption-cover')).toBe(true);
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await tick();
+    expect(container().contains('rr-player__caption-cover')).toBe(false);
+    target
+      .querySelector('.rr-custom-event')
+      ?.dispatchEvent(new Event('mouseenter'));
+    await tick();
+    expect(container().contains('rr-player__caption-cover')).toBe(true);
+  });
+
   it('lets marker shortcuts bubble without seeking and dismisses focused timeline marker panels', async () => {
     const player = await mount();
     player.goto(2000, false);
@@ -709,6 +724,10 @@ describe('player annotations', () => {
     player.goto(2000, false);
     await tick();
     const caption = target.querySelector<HTMLElement>('.rr-player__caption');
+    // Styled captions opt into moving above an open marker panel.
+    expect(caption?.classList.contains('rr-player__caption--styled')).toBe(
+      true,
+    );
     expect(caption?.classList.contains('rr-player__caption--top')).toBe(true);
     expect(caption?.classList.contains('rr-player__caption--right')).toBe(true);
     expect(caption?.classList.contains('rr-player__caption--left')).toBe(false);

@@ -34,6 +34,8 @@
   let replayer: Replayer;
   let captionText: string | undefined;
   $: caption = resolveCaptionStyle(captionStyle);
+  // Captions keep today's look and placement until captionStyle is set.
+  $: styledCaption = Object.keys(captionStyle ?? {}).length > 0;
 
   export const getMirror = () => replayer.getMirror();
 
@@ -240,6 +242,13 @@
     bottom: auto;
   }
 
+  /* With captionStyle set, an element covering the bottom of the replay while hovered or focused moves bottom-row captions to the top. */
+  .rr-player:has(.rr-player__caption-cover:hover) .rr-player__caption--styled:not(.rr-player__caption--top):not(.rr-player__caption--middle),
+  .rr-player:has(.rr-player__caption-cover:focus-within) .rr-player__caption--styled:not(.rr-player__caption--top):not(.rr-player__caption--middle) {
+    top: 24px;
+    bottom: auto;
+  }
+
   .rr-player__caption--middle {
     top: 50%;
     bottom: auto;
@@ -286,6 +295,7 @@
       {#if captionText !== undefined}
         <div
           class="rr-player__caption"
+          class:rr-player__caption--styled={styledCaption}
           class:rr-player__caption--top={caption.position.startsWith('top')}
           class:rr-player__caption--middle={['left', 'center', 'right'].includes(caption.position)}
           class:rr-player__caption--left={caption.position.endsWith('left')}

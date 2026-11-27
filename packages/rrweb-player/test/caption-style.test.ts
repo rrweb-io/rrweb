@@ -4,7 +4,9 @@ import { resolveCaptionStyle } from '../src/caption-style';
 
 // happy-dom accepts every value, so stand in for a browser's CSS parser.
 const supports = vi.fn(
-  (property: string, value: string) => !value.startsWith('invalid'),
+  (property: string, value: string) =>
+    !value.startsWith('invalid') &&
+    !(property === 'text-shadow' && value.includes('inherit')),
 );
 function rejectInvalidCss() {
   vi.stubGlobal('CSS', { supports });
@@ -57,5 +59,12 @@ describe('resolveCaptionStyle', () => {
         outline: '  ',
       }),
     ).toEqual({ position: 'bottom' });
+  });
+
+  it('drops an outline color that is not valid in a shadow', () => {
+    rejectInvalidCss();
+    expect(resolveCaptionStyle({ outline: 'inherit' }).textShadow).toBe(
+      undefined,
+    );
   });
 });
