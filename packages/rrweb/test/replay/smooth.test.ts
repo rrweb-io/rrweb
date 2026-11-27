@@ -392,16 +392,33 @@ describe('Replayer', () => {
     expect(applyScroll({ smoothScroll: true }, false)).toBe('instant');
   });
 
-  it('passes added events to the smoothing after the player takes them', async () => {
+  it('passes added events to the smoothing after the player takes them', () => {
     const order: string[] = [];
+    const first = move(1000, 1, 100);
+    const added = move(1200, 2, 200);
+    const events = [first];
     const fake = {
       config: {},
-      mouse: { classList: { add: () => undefined } },
-      service: { send: () => order.push('send') },
-      smooth: { added: () => order.push('added') },
+      service: { state: { context: { events, baselineTime: 1000 } } },
+      getCurrentTime: () => 100,
+      isStalled: () => false,
+      registerEvent: () => order.push('registered'),
+      getCastFn: () => () => undefined,
+      timer: {},
+      smooth: {
+        added: (event: unknown) =>
+          order.push(events.includes(event as never) ? 'added' : 'missing'),
+      },
     };
-    Replayer.prototype.addEvent.call(fake, move(1200, 2, 200));
-    await Promise.resolve();
-    expect(order).toEqual(['send', 'added']);
+    fake.service.state.context = Object.assign(fake.service.state.context, {
+      timer: {
+        isActive: () => true,
+        addAction: () => order.push('scheduled'),
+      },
+    });
+    vi.stubGlobal('requestAnimationFrame', () => 0);
+    vi.stubGlobal('cancelAnimationFrame', () => undefined);
+    Replayer.prototype.addEvent.call(fake, added);
+    expect(order).toEqual(['registered', 'scheduled', 'added']);
   });
 });
