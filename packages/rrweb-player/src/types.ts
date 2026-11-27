@@ -2,6 +2,46 @@ import type { eventWithTime } from '@rrweb/types';
 import type { Replayer, playerConfig } from '@rrweb/replay';
 import type { Mirror } from 'rrweb-snapshot';
 
+export type CaptionPosition =
+  | 'top-left'
+  | 'top'
+  | 'top-right'
+  | 'left'
+  | 'center'
+  | 'right'
+  | 'bottom-left'
+  | 'bottom'
+  | 'bottom-right';
+
+export type CaptionStyle = {
+  /**
+   * Where captions sit in the replay viewport.
+   * @defaultValue `'bottom'`
+   */
+  position?: CaptionPosition;
+  /**
+   * Caption font size, as a valid CSS length such as `20px` or `1.25rem`.
+   * @defaultValue `16px`
+   */
+  fontSize?: string;
+  /**
+   * Caption text color, as a valid CSS color string.
+   * @defaultValue `#fff`
+   */
+  color?: string;
+  /**
+   * Caption background, as a valid CSS color string. Use an alpha value or
+   * `transparent` to let the replay show through.
+   * @defaultValue `rgba(24, 29, 40, 0.94)`
+   */
+  background?: string;
+  /**
+   * Outline color drawn around each letter, like film subtitles. Captions have
+   * no outline when this is not set.
+   */
+  outline?: string;
+};
+
 export type RRwebPlayerOptions = {
   target: HTMLElement;
   props: {
@@ -50,6 +90,12 @@ export type RRwebPlayerOptions = {
      * @defaultValue `true`
      */
     showCaptions?: boolean;
+    /**
+     * Caption position, text size, colors and outline. Values that are not
+     * valid keep the default look.
+     * @defaultValue `{}`
+     */
+    captionStyle?: CaptionStyle;
     /**
      * Customize the custom events style with a key-value map
      * @defaultValue `{}`

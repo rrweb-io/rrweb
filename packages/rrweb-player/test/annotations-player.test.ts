@@ -686,4 +686,45 @@ describe('player annotations', () => {
     expect(target.querySelector('.rr-player__caption')).toBeNull();
     expect(target.querySelector('[title="annotation"]')).toBeNull();
   });
+
+  it('keeps the default caption look without captionStyle', async () => {
+    const player = await mount();
+    player.goto(2000, false);
+    await tick();
+    const caption = target.querySelector<HTMLElement>('.rr-player__caption');
+    expect(caption?.className).toBe('rr-player__caption');
+    expect(caption?.getAttribute('style')).toBeFalsy();
+  });
+
+  it('applies captionStyle position, size, colors and outline', async () => {
+    const player = await mount({
+      captionStyle: {
+        position: 'top-right',
+        fontSize: '24px',
+        color: 'yellow',
+        background: 'transparent',
+        outline: 'black',
+      },
+    });
+    player.goto(2000, false);
+    await tick();
+    const caption = target.querySelector<HTMLElement>('.rr-player__caption');
+    expect(caption?.classList.contains('rr-player__caption--top')).toBe(true);
+    expect(caption?.classList.contains('rr-player__caption--right')).toBe(true);
+    expect(caption?.classList.contains('rr-player__caption--left')).toBe(false);
+    expect(caption?.style.fontSize).toBe('24px');
+    expect(caption?.style.color).toBe('yellow');
+    expect(caption?.style.background).toBe('transparent');
+    expect(caption?.style.textShadow).toContain('black');
+    expect(caption?.textContent).toBe('Click Save\n<b>project</b>');
+
+    player.$set({ captionStyle: { position: 'left' } });
+    await tick();
+    expect(caption?.classList.contains('rr-player__caption--middle')).toBe(
+      true,
+    );
+    expect(caption?.classList.contains('rr-player__caption--left')).toBe(true);
+    expect(caption?.classList.contains('rr-player__caption--top')).toBe(false);
+    expect(caption?.style.color).toBe('');
+  });
 });
