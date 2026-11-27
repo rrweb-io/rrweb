@@ -120,6 +120,14 @@ const movePointer = (
     ? 'mouse'
     : current;
 
+// shown in state mode before the first pointer event
+const initialCursor: CursorState = {
+  cursor: 'default',
+  pointerType: 'mouse',
+  pressed: false,
+  target: null,
+};
+
 function indicatesTouchDevice(e: eventWithTime) {
   return (
     e.type == EventType.IncrementalSnapshot &&
@@ -370,12 +378,7 @@ export class Replayer {
       this.mirror.reset();
       this.styleMirror.reset();
       this.mediaManager.reset();
-      // the rebuild replays pointer events from the start, so forget the
-      // pointer the later position left behind
-      this.cursorPressed = false;
-      this.cursorPointer = 'mouse';
-      this.lastTouch = { x: NaN, y: NaN };
-      this.cursorState = null;
+      this.resetCursor();
     });
 
     const timer = new Timer([], {
@@ -613,6 +616,9 @@ export class Replayer {
    *   event; defaults to 0 or to the current position while stalled
    */
   public play(timeOffset?: number) {
+    // After the end the machine forgets the last event, so it replays from
+    // the start without a PlayBack and the cursor needs the same reset.
+    if (!this.service.state.context.lastPlayedEvent) this.resetCursor();
     timeOffset = timeOffset ?? (this.isStalled() ? this.getCurrentTime() : 0);
     this.stallTimeOffset = null;
     this.stallResumePlay = true;
@@ -736,7 +742,8 @@ export class Replayer {
   }
 
   private registerEvent(event: eventWithTime) {
-    if (indicatesTouchDevice(event)) {
+    // State mode follows the current pointer instead.
+    if (this.config.cursor?.mode !== 'state' && indicatesTouchDevice(event)) {
       this.mouse.classList.add('touch-device');
     }
     this.stallControllers.forEach((sc) => sc.registerEvent(event));
@@ -783,13 +790,7 @@ export class Replayer {
     this.wrapper.appendChild(this.mouse);
     // Before the first pointer event there is no element to read a cursor
     // from, so show the pack's default arrow rather than the dot mode image.
-    if (this.config.cursor?.mode === 'state')
-      this.showCursor({
-        cursor: 'default',
-        pointerType: 'mouse',
-        pressed: false,
-        target: null,
-      });
+    if (this.config.cursor?.mode === 'state') this.showCursor(initialCursor);
 
     if (this.config.mouseTail !== false) {
       this.mouseTail = document.createElement('canvas');
@@ -2323,6 +2324,8 @@ export class Replayer {
           stylesToAdopt;
       else if (targetHost.nodeName === '#document')
         (targetHost as Document).adoptedStyleSheets = stylesToAdopt;
+      // the adopted sheets can change the hovered element's cursor
+      this.scheduleCursor();
 
       /**
        * In the live mode where events are transferred over network without strict order guarantee, some newer events are applied before some old events and adopted stylesheets may haven't been created.
@@ -2399,6 +2402,21 @@ export class Replayer {
     }
   }
 
+  // Replaying from the start forgets the pointer the later position left
+  // behind and shows the cursor from before the first pointer event.
+  private resetCursor() {
+    this.cursorSample = null;
+    this.cursorPressed = false;
+    this.cursorPointer = 'mouse';
+    this.lastTouch = { x: NaN, y: NaN };
+    if (this.config.cursor?.mode !== 'state') return;
+    this.mouse.classList.remove('touch-device');
+    if (this.cursorState) {
+      this.cursorState = null;
+      this.showCursor(initialCursor);
+    }
+  }
+
   // In state mode, shows the touch ring only while the pointer is a finger.
   // Without it, a session with any touch keeps the ring throughout.
   // Mouse events at the last touch point are the browser emulating that
@@ -2428,7 +2446,9 @@ export class Replayer {
     this.cursorPending = true;
     setTimeout(() => {
       this.cursorPending = false;
-      const { target, x, y } = this.cursorSample!;
+      // a seek back can clear the sample before this runs
+      if (!this.cursorSample) return;
+      const { target, x, y } = this.cursorSample;
       const pressed = this.cursorPressed;
       const state: CursorState = {
         cursor: resolveCursor(

@@ -32,6 +32,7 @@ function recordPage(html: string) {
   document
     .querySelectorAll('[id]')
     .forEach((el) => (ids[el.id] = record.mirror.getId(el)));
+  ids.document = record.mirror.getId(document);
   document.body.innerHTML = '';
   const start = events[0].timestamp;
   const at = (dt: number, data: unknown) =>
@@ -167,5 +168,128 @@ describe('replayer cursor state', () => {
     replayer.pause();
     seen.push(m.dataset.cursor);
     expect(seen).toEqual(['default', 'pointer', 'move']);
+  });
+
+  it('follows the current pointer in state mode when touch events are added', async () => {
+    const { events, move } = recordPage('<div id="d"></div>');
+    const touch = move(800, 'd', IncrementalSource.TouchMove, 5);
+    const seen = [];
+    // a touch later in the recording
+    const loaded = new Replayer([...events, move(100, 'd'), touch], {
+      cursor: { mode: 'state' },
+    });
+    seen.push(mouseOf(loaded).classList.contains('touch-device'));
+    // a touch added while paused on a mouse position
+    const live = new Replayer([...events, move(100, 'd')], {
+      cursor: { mode: 'state' },
+    });
+    live.pause(150);
+    await settle();
+    live.addEvent(touch);
+    await settle();
+    seen.push(mouseOf(live).classList.contains('touch-device'));
+    expect(seen).toEqual([false, false]);
+  });
+
+  it('forgets the pen when replaying a finished recording', async () => {
+    const { events, at, ids, move } = recordPage('<div id="d"></div>');
+    const replayer = new Replayer(
+      [
+        ...events,
+        move(100, 'd'),
+        at(150, {
+          source: IncrementalSource.MouseInteraction,
+          type: MouseInteractions.MouseDown,
+          id: ids.d,
+          x: 20,
+          y: 20,
+          pointerType: 1, // pen
+        }),
+        move(200, 'd', IncrementalSource.MouseMove, 30),
+      ],
+      { cursor: { mode: 'state' } },
+    );
+    const finished = new Promise((r) => replayer.on('finish', r));
+    replayer.play(180);
+    await finished;
+    const m = mouseOf(replayer);
+    const seen = [m.dataset.pointer];
+    replayer.pause(110);
+    await settle();
+    seen.push(m.dataset.pointer);
+    expect(seen).toEqual(['pen', 'mouse']);
+  });
+
+  it('refreshes a stationary cursor after a sheet is adopted', async () => {
+    const { events, ids, at, move } = recordPage(
+      '<div id="d" class="c"></div>',
+    );
+    const adopt = (dt: number, styleId: number) =>
+      at(dt, {
+        source: IncrementalSource.AdoptedStyleSheet,
+        id: ids.document,
+        styleIds: [styleId],
+        styles: [{ styleId, rules: [{ rule: '.c { cursor: pointer; }' }] }],
+      });
+    const replayer = new Replayer(
+      [...events, move(100, 'd'), adopt(200, 1), adopt(300, 2)],
+      { cursor: { mode: 'state' } },
+    );
+    replayer.pause(150);
+    await settle();
+    // jsdom ignores adopted sheets in computed style, so count the reads
+    const w = replayer.iframe.contentWindow!;
+    const read = vi.spyOn(w, 'getComputedStyle');
+    const seen = [];
+    replayer.pause(250); // a seek adopts the sheet synchronously
+    await settle();
+    seen.push(read.mock.calls.length);
+    replayer.play(250); // playback adopts it from the timer
+    await settle(150);
+    replayer.pause();
+    seen.push(read.mock.calls.length);
+    expect(seen).toEqual([1, 2]);
+  });
+
+  it('shows the initial cursor after seeking before the first pointer event', async () => {
+    const { events, move, interaction } = recordPage(
+      '<div id="grab" style="cursor: grab"></div>',
+    );
+    const replayer = new Replayer(
+      [
+        ...events,
+        move(100, 'grab'),
+        interaction(150, 'grab', MouseInteractions.MouseDown),
+        move(200, 'grab'),
+      ],
+      { cursor: { mode: 'state' } },
+    );
+    const m = mouseOf(replayer);
+    const seen = [];
+    replayer.pause(210);
+    await settle();
+    seen.push(m.dataset.cursor);
+    replayer.pause(50);
+    await settle();
+    seen.push(m.dataset.cursor);
+    // a refresh still pending from the first seek finds no sample
+    replayer.pause(210);
+    replayer.pause(50);
+    await settle();
+    seen.push(m.dataset.cursor);
+    expect(seen).toEqual(['grabbing', 'default', 'default']);
+
+    // the touch ring clears too
+    const touched = new Replayer(
+      [...events, move(100, 'grab', IncrementalSource.TouchMove)],
+      { cursor: { mode: 'state' } },
+    );
+    touched.pause(110);
+    await settle();
+    const ring = [mouseOf(touched).classList.contains('touch-device')];
+    touched.pause(50);
+    await settle();
+    ring.push(mouseOf(touched).classList.contains('touch-device'));
+    expect(ring).toEqual([true, false]);
   });
 });
