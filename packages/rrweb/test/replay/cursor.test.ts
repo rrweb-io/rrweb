@@ -191,7 +191,7 @@ describe('replayer cursor', () => {
     expect(seen).toEqual(['touch', true]);
   });
 
-  it('shows the cursor in dot mode after a touch in a desktop session', async () => {
+  it('keeps the touch ring in dot mode after a touch in a desktop session', async () => {
     const seen = await page.evaluate(`(async () => {
       const id = events.find((e) => e.type === 3 && e.data.source === 1).data.positions[0].id;
       const touchMove = { type: 3, timestamp: events[0].timestamp + 50, data: { source: 6, positions: [{ x: 5, y: 5, id, timeOffset: 0 }] } };
@@ -204,7 +204,7 @@ describe('replayer cursor', () => {
       }
       return seen;
     })()`);
-    expect(seen).toEqual([true, false]);
+    expect(seen).toEqual([true, true]); // as on main, touch applies to the whole session
   });
 
   it('keeps the pen pointer across mouse moves', async () => {

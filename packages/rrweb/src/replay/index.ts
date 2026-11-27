@@ -340,10 +340,11 @@ export class Replayer {
           this.mousePos.debugData,
         );
         this.mousePos = null;
-        this.mouse.classList.toggle(
-          'touch-device',
-          this.cursorPointer === 'touch',
-        );
+        if (this.config.cursor?.mode === 'state')
+          this.mouse.classList.toggle(
+            'touch-device',
+            this.cursorPointer === 'touch',
+          );
       }
 
       if (this.touchActive === true) {
@@ -369,6 +370,12 @@ export class Replayer {
       this.mirror.reset();
       this.styleMirror.reset();
       this.mediaManager.reset();
+      // the rebuild replays pointer events from the start, so forget the
+      // pointer the later position left behind
+      this.cursorPressed = false;
+      this.cursorPointer = 'mouse';
+      this.lastTouch = { x: NaN, y: NaN };
+      this.cursorState = null;
     });
 
     const timer = new Timer([], {
@@ -1507,6 +1514,9 @@ export class Replayer {
               this.virtualDom.mirror.getNode(d.id) as RRStyleElement | null
             )?.rules.push(d);
         } else this.applyStyleSheetMutation(d);
+        // a rule can change the hovered element's cursor; on a seek the
+        // timeout runs after the flush applies the rule
+        this.scheduleCursor();
         break;
       }
       case IncrementalSource.CanvasMutation: {
@@ -2389,8 +2399,10 @@ export class Replayer {
     }
   }
 
-  // Shows the touch ring only while the pointer is a finger. Mouse events at
-  // the last touch point are the browser emulating that touch, so skip them.
+  // In state mode, shows the touch ring only while the pointer is a finger.
+  // Without it, a session with any touch keeps the ring throughout.
+  // Mouse events at the last touch point are the browser emulating that
+  // touch, so skip them.
   private setPointer(
     pointer: CursorState['pointerType'],
     x: number,
@@ -2404,7 +2416,7 @@ export class Replayer {
     )
       return;
     this.cursorPointer = pointer;
-    if (!isSync)
+    if (!isSync && this.config.cursor?.mode === 'state')
       this.mouse.classList.toggle('touch-device', pointer === 'touch');
   }
 
@@ -2431,15 +2443,15 @@ export class Replayer {
         target,
       };
       const prev = this.cursorState;
-      if (
+      const sameShape =
         prev?.cursor === state.cursor &&
         prev.pointerType === state.pointerType &&
-        prev.pressed === pressed
-      )
-        return;
+        prev.pressed === pressed;
+      // a pack receives the target, so a new target needs a new resolve
+      if (sameShape && prev.target === target) return;
       this.cursorState = state;
       this.showCursor(state);
-      this.emitter.emit(ReplayerEvents.CursorChange, state);
+      if (!sameShape) this.emitter.emit(ReplayerEvents.CursorChange, state);
     });
   }
 
