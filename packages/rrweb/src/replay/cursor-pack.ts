@@ -51,7 +51,7 @@ export const cursors: Record<string, [string, number, number]> = {
     11,
   ],
   grabbing: [
-    '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M9.5 15 Q9.5 12.5 11.5 12.5 Q13.3 12.5 13.5 14.5 L13.5 13.5 Q13.5 11 15.7 11 Q17.9 11 17.9 13.5 L17.9 12.5 Q17.9 10 20.1 10 Q22.3 10 22.3 12.5 L22.3 13.5 Q22.3 11.5 24.3 11.5 Q26.5 11.5 26.5 14 L26.5 20 Q26.5 29 18.5 29 L16 29 Q12 29 10 25.5 L6 20.5 Q5 18.5 6.6 17.3 Q8.2 16.3 9.5 17.6 Z" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M13.5 15 L13.5 18 M17.9 14 L17.9 18 M22.3 14 L22.3 18" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M9.5 15 Q9.5 12.5 11.5 12.5 Q13.3 12.5 13.5 14.5 L13.5 13.5 Q13.5 11 15.7 11 Q17.9 11 17.9 13.5 L17.9 12.5 Q17.9 10 20.1 10 Q22.3 10 22.3 12.5 L22.3 13.5 Q22.3 11.5 24.3 11.5 Q26.5 11.5 26.5 14 L26.5 20 Q26.5 29 18.5 29 L16 29 Q12 29 10 25.5 L6 20.5 Q5 18.5 6.6 17.3 Q8.2 16.3 9.5 17.6 Z" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M13.5 14.5 L13.5 18 M17.9 13.5 L17.9 18 M22.3 13.5 L22.3 18" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/></svg>',
     15,
     14,
   ],
@@ -101,7 +101,7 @@ export const cursors: Record<string, [string, number, number]> = {
     16,
   ],
   pointer: [
-    '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M12 8.5 Q12 6 14.5 6 Q17 6 17 8.5 L17 14 L19 14 Q21 13.8 21.5 15 L23.5 15 Q25.5 15 26 16.6 L27.5 16.6 Q29.5 17 29.5 19.5 L29.5 23.5 Q29.5 29.5 23.5 29.5 L17 29.5 Q13 29.5 11 26.5 L6.5 20 Q5.5 18 7 17 Q8.5 16.2 10 17.5 L12 19.8 Z" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M17 15.5 L17 21 M21.5 16 L21.5 21 M26 17.5 L26 21" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M12 8.5 Q12 6 14.5 6 Q17 6 17 8.5 L17 14 L19 14 Q21 13.8 21.5 15 L23.5 15 Q25.5 15 26 16.6 L27.5 16.6 Q29.5 17 29.5 19.5 L29.5 23.5 Q29.5 29.5 23.5 29.5 L17 29.5 Q13 29.5 11 26.5 L6.5 20 Q5.5 18 7 17 Q8.5 16.2 10 17.5 L12 19.8 Z" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M17 14 L17 21 M21.5 15 L21.5 21 M26 16.6 L26 21" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/></svg>',
     14,
     6,
   ],
