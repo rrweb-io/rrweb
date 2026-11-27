@@ -1,7 +1,11 @@
 # 跨域 IFrame 录制
 
-默认情况下，浏览器很难访问托管在不同域上的 iframe 的内容。 这是一项安全功能，可防止恶意站点访问其他站点上的敏感信息。 rrweb 提供了一个解决方案，但如果您对网站的安全有严格的要求https://stackoverflow.com/a/21629575， 只允许您信任的网站将您的网站嵌入 iframe 中，那我们不建议使用我们的解决方案。
-因为如果您允许记录跨源 iframe，任何恶意网站都可以嵌入您的网站，并且只要它们运行 rrweb，它们就可以记录您网站的所有内容。
+浏览器会阻止父页面访问跨域 iframe 的内容。要录制这些内容，需要在父页面和子页面中运行 rrweb，并启用 `recordCrossOriginIframes`。iframe 会将录制事件发送给父窗口。
+
+> **安全警告：** 除非您[严格限制哪些网站可以嵌入您的页面](https://stackoverflow.com/a/21629575)，并信任这些网站接收页面的录制内容，否则不建议启用跨域 iframe 录制。
+> 浏览器的跨域限制用于保护敏感信息。使用默认的 `crossOriginIframeParentOrigin: '*'` 时，恶意网站可以嵌入您的页面并收集其录制内容。
+
+在子页面中设置 `crossOriginIframeParentOrigin`，可以限制只有受信任的父窗口来源才能接收事件。此选项控制事件的接收方，不会限制哪些网站可以嵌入您的页面。
 
 ## 如何记录跨源 iframe
 
@@ -16,16 +20,28 @@ record({
 });
 ```
 
-在您的子页面中启用重放跨域 iframe:
+在子页面中启用录制。此示例中，父页面位于 `https://app.example.com`:
 
 ```js
 import { record } from '@rrweb/record';
 
 record({
-  emit(event) {}, // 这是 rrweb 所必需的，但子页面不会发出任何事件
   recordCrossOriginIframes: true,
+  crossOriginIframeParentOrigin: 'https://app.example.com',
 });
 ```
+
+子页面会将事件转发给父窗口，不会调用自己的 `emit` 回调，因此不需要提供 `emit` 回调。
+
+## 限制接收事件的父窗口来源
+
+`crossOriginIframeParentOrigin` 是字符串，默认值为 `'*'`。在每个跨域子页面的录制配置中，将其设置为直接父窗口的来源。
+来源包含协议、主机名和必要的端口，例如 `https://app.example.com:8443`。不要包含路径或末尾斜杠。
+
+只有父窗口来源匹配时，浏览器才会传递事件。如果不匹配，父窗口将无法收到该 iframe 的录制事件。在顶层页面中设置此选项不会配置子页面的录制器。
+此选项仅在 `recordCrossOriginIframes` 为 `true` 且录制器从跨域 iframe 转发事件时生效。
+
+对于嵌套的跨域 iframe，应为每个子页面配置其直接父窗口的来源，该来源可能与顶层页面不同。
 
 ## 注意事项
 
@@ -33,7 +49,9 @@ record({
 
 如果您没有在顶层窗口中运行 rrweb，则打开 `recordCrossOriginIframes` 时事件将丢失。
 
-如果顶层窗口是一个恶意网站，它可以监听事件并将它们发送到它选择的服务器。或者如果您的页面上正在运行恶意脚本，则它们可以监听“postMessage”，又因为子窗口和父窗口之间的通信未加密，所以他们可以获取到所有事件。
+使用默认的 `crossOriginIframeParentOrigin: '*'` 时，任何父网站都能接收事件并将其发送到自己的服务器。
+
+限制父窗口来源只控制浏览器向哪个来源传递事件，不会阻止受信任父页面中的脚本读取事件。只应允许您信任的父窗口来源接收 iframe 的录制内容。
 
 ## 将 rrweb 注入跨源 iframe 的选项
 
