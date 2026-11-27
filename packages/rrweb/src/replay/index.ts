@@ -706,6 +706,8 @@ export class Replayer {
         delay: event.delay!,
       });
     }
+    // The smoothing sees an added event once the player has taken it.
+    this.smooth.added(event);
     // throttle to protect against rapid calls to addEvent
     cancelAnimationFrame(this.addEventEmitThrottle);
     this.addEventEmitThrottle = requestAnimationFrame(() => {
@@ -2023,7 +2025,12 @@ export class Replayer {
       return this.debugNodeNotFound(d, d.id);
     }
     const sn = this.mirror.getMeta(target);
-    const behavior = isSync || this.config.smoothScroll ? 'instant' : 'smooth';
+    // smoothScroll glides between samples itself, so it jumps to each one.
+    const behavior = this.config.smoothScroll
+      ? 'instant'
+      : isSync
+      ? 'auto'
+      : 'smooth';
     if (target === this.iframe.contentDocument) {
       this.iframe.contentWindow?.scrollTo({ top: d.y, left: d.x, behavior });
     } else if (sn?.type === NodeType.Document) {

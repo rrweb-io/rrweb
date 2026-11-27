@@ -1,6 +1,13 @@
-import { describe, expect, it } from 'vitest';
-import { EventType, IncrementalSource, type eventWithTime } from '@rrweb/types';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  EventType,
+  IncrementalSource,
+  MouseInteractions,
+  type eventWithTime,
+} from '@rrweb/types';
+import { Replayer } from '../../src/replay';
+import {
+  SmoothReplay,
   cursorAt,
   drawTaperedTrail,
   findNextScroll,
@@ -137,5 +144,181 @@ describe('halo', () => {
   it('smooths speed, recovering faster than it rises', () => {
     expect(smoothSpeed(0, 1)).toBe(0.3);
     expect(smoothSpeed(1, 0)).toBe(0.5);
+  });
+});
+
+const click = (timestamp: number, id: number, x: number): eventWithTime => ({
+  type: EventType.IncrementalSnapshot,
+  timestamp,
+  data: {
+    source: IncrementalSource.MouseInteraction,
+    type: MouseInteractions.Click,
+    id,
+    x,
+    y: 0,
+  },
+});
+const move = (timestamp: number, id: number, x: number): eventWithTime => ({
+  type: EventType.IncrementalSnapshot,
+  timestamp,
+  data: {
+    source: IncrementalSource.MouseMove,
+    positions: [{ id, x, y: 0, timeOffset: 0 }],
+  },
+});
+const scrollTo = (timestamp: number, id: number, y: number): eventWithTime => ({
+  type: EventType.IncrementalSnapshot,
+  timestamp,
+  data: { source: IncrementalSource.Scroll, id, x: 0, y },
+});
+
+/** A SmoothReplay on a stand-in replayer whose clock and frames the test drives. */
+function harness(events: eventWithTime[], config: object) {
+  let frame: FrameRequestCallback = () => undefined;
+  vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+    frame = cb;
+    return 1;
+  });
+  vi.stubGlobal('cancelAnimationFrame', () => undefined);
+  const handlers: Record<string, Array<(e: unknown) => void>> = {};
+  const doc = {};
+  const nodes = new Map<number, object>();
+  const replayer = {
+    config,
+    service: {
+      state: {
+        context: { events, baselineTime: 0 },
+        matches: (s: string) => s === 'playing',
+      },
+    },
+    timer: { timeOffset: 0 },
+    iframe: {},
+    getMirror: () => ({ getNode: (id: number) => nodes.get(id) ?? null }),
+    on(name: string, h: (e: unknown) => void) {
+      (handlers[name] ??= []).push(h);
+    },
+  };
+  const mouse = {
+    classList: { toggle: () => undefined },
+    style: { left: '', top: '', setProperty: () => undefined },
+  };
+  const smooth = new SmoothReplay(
+    replayer as unknown as Replayer,
+    mouse as unknown as HTMLElement,
+    () => undefined,
+  );
+  return {
+    smooth,
+    nodes,
+    element: () => ({ ownerDocument: doc, scrollTo: vi.fn() }),
+    setTime(t: number) {
+      replayer.timer.timeOffset = t;
+    },
+    frameAt(t: number) {
+      replayer.timer.timeOffset = t;
+      frame(0);
+    },
+    cast(e: eventWithTime) {
+      replayer.timer.timeOffset = e.timestamp;
+      handlers['event-cast'].forEach((h) => h(e));
+    },
+    left: () => parseFloat(mouse.style.left),
+  };
+}
+
+describe('SmoothReplay', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('keeps gliding from a reached sample after its target is removed', () => {
+    const h = harness([click(1000, 2, 100), move(1200, 3, 200)], {
+      cursor: { smooth: true },
+    });
+    h.nodes.set(2, h.element());
+    h.nodes.set(3, h.element());
+    h.frameAt(1000);
+    expect(h.left()).toBe(100);
+    h.nodes.delete(2);
+    h.frameAt(1100);
+    expect(h.left()).toBeGreaterThan(120);
+    expect(h.left()).toBeLessThan(180);
+  });
+
+  it('keeps gliding when a click target is removed before the next frame', () => {
+    const events = [click(1000, 2, 100), move(1200, 3, 200)];
+    const h = harness(events, { cursor: { smooth: true } });
+    h.nodes.set(2, h.element());
+    h.nodes.set(3, h.element());
+    h.cast(events[0]);
+    h.nodes.delete(2);
+    h.frameAt(1100);
+    expect(h.left()).toBeGreaterThan(120);
+    expect(h.left()).toBeLessThan(180);
+  });
+
+  it('glides the cursor toward a sample added before its cast', () => {
+    const events = [click(1000, 2, 100)];
+    const h = harness(events, { cursor: { smooth: true } });
+    h.nodes.set(2, h.element());
+    h.frameAt(1000);
+    h.setTime(1100);
+    const added = move(1200, 2, 200);
+    events.push(added);
+    h.smooth.added(added);
+    h.frameAt(1150);
+    expect(h.left()).toBeGreaterThan(130);
+    expect(h.left()).toBeLessThan(200);
+  });
+
+  it('extends the current scroll glide to a scroll added before its cast', () => {
+    const events = [scrollTo(1000, 5, 0)];
+    const h = harness(events, { smoothScroll: true });
+    const el = h.element();
+    h.nodes.set(5, el);
+    h.cast(events[0]);
+    h.setTime(1100);
+    const added = scrollTo(1200, 5, 200);
+    events.push(added);
+    h.smooth.added(added);
+    h.frameAt(1150);
+    expect(el.scrollTo).toHaveBeenLastCalledWith(
+      expect.objectContaining({ top: 150 }),
+    );
+  });
+});
+
+describe('Replayer', () => {
+  const applyScroll = (config: object, isSync: boolean) => {
+    const target = { scrollTo: vi.fn() };
+    const fake = {
+      config,
+      iframe: {},
+      mirror: { getNode: () => target, getMeta: () => null },
+    };
+    (
+      Replayer.prototype as unknown as {
+        applyScroll(d: unknown, isSync: boolean): void;
+      }
+    ).applyScroll.call(fake, { id: 6, x: 0, y: 10 }, isSync);
+    return target.scrollTo.mock.calls[0][0].behavior;
+  };
+
+  it('scrolls as it did before smoothScroll unless smoothScroll is set', () => {
+    expect(applyScroll({}, true)).toBe('auto');
+    expect(applyScroll({}, false)).toBe('smooth');
+    expect(applyScroll({ smoothScroll: true }, true)).toBe('instant');
+    expect(applyScroll({ smoothScroll: true }, false)).toBe('instant');
+  });
+
+  it('passes added events to the smoothing after the player takes them', async () => {
+    const order: string[] = [];
+    const fake = {
+      config: {},
+      mouse: { classList: { add: () => undefined } },
+      service: { send: () => order.push('send') },
+      smooth: { added: () => order.push('added') },
+    };
+    Replayer.prototype.addEvent.call(fake, move(1200, 2, 200));
+    await Promise.resolve();
+    expect(order).toEqual(['send', 'added']);
   });
 });

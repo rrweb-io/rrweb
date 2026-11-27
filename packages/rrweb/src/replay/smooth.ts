@@ -222,10 +222,18 @@ export class SmoothReplay {
   private lastGuard = 0;
   private last = { x: NaN, y: NaN, t: NaN };
   private speed = 0;
-  /** Iframe offset of each sample, measured when the cursor reaches it. */
-  private bases = new WeakMap<CursorSample, DocumentDimension>();
-  /** Pointer events read by seed(); any other cast is newly added. */
-  private seen = new WeakSet<eventWithTime>();
+  /**
+   * Document and iframe offset of each sample, recorded when it is cast or
+   * reached, so they still apply after its target is removed.
+   */
+  private spaces = new WeakMap<
+    CursorSample,
+    { doc: Document | null; base: DocumentDimension }
+  >();
+  /** Samples queued from each pointer event, so a cast never queues them twice. */
+  private queued = new WeakMap<eventWithTime, CursorSample[]>();
+  /** Last scroll applied to each target, whose glide an added event can extend. */
+  private lastScroll = new Map<number, eventWithTime & { data: scrollData }>();
   private live = false;
   private cursorOn = false;
   private scrollOn = false;
@@ -286,6 +294,7 @@ export class SmoothReplay {
     this.samples.length = 0;
     this.glides.clear();
     this.desired.clear();
+    this.lastScroll.clear();
     // The first snapshot is already on screen as the poster, even before its time.
     let poster = true;
     for (const e of events) {
@@ -301,7 +310,7 @@ export class SmoothReplay {
       } else if (this.cursorOn) {
         const add = cursorSamples(e);
         if (!add.length) continue;
-        this.seen.add(e);
+        this.queued.set(e, add);
         if (past) seedSample(this.samples, add[add.length - 1]);
         else queueSamples(this.samples, add);
       }
@@ -309,22 +318,51 @@ export class SmoothReplay {
     this.start();
   }
 
+  /**
+   * Takes in an event added during playback. Events at or before the current
+   * time are cast right away and handled there; later ones join the cursor
+   * buffer and the scroll glides now, before they are cast.
+   */
+  added(e: eventWithTime) {
+    if (!this.enabled || e.type !== EventType.IncrementalSnapshot) return;
+    if (e.timestamp <= this.now()) return;
+    if (e.data.source === IncrementalSource.Scroll) {
+      const last = this.scrollOn && this.lastScroll.get(e.data.id);
+      if (last) this.trackScroll(last, last.data);
+    } else if (this.cursorOn) this.queue(e);
+  }
+
+  private queue(e: eventWithTime) {
+    let add = this.queued.get(e);
+    if (!add) {
+      add = cursorSamples(e);
+      if (add.length) this.queued.set(e, add);
+      queueSamples(this.samples, add);
+    }
+    return add;
+  }
+
   private trackCast(e: eventWithTime) {
     if (e.type !== EventType.IncrementalSnapshot) return;
     if (e.data.source === IncrementalSource.Scroll) {
       if (this.scrollOn) this.trackScroll(e, e.data);
-    } else if (this.cursorOn && !this.seen.has(e))
-      queueSamples(this.samples, cursorSamples(e));
+    } else if (this.cursorOn) {
+      // The page can remove a click's target right after it, as when a
+      // modal closes, so record each sample's space while its target exists.
+      for (const sample of this.queue(e)) this.spaceOf(sample);
+    }
   }
 
   private trackSnapshot(e: fullSnapshotEvent) {
     this.glides.clear();
     this.desired.clear();
+    this.lastScroll.clear();
     const { left: x, top: y } = e.data.initialOffset;
     this.desired.set(e.data.node.id, { x, y });
   }
 
   private trackScroll(e: eventWithTime, d: scrollData) {
+    this.lastScroll.set(d.id, e as eventWithTime & { data: scrollData });
     this.desired.set(d.id, { x: d.x, y: d.y });
     const next = findNextScroll(
       this.replayer.service.state.context.events,
@@ -389,16 +427,12 @@ export class SmoothReplay {
     const s = this.samples;
     while (s.length > 2 && s[2].t <= t) s.shift();
     const p = cursorAt(s, t, this.sameDocument);
-    const target = p && this.replayer.getMirror().getNode(p.id);
-    if (!p || !target) return;
+    if (!p) return;
     // Measured once per sample, as moveAndHover does: a still pointer stays
     // put when the page scrolls a nested iframe under it.
     const reached = s[1] && s[1].t <= t ? s[1] : s[0];
-    let base = this.bases.get(reached);
-    if (!base) {
-      base = getBaseDimension(target, this.replayer.iframe);
-      this.bases.set(reached, base);
-    }
+    const base = this.spaceOf(reached)?.base;
+    if (!base) return;
     const x = p.x * base.absoluteScale + base.x;
     const y = p.y * base.absoluteScale + base.y;
     const last = this.last;
@@ -415,18 +449,34 @@ export class SmoothReplay {
     this.last = { x, y, t };
   }
 
+  /** The sample's recorded document and offset, recorded now if its target exists. */
+  private spaceOf(sample: CursorSample) {
+    let space = this.spaces.get(sample);
+    const target = !space && this.replayer.getMirror().getNode(sample.id);
+    if (target) {
+      space = {
+        doc: target.ownerDocument,
+        base: getBaseDimension(target, this.replayer.iframe),
+      };
+      this.spaces.set(sample, space);
+    }
+    return space;
+  }
+
   /**
    * Recorded positions are viewport coordinates of the document they were
    * captured in, so only positions from the same document can be blended.
    */
   private sameDocument = (a: CursorSample, b: CursorSample) => {
-    const mirror = this.replayer.getMirror();
-    return (
-      !b.jump &&
-      (a.id === b.id ||
-        mirror.getNode(a.id)?.ownerDocument ===
-          mirror.getNode(b.id)?.ownerDocument)
-    );
+    if (b.jump) return false;
+    if (a.id === b.id) return true;
+    const docOf = (s: CursorSample) => {
+      const space = this.spaces.get(s);
+      return space
+        ? space.doc
+        : this.replayer.getMirror().getNode(s.id)?.ownerDocument;
+    };
+    return docOf(a) === docOf(b);
   };
 
   private stepScroll(t: number) {
