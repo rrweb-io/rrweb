@@ -3,6 +3,8 @@ import {
   EventType,
   IncrementalSource,
   MouseInteractions,
+  ReplayerEvents,
+  type actionWithDelay,
   type eventWithTime,
 } from '@rrweb/types';
 import { Replayer } from '../../src/replay';
@@ -158,12 +160,21 @@ const click = (timestamp: number, id: number, x: number): eventWithTime => ({
     y: 0,
   },
 });
-const move = (timestamp: number, id: number, x: number): eventWithTime => ({
+const move = (
+  timestamp: number,
+  id: number,
+  x: number,
+  earlier: Array<{ x: number; timeOffset: number }> = [],
+): eventWithTime => ({
   type: EventType.IncrementalSnapshot,
   timestamp,
   data: {
     source: IncrementalSource.MouseMove,
-    positions: [{ id, x, y: 0, timeOffset: 0 }],
+    positions: [...earlier, { x, timeOffset: 0 }].map((p) => ({
+      ...p,
+      id,
+      y: 0,
+    })),
   },
 });
 const scrollTo = (timestamp: number, id: number, y: number): eventWithTime => ({
@@ -191,7 +202,13 @@ function harness(events: eventWithTime[], config: object) {
         matches: (s: string) => s === 'playing',
       },
     },
-    timer: { timeOffset: 0 },
+    timer: {
+      timeOffset: 0,
+      actions: [] as actionWithDelay[],
+      addAction(a: actionWithDelay) {
+        this.actions.push(a);
+      },
+    },
     iframe: {},
     getMirror: () => ({ getNode: (id: number) => nodes.get(id) ?? null }),
     on(name: string, h: (e: unknown) => void) {
@@ -218,8 +235,19 @@ function harness(events: eventWithTime[], config: object) {
       replayer.timer.timeOffset = t;
       frame(0);
     },
-    cast(e: eventWithTime) {
-      replayer.timer.timeOffset = e.timestamp;
+    /** Runs the timer actions due by t, as the replayer's timer would. */
+    runActions(t: number) {
+      replayer.timer.timeOffset = t;
+      const { actions } = replayer.timer;
+      actions.sort((a, b) => a.delay - b.delay);
+      while (actions.length && actions[0].delay <= t)
+        actions.shift()!.doAction();
+    },
+    emit(name: ReplayerEvents) {
+      handlers[name].forEach((h) => h(undefined));
+    },
+    cast(e: eventWithTime, at = e.timestamp) {
+      replayer.timer.timeOffset = at;
       handlers['event-cast'].forEach((h) => h(e));
     },
     left: () => parseFloat(mouse.style.left),
@@ -238,9 +266,15 @@ describe('SmoothReplay', () => {
     h.frameAt(1000);
     expect(h.left()).toBe(100);
     h.nodes.delete(2);
-    h.frameAt(1100);
-    expect(h.left()).toBeGreaterThan(120);
-    expect(h.left()).toBeLessThan(180);
+    h.frameAt(1050);
+    const before = h.left();
+    expect(before).toBeGreaterThan(100);
+    h.emit(ReplayerEvents.Pause);
+    h.setTime(1100);
+    h.emit(ReplayerEvents.Start);
+    h.frameAt(1150);
+    expect(h.left()).toBeGreaterThan(before);
+    expect(h.left()).toBeLessThan(200);
   });
 
   it('keeps gliding when a click target is removed before the next frame', () => {
@@ -283,6 +317,55 @@ describe('SmoothReplay', () => {
     expect(el.scrollTo).toHaveBeenLastCalledWith(
       expect.objectContaining({ top: 150 }),
     );
+  });
+});
+
+describe('SmoothReplay in a nested iframe', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  /** A target inside an iframe whose left edge the test can move. */
+  const framed = () => {
+    const frame = {
+      left: 300,
+      clientHeight: 100,
+      ownerDocument: {},
+      getBoundingClientRect() {
+        return { x: this.left, y: 0, height: 100 };
+      },
+    };
+    return {
+      frame,
+      node: { ownerDocument: { defaultView: { frameElement: frame } } },
+    };
+  };
+
+  it('measures each sample of a move batch at its own move', () => {
+    const batch = move(1100, 3, 20, [{ x: 0, timeOffset: -100 }]);
+    const h = harness([batch], { cursor: { smooth: true } });
+    const { frame, node } = framed();
+    h.nodes.set(3, node);
+    h.cast(batch, 1000);
+    h.frameAt(1000);
+    expect(h.left()).toBe(300);
+    frame.left = 100; // the parent page scrolls the iframe
+    h.runActions(1100);
+    h.frameAt(1100);
+    expect(h.left()).toBe(120);
+  });
+
+  it('measures samples again after a seek back', () => {
+    const events = [click(1000, 3, 0), click(1200, 3, 50)];
+    const h = harness(events, { cursor: { smooth: true } });
+    const { frame, node } = framed();
+    h.nodes.set(3, node);
+    h.frameAt(1000);
+    expect(h.left()).toBe(300);
+    h.frameAt(1300);
+    frame.left = 100;
+    h.setTime(900);
+    h.emit(ReplayerEvents.Start);
+    h.frameAt(1000);
+    expect(h.left()).toBe(100);
   });
 });
 

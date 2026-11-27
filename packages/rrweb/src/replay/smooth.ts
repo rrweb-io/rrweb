@@ -291,6 +291,9 @@ export class SmoothReplay {
     if (!this.enabled) return this.stop();
     const { events } = this.replayer.service.state.context;
     const now = this.now();
+    // Recorded spaces hold for the rest of the recording when resuming
+    // forward. A seek back replays those moments, so they are measured again.
+    if (now < this.last.t) this.spaces = new WeakMap();
     this.samples.length = 0;
     this.glides.clear();
     this.desired.clear();
@@ -308,7 +311,8 @@ export class SmoothReplay {
       ) {
         if (this.scrollOn && past) this.trackScroll(e, e.data);
       } else if (this.cursorOn) {
-        const add = cursorSamples(e);
+        // Reuses the samples queued before, which keep their recorded spaces.
+        const add = this.queued.get(e) ?? cursorSamples(e);
         if (!add.length) continue;
         this.queued.set(e, add);
         if (past) seedSample(this.samples, add[add.length - 1]);
@@ -349,7 +353,18 @@ export class SmoothReplay {
     } else if (this.cursorOn) {
       // The page can remove a click's target right after it, as when a
       // modal closes, so record each sample's space while its target exists.
-      for (const sample of this.queue(e)) this.spaceOf(sample);
+      // A mouse-move batch is cast at its first sample, so later samples are
+      // recorded at their own move, after any scroll that moved an iframe.
+      const now = this.now();
+      const { baselineTime } = this.replayer.service.state.context;
+      for (const sample of this.queue(e)) {
+        if (sample.t <= now) this.spaceOf(sample);
+        else
+          this.replayer.timer.addAction({
+            doAction: () => this.spaceOf(sample),
+            delay: sample.t - baselineTime,
+          });
+      }
     }
   }
 
