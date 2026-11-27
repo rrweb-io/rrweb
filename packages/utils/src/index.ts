@@ -112,26 +112,21 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
   );
 
   if (isUntaintedAccessors && isUntaintedMethods) {
-    untaintedBasePrototype[key] = defaultObj.prototype as BasePrototypeCache[T];
-    return defaultObj.prototype as BasePrototypeCache[T];
+    untaintedBasePrototype[key] = defaultPrototype; // cache success
+    return defaultPrototype;
   }
 
+  let iframeEl: HTMLIFrameElement | undefined;
   try {
-    const iframeEl = document.createElement('iframe');
+    iframeEl = document.createElement('iframe');
     iframeEl.style.display = 'none';
     document.body.appendChild(iframeEl);
     const win = iframeEl.contentWindow;
-    if (!win) return defaultObj.prototype as BasePrototypeCache[T];
-
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
     const untaintedObject = (win as any)[key]
       .prototype as BasePrototypeCache[T];
-
-    if (!untaintedObject) {
-      iframeEl.remove();
-      return defaultPrototype;
-    }
-
+    if (!untaintedObject)
+      throw new Error('no prototype on untainted constructor');
     // WebKit/Safari: WebKit tears down an iframe's ScriptExecutionContext when it is
     // detached from the DOM. MutationObserver.deliver() silently drops callbacks when
     // m_callback->scriptExecutionContext() returns null (webkit.org/b/179224).
@@ -141,13 +136,14 @@ export function getUntaintedPrototype<T extends keyof BasePrototypeCache>(
       // rr-block prevents rrweb from serializing this iframe in subsequent snapshots
       iframeEl.classList.add('rr-block');
       iframeEl.setAttribute('__rrwebUntaintedMutationObserver', '');
-      untaintedBaseIframeCleanup[key] = () => iframeEl.remove();
+      untaintedBaseIframeCleanup[key] = () => iframeEl?.remove();
     } else {
       iframeEl.remove();
     }
-
-    return (untaintedBasePrototype[key] = untaintedObject);
+    untaintedBasePrototype[key] = untaintedObject; // cache success
+    return untaintedObject;
   } catch {
+    iframeEl?.remove();
     return defaultPrototype;
   }
 }
