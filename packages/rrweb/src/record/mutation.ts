@@ -29,6 +29,7 @@ import {
   inDom,
   getShadowHost,
   closestElementOfNode,
+  nowTimestamp,
 } from '../utils';
 import dom from '@rrweb/utils';
 
@@ -130,9 +131,9 @@ export default class MutationBuffer {
     this.frozen = true;
   }
 
-  public unfreeze() {
+  public unfreeze(now: number) {
     this.frozen = false;
-    this.emit();
+    this.emit(now);
   }
 
   public isFrozen() {
@@ -153,9 +154,13 @@ export default class MutationBuffer {
     this.emit(); // clears buffer if not locked/frozen
   };
 
-  public emit = () => {
+  public emit = (now?: number) => {
     if (this.frozen || this.locked) {
       return;
+    }
+
+    if (typeof now === 'undefined') {
+      now = nowTimestamp();
     }
 
     // delay any modification of the mirror until this function
@@ -426,7 +431,7 @@ export default class MutationBuffer {
     this.removesSubTreeCache = new Set<Node>();
     this.movedMap = {};
 
-    this.mutationCb(payload);
+    this.mutationCb(payload, now);
   };
 
   private genTextAreaValueMutation = (textarea: HTMLTextAreaElement) => {
