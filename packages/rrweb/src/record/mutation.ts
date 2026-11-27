@@ -565,7 +565,10 @@ export default class MutationBuffer {
             }
             const old = this.unattachedDoc.createElement('span');
             if (m.oldValue) {
-              old.setAttribute('style', m.oldValue);
+              // set via CSSOM rather than setAttribute: the unattached document inherits the
+              // page's CSP, so under `style-src-attr 'none'` setAttribute('style') is blocked
+              // (and reported as a violation), leaving `old` empty and removed properties undetected
+              old.style.cssText = m.oldValue;
             }
             for (const pname of Array.from(target.style)) {
               const newValue = target.style.getPropertyValue(pname);
