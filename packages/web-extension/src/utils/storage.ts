@@ -23,10 +23,11 @@ export async function getEventStore() {
   });
 }
 
+/** A session's events, or undefined if it is no longer stored. */
 export async function getEvents(id: string) {
   const db = await getEventStore();
-  const data = (await db.get(EventStoreName, id)) as EventData;
-  return data.events;
+  const data = (await db.get(EventStoreName, id)) as EventData | undefined;
+  return data?.events;
 }
 
 const SessionStoreName = 'sessions';
@@ -118,4 +119,43 @@ export async function downloadSessions(ids: string[]) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
+}
+
+/**
+ * What a pending share still has to send, kept until Share delivers it. A
+ * database of its own, so the offline stores keep version 1. The share posts
+ * with the key of the organization connected at the time, never a stored one.
+ * unsent: `events` are serialized events the server has not accepted yet, in
+ * order.
+ * delivered: every event arrived, but the session could not be stored as
+ * shared; the next Share only stores it as shared and sends nothing.
+ */
+const UnsentStoreName = 'unsent-events';
+export type StoredUnsentEvents =
+  | { recordingId: string; state: 'unsent'; events: string[] }
+  | { recordingId: string; state: 'delivered' };
+
+function getUnsentStore() {
+  return openDB<StoredUnsentEvents>(UnsentStoreName, 1, {
+    upgrade(db) {
+      db.createObjectStore(UnsentStoreName, { keyPath: 'recordingId' });
+    },
+  });
+}
+
+export async function putUnsentEvents(upload: StoredUnsentEvents) {
+  const db = await getUnsentStore();
+  await db.put(UnsentStoreName, upload);
+}
+
+export async function getUnsentEvents(recordingId: string) {
+  const db = await getUnsentStore();
+  return (await db.get(UnsentStoreName, recordingId)) as
+    | StoredUnsentEvents
+    | undefined;
+}
+
+export async function deleteUnsentEvents(recordingId: string) {
+  const db = await getUnsentStore();
+  await db.delete(UnsentStoreName, recordingId);
 }
