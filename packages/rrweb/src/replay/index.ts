@@ -74,7 +74,6 @@ import type {
   StallController,
 } from '@rrweb/types';
 import {
-  polyfill,
   queueToResolveTrees,
   iterateResolveTree,
   type AppendedIframe,
@@ -773,9 +772,6 @@ export class Replayer {
     // hide iframe before first meta event
     this.iframe.style.display = 'none';
     this.disableInteract();
-    if (this.iframe.contentWindow) {
-      polyfill(this.iframe.contentWindow as IWindow);
-    }
   }
 
   private handleResize = (dimension: viewportResizeDimension) => {

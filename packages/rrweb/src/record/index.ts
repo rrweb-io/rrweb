@@ -10,7 +10,6 @@ import {
   getWindowWidth,
   getWindowHeight,
   getWindowScroll,
-  polyfill,
   hasShadowRoot,
   isSerializedIframe,
   isSerializedStylesheet,
@@ -162,8 +161,6 @@ function record<T = eventWithTime>(
       : { password: true };
 
   const slimDOMOptions = slimDOMDefaults(_slimDOMOptions);
-
-  polyfill();
 
   let lastFullSnapshotEvent: eventWithTime;
   let incrementalSnapshotCount = 0;
