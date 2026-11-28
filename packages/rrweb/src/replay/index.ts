@@ -2418,13 +2418,23 @@ export class Replayer {
 
   // Switching modes at runtime installs or removes the state mode image;
   // without this, dot mode keeps showing the last resolved cursor.
+  // A new pack or resolveAuto applies to the cursor already shown.
   private applyCursorMode() {
     if (this.config.cursor?.mode === 'state') {
-      if (this.cursorState) return;
-      this.cursorState = initialCursor;
-      this.showCursor(initialCursor);
+      this.mouse.classList.toggle(
+        'touch-device',
+        this.cursorPointer === 'touch',
+      );
+      this.cursorState = this.cursorState || initialCursor;
+      this.showCursor(this.cursorState);
+      this.scheduleCursor();
       return;
     }
+    // dot mode shows the touch ring for the whole session
+    this.mouse.classList.toggle(
+      'touch-device',
+      this.service.state.context.events.some(indicatesTouchDevice),
+    );
     this.cursorSample = null;
     this.cursorState = null;
     delete this.mouse.dataset.cursor;
@@ -2482,17 +2492,19 @@ export class Replayer {
       // a seek back can clear the sample before this runs
       if (!this.cursorSample) return;
       const { id, x, y } = this.cursorSample;
+      // a removed node has left the mirror, and shows the default arrow
       const target = this.mirror.getNode(id) as Element | null;
-      if (!target) return;
       const pressed = this.cursorPressed;
       const state: CursorState = {
-        cursor: resolveCursor(
-          target,
-          x,
-          y,
-          this.config.cursor?.resolveAuto !== false,
-          pressed,
-        ),
+        cursor: target
+          ? resolveCursor(
+              target,
+              x,
+              y,
+              this.config.cursor?.resolveAuto !== false,
+              pressed,
+            )
+          : 'default',
         pointerType: this.cursorPointer,
         pressed,
         target,

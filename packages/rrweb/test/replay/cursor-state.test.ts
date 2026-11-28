@@ -33,6 +33,7 @@ function recordPage(html: string) {
     .querySelectorAll('[id]')
     .forEach((el) => (ids[el.id] = record.mirror.getId(el)));
   ids.document = record.mirror.getId(document);
+  ids.body = record.mirror.getId(document.body);
   document.body.innerHTML = '';
   const start = events[0].timestamp;
   const at = (dt: number, data: unknown) =>
@@ -353,6 +354,34 @@ describe('replayer cursor state', () => {
     expect(mouseOf(replayer).dataset.cursor).toBe('move');
   });
 
+  it('shows the default arrow once the hovered element is removed', async () => {
+    const { events, ids, at, move } = recordPage(
+      '<div id="a" style="cursor: pointer"></div>',
+    );
+    const replayer = new Replayer(
+      [
+        ...events,
+        move(100, 'a'),
+        at(150, {
+          source: IncrementalSource.Mutation,
+          texts: [],
+          attributes: [],
+          adds: [],
+          removes: [{ parentId: ids.body, id: ids.a }],
+        }),
+      ],
+      { cursor: { mode: 'state' } },
+    );
+    const m = mouseOf(replayer);
+    const seen = [];
+    for (const t of [120, 160]) {
+      replayer.pause(t);
+      await settle();
+      seen.push(m.dataset.cursor);
+    }
+    expect(seen).toEqual(['pointer', 'default']);
+  });
+
   it('refreshes a stationary cursor when focus changes', async () => {
     const { events, move, interaction } = recordPage('<input id="i">');
     const replayer = new Replayer(
@@ -416,5 +445,46 @@ describe('replayer cursor state', () => {
     // and back to state mode, which shows the arrow until the next pointer event
     replayer.setConfig({ cursor: { mode: 'state' } });
     expect(m.dataset.cursor).toBe('default');
+  });
+
+  it('sets the touch ring for the new mode when switching modes', async () => {
+    const { events, move } = recordPage('<div id="d"></div>');
+    const replayer = new Replayer([
+      ...events,
+      move(100, 'd'),
+      move(800, 'd', IncrementalSource.TouchMove, 5),
+    ]);
+    const m = mouseOf(replayer);
+    replayer.pause(150);
+    await settle();
+    const seen = [m.classList.contains('touch-device')];
+    replayer.setConfig({ cursor: { mode: 'state' } });
+    seen.push(m.classList.contains('touch-device'));
+    replayer.setConfig({ cursor: { mode: 'dot' } });
+    seen.push(m.classList.contains('touch-device'));
+    // dot mode keeps the ring for a session with touch; state mode follows
+    // the mouse under it
+    expect(seen).toEqual([true, false, true]);
+  });
+
+  it('shows the current cursor from a pack set while paused', async () => {
+    const { events, move } = recordPage(
+      '<div id="d" style="cursor: pointer"></div>',
+    );
+    const pack = (url: string): CursorPack => ({
+      name: url,
+      resolve: () => ({ url, hotspot: [0, 0] }),
+    });
+    const replayer = new Replayer([...events, move(100, 'd')], {
+      cursor: { mode: 'state', pack: pack('a.svg') },
+    });
+    const m = mouseOf(replayer);
+    replayer.pause(150);
+    await settle();
+    replayer.setConfig({ cursor: { mode: 'state', pack: pack('b.svg') } });
+    await settle();
+    expect([m.dataset.cursor, m.style.getPropertyValue('--rr-cursor')]).toEqual(
+      ['pointer', 'url("b.svg")'],
+    );
   });
 });
