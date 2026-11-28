@@ -251,7 +251,12 @@ export class SmoothReplay {
     // A seek back replays earlier moments, so their spaces are measured
     // again. This runs before the replay up to the seek records new ones.
     replayer.on(ReplayerEvents.PlayBack, () => (this.spaces = new WeakMap()));
-    replayer.on(ReplayerEvents.Finish, () => this.stop());
+    // Playing after the end starts over without a PlayBack, so the spaces
+    // are cleared here for the next run to measure them again.
+    replayer.on(ReplayerEvents.Finish, () => {
+      this.stop();
+      this.spaces = new WeakMap();
+    });
     replayer.on(ReplayerEvents.Destroy, () => this.stop());
     replayer.on(ReplayerEvents.StateChange, (s) => {
       const p = (s as { player?: { matches(v: string): boolean } }).player;

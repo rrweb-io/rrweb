@@ -409,6 +409,23 @@ describe('SmoothReplay in a nested iframe', () => {
     h.frameAt(1000);
     expect(h.left()).toBe(100);
   });
+
+  it('measures samples again when playing after the end', () => {
+    const events = [click(1000, 3, 0), click(1200, 3, 50)];
+    const h = harness(events, { cursor: { smooth: true } });
+    const { frame, node } = framed();
+    h.nodes.set(3, node);
+    h.frameAt(1000);
+    expect(h.left()).toBe(300);
+    h.frameAt(1300);
+    h.emit(ReplayerEvents.Finish);
+    frame.left = 100;
+    // play(0) after the end sends no PlayBack.
+    h.setTime(0);
+    h.emit(ReplayerEvents.Start);
+    h.frameAt(1000);
+    expect(h.left()).toBe(100);
+  });
 });
 
 describe('Replayer', () => {
