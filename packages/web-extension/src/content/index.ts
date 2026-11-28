@@ -11,7 +11,6 @@ import {
   EventName,
 } from '~/types';
 import Channel from '~/utils/channel';
-import { isInCrossOriginIFrame } from '~/utils';
 
 const channel = new Channel();
 
@@ -29,16 +28,21 @@ void (() => {
           {
             message: MessageName.StartRecord,
             config: {
-              recordCrossOriginIframes: true,
+              // Cross-origin iframe events must not be forwarded through the
+              // embedding page's window. That would make the recorded data
+              // visible to scripts in the parent page.
+              recordCrossOriginIframes: false,
             },
           },
           location.origin,
         );
     },
   );
-  if (isInCrossOriginIFrame()) {
-    void initCrossOriginIframe();
-  } else if (window === window.top) {
+  // Same-origin iframes are recorded by rrweb from the top-level document.
+  // Do not start an independent recorder in cross-origin frames: rrweb's
+  // cross-origin transport uses window.parent.postMessage(), which is
+  // observable by the untrusted embedding page.
+  if (window === window.top) {
     void initMainPage();
   }
 })();
@@ -106,28 +110,6 @@ async function initMainPage() {
   ) {
     startRecord();
   }
-}
-
-async function initCrossOriginIframe() {
-  Browser.storage.local.onChanged.addListener((change) => {
-    if (change[LocalDataKey.recorderStatus]) {
-      const statusChange = change[LocalDataKey.recorderStatus];
-      const newStatus =
-        statusChange.newValue as LocalData[LocalDataKey.recorderStatus];
-      if (newStatus.status === RecorderStatus.RECORDING) startRecord();
-      else
-        window.postMessage(
-          { message: MessageName.StopRecord },
-          location.origin,
-        );
-    }
-  });
-  const localData = (await Browser.storage.local.get()) as LocalData;
-  if (
-    localData?.[LocalDataKey.recorderStatus]?.status ===
-    RecorderStatus.RECORDING
-  )
-    startRecord();
 }
 
 function startRecord() {
