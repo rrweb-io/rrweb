@@ -161,6 +161,68 @@ describe('rrweb-plugin-network-record', () => {
     cleanup();
 
     expect(events[0].requests[0].method).toBe('POST');
+    expect(events[0].requests[0].status).toBe(200);
+    expect(events[0].requests[0].startTime).toBe(0);
+    expect(events[0].requests[0].endTime).toBe(1);
+    expect(events[0].requests[0].duration).toBe(1);
+  });
+
+  it('records failure status and elapsed time when a fetch has no performance entry', async () => {
+    vi.useFakeTimers();
+    const url = 'https://example.com/api';
+    const events: NetworkData[] = [];
+    const win = createMockWindow({
+      fetchImpl: async () => {
+        throw new TypeError('Simulated network failure');
+      },
+    });
+    const plugin = getRecordNetworkPlugin({
+      recordBody: true,
+      initiatorTypes: ['fetch'],
+    });
+    const cleanup = plugin.observer(
+      (data: NetworkData) => events.push(data),
+      win,
+      plugin.options,
+    );
+
+    await expect(win.fetch(url)).rejects.toThrow('Simulated network failure');
+    await vi.runAllTimersAsync();
+    await flushMicrotasks();
+    cleanup();
+
+    expect(events[0].requests[0].status).toBe(0);
+    expect(events[0].requests[0].startTime).toBe(0);
+    expect(events[0].requests[0].endTime).toBe(1);
+    expect(events[0].requests[0].duration).toBe(1);
+  });
+
+  it('records HTTP status and elapsed time when a fetch has no performance entry', async () => {
+    vi.useFakeTimers();
+    const url = 'https://example.com/api';
+    const events: NetworkData[] = [];
+    const win = createMockWindow({
+      fetchImpl: async () => new Response(null, { status: 503 }),
+    });
+    const plugin = getRecordNetworkPlugin({
+      recordBody: true,
+      initiatorTypes: ['fetch'],
+    });
+    const cleanup = plugin.observer(
+      (data: NetworkData) => events.push(data),
+      win,
+      plugin.options,
+    );
+
+    await win.fetch(url);
+    await vi.runAllTimersAsync();
+    await flushMicrotasks();
+    cleanup();
+
+    expect(events[0].requests[0].status).toBe(503);
+    expect(events[0].requests[0].startTime).toBe(0);
+    expect(events[0].requests[0].endTime).toBe(1);
+    expect(events[0].requests[0].duration).toBe(1);
   });
 
   it('records the XHR method when performance timing data is unavailable', async () => {
@@ -181,12 +243,17 @@ describe('rrweb-plugin-network-record', () => {
     const xhr = new win.XMLHttpRequest();
     xhr.open('POST', url);
     xhr.send('{"ok":true}');
+    (xhr as unknown as { status: number }).status = 500;
     (xhr as unknown as { complete: () => void }).complete();
     await vi.runAllTimersAsync();
     await flushMicrotasks();
     cleanup();
 
     expect(events[0].requests[0].method).toBe('POST');
+    expect(events[0].requests[0].status).toBe(500);
+    expect(events[0].requests[0].startTime).toBe(0);
+    expect(events[0].requests[0].endTime).toBe(1);
+    expect(events[0].requests[0].duration).toBe(1);
   });
 
   it('filters initial navigation entries by initiatorTypes', () => {
