@@ -320,4 +320,101 @@ describe('replayer cursor state', () => {
     // cursor over #d is no change
     expect(changes).toEqual(['grabbing', 'default']);
   });
+
+  it('follows the hovered element into the page a checkout rebuilds', async () => {
+    const { events, ids, at, move } = recordPage(
+      '<style>.m { cursor: move; }</style><div id="a" style="cursor: pointer"></div>',
+    );
+    const start = events[0].timestamp;
+    const checkout = events.map((e) => ({ ...e, timestamp: start + 200 }));
+    const replayer = new Replayer(
+      [
+        ...events,
+        move(100, 'a'),
+        ...checkout,
+        at(300, {
+          source: IncrementalSource.Mutation,
+          texts: [],
+          attributes: [{ id: ids.a, attributes: { style: null, class: 'm' } }],
+          removes: [],
+          adds: [],
+        }),
+      ],
+      { cursor: { mode: 'state' } },
+    );
+    // a seek starts from the checkout and drops the earlier move, so play
+    // through it
+    replayer.pause(150);
+    await settle();
+    expect(mouseOf(replayer).dataset.cursor).toBe('pointer');
+    replayer.play(150);
+    await settle(250);
+    replayer.pause();
+    expect(mouseOf(replayer).dataset.cursor).toBe('move');
+  });
+
+  it('refreshes a stationary cursor when focus changes', async () => {
+    const { events, move, interaction } = recordPage('<input id="i">');
+    const replayer = new Replayer(
+      [
+        ...events,
+        move(100, 'i'),
+        interaction(200, 'i', MouseInteractions.Focus),
+        interaction(300, 'i', MouseInteractions.Blur),
+      ],
+      { cursor: { mode: 'state' } },
+    );
+    // jsdom matches :focus but leaves :focus rules out of computed style, so
+    // stand in for the cascade of an `input:focus { cursor: crosshair }` rule
+    const win = replayer.iframe.contentWindow!;
+    const computed = win.getComputedStyle.bind(win);
+    win.getComputedStyle = (el: Element) =>
+      el.matches(':focus')
+        ? ({ cursor: 'crosshair' } as CSSStyleDeclaration)
+        : computed(el);
+    const m = mouseOf(replayer);
+    const seen = [];
+    for (const t of [150, 250, 350]) {
+      replayer.pause(t);
+      await settle();
+      seen.push(m.dataset.cursor);
+    }
+    expect(seen).toEqual(['text', 'crosshair', 'text']);
+  });
+
+  it('removes the state mode image when switching to dot mode', async () => {
+    const { events, ids, at, move } = recordPage(
+      '<style id="s"></style><div id="d" class="c" style="cursor: grab"></div>',
+    );
+    const replayer = new Replayer(
+      [
+        ...events,
+        move(100, 'd'),
+        at(200, {
+          source: IncrementalSource.StyleSheetRule,
+          id: ids.s,
+          adds: [{ rule: '.c { cursor: move !important; }', index: 0 }],
+        }),
+      ],
+      { cursor: { mode: 'state' } },
+    );
+    const m = mouseOf(replayer);
+    replayer.pause(150);
+    await settle();
+    expect(m.dataset.cursor).toBe('grab');
+    const changes: string[] = [];
+    replayer.on('cursor-change', (s) =>
+      changes.push((s as { cursor: string }).cursor),
+    );
+    replayer.setConfig({ cursor: { mode: 'dot' } });
+    replayer.pause(250);
+    await settle();
+    expect([m.dataset.cursor, m.style.getPropertyValue('--rr-cursor')]).toEqual(
+      [undefined, ''],
+    );
+    expect(changes).toEqual([]);
+    // and back to state mode, which shows the arrow until the next pointer event
+    replayer.setConfig({ cursor: { mode: 'state' } });
+    expect(m.dataset.cursor).toBe('default');
+  });
 });

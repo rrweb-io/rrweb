@@ -163,7 +163,8 @@ export class Replayer {
   private mouse: HTMLDivElement;
   private mouseTail: HTMLCanvasElement | null = null;
   private tailPositions: Array<{ x: number; y: number }> = [];
-  private cursorSample: { target: Element; x: number; y: number } | null = null;
+  // the node id, so a checkout that rebuilds the page resolves the new node
+  private cursorSample: { id: number; x: number; y: number } | null = null;
   private cursorPending = false;
   private cursorState: CursorState | null = null;
   private cursorPressed = false;
@@ -504,6 +505,7 @@ export class Replayer {
         },
       });
     }
+    if (config.cursor) this.applyCursorMode();
     if (typeof config.mouseTail !== 'undefined') {
       if (config.mouseTail === false) {
         if (this.mouseTail) {
@@ -1380,6 +1382,8 @@ export class Replayer {
             if ('blur' in (target as HTMLElement)) {
               (target as HTMLElement).blur();
             }
+            // :focus rules can change the cursor of the element under it
+            this.scheduleCursor();
             break;
           case MouseInteractions.Focus:
             if (triggerFocus && (target as HTMLElement).focus) {
@@ -1387,6 +1391,7 @@ export class Replayer {
                 preventScroll: true,
               });
             }
+            this.scheduleCursor();
             break;
           case MouseInteractions.Click:
           case MouseInteractions.TouchStart:
@@ -2406,9 +2411,26 @@ export class Replayer {
     }
     this.hoverElements(target as Element);
     if (this.config.cursor?.mode === 'state') {
-      this.cursorSample = { target: target as Element, x, y };
+      this.cursorSample = { id, x, y };
       this.scheduleCursor();
     }
+  }
+
+  // Switching modes at runtime installs or removes the state mode image;
+  // without this, dot mode keeps showing the last resolved cursor.
+  private applyCursorMode() {
+    if (this.config.cursor?.mode === 'state') {
+      if (this.cursorState) return;
+      this.cursorState = initialCursor;
+      this.showCursor(initialCursor);
+      return;
+    }
+    this.cursorSample = null;
+    this.cursorState = null;
+    delete this.mouse.dataset.cursor;
+    delete this.mouse.dataset.pointer;
+    for (const name of ['--rr-cursor', '--rr-cursor-x', '--rr-cursor-y'])
+      this.mouse.style.removeProperty(name);
   }
 
   // Replaying from the start forgets the pointer the later position left
@@ -2459,7 +2481,9 @@ export class Replayer {
       this.cursorPending = false;
       // a seek back can clear the sample before this runs
       if (!this.cursorSample) return;
-      const { target, x, y } = this.cursorSample;
+      const { id, x, y } = this.cursorSample;
+      const target = this.mirror.getNode(id) as Element | null;
+      if (!target) return;
       const pressed = this.cursorPressed;
       const state: CursorState = {
         cursor: resolveCursor(
