@@ -7,19 +7,65 @@
     inlineCss,
     openFullscreen,
     exitFullscreen,
-    isFullscreen,
+    getFullscreenElement,
     onFullscreenChange,
     typeOf,
   } from './utils';
-  import Controller from './Controller.svelte';
+  import Controller, { keyOwner, playerOf } from './Controller.svelte';
+  import ZoomPan, { isZoomSurface } from './components/ZoomPan.svelte';
+  import {
+    inPopover,
+    openPopovers,
+    popoverTriggers,
+  } from './components/ControlPopover.svelte';
+  import { ZOOM_LABEL } from './components/PlayerToolbar.svelte';
   import type { RRwebPlayerOptions, RRwebPlayerExpose } from './types';
-    
+
+  import type {
+    PlayerControls,
+    PlayerFeatures,
+    PlayerIcons,
+    JumpEvent,
+  } from './features';
+  import { jumpSeconds, maxZoom } from './features';
+  export let features: PlayerFeatures = {};
+  export let controls: PlayerControls = {};
+  export let icons: PlayerIcons = {};
+  export let recordingTimeZone: string | undefined = undefined;
+  const jumpListeners = new Set<(event: JumpEvent) => unknown>();
+  export const jump: RRwebPlayerExpose['jump'] = (direction) => {
+    controller?.jump(
+      direction === 'forward' ? 1 : -1,
+      'api',
+      jumpSeconds(features.jump),
+    );
+  };
+
   export let width: NonNullable<RRwebPlayerOptions['props']['width']>  = 1024;
   export let height: NonNullable<RRwebPlayerOptions['props']['height']> = 576;
   export let maxScale: NonNullable<RRwebPlayerOptions['props']['maxScale']> = 1;
   export let events: RRwebPlayerOptions['props']['events'];
   export let skipInactive: NonNullable<RRwebPlayerOptions['props']['skipInactive']> = true;
   export let autoPlay: NonNullable<RRwebPlayerOptions['props']['autoPlay']> = true;
+  export let clickToPlay: NonNullable<RRwebPlayerOptions['props']['clickToPlay']> = false;
+  export let showPlayOverlay: NonNullable<RRwebPlayerOptions['props']['showPlayOverlay']> = false;
+  // Tracked only for the overlay and the click surface's label, so other
+  // players do not re-render on
+  // play and pause. A live replay is never paused, and a stalled one counts
+  // as paused only when it will not resume.
+  let paused = true;
+  $: tracksPause = showPlayOverlay || clickToPlay;
+  const syncPaused = () => {
+    if (tracksPause) paused = replayer.isPaused();
+  };
+  $: if (tracksPause && replayer) syncPaused();
+  // Playing removes the button; keep keyboard focus in the player.
+  function playFromOverlay(event: MouseEvent) {
+    const root = player.getRootNode() as Document | ShadowRoot;
+    const focused = root.activeElement === event.currentTarget;
+    controller.play();
+    if (focused) player.focus();
+  }
   export let speedOption: NonNullable<RRwebPlayerOptions['props']['speedOption']> = [1, 2, 4, 8];
   export let speed: NonNullable<RRwebPlayerOptions['props']['speed']> = 1;
   export let showController: NonNullable<RRwebPlayerOptions['props']['showController']> = true;
@@ -37,19 +83,118 @@
   const controllerHeight = 80;
   let player: HTMLElement;
   let frame: HTMLElement;
+  let zoom = 1;
+  // The viewer's choice; features.zoom.follow only sets where it starts.
+  let followCursor = features.zoom?.follow !== false;
+  $: zoomLimit = maxZoom(features.zoom);
+  $: if (zoom > zoomLimit) zoom = zoomLimit;
+  // The scale that fits the recording into the player, and the zoom that
+  // shows it at the size it was recorded. updateScale sets both: it runs from
+  // a later reactive statement when the player resizes, which would leave a
+  // reactive declaration here with the previous size.
+  let fitScale = 1;
+  let trueZoom = 1;
+  // Whether the viewer chose true size. The zoom then follows the fitted
+  // scale as the player resizes, until another zoom is chosen.
+  let trueSize = false;
+  // A resize sets the zoom through updateScale, so it runs before the
+  // statements below that read the zoom.
+  $: if (replayer) resizeReplay(viewportSize);
+  // Zoom does not go below Fit: where the fitted scale already enlarges the
+  // recording, true size stays at Fit, and the toolbar shows the actual zoom.
+  const trueSizeZoom = () => Math.max(1, Math.min(trueZoom, zoomLimit));
+  // Written out, not through trueSizeZoom(), so it reruns when the maximum
+  // or true size changes.
+  $: if (trueSize) zoom = Math.max(1, Math.min(trueZoom, zoomLimit));
+  $: hasSurface = !!replayer && (clickToPlay || zoom > 1);
+  export const setZoom: RRwebPlayerExpose['setZoom'] = (value) => {
+    if (!Number.isFinite(value)) return;
+    trueSize = false;
+    zoom = Math.max(1, Math.min(maxZoom(features.zoom), value));
+  };
+  export const fit: RRwebPlayerExpose['fit'] = () => {
+    trueSize = false;
+    zoom = 1;
+  };
+  // The viewport surface goes away at the fitted size unless it also plays
+  // and pauses, whether by fit(), setZoom(1), Escape or a lower maximum.
+  // This runs before the DOM update, so focus moves while it still exists.
+  // The Zoom button and its panel stay only while zoom is on in the toolbar.
+  $: zoomButtonStays =
+    zoomLimit > 1 && showController && features.toolbar === true && controls.zoom !== false;
+  // Focus inside this player, leaving focus in a nested player to that one.
+  function focusedInPlayer() {
+    const root = player?.getRootNode() as Document | ShadowRoot | undefined;
+    const focused = root?.activeElement;
+    return focused && playerOf(focused) === player ? focused : null;
+  }
+  function holdFocus() {
+    holdingFocus = true;
+    // The tabindex binding applies on the next update; focus needs it now.
+    if (!player.hasAttribute('tabindex')) player.tabIndex = -1;
+    player.focus();
+  }
+  function keepFocusInPlayer() {
+    const focused = focusedInPlayer();
+    if (!isZoomSurface(focused)) return;
+    const zoomButton = zoomButtonStays
+      ? popoverTriggers(player, ZOOM_LABEL).find(
+          (trigger) => playerOf(trigger) === player,
+        )
+      : undefined;
+    if (zoomButton) return zoomButton.focus();
+    holdFocus();
+  }
+  // Focus on the Zoom button or in its panel moves to the player before they
+  // are removed.
+  function keepFocusFromZoomControls() {
+    const focused = focusedInPlayer();
+    if (focused && inPopover(focused, ZOOM_LABEL)) holdFocus();
+  }
+  $: if (!zoomButtonStays) keepFocusFromZoomControls();
+  // Keeps the player focusable while it holds focus taken from the viewport,
+  // even if the host has just turned zoom off.
+  let holdingFocus = false;
+  $: if (!hasSurface) keepFocusInPlayer();
+  function fitOnEscape(event: KeyboardEvent) {
+    // While one of this player's toolbar panels is open, Escape only closes
+    // it. Panels of a nested player are that player's.
+    const panelOpen = openPopovers(player).some(
+      (panel) => playerOf(panel) === player,
+    );
+    // A chosen True size counts as zoomed even while it equals Fit.
+    if (event.key !== 'Escape' || (zoom === 1 && !trueSize) || panelOpen || event.defaultPrevented)
+      return;
+    // Escape pressed in a player nested inside this one belongs to it.
+    if (keyOwner(event) !== player) return;
+    event.preventDefault();
+    fit();
+  }
+
   let fullscreenListener: undefined | (() => void);
-  let _width: number = width;
-  let _height: number = height;
+  // Measured while this player is fullscreen; null otherwise, so the
+  // embedded width and height props are never overwritten.
+  let fullscreenSize: { width: number; height: number } | null = null;
+  let fullscreenObserver: ResizeObserver | undefined;
   let controller: {
     toggle: () => void;
     setSpeed: (speed: number) => void;
     toggleSkipInactive: () => void;
   } & Controller;
 
+  $: viewportSize = {
+    width: fullscreenSize?.width ?? width,
+    height: fullscreenSize
+      ? Math.max(
+          1,
+          fullscreenSize.height - (showController ? controllerHeight : 0),
+        )
+      : height,
+  };
   let style: string;
   $: style = inlineCss({
-    width: `${width}px`,
-    height: `${height}px`,
+    width: `${viewportSize.width}px`,
+    height: `${viewportSize.height}px`,
   });
   let playerStyle: string;
   $: playerStyle = inlineCss({
@@ -59,42 +204,57 @@
 
   const updateScale = (
     el: HTMLElement,
+    viewport: { width: number; height: number },
     frameDimension: { width: number; height: number },
   ) => {
-    const widthScale = width / frameDimension.width;
-    const heightScale = height / frameDimension.height;
+    const widthScale = viewport.width / frameDimension.width;
+    const heightScale = viewport.height / frameDimension.height;
     const scale = [widthScale, heightScale];
     if (maxScale) scale.push(maxScale);
-    el.style.transform =
-      `scale(${Math.min(...scale)})` + 'translate(-50%, -50%)';
+    fitScale = Math.min(...scale);
+    trueZoom = fitScale > 0 ? 1 / fitScale : 1;
+    if (trueSize) zoom = trueSizeZoom();
+    el.style.transform = `scale(${fitScale})` + 'translate(-50%, -50%)';
+  };
+
+  const resizeReplay = (viewport: { width: number; height: number }) => {
+    const frame = {
+      width: replayer.iframe.offsetWidth,
+      height: replayer.iframe.offsetHeight,
+    };
+    // A hidden player has no layout; keep the scale it already has.
+    if (!frame.width || !frame.height) return;
+    updateScale(replayer.wrapper, viewport, frame);
   };
 
   export const triggerResize: RRwebPlayerExpose['triggerResize'] = () => {
-    updateScale(replayer.wrapper, {
-      width: replayer.iframe.offsetWidth,
-      height: replayer.iframe.offsetHeight,
-    });
+    resizeReplay(viewportSize);
   };
 
   export const toggleFullscreen: RRwebPlayerExpose['toggleFullscreen'] = () => {
-    if (player) {
-      isFullscreen() ? exitFullscreen() : openFullscreen(player);
-    }
+    if (!player) return;
+    // A browser can refuse fullscreen, for example without a user gesture.
+    const request =
+      getFullscreenElement(player) === player
+        ? exitFullscreen(player.ownerDocument)
+        : openFullscreen(player);
+    // Prefixed APIs in older browsers return nothing.
+    void Promise.resolve(request).catch(() => undefined);
   };
 
   export const addEventListener: RRwebPlayerExpose['addEventListener'] = (
-    event: string,
-    handler: (detail: unknown) => unknown,
+    event: string, handler: (detail: JumpEvent) => unknown,
   ) => {
-    replayer.on(event, handler);
-    switch (event) {
-      case 'ui-update-current-time':
-      case 'ui-update-progress':
-      case 'ui-update-player-state':
-        controller.$on(event, ({ detail }) => handler(detail));
-      default:
-        break;
+    if (event === 'ui-jump') {
+      jumpListeners.add(handler);
+      return () => { jumpListeners.delete(handler); };
     }
+    if (event === 'ui-update-current-time' || event === 'ui-update-progress' || event === 'ui-update-player-state') {
+      return controller.$on(event, ({ detail }) => (handler as (value: unknown) => unknown)(detail));
+    }
+    const listener = handler as (detail: unknown) => unknown;
+    replayer.on(event, listener);
+    return () => { replayer.off(event, listener); };
   };
 
   export const addEvent: RRwebPlayerExpose['addEvent'] = (event: eventWithTime) => {
@@ -153,45 +313,62 @@
         `);
     }
 
+    // Player-only props are not Replayer options.
+    const {
+      features: _features,
+      controls: _controls,
+      icons: _icons,
+      recordingTimeZone: _recordingTimeZone,
+      ...replayProps
+    } = $$props;
     replayer = new Replayer(events, {
       speed,
       root: frame,
       unpackFn: unpack,
-      ...$$props,
+      ...replayProps,
     });
 
+    replayer.on('state-change', syncPaused);
     replayer.on('resize', (dimension) => {
       updateScale(
         replayer.wrapper,
+        viewportSize,
         dimension as { width: number; height: number },
       );
     });
 
-    fullscreenListener = onFullscreenChange(() => {
-      if (isFullscreen()) {
-        setTimeout(() => {
-          _width = width;
-          _height = height;
-          width = player.offsetWidth;
-          height =
-            player.offsetHeight - (showController ? controllerHeight : 0);
-          updateScale(replayer.wrapper, {
-            width: replayer.iframe.offsetWidth,
-            height: replayer.iframe.offsetHeight,
-          });
-        }, 0);
+    const measureFullscreen = () => {
+      if (player && getFullscreenElement(player) === player) {
+        fullscreenSize = {
+          width: player.clientWidth,
+          height: player.clientHeight,
+        };
+      }
+    };
+    fullscreenListener = onFullscreenChange(player.ownerDocument, () => {
+      if (getFullscreenElement(player) === player) {
+        measureFullscreen();
+        if (!fullscreenObserver && typeof ResizeObserver !== 'undefined') {
+          fullscreenObserver = new ResizeObserver(measureFullscreen);
+          fullscreenObserver.observe(player);
+        }
       } else {
-        width = _width;
-        height = _height;
-        updateScale(replayer.wrapper, {
-          width: replayer.iframe.offsetWidth,
-          height: replayer.iframe.offsetHeight,
-        });
+        fullscreenObserver?.disconnect();
+        fullscreenObserver = undefined;
+        fullscreenSize = null;
       }
     });
   });
 
+  // Escape is delegated from any control or the replay inside the player.
+  onMount(() => {
+    player.addEventListener('keydown', fitOnEscape);
+    return () => player.removeEventListener('keydown', fitOnEscape);
+  });
+
   onDestroy(() => {
+    replayer?.off('state-change', syncPaused);
+    fullscreenObserver?.disconnect();
     fullscreenListener && fullscreenListener();
   });
 </script>
@@ -207,8 +384,79 @@
     box-shadow: 0 24px 48px rgba(17, 16, 62, 0.12);
   }
 
+  .rr-player:fullscreen {
+    width: 100vw !important;
+    height: 100vh !important;
+    border-radius: 0;
+  }
+
+  /* The opt-in toolbar adapts its spacing to the player's width. */
+  /* The toolbar derives every color from four custom properties the host
+     can set: surface, text, accent and focus ring. */
+  .rr-player.rr-player--toolbar {
+    container-type: inline-size;
+    --rr-surface: var(--rrweb-player-surface, #fff);
+    --rr-text: var(--rrweb-player-text, #11103e);
+    --rr-accent: var(--rrweb-player-accent, #4950f6);
+    --rr-focus: var(--rrweb-player-focus-ring, var(--rr-accent));
+    --rr-subtle: color-mix(in srgb, var(--rr-text) 10%, var(--rr-surface));
+    --rr-track: color-mix(in srgb, var(--rr-text) 16%, var(--rr-surface));
+    --rr-line: color-mix(in srgb, var(--rr-text) 22%, var(--rr-surface));
+    --rr-muted: color-mix(in srgb, var(--rr-text) 68%, var(--rr-surface));
+    --rr-accent-soft: color-mix(in srgb, var(--rr-accent) 28%, var(--rr-surface));
+    background: var(--rr-surface);
+    color: var(--rr-text);
+  }
+  /* A browser paints an unstyled page white, so the replayed page keeps a
+     white canvas; only the letterbox around it takes the surface color. */
+  .rr-player--toolbar :global(.replayer-wrapper) {
+    background: #fff;
+  }
+
   .rr-player__viewport {
     position: relative;
+  }
+
+  /* Shows while the pointer is on the replay or the button has focus. Only
+     the button takes clicks, so the replay below stays usable. */
+  .rr-player__play-overlay {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgb(0 0 0 / 15%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms;
+  }
+  .rr-player__viewport:hover .rr-player__play-overlay,
+  .rr-player__play-overlay:focus-within {
+    opacity: 1;
+  }
+  /* Touch screens, including ones next to a mouse, cannot hover. */
+  @media (hover: none), (any-pointer: coarse) {
+    .rr-player__play-overlay {
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rr-player__play-overlay {
+      transition: none;
+    }
+  }
+  .rr-player__play-overlay > button {
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: #222;
+    color: #fff;
+    font: 32px/1 system-ui, sans-serif;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+  .rr-player__play-overlay > button:focus-visible {
+    outline: 2px solid #4950f6;
+    outline-offset: 2px;
   }
 
   .rr-player__caption {
@@ -236,6 +484,12 @@
     overflow: hidden;
   }
 
+  /* The iframe can still receive input when the Replayer enables interaction. */
+  .rr-player__frame.with-surface {
+    position: relative;
+    pointer-events: none;
+  }
+
   .replayer-wrapper {
     float: left;
     clear: both;
@@ -251,13 +505,44 @@
 
 <div
   class="rr-player"
+  class:rr-player--toolbar={features.toolbar === true}
+  tabindex={showController && features.jump?.keyboard === 'player'
+    ? 0
+    : features.zoom || holdingFocus || showPlayOverlay
+      ? -1
+      : undefined}
+  on:blur={() => (holdingFocus = false)}
   bind:this={player}
   style={playerStyle}
-  style:--rr-timeline-marker-panel-width={`${Math.min(280, width * 0.7)}px`}
-  style:--rr-timeline-marker-panel-height={`${Math.max(48, height - 32)}px`}
+  style:--rr-timeline-marker-panel-width={`${Math.min(280, viewportSize.width * 0.7)}px`}
+  style:--rr-timeline-marker-panel-height={`${Math.max(48, viewportSize.height - 32)}px`}
 >
   <div class="rr-player__viewport" {style}>
-    <div class="rr-player__frame" bind:this={frame} {style} />
+    {#if hasSurface}
+      <ZoomPan
+        {clickToPlay}
+        {paused}
+        {frame}
+        replay={replayer.wrapper}
+        {replayer}
+        {zoom}
+        bind:followCursor
+        on:toggle={toggle}
+      />
+    {/if}
+    <div
+      class="rr-player__frame"
+      class:with-surface={hasSurface}
+      bind:this={frame}
+      {style}
+    />
+    {#if showPlayOverlay && paused}
+      <div class="rr-player__play-overlay">
+        <button type="button" aria-label="Play" on:click={playFromOverlay}
+          >▶︎</button
+        >
+      </div>
+    {/if}
     <div role="status" aria-live="polite" aria-atomic="true">
       {#if captionText !== undefined}
         <div class="rr-player__caption">{captionText}</div>
@@ -267,7 +552,20 @@
   {#if replayer}
     <Controller
       bind:this={controller}
+      {features}
+      playerElement={player}
+      controlVisibility={controls}
+      {icons}
+      {recordingTimeZone}
+      container={player}
+      fullscreen={fullscreenSize !== null}
+      on:ui-jump={({ detail }) => [...jumpListeners].forEach(listener => listener(detail))}
       {replayer}
+      maxZoom={zoomLimit}
+      {trueZoom}
+      bind:zoom
+      bind:trueSize
+      bind:followCursor
       bind:captionText
       bind:showCaptions
       {showController}
