@@ -128,6 +128,12 @@ const initialCursor: CursorState = {
   target: null,
 };
 
+// cursor-change reports only what the overlay shows
+const sameShape = (a: CursorState | null, b: CursorState) =>
+  a?.cursor === b.cursor &&
+  a.pointerType === b.pointerType &&
+  a.pressed === b.pressed;
+
 function indicatesTouchDevice(e: eventWithTime) {
   return (
     e.type == EventType.IncrementalSnapshot &&
@@ -790,7 +796,10 @@ export class Replayer {
     this.wrapper.appendChild(this.mouse);
     // Before the first pointer event there is no element to read a cursor
     // from, so show the pack's default arrow rather than the dot mode image.
-    if (this.config.cursor?.mode === 'state') this.showCursor(initialCursor);
+    if (this.config.cursor?.mode === 'state') {
+      this.cursorState = initialCursor;
+      this.showCursor(initialCursor);
+    }
 
     if (this.config.mouseTail !== false) {
       this.mouseTail = document.createElement('canvas');
@@ -2411,10 +2420,12 @@ export class Replayer {
     this.lastTouch = { x: NaN, y: NaN };
     if (this.config.cursor?.mode !== 'state') return;
     this.mouse.classList.remove('touch-device');
-    if (this.cursorState) {
-      this.cursorState = null;
-      this.showCursor(initialCursor);
-    }
+    const prev = this.cursorState;
+    if (prev === initialCursor) return;
+    this.cursorState = initialCursor;
+    this.showCursor(initialCursor);
+    if (!sameShape(prev, initialCursor))
+      this.emitter.emit(ReplayerEvents.CursorChange, initialCursor);
   }
 
   // In state mode, shows the touch ring only while the pointer is a finger.
@@ -2463,15 +2474,12 @@ export class Replayer {
         target,
       };
       const prev = this.cursorState;
-      const sameShape =
-        prev?.cursor === state.cursor &&
-        prev.pointerType === state.pointerType &&
-        prev.pressed === pressed;
+      const shapeKept = sameShape(prev, state);
       // a pack receives the target, so a new target needs a new resolve
-      if (sameShape && prev.target === target) return;
+      if (shapeKept && prev?.target === target) return;
       this.cursorState = state;
       this.showCursor(state);
-      if (!sameShape) this.emitter.emit(ReplayerEvents.CursorChange, state);
+      if (!shapeKept) this.emitter.emit(ReplayerEvents.CursorChange, state);
     });
   }
 

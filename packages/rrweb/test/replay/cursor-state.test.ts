@@ -292,4 +292,32 @@ describe('replayer cursor state', () => {
     ring.push(mouseOf(touched).classList.contains('touch-device'));
     expect(ring).toEqual([true, false]);
   });
+
+  it('reports the initial cursor when a seek resets a held cursor', async () => {
+    const { events, move, interaction } = recordPage(
+      '<div id="grab" style="cursor: grab"></div><div id="d"></div>',
+    );
+    const replayer = new Replayer(
+      [
+        ...events,
+        move(100, 'grab'),
+        interaction(150, 'grab', MouseInteractions.MouseDown),
+        move(200, 'grab'),
+        interaction(250, 'grab', MouseInteractions.MouseUp),
+        move(300, 'd'),
+      ],
+      { cursor: { mode: 'state' } },
+    );
+    const changes: string[] = [];
+    replayer.on('cursor-change', (s) =>
+      changes.push((s as { cursor: string }).cursor),
+    );
+    for (const t of [210, 50, 310]) {
+      replayer.pause(t);
+      await settle();
+    }
+    // the reset reports the arrow, and the arrow it keeps means the default
+    // cursor over #d is no change
+    expect(changes).toEqual(['grabbing', 'default']);
+  });
 });
