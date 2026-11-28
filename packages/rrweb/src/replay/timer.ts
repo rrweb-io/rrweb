@@ -8,6 +8,8 @@ import {
 export class Timer {
   public timeOffset = 0;
   public speed: number;
+  /** While skipping, where the skip ends: the interaction, or a stall marker before it. */
+  public skipEnd: number | null = null;
 
   private actions: actionWithDelay[];
   private raf: number | true | null = null;
@@ -63,7 +65,16 @@ export class Timer {
 
   private rafCheck() {
     const time = performance.now();
-    this.timeOffset += (time - this.lastTimestamp) * this.speed;
+    let next = this.timeOffset + (time - this.lastTimestamp) * this.speed;
+    // While skipping, an overdue action (one scheduled in the past, such as a
+    // stall marker behind a seek) runs before time moves on, and a frame does
+    // not run past the end of the skip while an action before it is due.
+    if (this.skipEnd !== null && this.actions.length) {
+      const due = this.actions[0].delay;
+      if (due < this.timeOffset) next = this.timeOffset;
+      else if (due <= this.skipEnd) next = Math.min(next, this.skipEnd);
+    }
+    this.timeOffset = next;
     this.lastTimestamp = time;
     while (this.actions.length) {
       const action = this.actions[0];
