@@ -245,6 +245,12 @@ export class SmoothReplay {
   ) {
     replayer.on(ReplayerEvents.Start, () => this.seed());
     replayer.on(ReplayerEvents.Pause, () => this.stop());
+    // A seek that crosses a stall marker holds back the casts after it, so
+    // smoothing waits too until the next Start.
+    replayer.on(ReplayerEvents.StallStart, () => this.stop());
+    // A seek back replays earlier moments, so their spaces are measured
+    // again. This runs before the replay up to the seek records new ones.
+    replayer.on(ReplayerEvents.PlayBack, () => (this.spaces = new WeakMap()));
     replayer.on(ReplayerEvents.Finish, () => this.stop());
     replayer.on(ReplayerEvents.Destroy, () => this.stop());
     replayer.on(ReplayerEvents.StateChange, (s) => {
@@ -291,9 +297,6 @@ export class SmoothReplay {
     if (!this.enabled) return this.stop();
     const { events } = this.replayer.service.state.context;
     const now = this.now();
-    // Recorded spaces hold for the rest of the recording when resuming
-    // forward. A seek back replays those moments, so they are measured again.
-    if (now < this.last.t) this.spaces = new WeakMap();
     this.samples.length = 0;
     this.glides.clear();
     this.desired.clear();

@@ -185,12 +185,12 @@ const scrollTo = (timestamp: number, id: number, y: number): eventWithTime => ({
 
 /** A SmoothReplay on a stand-in replayer whose clock and frames the test drives. */
 function harness(events: eventWithTime[], config: object) {
-  let frame: FrameRequestCallback = () => undefined;
+  let frame: FrameRequestCallback | null = null;
   vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
     frame = cb;
     return 1;
   });
-  vi.stubGlobal('cancelAnimationFrame', () => undefined);
+  vi.stubGlobal('cancelAnimationFrame', () => (frame = null));
   const handlers: Record<string, Array<(e: unknown) => void>> = {};
   const doc = {};
   const nodes = new Map<number, object>();
@@ -227,13 +227,19 @@ function harness(events: eventWithTime[], config: object) {
   return {
     smooth,
     nodes,
-    element: () => ({ ownerDocument: doc, scrollTo: vi.fn() }),
+    element: () => ({
+      ownerDocument: doc,
+      scrollTo: vi.fn(),
+      scrollLeft: 0,
+      scrollTop: 0,
+    }),
     setTime(t: number) {
       replayer.timer.timeOffset = t;
     },
+    /** Runs the pending animation frame at t, if one is requested. */
     frameAt(t: number) {
       replayer.timer.timeOffset = t;
-      frame(0);
+      frame?.(0);
     },
     /** Runs the timer actions due by t, as the replayer's timer would. */
     runActions(t: number) {
@@ -303,6 +309,41 @@ describe('SmoothReplay', () => {
     expect(h.left()).toBeLessThan(200);
   });
 
+  it('keeps the spaces recorded while replaying up to a seek back', () => {
+    const events = [click(1000, 2, 100), move(1200, 3, 200)];
+    const h = harness(events, { cursor: { smooth: true } });
+    h.nodes.set(2, h.element());
+    h.nodes.set(3, h.element());
+    h.frameAt(1000);
+    h.frameAt(1300);
+    expect(h.left()).toBe(200);
+    // Seek back to 1100: the replayer rebuilds, casts the click, then the
+    // removal of its target, and only then emits Start.
+    h.emit(ReplayerEvents.PlayBack);
+    h.nodes.set(2, h.element());
+    h.cast(events[0]);
+    h.nodes.delete(2);
+    h.setTime(1100);
+    h.emit(ReplayerEvents.Start);
+    h.frameAt(1150);
+    expect(h.left()).toBeGreaterThan(100);
+    expect(h.left()).toBeLessThan(200);
+  });
+
+  it('applies no scroll while a seek waits at a stall marker', () => {
+    const events = [scrollTo(1200, 5, 200)];
+    const h = harness(events, { smoothScroll: true });
+    const el = h.element();
+    h.nodes.set(5, el);
+    // Seeking to 1500 across a stall marker at 1000: Start, then the stall.
+    h.setTime(1500);
+    h.emit(ReplayerEvents.Start);
+    h.emit(ReplayerEvents.StallStart);
+    h.frameAt(1500);
+    h.frameAt(1800);
+    expect(el.scrollTo).not.toHaveBeenCalled();
+  });
+
   it('extends the current scroll glide to a scroll added before its cast', () => {
     const events = [scrollTo(1000, 5, 0)];
     const h = harness(events, { smoothScroll: true });
@@ -362,6 +403,7 @@ describe('SmoothReplay in a nested iframe', () => {
     expect(h.left()).toBe(300);
     h.frameAt(1300);
     frame.left = 100;
+    h.emit(ReplayerEvents.PlayBack);
     h.setTime(900);
     h.emit(ReplayerEvents.Start);
     h.frameAt(1000);
