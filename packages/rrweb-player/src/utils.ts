@@ -3,9 +3,9 @@ declare global {
     mozExitFullscreen: Document['exitFullscreen'];
     webkitExitFullscreen: Document['exitFullscreen'];
     msExitFullscreen: Document['exitFullscreen'];
-    webkitIsFullScreen: Document['fullscreen'];
-    mozFullScreen: Document['fullscreen'];
-    msFullscreenElement: Document['fullscreen'];
+    webkitFullscreenElement?: Element | null;
+    mozFullScreenElement?: Element | null;
+    msFullscreenElement?: Element | null;
   }
 
   interface HTMLElement {
@@ -71,7 +71,7 @@ export function openFullscreen(el: HTMLElement): Promise<void> {
   return Promise.resolve();
 }
 
-export function exitFullscreen(): Promise<void> {
+export function exitFullscreen(document: Document): Promise<void> {
   if (document.exitFullscreen) {
     return document.exitFullscreen();
   } else if (document.mozExitFullscreen) {
@@ -87,24 +87,22 @@ export function exitFullscreen(): Promise<void> {
   return Promise.resolve();
 }
 
-export function isFullscreen(): boolean {
-  let fullscreen = false;
-  (
-    [
-      'fullscreen',
-      'webkitIsFullScreen',
-      'mozFullScreen',
-      'msFullscreenElement',
-    ] as const
-  ).forEach((fullScreenAccessor) => {
-    if (fullScreenAccessor in document) {
-      fullscreen = fullscreen || Boolean(document[fullScreenAccessor]);
-    }
-  });
-  return fullscreen;
+export function getFullscreenElement(element: HTMLElement): Element | null {
+  const root = element.getRootNode() as Document | ShadowRoot;
+  const document = element.ownerDocument;
+  return (
+    root.fullscreenElement ??
+    document.webkitFullscreenElement ??
+    document.mozFullScreenElement ??
+    document.msFullscreenElement ??
+    null
+  );
 }
 
-export function onFullscreenChange(handler: () => unknown): () => void {
+export function onFullscreenChange(
+  document: Document,
+  handler: () => unknown,
+): () => void {
   document.addEventListener('fullscreenchange', handler);
   document.addEventListener('webkitfullscreenchange', handler);
   document.addEventListener('mozfullscreenchange', handler);
