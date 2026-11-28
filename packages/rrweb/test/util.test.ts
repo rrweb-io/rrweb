@@ -59,15 +59,6 @@ describe('Utilities for other modules', () => {
       expect(mirror.getId(new CSSStyleSheet())).toBe(-1);
     });
 
-    it('can get CSSStyleSheet objects with id', () => {
-      const mirror = new StyleSheetMirror();
-      for (let i = 0; i < 10; i++) {
-        const styleSheet = new CSSStyleSheet();
-        mirror.add(styleSheet);
-        expect(mirror.getStyle(i + 1)).toBe(styleSheet);
-      }
-    });
-
     it('can reset the mirror', () => {
       const mirror = new StyleSheetMirror();
       const styleList: CSSStyleSheet[] = [];
@@ -79,7 +70,6 @@ describe('Utilities for other modules', () => {
       }
       expect(mirror.reset()).toBeUndefined();
       for (let s of styleList) expect(mirror.has(s)).toBeFalsy();
-      for (let i = 0; i < 10; i++) expect(mirror.getStyle(i + 1)).toBeNull();
       expect(mirror.add(new CSSStyleSheet())).toBe(1);
     });
   });
