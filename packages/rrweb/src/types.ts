@@ -199,6 +199,21 @@ export type playerConfig = {
       };
   unpackFn?: UnpackFn;
   useVirtualDom: boolean;
+  /**
+   * Whether the replayer rewrites CSS for replay (`:hover` -> `.\:hover`,
+   * `max-device-width` -> `max-width`) when applying a text mutation to a
+   * child of a `<style>` element. Defaults to `true`.
+   *
+   * Set this to `false` when the consumer supplies text mutations whose values
+   * have already been passed through `adaptCssForReplay`. The rewrite is a
+   * postcss parse of the whole value, so a consumer that replays a stylesheet
+   * built up over many text mutations otherwise pays it once per mutation on
+   * the accumulated CSS, which is quadratic in the number of mutations.
+   *
+   * This only covers text mutations. Nodes added via `adds` are always
+   * rewritten, because their values come straight from the recording.
+   */
+  adaptCssInTextMutations: boolean;
   logger: {
     log: (...args: Parameters<typeof console.log>) => void;
     warn: (...args: Parameters<typeof console.warn>) => void;
