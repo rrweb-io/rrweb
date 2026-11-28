@@ -47,6 +47,26 @@
 .replayer-mouse.touch-device.active::after {
   animation: touch-click 0.2s ease-in-out 1;
 }
+.replayer-mouse[data-cursor] {
+  background-image: none;
+}
+.replayer-mouse[data-cursor]::before {
+  content: '';
+  position: absolute;
+  z-index: 1; /* above .replayer-mouse-tail */
+  /* 32px pack art drawn at 24px, hotspot scaled to match */
+  left: calc(var(--rr-cursor-x) * -0.75px);
+  top: calc(var(--rr-cursor-y) * -0.75px);
+  width: 24px;
+  height: 24px;
+  background-size: 24px 24px;
+  background-image: var(--rr-cursor);
+  pointer-events: none;
+}
+.replayer-mouse.touch-device::before,
+.replayer-mouse[data-pointer='touch']::before {
+  display: none;
+}
 .replayer-mouse-tail {
   position: absolute;
   pointer-events: none;
