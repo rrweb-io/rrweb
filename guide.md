@@ -375,9 +375,12 @@ new Replayer(events, {
     mode: 'state',
     resolveAuto: true, // `cursor: auto` becomes `text` over text and editable fields, else `default`
     pack: myPack, // optional, a CursorPack
+    click: 'ripple', // optional: a click also sends rings outwards from the dot
   },
 });
 ```
+
+`click` works in both modes. With `'contract'`, the default, the dot shrinks on each click. With `'ripple'`, the dot shrinks the same way and a dark and a light ring also spread outwards from it and fade, so the click shows on light and dark pages.
 
 A `CursorPack` is `{ name, resolve(state) }` where `state` is `{ cursor, pointerType, pressed, target }` and `resolve` returns `{ url, hotspot: [x, y] }` for a 32x32 image (drawn at 24px), or `null` for the default arrow. The overlay also gets `data-cursor` and `data-pointer` attributes for styling. Pen sessions show a pen tip, touch sessions keep the touch ring, and `url()` cursors use their keyword fallback.
 

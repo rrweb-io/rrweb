@@ -505,7 +505,10 @@ export class Replayer {
         },
       });
     }
-    if (config.cursor) this.applyCursorMode();
+    if (config.cursor) {
+      this.applyCursorMode();
+      this.applyClickEffect();
+    }
     if (typeof config.mouseTail !== 'undefined') {
       if (config.mouseTail === false) {
         if (this.mouseTail) {
@@ -795,6 +798,7 @@ export class Replayer {
 
     this.mouse = document.createElement('div');
     this.mouse.classList.add('replayer-mouse');
+    this.applyClickEffect();
     this.wrapper.appendChild(this.mouse);
     // Before the first pointer event there is no element to read a cursor
     // from, so show the pack's default arrow rather than the dot mode image.
@@ -2418,6 +2422,21 @@ export class Replayer {
 
   // Switching modes at runtime installs or removes the state mode image;
   // without this, dot mode keeps showing the last resolved cursor.
+  // A click contracts the dot unless the ripple is chosen, which adds a dark
+  // and a light ring for the click animation to send outwards.
+  private applyClickEffect() {
+    const ripple = this.config.cursor?.click === 'ripple';
+    this.mouse.classList.toggle('replayer-mouse--ripple', ripple);
+    const rings = this.mouse.querySelectorAll('.replayer-mouse__ripple');
+    if (!ripple) rings.forEach((ring) => ring.remove());
+    else if (!rings.length)
+      for (let i = 0; i < 2; i++) {
+        const ring = document.createElement('span');
+        ring.className = 'replayer-mouse__ripple';
+        this.mouse.appendChild(ring);
+      }
+  }
+
   // A new pack or resolveAuto applies to the cursor already shown.
   private applyCursorMode() {
     if (this.config.cursor?.mode === 'state') {

@@ -1,6 +1,8 @@
 /**
  * @vitest-environment jsdom
  */
+import * as fs from 'fs';
+import * as path from 'path';
 import { describe, expect, it, vi } from 'vitest';
 import {
   EventType,
@@ -63,6 +65,35 @@ const mouseOf = (replayer: Replayer) =>
   replayer.wrapper.querySelector('.replayer-mouse') as HTMLElement;
 
 describe('replayer cursor state', () => {
+  it.each([
+    [undefined, false],
+    [{ click: 'contract' as const }, false],
+    [{ click: 'ripple' as const }, true],
+    [{ mode: 'state' as const, click: 'ripple' as const }, true],
+  ])('marks the click effect for cursor %j', async (cursor, ripple) => {
+    const { events, move, interaction } = recordPage('<div id="d"></div>');
+    const replayer = new Replayer(
+      [
+        ...events,
+        move(100, 'd'),
+        interaction(150, 'd', MouseInteractions.Click),
+        move(200, 'd'),
+      ],
+      cursor ? { cursor } : {},
+    );
+    const m = mouseOf(replayer);
+    replayer.play(140);
+    await settle(60);
+    replayer.pause();
+    // The click itself still plays the same way.
+    expect(m.classList.contains('active')).toBe(true);
+    expect(m.classList.contains('replayer-mouse--ripple')).toBe(ripple);
+    // A dark and a light ring carry the ripple.
+    expect(m.querySelectorAll('.replayer-mouse__ripple')).toHaveLength(
+      ripple ? 2 : 0,
+    );
+  });
+
   it('keeps the touch ring for the whole session without cursor options', async () => {
     const { events, move, interaction } = recordPage('<div id="d"></div>');
     const replayer = new Replayer([
@@ -486,5 +517,82 @@ describe('replayer cursor state', () => {
     expect([m.dataset.cursor, m.style.getPropertyValue('--rr-cursor')]).toEqual(
       ['pointer', 'url("b.svg")'],
     );
+  });
+
+  it('centres the click ripple on the tap in touch mode', () => {
+    document.head.innerHTML = `<style>${fs.readFileSync(
+      path.resolve(__dirname, '../../src/replay/styles/style.css'),
+      'utf8',
+    )}</style>`;
+    // jsdom has no layout, so add up the cascaded offsets from the mouse's
+    // left edge, which sits on the pointer, to the ripple's centre
+    const centre = (classes: string) => {
+      document.body.innerHTML = `<div class="${classes}"><span class="replayer-mouse__ripple"></span></div>`;
+      const mouse = getComputedStyle(document.body.firstElementChild!);
+      const ripple = getComputedStyle(document.querySelector('span')!);
+      const px = (v: string) => parseFloat(v) || 0;
+      const border =
+        mouse.borderLeftStyle === 'solid' ? px(mouse.borderLeftWidth) : 0;
+      return [
+        px(mouse.marginLeft) + border + px(ripple.left) + px(ripple.width) / 2,
+        px(mouse.marginTop) + border + px(ripple.top) + px(ripple.height) / 2,
+      ];
+    };
+    const seen = [
+      centre('replayer-mouse active'),
+      centre('replayer-mouse touch-device active'),
+    ];
+    document.head.innerHTML = '';
+    expect(seen).toEqual([
+      [0, 0],
+      [0, 0],
+    ]);
+  });
+
+  it('animates both click rings outwards, the light one just behind', () => {
+    document.head.innerHTML = `<style>${fs.readFileSync(
+      path.resolve(__dirname, '../../src/replay/styles/style.css'),
+      'utf8',
+    )}</style>`;
+    document.body.innerHTML =
+      '<div class="replayer-mouse active"><span class="replayer-mouse__ripple"></span><span class="replayer-mouse__ripple"></span></div>';
+    const [dark, light] = Array.from(document.querySelectorAll('span')).map(
+      (ring) => getComputedStyle(ring).animation,
+    );
+    const rules = Array.from(document.styleSheets[0].cssRules);
+    const keyframes = rules.find(
+      (r) => (r as CSSKeyframesRule).name === 'click-ripple',
+    ) as CSSKeyframesRule | undefined;
+    const frame = (key: string) => {
+      // jsdom's keyframes rule has no findRule
+      const f = (
+        Array.from(keyframes?.cssRules || []) as CSSKeyframeRule[]
+      ).find((r) => r.keyText === key)?.style;
+      return f && [f.transform, f.opacity, f.filter];
+    };
+    document.head.innerHTML = '';
+    document.body.innerHTML = '';
+    expect([dark, light]).toEqual([
+      'click-ripple 0.5s linear 1',
+      'click-ripple 0.5s linear 0.06s 1 backwards',
+    ]);
+    expect([frame('from'), frame('to')]).toEqual([
+      ['scale(0.33)', '1', 'blur(0)'],
+      ['scale(1)', '0', 'blur(2px)'],
+    ]);
+  });
+
+  it('switches the click effect through setConfig', () => {
+    const replayer = new Replayer(recordPage('<div></div>').events);
+    const m = mouseOf(replayer);
+    const rings = () => m.querySelectorAll('.replayer-mouse__ripple').length;
+    const seen = [rings()];
+    replayer.setConfig({ cursor: { click: 'ripple' } });
+    seen.push(rings());
+    replayer.setConfig({ cursor: { click: 'ripple', mode: 'state' } });
+    seen.push(rings());
+    replayer.setConfig({ cursor: { mode: 'state' } });
+    seen.push(rings());
+    expect(seen).toEqual([0, 2, 2, 0]);
   });
 });

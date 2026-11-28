@@ -204,6 +204,7 @@ export type playerConfig = {
   cursor?: {
     mode?: 'dot' | 'state';
     resolveAuto?: boolean;
+    click?: 'contract' | 'ripple';
     pack?: CursorPack;
   };
   mouseTail:
