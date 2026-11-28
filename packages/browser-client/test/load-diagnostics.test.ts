@@ -177,7 +177,7 @@ beforeEach(() => {
   sessionStorage.clear();
   document.body.innerHTML = '';
   setCurrentScript(null);
-  window.history.replaceState({}, '', 'http://localhost/');
+  window.history.replaceState({}, '', '/');
 });
 
 afterEach(() => {

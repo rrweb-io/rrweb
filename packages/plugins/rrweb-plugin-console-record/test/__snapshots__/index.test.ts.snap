@@ -172,7 +172,7 @@ exports[`rrweb-plugin-console-record > should handle recursive console messages 
       \\"payload\\": {
         \\"level\\": \\"log\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:21:15\\"
+          \\"__puppeteer_evaluation_script__:22:12\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"Proxied object:\\\\\\"\\",
@@ -356,7 +356,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"assert\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:3:15\\"
+          \\"__puppeteer_evaluation_script__:5:12\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"should log assert\\\\\\"\\"
@@ -371,7 +371,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"count\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:4:15\\"
+          \\"__puppeteer_evaluation_script__:6:12\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"count\\\\\\"\\"
@@ -386,7 +386,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"countReset\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:5:15\\"
+          \\"__puppeteer_evaluation_script__:7:12\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"count\\\\\\"\\"
@@ -401,7 +401,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"debug\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:6:15\\"
+          \\"__puppeteer_evaluation_script__:8:12\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"debug\\\\\\"\\"
@@ -416,7 +416,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"dir\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:7:15\\"
+          \\"__puppeteer_evaluation_script__:9:12\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"dir\\\\\\"\\"
@@ -431,7 +431,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"dirxml\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:8:15\\"
+          \\"__puppeteer_evaluation_script__:10:12\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"dirxml\\\\\\"\\"
@@ -446,7 +446,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"group\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:9:15\\"
+          \\"__puppeteer_evaluation_script__:11:12\\"
         ],
         \\"payload\\": []
       }
@@ -459,7 +459,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"groupCollapsed\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:10:15\\"
+          \\"__puppeteer_evaluation_script__:12:12\\"
         ],
         \\"payload\\": []
       }
@@ -472,7 +472,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"info\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:11:15\\"
+          \\"__puppeteer_evaluation_script__:13:12\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"info\\\\\\"\\"
@@ -487,7 +487,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"log\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:12:15\\"
+          \\"__puppeteer_evaluation_script__:14:12\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"log\\\\\\"\\"
@@ -502,7 +502,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"table\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:13:15\\"
+          \\"__puppeteer_evaluation_script__:15:12\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"table\\\\\\"\\"
@@ -517,7 +517,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"time\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:14:15\\"
+          \\"__puppeteer_evaluation_script__:16:12\\"
         ],
         \\"payload\\": []
       }
@@ -530,7 +530,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"timeEnd\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:15:15\\"
+          \\"__puppeteer_evaluation_script__:17:12\\"
         ],
         \\"payload\\": []
       }
@@ -543,7 +543,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"timeLog\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:16:15\\"
+          \\"__puppeteer_evaluation_script__:18:12\\"
         ],
         \\"payload\\": []
       }
@@ -556,7 +556,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"trace\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:17:15\\"
+          \\"__puppeteer_evaluation_script__:19:12\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"trace\\\\\\"\\"
@@ -571,7 +571,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"warn\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:18:15\\"
+          \\"__puppeteer_evaluation_script__:20:12\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"warn\\\\\\"\\"
@@ -586,7 +586,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"clear\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:19:15\\"
+          \\"__puppeteer_evaluation_script__:21:12\\"
         ],
         \\"payload\\": []
       }
@@ -599,10 +599,10 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"log\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:20:15\\"
+          \\"__puppeteer_evaluation_script__:22:12\\"
         ],
         \\"payload\\": [
-          \\"\\\\\\"TypeError: a message\\\\\\\\n    at __puppeteer_evaluation_script__:20:19\\\\\\\\nEnd of stack for Error object\\\\\\"\\"
+          \\"\\\\\\"TypeError: a message\\\\\\\\n    at __puppeteer_evaluation_script__:22:16\\\\\\\\nEnd of stack for Error object\\\\\\"\\"
         ]
       }
     }
@@ -684,7 +684,7 @@ exports[`rrweb-plugin-console-record > should record console messages 1`] = `
       \\"payload\\": {
         \\"level\\": \\"log\\",
         \\"trace\\": [
-          \\"__puppeteer_evaluation_script__:2:15\\"
+          \\"__puppeteer_evaluation_script__:2:12\\"
         ],
         \\"payload\\": [
           \\"\\\\\\"from iframe\\\\\\"\\"

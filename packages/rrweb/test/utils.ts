@@ -321,16 +321,15 @@ export async function assertSnapshot(
   expect(snapshots).toBeDefined();
 
   if (useOwnFile) {
-    // e.g. 'mutation.test.ts > mutation > add elements at once'
-    const longFname = expect.getState().currentTestName.split('/').pop();
-    const file = longFname.split(' > ')[0].replace('.test.ts', '');
+    const { testPath, currentTestName } = expect.getState();
+    const file = path.basename(testPath, '.test.ts');
     if (typeof useOwnFile !== 'string') {
-      useOwnFile = longFname.substring(longFname.indexOf(' > ') + 3);
+      useOwnFile = currentTestName;
     }
     useOwnFile = useOwnFile.replace(/ > /g, '.').replace(/\s/g, '-');
 
     const fname = `./__${file}.snapshots__/${useOwnFile}.json`;
-    expect(stringifySnapshots(snapshots)).toMatchFileSnapshot(fname);
+    await expect(stringifySnapshots(snapshots)).toMatchFileSnapshot(fname);
   } else {
     expect(stringifySnapshots(snapshots)).toMatchSnapshot();
   }
