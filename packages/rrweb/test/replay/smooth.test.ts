@@ -16,7 +16,7 @@ import {
   glideAt,
   haloScale,
   queueSamples,
-  seedSample,
+  dropPast,
   REST_GAP_MS,
   smoothSpeed,
   TRAVEL_MS,
@@ -78,12 +78,13 @@ describe('queueSamples', () => {
   });
 });
 
-describe('seedSample', () => {
-  it('replaces the past and keeps queued future samples', () => {
-    const buf = [s(300, 3), s(400, 4)];
-    seedSample(buf, s(250, 2));
-    seedSample(buf, s(280, 3));
-    expect(buf.map((p) => p.t)).toEqual([280, 300, 400]);
+describe('dropPast', () => {
+  it('keeps the last two past samples and every future one', () => {
+    const buf = [s(100, 1), s(200, 2), s(280, 3), s(300, 3), s(400, 4)];
+    dropPast(buf, 290);
+    expect(buf.map((p) => p.t)).toEqual([200, 280, 300, 400]);
+    dropPast(buf, 50);
+    expect(buf.map((p) => p.t)).toEqual([200, 280, 300, 400]);
   });
 });
 
@@ -213,6 +214,10 @@ function harness(events: eventWithTime[], config: object) {
     },
     timer: {
       timeOffset: 0,
+      active: true,
+      isActive() {
+        return this.active;
+      },
       actions: [] as actionWithDelay[],
       addAction(a: actionWithDelay) {
         this.actions.push(a);
@@ -245,6 +250,10 @@ function harness(events: eventWithTime[], config: object) {
     setTime(t: number) {
       replayer.timer.timeOffset = t;
     },
+    /** The replayer's timer is stopped while a seek casts synchronously. */
+    setSeeking(seeking: boolean) {
+      replayer.timer.active = !seeking;
+    },
     /** Runs the pending animation frame at t, if one is requested. */
     frameAt(t: number) {
       replayer.timer.timeOffset = t;
@@ -261,6 +270,7 @@ function harness(events: eventWithTime[], config: object) {
     emit(name: ReplayerEvents) {
       handlers[name].forEach((h) => h(undefined));
     },
+    config: config as { smoothScroll?: boolean },
     cast(e: eventWithTime, at = e.timestamp) {
       replayer.timer.timeOffset = at;
       handlers['event-cast'].forEach((h) => h(e));
@@ -327,11 +337,14 @@ describe('SmoothReplay', () => {
     h.frameAt(1300);
     expect(h.left()).toBe(200);
     // Seek back to 1100: the replayer rebuilds, casts the click, then the
-    // removal of its target, and only then emits Start.
+    // removal of its target, which Flush applies, and only then emits Start.
     h.emit(ReplayerEvents.PlayBack);
     h.nodes.set(2, h.element());
+    h.setSeeking(true);
     h.cast(events[0]);
     h.nodes.delete(2);
+    h.emit(ReplayerEvents.Flush);
+    h.setSeeking(false);
     h.setTime(1100);
     h.emit(ReplayerEvents.Start);
     h.frameAt(1150);
@@ -368,6 +381,37 @@ describe('SmoothReplay', () => {
       expect.objectContaining({ top: 150 }),
     );
   });
+
+  it('keeps the curve through a past batch after a pause or option change', () => {
+    // The batch's first sample is the control point before 1000.
+    const events = () => [
+      move(1000, 3, 100, [{ x: 0, timeOffset: -100 }]),
+      move(1100, 3, 110),
+    ];
+    const run = (interrupt: (h: ReturnType<typeof harness>) => void) => {
+      const h = harness(events(), { cursor: { smooth: true } });
+      h.nodes.set(3, h.element());
+      h.frameAt(900);
+      h.frameAt(1000);
+      h.frameAt(1030);
+      interrupt(h);
+      h.frameAt(1060);
+      return h.left();
+    };
+    const played = run(() => undefined);
+    expect(played).not.toBeCloseTo(100 + 0.6 * 10);
+    const resumed = run((h) => {
+      h.emit(ReplayerEvents.Pause);
+      h.setTime(1030);
+      h.emit(ReplayerEvents.Start);
+    });
+    expect(resumed).toBeCloseTo(played, 6);
+    const toggled = run((h) => {
+      h.config.smoothScroll = true;
+      h.smooth.configure();
+    });
+    expect(toggled).toBeCloseTo(played, 6);
+  });
 });
 
 describe('SmoothReplay in a nested iframe', () => {
@@ -398,7 +442,27 @@ describe('SmoothReplay in a nested iframe', () => {
     h.frameAt(1000);
     expect(h.left()).toBe(300);
     frame.left = 100; // the parent page scrolls the iframe
+    // Halfway between 300 and the next sample at 100 + 20.
+    h.frameAt(1050);
+    expect(h.left()).toBeCloseTo(210, 6);
     h.runActions(1100);
+    h.frameAt(1100);
+    expect(h.left()).toBe(120);
+  });
+
+  it('measures samples cast while seeking after Flush updates the page', () => {
+    const events = [click(1000, 3, 20)];
+    const h = harness(events, { cursor: { smooth: true } });
+    const { frame, node } = framed();
+    h.nodes.set(3, node);
+    // A seek to 1100 casts the click before Flush applies the mutation that
+    // moves the iframe to 100.
+    h.setSeeking(true);
+    h.cast(events[0], 1100);
+    frame.left = 100;
+    h.emit(ReplayerEvents.Flush);
+    h.setSeeking(false);
+    h.emit(ReplayerEvents.Start);
     h.frameAt(1100);
     expect(h.left()).toBe(120);
   });

@@ -117,11 +117,14 @@ export function queueSamples(s: CursorSample[], add: CursorSample[]) {
   if (n && add.length && s[n - 1].t > s[n].t) s.sort((a, b) => a.t - b.t);
 }
 
-/** Replaces every sample at or before sample.t with it, so a seek starts from where the pointer was. */
-export function seedSample(s: CursorSample[], sample: CursorSample) {
+/**
+ * Drops samples before the last two at or before t, as playback does, so the
+ * curve after a seek or resume keeps the control point before the pointer.
+ */
+export function dropPast(s: CursorSample[], t: number) {
   let i = 0;
-  while (i < s.length && s[i].t <= sample.t) i++;
-  s.splice(0, i, sample);
+  while (i < s.length && s[i].t <= t) i++;
+  s.splice(0, Math.max(0, i - 2));
 }
 
 export function glideAt(g: ScrollGlide, t: number) {
@@ -183,6 +186,15 @@ export function drawTaperedTrail(
   }
 }
 
+/**
+ * Recorded positions are viewport coordinates of the document they were
+ * captured in, so only positions from the same document can be blended.
+ */
+const sameDocument = (
+  a: CursorSample & { doc?: Document | null },
+  b: CursorSample & { doc?: Document | null },
+) => !b.jump && (a.id === b.id || a.doc === b.doc);
+
 const cursorSamples = (e: eventWithTime): CursorSample[] => {
   if (e.type !== EventType.IncrementalSnapshot) return [];
   const d = e.data;
@@ -234,6 +246,8 @@ export class SmoothReplay {
     CursorSample,
     { doc: Document | null; base: DocumentDimension }
   >();
+  /** Samples cast while seeking, measured again once Flush has updated the page. */
+  private unflushed: CursorSample[] = [];
   /** Samples queued from each pointer event, so a cast never queues them twice. */
   private queued = new WeakMap<eventWithTime, CursorSample[]>();
   /** Last scroll applied to each target, whose glide an added event can extend. */
@@ -262,6 +276,14 @@ export class SmoothReplay {
       this.spaces = new WeakMap();
     });
     replayer.on(ReplayerEvents.Destroy, () => this.stop());
+    // Runs after the replayer's own Flush handler has applied the virtual DOM.
+    replayer.on(ReplayerEvents.Flush, () => {
+      for (const sample of this.unflushed) {
+        const space = this.measure(sample);
+        if (space) this.spaces.set(sample, space);
+      }
+      this.unflushed = [];
+    });
     replayer.on(ReplayerEvents.StateChange, (s) => {
       const p = (s as { player?: { matches(v: string): boolean } }).player;
       if (!p) return;
@@ -327,10 +349,10 @@ export class SmoothReplay {
         const add = this.queued.get(e) ?? cursorSamples(e);
         if (!add.length) continue;
         this.queued.set(e, add);
-        if (past) seedSample(this.samples, add[add.length - 1]);
-        else queueSamples(this.samples, add);
+        queueSamples(this.samples, add);
       }
     }
+    dropPast(this.samples, now);
     this.start();
   }
 
@@ -367,9 +389,14 @@ export class SmoothReplay {
       // modal closes, so record each sample's space while its target exists.
       // A mouse-move batch is cast at its first sample, so later samples are
       // recorded at their own move, after any scroll that moved an iframe.
+      // A seek casts synchronously before Flush updates the page, so those
+      // samples are measured again after it, keeping this space if their
+      // target is gone by then.
+      const seeking = !this.replayer.timer.isActive();
       const now = this.now();
       const { baselineTime } = this.replayer.service.state.context;
       for (const sample of this.queue(e)) {
+        if (seeking) this.unflushed.push(sample);
         if (sample.t <= now) this.spaceOf(sample);
         else
           this.replayer.timer.addAction({
@@ -453,15 +480,29 @@ export class SmoothReplay {
   private stepCursor(t: number) {
     const s = this.samples;
     while (s.length > 2 && s[2].t <= t) s.shift();
-    const p = cursorAt(s, t, this.sameDocument);
-    if (!p) return;
-    // Measured once per sample, as moveAndHover does: a still pointer stays
-    // put when the page scrolls a nested iframe under it.
+    if (!s.length || s[0].t > t) return;
+    // A reached sample is measured once, as moveAndHover does, so a still
+    // pointer stays put when the page scrolls a nested iframe under it.
     const reached = s[1] && s[1].t <= t ? s[1] : s[0];
-    const base = this.spaceOf(reached)?.base;
-    if (!base) return;
-    const x = p.x * base.absoluteScale + base.x;
-    const y = p.y * base.absoluteScale + base.y;
+    const fallback = this.spaceOf(reached);
+    if (!fallback) return;
+    // Each sample is placed in player coordinates through its own iframe
+    // offset before blending, so an iframe that moves between two samples
+    // does not bend the path. Samples not reached yet are measured each frame.
+    // cursorAt reads at most four samples, as s[2] is after t.
+    const placed = s.slice(0, 4).map((sample) => {
+      const own = sample.t <= t ? this.spaceOf(sample) : this.measure(sample);
+      const { base } = own ?? fallback;
+      return {
+        ...sample,
+        x: sample.x * base.absoluteScale + base.x,
+        y: sample.y * base.absoluteScale + base.y,
+        doc: own?.doc,
+      };
+    });
+    const p = cursorAt(placed, t, sameDocument);
+    if (!p) return;
+    const { x, y } = p;
     const last = this.last;
     if (t > last.t) {
       const v = Math.hypot(x - last.x, y - last.y) / (t - last.t);
@@ -479,32 +520,22 @@ export class SmoothReplay {
   /** The sample's recorded document and offset, recorded now if its target exists. */
   private spaceOf(sample: CursorSample) {
     let space = this.spaces.get(sample);
-    const target = !space && this.replayer.getMirror().getNode(sample.id);
-    if (target) {
-      space = {
-        doc: target.ownerDocument,
-        base: getBaseDimension(target, this.replayer.iframe),
-      };
-      this.spaces.set(sample, space);
+    if (!space) {
+      space = this.measure(sample);
+      if (space) this.spaces.set(sample, space);
     }
     return space;
   }
 
-  /**
-   * Recorded positions are viewport coordinates of the document they were
-   * captured in, so only positions from the same document can be blended.
-   */
-  private sameDocument = (a: CursorSample, b: CursorSample) => {
-    if (b.jump) return false;
-    if (a.id === b.id) return true;
-    const docOf = (s: CursorSample) => {
-      const space = this.spaces.get(s);
-      return space
-        ? space.doc
-        : this.replayer.getMirror().getNode(s.id)?.ownerDocument;
+  /** The current document and offset of the sample's target, if it exists. */
+  private measure(sample: CursorSample) {
+    const target = this.replayer.getMirror().getNode(sample.id);
+    if (!target) return undefined;
+    return {
+      doc: target.ownerDocument,
+      base: getBaseDimension(target, this.replayer.iframe),
     };
-    return docOf(a) === docOf(b);
-  };
+  }
 
   private stepScroll(t: number) {
     for (const [id, g] of this.glides) {

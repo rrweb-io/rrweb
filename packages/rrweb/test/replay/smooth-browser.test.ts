@@ -63,12 +63,15 @@ describe('cursor.smooth', () => {
       const start = performance.now();
       while (performance.now() - start < 2200) {
         await new Promise((r) => requestAnimationFrame(r));
-        seen.push(m.style.left + '|' + m.style.top + '|' + m.style.getPropertyValue('--rr-cursor-scale'));
+        seen.push(m.style.left + '|' + m.style.top);
       }
-      return { frames: seen.length, distinct: new Set(seen).size, cls: m.className, sample: seen.filter((_, i) => i % 20 === 0) };
+      // Recorded x values are multiples of 10, so any other left is interpolated.
+      const between = seen.filter((p) => parseFloat(p) % 10 !== 0).length;
+      return { frames: seen.length, distinct: new Set(seen).size, between, sample: seen.filter((_, i) => i % 20 === 0) };
     })()`);
     console.log(JSON.stringify(r));
     expect(r.distinct).toBeGreaterThan(40);
+    expect(r.between).toBeGreaterThan(20);
     await page.close();
   });
 });
