@@ -46,6 +46,12 @@ export type RRwebPlayerOptions = {
      */
     showController?: boolean;
     /**
+     * Show a fast-forward indicator over the replay while it skips inactive
+     * time, with or without the controller.
+     * @defaultValue `false`
+     */
+    showSkipIndicator?: boolean;
+    /**
      * Display timed captions from annotation events.
      * @defaultValue `true`
      */

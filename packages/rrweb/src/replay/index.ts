@@ -28,6 +28,7 @@ import type {
   Mirror as RRDOMMirror,
 } from 'rrdom';
 import * as mittProxy from 'mitt';
+import { adaptiveSkipSpeed } from './inactivity';
 import { Timer, addDelay, getEarliestTimestamp } from './timer';
 import {
   createPlayerService,
@@ -140,6 +141,22 @@ export class Replayer {
   private emitter: Emitter = mitt();
 
   private nextUserInteractionEvent: eventWithTime | null;
+  // Timestamp of the latest interaction applied, where the current gap starts.
+  private gapStart: number | null = null;
+  // The latest last sample of the interactions applied. A mouse batch runs
+  // from its first sample but moves until its timestamp, so the inactivity
+  // after it starts there.
+  private lastSample: number | null = null;
+  // Whether the gap starts at the first event because no interaction has run
+  // yet. Interactions stamped with that first event are then still to run.
+  private gapStartsBeforeInteractions = false;
+  // An unresolved stall marker inside the current skip, where it must stop.
+  private skipBarrier: eventWithTime | null = null;
+  // How far before its timestamp any event runs: a mouse batch runs at its
+  // first position. Bounds the search for the next interaction to run.
+  private batchLead = 0;
+  // The skip last announced with skip-start, until skip-end.
+  private announcedSkip: { target: eventWithTime; speed: number } | null = null;
 
   private legacy_missingNodeRetryMap: missingNodeMap = {};
 
@@ -370,8 +387,20 @@ export class Replayer {
         getCastFn: this.getCastFn,
         applyEventsSynchronously: this.applyEventsSynchronously,
         emitter: this.emitter,
-        isStallMarker: (event) =>
-          this.stallControllers.some((sc) => sc.isStallMarker(event)),
+        isStallMarker: (event) => {
+          const marker = this.stallControllers.some((sc) =>
+            sc.isStallMarker(event),
+          );
+          if (
+            event === this.skipBarrier &&
+            (!marker || !this.service.state.context.events.includes(event))
+          ) {
+            // Resolved or removed: the skip runs on to the next unresolved
+            // marker or to its interaction.
+            if (this.gapStart !== null) this.checkSkipping(this.gapStart);
+          }
+          return marker;
+        },
       },
     );
     this.service.start();
@@ -464,6 +493,11 @@ export class Replayer {
           speed: config.speed,
         },
       });
+    }
+    // The threshold and skip speed depend on the settings. A speed, even an
+    // unchanged one, also ends a skip in the speed service.
+    if (this.config.skipInactive && this.gapStart !== null) {
+      this.checkSkipping(this.gapStart);
     }
     if (typeof config.mouseTail !== 'undefined') {
       if (config.mouseTail === false) {
@@ -690,6 +724,24 @@ export class Replayer {
       } else {
         // isSync e.g. live replay 'catchup'
         this.getCastFn(event, true)();
+        const time = getEarliestTimestamp(event);
+        if (this.isUserInteraction(event)) {
+          if (
+            this.gapStart === null ||
+            time > this.gapStart ||
+            (time === this.gapStart && this.gapStartsBeforeInteractions)
+          ) {
+            // A late interaction moves the start of the current gap. One at
+            // the first event's time has now run too.
+            this.gapStart = time;
+            this.gapStartsBeforeInteractions = false;
+          }
+          this.lastSample = Math.max(
+            this.lastSample ?? -Infinity,
+            event.timestamp,
+          );
+          if (this.config.skipInactive) this.checkSkipping(this.gapStart);
+        }
       }
     } else if (timer.isActive()) {
       addDelay(event, baselineTime);
@@ -697,6 +749,14 @@ export class Replayer {
         doAction: this.getCastFn(event, false),
         delay: event.delay!,
       });
+      if (
+        this.config.skipInactive &&
+        this.gapStart !== null &&
+        this.isUserInteraction(event)
+      ) {
+        // An interaction appended inside the current gap shortens it.
+        this.checkSkipping(this.gapStart);
+      }
     }
     // throttle to protect against rapid calls to addEvent
     cancelAnimationFrame(this.addEventEmitThrottle);
@@ -706,6 +766,10 @@ export class Replayer {
   }
 
   private registerEvent(event: eventWithTime) {
+    this.batchLead = Math.max(
+      this.batchLead,
+      event.timestamp - getEarliestTimestamp(event),
+    );
     if (indicatesTouchDevice(event)) {
       this.mouse.classList.add('touch-device');
     }
@@ -790,15 +854,44 @@ export class Replayer {
   };
 
   private applyEventsSynchronously = (events: Array<eventWithTime>) => {
-    let gapStart = null;
     for (const event of events) {
-      if (gapStart === null || this.isUserInteraction(event)) {
-        gapStart = event.timestamp;
-      }
       this.getCastFn(event, true)();
     }
-    if (this.config.skipInactive && gapStart !== null) {
-      this.checkSkipping(gapStart);
+    // The gap at the playhead starts at the last interaction before it, or at
+    // the first event. This is found from all events, since the batch can be
+    // empty (playing from the start, resuming in place) or begin at a full
+    // snapshot inside the gap.
+    const { events: all, baselineTime } = this.service.state.context;
+    // The latest by when it ran: a mouse batch runs before its timestamp,
+    // so an earlier entry can have run later. An entry stamped at or before
+    // the best time found so far cannot have run after it.
+    let latest: number | null = null;
+    let lastSample: number | null = null;
+    const index = findEventIndex(all, baselineTime);
+    // A mouse batch stamped after the playhead can have started before it.
+    for (
+      let i = index;
+      i < all.length && all[i].timestamp <= baselineTime + this.batchLead;
+      i++
+    ) {
+      const time = getEarliestTimestamp(all[i]);
+      if (this.isUserInteraction(all[i]) && time < baselineTime) {
+        latest = Math.max(latest ?? -Infinity, time);
+        lastSample = Math.max(lastSample ?? -Infinity, all[i].timestamp);
+      }
+    }
+    for (let i = index - 1; i >= 0; i--) {
+      if (latest !== null && all[i].timestamp <= latest) break;
+      if (this.isUserInteraction(all[i])) {
+        latest = Math.max(latest ?? -Infinity, getEarliestTimestamp(all[i]));
+        lastSample = Math.max(lastSample ?? -Infinity, all[i].timestamp);
+      }
+    }
+    this.lastSample = lastSample;
+    this.gapStart = latest ?? (all.length ? all[0].timestamp : null);
+    this.gapStartsBeforeInteractions = latest === null;
+    if (this.config.skipInactive && this.gapStart !== null) {
+      this.checkSkipping(this.gapStart);
     }
   };
 
@@ -857,12 +950,18 @@ export class Replayer {
       if (castFn) {
         castFn();
       }
-      if (
-        !isSync &&
-        this.config.skipInactive &&
-        this.isUserInteraction(event)
-      ) {
-        this.checkSkipping(event.timestamp);
+      if (!isSync && this.isUserInteraction(event)) {
+        // An overdue mouse batch can cast after a later interaction.
+        this.gapStart = Math.max(
+          this.gapStart ?? -Infinity,
+          getEarliestTimestamp(event),
+        );
+        this.lastSample = Math.max(
+          this.lastSample ?? -Infinity,
+          event.timestamp,
+        );
+        this.gapStartsBeforeInteractions = false;
+        if (this.config.skipInactive) this.checkSkipping(this.gapStart);
       }
       for (const plugin of this.config.plugins || []) {
         if (plugin.handler) plugin.handler(event, isSync, { replayer: this });
@@ -875,48 +974,96 @@ export class Replayer {
     return wrappedCastFn;
   };
 
+  /**
+   * Chooses the skip for the gap that starts at fromTimestamp. Runs after
+   * every interaction, seek and setting change; it signals only a change of
+   * target or speed.
+   */
   private checkSkipping(fromTimestamp: number) {
-    if (
-      this.nextUserInteractionEvent &&
-      this.nextUserInteractionEvent.timestamp <= fromTimestamp
-    ) {
-      this.nextUserInteractionEvent = null;
-    }
     let nEvent: eventWithTime | null = null;
+    let barrier: eventWithTime | null = null;
     const { events } = this.service.state.context;
-    for (
-      let i = findEventIndex(events, fromTimestamp) + 1;
-      i < events.length;
-      i++
-    ) {
-      if (this.isUserInteraction(events[i])) {
+    const start = findEventIndex(events, fromTimestamp);
+    // The next interaction to run after fromTimestamp. Times are when events
+    // run: a mouse batch runs at its first position, before its timestamp,
+    // so the search goes on past the first match as far as batchLead. An
+    // interaction due at fromTimestamp has been applied or runs in the same
+    // frame, so the next one comes after it. Events stored after an unresolved
+    // stall marker wait for it, so a match before the marker ends the search.
+    // Before any interaction has run, one stamped at the gap's start is next.
+    const includeStart =
+      this.gapStartsBeforeInteractions && fromTimestamp === this.gapStart;
+    let end = Infinity;
+    let nIndex = events.length;
+    const isStallMarker = (event: eventWithTime) =>
+      this.stallControllers.some((sc) => sc.isStallMarker(event));
+    for (let i = start; i < events.length; i++) {
+      if (events[i].timestamp > end + this.batchLead) break;
+      if (nEvent && isStallMarker(events[i])) break;
+      if (!this.isUserInteraction(events[i])) continue;
+      const time = getEarliestTimestamp(events[i]);
+      if (
+        (time > fromTimestamp || (includeStart && time === fromTimestamp)) &&
+        time < end
+      ) {
         nEvent = events[i];
+        nIndex = i;
+        end = time;
+      }
+    }
+    // The first unresolved stall marker before it in the events, including
+    // one at fromTimestamp, stops the skip. The scheduler stops at markers in
+    // that order, so a marker stamped after an early-running mouse batch but
+    // stored before it still holds the batch back.
+    for (let i = start; i < nIndex; i++) {
+      if (isStallMarker(events[i])) {
+        barrier = events[i];
         break;
       }
     }
-    if (nEvent && nEvent !== this.nextUserInteractionEvent) {
-      const gap = getEarliestTimestamp(nEvent) - fromTimestamp;
-      const skipThreshold =
-        this.config.inactivePeriodThreshold *
-        this.speedService.state.context.normalSpeed;
-
-      if (skipThreshold < gap) {
-        const payload = {
-          speed: Math.min(
-            Math.round(gap / SKIP_TIME_INTERVAL),
-            this.config.maxSpeed,
-          ),
-        };
-        this.nextUserInteractionEvent = nEvent;
-        this.speedService.send({ type: 'FAST_FORWARD', payload });
-        this.emitter.emit(ReplayerEvents.SkipStart, payload);
-      } else {
-        this.nextUserInteractionEvent = null; // we are now in a different gap/section
-      }
-    }
-    if (!this.nextUserInteractionEvent) {
+    // The skip lands on the first sample of the next interaction, but the
+    // inactivity starts after the last sample of those applied. An
+    // interaction still to run inside that movement leaves no gap.
+    const gap = nEvent
+      ? getEarliestTimestamp(nEvent) -
+        Math.max(fromTimestamp, this.lastSample ?? -Infinity)
+      : 0;
+    // The speed chosen by the user. The speed service only records its
+    // normalSpeed once a skip starts, so it is not set for the first check.
+    if (
+      !nEvent ||
+      gap <= this.config.inactivePeriodThreshold * this.config.speed
+    ) {
       this.backToNormalSpeed();
+      return;
     }
+    const speed = this.config.adaptiveSkip
+      ? adaptiveSkipSpeed(gap, this.config.speed, this.config.maxSpeed)
+      : Math.min(Math.round(gap / SKIP_TIME_INTERVAL), this.config.maxSpeed);
+    this.nextUserInteractionEvent = nEvent;
+    // A speed setting puts the speed service back to normal, so the skip is
+    // resumed without announcing it again.
+    if (
+      !this.speedService.state.matches('skipping') ||
+      speed !== this.timer.speed
+    )
+      this.speedService.send({ type: 'FAST_FORWARD', payload: { speed } });
+    this.skipBarrier = barrier;
+    this.setSkipEnd();
+    // Announced last, so a listener that turns skipping off is not undone.
+    const announced = this.announcedSkip;
+    if (announced?.target !== nEvent || announced.speed !== speed) {
+      this.announcedSkip = { target: nEvent, speed };
+      this.emitter.emit(ReplayerEvents.SkipStart, { speed });
+    }
+  }
+
+  /** Recomputed on every check, since a seek moves the baseline. */
+  private setSkipEnd() {
+    const end = this.skipBarrier ?? this.nextUserInteractionEvent;
+    this.timer.skipEnd = end
+      ? getEarliestTimestamp(end) - this.service.state.context.baselineTime
+      : null;
   }
 
   private rebuildFullSnapshot(
@@ -2396,13 +2543,16 @@ export class Replayer {
    */
   private backToNormalSpeed() {
     this.nextUserInteractionEvent = null;
-    if (this.speedService.state.matches('normal')) {
-      return;
+    this.skipBarrier = null;
+    this.timer.skipEnd = null;
+    if (this.speedService.state.matches('skipping'))
+      this.speedService.send({ type: 'BACK_TO_NORMAL' });
+    // Announced even when a speed setting already left the skip state.
+    if (this.announcedSkip) {
+      this.announcedSkip = null;
+      // The timer's speed, which a speed setting may have just changed.
+      this.emitter.emit(ReplayerEvents.SkipEnd, { speed: this.timer.speed });
     }
-    this.speedService.send({ type: 'BACK_TO_NORMAL' });
-    this.emitter.emit(ReplayerEvents.SkipEnd, {
-      speed: this.speedService.state.context.normalSpeed,
-    });
   }
 
   private warnNodeNotFound(d: incrementalData, id: number) {
