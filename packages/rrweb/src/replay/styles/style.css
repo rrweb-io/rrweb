@@ -77,3 +77,15 @@
     height: 10px;
   }
 }
+
+.replayer-mouse.smooth,
+.replayer-mouse.smooth.touch-device {
+  transition: border-color 0.2s ease-in-out;
+}
+.replayer-mouse.smooth ~ .replayer-mouse-tail {
+  opacity: 0.7;
+}
+.replayer-mouse.smooth::after {
+  transform: translate(-50%, -50%) scale(var(--rr-cursor-scale, 1));
+  transition: transform 0.06s linear;
+}

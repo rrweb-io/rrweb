@@ -29,6 +29,7 @@ import type {
 } from 'rrdom';
 import * as mittProxy from 'mitt';
 import { Timer, addDelay } from './timer';
+import { drawTaperedTrail, SmoothReplay } from './smooth';
 import {
   createPlayerService,
   createSpeedService,
@@ -105,6 +106,7 @@ const defaultMouseTailConfig = {
   lineCap: 'round',
   lineWidth: 3,
   strokeStyle: 'red',
+  taper: false,
 } as const;
 
 function indicatesTouchDevice(e: eventWithTime) {
@@ -136,6 +138,7 @@ export class Replayer {
   private mouse: HTMLDivElement;
   private mouseTail: HTMLCanvasElement | null = null;
   private tailPositions: Array<{ x: number; y: number }> = [];
+  private smooth: SmoothReplay;
 
   private emitter: Emitter = mitt();
 
@@ -208,6 +211,7 @@ export class Replayer {
       triggerFocus: true,
       UNSAFE_replayCanvas: false,
       pauseAnimation: true,
+      smoothScroll: false,
       mouseTail: defaultMouseTailConfig,
       useVirtualDom: true, // Virtual-dom optimization is enabled by default.
       logger: console,
@@ -435,6 +439,9 @@ export class Replayer {
         );
       }, 1);
     }
+    this.smooth = new SmoothReplay(this, this.mouse, (p) =>
+      this.drawMouseTail(p),
+    );
   }
 
   public on(event: string, handler: Handler) {
@@ -454,6 +461,7 @@ export class Replayer {
         key as keyof playerConfig
       ] = config[key as keyof playerConfig];
     });
+    this.smooth.configure();
     if (!this.config.skipInactive) {
       this.backToNormal();
     }
@@ -698,6 +706,8 @@ export class Replayer {
         delay: event.delay!,
       });
     }
+    // The smoothing sees an added event once the player has taken it.
+    this.smooth.added(event);
     // throttle to protect against rapid calls to addEvent
     cancelAnimationFrame(this.addEventEmitThrottle);
     this.addEventEmitThrottle = requestAnimationFrame(() => {
@@ -2015,26 +2025,24 @@ export class Replayer {
       return this.debugNodeNotFound(d, d.id);
     }
     const sn = this.mirror.getMeta(target);
+    // smoothScroll glides between samples itself, so it jumps to each one.
+    const behavior = this.config.smoothScroll
+      ? 'instant'
+      : isSync
+      ? 'auto'
+      : 'smooth';
     if (target === this.iframe.contentDocument) {
-      this.iframe.contentWindow?.scrollTo({
-        top: d.y,
-        left: d.x,
-        behavior: isSync ? 'auto' : 'smooth',
-      });
+      this.iframe.contentWindow?.scrollTo({ top: d.y, left: d.x, behavior });
     } else if (sn?.type === NodeType.Document) {
       // nest iframe content document
       (target as Document).defaultView?.scrollTo({
         top: d.y,
         left: d.x,
-        behavior: isSync ? 'auto' : 'smooth',
+        behavior,
       });
     } else {
       try {
-        (target as Element).scrollTo({
-          top: d.y,
-          left: d.x,
-          behavior: isSync ? 'auto' : 'smooth',
-        });
+        (target as Element).scrollTo({ top: d.y, left: d.x, behavior });
       } catch (error) {
         /**
          * Seldomly we may found scroll target was removed before
@@ -2318,7 +2326,7 @@ export class Replayer {
 
     this.mouse.style.left = `${_x}px`;
     this.mouse.style.top = `${_y}px`;
-    if (!isSync) {
+    if (!isSync && !this.config.cursor?.smooth) {
       this.drawMouseTail({ x: _x, y: _y });
     }
     this.hoverElements(target as Element);
@@ -2329,7 +2337,7 @@ export class Replayer {
       return;
     }
 
-    const { lineCap, lineWidth, strokeStyle, duration } =
+    const { lineCap, lineWidth, strokeStyle, duration, taper } =
       this.config.mouseTail === true
         ? defaultMouseTailConfig
         : Object.assign({}, defaultMouseTailConfig, this.config.mouseTail);
@@ -2343,10 +2351,13 @@ export class Replayer {
         return;
       }
       ctx.clearRect(0, 0, this.mouseTail.width, this.mouseTail.height);
-      ctx.beginPath();
-      ctx.lineWidth = lineWidth;
       ctx.lineCap = lineCap;
       ctx.strokeStyle = strokeStyle;
+      if (taper) {
+        return drawTaperedTrail(ctx, this.tailPositions, lineWidth);
+      }
+      ctx.beginPath();
+      ctx.lineWidth = lineWidth;
       ctx.moveTo(this.tailPositions[0].x, this.tailPositions[0].y);
       this.tailPositions.forEach((p) => ctx.lineTo(p.x, p.y));
       ctx.stroke();
