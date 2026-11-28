@@ -13,7 +13,7 @@ import type {
 import type { Mirror, SlimDOMOptions } from 'rrweb-snapshot';
 import { isShadowRoot, IGNORED_NODE, classMatchesRegex } from 'rrweb-snapshot';
 import { RRNode, RRIFrameElement, BaseRRNode } from 'rrdom';
-import dom from '@rrweb/utils';
+import dom, { getUntaintedMethod } from '@rrweb/utils';
 export { nowTimestamp } from '@rrweb/utils';
 
 export function on(
@@ -22,8 +22,29 @@ export function on(
   target: Document | IWindow = document,
 ): listenerHandler {
   const options = { capture: true, passive: true };
-  target.addEventListener(type, fn, options);
-  return () => target.removeEventListener(type, fn, options);
+  const eventTarget = target as unknown as EventTarget;
+  // jsdom's window is not a valid receiver for EventTarget.prototype methods,
+  // so fall back to the target's own methods if the untainted call throws
+  try {
+    getUntaintedMethod('EventTarget', eventTarget, 'addEventListener')(
+      type,
+      fn,
+      options,
+    );
+  } catch {
+    target.addEventListener(type, fn, options);
+  }
+  return () => {
+    try {
+      getUntaintedMethod('EventTarget', eventTarget, 'removeEventListener')(
+        type,
+        fn,
+        options,
+      );
+    } catch {
+      target.removeEventListener(type, fn, options);
+    }
+  };
 }
 
 // https://github.com/rrweb-io/rrweb/pull/407
