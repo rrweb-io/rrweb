@@ -55,6 +55,7 @@
     "./dist/style.css": "./dist/style.css"
   },
   "files": [
+    "LICENSE-lucide",
     "umd",
     "dist",
     "package.json"

@@ -1,3 +1,16 @@
+<script context="module" lang="ts">
+  const CONTAINER = 'rr-custom-event-container';
+
+  // Whether an event happened on a marker, which handles its own clicks.
+  export function markersHandle(event: Event): boolean {
+    return event
+      .composedPath()
+      .some(
+        (node) => node instanceof Element && node.classList.contains(CONTAINER),
+      );
+  }
+</script>
+
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
 
