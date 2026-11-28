@@ -509,6 +509,23 @@ export class StyleSheetMirror {
   }
 }
 
+/*
+ * Step up to the .parentNode and also break out of shadow hosts
+ */
+export function parentOrShadowHost(n: Node): ParentNode | null {
+  let parentNode = dom.parentNode(n);
+  if (parentNode && isShadowRoot(parentNode)) {
+    const shadowHost = getShadowHost(n);
+    if (shadowHost) {
+      // a shadow host is a 'phantom' and isn't serialized or in the mirror
+      // so we can safely skip while traversing so we visit 'real' nodes only
+      parentNode = shadowHost;
+    }
+  }
+  return parentNode;
+}
+
+
 /**
  * Get the direct shadow host of a node in shadow dom. Returns null if it is not in a shadow dom.
  */

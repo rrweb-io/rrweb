@@ -27,7 +27,7 @@ import {
   isSerializedIframe,
   isSerializedStylesheet,
   inDom,
-  getShadowHost,
+  parentOrShadowHost,
   closestElementOfNode,
 } from '../utils';
 import dom from '@rrweb/utils';
@@ -203,7 +203,7 @@ export default class MutationBuffer {
 
         // eslint-disable-next-line no-constant-condition
         while (true) {
-          parentNode = dom.parentNode(n);
+          parentNode = parentOrShadowHost(n);
           if (this.addedSet.has(parentNode as Node)) {
             // start at top of added tree so as not to serialize children before their parents (parentId requirement)
             n = parentNode as Node;
@@ -247,19 +247,7 @@ export default class MutationBuffer {
               break;
             }
           }
-
-          parentId = isShadowRoot(parentNode)
-            ? this.mirror.getId(getShadowHost(n))
-            : this.mirror.getId(parentNode);
-
-          // If the node is the direct child of a shadow root, we treat the shadow host as its parent node.
-          if (
-            parentId === -1 &&
-            parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE
-          ) {
-            const shadowHost = dom.host(parentNode as ShadowRoot);
-            parentId = this.mirror.getId(shadowHost);
-          }
+          parentId = this.mirror.getId(parentNode);
         }
       }
 
@@ -749,7 +737,7 @@ function _isSelfOrAncestorInSet(set: Set<Node>, n: Node): boolean {
   if (set.has(n)) {
     return true;
   }
-  const parent = dom.parentNode(n);
+  const parent = parentOrShadowHost(n);
   if (!parent) {
     return false;
   }
