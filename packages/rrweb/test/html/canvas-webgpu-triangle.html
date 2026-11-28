@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>canvas webgpu triangle</title>
+  </head>
+  <body>
+    <canvas id="myCanvas" width="200" height="100"></canvas>
+    <script>
+      // Called by the test once the recorder is running, so the recorder's
+      // requestAnimationFrame loop is registered before this render loop.
+      window.startWebGPU = async () => {
+        const canvas = document.getElementById('myCanvas');
+        const adapter = await navigator.gpu?.requestAdapter();
+        if (!adapter) return false;
+        const device = await adapter.requestDevice();
+        const context = canvas.getContext('webgpu');
+        const format = navigator.gpu.getPreferredCanvasFormat();
+        context.configure({ device, format, alphaMode: 'opaque' });
+        const module = device.createShaderModule({
+          code: `
+            @vertex fn vs(@builtin(vertex_index) i: u32) -> @builtin(position) vec4f {
+              var p = array<vec2f, 3>(vec2f(0.0, 0.8), vec2f(-0.8, -0.8), vec2f(0.8, -0.8));
+              return vec4f(p[i], 0.0, 1.0);
+            }
+            @fragment fn fs() -> @location(0) vec4f { return vec4f(1.0, 0.6, 0.1, 1.0); }`,
+        });
+        const pipeline = device.createRenderPipeline({
+          layout: 'auto',
+          vertex: { module, entryPoint: 'vs' },
+          fragment: { module, entryPoint: 'fs', targets: [{ format }] },
+        });
+        const draw = () => {
+          const encoder = device.createCommandEncoder();
+          const pass = encoder.beginRenderPass({
+            colorAttachments: [
+              {
+                view: context.getCurrentTexture().createView(),
+                clearValue: { r: 0.05, g: 0.1, b: 0.4, a: 1 },
+                loadOp: 'clear',
+                storeOp: 'store',
+              },
+            ],
+          });
+          pass.setPipeline(pipeline);
+          pass.draw(3);
+          pass.end();
+          device.queue.submit([encoder.finish()]);
+          requestAnimationFrame(draw);
+        };
+        requestAnimationFrame(draw);
+        return true;
+      };
+    </script>
+  </body>
+</html>
