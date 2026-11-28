@@ -358,11 +358,28 @@ The replayer accepts options as its constructor's second parameter, and it has t
 | UNSAFE_replayCanvas     | false         | whether to replay the canvas element. **Enabling this adds `allow-scripts` to the replay iframe and opts out of the sandbox script-execution protection, which is unsafe.**                                                    |
 | pauseAnimation          | true          | whether to pause CSS animation when the replayer is paused                                                                                                                                                                     |
 | mouseTail               | true          | whether to show mouse tail during replay. Set to false to disable mouse tail. A complete config can be found in this [type](https://github.com/rrweb-io/rrweb/blob/9488deb6d54a5f04350c063d942da5e96ab74075/src/types.ts#L407) |
+| cursor                  | -             | `{ mode: 'state' }` shows the cursor of the element under the pointer, e.g. a hand over links. See [Cursor](#cursor)                                                                                                           |
 | unpackFn                | -             | refer to the [storage optimization recipe](./docs/recipes/optimize-storage.md)                                                                                                                                                 |
 | logConfig               | -             | configuration of console output playback, refer to the [console recipe](./docs/recipes/console.md)                                                                                                                             |
 | plugins                 | []            | load plugins to provide extended replay functions. [What are plugins?](./docs/recipes/plugin-api.md)                                                                                                                           |
 | useVirtualDom           | true          | whether to use Virtual Dom optimization in the process of skipping to a new point of time                                                                                                                                      |
 | logger                  | console       | The logger object used by the replayer to print warnings or errors                                                                                                                                                             |
+
+#### Cursor
+
+By default (`mode: 'dot'`) the replayer shows one arrow for the whole session. With `cursor: { mode: 'state' }` it reads the computed `cursor` of the element under the pointer in the replay, at most once per frame and never while seeking, and shows the matching image from a built-in pack:
+
+```js
+new Replayer(events, {
+  cursor: {
+    mode: 'state',
+    resolveAuto: true, // `cursor: auto` becomes `text` over text and editable fields, else `default`
+    pack: myPack, // optional, a CursorPack
+  },
+});
+```
+
+A `CursorPack` is `{ name, resolve(state) }` where `state` is `{ cursor, pointerType, pressed, target }` and `resolve` returns `{ url, hotspot: [x, y] }` for a 32x32 image (drawn at 24px), or `null` for the default arrow. The overlay also gets `data-cursor` and `data-pointer` attributes for styling. Pen sessions show a pen tip, touch sessions keep the touch ring, and `url()` cursors use their keyword fallback.
 
 #### Use rrweb-player
 
@@ -456,6 +473,7 @@ The event list:
 | mouse-interaction      | mouse interaction has been replayed | { type, target }  |
 | event-cast             | event has been replayed             | event             |
 | custom-event           | custom event has been replayed      | event             |
+| cursor-change          | the cursor shape has changed        | CursorState       |
 | destroy                | destroyed the replayer              | -                 |
 
 The rrweb-replayer also re-expose the event listener via a `component.addEventListener` API.

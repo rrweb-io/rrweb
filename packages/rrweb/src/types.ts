@@ -174,6 +174,18 @@ export type ReplayPlugin = {
   getMirror?: (mirrors: { nodeMirror: Mirror }) => void;
 };
 export type { Replayer } from './replay';
+export type CursorState = {
+  cursor: string;
+  pointerType: 'mouse' | 'pen' | 'touch';
+  pressed: boolean;
+  target: Element | null;
+};
+export type CursorPack = {
+  name: string;
+  resolve(
+    state: CursorState,
+  ): { url: string; hotspot: [number, number] } | null;
+};
 export type playerConfig = {
   speed: number;
   maxSpeed: number;
@@ -189,6 +201,11 @@ export type playerConfig = {
   triggerFocus: boolean;
   UNSAFE_replayCanvas: boolean;
   pauseAnimation?: boolean;
+  cursor?: {
+    mode?: 'dot' | 'state';
+    resolveAuto?: boolean;
+    pack?: CursorPack;
+  };
   mouseTail:
     | boolean
     | {
