@@ -12,6 +12,7 @@
     typeOf,
   } from './utils';
   import Controller from './Controller.svelte';
+  import { resolveCaptionStyle } from './caption-style';
   import type { RRwebPlayerOptions, RRwebPlayerExpose } from './types';
     
   export let width: NonNullable<RRwebPlayerOptions['props']['width']>  = 1024;
@@ -24,6 +25,7 @@
   export let speed: NonNullable<RRwebPlayerOptions['props']['speed']> = 1;
   export let showController: NonNullable<RRwebPlayerOptions['props']['showController']> = true;
   export let showCaptions: NonNullable<RRwebPlayerOptions['props']['showCaptions']> = true;
+  export let captionStyle: NonNullable<RRwebPlayerOptions['props']['captionStyle']> = {};
   export let timelineMarkerColor: NonNullable<RRwebPlayerOptions['props']['timelineMarkerColor']> = 'rgb(73, 80, 246)';
   export let tags: NonNullable<RRwebPlayerOptions['props']['tags']> = {};
   // color of inactive periods indicator
@@ -31,6 +33,9 @@
 
   let replayer: Replayer;
   let captionText: string | undefined;
+  $: caption = resolveCaptionStyle(captionStyle);
+  // Captions keep today's look and placement until captionStyle is set.
+  $: styledCaption = Object.keys(captionStyle ?? {}).length > 0;
 
   export const getMirror = () => replayer.getMirror();
 
@@ -232,6 +237,34 @@
     overflow-wrap: anywhere;
   }
 
+  .rr-player__caption--top {
+    top: 24px;
+    bottom: auto;
+  }
+
+  /* With captionStyle set, an element covering the bottom of the replay while hovered or focused moves bottom-row captions to the top. */
+  .rr-player:has(.rr-player__caption-cover:hover) .rr-player__caption--styled:not(.rr-player__caption--top):not(.rr-player__caption--middle),
+  .rr-player:has(.rr-player__caption-cover:focus-within) .rr-player__caption--styled:not(.rr-player__caption--top):not(.rr-player__caption--middle) {
+    top: 24px;
+    bottom: auto;
+  }
+
+  .rr-player__caption--middle {
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+  }
+
+  .rr-player__caption--left {
+    margin-left: 0;
+    text-align: left;
+  }
+
+  .rr-player__caption--right {
+    margin-right: 0;
+    text-align: right;
+  }
+
   .rr-player__frame {
     overflow: hidden;
   }
@@ -260,7 +293,17 @@
     <div class="rr-player__frame" bind:this={frame} {style} />
     <div role="status" aria-live="polite" aria-atomic="true">
       {#if captionText !== undefined}
-        <div class="rr-player__caption">{captionText}</div>
+        <div
+          class="rr-player__caption"
+          class:rr-player__caption--styled={styledCaption}
+          class:rr-player__caption--top={caption.position.startsWith('top')}
+          class:rr-player__caption--middle={['left', 'center', 'right'].includes(caption.position)}
+          class:rr-player__caption--left={caption.position.endsWith('left')}
+          class:rr-player__caption--right={caption.position.endsWith('right')}
+          style:font-size={caption.fontSize}
+          style:color={caption.color}
+          style:background={caption.background}
+          style:text-shadow={caption.textShadow}>{captionText}</div>
       {/if}
     </div>
   </div>

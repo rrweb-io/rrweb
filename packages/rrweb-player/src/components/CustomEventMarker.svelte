@@ -27,7 +27,12 @@
 
 </script>
 
-<div class="rr-custom-event-container" style:left={position}>
+<!-- While hovered or focused, the open panel covers the bottom of the replay. -->
+<div
+  class="rr-custom-event-container"
+  class:rr-player__caption-cover={!dismissed}
+  style:left={position}
+>
   <button
     bind:this={marker}
     type="button"
