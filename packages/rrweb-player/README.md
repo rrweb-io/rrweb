@@ -72,6 +72,8 @@ new rrwebPlayer({
 | height              | 576              | the height of the replayer                                                                                        |
 | maxScale            | 1                | the maximum scale of the replayer (1 = 100%), set to 0 for unlimited                                              |
 | autoPlay            | true             | whether to autoplay                                                                                               |
+| clickToPlay         | false            | whether a click on the replay plays or pauses it                                                                  |
+| showPlayOverlay     | false            | whether a paused replay shows a play button on hover                                                              |
 | speed               | 1                | The default speed to play at                                                                                      |
 | speedOption         | [1, 2, 4, 8]     | speed options in UI                                                                                               |
 | showCaptions        | true             | display timed captions from annotation events; viewers can toggle them with CC                                    |
@@ -80,6 +82,141 @@ new rrwebPlayer({
 | tags                | {}               | customize the custom events style with a key-value map                                                            |
 | inactiveColor       | #D4D4D4          | Customize the color of inactive periods indicator in the progress bar with a valid CSS color string.              |
 | ...                 | -                | all the [rrweb Replayer options](https://github.com/rrweb-io/rrweb/blob/main/guide.md#options-1) will be bypassed |
+
+## Playback controls
+
+These features are off unless you turn them on, so upgrading changes nothing
+for an existing player.
+
+- `features.jump` adds back and forward buttons that jump by `seconds`
+  (default 10). Its `keyboard` option lets the left and right arrows jump and
+  Space play or pause: `'player'` while focus is in the player, or `'page'`
+  from anywhere on the page when this is the only visible player with page
+  shortcuts. Inputs, sliders, dialogs and other players keep their arrow keys,
+  and buttons, links and other controls keep Space. These keys need the
+  controller.
+- The `clickToPlay` prop lets a click on the replay play or pause it, with or
+  without the controller. A drag does not count as a click.
+- The `showPlayOverlay` prop shows a play button over a paused replay while the
+  pointer is on it, and touch screens show it whenever the replay is paused.
+
+```js
+const player = new rrwebPlayer({
+  target: document.body,
+  props: { events, features: { jump: { seconds: 5, keyboard: 'player' } } },
+});
+
+const unsubscribe = player.addEventListener(
+  'ui-jump',
+  ({ fromMs, toMs, source }) => {
+    console.log(fromMs, toMs, source);
+  },
+);
+player.jump('forward');
+player.$set({ features: { jump: { seconds: 15 } } });
+unsubscribe();
+```
+
+`player.jump()` works whether or not the buttons are shown. Jump events give
+replay offsets in milliseconds and name the source: `'button'`,
+`'keyboard'` or `'api'`. Jumps are ignored during live replay. While the
+replay is stalled, a jump moves the position it resumes from.
+
+### Toolbar
+
+`features.toolbar: true` replaces the classic button row with a compact
+toolbar. It is off unless you turn it on.
+
+- Play or pause, the jump buttons when `features.jump` is set, and the
+  current and total time.
+- A speed panel with a slider over the `speedOption` range and a button for
+  each `speedOption` value.
+- A settings panel with Skip inactive and, when the recording has captions
+  or timeline notes, an Annotations switch that shows or hides both together.
+  It starts in the state `showCaptions` gives it.
+- Fullscreen.
+
+The panels open on hover and stay open on click. They keep keyboard focus,
+including inside a shadow root, and close with Escape.
+
+Four CSS custom properties on the mounting element set the toolbar's colors:
+`--rrweb-player-surface`, `--rrweb-player-text`, `--rrweb-player-accent` and
+`--rrweb-player-focus-ring`. The player background, borders, the timeline
+track, pill backgrounds and muted text are mixed from the surface and text
+colors, and the playhead, progress and switches use the accent. A dark surface
+with light text therefore gives a fully dark toolbar.
+
+```css
+.customer-replay {
+  --rrweb-player-accent: #0b7a75;
+  --rrweb-player-focus-ring: #f2a900;
+}
+```
+
+Hovering or focusing the time shows when the recording started in the
+viewer's local time. Set `recordingTimeZone` to the recorded user's IANA time
+zone, such as `'America/New_York'`, to show their local time as well.
+
+`features.download` adds a Download menu to the toolbar. Its rrweb events
+(JSON) item saves the events the player holds, including any appended since it
+loaded, as `rrweb-<start time>.json`. Pass `{ fileName }` to name the file, or
+`{ json: false }` to leave the item out.
+
+Add your own downloads, such as a video or a screenshot your server renders,
+with `links`. Each link has a `label`, an `href` and an optional `description`,
+and opens in a new tab. The menu lists only `http`, `https` and `blob` URLs.
+The Download button appears when the menu has at least one item.
+
+```js
+features: {
+  toolbar: true,
+  download: {
+    links: [
+      { label: 'Video (MP4)', href: 'https://example.com/recording.mp4' },
+    ],
+  },
+},
+```
+
+Two props adjust the toolbar. Neither does anything without it.
+
+- `controls` leaves out the controls set to `false`: `play`, `jump`, `time`,
+  `speed`, `settings`, `download` and `fullscreen`.
+- `icons` replaces built-in icons. Each entry is a function that receives
+  `{ name, seconds, document }` and returns an SVG element. The names are
+  `play`, `pause`, `jump-back`, `jump-forward`, `speed`, `settings`, `download`,
+  `enter-fullscreen` and `exit-fullscreen`. Create the SVG with `document`,
+  which may be the player's own, and give it a size: the built-in icons are
+  16 pixels.
+
+```js
+new rrwebPlayer({
+  target: document.body,
+  props: {
+    events,
+    features: { toolbar: true, jump: {} },
+    controls: { settings: false },
+    icons: {
+      play: ({ document }) => {
+        const svg = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'svg',
+        );
+        svg.setAttribute('width', '16');
+        svg.setAttribute('height', '16');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        svg.innerHTML = '<path d="M8 5v14l11-7z" />';
+        return svg;
+      },
+    },
+  },
+});
+```
+
+Both can be changed later with `player.$set`.
+
+The built-in toolbar icons come from [Lucide](https://lucide.dev) (ISC
+license, see `LICENSE-lucide`).
 
 ## Captions and timeline markers
 
@@ -109,7 +246,7 @@ for replay callbacks, keyboard interactions, seeking, and TypeScript usage.
 ## Methods on the rrwebPlayer component
 
 ```ts
-addEventListener(event: string, handler: (params: any) => unknown): void;
+addEventListener(event: string, handler: (params: any) => unknown): () => void;
 ```
 
 ```ts
