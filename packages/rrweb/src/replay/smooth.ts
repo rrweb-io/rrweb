@@ -133,7 +133,10 @@ export function glideAt(g: ScrollGlide, t: number) {
   };
 }
 
-/** Next scroll event on the same target within SCROLL_GLIDE_MAX_GAP_MS, or null. */
+/**
+ * Next scroll event on the same target within SCROLL_GLIDE_MAX_GAP_MS, or null.
+ * Stops at a full snapshot: a new page reuses node ids, so its scroll is not the old page's.
+ */
 export function findNextScroll(
   events: eventWithTime[],
   e: eventWithTime,
@@ -149,6 +152,7 @@ export function findNextScroll(
   for (let i = lo; i < events.length; i++) {
     const n = events[i];
     if (n.timestamp - e.timestamp > SCROLL_GLIDE_MAX_GAP_MS) break;
+    if (n.type === EventType.FullSnapshot) break;
     if (
       n.type === EventType.IncrementalSnapshot &&
       n.data.source === IncrementalSource.Scroll &&

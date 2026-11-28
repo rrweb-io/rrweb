@@ -114,6 +114,15 @@ describe('findNextScroll', () => {
     expect(findNextScroll(events, events[2], 1)).toBeNull();
     expect(findNextScroll(events, events[1], 2)).toBeNull();
   });
+
+  it('stops at a full snapshot, where a new page reuses the node ids', () => {
+    const page = {
+      type: EventType.FullSnapshot,
+      timestamp: 51,
+    } as eventWithTime;
+    const navigated = [scroll(0, 1, 1800), page, scroll(100, 1, 100)];
+    expect(findNextScroll(navigated, navigated[0], 1)).toBeNull();
+  });
 });
 
 describe('drawTaperedTrail', () => {
