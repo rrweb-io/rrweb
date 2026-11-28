@@ -25,6 +25,31 @@
 .replayer-mouse.active::after {
   animation: click 0.2s ease-in-out 1;
 }
+/* With cursor.click 'ripple', a click also sends a dark and a light ring
+   outwards from the dot, so it shows on light and dark pages alike. */
+.replayer-mouse__ripple {
+  position: absolute;
+  left: -30px;
+  top: -30px;
+  width: 60px;
+  height: 60px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+.replayer-mouse__ripple:first-child {
+  border: 1.5px solid rgba(0, 0, 0, 0.6);
+}
+.replayer-mouse__ripple:last-child {
+  border: 2.5px solid rgba(255, 255, 255, 1);
+}
+.replayer-mouse.active .replayer-mouse__ripple:first-child {
+  animation: click-ripple 0.5s linear 1;
+}
+.replayer-mouse.active .replayer-mouse__ripple:last-child {
+  animation: click-ripple 0.5s linear 0.06s 1 backwards;
+}
 .replayer-mouse.touch-device {
   background-image: none;  /* there's no passive cursor on touch-only screens */
   width: 70px;
@@ -37,6 +62,12 @@
   border-color: rgba(73, 80, 246, 0);
   transition: left 0s linear, top 0s linear, border-color 0.2s ease-in-out;
 }
+/* The touch ring's -37px margin and 4px border move its content origin 33px
+   up and left of the tap, so move the rings back to centre on it. */
+.replayer-mouse.touch-device .replayer-mouse__ripple {
+  left: 3px;
+  top: 3px;
+}
 .replayer-mouse.touch-device.touch-active {
   border-color: rgba(73, 80, 246, 1);
   transition: left 0.25s linear, top 0.25s linear, border-color 0.2s ease-in-out;
@@ -46,6 +77,25 @@
 }
 .replayer-mouse.touch-device.active::after {
   animation: touch-click 0.2s ease-in-out 1;
+}
+.replayer-mouse[data-cursor] {
+  background-image: none;
+}
+.replayer-mouse[data-cursor]::before {
+  content: '';
+  position: absolute;
+  z-index: 1; /* above .replayer-mouse-tail */
+  /* 32px pack art drawn at 24px, hotspot scaled to match */
+  left: calc(var(--rr-cursor-x) * -0.75px);
+  top: calc(var(--rr-cursor-y) * -0.75px);
+  width: 24px;
+  height: 24px;
+  background-size: 24px 24px;
+  background-image: var(--rr-cursor);
+  pointer-events: none;
+}
+.replayer-mouse.touch-device::before {
+  display: none;
 }
 .replayer-mouse-tail {
   position: absolute;
@@ -62,6 +112,19 @@
     opacity: 0.5;
     width: 10px;
     height: 10px;
+  }
+}
+
+@keyframes click-ripple {
+  from {
+    transform: scale(0.33);
+    opacity: 1;
+    filter: blur(0);
+  }
+  to {
+    transform: scale(1);
+    opacity: 0;
+    filter: blur(2px);
   }
 }
 
